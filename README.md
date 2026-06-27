@@ -58,11 +58,18 @@ It includes:
 
 - frontend design planning principles
 - WordPress/Elementor automation workflow
-- native Elementor-only rules
+- distilled `frontend-design` and `wordpress-elementor-dev` knowledge packs
+- native Elementor-first rules
+- HTML widget enhancement policy
 - Elementor `_elementor_data` shape
 - required page meta keys
+- verification checklist
 - security rules
 - a minimal PHP snippet for creating an Elementor page
+
+The guide intentionally does not embed Codex skills as a runtime dependency. Instead, it
+ships portable distilled rules that Claude, Codex, GPT, Gemini, Qwen, scripts, or any
+HTTP-capable agent can fetch and apply.
 
 ```bash
 KEY="your-secret-key"
@@ -113,9 +120,10 @@ Ask any agent to fetch `/guide` first:
 Before making WordPress changes, call:
 GET /wp-json/ai-executor/v1/guide with X-AI-Key.
 
-Follow the returned agent_prompt, frontend_design rules, wordpress_elementor
-workflow, and page_meta contract. Then use /run for execution and verify the
-published URL plus Elementor metadata.
+Follow the returned agent_prompt, embedded_skill_packs, frontend_design rules,
+wordpress_elementor workflow, page_meta contract, html_enhancement_policy, and
+verification_checklist. Then use /run for execution and verify the published URL
+plus Elementor metadata.
 
 Important: build Elementor page structure and content with native editable
 Elementor elements. Use containers and widget settings such as `heading`,
@@ -127,6 +135,27 @@ the main page markup/content/layout container, and do not use shortcode widgets
 to fake editable page sections. After writing `_elementor_data`, recursively
 inspect any `html` widgets and confirm they are enhancement-only.
 ```
+
+### Agent quality gates
+
+Before writing a landing page, the agent should produce or internally resolve:
+
+- subject, audience, and the page's single job
+- 4-6 color tokens
+- display, body, and utility typography roles
+- section map / wireframe
+- one distinctive signature element
+- native Elementor element plan
+- CSS/JS enhancement plan, if needed
+
+After writing, the agent should verify:
+
+- permalink returns HTTP 200
+- post status and Elementor meta are correct
+- `_elementor_data` decodes as a recursive array
+- main copy lives in native widget settings
+- any `html` widget is CSS/JS enhancement-only
+- no obvious desktop/mobile overlap or horizontal overflow
 
 ---
 

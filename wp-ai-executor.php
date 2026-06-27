@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.2.1
+ * Version:     1.3.0
  * Author:      DIAS
  * License:     MIT
  */
@@ -74,8 +74,12 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.0.0',
+        'version' => '1.1.0',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
+        'embedded_skill_packs' => [
+            'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
+            'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',
+        ],
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
@@ -93,6 +97,12 @@ function wpae_agent_guide(): array {
                 'Keep copy specific, active, and useful from the visitor side of the screen.',
                 'Spend boldness in one place; keep the rest disciplined and responsive.',
             ],
+            'anti_generic_defaults' => [
+                'Do not default to a generic hero, generic gradient cards, generic dark SaaS page, or one-note palette.',
+                'Do not use decorative numbering unless the content is actually sequential.',
+                'Do not use stock-like filler sections; every section must move the visitor toward the page job.',
+                'Do not stop at a technically valid layout; evaluate whether the page looks intentionally designed.',
+            ],
             'planning_template' => [
                 'subject' => 'What is being sold or explained?',
                 'audience' => 'Who must understand and act?',
@@ -101,6 +111,13 @@ function wpae_agent_guide(): array {
                 'type_roles' => 'Display, body, and utility/caption roles.',
                 'layout' => 'Short section map or wireframe.',
                 'signature' => 'One distinctive element justified by the brief.',
+            ],
+            'design_quality_bar' => [
+                'Hero must be the design thesis and should contain the page signature.',
+                'Typography must use deliberate roles: display, body, utility/caption.',
+                'Layout must be stable at desktop, tablet, and mobile widths.',
+                'Motion must support comprehension: reveal, hover, progress, or focused ambient animation.',
+                'Copy must be concrete and action-oriented.',
             ],
         ],
         'wordpress_elementor' => [
@@ -113,7 +130,7 @@ function wpae_agent_guide(): array {
                 'HTML widget only for small JS snippets or complex CSS that cannot reasonably be expressed through Elementor settings',
                 'Avoid browser automation unless absolutely required',
             ],
-            'native_elementor_only' => [
+            'native_elementor_first' => [
                 'required' => true,
                 'rule' => 'Build page structure and content from native Elementor containers and widgets so the user can edit content and styling in the Elementor editor panel.',
                 'allowed_widget_types' => [
@@ -139,6 +156,13 @@ function wpae_agent_guide(): array {
                 'conditional_widget_types' => [
                     'html' => 'Allowed only for small JavaScript snippets or complex CSS enhancements that cannot reasonably be expressed with native Elementor settings. Never use it as the main page markup/content/layout container.',
                 ],
+                'content_placement' => [
+                    'Headlines must live in heading widget settings.title.',
+                    'Body copy must live in text-editor widget settings.editor.',
+                    'Calls to action must live in button widget settings.text and settings.link.',
+                    'Lists must live in icon-list repeater settings when practical.',
+                    'Cards, columns, grids, hero panels, and sections must be containers with settings and child widgets.',
+                ],
                 'forbidden_patterns' => [
                     'Do not put full page markup into an Elementor HTML widget.',
                     'Do not use inline CSS/JS blobs to fake the main page structure.',
@@ -149,6 +173,22 @@ function wpae_agent_guide(): array {
                     'Confirm all core content and layout elements are containers or allowed native widgets.',
                     'If html widgets exist, confirm each one is limited to JS or complex CSS enhancements, not page content/layout.',
                     'Confirm important text lives in heading/text-editor/button/icon-list settings.',
+                ],
+            ],
+            'html_enhancement_policy' => [
+                'allowed' => true,
+                'allowed_for' => [
+                    'Google Fonts or other font loading when the site has no better typography pipeline.',
+                    'Scoped CSS polish for classed Elementor containers/widgets.',
+                    'Small JavaScript interactions such as scroll reveal, hover helpers, tabs state, counters, or progressive enhancement.',
+                    'Complex responsive CSS that Elementor settings cannot express cleanly.',
+                ],
+                'requirements' => [
+                    'Scope CSS under project-specific classes, e.g. .wpae-* or page-specific .mz-*.',
+                    'Do not target .elementor-widget-container as the primary selector.',
+                    'Respect prefers-reduced-motion for animation.',
+                    'Use vanilla JavaScript in an IIFE; avoid jQuery unless WordPress/Elementor dependency forces it.',
+                    'HTML widget must be enhancement-only and removable without losing the page content.',
                 ],
             ],
             'page_meta' => [
@@ -175,6 +215,24 @@ function wpae_agent_guide(): array {
                     'elements' => [],
                 ],
             ],
+            'elementor_data_rules' => [
+                'Use recursive arrays of containers and widgets.',
+                'Every element needs id, elType, isInner, settings, and elements.',
+                'Widgets also need widgetType.',
+                'Use deterministic short ids when possible so future updates can target stable elements.',
+                'Use _css_classes in settings to attach scoped enhancement styles.',
+                'Clear/regenerate Elementor CSS cache after writing page data when Elementor classes are available.',
+            ],
+            'verification_checklist' => [
+                'HTTP status for permalink is 200.',
+                'Post status is publish unless the user requested draft.',
+                '_wp_page_template is elementor_canvas for full landing pages when appropriate.',
+                '_elementor_edit_mode is builder.',
+                '_elementor_data decodes as JSON array.',
+                'Core text is stored in native widget settings, not opaque HTML.',
+                'Any html widget is enhancement-only.',
+                'Desktop and mobile layout should not have obvious overlap or horizontal overflow.',
+            ],
             'php_snippet' => wpae_elementor_page_snippet(),
         ],
         'security' => [
@@ -189,7 +247,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, inspect the environment. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Then create or update a WordPress page by setting Elementor metadata. Use native Elementor Containers/Flexbox and editable native widgets for page layout and content. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. Verify the published URL over HTTP plus Elementor meta after every write, and recursively inspect any html widgets to confirm they are enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use native Elementor Containers/Flexbox and editable native widgets for page layout and content. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, native widget content placement, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 
