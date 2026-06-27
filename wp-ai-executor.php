@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.2.0
+ * Version:     1.2.1
  * Author:      DIAS
  * License:     MIT
  */
@@ -80,9 +80,9 @@ function wpae_agent_guide(): array {
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
             '2. For page work, create or update a WordPress page and write Elementor metadata.',
-            '3. Prefer Elementor Containers/Flexbox over legacy section-column layouts.',
+            '3. Use native Elementor elements only: containers and widgets with editable settings.',
             '4. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '5. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, and visible HTML text.',
+            '5. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -110,7 +110,46 @@ function wpae_agent_guide(): array {
                 'WP AI Executor as the automation bridge',
                 'No Oxygen',
                 'No Novamira',
+                'HTML widget only for small JS snippets or complex CSS that cannot reasonably be expressed through Elementor settings',
                 'Avoid browser automation unless absolutely required',
+            ],
+            'native_elementor_only' => [
+                'required' => true,
+                'rule' => 'Build page structure and content from native Elementor containers and widgets so the user can edit content and styling in the Elementor editor panel.',
+                'allowed_widget_types' => [
+                    'heading',
+                    'text-editor',
+                    'button',
+                    'icon-list',
+                    'image',
+                    'image-box',
+                    'icon-box',
+                    'divider',
+                    'spacer',
+                    'counter',
+                    'progress',
+                    'testimonial',
+                    'tabs',
+                    'accordion',
+                    'toggle',
+                ],
+                'forbidden_widget_types' => [
+                    'shortcode',
+                ],
+                'conditional_widget_types' => [
+                    'html' => 'Allowed only for small JavaScript snippets or complex CSS enhancements that cannot reasonably be expressed with native Elementor settings. Never use it as the main page markup/content/layout container.',
+                ],
+                'forbidden_patterns' => [
+                    'Do not put full page markup into an Elementor HTML widget.',
+                    'Do not use inline CSS/JS blobs to fake the main page structure.',
+                    'Do not replace editable Elementor controls with opaque HTML.',
+                ],
+                'verification' => [
+                    'Traverse _elementor_data recursively.',
+                    'Confirm all core content and layout elements are containers or allowed native widgets.',
+                    'If html widgets exist, confirm each one is limited to JS or complex CSS enhancements, not page content/layout.',
+                    'Confirm important text lives in heading/text-editor/button/icon-list settings.',
+                ],
             ],
             'page_meta' => [
                 '_elementor_edit_mode' => 'builder',
@@ -130,7 +169,7 @@ function wpae_agent_guide(): array {
                 'widget' => [
                     'id' => 'unique 7-8 character string',
                     'elType' => 'widget',
-                    'widgetType' => 'heading, text-editor, button, html, icon-list, etc.',
+                    'widgetType' => 'Native editable Elementor widget, e.g. heading, text-editor, button, icon-list, image, divider, spacer. HTML widget is allowed only for JS or complex CSS enhancements, never for main layout/content.',
                     'isInner' => false,
                     'settings' => 'Widget control values.',
                     'elements' => [],
@@ -150,7 +189,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, inspect the environment. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Then create or update a WordPress page by setting Elementor metadata. Use Elementor Containers/Flexbox, avoid Oxygen and Novamira, and verify the published URL over HTTP plus Elementor meta after every write. Do not expose API keys.
+Before writing, inspect the environment. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Then create or update a WordPress page by setting Elementor metadata. Use native Elementor Containers/Flexbox and editable native widgets for page layout and content. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. Verify the published URL over HTTP plus Elementor meta after every write, and recursively inspect any html widgets to confirm they are enhancement-only. Do not expose API keys.
 PROMPT;
 }
 

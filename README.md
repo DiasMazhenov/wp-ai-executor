@@ -58,6 +58,7 @@ It includes:
 
 - frontend design planning principles
 - WordPress/Elementor automation workflow
+- native Elementor-only rules
 - Elementor `_elementor_data` shape
 - required page meta keys
 - security rules
@@ -115,6 +116,16 @@ GET /wp-json/ai-executor/v1/guide with X-AI-Key.
 Follow the returned agent_prompt, frontend_design rules, wordpress_elementor
 workflow, and page_meta contract. Then use /run for execution and verify the
 published URL plus Elementor metadata.
+
+Important: build Elementor page structure and content with native editable
+Elementor elements. Use containers and widget settings such as `heading`,
+`text-editor`, `button`, `icon-list`, `image`, `divider`, and `spacer`.
+
+The Elementor `html` widget is allowed only for small JavaScript snippets or
+complex CSS enhancements when native settings are not enough. Do not use it as
+the main page markup/content/layout container, and do not use shortcode widgets
+to fake editable page sections. After writing `_elementor_data`, recursively
+inspect any `html` widgets and confirm they are enhancement-only.
 ```
 
 ---
