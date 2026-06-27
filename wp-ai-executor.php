@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      DIAS
  * License:     MIT
  */
@@ -35,6 +35,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn() => in_array( $_SERVER['REMOTE_ADDR'] ?? '', [ '127.0.0.1', '::1', 'localhost' ], true ),
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/guide', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_get_guide',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
 } );
 
 function wpae_auth( WP_REST_Request $r ): bool {
@@ -59,6 +65,141 @@ function wpae_run( WP_REST_Request $request ) {
         return new WP_REST_Response( [ 'error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine() ], 500 );
     }
     return new WP_REST_Response( [ 'return_value' => $result, 'output' => ob_get_clean() ], 200 );
+}
+
+function wpae_get_guide(): WP_REST_Response {
+    return new WP_REST_Response( wpae_agent_guide(), 200 );
+}
+
+function wpae_agent_guide(): array {
+    return [
+        'name' => 'WP AI Executor Agent Guide',
+        'version' => '1.0.0',
+        'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
+        'agent_prompt' => wpae_agent_prompt(),
+        'workflow' => [
+            '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
+            '2. For page work, create or update a WordPress page and write Elementor metadata.',
+            '3. Prefer Elementor Containers/Flexbox over legacy section-column layouts.',
+            '4. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
+            '5. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, and visible HTML text.',
+        ],
+        'frontend_design' => [
+            'principles' => [
+                'Avoid generic template aesthetics; ground the visual direction in the subject matter.',
+                'Open with a hero that states a clear design thesis.',
+                'Choose a compact color system, intentional typography roles, and one memorable signature element.',
+                'Use structure as information, not decoration. Numbering should mean sequence.',
+                'Keep copy specific, active, and useful from the visitor side of the screen.',
+                'Spend boldness in one place; keep the rest disciplined and responsive.',
+            ],
+            'planning_template' => [
+                'subject' => 'What is being sold or explained?',
+                'audience' => 'Who must understand and act?',
+                'single_job' => 'What should the page make the visitor do?',
+                'palette' => '4-6 named hex colors.',
+                'type_roles' => 'Display, body, and utility/caption roles.',
+                'layout' => 'Short section map or wireframe.',
+                'signature' => 'One distinctive element justified by the brief.',
+            ],
+        ],
+        'wordpress_elementor' => [
+            'stack' => [
+                'Remote WordPress site',
+                'Elementor only',
+                'WP AI Executor as the automation bridge',
+                'No Oxygen',
+                'No Novamira',
+                'Avoid browser automation unless absolutely required',
+            ],
+            'page_meta' => [
+                '_elementor_edit_mode' => 'builder',
+                '_elementor_template_type' => 'wp-page',
+                '_elementor_version' => 'Use ELEMENTOR_VERSION when defined.',
+                '_elementor_data' => 'JSON-encoded Elementor element array, stored with wp_slash().',
+                '_wp_page_template' => 'elementor_canvas for full landing pages when appropriate.',
+            ],
+            'element_shape' => [
+                'container' => [
+                    'id' => 'unique 7-8 character string',
+                    'elType' => 'container',
+                    'isInner' => false,
+                    'settings' => 'Container/Flexbox settings.',
+                    'elements' => 'Nested widgets or containers.',
+                ],
+                'widget' => [
+                    'id' => 'unique 7-8 character string',
+                    'elType' => 'widget',
+                    'widgetType' => 'heading, text-editor, button, html, icon-list, etc.',
+                    'isInner' => false,
+                    'settings' => 'Widget control values.',
+                    'elements' => [],
+                ],
+            ],
+            'php_snippet' => wpae_elementor_page_snippet(),
+        ],
+        'security' => [
+            'Treat X-AI-Key as root access to WordPress.',
+            'Never commit, log, or expose real keys in frontend code.',
+            'Prefer server/firewall IP restrictions for production.',
+            'Run read-only checks before writes and verify after writes.',
+        ],
+    ];
+}
+
+function wpae_agent_prompt(): string {
+    return <<<'PROMPT'
+You are operating a remote WordPress site through WP AI Executor.
+Before writing, inspect the environment. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Then create or update a WordPress page by setting Elementor metadata. Use Elementor Containers/Flexbox, avoid Oxygen and Novamira, and verify the published URL over HTTP plus Elementor meta after every write. Do not expose API keys.
+PROMPT;
+}
+
+function wpae_elementor_page_snippet(): string {
+    return <<<'PHP'
+$page_id = wp_insert_post([
+    'post_title'  => 'Landing Page',
+    'post_name'   => 'landing-page',
+    'post_status' => 'publish',
+    'post_type'   => 'page',
+], true);
+
+if ( is_wp_error( $page_id ) ) {
+    return [ 'ok' => false, 'error' => $page_id->get_error_message() ];
+}
+
+$elementor_data = [
+    [
+        'id'       => 'hero01',
+        'elType'   => 'container',
+        'isInner'  => false,
+        'settings' => [
+            'content_width'  => 'boxed',
+            'flex_direction' => 'column',
+        ],
+        'elements' => [
+            [
+                'id'         => 'title01',
+                'elType'     => 'widget',
+                'widgetType' => 'heading',
+                'isInner'    => false,
+                'settings'   => [
+                    'title'       => 'Landing headline',
+                    'header_size' => 'h1',
+                ],
+                'elements'   => [],
+            ],
+        ],
+    ],
+];
+
+update_post_meta( $page_id, '_elementor_edit_mode', 'builder' );
+update_post_meta( $page_id, '_elementor_template_type', 'wp-page' );
+update_post_meta( $page_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
+update_post_meta( $page_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
+update_post_meta( $page_id, '_wp_page_template', 'elementor_canvas' );
+
+return [ 'ok' => true, 'id' => $page_id, 'url' => get_permalink( $page_id ) ];
+PHP;
 }
 
 // ── Settings page ──────────────────────────────────────────────────────────────
@@ -180,6 +321,30 @@ def wp_php(code: str) -> dict:
 result = wp_php("return get_bloginfo(\'name\');")
 print(result["return_value"])'
 ); ?></pre>
+        </div>
+
+        <!-- Agent guide -->
+        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
+            <h2 style="margin-top:0">🧭 Agent Guide</h2>
+            <p style="color:#666;margin-top:0">Authenticated guidance endpoint for Codex, Claude, GPT, Gemini, Qwen, and other agents before they automate Elementor pages.</p>
+
+            <label style="display:block;font-weight:600;margin-bottom:6px">Guide URL</label>
+            <div style="display:flex;gap:8px">
+                <input type="text" value="<?php echo esc_attr( get_rest_url( null, 'ai-executor/v1/guide' ) ); ?>" readonly
+                    style="width:100%;font-family:monospace;background:#f6f7f7;padding:8px 12px;border:1px solid #ccc;border-radius:4px"
+                    onclick="this.select()" />
+                <button type="button" onclick="navigator.clipboard.writeText('<?php echo esc_js( get_rest_url( null, 'ai-executor/v1/guide' ) ); ?>');this.textContent='✅ Copied!';setTimeout(()=>this.textContent='Copy',2000)"
+                    class="button">Copy</button>
+            </div>
+
+            <h3>curl</h3>
+            <pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px"><?php echo esc_html(
+'curl -s "' . get_rest_url( null, 'ai-executor/v1/guide' ) . '" \\
+  -H "X-AI-Key: ' . $key . '"'
+); ?></pre>
+
+            <h3>Recommended agent instruction</h3>
+            <pre style="background:#f6f7f7;color:#1d2327;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px;white-space:pre-wrap"><?php echo esc_html( wpae_agent_prompt() ); ?></pre>
         </div>
 
         <!-- Security notes -->

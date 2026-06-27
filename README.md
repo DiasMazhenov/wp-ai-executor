@@ -48,6 +48,29 @@ Returns the current secret key. **Accessible from localhost only.**
 curl https://yoursite.com/wp-json/ai-executor/v1/key
 ```
 
+### `GET /wp-json/ai-executor/v1/guide`
+
+Returns authenticated guidance for AI agents before they automate WordPress or Elementor.
+This is not a Codex-specific skill runtime. It is a portable prompt and implementation
+contract that any HTTP-capable agent can fetch and follow.
+
+It includes:
+
+- frontend design planning principles
+- WordPress/Elementor automation workflow
+- Elementor `_elementor_data` shape
+- required page meta keys
+- security rules
+- a minimal PHP snippet for creating an Elementor page
+
+```bash
+KEY="your-secret-key"
+SITE="https://yoursite.com"
+
+curl -s "$SITE/wp-json/ai-executor/v1/guide" \
+  -H "X-AI-Key: $KEY"
+```
+
 ---
 
 ## Usage Examples
@@ -81,6 +104,19 @@ window.aiPHP = async (code) => {
 await aiPHP(`return get_bloginfo('name') . ' | PHP ' . PHP_VERSION;`);
 ```
 
+### Agent bootstrap
+
+Ask any agent to fetch `/guide` first:
+
+```text
+Before making WordPress changes, call:
+GET /wp-json/ai-executor/v1/guide with X-AI-Key.
+
+Follow the returned agent_prompt, frontend_design rules, wordpress_elementor
+workflow, and page_meta contract. Then use /run for execution and verify the
+published URL plus Elementor metadata.
+```
+
 ---
 
 ## Security
@@ -89,6 +125,7 @@ await aiPHP(`return get_bloginfo('name') . ' | PHP ' . PHP_VERSION;`);
 - Key is a 64-char cryptographically random hex string
 - Key comparison uses `hash_equals()` to prevent timing attacks
 - The `/key` endpoint is restricted to `127.0.0.1` / `::1` only
+- The `/guide` endpoint is authenticated because it describes privileged automation workflows
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
 ---
