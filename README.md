@@ -128,6 +128,10 @@ plus Elementor metadata.
 Important: build Elementor page structure and content with native editable
 Elementor elements. Use containers and widget settings such as `heading`,
 `text-editor`, `button`, `icon-list`, `image`, `divider`, and `spacer`.
+Critical visual state must also be set natively: backgrounds, text colors,
+borders, border radius, spacing, dimensions, and alignment. Scoped CSS may use
+`!important` as a fallback when Elementor/theme CSS wins specificity, but CSS
+must not be the only source for essential contrast or layout.
 
 The Elementor `html` widget is allowed only for small JavaScript snippets or
 complex CSS enhancements when native settings are not enough. Do not use it as
@@ -155,6 +159,7 @@ After writing, the agent should verify:
 - `_elementor_data` decodes as a recursive array
 - main copy lives in native widget settings
 - any `html` widget is CSS/JS enhancement-only
+- critical backgrounds, borders, spacing, and contrast exist in native Elementor settings
 - no obvious desktop/mobile overlap or horizontal overflow
 
 ---
