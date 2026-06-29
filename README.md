@@ -128,6 +128,10 @@ plus Elementor metadata.
 Important: build Elementor page structure and content with native editable
 Elementor elements. Use containers and widget settings such as `heading`,
 `text-editor`, `button`, `icon-list`, `image`, `divider`, and `spacer`.
+Use only Elementor Flexbox Containers for layout. In `_elementor_data`, layout
+nodes must be `elType: "container"` only. Legacy `elType: "section"` and
+`elType: "column"` are forbidden and must be converted to nested containers
+before saving.
 Critical visual state must also be set natively: backgrounds, text colors,
 borders, border radius, spacing, dimensions, and alignment. Scoped CSS may use
 `!important` as a fallback when Elementor/theme CSS wins specificity, but CSS
@@ -157,6 +161,7 @@ After writing, the agent should verify:
 - permalink returns HTTP 200
 - post status and Elementor meta are correct
 - `_elementor_data` decodes as a recursive array
+- `_elementor_data` contains zero legacy `section` or `column` elements
 - main copy lives in native widget settings
 - any `html` widget is CSS/JS enhancement-only
 - critical backgrounds, borders, spacing, and contrast exist in native Elementor settings

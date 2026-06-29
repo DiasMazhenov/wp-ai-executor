@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.1
+ * Version:     1.3.2
  * Author:      DIAS
  * License:     MIT
  */
@@ -74,7 +74,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.1',
+        'version' => '1.1.2',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
@@ -84,7 +84,7 @@ function wpae_agent_guide(): array {
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
             '2. For page work, create or update a WordPress page and write Elementor metadata.',
-            '3. Use native Elementor elements only: containers and widgets with editable settings.',
+            '3. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
             '4. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
             '5. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
         ],
@@ -132,7 +132,18 @@ function wpae_agent_guide(): array {
             ],
             'native_elementor_first' => [
                 'required' => true,
-                'rule' => 'Build page structure and content from native Elementor containers and widgets so the user can edit content and styling in the Elementor editor panel.',
+                'rule' => 'Build page structure and content from native Elementor Flexbox Containers and widgets so the user can edit content and styling in the Elementor editor panel. Use elType=container for all layout nodes.',
+                'layout_system' => [
+                    'required' => 'Elementor Flexbox Containers only.',
+                    'allowed_layout_eltypes' => [
+                        'container',
+                    ],
+                    'forbidden_legacy_eltypes' => [
+                        'section',
+                        'column',
+                    ],
+                    'rule' => 'Do not create, import, or preserve legacy Section/Column layouts. Convert every layout wrapper to nested containers with flex_direction, content_width, width, gap, padding, and responsive settings.',
+                ],
                 'allowed_widget_types' => [
                     'heading',
                     'text-editor',
@@ -161,10 +172,11 @@ function wpae_agent_guide(): array {
                     'Body copy must live in text-editor widget settings.editor.',
                     'Calls to action must live in button widget settings.text and settings.link.',
                     'Lists must live in icon-list repeater settings when practical.',
-                    'Cards, columns, grids, hero panels, and sections must be containers with settings and child widgets.',
+                    'Cards, columns, grids, hero panels, and sections must be Flexbox Containers with settings and child widgets.',
                     'Critical visual state required for readability must live in native Elementor settings first: background_color, text color, border, border_radius, padding, margin, width, min-height, gap, and alignment.',
                 ],
                 'forbidden_patterns' => [
+                    'Do not use legacy Elementor sections or columns: elType=section and elType=column are forbidden.',
                     'Do not put full page markup into an Elementor HTML widget.',
                     'Do not use inline CSS/JS blobs to fake the main page structure.',
                     'Do not replace editable Elementor controls with opaque HTML.',
@@ -172,7 +184,8 @@ function wpae_agent_guide(): array {
                 ],
                 'verification' => [
                     'Traverse _elementor_data recursively.',
-                    'Confirm all core content and layout elements are containers or allowed native widgets.',
+                    'Confirm all layout elements are elType=container and all content elements are allowed native widgets.',
+                    'Confirm there are zero elements with elType=section or elType=column.',
                     'If html widgets exist, confirm each one is limited to JS or complex CSS enhancements, not page content/layout.',
                     'Confirm important text lives in heading/text-editor/button/icon-list settings.',
                     'Confirm any visually critical card, panel, hero, or dark section has native Elementor background and border settings before relying on CSS.',
@@ -224,6 +237,8 @@ function wpae_agent_guide(): array {
                 'Use recursive arrays of containers and widgets.',
                 'Every element needs id, elType, isInner, settings, and elements.',
                 'Widgets also need widgetType.',
+                'Never emit legacy elType=section or elType=column. If source data contains them, convert to nested elType=container before saving.',
+                'Use Flexbox Container settings for layout: flex_direction, content_width, width, min_height, gap, padding, margin, justify_content, align_items, flex_wrap, and responsive variants.',
                 'Use deterministic short ids when possible so future updates can target stable elements.',
                 'Use _css_classes in settings to attach scoped enhancement styles.',
                 'For readable sections and cards, duplicate essential styling in settings before adding CSS: background_background, background_color, title/text colors, border_border, border_color, border_width, border_radius, padding, margin, gap, width, min-height, and alignment.',
@@ -235,6 +250,7 @@ function wpae_agent_guide(): array {
                 '_wp_page_template is elementor_canvas for full landing pages when appropriate.',
                 '_elementor_edit_mode is builder.',
                 '_elementor_data decodes as JSON array.',
+                '_elementor_data contains no legacy section or column elements.',
                 'Core text is stored in native widget settings, not opaque HTML.',
                 'Any html widget is enhancement-only.',
                 'Critical backgrounds, borders, spacing, and contrast are present in native Elementor settings, with CSS only refining or reinforcing them.',
@@ -254,7 +270,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use native Elementor Containers/Flexbox and editable native widgets for page layout and content. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 
