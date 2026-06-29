@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.2
+ * Version:     1.3.3
  * Author:      DIAS
  * License:     MIT
  */
@@ -55,6 +55,19 @@ function wpae_run( WP_REST_Request $request ) {
     if ( $code === '' ) {
         return new WP_REST_Response( [ 'error' => 'No code provided' ], 400 );
     }
+
+    $forbidden_file_operation = wpae_detect_forbidden_file_operation( $code );
+    if (
+        $forbidden_file_operation &&
+        ! ( defined( 'WP_AI_EXECUTOR_ALLOW_FILE_WRITES' ) && WP_AI_EXECUTOR_ALLOW_FILE_WRITES )
+    ) {
+        return new WP_REST_Response( [
+            'error' => 'Filesystem writes are disabled by WP AI Executor policy.',
+            'blocked_operation' => $forbidden_file_operation,
+            'help' => 'Use WordPress APIs for posts, post meta, options, Elementor data, and cache clearing. Do not create temporary loaders, mu-plugins, PHP/JS/CSS/JSON files, or files in /tmp.',
+        ], 403 );
+    }
+
     ob_start();
     $result = null;
     try {
@@ -67,6 +80,62 @@ function wpae_run( WP_REST_Request $request ) {
     return new WP_REST_Response( [ 'return_value' => $result, 'output' => ob_get_clean() ], 200 );
 }
 
+function wpae_detect_forbidden_file_operation( string $code ): ?string {
+    $patterns = [
+        'file_put_contents',
+        'fopen',
+        'fwrite',
+        'fputs',
+        'mkdir',
+        'rmdir',
+        'unlink',
+        'rename',
+        'copy',
+        'touch',
+        'chmod',
+        'chown',
+        'chgrp',
+        'symlink',
+        'link',
+        'move_uploaded_file',
+        'ZipArchive',
+        'Phar',
+        'WP_Filesystem',
+        'wp_mkdir_p',
+        'wp_delete_file',
+        'wp_tempnam',
+        'exec',
+        'shell_exec',
+        'system',
+        'passthru',
+        'proc_open',
+        'popen',
+    ];
+
+    foreach ( $patterns as $pattern ) {
+        if ( preg_match( '/\b' . preg_quote( $pattern, '/' ) . '\b/i', $code ) ) {
+            return $pattern;
+        }
+    }
+
+    $path_patterns = [
+        '/tmp/',
+        'wp-content/mu-plugins',
+        'wp-content/plugins',
+        'wp-content/themes',
+        'landing_data.b64',
+        'elem-loader.php',
+    ];
+
+    foreach ( $path_patterns as $pattern ) {
+        if ( stripos( $code, $pattern ) !== false ) {
+            return $pattern;
+        }
+    }
+
+    return null;
+}
+
 function wpae_get_guide(): WP_REST_Response {
     return new WP_REST_Response( wpae_agent_guide(), 200 );
 }
@@ -74,7 +143,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.2',
+        'version' => '1.1.3',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
@@ -85,8 +154,9 @@ function wpae_agent_guide(): array {
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
             '2. For page work, create or update a WordPress page and write Elementor metadata.',
             '3. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
-            '4. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '5. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '4. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
+            '5. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
+            '6. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -129,6 +199,22 @@ function wpae_agent_guide(): array {
                 'No Novamira',
                 'HTML widget only for small JS snippets or complex CSS that cannot reasonably be expressed through Elementor settings',
                 'Avoid browser automation unless absolutely required',
+            ],
+            'filesystem_policy' => [
+                'required' => true,
+                'rule' => 'Do not create, modify, rename, copy, chmod, or delete files on the WordPress server through WP AI Executor.',
+                'forbidden' => [
+                    'Temporary loaders such as elem-loader.php.',
+                    'Files in /tmp, wp-content/mu-plugins, wp-content/plugins, wp-content/themes, or uploads created as implementation scratch space.',
+                    'External PHP, JS, CSS, JSON, base64, cache, or helper files.',
+                    'Direct filesystem or shell/process calls such as file_put_contents, fopen, fwrite, mkdir, unlink, rename, copy, chmod, ZipArchive, Phar, WP_Filesystem, wp_mkdir_p, exec, shell_exec, system, passthru, proc_open, and popen.',
+                ],
+                'allowed_instead' => [
+                    'Use wp_insert_post, wp_update_post, update_post_meta, update_option, delete_option, and Elementor metadata.',
+                    'Use Elementor cache APIs to clear/regenerate generated CSS; do not write CSS files manually.',
+                    'Return data directly from /run instead of writing temporary files.',
+                ],
+                'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined by the site owner.',
             ],
             'native_elementor_first' => [
                 'required' => true,
@@ -176,6 +262,7 @@ function wpae_agent_guide(): array {
                     'Critical visual state required for readability must live in native Elementor settings first: background_color, text color, border, border_radius, padding, margin, width, min-height, gap, and alignment.',
                 ],
                 'forbidden_patterns' => [
+                    'Do not create temporary loader files, mu-plugins, helper PHP files, external CSS/JS files, JSON/base64 payload files, or scratch files anywhere on the server.',
                     'Do not use legacy Elementor sections or columns: elType=section and elType=column are forbidden.',
                     'Do not put full page markup into an Elementor HTML widget.',
                     'Do not use inline CSS/JS blobs to fake the main page structure.',
@@ -183,6 +270,7 @@ function wpae_agent_guide(): array {
                     'Do not rely on enhancement CSS as the only source for essential backgrounds, contrast, spacing, or card borders.',
                 ],
                 'verification' => [
+                    'Confirm the solution did not create or require any external files.',
                     'Traverse _elementor_data recursively.',
                     'Confirm all layout elements are elType=container and all content elements are allowed native widgets.',
                     'Confirm there are zero elements with elType=section or elType=column.',
@@ -254,6 +342,7 @@ function wpae_agent_guide(): array {
                 'Core text is stored in native widget settings, not opaque HTML.',
                 'Any html widget is enhancement-only.',
                 'Critical backgrounds, borders, spacing, and contrast are present in native Elementor settings, with CSS only refining or reinforcing them.',
+                'No external files, temporary loaders, mu-plugins, scratch files, or filesystem writes were created or required.',
                 'Desktop and mobile layout should not have obvious overlap or horizontal overflow.',
             ],
             'php_snippet' => wpae_elementor_page_snippet(),
@@ -261,6 +350,8 @@ function wpae_agent_guide(): array {
         'security' => [
             'Treat X-AI-Key as root access to WordPress.',
             'Never commit, log, or expose real keys in frontend code.',
+            'Never create temporary loaders, mu-plugins, PHP/JS/CSS/JSON/base64 files, or scratch files on the server.',
+            'Filesystem write/delete operations are blocked by default in /run; do not ask agents to bypass this.',
             'Prefer server/firewall IP restrictions for production.',
             'Run read-only checks before writes and verify after writes.',
         ],
@@ -270,7 +361,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 

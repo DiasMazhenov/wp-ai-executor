@@ -142,6 +142,12 @@ complex CSS enhancements when native settings are not enough. Do not use it as
 the main page markup/content/layout container, and do not use shortcode widgets
 to fake editable page sections. After writing `_elementor_data`, recursively
 inspect any `html` widgets and confirm they are enhancement-only.
+
+Never create external files through this plugin. Do not create temporary
+loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch
+files, or files in `/tmp`. Use WordPress APIs and Elementor metadata instead.
+By default `/run` rejects common filesystem write/delete operations and
+shell/process execution.
 ```
 
 ### Agent quality gates
@@ -165,6 +171,7 @@ After writing, the agent should verify:
 - main copy lives in native widget settings
 - any `html` widget is CSS/JS enhancement-only
 - critical backgrounds, borders, spacing, and contrast exist in native Elementor settings
+- no external files, temporary loaders, mu-plugins, or scratch files are created
 - no obvious desktop/mobile overlap or horizontal overflow
 
 ---
@@ -176,6 +183,7 @@ After writing, the agent should verify:
 - Key comparison uses `hash_equals()` to prevent timing attacks
 - The `/key` endpoint is restricted to `127.0.0.1` / `::1` only
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
+- `/run` blocks common filesystem write/delete functions and shell/process execution by default
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
 ---
