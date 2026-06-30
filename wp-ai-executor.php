@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.4
+ * Version:     1.3.5
  * Author:      DIAS
  * License:     MIT
  */
@@ -68,6 +68,8 @@ function wpae_run( WP_REST_Request $request ) {
         ], 403 );
     }
 
+    $elementor_before = wpae_capture_elementor_data_snapshot();
+
     ob_start();
     $result = null;
     try {
@@ -77,7 +79,19 @@ function wpae_run( WP_REST_Request $request ) {
         ob_end_clean();
         return new WP_REST_Response( [ 'error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine() ], 500 );
     }
-    return new WP_REST_Response( [ 'return_value' => $result, 'output' => ob_get_clean() ], 200 );
+    $output = ob_get_clean();
+
+    $elementor_validation = wpae_validate_changed_elementor_data( $elementor_before );
+    if ( ! $elementor_validation['ok'] ) {
+        return new WP_REST_Response( [
+            'error' => 'Invalid Elementor data blocked by WP AI Executor policy.',
+            'details' => $elementor_validation['errors'],
+            'rolled_back_post_ids' => $elementor_validation['rolled_back_post_ids'],
+            'output' => $output,
+        ], 422 );
+    }
+
+    return new WP_REST_Response( [ 'return_value' => $result, 'output' => $output ], 200 );
 }
 
 function wpae_detect_forbidden_file_operation( string $code ): ?string {
@@ -136,6 +150,99 @@ function wpae_detect_forbidden_file_operation( string $code ): ?string {
     return null;
 }
 
+function wpae_capture_elementor_data_snapshot(): array {
+    global $wpdb;
+
+    $rows = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s ORDER BY meta_id ASC",
+            '_elementor_data'
+        ),
+        ARRAY_A
+    );
+
+    $snapshot = [];
+    foreach ( $rows as $row ) {
+        $snapshot[ (int) $row['post_id'] ] = (string) $row['meta_value'];
+    }
+
+    return $snapshot;
+}
+
+function wpae_validate_changed_elementor_data( array $before ): array {
+    $after = wpae_capture_elementor_data_snapshot();
+    $errors = [];
+    $rolled_back_post_ids = [];
+
+    foreach ( $after as $post_id => $raw_data ) {
+        if ( array_key_exists( $post_id, $before ) && $before[ $post_id ] === $raw_data ) {
+            continue;
+        }
+
+        $post_errors = wpae_validate_elementor_data_string( $raw_data );
+        if ( empty( $post_errors ) ) {
+            continue;
+        }
+
+        $errors[] = [
+            'post_id' => $post_id,
+            'errors' => $post_errors,
+        ];
+
+        if ( array_key_exists( $post_id, $before ) ) {
+            update_post_meta( $post_id, '_elementor_data', wp_slash( $before[ $post_id ] ) );
+        } else {
+            delete_post_meta( $post_id, '_elementor_data' );
+        }
+        $rolled_back_post_ids[] = $post_id;
+    }
+
+    return [
+        'ok' => empty( $errors ),
+        'errors' => $errors,
+        'rolled_back_post_ids' => $rolled_back_post_ids,
+    ];
+}
+
+function wpae_validate_elementor_data_string( string $raw_data ): array {
+    $data = json_decode( $raw_data, true );
+    if ( ! is_array( $data ) ) {
+        return [ 'Elementor _elementor_data must be valid JSON array data.' ];
+    }
+
+    $errors = [];
+    wpae_validate_elementor_elements_recursive( $data, 'root', $errors );
+    return $errors;
+}
+
+function wpae_validate_elementor_elements_recursive( array $elements, string $path, array &$errors ): void {
+    foreach ( $elements as $index => $element ) {
+        if ( ! is_array( $element ) ) {
+            $errors[] = "{$path}.{$index}: element must be an object/array.";
+            continue;
+        }
+
+        $element_path = $path . '.' . ( $element['id'] ?? $index );
+        $el_type = $element['elType'] ?? null;
+
+        if ( $el_type === 'section' || $el_type === 'column' ) {
+            $errors[] = "{$element_path}: legacy Elementor elType={$el_type} is forbidden; use elType=container.";
+        }
+
+        if ( array_key_exists( 'widget_type', $element ) ) {
+            $errors[] = "{$element_path}: widget_type is forbidden; use camelCase widgetType.";
+        }
+
+        if ( $el_type === 'widget' && empty( $element['widgetType'] ) ) {
+            $errors[] = "{$element_path}: widget element must have non-empty camelCase widgetType.";
+        }
+
+        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+            wpae_validate_elementor_elements_recursive( $element['elements'], $element_path, $errors );
+        }
+    }
+}
+
 function wpae_get_guide(): WP_REST_Response {
     return new WP_REST_Response( wpae_agent_guide(), 200 );
 }
@@ -143,7 +250,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.4',
+        'version' => '1.1.5',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
@@ -215,6 +322,17 @@ function wpae_agent_guide(): array {
                     'Return data directly from /run instead of writing temporary files.',
                 ],
                 'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined by the site owner.',
+            ],
+            'runtime_elementor_validation' => [
+                'required' => true,
+                'rule' => 'The executor validates changed _elementor_data after each /run call and rejects invalid Elementor JSON even if the agent ignored the guide.',
+                'blocked' => [
+                    'Legacy elType=section.',
+                    'Legacy elType=column.',
+                    'Snake-case widget_type.',
+                    'Any elType=widget element with missing or empty widgetType.',
+                ],
+                'rollback' => 'If invalid _elementor_data is detected, the changed _elementor_data meta is rolled back to its pre-run value when possible.',
             ],
             'native_elementor_first' => [
                 'required' => true,
@@ -363,7 +481,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 

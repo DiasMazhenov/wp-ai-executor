@@ -135,6 +135,9 @@ before saving.
 Every widget must use Elementor's exact camelCase `widgetType` key. Never use
 `widget_type`; Elementor will treat that as missing widget identity and can
 render empty widgets.
+The executor validates changed `_elementor_data` after each `/run` call and
+blocks legacy `section`/`column`, snake-case `widget_type`, and widgets missing
+`widgetType`, rolling changed Elementor data back when possible.
 Critical visual state must also be set natively: backgrounds, text colors,
 borders, border radius, spacing, dimensions, and alignment. Scoped CSS may use
 `!important` as a fallback when Elementor/theme CSS wins specificity, but CSS
@@ -188,6 +191,7 @@ After writing, the agent should verify:
 - The `/key` endpoint is restricted to `127.0.0.1` / `::1` only
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
 - `/run` blocks common filesystem write/delete functions and shell/process execution by default
+- `/run` validates changed Elementor data and blocks legacy sections/columns or missing `widgetType`
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
 ---
