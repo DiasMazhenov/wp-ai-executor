@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.3
+ * Version:     1.3.4
  * Author:      DIAS
  * License:     MIT
  */
@@ -143,7 +143,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.3',
+        'version' => '1.1.4',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
@@ -315,7 +315,7 @@ function wpae_agent_guide(): array {
                 'widget' => [
                     'id' => 'unique 7-8 character string',
                     'elType' => 'widget',
-                    'widgetType' => 'Native editable Elementor widget, e.g. heading, text-editor, button, icon-list, image, divider, spacer. HTML widget is allowed only for JS or complex CSS enhancements, never for main layout/content.',
+                    'widgetType' => 'Required camelCase key. Native editable Elementor widget, e.g. heading, text-editor, button, icon-list, image, divider, spacer. HTML widget is allowed only for JS or complex CSS enhancements, never for main layout/content.',
                     'isInner' => false,
                     'settings' => 'Widget control values.',
                     'elements' => [],
@@ -324,7 +324,8 @@ function wpae_agent_guide(): array {
             'elementor_data_rules' => [
                 'Use recursive arrays of containers and widgets.',
                 'Every element needs id, elType, isInner, settings, and elements.',
-                'Widgets also need widgetType.',
+                'Every widget element must use the exact camelCase key widgetType. Never use widget_type, widget_type_name, type, or name as substitutes.',
+                'If elType is widget and widgetType is missing or empty, Elementor will render an empty/broken widget; treat this as a blocker.',
                 'Never emit legacy elType=section or elType=column. If source data contains them, convert to nested elType=container before saving.',
                 'Use Flexbox Container settings for layout: flex_direction, content_width, width, min_height, gap, padding, margin, justify_content, align_items, flex_wrap, and responsive variants.',
                 'Use deterministic short ids when possible so future updates can target stable elements.',
@@ -339,6 +340,7 @@ function wpae_agent_guide(): array {
                 '_elementor_edit_mode is builder.',
                 '_elementor_data decodes as JSON array.',
                 '_elementor_data contains no legacy section or column elements.',
+                'Every elType=widget element has non-empty widgetType and no widget_type key.',
                 'Core text is stored in native widget settings, not opaque HTML.',
                 'Any html widget is enhancement-only.',
                 'Critical backgrounds, borders, spacing, and contrast are present in native Elementor settings, with CSS only refining or reinforcing them.',
