@@ -84,6 +84,7 @@ curl -s "$SITE/wp-json/ai-executor/v1/guide" \
 Safely updates only the plugin's own `wp-ai-executor.php` file from the
 allowlisted GitHub source. This is the only supported filesystem write path.
 General filesystem writes through `/run` remain blocked.
+The downloaded file must pass required plugin marker validation before writing.
 
 ```bash
 curl -s -X POST "$SITE/wp-json/ai-executor/v1/self-update" \

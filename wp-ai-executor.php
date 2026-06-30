@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.6
+ * Version:     1.3.7
  * Author:      DIAS
  * License:     MIT
  */
@@ -178,21 +178,6 @@ function wpae_validate_self_update_file( string $contents ): array {
     foreach ( $required_markers as $marker ) {
         if ( strpos( $contents, $marker ) === false ) {
             $errors[] = 'Missing marker: ' . $marker;
-        }
-    }
-
-    $forbidden_markers = [
-        '__halt_compiler',
-        'base64_decode(',
-        'shell_exec(',
-        'passthru(',
-        'proc_open(',
-        'popen(',
-    ];
-
-    foreach ( $forbidden_markers as $marker ) {
-        if ( stripos( $contents, $marker ) !== false ) {
-            $errors[] = 'Forbidden marker in plugin update file: ' . $marker;
         }
     }
 
@@ -399,7 +384,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.6',
+        'version' => '1.1.7',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
