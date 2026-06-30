@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.5
+ * Version:     1.3.6
  * Author:      DIAS
  * License:     MIT
  */
@@ -41,6 +41,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/self-update', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_self_update',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
 } );
 
 function wpae_auth( WP_REST_Request $r ): bool {
@@ -48,6 +54,149 @@ function wpae_auth( WP_REST_Request $r ): bool {
              ?? $r->get_header( 'X-Claude-Key' )
              ?? $r->get_param( 'key' );
     return hash_equals( wpae_get_key(), (string) $provided );
+}
+
+function wpae_self_update( WP_REST_Request $request ) {
+    $default_url = 'https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/main/wp-ai-executor.php';
+    $source_url  = trim( (string) ( $request->get_param( 'source_url' ) ?: $default_url ) );
+    $dry_run     = (bool) $request->get_param( 'dry_run' );
+
+    if ( ! wpae_is_allowed_self_update_url( $source_url ) ) {
+        return new WP_REST_Response( [
+            'error' => 'Self-update source_url is not allowed.',
+            'allowed' => 'https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.php',
+        ], 400 );
+    }
+
+    $response = wp_remote_get( $source_url, [
+        'timeout' => 20,
+        'redirection' => 3,
+    ] );
+
+    if ( is_wp_error( $response ) ) {
+        return new WP_REST_Response( [
+            'error' => 'Failed to download update.',
+            'message' => $response->get_error_message(),
+        ], 502 );
+    }
+
+    $status = (int) wp_remote_retrieve_response_code( $response );
+    $body   = (string) wp_remote_retrieve_body( $response );
+
+    if ( $status !== 200 ) {
+        return new WP_REST_Response( [
+            'error' => 'Update download returned non-200 status.',
+            'status' => $status,
+        ], 502 );
+    }
+
+    $validation_errors = wpae_validate_self_update_file( $body );
+    if ( ! empty( $validation_errors ) ) {
+        return new WP_REST_Response( [
+            'error' => 'Downloaded plugin file failed validation.',
+            'details' => $validation_errors,
+        ], 422 );
+    }
+
+    $target = __FILE__;
+    $current_hash = hash_file( 'sha256', $target );
+    $new_hash = hash( 'sha256', $body );
+
+    if ( $dry_run ) {
+        return new WP_REST_Response( [
+            'ok' => true,
+            'dry_run' => true,
+            'target' => $target,
+            'source_url' => $source_url,
+            'current_sha256' => $current_hash,
+            'new_sha256' => $new_hash,
+            'same_file' => hash_equals( $current_hash, $new_hash ),
+        ], 200 );
+    }
+
+    $written = file_put_contents( $target, $body, LOCK_EX );
+    if ( $written === false ) {
+        return new WP_REST_Response( [
+            'error' => 'Failed to write plugin file.',
+            'target' => $target,
+        ], 500 );
+    }
+
+    clearstatcache( true, $target );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'target' => $target,
+        'source_url' => $source_url,
+        'bytes' => $written,
+        'previous_sha256' => $current_hash,
+        'new_sha256' => hash_file( 'sha256', $target ),
+    ], 200 );
+}
+
+function wpae_is_allowed_self_update_url( string $source_url ): bool {
+    $parts = wp_parse_url( $source_url );
+    if ( ! is_array( $parts ) ) {
+        return false;
+    }
+
+    if ( ( $parts['scheme'] ?? '' ) !== 'https' ) {
+        return false;
+    }
+
+    if ( ( $parts['host'] ?? '' ) !== 'raw.githubusercontent.com' ) {
+        return false;
+    }
+
+    $path = $parts['path'] ?? '';
+    return (bool) preg_match( '#^/DiasMazhenov/wp-ai-executor/[^/]+/wp-ai-executor\.php$#', $path );
+}
+
+function wpae_validate_self_update_file( string $contents ): array {
+    $errors = [];
+
+    if ( strlen( $contents ) < 5000 ) {
+        $errors[] = 'File is unexpectedly small.';
+    }
+
+    if ( strlen( $contents ) > 500000 ) {
+        $errors[] = 'File is unexpectedly large.';
+    }
+
+    if ( strncmp( ltrim( $contents ), '<?php', 5 ) !== 0 ) {
+        $errors[] = 'File must start with <?php.';
+    }
+
+    $required_markers = [
+        'Plugin Name: WP AI Executor',
+        'function wpae_run',
+        'function wpae_self_update',
+        "register_rest_route( 'ai-executor/v1'",
+        'Filesystem writes are disabled by WP AI Executor policy.',
+    ];
+
+    foreach ( $required_markers as $marker ) {
+        if ( strpos( $contents, $marker ) === false ) {
+            $errors[] = 'Missing marker: ' . $marker;
+        }
+    }
+
+    $forbidden_markers = [
+        '__halt_compiler',
+        'base64_decode(',
+        'shell_exec(',
+        'passthru(',
+        'proc_open(',
+        'popen(',
+    ];
+
+    foreach ( $forbidden_markers as $marker ) {
+        if ( stripos( $contents, $marker ) !== false ) {
+            $errors[] = 'Forbidden marker in plugin update file: ' . $marker;
+        }
+    }
+
+    return $errors;
 }
 
 function wpae_run( WP_REST_Request $request ) {
@@ -250,7 +399,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.5',
+        'version' => '1.1.6',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
@@ -322,6 +471,13 @@ function wpae_agent_guide(): array {
                     'Return data directly from /run instead of writing temporary files.',
                 ],
                 'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined by the site owner.',
+                'self_update_policy' => [
+                    'endpoint' => 'POST /wp-json/ai-executor/v1/self-update',
+                    'rule' => 'Plugin self-update is allowed only through the dedicated self-update endpoint, never through arbitrary /run filesystem writes.',
+                    'source' => 'Only allowlisted raw GitHub URLs from DiasMazhenov/wp-ai-executor ending in wp-ai-executor.php are accepted.',
+                    'target' => 'The endpoint writes only to the current plugin file (__FILE__) after validating required plugin markers.',
+                    'dry_run' => 'Pass dry_run=true to compare hashes without writing.',
+                ],
             ],
             'runtime_elementor_validation' => [
                 'required' => true,

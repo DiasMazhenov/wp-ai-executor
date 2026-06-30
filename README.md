@@ -79,6 +79,25 @@ curl -s "$SITE/wp-json/ai-executor/v1/guide" \
   -H "X-AI-Key: $KEY"
 ```
 
+### `POST /wp-json/ai-executor/v1/self-update`
+
+Safely updates only the plugin's own `wp-ai-executor.php` file from the
+allowlisted GitHub source. This is the only supported filesystem write path.
+General filesystem writes through `/run` remain blocked.
+
+```bash
+curl -s -X POST "$SITE/wp-json/ai-executor/v1/self-update" \
+  -H "X-AI-Key: $KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"dry_run": true}'
+```
+
+Accepted source URLs must match:
+
+```text
+https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.php
+```
+
 ---
 
 ## Usage Examples
@@ -192,6 +211,7 @@ After writing, the agent should verify:
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
 - `/run` blocks common filesystem write/delete functions and shell/process execution by default
 - `/run` validates changed Elementor data and blocks legacy sections/columns or missing `widgetType`
+- `/self-update` is the only allowed plugin file write path and only writes the current plugin file from the allowlisted GitHub source
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
 ---
