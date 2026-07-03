@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.4.0
+ * Version:     1.5.0
  * Author:      DIAS
  * License:     MIT
  */
@@ -26,7 +26,7 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/run', [
         'methods'             => 'POST',
         'callback'            => 'wpae_run',
-        'permission_callback' => 'wpae_auth',
+        'permission_callback' => 'wpae_auth_with_guide_token',
     ] );
 
     register_rest_route( 'ai-executor/v1', '/key', [
@@ -38,6 +38,18 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/guide', [
         'methods'             => 'GET',
         'callback'            => 'wpae_get_guide',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/guide/session', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_create_guide_session',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/guide/ack', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_ack_guide_session',
         'permission_callback' => 'wpae_auth',
     ] );
 
@@ -56,31 +68,31 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/skills', [
         'methods'             => 'POST',
         'callback'            => 'wpae_save_skill',
-        'permission_callback' => 'wpae_auth',
+        'permission_callback' => 'wpae_auth_with_guide_token',
     ] );
 
     register_rest_route( 'ai-executor/v1', '/skills/(?P<id>[a-z0-9_-]+)', [
         'methods'             => 'DELETE',
         'callback'            => 'wpae_delete_skill',
-        'permission_callback' => 'wpae_auth',
+        'permission_callback' => 'wpae_auth_with_guide_token',
     ] );
 
     register_rest_route( 'ai-executor/v1', '/media/upload', [
         'methods'             => 'POST',
         'callback'            => 'wpae_upload_media',
-        'permission_callback' => 'wpae_auth',
+        'permission_callback' => 'wpae_auth_with_guide_token',
     ] );
 
     register_rest_route( 'ai-executor/v1', '/exports/create', [
         'methods'             => 'POST',
         'callback'            => 'wpae_create_export',
-        'permission_callback' => 'wpae_auth',
+        'permission_callback' => 'wpae_auth_with_guide_token',
     ] );
 
     register_rest_route( 'ai-executor/v1', '/self-update', [
         'methods'             => 'POST',
         'callback'            => 'wpae_self_update',
-        'permission_callback' => 'wpae_auth',
+        'permission_callback' => 'wpae_auth_with_guide_token',
     ] );
 
 } );
@@ -92,6 +104,195 @@ function wpae_auth( WP_REST_Request $r ): bool {
     return hash_equals( wpae_get_key(), (string) $provided );
 }
 
+function wpae_auth_with_guide_token( WP_REST_Request $request ) {
+    if ( ! wpae_auth( $request ) ) {
+        return false;
+    }
+
+    $token = (string) ( $request->get_header( 'X-WPAE-Guide-Token' ) ?: $request->get_param( 'guide_token' ) );
+    $guide_hash = (string) ( $request->get_header( 'X-WPAE-Guide-Hash' ) ?: $request->get_param( 'guide_hash' ) );
+    $validation = wpae_validate_guide_token( $token, $guide_hash );
+
+    if ( $validation === true ) {
+        return true;
+    }
+
+    return new WP_Error(
+        'wpae_guide_token_required',
+        'Write endpoints require a valid guide token. Call /guide/session, read /guide and /capabilities, then call /guide/ack.',
+        [
+            'status' => 403,
+            'details' => $validation,
+        ]
+    );
+}
+
+function wpae_required_ack_schema(): array {
+    return [
+        'read_agent_prompt' => true,
+        'read_custom_skills' => true,
+        'read_capabilities' => true,
+        'will_follow_skills' => true,
+        'will_follow_runtime_rules' => true,
+    ];
+}
+
+function wpae_get_guide_hash(): string {
+    $payload = [
+        'guide_version' => '1.3.0',
+        'plugin_version' => '1.5.0',
+        'agent_prompt' => wpae_agent_prompt(),
+        'custom_skills' => wpae_get_enabled_skills_for_guide(),
+        'capabilities' => [
+            'must_use_flex_containers' => true,
+            'requires_widgetType' => true,
+            'blocks_file_writes_via_run' => true,
+            'requires_guide_token_for_writes' => true,
+        ],
+    ];
+
+    return hash( 'sha256', (string) wp_json_encode( $payload ) );
+}
+
+function wpae_get_guide_sessions(): array {
+    $sessions = get_option( 'wp_ai_executor_guide_sessions', [] );
+    return is_array( $sessions ) ? $sessions : [];
+}
+
+function wpae_update_guide_sessions( array $sessions ): void {
+    update_option( 'wp_ai_executor_guide_sessions', $sessions, false );
+}
+
+function wpae_prune_guide_sessions( array $sessions ): array {
+    $now = time();
+    foreach ( $sessions as $id => $session ) {
+        if ( (int) ( $session['expires_at_unix'] ?? 0 ) < $now ) {
+            unset( $sessions[ $id ] );
+        }
+    }
+    return $sessions;
+}
+
+function wpae_create_guide_session(): WP_REST_Response {
+    $sessions = wpae_prune_guide_sessions( wpae_get_guide_sessions() );
+    $session_id = bin2hex( random_bytes( 16 ) );
+    $expires_at_unix = time() + 15 * MINUTE_IN_SECONDS;
+
+    $sessions[ $session_id ] = [
+        'id' => $session_id,
+        'guide_hash' => wpae_get_guide_hash(),
+        'created_at' => gmdate( 'c' ),
+        'expires_at' => gmdate( 'c', $expires_at_unix ),
+        'expires_at_unix' => $expires_at_unix,
+        'acked' => false,
+    ];
+
+    wpae_update_guide_sessions( $sessions );
+
+    return new WP_REST_Response( [
+        'guide_session_id' => $session_id,
+        'guide_hash' => $sessions[ $session_id ]['guide_hash'],
+        'expires_at' => $sessions[ $session_id ]['expires_at'],
+        'required_ack_schema' => wpae_required_ack_schema(),
+        'next_steps' => [
+            'Read /guide and /capabilities.',
+            'Call /guide/ack with guide_session_id and all required ack fields set to true.',
+            'Pass X-WPAE-Guide-Token and X-WPAE-Guide-Hash to every write endpoint.',
+        ],
+    ], 200 );
+}
+
+function wpae_ack_guide_session( WP_REST_Request $request ) {
+    $session_id = sanitize_text_field( (string) $request->get_param( 'guide_session_id' ) );
+    $ack = $request->get_param( 'ack' );
+    $sessions = wpae_prune_guide_sessions( wpae_get_guide_sessions() );
+
+    if ( $session_id === '' || ! isset( $sessions[ $session_id ] ) ) {
+        wpae_update_guide_sessions( $sessions );
+        return new WP_REST_Response( [ 'error' => 'Invalid or expired guide_session_id.' ], 404 );
+    }
+
+    if ( ! is_array( $ack ) ) {
+        return new WP_REST_Response( [ 'error' => 'ack object is required.', 'required_ack_schema' => wpae_required_ack_schema() ], 400 );
+    }
+
+    $missing = [];
+    foreach ( wpae_required_ack_schema() as $field => $required_value ) {
+        if ( empty( $ack[ $field ] ) ) {
+            $missing[] = $field;
+        }
+    }
+
+    if ( ! empty( $missing ) ) {
+        return new WP_REST_Response( [
+            'error' => 'Guide acknowledgement is incomplete.',
+            'missing' => $missing,
+            'required_ack_schema' => wpae_required_ack_schema(),
+        ], 400 );
+    }
+
+    $current_hash = wpae_get_guide_hash();
+    if ( ! hash_equals( (string) $sessions[ $session_id ]['guide_hash'], $current_hash ) ) {
+        unset( $sessions[ $session_id ] );
+        wpae_update_guide_sessions( $sessions );
+        return new WP_REST_Response( [ 'error' => 'Guide changed. Start a new /guide/session.', 'guide_hash' => $current_hash ], 409 );
+    }
+
+    $token = bin2hex( random_bytes( 32 ) );
+    $token_hash = hash( 'sha256', $token );
+    $expires_at_unix = time() + 15 * MINUTE_IN_SECONDS;
+
+    $sessions[ $session_id ]['acked'] = true;
+    $sessions[ $session_id ]['ack'] = array_intersect_key( $ack, wpae_required_ack_schema() );
+    $sessions[ $session_id ]['token_hash'] = $token_hash;
+    $sessions[ $session_id ]['expires_at'] = gmdate( 'c', $expires_at_unix );
+    $sessions[ $session_id ]['expires_at_unix'] = $expires_at_unix;
+    $sessions[ $session_id ]['acked_at'] = gmdate( 'c' );
+
+    wpae_update_guide_sessions( $sessions );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'guide_token' => $token,
+        'guide_hash' => $current_hash,
+        'expires_at' => $sessions[ $session_id ]['expires_at'],
+        'headers' => [
+            'X-WPAE-Guide-Token' => $token,
+            'X-WPAE-Guide-Hash' => $current_hash,
+        ],
+    ], 200 );
+}
+
+function wpae_validate_guide_token( string $token, string $guide_hash ) {
+    if ( $token === '' || $guide_hash === '' ) {
+        return [ 'error' => 'missing_guide_token_or_hash' ];
+    }
+
+    $current_hash = wpae_get_guide_hash();
+    if ( ! hash_equals( $current_hash, $guide_hash ) ) {
+        return [ 'error' => 'stale_guide_hash', 'current_guide_hash' => $current_hash ];
+    }
+
+    $sessions = wpae_prune_guide_sessions( wpae_get_guide_sessions() );
+    $token_hash = hash( 'sha256', $token );
+    $valid = false;
+
+    foreach ( $sessions as $session ) {
+        if (
+            ! empty( $session['acked'] ) &&
+            hash_equals( (string) ( $session['guide_hash'] ?? '' ), $current_hash ) &&
+            hash_equals( (string) ( $session['token_hash'] ?? '' ), $token_hash )
+        ) {
+            $valid = true;
+            break;
+        }
+    }
+
+    wpae_update_guide_sessions( $sessions );
+
+    return $valid ? true : [ 'error' => 'invalid_or_expired_guide_token' ];
+}
+
 function wpae_get_capabilities(): WP_REST_Response {
     return new WP_REST_Response( [
         'can_execute_php' => true,
@@ -100,6 +301,7 @@ function wpae_get_capabilities(): WP_REST_Response {
         'can_upload_media' => true,
         'can_create_exports' => true,
         'can_manage_skills' => true,
+        'requires_guide_token_for_writes' => true,
         'elementor' => [
             'must_use_flex_containers' => true,
             'forbidden_eltypes' => [ 'section', 'column' ],
@@ -114,6 +316,12 @@ function wpae_get_capabilities(): WP_REST_Response {
                 '/media/upload' => 'Writes only validated media files through the WordPress uploads API.',
                 '/exports/create' => 'Writes only JSON exports under uploads/wp-ai-executor/exports.',
             ],
+        ],
+        'guide_token_protocol' => [
+            'session_endpoint' => 'POST /wp-json/ai-executor/v1/guide/session',
+            'ack_endpoint' => 'POST /wp-json/ai-executor/v1/guide/ack',
+            'required_headers_for_writes' => [ 'X-WPAE-Guide-Token', 'X-WPAE-Guide-Hash' ],
+            'ttl_minutes' => 15,
         ],
     ], 200 );
 }
@@ -173,11 +381,13 @@ function wpae_save_skill( WP_REST_Request $request ) {
     $skills = wpae_get_skill_store();
     $now = gmdate( 'c' );
 
+    $enforce = $request->get_param( 'enforce' );
     $skills[ $id ] = [
         'id' => $id,
         'name' => $name,
         'description' => sanitize_textarea_field( (string) $request->get_param( 'description' ) ),
         'content' => wp_check_invalid_utf8( $content ),
+        'enforce' => wpae_sanitize_skill_enforce_rules( is_array( $enforce ) ? $enforce : [] ),
         'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
         'priority' => max( -100, min( 100, (int) $request->get_param( 'priority' ) ) ),
         'created_at' => $skills[ $id ]['created_at'] ?? $now,
@@ -218,6 +428,62 @@ function wpae_get_enabled_skills_for_guide(): array {
     }
 
     return $enabled;
+}
+
+function wpae_sanitize_skill_enforce_rules( array $rules ): array {
+    $allowed_types = [
+        'forbid_elementor_eltype',
+        'require_widget_key',
+        'forbid_widget_key',
+    ];
+    $clean = [];
+
+    foreach ( $rules as $rule ) {
+        if ( ! is_array( $rule ) ) {
+            continue;
+        }
+
+        $type = sanitize_key( (string) ( $rule['type'] ?? '' ) );
+        $value = sanitize_text_field( (string) ( $rule['value'] ?? '' ) );
+
+        if ( ! in_array( $type, $allowed_types, true ) || $value === '' ) {
+            continue;
+        }
+
+        $clean[] = [
+            'type' => $type,
+            'value' => $value,
+        ];
+
+        if ( count( $clean ) >= 50 ) {
+            break;
+        }
+    }
+
+    return $clean;
+}
+
+function wpae_get_enforceable_skill_rules(): array {
+    $skills = wpae_get_enabled_skills_for_guide();
+    $rules = [];
+
+    foreach ( $skills as $skill ) {
+        if ( empty( $skill['enforce'] ) || ! is_array( $skill['enforce'] ) ) {
+            continue;
+        }
+
+        foreach ( $skill['enforce'] as $rule ) {
+            if ( is_array( $rule ) ) {
+                $rules[] = [
+                    'skill_id' => $skill['id'] ?? 'unknown',
+                    'type' => $rule['type'] ?? '',
+                    'value' => $rule['value'] ?? '',
+                ];
+            }
+        }
+    }
+
+    return $rules;
 }
 
 function wpae_upload_media( WP_REST_Request $request ) {
@@ -625,11 +891,11 @@ function wpae_validate_elementor_data_string( string $raw_data ): array {
     }
 
     $errors = [];
-    wpae_validate_elementor_elements_recursive( $data, 'root', $errors );
+    wpae_validate_elementor_elements_recursive( $data, 'root', $errors, wpae_get_enforceable_skill_rules() );
     return $errors;
 }
 
-function wpae_validate_elementor_elements_recursive( array $elements, string $path, array &$errors ): void {
+function wpae_validate_elementor_elements_recursive( array $elements, string $path, array &$errors, array $skill_rules = [] ): void {
     foreach ( $elements as $index => $element ) {
         if ( ! is_array( $element ) ) {
             $errors[] = "{$path}.{$index}: element must be an object/array.";
@@ -651,8 +917,26 @@ function wpae_validate_elementor_elements_recursive( array $elements, string $pa
             $errors[] = "{$element_path}: widget element must have non-empty camelCase widgetType.";
         }
 
+        foreach ( $skill_rules as $rule ) {
+            $rule_type = $rule['type'] ?? '';
+            $rule_value = $rule['value'] ?? '';
+            $skill_id = $rule['skill_id'] ?? 'unknown';
+
+            if ( $rule_type === 'forbid_elementor_eltype' && $el_type === $rule_value ) {
+                $errors[] = "{$element_path}: elType={$el_type} is forbidden by skill {$skill_id}.";
+            }
+
+            if ( $rule_type === 'forbid_widget_key' && $el_type === 'widget' && array_key_exists( $rule_value, $element ) ) {
+                $errors[] = "{$element_path}: widget key {$rule_value} is forbidden by skill {$skill_id}.";
+            }
+
+            if ( $rule_type === 'require_widget_key' && $el_type === 'widget' && empty( $element[ $rule_value ] ) ) {
+                $errors[] = "{$element_path}: widget key {$rule_value} is required by skill {$skill_id}.";
+            }
+        }
+
         if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
-            wpae_validate_elementor_elements_recursive( $element['elements'], $element_path, $errors );
+            wpae_validate_elementor_elements_recursive( $element['elements'], $element_path, $errors, $skill_rules );
         }
     }
 }
@@ -664,13 +948,24 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.2.0',
+        'version' => '1.3.0',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
             'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',
         ],
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
+        'guide_token_protocol' => [
+            'required_for_write_endpoints' => true,
+            'session_endpoint' => 'POST /wp-json/ai-executor/v1/guide/session',
+            'ack_endpoint' => 'POST /wp-json/ai-executor/v1/guide/ack',
+            'required_write_headers' => [
+                'X-WPAE-Guide-Token',
+                'X-WPAE-Guide-Hash',
+            ],
+            'ttl_minutes' => 15,
+            'rule' => 'Before any write endpoint, create a guide session, read /guide and /capabilities, acknowledge all required fields, then send the returned guide token and hash with the write request.',
+        ],
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
@@ -752,6 +1047,11 @@ function wpae_agent_guide(): array {
                 'storage' => 'Skills are stored in wp_options as text/JSON, not as files.',
                 'rule' => 'Agents must read custom_skills in this guide and apply enabled skills by priority.',
                 'limits' => 'Each skill content is limited to 120 KB and is never executed as code.',
+                'enforceable_rules' => [
+                    'forbid_elementor_eltype',
+                    'require_widget_key',
+                    'forbid_widget_key',
+                ],
             ],
             'runtime_elementor_validation' => [
                 'required' => true,
@@ -911,7 +1211,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read and apply any enabled custom_skills by priority. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 

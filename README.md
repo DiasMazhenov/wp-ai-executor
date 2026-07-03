@@ -24,6 +24,8 @@ Execute PHP code in the WordPress environment.
 **Headers:**
 ```
 X-AI-Key: <your-secret-key>
+X-WPAE-Guide-Token: <token from /guide/ack>
+X-WPAE-Guide-Hash: <hash from /guide/ack>
 Content-Type: application/json
 ```
 
@@ -89,6 +91,8 @@ The downloaded file must pass required plugin marker validation before writing.
 ```bash
 curl -s -X POST "$SITE/wp-json/ai-executor/v1/self-update" \
   -H "X-AI-Key: $KEY" \
+  -H "X-WPAE-Guide-Token: $GUIDE_TOKEN" \
+  -H "X-WPAE-Guide-Hash: $GUIDE_HASH" \
   -H "Content-Type: application/json" \
   -d '{"dry_run": true}'
 ```
@@ -103,6 +107,23 @@ https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.p
 
 Returns the executor's current safety and write capabilities.
 
+### `POST /wp-json/ai-executor/v1/guide/session`
+
+Starts a short-lived guide session and returns `guide_session_id`,
+`guide_hash`, expiration, and the required acknowledgement schema.
+
+### `POST /wp-json/ai-executor/v1/guide/ack`
+
+Acknowledges that the agent read `/guide`, `custom_skills`, and
+`/capabilities`. Returns:
+
+```http
+X-WPAE-Guide-Token: <token>
+X-WPAE-Guide-Hash: <hash>
+```
+
+All write endpoints require these headers.
+
 ### `GET|POST /wp-json/ai-executor/v1/skills`
 
 Stores custom agent skills in the WordPress database. Skills are returned inside
@@ -115,6 +136,10 @@ Stores custom agent skills in the WordPress database. Skills are returned inside
   "name": "frontend-design",
   "description": "Project visual and UX rules",
   "content": "Skill instructions as Markdown or plain text",
+  "enforce": [
+    { "type": "forbid_elementor_eltype", "value": "section" },
+    { "type": "require_widget_key", "value": "widgetType" }
+  ],
   "enabled": true,
   "priority": 10
 }
@@ -174,6 +199,8 @@ Ask any agent to fetch `/guide` first:
 ```text
 Before making WordPress changes, call:
 GET /wp-json/ai-executor/v1/guide with X-AI-Key.
+Then call /guide/session, read /guide and /capabilities, call /guide/ack,
+and pass X-WPAE-Guide-Token plus X-WPAE-Guide-Hash to every write endpoint.
 
 Follow the returned agent_prompt, embedded_skill_packs, frontend_design rules,
 custom_skills, wordpress_elementor workflow, page_meta contract,
@@ -249,8 +276,10 @@ After writing, the agent should verify:
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
 - `/run` blocks common filesystem write/delete functions and shell/process execution by default
 - `/run` validates changed Elementor data and blocks legacy sections/columns or missing `widgetType`
+- write endpoints require a fresh guide token from `/guide/session` + `/guide/ack`
 - `/self-update` is the only allowed plugin file write path and only writes the current plugin file from the allowlisted GitHub source
 - `/skills` stores custom skills in the database, not as files
+- skills can include limited `enforce` rules that runtime validators apply
 - `/media/upload` and `/exports/create` are the only non-plugin file write endpoints
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
