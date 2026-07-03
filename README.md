@@ -99,6 +99,41 @@ Accepted source URLs must match:
 https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.php
 ```
 
+### `GET /wp-json/ai-executor/v1/capabilities`
+
+Returns the executor's current safety and write capabilities.
+
+### `GET|POST /wp-json/ai-executor/v1/skills`
+
+Stores custom agent skills in the WordPress database. Skills are returned inside
+`/guide` as `custom_skills`; no skill files are created on disk.
+
+**Body:**
+```json
+{
+  "id": "frontend-design",
+  "name": "frontend-design",
+  "description": "Project visual and UX rules",
+  "content": "Skill instructions as Markdown or plain text",
+  "enabled": true,
+  "priority": 10
+}
+```
+
+### `DELETE /wp-json/ai-executor/v1/skills/{id}`
+
+Deletes a custom skill from the database.
+
+### `POST /wp-json/ai-executor/v1/media/upload`
+
+Uploads validated media through the WordPress uploads API. Allowed MIME types:
+JPEG, PNG, WebP, GIF, PDF. Max size: 8 MB.
+
+### `POST /wp-json/ai-executor/v1/exports/create`
+
+Creates a JSON export under `wp-content/uploads/wp-ai-executor/exports/`.
+Max size: 1 MB. PHP and arbitrary paths are not allowed.
+
 ---
 
 ## Usage Examples
@@ -141,9 +176,9 @@ Before making WordPress changes, call:
 GET /wp-json/ai-executor/v1/guide with X-AI-Key.
 
 Follow the returned agent_prompt, embedded_skill_packs, frontend_design rules,
-wordpress_elementor workflow, page_meta contract, html_enhancement_policy, and
-verification_checklist. Then use /run for execution and verify the published URL
-plus Elementor metadata.
+custom_skills, wordpress_elementor workflow, page_meta contract,
+html_enhancement_policy, and verification_checklist. Then use /run for execution
+and verify the published URL plus Elementor metadata.
 
 Important: build Elementor page structure and content with native editable
 Elementor elements. Use containers and widget settings such as `heading`,
@@ -174,6 +209,8 @@ loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch
 files, or files in `/tmp`. Use WordPress APIs and Elementor metadata instead.
 By default `/run` rejects common filesystem write/delete operations and
 shell/process execution.
+Use only dedicated endpoints for allowed writes: `/self-update`,
+`/media/upload`, `/exports/create`, and `/skills`.
 ```
 
 ### Agent quality gates
@@ -213,6 +250,8 @@ After writing, the agent should verify:
 - `/run` blocks common filesystem write/delete functions and shell/process execution by default
 - `/run` validates changed Elementor data and blocks legacy sections/columns or missing `widgetType`
 - `/self-update` is the only allowed plugin file write path and only writes the current plugin file from the allowlisted GitHub source
+- `/skills` stores custom skills in the database, not as files
+- `/media/upload` and `/exports/create` are the only non-plugin file write endpoints
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
 ---

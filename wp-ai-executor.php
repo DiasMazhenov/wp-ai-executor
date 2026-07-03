@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.3.7
+ * Version:     1.4.0
  * Author:      DIAS
  * License:     MIT
  */
@@ -41,6 +41,42 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/capabilities', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_get_capabilities',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/skills', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_get_skills',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/skills', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_save_skill',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/skills/(?P<id>[a-z0-9_-]+)', [
+        'methods'             => 'DELETE',
+        'callback'            => 'wpae_delete_skill',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/media/upload', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_upload_media',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/exports/create', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_create_export',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/self-update', [
         'methods'             => 'POST',
         'callback'            => 'wpae_self_update',
@@ -54,6 +90,250 @@ function wpae_auth( WP_REST_Request $r ): bool {
              ?? $r->get_header( 'X-Claude-Key' )
              ?? $r->get_param( 'key' );
     return hash_equals( wpae_get_key(), (string) $provided );
+}
+
+function wpae_get_capabilities(): WP_REST_Response {
+    return new WP_REST_Response( [
+        'can_execute_php' => true,
+        'can_write_files_via_run' => false,
+        'can_self_update_plugin' => true,
+        'can_upload_media' => true,
+        'can_create_exports' => true,
+        'can_manage_skills' => true,
+        'elementor' => [
+            'must_use_flex_containers' => true,
+            'forbidden_eltypes' => [ 'section', 'column' ],
+            'required_widget_key' => 'widgetType',
+            'forbidden_widget_keys' => [ 'widget_type' ],
+            'runtime_validation' => true,
+        ],
+        'file_write_policy' => [
+            'forbidden_in_run' => [ 'php_files', 'mu_plugins', 'tmp_files', 'arbitrary_paths', 'shell_commands' ],
+            'allowed_endpoints' => [
+                '/self-update' => 'Writes only the current plugin file from an allowlisted GitHub source.',
+                '/media/upload' => 'Writes only validated media files through the WordPress uploads API.',
+                '/exports/create' => 'Writes only JSON exports under uploads/wp-ai-executor/exports.',
+            ],
+        ],
+    ], 200 );
+}
+
+function wpae_get_skill_store(): array {
+    $skills = get_option( 'wp_ai_executor_skills', [] );
+    return is_array( $skills ) ? $skills : [];
+}
+
+function wpae_update_skill_store( array $skills ): void {
+    update_option( 'wp_ai_executor_skills', $skills, false );
+}
+
+function wpae_normalize_skill_id( string $id ): string {
+    $id = strtolower( trim( $id ) );
+    $id = preg_replace( '/[^a-z0-9_-]+/', '-', $id );
+    $id = trim( (string) $id, '-' );
+    return $id !== '' ? $id : 'skill-' . wp_generate_password( 8, false, false );
+}
+
+function wpae_sort_skills( array $skills ): array {
+    uasort( $skills, function ( array $a, array $b ): int {
+        $priority = (int) ( $b['priority'] ?? 0 ) <=> (int) ( $a['priority'] ?? 0 );
+        if ( $priority !== 0 ) {
+            return $priority;
+        }
+        return strcmp( (string) ( $a['name'] ?? '' ), (string) ( $b['name'] ?? '' ) );
+    } );
+    return $skills;
+}
+
+function wpae_get_skills(): WP_REST_Response {
+    $skills = wpae_sort_skills( wpae_get_skill_store() );
+    return new WP_REST_Response( [
+        'skills' => array_values( $skills ),
+        'count' => count( $skills ),
+    ], 200 );
+}
+
+function wpae_save_skill( WP_REST_Request $request ) {
+    $name = sanitize_text_field( (string) $request->get_param( 'name' ) );
+    $content = (string) $request->get_param( 'content' );
+
+    if ( $name === '' ) {
+        return new WP_REST_Response( [ 'error' => 'Skill name is required.' ], 400 );
+    }
+
+    if ( trim( $content ) === '' ) {
+        return new WP_REST_Response( [ 'error' => 'Skill content is required.' ], 400 );
+    }
+
+    if ( strlen( $content ) > 120000 ) {
+        return new WP_REST_Response( [ 'error' => 'Skill content exceeds 120 KB limit.' ], 413 );
+    }
+
+    $id = wpae_normalize_skill_id( (string) ( $request->get_param( 'id' ) ?: $name ) );
+    $skills = wpae_get_skill_store();
+    $now = gmdate( 'c' );
+
+    $skills[ $id ] = [
+        'id' => $id,
+        'name' => $name,
+        'description' => sanitize_textarea_field( (string) $request->get_param( 'description' ) ),
+        'content' => wp_check_invalid_utf8( $content ),
+        'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
+        'priority' => max( -100, min( 100, (int) $request->get_param( 'priority' ) ) ),
+        'created_at' => $skills[ $id ]['created_at'] ?? $now,
+        'updated_at' => $now,
+    ];
+
+    wpae_update_skill_store( $skills );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'skill' => $skills[ $id ],
+    ], 200 );
+}
+
+function wpae_delete_skill( WP_REST_Request $request ) {
+    $id = wpae_normalize_skill_id( (string) $request['id'] );
+    $skills = wpae_get_skill_store();
+
+    if ( ! isset( $skills[ $id ] ) ) {
+        return new WP_REST_Response( [ 'error' => 'Skill not found.' ], 404 );
+    }
+
+    unset( $skills[ $id ] );
+    wpae_update_skill_store( $skills );
+
+    return new WP_REST_Response( [ 'ok' => true, 'deleted' => $id ], 200 );
+}
+
+function wpae_get_enabled_skills_for_guide(): array {
+    $skills = wpae_sort_skills( wpae_get_skill_store() );
+    $enabled = [];
+
+    foreach ( $skills as $skill ) {
+        if ( empty( $skill['enabled'] ) ) {
+            continue;
+        }
+        $enabled[] = $skill;
+    }
+
+    return $enabled;
+}
+
+function wpae_upload_media( WP_REST_Request $request ) {
+    $filename = sanitize_file_name( (string) $request->get_param( 'filename' ) );
+    $mime_type = sanitize_text_field( (string) $request->get_param( 'mime_type' ) );
+    $content_base64 = (string) $request->get_param( 'content_base64' );
+    $post_parent = absint( $request->get_param( 'post_parent' ) );
+
+    $allowed_mimes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+        'application/pdf' => 'pdf',
+    ];
+
+    if ( $filename === '' || $content_base64 === '' ) {
+        return new WP_REST_Response( [ 'error' => 'filename and content_base64 are required.' ], 400 );
+    }
+
+    if ( ! isset( $allowed_mimes[ $mime_type ] ) ) {
+        return new WP_REST_Response( [ 'error' => 'mime_type is not allowed.', 'allowed' => array_keys( $allowed_mimes ) ], 400 );
+    }
+
+    $bytes = base64_decode( $content_base64, true );
+    if ( $bytes === false ) {
+        return new WP_REST_Response( [ 'error' => 'Invalid base64 content.' ], 400 );
+    }
+
+    if ( strlen( $bytes ) > 8 * 1024 * 1024 ) {
+        return new WP_REST_Response( [ 'error' => 'Media file exceeds 8 MB limit.' ], 413 );
+    }
+
+    $extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
+    if ( $extension !== $allowed_mimes[ $mime_type ] ) {
+        $filename .= '.' . $allowed_mimes[ $mime_type ];
+    }
+
+    $upload = wp_upload_bits( $filename, null, $bytes );
+    if ( ! empty( $upload['error'] ) ) {
+        return new WP_REST_Response( [ 'error' => $upload['error'] ], 500 );
+    }
+
+    $attachment_id = wp_insert_attachment( [
+        'post_mime_type' => $mime_type,
+        'post_title' => sanitize_text_field( pathinfo( $filename, PATHINFO_FILENAME ) ),
+        'post_content' => '',
+        'post_status' => 'inherit',
+    ], $upload['file'], $post_parent );
+
+    if ( is_wp_error( $attachment_id ) ) {
+        return new WP_REST_Response( [ 'error' => $attachment_id->get_error_message() ], 500 );
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+    $metadata = wp_generate_attachment_metadata( $attachment_id, $upload['file'] );
+    if ( is_array( $metadata ) ) {
+        wp_update_attachment_metadata( $attachment_id, $metadata );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'id' => $attachment_id,
+        'url' => wp_get_attachment_url( $attachment_id ),
+        'file' => basename( $upload['file'] ),
+        'mime_type' => $mime_type,
+    ], 200 );
+}
+
+function wpae_create_export( WP_REST_Request $request ) {
+    $filename = sanitize_file_name( (string) ( $request->get_param( 'filename' ) ?: 'wp-ai-export-' . gmdate( 'Ymd-His' ) . '.json' ) );
+    $payload = $request->get_param( 'data' );
+
+    if ( $payload === null ) {
+        return new WP_REST_Response( [ 'error' => 'data is required.' ], 400 );
+    }
+
+    if ( pathinfo( $filename, PATHINFO_EXTENSION ) !== 'json' ) {
+        $filename .= '.json';
+    }
+
+    $json = is_string( $payload )
+        ? $payload
+        : wp_json_encode( $payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE );
+
+    if ( ! is_string( $json ) || strlen( $json ) > 1024 * 1024 ) {
+        return new WP_REST_Response( [ 'error' => 'Export JSON exceeds 1 MB limit or could not be encoded.' ], 413 );
+    }
+
+    $decoded = json_decode( $json, true );
+    if ( json_last_error() !== JSON_ERROR_NONE ) {
+        return new WP_REST_Response( [ 'error' => 'Export data must be valid JSON.' ], 400 );
+    }
+
+    $upload_dir = wp_upload_dir();
+    if ( ! empty( $upload_dir['error'] ) ) {
+        return new WP_REST_Response( [ 'error' => $upload_dir['error'] ], 500 );
+    }
+
+    $dir = trailingslashit( $upload_dir['basedir'] ) . 'wp-ai-executor/exports';
+    if ( ! wp_mkdir_p( $dir ) ) {
+        return new WP_REST_Response( [ 'error' => 'Could not create exports directory.' ], 500 );
+    }
+
+    $path = trailingslashit( $dir ) . $filename;
+    $written = file_put_contents( $path, $json, LOCK_EX );
+    if ( $written === false ) {
+        return new WP_REST_Response( [ 'error' => 'Could not write export file.' ], 500 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'filename' => $filename,
+        'bytes' => $written,
+        'url' => trailingslashit( $upload_dir['baseurl'] ) . 'wp-ai-executor/exports/' . rawurlencode( $filename ),
+    ], 200 );
 }
 
 function wpae_self_update( WP_REST_Request $request ) {
@@ -384,12 +664,13 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.1.7',
+        'version' => '1.2.0',
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
             'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',
         ],
+        'custom_skills' => wpae_get_enabled_skills_for_guide(),
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
@@ -454,6 +735,8 @@ function wpae_agent_guide(): array {
                     'Use wp_insert_post, wp_update_post, update_post_meta, update_option, delete_option, and Elementor metadata.',
                     'Use Elementor cache APIs to clear/regenerate generated CSS; do not write CSS files manually.',
                     'Return data directly from /run instead of writing temporary files.',
+                    'Use /media/upload for validated media library files.',
+                    'Use /exports/create for JSON export files under uploads/wp-ai-executor/exports.',
                 ],
                 'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined by the site owner.',
                 'self_update_policy' => [
@@ -463,6 +746,12 @@ function wpae_agent_guide(): array {
                     'target' => 'The endpoint writes only to the current plugin file (__FILE__) after validating required plugin markers.',
                     'dry_run' => 'Pass dry_run=true to compare hashes without writing.',
                 ],
+            ],
+            'custom_skills_policy' => [
+                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills',
+                'storage' => 'Skills are stored in wp_options as text/JSON, not as files.',
+                'rule' => 'Agents must read custom_skills in this guide and apply enabled skills by priority.',
+                'limits' => 'Each skill content is limited to 120 KB and is never executed as code.',
             ],
             'runtime_elementor_validation' => [
                 'required' => true,
@@ -622,7 +911,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read and apply any enabled custom_skills by priority. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 
