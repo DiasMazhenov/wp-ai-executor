@@ -192,6 +192,8 @@ All write endpoints require these headers.
 
 Stores custom agent skills in the WordPress database. Skills are returned inside
 `/guide` as `custom_skills`; no skill files are created on disk.
+The same storage can be managed from **Settings → AI Executor → Custom skills**
+by pasting `SKILL.md` content into the dashboard.
 
 **Body:**
 ```json

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.6.1
+ * Version:     1.6.2
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.6.1';
+const WPAE_VERSION = '1.6.2';
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -497,6 +497,44 @@ function wpae_sort_skills( array $skills ): array {
     return $skills;
 }
 
+function wpae_upsert_skill( array $data ) {
+    $name = sanitize_text_field( (string) ( $data['name'] ?? '' ) );
+    $content = (string) ( $data['content'] ?? '' );
+
+    if ( $name === '' ) {
+        return new WP_Error( 'wpae_skill_name_required', 'Skill name is required.' );
+    }
+
+    if ( trim( $content ) === '' ) {
+        return new WP_Error( 'wpae_skill_content_required', 'Skill content is required.' );
+    }
+
+    if ( strlen( $content ) > 120000 ) {
+        return new WP_Error( 'wpae_skill_too_large', 'Skill content exceeds 120 KB limit.' );
+    }
+
+    $id = wpae_normalize_skill_id( (string) ( $data['id'] ?? $name ) );
+    $skills = wpae_get_skill_store();
+    $now = gmdate( 'c' );
+    $enforce = $data['enforce'] ?? [];
+
+    $skills[ $id ] = [
+        'id' => $id,
+        'name' => $name,
+        'description' => sanitize_textarea_field( (string) ( $data['description'] ?? '' ) ),
+        'content' => wp_check_invalid_utf8( $content ),
+        'enforce' => wpae_sanitize_skill_enforce_rules( is_array( $enforce ) ? $enforce : [] ),
+        'enabled' => array_key_exists( 'enabled', $data ) ? (bool) $data['enabled'] : true,
+        'priority' => max( -100, min( 100, (int) ( $data['priority'] ?? 0 ) ) ),
+        'created_at' => $skills[ $id ]['created_at'] ?? $now,
+        'updated_at' => $now,
+    ];
+
+    wpae_update_skill_store( $skills );
+
+    return $skills[ $id ];
+}
+
 function wpae_get_skills(): WP_REST_Response {
     $skills = wpae_sort_skills( wpae_get_skill_store() );
     return new WP_REST_Response( [
@@ -506,43 +544,24 @@ function wpae_get_skills(): WP_REST_Response {
 }
 
 function wpae_save_skill( WP_REST_Request $request ) {
-    $name = sanitize_text_field( (string) $request->get_param( 'name' ) );
-    $content = (string) $request->get_param( 'content' );
-
-    if ( $name === '' ) {
-        return new WP_REST_Response( [ 'error' => 'Skill name is required.' ], 400 );
-    }
-
-    if ( trim( $content ) === '' ) {
-        return new WP_REST_Response( [ 'error' => 'Skill content is required.' ], 400 );
-    }
-
-    if ( strlen( $content ) > 120000 ) {
-        return new WP_REST_Response( [ 'error' => 'Skill content exceeds 120 KB limit.' ], 413 );
-    }
-
-    $id = wpae_normalize_skill_id( (string) ( $request->get_param( 'id' ) ?: $name ) );
-    $skills = wpae_get_skill_store();
-    $now = gmdate( 'c' );
-
-    $enforce = $request->get_param( 'enforce' );
-    $skills[ $id ] = [
-        'id' => $id,
-        'name' => $name,
-        'description' => sanitize_textarea_field( (string) $request->get_param( 'description' ) ),
-        'content' => wp_check_invalid_utf8( $content ),
-        'enforce' => wpae_sanitize_skill_enforce_rules( is_array( $enforce ) ? $enforce : [] ),
+    $skill = wpae_upsert_skill( [
+        'id' => $request->get_param( 'id' ),
+        'name' => $request->get_param( 'name' ),
+        'description' => $request->get_param( 'description' ),
+        'content' => $request->get_param( 'content' ),
+        'enforce' => $request->get_param( 'enforce' ),
         'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
-        'priority' => max( -100, min( 100, (int) $request->get_param( 'priority' ) ) ),
-        'created_at' => $skills[ $id ]['created_at'] ?? $now,
-        'updated_at' => $now,
-    ];
+        'priority' => $request->get_param( 'priority' ),
+    ] );
 
-    wpae_update_skill_store( $skills );
+    if ( is_wp_error( $skill ) ) {
+        $status = $skill->get_error_code() === 'wpae_skill_too_large' ? 413 : 400;
+        return new WP_REST_Response( [ 'error' => $skill->get_error_message() ], $status );
+    }
 
     return new WP_REST_Response( [
         'ok' => true,
-        'skill' => $skills[ $id ],
+        'skill' => $skill,
     ], 200 );
 }
 
@@ -1806,6 +1825,56 @@ add_action( 'admin_init', function () {
         wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&capabilities_saved=1' ) );
         exit;
     }
+
+    if (
+        isset( $_POST['wpae_save_skill_ui'] ) &&
+        check_admin_referer( 'wpae_save_skill_ui' )
+    ) {
+        $raw_enforce = isset( $_POST['wpae_skill_enforce'] )
+            ? trim( (string) wp_unslash( $_POST['wpae_skill_enforce'] ) )
+            : '';
+        $enforce = [];
+
+        if ( $raw_enforce !== '' ) {
+            $decoded = json_decode( $raw_enforce, true );
+            if ( is_array( $decoded ) ) {
+                $enforce = $decoded;
+            } else {
+                wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&skill_error=1' ) );
+                exit;
+            }
+        }
+
+        $skill = wpae_upsert_skill( [
+            'id' => isset( $_POST['wpae_skill_id'] ) ? wp_unslash( $_POST['wpae_skill_id'] ) : '',
+            'name' => isset( $_POST['wpae_skill_name'] ) ? wp_unslash( $_POST['wpae_skill_name'] ) : '',
+            'description' => isset( $_POST['wpae_skill_description'] ) ? wp_unslash( $_POST['wpae_skill_description'] ) : '',
+            'content' => isset( $_POST['wpae_skill_content'] ) ? wp_unslash( $_POST['wpae_skill_content'] ) : '',
+            'enforce' => $enforce,
+            'enabled' => ! empty( $_POST['wpae_skill_enabled'] ),
+            'priority' => isset( $_POST['wpae_skill_priority'] ) ? wp_unslash( $_POST['wpae_skill_priority'] ) : 0,
+        ] );
+
+        $result = is_wp_error( $skill ) ? 'skill_error' : 'skill_saved';
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . $result . '=1' ) );
+        exit;
+    }
+
+    if (
+        isset( $_POST['wpae_delete_skill_ui'] ) &&
+        check_admin_referer( 'wpae_delete_skill_ui' )
+    ) {
+        $id = wpae_normalize_skill_id( isset( $_POST['wpae_delete_skill_id'] ) ? (string) wp_unslash( $_POST['wpae_delete_skill_id'] ) : '' );
+        $skills = wpae_get_skill_store();
+
+        if ( isset( $skills[ $id ] ) ) {
+            unset( $skills[ $id ] );
+            wpae_update_skill_store( $skills );
+        }
+
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&skill_deleted=1' ) );
+        exit;
+    }
 } );
 
 function wpae_settings_page() {
@@ -1815,8 +1884,12 @@ function wpae_settings_page() {
     $capabilities_url   = get_rest_url( null, 'ai-executor/v1/capabilities' );
     $regen              = isset( $_GET['regenerated'] );
     $capabilities_saved = isset( $_GET['capabilities_saved'] );
+    $skill_saved        = isset( $_GET['skill_saved'] );
+    $skill_deleted      = isset( $_GET['skill_deleted'] );
+    $skill_error        = isset( $_GET['skill_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
+    $skills             = wpae_sort_skills( wpae_get_skill_store() );
     $enabled_count      = count( array_filter( $capabilities ) );
     $total_count        = count( $capabilities );
     $filesystem_locked  = ! wpae_can_run_filesystem_operations();
@@ -1992,6 +2065,51 @@ function wpae_settings_page() {
             color: #1f2937;
             border: 1px solid var(--wpae-border);
         }
+        .wpae-textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 11px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 7px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+        .wpae-form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .wpae-form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        .wpae-skill-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .wpae-skill-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: center;
+            padding: 13px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            background: var(--wpae-panel-soft);
+        }
+        .wpae-skill-item h3 {
+            margin: 0 0 4px;
+            font-size: 14px;
+        }
+        .wpae-skill-meta {
+            color: var(--wpae-muted);
+            font-size: 12px;
+        }
         .wpae-cap-list {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2054,6 +2172,10 @@ function wpae_settings_page() {
             .wpae-field-row {
                 flex-direction: column;
             }
+            .wpae-form-grid,
+            .wpae-skill-item {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 
@@ -2099,6 +2221,18 @@ function wpae_settings_page() {
 
         <?php if ( $capabilities_saved ) : ?>
             <div class="wpae-alert" role="status">Настройки разрешений сохранены.</div>
+        <?php endif; ?>
+
+        <?php if ( $skill_saved ) : ?>
+            <div class="wpae-alert" role="status">Custom skill сохранен.</div>
+        <?php endif; ?>
+
+        <?php if ( $skill_deleted ) : ?>
+            <div class="wpae-alert" role="status">Custom skill удален.</div>
+        <?php endif; ?>
+
+        <?php if ( $skill_error ) : ?>
+            <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось сохранить skill: проверьте название, содержимое и JSON enforce.</div>
         <?php endif; ?>
 
         <div class="wpae-grid">
@@ -2161,6 +2295,94 @@ function wpae_settings_page() {
                         <button type="submit" class="button button-primary wpae-button">Сохранить разрешения</button>
                     </p>
                 </form>
+            </div>
+
+            <div class="wpae-card wpae-card-wide">
+                <h2>Custom skills</h2>
+                <p>
+                    Загружайте собственные инструкции в формате <code>SKILL.md</code>. Они хранятся в базе WordPress,
+                    попадают в <code>/guide</code> и не создают файлов на сервере.
+                </p>
+
+                <form method="post">
+                    <?php wp_nonce_field( 'wpae_save_skill_ui' ); ?>
+                    <input type="hidden" name="wpae_save_skill_ui" value="1" />
+
+                    <div class="wpae-form-grid">
+                        <div class="wpae-form-field">
+                            <label for="wpae-skill-name">Название</label>
+                            <input class="wpae-input" id="wpae-skill-name" name="wpae_skill_name" type="text" placeholder="frontend-design" required />
+                        </div>
+                        <div class="wpae-form-field">
+                            <label for="wpae-skill-id">ID</label>
+                            <input class="wpae-input" id="wpae-skill-id" name="wpae_skill_id" type="text" placeholder="frontend-design" />
+                        </div>
+                        <div class="wpae-form-field">
+                            <label for="wpae-skill-priority">Приоритет</label>
+                            <input class="wpae-input" id="wpae-skill-priority" name="wpae_skill_priority" type="number" min="-100" max="100" value="10" />
+                        </div>
+                        <div class="wpae-form-field">
+                            <label for="wpae-skill-enabled">Статус</label>
+                            <label class="wpae-toggle" style="min-height:38px;padding:9px;margin:0">
+                                <input id="wpae-skill-enabled" name="wpae_skill_enabled" type="checkbox" value="1" checked />
+                                <span><strong>Включить skill</strong></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-skill-description">Описание</label>
+                        <input class="wpae-input" id="wpae-skill-description" name="wpae_skill_description" type="text" placeholder="Правила дизайна, Elementor или проекта" />
+                    </div>
+
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-skill-content">Содержимое SKILL.md</label>
+                        <textarea class="wpae-textarea" id="wpae-skill-content" name="wpae_skill_content" placeholder="# Skill instructions..." required></textarea>
+                    </div>
+
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-skill-enforce">Enforce JSON</label>
+                        <textarea class="wpae-textarea" id="wpae-skill-enforce" name="wpae_skill_enforce" style="min-height:92px" placeholder='[{"type":"forbid_elementor_eltype","value":"section"},{"type":"require_widget_key","value":"widgetType"}]'></textarea>
+                    </div>
+
+                    <p style="margin-top:14px">
+                        <button type="submit" class="button button-primary wpae-button">Сохранить skill</button>
+                    </p>
+                </form>
+
+                <div class="wpae-skill-list" aria-label="Установленные custom skills">
+                    <?php if ( empty( $skills ) ) : ?>
+                        <div class="wpae-skill-item">
+                            <div>
+                                <h3>Skills пока не загружены</h3>
+                                <div class="wpae-skill-meta">Добавьте SKILL.md через форму выше.</div>
+                            </div>
+                        </div>
+                    <?php else : ?>
+                        <?php foreach ( $skills as $skill ) : ?>
+                            <div class="wpae-skill-item">
+                                <div>
+                                    <h3><?php echo esc_html( (string) ( $skill['name'] ?? $skill['id'] ?? 'skill' ) ); ?></h3>
+                                    <div class="wpae-skill-meta">
+                                        ID: <code><?php echo esc_html( (string) ( $skill['id'] ?? '' ) ); ?></code>
+                                        · приоритет: <?php echo esc_html( (string) ( $skill['priority'] ?? 0 ) ); ?>
+                                        · <?php echo ! empty( $skill['enabled'] ) ? 'включен' : 'выключен'; ?>
+                                        · enforce: <?php echo esc_html( (string) count( is_array( $skill['enforce'] ?? null ) ? $skill['enforce'] : [] ) ); ?>
+                                    </div>
+                                    <?php if ( ! empty( $skill['description'] ) ) : ?>
+                                        <div class="wpae-skill-meta"><?php echo esc_html( (string) $skill['description'] ); ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <form method="post" onsubmit="return confirm('Удалить custom skill?')">
+                                    <?php wp_nonce_field( 'wpae_delete_skill_ui' ); ?>
+                                    <input type="hidden" name="wpae_delete_skill_ui" value="1" />
+                                    <input type="hidden" name="wpae_delete_skill_id" value="<?php echo esc_attr( (string) ( $skill['id'] ?? '' ) ); ?>" />
+                                    <button type="submit" class="button wpae-button wpae-danger-button">Удалить</button>
+                                </form>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="wpae-card">

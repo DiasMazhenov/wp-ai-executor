@@ -12,6 +12,7 @@
 - Expand `/capabilities` into a machine-readable contract aligned with runtime enforcement.
 - Add safe Elementor endpoints: `/elementor/validate`, `/elementor/page`, and `/elementor/update`.
 - Add `/audit` for machine-readable post-write Elementor/page verification.
+- Add dashboard fields for pasting and managing database-backed custom `SKILL.md` instructions.
 
 ## Next
 
@@ -21,8 +22,8 @@
    - Store a short-lived rollback snapshot in options, not files.
    - Add rollback endpoint guarded by guide token.
 
-2. Improve custom skill import.
-   - Accept pasted `SKILL.md` content and JSON skill packs.
+2. Improve custom skill import/export.
+   - Support JSON skill packs import/export.
    - Support import/export of skill bundles through WordPress options.
    - Keep all skill storage in the database; no server-side skill files.
    - Extend `enforce` rules for Elementor widget allowlists, required native style keys, forbidden HTML-widget content patterns, and required verification checks.
