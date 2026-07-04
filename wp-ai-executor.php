@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.5.1
+ * Version:     1.6.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.5.1';
+const WPAE_VERSION = '1.6.0';
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -22,13 +22,93 @@ function wpae_get_key(): string {
     return $key;
 }
 
+function wpae_capability_defaults(): array {
+    return [
+        'run' => true,
+        'self_update' => true,
+        'elementor_writes' => true,
+        'media_upload' => true,
+        'exports' => true,
+        'manage_skills' => true,
+        'filesystem_writes' => false,
+    ];
+}
+
+function wpae_capability_labels(): array {
+    return [
+        'run' => [
+            'label' => 'Allow PHP /run',
+            'description' => 'Allows authenticated agents to execute PHP through /run.',
+        ],
+        'self_update' => [
+            'label' => 'Allow plugin self-update',
+            'description' => 'Allows /self-update to replace this plugin from the allowlisted GitHub source.',
+        ],
+        'elementor_writes' => [
+            'label' => 'Allow Elementor writes',
+            'description' => 'Allows changed _elementor_data to remain after /run and future Elementor endpoints.',
+        ],
+        'media_upload' => [
+            'label' => 'Allow media upload',
+            'description' => 'Allows /media/upload to create validated WordPress media attachments.',
+        ],
+        'exports' => [
+            'label' => 'Allow JSON exports',
+            'description' => 'Allows /exports/create to write JSON exports under uploads/wp-ai-executor/exports.',
+        ],
+        'manage_skills' => [
+            'label' => 'Allow skills management',
+            'description' => 'Allows agents to create, update, and delete database-backed custom skills.',
+        ],
+        'filesystem_writes' => [
+            'label' => 'Allow filesystem writes in /run',
+            'description' => 'Dangerous. Allows file write/delete operations through /run. Keep disabled unless you explicitly need it.',
+        ],
+    ];
+}
+
+function wpae_get_capability_settings(): array {
+    $stored = get_option( 'wp_ai_executor_capabilities', [] );
+    if ( ! is_array( $stored ) ) {
+        $stored = [];
+    }
+
+    $settings = [];
+    foreach ( wpae_capability_defaults() as $key => $default ) {
+        $settings[ $key ] = array_key_exists( $key, $stored ) ? (bool) $stored[ $key ] : (bool) $default;
+    }
+
+    return $settings;
+}
+
+function wpae_update_capability_settings( array $input ): void {
+    $settings = [];
+    foreach ( wpae_capability_defaults() as $key => $default ) {
+        $settings[ $key ] = ! empty( $input[ $key ] );
+    }
+    update_option( 'wp_ai_executor_capabilities', $settings, false );
+}
+
+function wpae_capability_enabled( string $capability ): bool {
+    $settings = wpae_get_capability_settings();
+    return ! empty( $settings[ $capability ] );
+}
+
+function wpae_can_run_filesystem_operations(): bool {
+    if ( defined( 'WP_AI_EXECUTOR_ALLOW_FILE_WRITES' ) && WP_AI_EXECUTOR_ALLOW_FILE_WRITES ) {
+        return true;
+    }
+
+    return wpae_capability_enabled( 'filesystem_writes' );
+}
+
 // ── REST routes ────────────────────────────────────────────────────────────────
 add_action( 'rest_api_init', function () {
 
     register_rest_route( 'ai-executor/v1', '/run', [
         'methods'             => 'POST',
         'callback'            => 'wpae_run',
-        'permission_callback' => 'wpae_auth_with_guide_token',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'run' ),
     ] );
 
     register_rest_route( 'ai-executor/v1', '/key', [
@@ -61,6 +141,30 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/audit', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_audit',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/validate', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_validate',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/page', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_page',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/update', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_update',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/skills', [
         'methods'             => 'GET',
         'callback'            => 'wpae_get_skills',
@@ -70,31 +174,31 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/skills', [
         'methods'             => 'POST',
         'callback'            => 'wpae_save_skill',
-        'permission_callback' => 'wpae_auth_with_guide_token',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'manage_skills' ),
     ] );
 
     register_rest_route( 'ai-executor/v1', '/skills/(?P<id>[a-z0-9_-]+)', [
         'methods'             => 'DELETE',
         'callback'            => 'wpae_delete_skill',
-        'permission_callback' => 'wpae_auth_with_guide_token',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'manage_skills' ),
     ] );
 
     register_rest_route( 'ai-executor/v1', '/media/upload', [
         'methods'             => 'POST',
         'callback'            => 'wpae_upload_media',
-        'permission_callback' => 'wpae_auth_with_guide_token',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'media_upload' ),
     ] );
 
     register_rest_route( 'ai-executor/v1', '/exports/create', [
         'methods'             => 'POST',
         'callback'            => 'wpae_create_export',
-        'permission_callback' => 'wpae_auth_with_guide_token',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'exports' ),
     ] );
 
     register_rest_route( 'ai-executor/v1', '/self-update', [
         'methods'             => 'POST',
         'callback'            => 'wpae_self_update',
-        'permission_callback' => 'wpae_auth_with_guide_token',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'self_update' ),
     ] );
 
 } );
@@ -129,6 +233,26 @@ function wpae_auth_with_guide_token( WP_REST_Request $request ) {
     );
 }
 
+function wpae_auth_with_capability( WP_REST_Request $request, string $capability ) {
+    $guide_auth = wpae_auth_with_guide_token( $request );
+    if ( $guide_auth !== true ) {
+        return $guide_auth;
+    }
+
+    if ( wpae_capability_enabled( $capability ) ) {
+        return true;
+    }
+
+    return new WP_Error(
+        'wpae_capability_disabled',
+        'This WP AI Executor capability is disabled by the site owner.',
+        [
+            'status' => 403,
+            'capability' => $capability,
+        ]
+    );
+}
+
 function wpae_required_ack_schema(): array {
     return [
         'read_agent_prompt' => true,
@@ -145,12 +269,7 @@ function wpae_get_guide_hash(): string {
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
-        'capabilities' => [
-            'must_use_flex_containers' => true,
-            'requires_widgetType' => true,
-            'blocks_file_writes_via_run' => true,
-            'requires_guide_token_for_writes' => true,
-        ],
+        'capabilities' => wpae_get_capabilities_payload(),
     ];
 
     return hash( 'sha256', (string) wp_json_encode( $payload ) );
@@ -295,16 +414,29 @@ function wpae_validate_guide_token( string $token, string $guide_hash ) {
     return $valid ? true : [ 'error' => 'invalid_or_expired_guide_token' ];
 }
 
-function wpae_get_capabilities(): WP_REST_Response {
-    return new WP_REST_Response( [
-        'can_execute_php' => true,
-        'can_write_files_via_run' => false,
-        'can_self_update_plugin' => true,
-        'can_upload_media' => true,
-        'can_create_exports' => true,
-        'can_manage_skills' => true,
+function wpae_get_capabilities_payload(): array {
+    $settings = wpae_get_capability_settings();
+
+    return [
+        'plugin_version' => WPAE_VERSION,
+        'guide_version' => '1.3.0',
+        'capability_toggles' => $settings,
+        'can_execute_php' => ! empty( $settings['run'] ),
+        'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
+        'can_self_update_plugin' => ! empty( $settings['self_update'] ),
+        'can_write_elementor' => ! empty( $settings['elementor_writes'] ),
+        'can_upload_media' => ! empty( $settings['media_upload'] ),
+        'can_create_exports' => ! empty( $settings['exports'] ),
+        'can_manage_skills' => ! empty( $settings['manage_skills'] ),
+        'can_audit' => true,
         'requires_guide_token_for_writes' => true,
         'elementor' => [
+            'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
+            'safe_endpoints' => [
+                'validate' => 'POST /wp-json/ai-executor/v1/elementor/validate',
+                'page' => 'POST /wp-json/ai-executor/v1/elementor/page',
+                'update' => 'POST /wp-json/ai-executor/v1/elementor/update',
+            ],
             'must_use_flex_containers' => true,
             'forbidden_eltypes' => [ 'section', 'column' ],
             'required_widget_key' => 'widgetType',
@@ -313,10 +445,16 @@ function wpae_get_capabilities(): WP_REST_Response {
         ],
         'file_write_policy' => [
             'forbidden_in_run' => [ 'php_files', 'mu_plugins', 'tmp_files', 'arbitrary_paths', 'shell_commands' ],
+            'filesystem_override_enabled' => wpae_can_run_filesystem_operations(),
             'allowed_endpoints' => [
-                '/self-update' => 'Writes only the current plugin file from an allowlisted GitHub source.',
-                '/media/upload' => 'Writes only validated media files through the WordPress uploads API.',
-                '/exports/create' => 'Writes only JSON exports under uploads/wp-ai-executor/exports.',
+                '/self-update' => ! empty( $settings['self_update'] ),
+                '/media/upload' => ! empty( $settings['media_upload'] ),
+                '/exports/create' => ! empty( $settings['exports'] ),
+                '/elementor/validate' => true,
+                '/elementor/page' => ! empty( $settings['elementor_writes'] ),
+                '/elementor/update' => ! empty( $settings['elementor_writes'] ),
+                '/audit' => true,
+                '/skills' => ! empty( $settings['manage_skills'] ),
             ],
         ],
         'guide_token_protocol' => [
@@ -325,7 +463,11 @@ function wpae_get_capabilities(): WP_REST_Response {
             'required_headers_for_writes' => [ 'X-WPAE-Guide-Token', 'X-WPAE-Guide-Hash' ],
             'ttl_minutes' => 15,
         ],
-    ], 200 );
+    ];
+}
+
+function wpae_get_capabilities(): WP_REST_Response {
+    return new WP_REST_Response( wpae_get_capabilities_payload(), 200 );
 }
 
 function wpae_get_skill_store(): array {
@@ -486,6 +628,162 @@ function wpae_get_enforceable_skill_rules(): array {
     }
 
     return $rules;
+}
+
+function wpae_get_elementor_data_from_request( WP_REST_Request $request ) {
+    $data = $request->get_param( 'elementor_data' );
+    if ( $data === null ) {
+        $data = $request->get_param( 'data' );
+    }
+
+    if ( is_string( $data ) ) {
+        $decoded = json_decode( $data, true );
+        if ( ! is_array( $decoded ) ) {
+            return new WP_Error( 'wpae_invalid_elementor_json', 'elementor_data must be valid JSON array data.' );
+        }
+        return $decoded;
+    }
+
+    if ( ! is_array( $data ) ) {
+        return new WP_Error( 'wpae_missing_elementor_data', 'elementor_data array is required.' );
+    }
+
+    return $data;
+}
+
+function wpae_validate_elementor_data_array( array $elementor_data ): array {
+    return wpae_validate_elementor_data_string( (string) wp_json_encode( $elementor_data ) );
+}
+
+function wpae_clear_elementor_cache( int $post_id ): void {
+    delete_post_meta( $post_id, '_elementor_css' );
+
+    if ( class_exists( '\Elementor\Plugin' ) ) {
+        try {
+            $elementor = \Elementor\Plugin::$instance;
+            if ( isset( $elementor->files_manager ) && method_exists( $elementor->files_manager, 'clear_cache' ) ) {
+                $elementor->files_manager->clear_cache();
+            }
+        } catch ( Throwable $e ) {
+            // Cache clearing is best effort; saving valid metadata is the critical path.
+        }
+    }
+}
+
+function wpae_save_elementor_page_data( int $post_id, array $elementor_data, string $template = 'elementor_canvas' ) {
+    if ( $post_id <= 0 || get_post( $post_id ) === null ) {
+        return new WP_Error( 'wpae_invalid_post_id', 'A valid post_id is required.' );
+    }
+
+    $errors = wpae_validate_elementor_data_array( $elementor_data );
+    if ( ! empty( $errors ) ) {
+        return new WP_Error( 'wpae_invalid_elementor_data', 'Elementor data failed validation.', [ 'errors' => $errors ] );
+    }
+
+    update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
+    update_post_meta( $post_id, '_elementor_template_type', 'wp-page' );
+    update_post_meta( $post_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
+    update_post_meta( $post_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
+    update_post_meta( $post_id, '_wp_page_template', $template ?: 'elementor_canvas' );
+    wpae_clear_elementor_cache( $post_id );
+
+    return true;
+}
+
+function wpae_elementor_validate( WP_REST_Request $request ): WP_REST_Response {
+    $elementor_data = wpae_get_elementor_data_from_request( $request );
+    if ( is_wp_error( $elementor_data ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $elementor_data->get_error_message() ], 400 );
+    }
+
+    $errors = wpae_validate_elementor_data_array( $elementor_data );
+
+    return new WP_REST_Response( [
+        'ok' => empty( $errors ),
+        'errors' => $errors,
+    ], empty( $errors ) ? 200 : 422 );
+}
+
+function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
+    $elementor_data = wpae_get_elementor_data_from_request( $request );
+
+    if ( is_wp_error( $elementor_data ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $elementor_data->get_error_message() ], 400 );
+    }
+
+    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
+    if ( is_wp_error( $saved ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $saved->get_error_message(),
+            'details' => $saved->get_error_data(),
+        ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'post_id' => $post_id,
+        'url' => get_permalink( $post_id ),
+    ], 200 );
+}
+
+function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    $title = sanitize_text_field( (string) ( $request->get_param( 'title' ) ?: 'Elementor Page' ) );
+    $slug = sanitize_title( (string) $request->get_param( 'slug' ) );
+    $status = sanitize_key( (string) ( $request->get_param( 'status' ) ?: 'publish' ) );
+    $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
+    $allowed_statuses = [ 'publish', 'draft', 'private', 'pending' ];
+    $elementor_data = wpae_get_elementor_data_from_request( $request );
+
+    if ( ! in_array( $status, $allowed_statuses, true ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Invalid page status.' ], 400 );
+    }
+
+    if ( is_wp_error( $elementor_data ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $elementor_data->get_error_message() ], 400 );
+    }
+
+    $post_args = [
+        'post_title' => $title,
+        'post_status' => $status,
+        'post_type' => 'page',
+    ];
+
+    if ( $slug !== '' ) {
+        $post_args['post_name'] = $slug;
+    }
+
+    if ( $post_id > 0 ) {
+        $post_args['ID'] = $post_id;
+        $result = wp_update_post( $post_args, true );
+    } else {
+        $result = wp_insert_post( $post_args, true );
+    }
+
+    if ( is_wp_error( $result ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $result->get_error_message() ], 500 );
+    }
+
+    $post_id = (int) $result;
+    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
+    if ( is_wp_error( $saved ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $saved->get_error_message(),
+            'details' => $saved->get_error_data(),
+            'post_id' => $post_id,
+        ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'post_id' => $post_id,
+        'url' => get_permalink( $post_id ),
+        'status' => get_post_status( $post_id ),
+    ], 200 );
 }
 
 function wpae_upload_media( WP_REST_Request $request ) {
@@ -741,7 +1039,7 @@ function wpae_run( WP_REST_Request $request ) {
     $forbidden_file_operation = wpae_detect_forbidden_file_operation( $code );
     if (
         $forbidden_file_operation &&
-        ! ( defined( 'WP_AI_EXECUTOR_ALLOW_FILE_WRITES' ) && WP_AI_EXECUTOR_ALLOW_FILE_WRITES )
+        ! wpae_can_run_filesystem_operations()
     ) {
         return new WP_REST_Response( [
             'error' => 'Filesystem writes are disabled by WP AI Executor policy.',
@@ -855,9 +1153,25 @@ function wpae_validate_changed_elementor_data( array $before ): array {
     $after = wpae_capture_elementor_data_snapshot();
     $errors = [];
     $rolled_back_post_ids = [];
+    $elementor_writes_enabled = wpae_capability_enabled( 'elementor_writes' );
 
     foreach ( $after as $post_id => $raw_data ) {
         if ( array_key_exists( $post_id, $before ) && $before[ $post_id ] === $raw_data ) {
+            continue;
+        }
+
+        if ( ! $elementor_writes_enabled ) {
+            $errors[] = [
+                'post_id' => $post_id,
+                'errors' => [ 'Elementor writes are disabled by the site owner.' ],
+            ];
+
+            if ( array_key_exists( $post_id, $before ) ) {
+                update_post_meta( $post_id, '_elementor_data', wp_slash( $before[ $post_id ] ) );
+            } else {
+                delete_post_meta( $post_id, '_elementor_data' );
+            }
+            $rolled_back_post_ids[] = $post_id;
             continue;
         }
 
@@ -943,6 +1257,193 @@ function wpae_validate_elementor_elements_recursive( array $elements, string $pa
     }
 }
 
+function wpae_audit_add_finding( array &$findings, string $code, string $status, string $message, array $details = [] ): void {
+    $findings[] = [
+        'code' => $code,
+        'status' => $status,
+        'message' => $message,
+        'details' => $details,
+    ];
+}
+
+function wpae_collect_elementor_audit_stats( array $elements, array &$stats ): void {
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $el_type = (string) ( $element['elType'] ?? '' );
+        if ( $el_type === 'container' ) {
+            $stats['containers']++;
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $has_background = ! empty( $settings['background_color'] )
+                || ! empty( $settings['background_background'] )
+                || ! empty( $settings['_background_color'] )
+                || ! empty( $settings['_background_background'] );
+
+            if ( $has_background ) {
+                $stats['containers_with_native_background']++;
+            }
+        }
+
+        if ( $el_type === 'widget' ) {
+            $stats['widgets']++;
+            $widget_type = (string) ( $element['widgetType'] ?? '' );
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+
+            if ( $widget_type === 'html' ) {
+                $stats['html_widgets']++;
+                $html = (string) ( $settings['html'] ?? $settings['editor'] ?? '' );
+                if ( preg_match( '/<(main|section|article|header|footer|nav)\b/i', $html ) || stripos( $html, 'elementor-section' ) !== false ) {
+                    $stats['html_widget_layout_risks']++;
+                }
+            }
+
+            if ( $widget_type === 'heading' && trim( (string) ( $settings['title'] ?? '' ) ) === '' ) {
+                $stats['empty_heading_widgets']++;
+            }
+
+            if ( $widget_type === 'text-editor' && trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) ) === '' ) {
+                $stats['empty_text_widgets']++;
+            }
+        }
+
+        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+            wpae_collect_elementor_audit_stats( $element['elements'], $stats );
+        }
+    }
+}
+
+function wpae_audit( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    $findings = [];
+
+    if ( $post_id <= 0 ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'post_id is required.' ], 400 );
+    }
+
+    $post = get_post( $post_id );
+    if ( ! $post ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Post not found.' ], 404 );
+    }
+
+    wpae_audit_add_finding(
+        $findings,
+        'post_exists',
+        'pass',
+        'Post exists.',
+        [ 'post_id' => $post_id, 'post_type' => $post->post_type, 'post_status' => $post->post_status ]
+    );
+
+    $edit_mode = (string) get_post_meta( $post_id, '_elementor_edit_mode', true );
+    wpae_audit_add_finding(
+        $findings,
+        'elementor_edit_mode',
+        $edit_mode === 'builder' ? 'pass' : 'fail',
+        $edit_mode === 'builder' ? 'Elementor edit mode is builder.' : 'Elementor edit mode is not builder.',
+        [ 'value' => $edit_mode ]
+    );
+
+    $template = (string) get_post_meta( $post_id, '_wp_page_template', true );
+    wpae_audit_add_finding(
+        $findings,
+        'page_template',
+        $template !== '' ? 'pass' : 'warn',
+        $template !== '' ? 'Page template is set.' : 'Page template is empty.',
+        [ 'value' => $template ]
+    );
+
+    $raw_data = (string) get_post_meta( $post_id, '_elementor_data', true );
+    if ( $raw_data === '' ) {
+        wpae_audit_add_finding( $findings, 'elementor_data_present', 'fail', '_elementor_data is empty.' );
+        return new WP_REST_Response( [
+            'ok' => false,
+            'post_id' => $post_id,
+            'findings' => $findings,
+        ], 422 );
+    }
+
+    $elementor_data = json_decode( $raw_data, true );
+    if ( ! is_array( $elementor_data ) ) {
+        wpae_audit_add_finding( $findings, 'elementor_data_json', 'fail', '_elementor_data is not valid JSON array data.' );
+        return new WP_REST_Response( [
+            'ok' => false,
+            'post_id' => $post_id,
+            'findings' => $findings,
+        ], 422 );
+    }
+
+    wpae_audit_add_finding( $findings, 'elementor_data_json', 'pass', '_elementor_data decodes as JSON array data.' );
+
+    $validation_errors = wpae_validate_elementor_data_string( $raw_data );
+    wpae_audit_add_finding(
+        $findings,
+        'elementor_policy_validation',
+        empty( $validation_errors ) ? 'pass' : 'fail',
+        empty( $validation_errors ) ? 'Elementor data passes runtime policy validation.' : 'Elementor data failed runtime policy validation.',
+        [ 'errors' => $validation_errors ]
+    );
+
+    $stats = [
+        'containers' => 0,
+        'containers_with_native_background' => 0,
+        'widgets' => 0,
+        'html_widgets' => 0,
+        'html_widget_layout_risks' => 0,
+        'empty_heading_widgets' => 0,
+        'empty_text_widgets' => 0,
+    ];
+    wpae_collect_elementor_audit_stats( $elementor_data, $stats );
+
+    wpae_audit_add_finding(
+        $findings,
+        'native_containers',
+        $stats['containers'] > 0 ? 'pass' : 'fail',
+        $stats['containers'] > 0 ? 'Elementor layout uses containers.' : 'No Elementor containers found.',
+        $stats
+    );
+
+    wpae_audit_add_finding(
+        $findings,
+        'native_backgrounds',
+        $stats['containers_with_native_background'] > 0 ? 'pass' : 'warn',
+        $stats['containers_with_native_background'] > 0 ? 'At least one container has native background settings.' : 'No native container background settings found; verify contrast is not CSS-only.',
+        $stats
+    );
+
+    wpae_audit_add_finding(
+        $findings,
+        'html_widget_scope',
+        $stats['html_widget_layout_risks'] === 0 ? 'pass' : 'warn',
+        $stats['html_widget_layout_risks'] === 0 ? 'No HTML widget layout risks detected.' : 'Some HTML widgets may contain layout/content markup instead of enhancement-only CSS/JS.',
+        $stats
+    );
+
+    wpae_audit_add_finding(
+        $findings,
+        'native_widget_content',
+        ( $stats['empty_heading_widgets'] === 0 && $stats['empty_text_widgets'] === 0 ) ? 'pass' : 'warn',
+        ( $stats['empty_heading_widgets'] === 0 && $stats['empty_text_widgets'] === 0 ) ? 'No empty heading/text widgets detected.' : 'Some native content widgets appear empty.',
+        $stats
+    );
+
+    $has_failures = false;
+    foreach ( $findings as $finding ) {
+        if ( ( $finding['status'] ?? '' ) === 'fail' ) {
+            $has_failures = true;
+            break;
+        }
+    }
+
+    return new WP_REST_Response( [
+        'ok' => ! $has_failures,
+        'post_id' => $post_id,
+        'url' => get_permalink( $post_id ),
+        'stats' => $stats,
+        'findings' => $findings,
+    ], $has_failures ? 422 : 200 );
+}
+
 function wpae_get_guide(): WP_REST_Response {
     return new WP_REST_Response( wpae_agent_guide(), 200 );
 }
@@ -951,12 +1452,14 @@ function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
         'version' => '1.3.0',
+        'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
             'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',
         ],
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
+        'capabilities' => wpae_get_capabilities_payload(),
         'guide_token_protocol' => [
             'required_for_write_endpoints' => true,
             'session_endpoint' => 'POST /wp-json/ai-executor/v1/guide/session',
@@ -971,11 +1474,11 @@ function wpae_agent_guide(): array {
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
-            '2. For page work, create or update a WordPress page and write Elementor metadata.',
+            '2. For page work, prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
             '3. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
             '4. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
             '5. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '6. Verify with HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '6. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -1035,7 +1538,7 @@ function wpae_agent_guide(): array {
                     'Use /media/upload for validated media library files.',
                     'Use /exports/create for JSON export files under uploads/wp-ai-executor/exports.',
                 ],
-                'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined by the site owner.',
+                'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless the site owner enables the filesystem_writes capability or WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined.',
                 'self_update_policy' => [
                     'endpoint' => 'POST /wp-json/ai-executor/v1/self-update',
                     'rule' => 'Plugin self-update is allowed only through the dedicated self-update endpoint, never through arbitrary /run filesystem writes.',
@@ -1200,7 +1703,7 @@ function wpae_agent_guide(): array {
             'php_snippet' => wpae_elementor_page_snippet(),
         ],
         'security' => [
-            'Treat X-AI-Key as root access to WordPress.',
+            'Treat X-AI-Key as sensitive WordPress automation access, restricted by site-owner capability toggles and guide-token flow.',
             'Never commit, log, or expose real keys in frontend code.',
             'Never create temporary loaders, mu-plugins, PHP/JS/CSS/JSON/base64 files, or scratch files on the server.',
             'Filesystem write/delete operations are blocked by default in /run; do not ask agents to bypass this.',
@@ -1213,7 +1716,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 
@@ -1290,12 +1793,28 @@ add_action( 'admin_init', function () {
         wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&regenerated=1' ) );
         exit;
     }
+
+    if (
+        isset( $_POST['wpae_save_capabilities'] ) &&
+        check_admin_referer( 'wpae_save_capabilities' )
+    ) {
+        $input = isset( $_POST['wpae_capabilities'] ) && is_array( $_POST['wpae_capabilities'] )
+            ? wp_unslash( $_POST['wpae_capabilities'] )
+            : [];
+
+        wpae_update_capability_settings( $input );
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&capabilities_saved=1' ) );
+        exit;
+    }
 } );
 
 function wpae_settings_page() {
-    $key      = wpae_get_key();
-    $site_url = get_rest_url( null, 'ai-executor/v1/run' );
-    $regen    = isset( $_GET['regenerated'] );
+    $key                = wpae_get_key();
+    $site_url           = get_rest_url( null, 'ai-executor/v1/run' );
+    $regen              = isset( $_GET['regenerated'] );
+    $capabilities_saved = isset( $_GET['capabilities_saved'] );
+    $capabilities       = wpae_get_capability_settings();
+    $capability_labels  = wpae_capability_labels();
     ?>
     <div class="wrap">
         <h1>
@@ -1308,6 +1827,10 @@ function wpae_settings_page() {
 
         <?php if ( $regen ) : ?>
             <div class="notice notice-success is-dismissible"><p>✅ Secret key regenerated successfully.</p></div>
+        <?php endif; ?>
+
+        <?php if ( $capabilities_saved ) : ?>
+            <div class="notice notice-success is-dismissible"><p>Capability settings saved.</p></div>
         <?php endif; ?>
 
         <!-- Endpoint -->
@@ -1342,6 +1865,48 @@ function wpae_settings_page() {
                 <button type="submit" class="button button-secondary" style="color:#b32d2e;border-color:#b32d2e">
                     🔄 Regenerate Key
                 </button>
+            </form>
+        </div>
+
+        <!-- Capabilities -->
+        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
+            <h2 style="margin-top:0">Capabilities</h2>
+            <p style="color:#666;margin-top:0">
+                Keep one <code>X-AI-Key</code>, but decide what authenticated agents are allowed to do.
+                Write endpoints still require a fresh guide token.
+            </p>
+
+            <form method="post">
+                <?php wp_nonce_field( 'wpae_save_capabilities' ); ?>
+                <input type="hidden" name="wpae_save_capabilities" value="1" />
+
+                <table class="widefat striped" style="max-width:900px">
+                    <tbody>
+                    <?php foreach ( $capability_labels as $capability => $meta ) : ?>
+                        <tr>
+                            <td style="width:260px">
+                                <label>
+                                    <input type="checkbox"
+                                        name="wpae_capabilities[<?php echo esc_attr( $capability ); ?>]"
+                                        value="1"
+                                        <?php checked( ! empty( $capabilities[ $capability ] ) ); ?> />
+                                    <strong><?php echo esc_html( $meta['label'] ); ?></strong>
+                                </label>
+                            </td>
+                            <td>
+                                <?php echo esc_html( $meta['description'] ); ?>
+                                <?php if ( $capability === 'filesystem_writes' && defined( 'WP_AI_EXECUTOR_ALLOW_FILE_WRITES' ) && WP_AI_EXECUTOR_ALLOW_FILE_WRITES ) : ?>
+                                    <br><strong>wp-config.php override is currently enabled.</strong>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+
+                <p>
+                    <button type="submit" class="button button-primary">Save Capabilities</button>
+                </p>
             </form>
         </div>
 

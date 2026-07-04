@@ -106,6 +106,70 @@ https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.p
 ### `GET /wp-json/ai-executor/v1/capabilities`
 
 Returns the executor's current safety and write capabilities.
+This reflects the site owner's settings from **Settings → AI Executor**.
+
+Important fields include:
+
+```json
+{
+  "can_execute_php": true,
+  "can_write_elementor": true,
+  "can_write_files_via_run": false,
+  "can_self_update_plugin": true,
+  "can_upload_media": true,
+  "can_create_exports": true,
+  "can_manage_skills": true
+}
+```
+
+If a capability is disabled, the matching write endpoint returns `403` even
+with a valid key and guide token.
+
+### `POST /wp-json/ai-executor/v1/elementor/validate`
+
+Validates Elementor JSON without writing anything. Requires `X-AI-Key`.
+
+```json
+{ "elementor_data": [] }
+```
+
+### `POST /wp-json/ai-executor/v1/elementor/page`
+
+Creates or updates a WordPress page and saves validated Elementor metadata.
+Requires `X-AI-Key`, `X-WPAE-Guide-Token`, `X-WPAE-Guide-Hash`, and the
+`elementor_writes` capability.
+
+```json
+{
+  "title": "Landing Page",
+  "slug": "landing-page",
+  "status": "publish",
+  "template": "elementor_canvas",
+  "elementor_data": []
+}
+```
+
+### `POST /wp-json/ai-executor/v1/elementor/update`
+
+Updates Elementor metadata for an existing page after validation.
+
+```json
+{
+  "post_id": 123,
+  "template": "elementor_canvas",
+  "elementor_data": []
+}
+```
+
+### `POST /wp-json/ai-executor/v1/audit`
+
+Audits a page after writing. Requires `X-AI-Key`; does not write anything.
+Returns machine-readable findings for Elementor meta, JSON validity, Flexbox
+Containers, `widgetType`, HTML widget layout risk, and basic native style checks.
+
+```json
+{ "post_id": 123 }
+```
 
 ### `POST /wp-json/ai-executor/v1/guide/session`
 
@@ -237,7 +301,8 @@ files, or files in `/tmp`. Use WordPress APIs and Elementor metadata instead.
 By default `/run` rejects common filesystem write/delete operations and
 shell/process execution.
 Use only dedicated endpoints for allowed writes: `/self-update`,
-`/media/upload`, `/exports/create`, and `/skills`.
+`/elementor/page`, `/elementor/update`, `/media/upload`, `/exports/create`,
+and `/skills`. Use `/audit` after page writes.
 ```
 
 ### Agent quality gates
@@ -274,8 +339,11 @@ After writing, the agent should verify:
 - Key comparison uses `hash_equals()` to prevent timing attacks
 - The `/key` endpoint is restricted to `127.0.0.1` / `::1` only
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
+- Site-owner capability toggles in **Settings → AI Executor** can disable `/run`, self-update, Elementor writes, media upload, exports, skills management, and filesystem writes
 - `/run` blocks common filesystem write/delete functions and shell/process execution by default
 - `/run` validates changed Elementor data and blocks legacy sections/columns or missing `widgetType`
+- `/elementor/validate`, `/elementor/page`, and `/elementor/update` provide structured Elementor JSON validation and saving
+- `/audit` returns machine-readable page verification findings
 - write endpoints require a fresh guide token from `/guide/session` + `/guide/ack`
 - `/self-update` is the only allowed plugin file write path and only writes the current plugin file from the allowlisted GitHub source
 - `/skills` stores custom skills in the database, not as files
