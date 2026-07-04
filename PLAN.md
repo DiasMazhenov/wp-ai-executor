@@ -11,13 +11,13 @@
 
 ## Next
 
-1. Split API keys by role.
-   - Current `X-AI-Key` is almost root-level access.
-   - Add `run_key` for PHP execution and high-risk writes.
-   - Add `guide_key` for read-only `/guide`, `/capabilities`, and `/skills` reads.
-   - Add `update_key` for `/self-update` only.
-   - Optionally add `readonly_key` for diagnostics.
-   - Keep backward compatibility during migration, but expose warnings when the single root key is still used.
+1. Add site-owner capability toggles.
+   - Keep one `X-AI-Key` for simpler agent setup.
+   - Add admin toggles for `/run`, plugin self-update, Elementor writes, media upload, exports, skills management, and filesystem write override.
+   - Keep dangerous capabilities off by default where practical, especially filesystem writes.
+   - Permission callbacks must check the key, guide token, and the relevant enabled capability.
+   - Show active plugin version, guide version, enabled skills, current capability state, and recent validation failures in the admin UI.
+   - Leave role-based keys as optional future hardening for multi-agent or client sites.
 
 2. Expand the capabilities contract.
    - Make `/capabilities` the explicit machine-readable contract agents must inspect before acting.
@@ -58,6 +58,7 @@
    - After each write, score whether the agent followed the guide: read guide token flow, no files, native Elementor, Flex Containers, correct `widgetType`, native critical styles, verification done.
    - Return score and blocking errors in write responses.
 
-9. Add site owner controls.
-   - Admin UI toggles for strict mode, allowed write endpoints, skill enable/disable, guide-token TTL, and file-write override status.
-   - Show active plugin version, guide version, enabled skills, and recent validation failures.
+9. Add optional role-based keys.
+   - Add only if a site needs different secrets for different agents or clients.
+   - Possible roles: `run_key`, `guide_key`, `update_key`, and `readonly_key`.
+   - Keep disabled by default to avoid unnecessary setup friction.
