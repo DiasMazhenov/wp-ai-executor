@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.6.0
+ * Version:     1.6.1
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.6.0';
+const WPAE_VERSION = '1.6.1';
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -37,32 +37,32 @@ function wpae_capability_defaults(): array {
 function wpae_capability_labels(): array {
     return [
         'run' => [
-            'label' => 'Allow PHP /run',
-            'description' => 'Allows authenticated agents to execute PHP through /run.',
+            'label' => 'Разрешить PHP /run',
+            'description' => 'Позволяет авторизованным агентам выполнять PHP через /run.',
         ],
         'self_update' => [
-            'label' => 'Allow plugin self-update',
-            'description' => 'Allows /self-update to replace this plugin from the allowlisted GitHub source.',
+            'label' => 'Разрешить самообновление плагина',
+            'description' => 'Позволяет /self-update обновлять файл плагина из разрешенного GitHub-источника.',
         ],
         'elementor_writes' => [
-            'label' => 'Allow Elementor writes',
-            'description' => 'Allows changed _elementor_data to remain after /run and future Elementor endpoints.',
+            'label' => 'Разрешить запись Elementor',
+            'description' => 'Позволяет сохранять _elementor_data через /run и структурированные Elementor endpoints.',
         ],
         'media_upload' => [
-            'label' => 'Allow media upload',
-            'description' => 'Allows /media/upload to create validated WordPress media attachments.',
+            'label' => 'Разрешить загрузку медиа',
+            'description' => 'Позволяет /media/upload создавать проверенные вложения WordPress.',
         ],
         'exports' => [
-            'label' => 'Allow JSON exports',
-            'description' => 'Allows /exports/create to write JSON exports under uploads/wp-ai-executor/exports.',
+            'label' => 'Разрешить JSON-экспорты',
+            'description' => 'Позволяет /exports/create создавать JSON-файлы в uploads/wp-ai-executor/exports.',
         ],
         'manage_skills' => [
-            'label' => 'Allow skills management',
-            'description' => 'Allows agents to create, update, and delete database-backed custom skills.',
+            'label' => 'Разрешить управление skills',
+            'description' => 'Позволяет агентам создавать, обновлять и удалять custom skills в базе данных.',
         ],
         'filesystem_writes' => [
-            'label' => 'Allow filesystem writes in /run',
-            'description' => 'Dangerous. Allows file write/delete operations through /run. Keep disabled unless you explicitly need it.',
+            'label' => 'Разрешить запись файлов через /run',
+            'description' => 'Опасно. Разрешает файловые операции через /run. Держите выключенным без явной необходимости.',
         ],
     ];
 }
@@ -1768,7 +1768,7 @@ return [ 'ok' => true, 'id' => $page_id, 'url' => get_permalink( $page_id ) ];
 PHP;
 }
 
-// ── Settings page ──────────────────────────────────────────────────────────────
+// ── Страница настроек ──────────────────────────────────────────────────────────
 add_action( 'admin_menu', function () {
     add_options_page(
         'WP AI Executor',
@@ -1784,7 +1784,7 @@ add_action( 'admin_init', function () {
         'sanitize_callback' => 'sanitize_text_field',
     ] );
 
-    // Handle key regeneration
+    // Обработка регенерации ключа.
     if (
         isset( $_POST['wpae_regenerate'] ) &&
         check_admin_referer( 'wpae_regenerate_key' )
@@ -1811,119 +1811,388 @@ add_action( 'admin_init', function () {
 function wpae_settings_page() {
     $key                = wpae_get_key();
     $site_url           = get_rest_url( null, 'ai-executor/v1/run' );
+    $guide_url          = get_rest_url( null, 'ai-executor/v1/guide' );
+    $capabilities_url   = get_rest_url( null, 'ai-executor/v1/capabilities' );
     $regen              = isset( $_GET['regenerated'] );
     $capabilities_saved = isset( $_GET['capabilities_saved'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
+    $enabled_count      = count( array_filter( $capabilities ) );
+    $total_count        = count( $capabilities );
+    $filesystem_locked  = ! wpae_can_run_filesystem_operations();
     ?>
-    <div class="wrap">
-        <h1>
-            ⚡ WP AI Executor
-            <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:3px 8px;border-radius:999px;background:#f0f0f1;color:#50575e;font-size:13px;font-weight:600;line-height:1.4">
-                v<?php echo esc_html( WPAE_VERSION ); ?>
-            </span>
-        </h1>
-        <p style="color:#666">Universal REST endpoint for AI automation. Works with Claude, GPT, Gemini, Qwen, and any AI agent that can make HTTP requests.</p>
+    <style>
+        .wpae-dashboard {
+            --wpae-bg: #f6f7f9;
+            --wpae-panel: #ffffff;
+            --wpae-panel-soft: #f8fafc;
+            --wpae-text: #111827;
+            --wpae-muted: #64748b;
+            --wpae-border: #d9e0ea;
+            --wpae-accent: #16a34a;
+            --wpae-accent-dark: #15803d;
+            --wpae-danger: #b91c1c;
+            --wpae-code: #0f172a;
+            --wpae-code-text: #dbeafe;
+            max-width: 1180px;
+            color: var(--wpae-text);
+        }
+        .wpae-dashboard * { box-sizing: border-box; }
+        .wpae-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+            gap: 16px;
+            align-items: stretch;
+            margin: 18px 0;
+        }
+        .wpae-hero-main,
+        .wpae-card {
+            background: var(--wpae-panel);
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        .wpae-hero-main {
+            padding: 24px;
+            border-left: 4px solid var(--wpae-accent);
+        }
+        .wpae-kicker {
+            margin: 0 0 8px;
+            color: var(--wpae-accent-dark);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .wpae-title {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin: 0;
+            font-size: 28px;
+            line-height: 1.15;
+            letter-spacing: 0;
+        }
+        .wpae-version {
+            display: inline-flex;
+            align-items: center;
+            min-height: 26px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: #e8f5ee;
+            color: #166534;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .wpae-lead {
+            max-width: 760px;
+            margin: 10px 0 0;
+            color: var(--wpae-muted);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+        .wpae-status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 16px;
+        }
+        .wpae-stat {
+            min-height: 78px;
+            padding: 14px;
+            background: var(--wpae-panel-soft);
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+        }
+        .wpae-stat-label {
+            margin: 0 0 7px;
+            color: var(--wpae-muted);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .wpae-stat-value {
+            margin: 0;
+            font-size: 22px;
+            line-height: 1.1;
+            font-weight: 800;
+        }
+        .wpae-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .wpae-card {
+            padding: 18px;
+        }
+        .wpae-card-wide {
+            grid-column: 1 / -1;
+        }
+        .wpae-card h2 {
+            margin: 0 0 6px;
+            font-size: 18px;
+            line-height: 1.25;
+        }
+        .wpae-card h3 {
+            margin: 18px 0 8px;
+            font-size: 14px;
+        }
+        .wpae-card p {
+            margin: 0 0 12px;
+            color: var(--wpae-muted);
+            line-height: 1.5;
+        }
+        .wpae-field-row {
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .wpae-input {
+            width: 100%;
+            min-height: 38px;
+            padding: 8px 11px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 7px;
+            background: #fff;
+            color: var(--wpae-text);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+        }
+        .wpae-button {
+            min-height: 38px;
+            padding: 7px 12px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .wpae-button:focus-visible,
+        .wpae-input:focus-visible,
+        .wpae-toggle input:focus-visible {
+            outline: 2px solid var(--wpae-accent);
+            outline-offset: 2px;
+        }
+        .wpae-danger-button {
+            color: var(--wpae-danger) !important;
+            border-color: var(--wpae-danger) !important;
+        }
+        .wpae-code {
+            margin: 0;
+            padding: 14px;
+            overflow-x: auto;
+            border-radius: 8px;
+            background: var(--wpae-code);
+            color: var(--wpae-code-text);
+            font-size: 12px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+        .wpae-code-light {
+            background: #f8fafc;
+            color: #1f2937;
+            border: 1px solid var(--wpae-border);
+        }
+        .wpae-cap-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .wpae-toggle {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            min-height: 92px;
+            padding: 13px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            background: var(--wpae-panel-soft);
+        }
+        .wpae-toggle input {
+            width: 18px;
+            height: 18px;
+            margin-top: 1px;
+        }
+        .wpae-toggle strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--wpae-text);
+        }
+        .wpae-toggle span {
+            display: block;
+            color: var(--wpae-muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .wpae-alert {
+            margin: 12px 0;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+            background: #f0fdf4;
+            color: #166534;
+            font-weight: 600;
+        }
+        .wpae-security {
+            border-color: #fde68a;
+            background: #fffbeb;
+        }
+        .wpae-security strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .wpae-security ul {
+            margin: 0 0 0 18px;
+            color: #713f12;
+        }
+        @media (max-width: 960px) {
+            .wpae-hero,
+            .wpae-grid,
+            .wpae-cap-list {
+                grid-template-columns: 1fr;
+            }
+            .wpae-field-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <div class="wrap wpae-dashboard">
+        <section class="wpae-hero" aria-labelledby="wpae-title">
+            <div class="wpae-hero-main">
+                <p class="wpae-kicker">Панель управления агентами</p>
+                <h1 id="wpae-title" class="wpae-title">
+                    WP AI Executor
+                    <span class="wpae-version">v<?php echo esc_html( WPAE_VERSION ); ?></span>
+                </h1>
+                <p class="wpae-lead">
+                    REST-мост для Codex, Claude, GPT, Gemini, Qwen и других агентов.
+                    Управляйте доступом, проверяйте Elementor-структуру и держите опасные операции под контролем.
+                </p>
+            </div>
+
+            <div class="wpae-card">
+                <div class="wpae-status-grid">
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Разрешения</p>
+                        <p class="wpae-stat-value"><?php echo esc_html( $enabled_count . '/' . $total_count ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Файловая запись</p>
+                        <p class="wpae-stat-value"><?php echo $filesystem_locked ? 'Выкл.' : 'Вкл.'; ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Guide-токен</p>
+                        <p class="wpae-stat-value">15 мин</p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Elementor</p>
+                        <p class="wpae-stat-value"><?php echo ! empty( $capabilities['elementor_writes'] ) ? 'Вкл.' : 'Выкл.'; ?></p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <?php if ( $regen ) : ?>
-            <div class="notice notice-success is-dismissible"><p>✅ Secret key regenerated successfully.</p></div>
+            <div class="wpae-alert" role="status">Секретный ключ успешно сгенерирован заново.</div>
         <?php endif; ?>
 
         <?php if ( $capabilities_saved ) : ?>
-            <div class="notice notice-success is-dismissible"><p>Capability settings saved.</p></div>
+            <div class="wpae-alert" role="status">Настройки разрешений сохранены.</div>
         <?php endif; ?>
 
-        <!-- Endpoint -->
-        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
-            <h2 style="margin-top:0">📡 Endpoint</h2>
-            <label style="display:block;font-weight:600;margin-bottom:6px">REST URL</label>
-            <div style="display:flex;gap:8px">
-                <input type="text" value="<?php echo esc_attr( $site_url ); ?>" readonly
-                    style="width:100%;font-family:monospace;background:#f6f7f7;padding:8px 12px;border:1px solid #ccc;border-radius:4px"
-                    onclick="this.select()" />
-                <button type="button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $site_url ); ?>');this.textContent='✅ Copied!';setTimeout(()=>this.textContent='Copy',2000)"
-                    class="button">Copy</button>
-            </div>
-        </div>
-
-        <!-- Secret Key -->
-        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
-            <h2 style="margin-top:0">🔑 Secret Key</h2>
-            <p style="color:#666;margin-top:0">Send this key in the <code>X-AI-Key</code> header with every request.</p>
-
-            <div style="display:flex;gap:8px;align-items:center">
-                <input type="text" id="wpae-key" value="<?php echo esc_attr( $key ); ?>" readonly
-                    style="width:100%;font-family:monospace;background:#f6f7f7;padding:8px 12px;border:1px solid #ccc;border-radius:4px"
-                    onclick="this.select()" />
-                <button type="button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $key ); ?>');this.textContent='✅ Copied!';setTimeout(()=>this.textContent='Copy',2000)"
-                    class="button">Copy</button>
+        <div class="wpae-grid">
+            <div class="wpae-card">
+                <h2>REST endpoint</h2>
+                <p>Основной адрес для выполнения PHP через защищенный REST API.</p>
+                <label for="wpae-rest-url">REST URL</label>
+                <div class="wpae-field-row" style="margin-top:6px">
+                    <input class="wpae-input" id="wpae-rest-url" type="text" value="<?php echo esc_attr( $site_url ); ?>" readonly onclick="this.select()" />
+                    <button type="button" class="button wpae-button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $site_url ); ?>');this.textContent='Скопировано';setTimeout(()=>this.textContent='Копировать',2000)">Копировать</button>
+                </div>
             </div>
 
-            <form method="post" style="margin-top:12px" onsubmit="return confirm('Regenerate secret key? All AI agents using the old key will need to be updated.')">
-                <?php wp_nonce_field( 'wpae_regenerate_key' ); ?>
-                <input type="hidden" name="wpae_regenerate" value="1" />
-                <button type="submit" class="button button-secondary" style="color:#b32d2e;border-color:#b32d2e">
-                    🔄 Regenerate Key
-                </button>
-            </form>
-        </div>
+            <div class="wpae-card">
+                <h2>Секретный ключ</h2>
+                <p>Передавайте этот ключ в заголовке <code>X-AI-Key</code>. Не публикуйте его в frontend-коде.</p>
+                <label for="wpae-key">X-AI-Key</label>
+                <div class="wpae-field-row" style="margin-top:6px">
+                    <input class="wpae-input" type="text" id="wpae-key" value="<?php echo esc_attr( $key ); ?>" readonly onclick="this.select()" />
+                    <button type="button" class="button wpae-button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $key ); ?>');this.textContent='Скопировано';setTimeout(()=>this.textContent='Копировать',2000)">Копировать</button>
+                </div>
 
-        <!-- Capabilities -->
-        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
-            <h2 style="margin-top:0">Capabilities</h2>
-            <p style="color:#666;margin-top:0">
-                Keep one <code>X-AI-Key</code>, but decide what authenticated agents are allowed to do.
-                Write endpoints still require a fresh guide token.
-            </p>
+                <form method="post" style="margin-top:12px" onsubmit="return confirm('Сгенерировать новый секретный ключ? Агентам со старым ключом потребуется обновление.')">
+                    <?php wp_nonce_field( 'wpae_regenerate_key' ); ?>
+                    <input type="hidden" name="wpae_regenerate" value="1" />
+                    <button type="submit" class="button wpae-button wpae-danger-button">Сгенерировать новый ключ</button>
+                </form>
+            </div>
 
-            <form method="post">
-                <?php wp_nonce_field( 'wpae_save_capabilities' ); ?>
-                <input type="hidden" name="wpae_save_capabilities" value="1" />
-
-                <table class="widefat striped" style="max-width:900px">
-                    <tbody>
-                    <?php foreach ( $capability_labels as $capability => $meta ) : ?>
-                        <tr>
-                            <td style="width:260px">
-                                <label>
-                                    <input type="checkbox"
-                                        name="wpae_capabilities[<?php echo esc_attr( $capability ); ?>]"
-                                        value="1"
-                                        <?php checked( ! empty( $capabilities[ $capability ] ) ); ?> />
-                                    <strong><?php echo esc_html( $meta['label'] ); ?></strong>
-                                </label>
-                            </td>
-                            <td>
-                                <?php echo esc_html( $meta['description'] ); ?>
-                                <?php if ( $capability === 'filesystem_writes' && defined( 'WP_AI_EXECUTOR_ALLOW_FILE_WRITES' ) && WP_AI_EXECUTOR_ALLOW_FILE_WRITES ) : ?>
-                                    <br><strong>wp-config.php override is currently enabled.</strong>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-
+            <div class="wpae-card wpae-card-wide">
+                <h2>Разрешения агента</h2>
                 <p>
-                    <button type="submit" class="button button-primary">Save Capabilities</button>
+                    Ключ остается один, но владелец сайта управляет тем, что агенту разрешено делать.
+                    Все write endpoints дополнительно требуют свежий guide token.
                 </p>
-            </form>
-        </div>
 
-        <!-- Usage examples -->
-        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
-            <h2 style="margin-top:0">📖 Usage Examples</h2>
+                <form method="post">
+                    <?php wp_nonce_field( 'wpae_save_capabilities' ); ?>
+                    <input type="hidden" name="wpae_save_capabilities" value="1" />
 
-            <h3>curl (production / no browser)</h3>
-            <pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px"><?php echo esc_html(
+                    <div class="wpae-cap-list">
+                    <?php foreach ( $capability_labels as $capability => $meta ) : ?>
+                        <label class="wpae-toggle">
+                            <input type="checkbox"
+                                name="wpae_capabilities[<?php echo esc_attr( $capability ); ?>]"
+                                value="1"
+                                <?php checked( ! empty( $capabilities[ $capability ] ) ); ?> />
+                            <span>
+                                <strong><?php echo esc_html( $meta['label'] ); ?></strong>
+                                <span><?php echo esc_html( $meta['description'] ); ?></span>
+                                <?php if ( $capability === 'filesystem_writes' && defined( 'WP_AI_EXECUTOR_ALLOW_FILE_WRITES' ) && WP_AI_EXECUTOR_ALLOW_FILE_WRITES ) : ?>
+                                    <span><strong>Переопределение в wp-config.php сейчас включено.</strong></span>
+                                <?php endif; ?>
+                            </span>
+                        </label>
+                    <?php endforeach; ?>
+                    </div>
+
+                    <p style="margin-top:14px">
+                        <button type="submit" class="button button-primary wpae-button">Сохранить разрешения</button>
+                    </p>
+                </form>
+            </div>
+
+            <div class="wpae-card">
+                <h2>Guide и разрешения</h2>
+                <p>Агент должен читать эти endpoints перед записью и следовать возвращенным правилам.</p>
+                <label for="wpae-guide-url">URL guide</label>
+                <div class="wpae-field-row" style="margin-top:6px">
+                    <input class="wpae-input" id="wpae-guide-url" type="text" value="<?php echo esc_attr( $guide_url ); ?>" readonly onclick="this.select()" />
+                    <button type="button" class="button wpae-button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $guide_url ); ?>');this.textContent='Скопировано';setTimeout(()=>this.textContent='Копировать',2000)">Копировать</button>
+                </div>
+                <label for="wpae-capabilities-url" style="display:block;margin-top:12px">URL разрешений</label>
+                <div class="wpae-field-row" style="margin-top:6px">
+                    <input class="wpae-input" id="wpae-capabilities-url" type="text" value="<?php echo esc_attr( $capabilities_url ); ?>" readonly onclick="this.select()" />
+                    <button type="button" class="button wpae-button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $capabilities_url ); ?>');this.textContent='Скопировано';setTimeout(()=>this.textContent='Копировать',2000)">Копировать</button>
+                </div>
+            </div>
+
+            <div class="wpae-card">
+                <h2>Пример curl</h2>
+                <p>Минимальный запрос к `/run`. Для write endpoints также нужен guide token.</p>
+                <pre class="wpae-code"><?php echo esc_html(
 'curl -s -X POST "' . $site_url . '" \\
   -H "Content-Type: application/json" \\
   -H "X-AI-Key: ' . $key . '" \\
   -d \'{"code": "return get_bloginfo(\'name\');"}\''
 ); ?></pre>
+            </div>
 
-            <h3>JavaScript / Browser (local dev)</h3>
-            <pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px"><?php echo esc_html(
+            <div class="wpae-card">
+                <h2>JavaScript</h2>
+                <p>Для локальной разработки или agent runtime с fetch.</p>
+                <pre class="wpae-code"><?php echo esc_html(
 'const AI_KEY = "' . $key . '";
 
 window.aiPHP = async (code) => {
@@ -1936,12 +2205,15 @@ window.aiPHP = async (code) => {
     return d.return_value ?? d.error;
 };
 
-// Example:
+// Пример:
 await aiPHP(`return get_bloginfo("name") . " | PHP " . PHP_VERSION;`);'
 ); ?></pre>
+            </div>
 
-            <h3>Python (any AI agent)</h3>
-            <pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px"><?php echo esc_html(
+            <div class="wpae-card">
+                <h2>Python</h2>
+                <p>Пример для любого агента, который умеет делать HTTP-запросы.</p>
+                <pre class="wpae-code"><?php echo esc_html(
 'import requests
 
 def wp_php(code: str) -> dict:
@@ -1954,40 +2226,28 @@ def wp_php(code: str) -> dict:
 result = wp_php("return get_bloginfo(\'name\');")
 print(result["return_value"])'
 ); ?></pre>
-        </div>
-
-        <!-- Agent guide -->
-        <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:20px;margin:20px 0">
-            <h2 style="margin-top:0">🧭 Agent Guide</h2>
-            <p style="color:#666;margin-top:0">Authenticated guidance endpoint for Codex, Claude, GPT, Gemini, Qwen, and other agents before they automate Elementor pages.</p>
-
-            <label style="display:block;font-weight:600;margin-bottom:6px">Guide URL</label>
-            <div style="display:flex;gap:8px">
-                <input type="text" value="<?php echo esc_attr( get_rest_url( null, 'ai-executor/v1/guide' ) ); ?>" readonly
-                    style="width:100%;font-family:monospace;background:#f6f7f7;padding:8px 12px;border:1px solid #ccc;border-radius:4px"
-                    onclick="this.select()" />
-                <button type="button" onclick="navigator.clipboard.writeText('<?php echo esc_js( get_rest_url( null, 'ai-executor/v1/guide' ) ); ?>');this.textContent='✅ Copied!';setTimeout(()=>this.textContent='Copy',2000)"
-                    class="button">Copy</button>
             </div>
 
-            <h3>curl</h3>
-            <pre style="background:#1e1e1e;color:#d4d4d4;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px"><?php echo esc_html(
+            <div class="wpae-card wpae-card-wide">
+                <h2>Рекомендуемая инструкция для агента</h2>
+                <p>Эту инструкцию можно дать Codex, Claude Desktop или другому агенту перед работой с сайтом.</p>
+                <h3>Получить guide</h3>
+                <pre class="wpae-code"><?php echo esc_html(
 'curl -s "' . get_rest_url( null, 'ai-executor/v1/guide' ) . '" \\
   -H "X-AI-Key: ' . $key . '"'
 ); ?></pre>
+                <h3>Инструкция агента</h3>
+                <pre class="wpae-code wpae-code-light"><?php echo esc_html( wpae_agent_prompt() ); ?></pre>
+            </div>
 
-            <h3>Recommended agent instruction</h3>
-            <pre style="background:#f6f7f7;color:#1d2327;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px;white-space:pre-wrap"><?php echo esc_html( wpae_agent_prompt() ); ?></pre>
-        </div>
-
-        <!-- Security notes -->
-        <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:16px;margin:20px 0">
-            <strong>⚠️ Security notes</strong>
-            <ul style="margin:8px 0 0 16px">
-                <li>This plugin executes arbitrary PHP — keep the key secret.</li>
-                <li>For extra security, hard-code the key in <code>wp-config.php</code>: <code>define('WP_AI_EXECUTOR_KEY', 'your-key');</code></li>
-                <li>Consider restricting access by IP at the server/firewall level on production.</li>
-            </ul>
+            <div class="wpae-card wpae-card-wide wpae-security">
+                <strong>Безопасность</strong>
+                <ul>
+                    <li>Плагин может выполнять PHP, поэтому держите ключ в секрете.</li>
+                    <li>Для production лучше задать ключ в <code>wp-config.php</code>: <code>define('WP_AI_EXECUTOR_KEY', 'your-key');</code></li>
+                    <li>Дополнительно ограничьте доступ по IP на уровне сервера или firewall.</li>
+                </ul>
+            </div>
         </div>
     </div>
     <?php
