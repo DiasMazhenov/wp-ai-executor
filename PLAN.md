@@ -13,31 +13,27 @@
 - Add safe Elementor endpoints: `/elementor/validate`, `/elementor/page`, and `/elementor/update`.
 - Add `/audit` for machine-readable post-write Elementor/page verification.
 - Add dashboard fields for pasting and managing database-backed custom `SKILL.md` instructions.
+- Add dry-run support for structured Elementor writes and rollback snapshots stored in `wp_options`.
+- Add `/rollback` guarded by guide token and `/run` `rollback_targets` for known posts/options.
 
 ## Next
 
-1. Add dry-run and rollback snapshots for write actions.
-   - Before `/run` mutates posts/meta/options, capture affected values.
-   - Let the agent request `dry_run=true` where practical.
-   - Store a short-lived rollback snapshot in options, not files.
-   - Add rollback endpoint guarded by guide token.
-
-2. Improve custom skill import/export.
+1. Improve custom skill import/export.
    - Support JSON skill packs import/export.
    - Support import/export of skill bundles through WordPress options.
    - Keep all skill storage in the database; no server-side skill files.
    - Extend `enforce` rules for Elementor widget allowlists, required native style keys, forbidden HTML-widget content patterns, and required verification checks.
 
-3. Add operation logs.
+2. Add operation logs.
    - Store recent authenticated actions in a capped option.
    - Include endpoint, actor hint, target IDs, guide hash, validation result, and rollback snapshot ID when present.
    - Never log API keys, guide tokens, raw page payloads, or secrets.
 
-4. Add agent conformance scoring.
+3. Add agent conformance scoring.
    - After each write, score whether the agent followed the guide: read guide token flow, no files, native Elementor, Flex Containers, correct `widgetType`, native critical styles, verification done.
    - Return score and blocking errors in write responses.
 
-5. Add optional role-based keys.
+4. Add optional role-based keys.
    - Add only if a site needs different secrets for different agents or clients.
    - Possible roles: `run_key`, `guide_key`, `update_key`, and `readonly_key`.
    - Keep disabled by default to avoid unnecessary setup friction.

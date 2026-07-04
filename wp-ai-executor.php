@@ -2,14 +2,16 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.6.2
+ * Version:     1.7.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.6.2';
+const WPAE_VERSION = '1.7.0';
+const WPAE_ROLLBACK_TTL_SECONDS = 7200;
+const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -147,6 +149,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/rollback', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_rollback',
+        'permission_callback' => 'wpae_auth_with_guide_token',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/validate', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_validate',
@@ -265,7 +273,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '1.3.0',
+        'guide_version' => '1.4.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -414,12 +422,214 @@ function wpae_validate_guide_token( string $token, string $guide_hash ) {
     return $valid ? true : [ 'error' => 'invalid_or_expired_guide_token' ];
 }
 
+function wpae_get_rollback_snapshots(): array {
+    $snapshots = get_option( 'wp_ai_executor_rollback_snapshots', [] );
+    return is_array( $snapshots ) ? $snapshots : [];
+}
+
+function wpae_update_rollback_snapshots( array $snapshots ): void {
+    update_option( 'wp_ai_executor_rollback_snapshots', $snapshots, false );
+}
+
+function wpae_prune_rollback_snapshots( array $snapshots ): array {
+    $now = time();
+    foreach ( $snapshots as $id => $snapshot ) {
+        if ( (int) ( $snapshot['expires_at_unix'] ?? 0 ) < $now ) {
+            unset( $snapshots[ $id ] );
+        }
+    }
+
+    uasort( $snapshots, function ( array $a, array $b ): int {
+        return (int) ( $b['created_at_unix'] ?? 0 ) <=> (int) ( $a['created_at_unix'] ?? 0 );
+    } );
+
+    return array_slice( $snapshots, 0, WPAE_ROLLBACK_MAX_SNAPSHOTS, true );
+}
+
+function wpae_sanitize_rollback_post_ids( $post_ids ): array {
+    if ( ! is_array( $post_ids ) ) {
+        return [];
+    }
+
+    $post_ids = array_map( 'absint', $post_ids );
+    $post_ids = array_values( array_unique( array_filter( $post_ids ) ) );
+
+    return array_slice( $post_ids, 0, 50 );
+}
+
+function wpae_sanitize_rollback_option_names( $option_names ): array {
+    if ( ! is_array( $option_names ) ) {
+        return [];
+    }
+
+    $clean = [];
+    foreach ( $option_names as $name ) {
+        $name = sanitize_key( (string) $name );
+        if ( $name !== '' ) {
+            $clean[] = $name;
+        }
+    }
+
+    return array_slice( array_values( array_unique( $clean ) ), 0, 50 );
+}
+
+function wpae_capture_post_snapshot( int $post_id ): array {
+    $post = get_post( $post_id, ARRAY_A );
+    if ( ! is_array( $post ) ) {
+        return [ 'exists' => false ];
+    }
+
+    return [
+        'exists' => true,
+        'post' => $post,
+        'meta' => get_post_meta( $post_id ),
+    ];
+}
+
+function wpae_capture_option_snapshot( string $option_name ): array {
+    $sentinel = '__wpae_missing_option__';
+    $value = get_option( $option_name, $sentinel );
+
+    if ( $value === $sentinel ) {
+        return [ 'exists' => false ];
+    }
+
+    return [
+        'exists' => true,
+        'value' => $value,
+    ];
+}
+
+function wpae_create_rollback_snapshot( string $label, array $post_ids = [], array $option_names = [], array $created_post_ids = [] ): ?array {
+    $post_ids = wpae_sanitize_rollback_post_ids( $post_ids );
+    $option_names = wpae_sanitize_rollback_option_names( $option_names );
+    $created_post_ids = wpae_sanitize_rollback_post_ids( $created_post_ids );
+    $all_post_ids = array_values( array_unique( array_merge( $post_ids, $created_post_ids ) ) );
+
+    if ( empty( $all_post_ids ) && empty( $option_names ) ) {
+        return null;
+    }
+
+    $now = time();
+    $snapshot_id = bin2hex( random_bytes( 12 ) );
+    $snapshot = [
+        'id' => $snapshot_id,
+        'label' => sanitize_text_field( $label ),
+        'created_at' => gmdate( 'c', $now ),
+        'created_at_unix' => $now,
+        'expires_at' => gmdate( 'c', $now + WPAE_ROLLBACK_TTL_SECONDS ),
+        'expires_at_unix' => $now + WPAE_ROLLBACK_TTL_SECONDS,
+        'posts' => [],
+        'options' => [],
+    ];
+
+    foreach ( $all_post_ids as $post_id ) {
+        $snapshot['posts'][ (string) $post_id ] = in_array( $post_id, $created_post_ids, true )
+            ? [ 'exists' => false ]
+            : wpae_capture_post_snapshot( $post_id );
+    }
+
+    foreach ( $option_names as $option_name ) {
+        $snapshot['options'][ $option_name ] = wpae_capture_option_snapshot( $option_name );
+    }
+
+    $snapshots = wpae_prune_rollback_snapshots( wpae_get_rollback_snapshots() );
+    $snapshots[ $snapshot_id ] = $snapshot;
+    wpae_update_rollback_snapshots( wpae_prune_rollback_snapshots( $snapshots ) );
+
+    return [
+        'id' => $snapshot_id,
+        'expires_at' => $snapshot['expires_at'],
+    ];
+}
+
+function wpae_restore_post_snapshot( int $post_id, array $snapshot ): array {
+    if ( empty( $snapshot['exists'] ) ) {
+        if ( get_post( $post_id ) !== null ) {
+            wp_delete_post( $post_id, true );
+        }
+        return [ 'post_id' => $post_id, 'action' => 'deleted_created_post' ];
+    }
+
+    $post = is_array( $snapshot['post'] ?? null ) ? $snapshot['post'] : [];
+    if ( empty( $post['ID'] ) ) {
+        $post['ID'] = $post_id;
+    }
+
+    $result = wp_update_post( $post, true );
+    if ( is_wp_error( $result ) ) {
+        return [ 'post_id' => $post_id, 'action' => 'failed', 'error' => $result->get_error_message() ];
+    }
+
+    $current_meta = get_post_meta( $post_id );
+    foreach ( array_keys( $current_meta ) as $meta_key ) {
+        delete_post_meta( $post_id, $meta_key );
+    }
+
+    $meta = is_array( $snapshot['meta'] ?? null ) ? $snapshot['meta'] : [];
+    foreach ( $meta as $meta_key => $values ) {
+        if ( ! is_array( $values ) ) {
+            $values = [ $values ];
+        }
+        foreach ( $values as $value ) {
+            add_post_meta( $post_id, $meta_key, $value );
+        }
+    }
+
+    wpae_clear_elementor_cache( $post_id );
+
+    return [ 'post_id' => $post_id, 'action' => 'restored' ];
+}
+
+function wpae_restore_option_snapshot( string $option_name, array $snapshot ): array {
+    if ( empty( $snapshot['exists'] ) ) {
+        delete_option( $option_name );
+        return [ 'option' => $option_name, 'action' => 'deleted_created_option' ];
+    }
+
+    update_option( $option_name, $snapshot['value'] ?? null, false );
+    return [ 'option' => $option_name, 'action' => 'restored' ];
+}
+
+function wpae_rollback( WP_REST_Request $request ): WP_REST_Response {
+    $snapshot_id = sanitize_text_field( (string) $request->get_param( 'snapshot_id' ) );
+    $snapshots = wpae_prune_rollback_snapshots( wpae_get_rollback_snapshots() );
+
+    if ( $snapshot_id === '' || ! isset( $snapshots[ $snapshot_id ] ) ) {
+        wpae_update_rollback_snapshots( $snapshots );
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Invalid or expired rollback snapshot.' ], 404 );
+    }
+
+    $snapshot = $snapshots[ $snapshot_id ];
+    $restored_posts = [];
+    $restored_options = [];
+
+    foreach ( (array) ( $snapshot['posts'] ?? [] ) as $post_id => $post_snapshot ) {
+        $restored_posts[] = wpae_restore_post_snapshot( absint( $post_id ), (array) $post_snapshot );
+    }
+
+    foreach ( (array) ( $snapshot['options'] ?? [] ) as $option_name => $option_snapshot ) {
+        $restored_options[] = wpae_restore_option_snapshot( sanitize_key( (string) $option_name ), (array) $option_snapshot );
+    }
+
+    unset( $snapshots[ $snapshot_id ] );
+    wpae_update_rollback_snapshots( $snapshots );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'snapshot_id' => $snapshot_id,
+        'label' => $snapshot['label'] ?? '',
+        'restored_posts' => $restored_posts,
+        'restored_options' => $restored_options,
+    ], 200 );
+}
+
 function wpae_get_capabilities_payload(): array {
     $settings = wpae_get_capability_settings();
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '1.3.0',
+        'guide_version' => '1.4.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -429,6 +639,7 @@ function wpae_get_capabilities_payload(): array {
         'can_create_exports' => ! empty( $settings['exports'] ),
         'can_manage_skills' => ! empty( $settings['manage_skills'] ),
         'can_audit' => true,
+        'can_rollback' => true,
         'requires_guide_token_for_writes' => true,
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
@@ -442,6 +653,20 @@ function wpae_get_capabilities_payload(): array {
             'required_widget_key' => 'widgetType',
             'forbidden_widget_keys' => [ 'widget_type' ],
             'runtime_validation' => true,
+            'supports_dry_run' => [ '/elementor/page', '/elementor/update' ],
+        ],
+        'rollback' => [
+            'endpoint' => 'POST /wp-json/ai-executor/v1/rollback',
+            'requires_guide_token' => true,
+            'ttl_seconds' => WPAE_ROLLBACK_TTL_SECONDS,
+            'max_snapshots' => WPAE_ROLLBACK_MAX_SNAPSHOTS,
+            'storage' => 'wp_options',
+            'run_snapshot_request' => [
+                'rollback_targets' => [
+                    'post_ids' => [ 123 ],
+                    'option_names' => [ 'some_option_name' ],
+                ],
+            ],
         ],
         'file_write_policy' => [
             'forbidden_in_run' => [ 'php_files', 'mu_plugins', 'tmp_files', 'arbitrary_paths', 'shell_commands' ],
@@ -454,6 +679,7 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/page' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/update' => ! empty( $settings['elementor_writes'] ),
                 '/audit' => true,
+                '/rollback' => true,
                 '/skills' => ! empty( $settings['manage_skills'] ),
             ],
         ],
@@ -726,12 +952,42 @@ function wpae_elementor_validate( WP_REST_Request $request ): WP_REST_Response {
 function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     $post_id = absint( $request->get_param( 'post_id' ) );
     $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
+    $dry_run = (bool) $request->get_param( 'dry_run' );
     $elementor_data = wpae_get_elementor_data_from_request( $request );
 
     if ( is_wp_error( $elementor_data ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => $elementor_data->get_error_message() ], 400 );
     }
 
+    if ( $post_id <= 0 || get_post( $post_id ) === null ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'A valid post_id is required.' ], 400 );
+    }
+
+    $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
+    if ( ! empty( $validation_errors ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor data failed validation.',
+            'details' => [ 'errors' => $validation_errors ],
+        ], 422 );
+    }
+
+    if ( $dry_run ) {
+        return new WP_REST_Response( [
+            'ok' => true,
+            'dry_run' => true,
+            'post_id' => $post_id,
+            'would_write' => [
+                '_elementor_data',
+                '_elementor_edit_mode',
+                '_elementor_template_type',
+                '_elementor_version',
+                '_wp_page_template',
+            ],
+        ], 200 );
+    }
+
+    $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
         return new WP_REST_Response( [
@@ -745,6 +1001,8 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         'ok' => true,
         'post_id' => $post_id,
         'url' => get_permalink( $post_id ),
+        'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+        'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
     ], 200 );
 }
 
@@ -755,6 +1013,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
     $status = sanitize_key( (string) ( $request->get_param( 'status' ) ?: 'publish' ) );
     $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
     $allowed_statuses = [ 'publish', 'draft', 'private', 'pending' ];
+    $dry_run = (bool) $request->get_param( 'dry_run' );
     $elementor_data = wpae_get_elementor_data_from_request( $request );
 
     if ( ! in_array( $status, $allowed_statuses, true ) ) {
@@ -763,6 +1022,31 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
 
     if ( is_wp_error( $elementor_data ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => $elementor_data->get_error_message() ], 400 );
+    }
+
+    $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
+    if ( ! empty( $validation_errors ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor data failed validation.',
+            'details' => [ 'errors' => $validation_errors ],
+        ], 422 );
+    }
+
+    if ( $post_id > 0 && get_post( $post_id ) === null ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Target post_id does not exist.' ], 404 );
+    }
+
+    if ( $dry_run ) {
+        return new WP_REST_Response( [
+            'ok' => true,
+            'dry_run' => true,
+            'post_id' => $post_id ?: null,
+            'title' => $title,
+            'slug' => $slug,
+            'status' => $status,
+            'template' => $template,
+        ], 200 );
     }
 
     $post_args = [
@@ -775,7 +1059,11 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         $post_args['post_name'] = $slug;
     }
 
+    $rollback_snapshot = null;
+    $is_new_post = $post_id <= 0;
+
     if ( $post_id > 0 ) {
+        $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_page:update:' . $post_id, [ $post_id ] );
         $post_args['ID'] = $post_id;
         $result = wp_update_post( $post_args, true );
     } else {
@@ -787,6 +1075,10 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
     }
 
     $post_id = (int) $result;
+    if ( $is_new_post ) {
+        $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_page:create:' . $post_id, [], [], [ $post_id ] );
+    }
+
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
         return new WP_REST_Response( [
@@ -794,6 +1086,8 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
             'error' => $saved->get_error_message(),
             'details' => $saved->get_error_data(),
             'post_id' => $post_id,
+            'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+            'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
@@ -802,6 +1096,8 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         'post_id' => $post_id,
         'url' => get_permalink( $post_id ),
         'status' => get_post_status( $post_id ),
+        'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+        'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
     ], 200 );
 }
 
@@ -1055,6 +1351,13 @@ function wpae_run( WP_REST_Request $request ) {
         return new WP_REST_Response( [ 'error' => 'No code provided' ], 400 );
     }
 
+    if ( (bool) $request->get_param( 'dry_run' ) ) {
+        return new WP_REST_Response( [
+            'error' => 'dry_run is not supported for arbitrary /run PHP.',
+            'help' => 'Use /elementor/validate, /elementor/page dry_run, /elementor/update dry_run, or pass rollback_targets for a real rollback snapshot.',
+        ], 400 );
+    }
+
     $forbidden_file_operation = wpae_detect_forbidden_file_operation( $code );
     if (
         $forbidden_file_operation &&
@@ -1067,6 +1370,16 @@ function wpae_run( WP_REST_Request $request ) {
         ], 403 );
     }
 
+    $rollback_snapshot = null;
+    $rollback_targets = $request->get_param( 'rollback_targets' );
+    if ( is_array( $rollback_targets ) ) {
+        $rollback_snapshot = wpae_create_rollback_snapshot(
+            'run',
+            is_array( $rollback_targets['post_ids'] ?? null ) ? $rollback_targets['post_ids'] : [],
+            is_array( $rollback_targets['option_names'] ?? null ) ? $rollback_targets['option_names'] : []
+        );
+    }
+
     $elementor_before = wpae_capture_elementor_data_snapshot();
 
     ob_start();
@@ -1076,7 +1389,13 @@ function wpae_run( WP_REST_Request $request ) {
         $result = $fn();
     } catch ( Throwable $e ) {
         ob_end_clean();
-        return new WP_REST_Response( [ 'error' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine() ], 500 );
+        return new WP_REST_Response( [
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+            'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+        ], 500 );
     }
     $output = ob_get_clean();
 
@@ -1086,11 +1405,18 @@ function wpae_run( WP_REST_Request $request ) {
             'error' => 'Invalid Elementor data blocked by WP AI Executor policy.',
             'details' => $elementor_validation['errors'],
             'rolled_back_post_ids' => $elementor_validation['rolled_back_post_ids'],
+            'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+            'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
             'output' => $output,
         ], 422 );
     }
 
-    return new WP_REST_Response( [ 'return_value' => $result, 'output' => $output ], 200 );
+    return new WP_REST_Response( [
+        'return_value' => $result,
+        'output' => $output,
+        'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+        'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+    ], 200 );
 }
 
 function wpae_detect_forbidden_file_operation( string $code ): ?string {
@@ -1470,7 +1796,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.3.0',
+        'version' => '1.4.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -1494,10 +1820,12 @@ function wpae_agent_guide(): array {
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
             '2. For page work, prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
-            '3. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
-            '4. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
-            '5. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '6. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '3. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
+            '4. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
+            '5. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
+            '6. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
+            '7. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '8. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -1587,6 +1915,27 @@ function wpae_agent_guide(): array {
                     'Any elType=widget element with missing or empty widgetType.',
                 ],
                 'rollback' => 'If invalid _elementor_data is detected, the changed _elementor_data meta is rolled back to its pre-run value when possible.',
+            ],
+            'rollback_policy' => [
+                'endpoint' => 'POST /wp-json/ai-executor/v1/rollback',
+                'storage' => 'Short-lived snapshots are stored in wp_options, never in files.',
+                'ttl_seconds' => WPAE_ROLLBACK_TTL_SECONDS,
+                'rule' => 'For structured Elementor writes, read rollback_snapshot_id and rollback_expires_at from the response. To revert, call /rollback with the snapshot_id and valid guide-token headers.',
+                'dry_run' => [
+                    '/elementor/page' => 'Pass dry_run=true to validate the requested create/update without writing.',
+                    '/elementor/update' => 'Pass dry_run=true to validate the requested metadata update without writing.',
+                    '/run' => 'Arbitrary PHP dry_run is not supported because the plugin cannot reliably simulate unknown mutations. Use rollback_targets instead.',
+                ],
+                'run_rollback_targets' => [
+                    'body' => [
+                        'code' => 'return update_option("example_option", "new-value");',
+                        'rollback_targets' => [
+                            'post_ids' => [ 123 ],
+                            'option_names' => [ 'example_option' ],
+                        ],
+                    ],
+                    'rule' => 'Before risky /run mutations, pass known post_ids and option_names so the plugin captures a rollback snapshot first.',
+                ],
             ],
             'native_elementor_first' => [
                 'required' => true,
@@ -1735,7 +2084,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
 PROMPT;
 }
 

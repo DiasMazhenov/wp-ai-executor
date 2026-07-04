@@ -118,7 +118,8 @@ Important fields include:
   "can_self_update_plugin": true,
   "can_upload_media": true,
   "can_create_exports": true,
-  "can_manage_skills": true
+  "can_manage_skills": true,
+  "can_rollback": true
 }
 ```
 
@@ -145,9 +146,14 @@ Requires `X-AI-Key`, `X-WPAE-Guide-Token`, `X-WPAE-Guide-Hash`, and the
   "slug": "landing-page",
   "status": "publish",
   "template": "elementor_canvas",
+  "dry_run": true,
   "elementor_data": []
 }
 ```
+
+Set `dry_run=true` to validate without writing. Real writes return
+`rollback_snapshot_id` and `rollback_expires_at`; pass the snapshot ID to
+`/rollback` if the page must be reverted.
 
 ### `POST /wp-json/ai-executor/v1/elementor/update`
 
@@ -157,7 +163,30 @@ Updates Elementor metadata for an existing page after validation.
 {
   "post_id": 123,
   "template": "elementor_canvas",
+  "dry_run": true,
   "elementor_data": []
+}
+```
+
+### `POST /wp-json/ai-executor/v1/rollback`
+
+Restores a short-lived rollback snapshot stored in `wp_options`.
+Requires `X-AI-Key`, `X-WPAE-Guide-Token`, and `X-WPAE-Guide-Hash`.
+
+```json
+{ "snapshot_id": "abc123" }
+```
+
+For arbitrary `/run` PHP, `dry_run` is intentionally unsupported. If a `/run`
+mutation is risky, pass known targets before execution:
+
+```json
+{
+  "code": "return update_option('example_option', 'new-value');",
+  "rollback_targets": {
+    "post_ids": [123],
+    "option_names": ["example_option"]
+  }
 }
 ```
 
