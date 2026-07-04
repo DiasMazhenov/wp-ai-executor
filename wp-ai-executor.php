@@ -2,12 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.5.0
+ * Version:     1.5.1
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
+
+const WPAE_VERSION = '1.5.1';
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -140,7 +142,7 @@ function wpae_required_ack_schema(): array {
 function wpae_get_guide_hash(): string {
     $payload = [
         'guide_version' => '1.3.0',
-        'plugin_version' => '1.5.0',
+        'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
         'capabilities' => [
@@ -1296,7 +1298,12 @@ function wpae_settings_page() {
     $regen    = isset( $_GET['regenerated'] );
     ?>
     <div class="wrap">
-        <h1>⚡ WP AI Executor</h1>
+        <h1>
+            ⚡ WP AI Executor
+            <span style="display:inline-block;vertical-align:middle;margin-left:8px;padding:3px 8px;border-radius:999px;background:#f0f0f1;color:#50575e;font-size:13px;font-weight:600;line-height:1.4">
+                v<?php echo esc_html( WPAE_VERSION ); ?>
+            </span>
+        </h1>
         <p style="color:#666">Universal REST endpoint for AI automation. Works with Claude, GPT, Gemini, Qwen, and any AI agent that can make HTTP requests.</p>
 
         <?php if ( $regen ) : ?>
