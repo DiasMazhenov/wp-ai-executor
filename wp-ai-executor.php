@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.7.0
+ * Version:     1.8.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.7.0';
+const WPAE_VERSION = '1.8.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 
@@ -185,6 +185,18 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'manage_skills' ),
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/skills/export', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_export_skills',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/skills/import', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_import_skills',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'manage_skills' ),
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/skills/(?P<id>[a-z0-9_-]+)', [
         'methods'             => 'DELETE',
         'callback'            => 'wpae_delete_skill',
@@ -273,7 +285,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '1.4.0',
+        'guide_version' => '1.5.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -629,7 +641,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '1.4.0',
+        'guide_version' => '1.5.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -638,6 +650,7 @@ function wpae_get_capabilities_payload(): array {
         'can_upload_media' => ! empty( $settings['media_upload'] ),
         'can_create_exports' => ! empty( $settings['exports'] ),
         'can_manage_skills' => ! empty( $settings['manage_skills'] ),
+        'can_import_export_skills' => ! empty( $settings['manage_skills'] ),
         'can_audit' => true,
         'can_rollback' => true,
         'requires_guide_token_for_writes' => true,
@@ -668,6 +681,30 @@ function wpae_get_capabilities_payload(): array {
                 ],
             ],
         ],
+        'skills' => [
+            'storage' => 'wp_options',
+            'safe_endpoints' => [
+                'list' => 'GET /wp-json/ai-executor/v1/skills',
+                'save_one' => 'POST /wp-json/ai-executor/v1/skills',
+                'delete_one' => 'DELETE /wp-json/ai-executor/v1/skills/{id}',
+                'export_bundle' => 'GET /wp-json/ai-executor/v1/skills/export',
+                'import_bundle' => 'POST /wp-json/ai-executor/v1/skills/import',
+            ],
+            'import_modes' => [ 'merge', 'replace' ],
+            'bundle_schema' => 'wp-ai-executor.skill-bundle',
+            'max_skills_per_bundle' => 100,
+            'max_content_bytes_per_skill' => 120000,
+            'enforce_rule_types' => [
+                'forbid_elementor_eltype',
+                'require_widget_key',
+                'forbid_widget_key',
+                'allow_widget_type',
+                'forbid_widget_type',
+                'require_widget_setting',
+                'require_container_setting',
+                'forbid_html_pattern',
+            ],
+        ],
         'file_write_policy' => [
             'forbidden_in_run' => [ 'php_files', 'mu_plugins', 'tmp_files', 'arbitrary_paths', 'shell_commands' ],
             'filesystem_override_enabled' => wpae_can_run_filesystem_operations(),
@@ -681,6 +718,8 @@ function wpae_get_capabilities_payload(): array {
                 '/audit' => true,
                 '/rollback' => true,
                 '/skills' => ! empty( $settings['manage_skills'] ),
+                '/skills/export' => true,
+                '/skills/import' => ! empty( $settings['manage_skills'] ),
             ],
         ],
         'guide_token_protocol' => [
@@ -723,8 +762,18 @@ function wpae_sort_skills( array $skills ): array {
     return $skills;
 }
 
-function wpae_upsert_skill( array $data ) {
-    $name = sanitize_text_field( (string) ( $data['name'] ?? '' ) );
+function wpae_is_list_array( array $items ): bool {
+    if ( $items === [] ) {
+        return true;
+    }
+
+    return array_keys( $items ) === range( 0, count( $items ) - 1 );
+}
+
+function wpae_normalize_skill_data( array $data, array $existing_skills = [] ) {
+    $raw_id = (string) ( $data['id'] ?? '' );
+    $raw_name = (string) ( $data['name'] ?? '' );
+    $name = sanitize_text_field( $raw_name !== '' ? $raw_name : $raw_id );
     $content = (string) ( $data['content'] ?? '' );
 
     if ( $name === '' ) {
@@ -740,11 +789,10 @@ function wpae_upsert_skill( array $data ) {
     }
 
     $id = wpae_normalize_skill_id( (string) ( $data['id'] ?? $name ) );
-    $skills = wpae_get_skill_store();
     $now = gmdate( 'c' );
     $enforce = $data['enforce'] ?? [];
 
-    $skills[ $id ] = [
+    return [
         'id' => $id,
         'name' => $name,
         'description' => sanitize_textarea_field( (string) ( $data['description'] ?? '' ) ),
@@ -752,13 +800,102 @@ function wpae_upsert_skill( array $data ) {
         'enforce' => wpae_sanitize_skill_enforce_rules( is_array( $enforce ) ? $enforce : [] ),
         'enabled' => array_key_exists( 'enabled', $data ) ? (bool) $data['enabled'] : true,
         'priority' => max( -100, min( 100, (int) ( $data['priority'] ?? 0 ) ) ),
-        'created_at' => $skills[ $id ]['created_at'] ?? $now,
+        'created_at' => $existing_skills[ $id ]['created_at'] ?? $now,
         'updated_at' => $now,
     ];
+}
 
+function wpae_upsert_skill( array $data ) {
+    $skills = wpae_get_skill_store();
+    $skill = wpae_normalize_skill_data( $data, $skills );
+
+    if ( is_wp_error( $skill ) ) {
+        return $skill;
+    }
+
+    $skills[ $skill['id'] ] = $skill;
     wpae_update_skill_store( $skills );
 
-    return $skills[ $id ];
+    return $skill;
+}
+
+function wpae_build_skill_bundle( bool $include_disabled = true ): array {
+    $skills = wpae_sort_skills( wpae_get_skill_store() );
+
+    if ( ! $include_disabled ) {
+        $skills = array_filter( $skills, fn( array $skill ): bool => ! empty( $skill['enabled'] ) );
+    }
+
+    return [
+        'schema' => 'wp-ai-executor.skill-bundle',
+        'schema_version' => 1,
+        'plugin_version' => WPAE_VERSION,
+        'exported_at' => gmdate( 'c' ),
+        'storage' => 'wp_options',
+        'file_policy' => 'No skill files are created on the server.',
+        'skills' => array_values( $skills ),
+    ];
+}
+
+function wpae_extract_skill_import_items( $payload ) {
+    if ( is_string( $payload ) ) {
+        $payload = json_decode( $payload, true );
+    }
+
+    if ( ! is_array( $payload ) ) {
+        return new WP_Error( 'wpae_invalid_skill_bundle', 'Skill import payload must be a JSON object or array.' );
+    }
+
+    if ( isset( $payload['skills'] ) && is_array( $payload['skills'] ) ) {
+        return $payload['skills'];
+    }
+
+    if ( wpae_is_list_array( $payload ) ) {
+        return $payload;
+    }
+
+    return new WP_Error( 'wpae_invalid_skill_bundle', 'Skill import payload must contain a skills array.' );
+}
+
+function wpae_import_skill_items( array $items, string $mode = 'merge' ) {
+    $mode = $mode === 'replace' ? 'replace' : 'merge';
+    $existing = $mode === 'replace' ? [] : wpae_get_skill_store();
+    $next = $existing;
+    $imported = [];
+    $errors = [];
+
+    if ( count( $items ) > 100 ) {
+        return new WP_Error( 'wpae_skill_bundle_too_large', 'Skill bundle contains more than 100 skills.' );
+    }
+
+    foreach ( $items as $index => $item ) {
+        if ( ! is_array( $item ) ) {
+            $errors[] = [ 'index' => $index, 'error' => 'Skill item must be an object.' ];
+            continue;
+        }
+
+        $skill = wpae_normalize_skill_data( $item, $next );
+        if ( is_wp_error( $skill ) ) {
+            $errors[] = [ 'index' => $index, 'error' => $skill->get_error_message() ];
+            continue;
+        }
+
+        $next[ $skill['id'] ] = $skill;
+        $imported[] = $skill;
+    }
+
+    if ( ! empty( $errors ) ) {
+        return new WP_Error( 'wpae_skill_import_failed', 'Skill import failed validation.', [ 'errors' => $errors ] );
+    }
+
+    wpae_update_skill_store( $next );
+
+    return [
+        'mode' => $mode,
+        'imported' => $imported,
+        'imported_count' => count( $imported ),
+        'total_count' => count( $next ),
+    ];
 }
 
 function wpae_get_skills(): WP_REST_Response {
@@ -767,6 +904,33 @@ function wpae_get_skills(): WP_REST_Response {
         'skills' => array_values( $skills ),
         'count' => count( $skills ),
     ], 200 );
+}
+
+function wpae_export_skills( WP_REST_Request $request ): WP_REST_Response {
+    $include_disabled = ! $request->has_param( 'enabled_only' ) || ! (bool) $request->get_param( 'enabled_only' );
+    return new WP_REST_Response( wpae_build_skill_bundle( $include_disabled ), 200 );
+}
+
+function wpae_import_skills( WP_REST_Request $request ) {
+    $payload = $request->get_json_params();
+    if ( empty( $payload ) && $request->has_param( 'bundle' ) ) {
+        $payload = $request->get_param( 'bundle' );
+    }
+
+    $items = wpae_extract_skill_import_items( $payload );
+    if ( is_wp_error( $items ) ) {
+        return new WP_REST_Response( [ 'error' => $items->get_error_message() ], 400 );
+    }
+
+    $result = wpae_import_skill_items( $items, sanitize_key( (string) ( $request->get_param( 'mode' ) ?: 'merge' ) ) );
+    if ( is_wp_error( $result ) ) {
+        return new WP_REST_Response( [
+            'error' => $result->get_error_message(),
+            'details' => $result->get_error_data(),
+        ], 422 );
+    }
+
+    return new WP_REST_Response( array_merge( [ 'ok' => true ], $result ), 200 );
 }
 
 function wpae_save_skill( WP_REST_Request $request ) {
@@ -824,6 +988,11 @@ function wpae_sanitize_skill_enforce_rules( array $rules ): array {
         'forbid_elementor_eltype',
         'require_widget_key',
         'forbid_widget_key',
+        'allow_widget_type',
+        'forbid_widget_type',
+        'require_widget_setting',
+        'require_container_setting',
+        'forbid_html_pattern',
     ];
     $clean = [];
 
@@ -834,15 +1003,22 @@ function wpae_sanitize_skill_enforce_rules( array $rules ): array {
 
         $type = sanitize_key( (string) ( $rule['type'] ?? '' ) );
         $value = sanitize_text_field( (string) ( $rule['value'] ?? '' ) );
+        $target = sanitize_key( (string) ( $rule['target'] ?? '' ) );
 
         if ( ! in_array( $type, $allowed_types, true ) || $value === '' ) {
             continue;
         }
 
-        $clean[] = [
+        $clean_rule = [
             'type' => $type,
             'value' => $value,
         ];
+
+        if ( $target !== '' ) {
+            $clean_rule['target'] = $target;
+        }
+
+        $clean[] = $clean_rule;
 
         if ( count( $clean ) >= 50 ) {
             break;
@@ -1557,6 +1733,14 @@ function wpae_validate_elementor_data_string( string $raw_data ): array {
 }
 
 function wpae_validate_elementor_elements_recursive( array $elements, string $path, array &$errors, array $skill_rules = [] ): void {
+    $allowed_widget_types = [];
+    foreach ( $skill_rules as $rule ) {
+        if ( ( $rule['type'] ?? '' ) === 'allow_widget_type' && ! empty( $rule['value'] ) ) {
+            $allowed_widget_types[] = (string) $rule['value'];
+        }
+    }
+    $allowed_widget_types = array_values( array_unique( $allowed_widget_types ) );
+
     foreach ( $elements as $index => $element ) {
         if ( ! is_array( $element ) ) {
             $errors[] = "{$path}.{$index}: element must be an object/array.";
@@ -1581,7 +1765,10 @@ function wpae_validate_elementor_elements_recursive( array $elements, string $pa
         foreach ( $skill_rules as $rule ) {
             $rule_type = $rule['type'] ?? '';
             $rule_value = $rule['value'] ?? '';
+            $rule_target = $rule['target'] ?? '';
             $skill_id = $rule['skill_id'] ?? 'unknown';
+            $widget_type = (string) ( $element['widgetType'] ?? '' );
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
 
             if ( $rule_type === 'forbid_elementor_eltype' && $el_type === $rule_value ) {
                 $errors[] = "{$element_path}: elType={$el_type} is forbidden by skill {$skill_id}.";
@@ -1594,6 +1781,35 @@ function wpae_validate_elementor_elements_recursive( array $elements, string $pa
             if ( $rule_type === 'require_widget_key' && $el_type === 'widget' && empty( $element[ $rule_value ] ) ) {
                 $errors[] = "{$element_path}: widget key {$rule_value} is required by skill {$skill_id}.";
             }
+
+            if ( $rule_type === 'forbid_widget_type' && $el_type === 'widget' && $widget_type === $rule_value ) {
+                $errors[] = "{$element_path}: widgetType={$widget_type} is forbidden by skill {$skill_id}.";
+            }
+
+            if (
+                $rule_type === 'require_widget_setting' &&
+                $el_type === 'widget' &&
+                ( $rule_target === '' || $rule_target === $widget_type ) &&
+                empty( $settings[ $rule_value ] )
+            ) {
+                $errors[] = "{$element_path}: widget setting {$rule_value} is required by skill {$skill_id}.";
+            }
+
+            if ( $rule_type === 'require_container_setting' && $el_type === 'container' && empty( $settings[ $rule_value ] ) ) {
+                $errors[] = "{$element_path}: container setting {$rule_value} is required by skill {$skill_id}.";
+            }
+
+            if ( $rule_type === 'forbid_html_pattern' && $el_type === 'widget' && $widget_type === 'html' ) {
+                $html = (string) ( $settings['html'] ?? $settings['editor'] ?? '' );
+
+                if ( stripos( $html, $rule_value ) !== false ) {
+                    $errors[] = "{$element_path}: HTML widget content matches forbidden pattern from skill {$skill_id}.";
+                }
+            }
+        }
+
+        if ( $el_type === 'widget' && ! empty( $allowed_widget_types ) && ! in_array( (string) ( $element['widgetType'] ?? '' ), $allowed_widget_types, true ) ) {
+            $errors[] = "{$element_path}: widgetType=" . (string) ( $element['widgetType'] ?? '' ) . ' is not in the enabled skills allowlist.';
         }
 
         if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
@@ -1796,7 +2012,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.4.0',
+        'version' => '1.5.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -1895,14 +2111,20 @@ function wpae_agent_guide(): array {
                 ],
             ],
             'custom_skills_policy' => [
-                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills',
+                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills plus GET /skills/export and POST /skills/import',
                 'storage' => 'Skills are stored in wp_options as text/JSON, not as files.',
                 'rule' => 'Agents must read custom_skills in this guide and apply enabled skills by priority.',
                 'limits' => 'Each skill content is limited to 120 KB and is never executed as code.',
+                'bundle_import_export' => 'Skill bundles are JSON objects with schema=wp-ai-executor.skill-bundle and a skills array. Import mode can be merge or replace. Bundles are stored in the database only.',
                 'enforceable_rules' => [
                     'forbid_elementor_eltype',
                     'require_widget_key',
                     'forbid_widget_key',
+                    'allow_widget_type',
+                    'forbid_widget_type',
+                    'require_widget_setting',
+                    'require_container_setting',
+                    'forbid_html_pattern',
                 ],
             ],
             'runtime_elementor_validation' => [
@@ -2224,6 +2446,23 @@ add_action( 'admin_init', function () {
         wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&skill_deleted=1' ) );
         exit;
     }
+
+    if (
+        isset( $_POST['wpae_import_skills_ui'] ) &&
+        check_admin_referer( 'wpae_import_skills_ui' )
+    ) {
+        $bundle = isset( $_POST['wpae_skill_bundle_json'] )
+            ? trim( (string) wp_unslash( $_POST['wpae_skill_bundle_json'] ) )
+            : '';
+        $mode = isset( $_POST['wpae_skill_import_mode'] )
+            ? sanitize_key( (string) wp_unslash( $_POST['wpae_skill_import_mode'] ) )
+            : 'merge';
+        $items = wpae_extract_skill_import_items( $bundle );
+        $result = is_wp_error( $items ) ? $items : wpae_import_skill_items( $items, $mode );
+
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . ( is_wp_error( $result ) ? 'skill_import_error' : 'skill_imported' ) . '=1' ) );
+        exit;
+    }
 } );
 
 function wpae_settings_page() {
@@ -2236,9 +2475,12 @@ function wpae_settings_page() {
     $skill_saved        = isset( $_GET['skill_saved'] );
     $skill_deleted      = isset( $_GET['skill_deleted'] );
     $skill_error        = isset( $_GET['skill_error'] );
+    $skill_imported     = isset( $_GET['skill_imported'] );
+    $skill_import_error = isset( $_GET['skill_import_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
+    $skill_bundle_json  = wp_json_encode( wpae_build_skill_bundle(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
     $enabled_count      = count( array_filter( $capabilities ) );
     $total_count        = count( $capabilities );
     $filesystem_locked  = ! wpae_can_run_filesystem_operations();
@@ -2584,6 +2826,14 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось сохранить skill: проверьте название, содержимое и JSON enforce.</div>
         <?php endif; ?>
 
+        <?php if ( $skill_imported ) : ?>
+            <div class="wpae-alert" role="status">Пакет skills импортирован.</div>
+        <?php endif; ?>
+
+        <?php if ( $skill_import_error ) : ?>
+            <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось импортировать пакет: проверьте JSON, поле skills и содержимое каждого skill.</div>
+        <?php endif; ?>
+
         <div class="wpae-grid">
             <div class="wpae-card">
                 <h2>REST endpoint</h2>
@@ -2647,7 +2897,7 @@ function wpae_settings_page() {
             </div>
 
             <div class="wpae-card wpae-card-wide">
-                <h2>Custom skills</h2>
+                <h2>Пользовательские skills</h2>
                 <p>
                     Загружайте собственные инструкции в формате <code>SKILL.md</code>. Они хранятся в базе WordPress,
                     попадают в <code>/guide</code> и не создают файлов на сервере.
@@ -2698,6 +2948,35 @@ function wpae_settings_page() {
                         <button type="submit" class="button button-primary wpae-button">Сохранить skill</button>
                     </p>
                 </form>
+
+                <div class="wpae-grid wpae-grid-two" style="margin-top:18px">
+                    <form method="post" style="border:1px solid var(--wpae-border);border-radius:12px;padding:16px;background:#fff">
+                        <?php wp_nonce_field( 'wpae_import_skills_ui' ); ?>
+                        <input type="hidden" name="wpae_import_skills_ui" value="1" />
+                        <h3 style="margin-top:0">Импорт пакета</h3>
+                        <p>Вставьте JSON bundle. Режим merge обновит совпадающие ID, replace полностью заменит текущие skills.</p>
+                        <div class="wpae-form-field">
+                            <label for="wpae-skill-import-mode">Режим</label>
+                            <select class="wpae-input" id="wpae-skill-import-mode" name="wpae_skill_import_mode">
+                                <option value="merge">Merge: добавить и обновить</option>
+                                <option value="replace">Replace: заменить все</option>
+                            </select>
+                        </div>
+                        <div class="wpae-form-field" style="margin-top:12px">
+                            <label for="wpae-skill-bundle-json">JSON bundle</label>
+                            <textarea class="wpae-textarea" id="wpae-skill-bundle-json" name="wpae_skill_bundle_json" style="min-height:180px" placeholder='{"schema":"wp-ai-executor.skill-bundle","skills":[]}' required></textarea>
+                        </div>
+                        <p style="margin-top:14px">
+                            <button type="submit" class="button button-primary wpae-button">Импортировать</button>
+                        </p>
+                    </form>
+
+                    <div style="border:1px solid var(--wpae-border);border-radius:12px;padding:16px;background:#fff">
+                        <h3 style="margin-top:0">Экспорт пакета</h3>
+                        <p>Этот JSON можно перенести на другой WordPress сайт с WP AI Executor. Файлы на сервере не создаются.</p>
+                        <textarea class="wpae-textarea" readonly style="min-height:265px" onclick="this.select()"><?php echo esc_textarea( (string) $skill_bundle_json ); ?></textarea>
+                    </div>
+                </div>
 
                 <div class="wpae-skill-list" aria-label="Установленные custom skills">
                     <?php if ( empty( $skills ) ) : ?>

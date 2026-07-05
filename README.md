@@ -233,10 +233,55 @@ by pasting `SKILL.md` content into the dashboard.
   "content": "Skill instructions as Markdown or plain text",
   "enforce": [
     { "type": "forbid_elementor_eltype", "value": "section" },
-    { "type": "require_widget_key", "value": "widgetType" }
+    { "type": "require_widget_key", "value": "widgetType" },
+    { "type": "allow_widget_type", "value": "heading" },
+    { "type": "require_container_setting", "value": "background_color" },
+    { "type": "forbid_html_pattern", "value": "<section" }
   ],
   "enabled": true,
   "priority": 10
+}
+```
+
+Supported `enforce` rule types:
+
+- `forbid_elementor_eltype`
+- `require_widget_key`
+- `forbid_widget_key`
+- `allow_widget_type`
+- `forbid_widget_type`
+- `require_widget_setting` with optional `target`
+- `require_container_setting`
+- `forbid_html_pattern`
+
+### `GET /wp-json/ai-executor/v1/skills/export`
+
+Returns a database-only JSON skill bundle. No files are created.
+
+```json
+{
+  "schema": "wp-ai-executor.skill-bundle",
+  "schema_version": 1,
+  "skills": []
+}
+```
+
+### `POST /wp-json/ai-executor/v1/skills/import`
+
+Imports a JSON skill bundle into `wp_options`. Requires the `manage_skills`
+capability and guide-token headers. Use `mode=merge` to add/update, or
+`mode=replace` to replace all current skills.
+
+```json
+{
+  "mode": "merge",
+  "skills": [
+    {
+      "id": "project-rules",
+      "name": "Project rules",
+      "content": "# Instructions"
+    }
+  ]
 }
 ```
 

@@ -15,25 +15,21 @@
 - Add dashboard fields for pasting and managing database-backed custom `SKILL.md` instructions.
 - Add dry-run support for structured Elementor writes and rollback snapshots stored in `wp_options`.
 - Add `/rollback` guarded by guide token and `/run` `rollback_targets` for known posts/options.
+- Add JSON skill bundle import/export through REST and dashboard, stored only in `wp_options`.
+- Extend skill `enforce` rules for Elementor widget allowlists, forbidden widget types, required widget/container settings, and forbidden HTML widget patterns.
 
 ## Next
 
-1. Improve custom skill import/export.
-   - Support JSON skill packs import/export.
-   - Support import/export of skill bundles through WordPress options.
-   - Keep all skill storage in the database; no server-side skill files.
-   - Extend `enforce` rules for Elementor widget allowlists, required native style keys, forbidden HTML-widget content patterns, and required verification checks.
-
-2. Add operation logs.
+1. Add operation logs.
    - Store recent authenticated actions in a capped option.
    - Include endpoint, actor hint, target IDs, guide hash, validation result, and rollback snapshot ID when present.
    - Never log API keys, guide tokens, raw page payloads, or secrets.
 
-3. Add agent conformance scoring.
+2. Add agent conformance scoring.
    - After each write, score whether the agent followed the guide: read guide token flow, no files, native Elementor, Flex Containers, correct `widgetType`, native critical styles, verification done.
    - Return score and blocking errors in write responses.
 
-4. Add optional role-based keys.
+3. Add optional role-based keys.
    - Add only if a site needs different secrets for different agents or clients.
    - Possible roles: `run_key`, `guide_key`, `update_key`, and `readonly_key`.
    - Keep disabled by default to avoid unnecessary setup friction.
