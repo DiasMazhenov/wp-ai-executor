@@ -2,16 +2,17 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.8.0
+ * Version:     1.9.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.8.0';
+const WPAE_VERSION = '1.9.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
+const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -140,6 +141,12 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/capabilities', [
         'methods'             => 'GET',
         'callback'            => 'wpae_get_capabilities',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/logs', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_get_logs',
         'permission_callback' => 'wpae_auth',
     ] );
 
@@ -273,6 +280,181 @@ function wpae_auth_with_capability( WP_REST_Request $request, string $capability
     );
 }
 
+function wpae_get_operation_logs_store(): array {
+    $logs = get_option( 'wp_ai_executor_operation_logs', [] );
+    return is_array( $logs ) ? $logs : [];
+}
+
+function wpae_update_operation_logs_store( array $logs ): void {
+    update_option( 'wp_ai_executor_operation_logs', array_slice( array_values( $logs ), 0, WPAE_OPERATION_LOG_MAX_ENTRIES ), false );
+}
+
+function wpae_should_log_operation( WP_REST_Request $request ): bool {
+    $route = (string) $request->get_route();
+    $method = strtoupper( (string) $request->get_method() );
+
+    if ( strpos( $route, '/ai-executor/v1/' ) !== 0 ) {
+        return false;
+    }
+
+    if ( in_array( $route, [ '/ai-executor/v1/logs', '/ai-executor/v1/key' ], true ) ) {
+        return false;
+    }
+
+    if ( in_array( $method, [ 'POST', 'DELETE' ], true ) ) {
+        return true;
+    }
+
+    return in_array( $route, [ '/ai-executor/v1/audit' ], true );
+}
+
+function wpae_get_response_data_for_log( $response ): array {
+    if ( $response instanceof WP_REST_Response ) {
+        $data = $response->get_data();
+        return is_array( $data ) ? $data : [];
+    }
+
+    if ( $response instanceof WP_HTTP_Response ) {
+        $data = $response->get_data();
+        return is_array( $data ) ? $data : [];
+    }
+
+    if ( is_wp_error( $response ) ) {
+        return [
+            'error' => $response->get_error_message(),
+            'code' => $response->get_error_code(),
+        ];
+    }
+
+    return [];
+}
+
+function wpae_get_response_status_for_log( $response ): int {
+    if ( $response instanceof WP_REST_Response || $response instanceof WP_HTTP_Response ) {
+        return (int) $response->get_status();
+    }
+
+    if ( is_wp_error( $response ) ) {
+        $data = $response->get_error_data();
+        return is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : 500;
+    }
+
+    return 200;
+}
+
+function wpae_collect_log_target_ids( WP_REST_Request $request, array $response_data ): array {
+    $targets = [];
+    $post_id = absint( $request->get_param( 'post_id' ) ?: ( $response_data['post_id'] ?? 0 ) );
+    $attachment_id = absint( $response_data['attachment_id'] ?? 0 );
+    $skill_id = (string) ( $request->get_param( 'id' ) ?: ( $response_data['deleted'] ?? '' ) );
+
+    if ( $skill_id === '' && ! empty( $response_data['skill'] ) && is_array( $response_data['skill'] ) ) {
+        $skill_id = (string) ( $response_data['skill']['id'] ?? '' );
+    }
+
+    if ( $post_id > 0 ) {
+        $targets['post_id'] = $post_id;
+    }
+
+    if ( $attachment_id > 0 ) {
+        $targets['attachment_id'] = $attachment_id;
+    }
+
+    if ( $skill_id !== '' ) {
+        $targets['skill_id'] = wpae_normalize_skill_id( $skill_id );
+    }
+
+    if ( ! empty( $response_data['imported'] ) && is_array( $response_data['imported'] ) ) {
+        $skill_ids = [];
+        foreach ( $response_data['imported'] as $skill ) {
+            if ( is_array( $skill ) && ! empty( $skill['id'] ) ) {
+                $skill_ids[] = wpae_normalize_skill_id( (string) $skill['id'] );
+            }
+        }
+        if ( ! empty( $skill_ids ) ) {
+            $targets['skill_ids'] = array_values( array_unique( $skill_ids ) );
+        }
+    }
+
+    if ( ! empty( $response_data['filename'] ) ) {
+        $targets['filename'] = sanitize_file_name( (string) $response_data['filename'] );
+    }
+
+    return $targets;
+}
+
+function wpae_summarize_response_for_log( array $response_data, int $status ): array {
+    $summary = [
+        'ok' => $status >= 200 && $status < 300 && empty( $response_data['error'] ),
+    ];
+
+    foreach ( [ 'error', 'code', 'dry_run', 'same_file', 'validation_ok', 'imported_count', 'total_count', 'mode' ] as $key ) {
+        if ( array_key_exists( $key, $response_data ) && ! is_array( $response_data[ $key ] ) ) {
+            $summary[ $key ] = $response_data[ $key ];
+        }
+    }
+
+    if ( isset( $response_data['ok'] ) && is_bool( $response_data['ok'] ) ) {
+        $summary['ok'] = $response_data['ok'];
+    }
+
+    if ( isset( $response_data['findings'] ) && is_array( $response_data['findings'] ) ) {
+        $summary['findings_count'] = count( $response_data['findings'] );
+    }
+
+    if ( isset( $response_data['errors'] ) && is_array( $response_data['errors'] ) ) {
+        $summary['errors_count'] = count( $response_data['errors'] );
+    }
+
+    return $summary;
+}
+
+function wpae_record_operation_log( WP_REST_Request $request, $response ): void {
+    if ( ! wpae_should_log_operation( $request ) || ! wpae_auth( $request ) ) {
+        return;
+    }
+
+    $status = wpae_get_response_status_for_log( $response );
+    $response_data = wpae_get_response_data_for_log( $response );
+    $route = (string) $request->get_route();
+    $logs = wpae_get_operation_logs_store();
+    $guide_hash = (string) ( $request->get_header( 'X-WPAE-Guide-Hash' ) ?: $request->get_param( 'guide_hash' ) );
+
+    array_unshift( $logs, [
+        'id' => bin2hex( random_bytes( 8 ) ),
+        'time' => gmdate( 'c' ),
+        'method' => strtoupper( (string) $request->get_method() ),
+        'endpoint' => preg_replace( '#^/ai-executor/v1#', '', $route ),
+        'status' => $status,
+        'actor' => sanitize_text_field( (string) ( $request->get_header( 'X-WPAE-Actor' ) ?: $request->get_header( 'X-AI-Agent' ) ?: 'agent' ) ),
+        'ip_hash' => hash( 'sha256', (string) ( $_SERVER['REMOTE_ADDR'] ?? '' ) ),
+        'guide_hash' => $guide_hash !== '' ? $guide_hash : null,
+        'target_ids' => wpae_collect_log_target_ids( $request, $response_data ),
+        'rollback_snapshot_id' => sanitize_text_field( (string) ( $response_data['rollback_snapshot_id'] ?? $response_data['snapshot_id'] ?? '' ) ) ?: null,
+        'validation_result' => wpae_summarize_response_for_log( $response_data, $status ),
+    ] );
+
+    wpae_update_operation_logs_store( $logs );
+}
+
+add_filter( 'rest_post_dispatch', function ( $response, WP_REST_Server $server, WP_REST_Request $request ) {
+    wpae_record_operation_log( $request, $response );
+    return $response;
+}, 10, 3 );
+
+function wpae_get_logs( WP_REST_Request $request ): WP_REST_Response {
+    $limit = max( 1, min( WPAE_OPERATION_LOG_MAX_ENTRIES, absint( $request->get_param( 'limit' ) ?: 50 ) ) );
+    $logs = array_slice( wpae_get_operation_logs_store(), 0, $limit );
+
+    return new WP_REST_Response( [
+        'logs' => $logs,
+        'count' => count( $logs ),
+        'max_entries' => WPAE_OPERATION_LOG_MAX_ENTRIES,
+        'storage' => 'wp_options',
+        'redaction' => 'API keys, guide tokens, raw request bodies, and raw page payloads are not logged.',
+    ], 200 );
+}
+
 function wpae_required_ack_schema(): array {
     return [
         'read_agent_prompt' => true,
@@ -285,7 +467,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '1.5.0',
+        'guide_version' => '1.6.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -641,7 +823,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '1.5.0',
+        'guide_version' => '1.6.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -653,6 +835,7 @@ function wpae_get_capabilities_payload(): array {
         'can_import_export_skills' => ! empty( $settings['manage_skills'] ),
         'can_audit' => true,
         'can_rollback' => true,
+        'can_view_operation_logs' => true,
         'requires_guide_token_for_writes' => true,
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
@@ -705,6 +888,31 @@ function wpae_get_capabilities_payload(): array {
                 'forbid_html_pattern',
             ],
         ],
+        'operation_logs' => [
+            'endpoint' => 'GET /wp-json/ai-executor/v1/logs',
+            'storage' => 'wp_options',
+            'max_entries' => WPAE_OPERATION_LOG_MAX_ENTRIES,
+            'logged_fields' => [
+                'time',
+                'method',
+                'endpoint',
+                'status',
+                'actor',
+                'ip_hash',
+                'guide_hash',
+                'target_ids',
+                'rollback_snapshot_id',
+                'validation_result',
+            ],
+            'redaction' => [
+                'api_keys',
+                'guide_tokens',
+                'raw_request_bodies',
+                'raw_page_payloads',
+                'raw_response_payloads',
+                'secrets',
+            ],
+        ],
         'file_write_policy' => [
             'forbidden_in_run' => [ 'php_files', 'mu_plugins', 'tmp_files', 'arbitrary_paths', 'shell_commands' ],
             'filesystem_override_enabled' => wpae_can_run_filesystem_operations(),
@@ -716,6 +924,7 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/page' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/update' => ! empty( $settings['elementor_writes'] ),
                 '/audit' => true,
+                '/logs' => true,
                 '/rollback' => true,
                 '/skills' => ! empty( $settings['manage_skills'] ),
                 '/skills/export' => true,
@@ -2012,7 +2221,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.5.0',
+        'version' => '1.6.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -2042,6 +2251,7 @@ function wpae_agent_guide(): array {
             '6. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
             '7. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
             '8. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '9. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -2157,6 +2367,29 @@ function wpae_agent_guide(): array {
                         ],
                     ],
                     'rule' => 'Before risky /run mutations, pass known post_ids and option_names so the plugin captures a rollback snapshot first.',
+                ],
+            ],
+            'operation_logs_policy' => [
+                'endpoint' => 'GET /wp-json/ai-executor/v1/logs',
+                'storage' => 'Recent operation metadata is stored in wp_options with a capped entry count.',
+                'max_entries' => WPAE_OPERATION_LOG_MAX_ENTRIES,
+                'logged' => [
+                    'endpoint',
+                    'method',
+                    'status',
+                    'actor hint',
+                    'guide hash',
+                    'target IDs',
+                    'rollback snapshot ID',
+                    'validation summary',
+                ],
+                'redacted' => [
+                    'API keys',
+                    'guide tokens',
+                    'raw request bodies',
+                    'raw page payloads',
+                    'raw response payloads',
+                    'secrets',
                 ],
             ],
             'native_elementor_first' => [
@@ -2306,7 +2539,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
@@ -2470,6 +2703,7 @@ function wpae_settings_page() {
     $site_url           = get_rest_url( null, 'ai-executor/v1/run' );
     $guide_url          = get_rest_url( null, 'ai-executor/v1/guide' );
     $capabilities_url   = get_rest_url( null, 'ai-executor/v1/capabilities' );
+    $logs_url           = get_rest_url( null, 'ai-executor/v1/logs' );
     $regen              = isset( $_GET['regenerated'] );
     $capabilities_saved = isset( $_GET['capabilities_saved'] );
     $skill_saved        = isset( $_GET['skill_saved'] );
@@ -2480,6 +2714,7 @@ function wpae_settings_page() {
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
+    $operation_logs     = array_slice( wpae_get_operation_logs_store(), 0, 8 );
     $skill_bundle_json  = wp_json_encode( wpae_build_skill_bundle(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
     $enabled_count      = count( array_filter( $capabilities ) );
     $total_count        = count( $capabilities );
@@ -3025,6 +3260,46 @@ function wpae_settings_page() {
                 <div class="wpae-field-row" style="margin-top:6px">
                     <input class="wpae-input" id="wpae-capabilities-url" type="text" value="<?php echo esc_attr( $capabilities_url ); ?>" readonly onclick="this.select()" />
                     <button type="button" class="button wpae-button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $capabilities_url ); ?>');this.textContent='Скопировано';setTimeout(()=>this.textContent='Копировать',2000)">Копировать</button>
+                </div>
+            </div>
+
+            <div class="wpae-card">
+                <h2>Журнал операций</h2>
+                <p>Последние действия агентов без ключей, токенов и raw payload.</p>
+                <label for="wpae-logs-url">URL журнала</label>
+                <div class="wpae-field-row" style="margin-top:6px">
+                    <input class="wpae-input" id="wpae-logs-url" type="text" value="<?php echo esc_attr( $logs_url ); ?>" readonly onclick="this.select()" />
+                    <button type="button" class="button wpae-button" onclick="navigator.clipboard.writeText('<?php echo esc_js( $logs_url ); ?>');this.textContent='Скопировано';setTimeout(()=>this.textContent='Копировать',2000)">Копировать</button>
+                </div>
+
+                <div class="wpae-skill-list" style="margin-top:14px">
+                    <?php if ( empty( $operation_logs ) ) : ?>
+                        <div class="wpae-skill-item">
+                            <div>
+                                <h3>Записей пока нет</h3>
+                                <div class="wpae-skill-meta">Журнал появится после write/audit запросов.</div>
+                            </div>
+                        </div>
+                    <?php else : ?>
+                        <?php foreach ( $operation_logs as $entry ) : ?>
+                            <div class="wpae-skill-item">
+                                <div>
+                                    <h3><?php echo esc_html( (string) ( $entry['method'] ?? '' ) . ' ' . ( $entry['endpoint'] ?? '' ) ); ?></h3>
+                                    <div class="wpae-skill-meta">
+                                        <?php echo esc_html( (string) ( $entry['time'] ?? '' ) ); ?>
+                                        · status <?php echo esc_html( (string) ( $entry['status'] ?? '' ) ); ?>
+                                        · actor <?php echo esc_html( (string) ( $entry['actor'] ?? 'agent' ) ); ?>
+                                    </div>
+                                    <?php if ( ! empty( $entry['target_ids'] ) ) : ?>
+                                        <div class="wpae-skill-meta">targets: <code><?php echo esc_html( (string) wp_json_encode( $entry['target_ids'] ) ); ?></code></div>
+                                    <?php endif; ?>
+                                    <?php if ( ! empty( $entry['rollback_snapshot_id'] ) ) : ?>
+                                        <div class="wpae-skill-meta">rollback: <code><?php echo esc_html( (string) $entry['rollback_snapshot_id'] ); ?></code></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
 

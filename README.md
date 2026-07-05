@@ -119,7 +119,8 @@ Important fields include:
   "can_upload_media": true,
   "can_create_exports": true,
   "can_manage_skills": true,
-  "can_rollback": true
+  "can_rollback": true,
+  "can_view_operation_logs": true
 }
 ```
 
@@ -298,6 +299,27 @@ JPEG, PNG, WebP, GIF, PDF. Max size: 8 MB.
 
 Creates a JSON export under `wp-content/uploads/wp-ai-executor/exports/`.
 Max size: 1 MB. PHP and arbitrary paths are not allowed.
+
+### `GET /wp-json/ai-executor/v1/logs`
+
+Returns recent authenticated operation metadata from `wp_options`.
+Logs are capped and do not include API keys, guide tokens, raw request bodies,
+raw page payloads, raw response payloads, or secrets.
+
+```json
+{
+  "logs": [
+    {
+      "time": "2026-07-05T20:00:00+00:00",
+      "method": "POST",
+      "endpoint": "/elementor/page",
+      "status": 200,
+      "target_ids": { "post_id": 123 },
+      "rollback_snapshot_id": "abc123"
+    }
+  ]
+}
+```
 
 ---
 

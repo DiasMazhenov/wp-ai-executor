@@ -17,19 +17,16 @@
 - Add `/rollback` guarded by guide token and `/run` `rollback_targets` for known posts/options.
 - Add JSON skill bundle import/export through REST and dashboard, stored only in `wp_options`.
 - Extend skill `enforce` rules for Elementor widget allowlists, forbidden widget types, required widget/container settings, and forbidden HTML widget patterns.
+- Add capped operation logs in `wp_options` with endpoint, actor hint, target IDs, guide hash, validation summary, and rollback snapshot ID.
+- Keep operation logs redacted: no API keys, guide tokens, raw page payloads, request bodies, response bodies, or secrets.
 
 ## Next
 
-1. Add operation logs.
-   - Store recent authenticated actions in a capped option.
-   - Include endpoint, actor hint, target IDs, guide hash, validation result, and rollback snapshot ID when present.
-   - Never log API keys, guide tokens, raw page payloads, or secrets.
-
-2. Add agent conformance scoring.
+1. Add agent conformance scoring.
    - After each write, score whether the agent followed the guide: read guide token flow, no files, native Elementor, Flex Containers, correct `widgetType`, native critical styles, verification done.
    - Return score and blocking errors in write responses.
 
-3. Add optional role-based keys.
+2. Add optional role-based keys.
    - Add only if a site needs different secrets for different agents or clients.
    - Possible roles: `run_key`, `guide_key`, `update_key`, and `readonly_key`.
    - Keep disabled by default to avoid unnecessary setup friction.
