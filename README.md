@@ -121,7 +121,10 @@ Important fields include:
   "can_manage_skills": true,
   "can_rollback": true,
   "can_view_operation_logs": true,
-  "can_score_agent_conformance": true
+  "can_score_agent_conformance": true,
+  "elementor": {
+    "can_normalize": true
+  }
 }
 ```
 
@@ -170,6 +173,33 @@ Validates Elementor JSON without writing anything. Requires `X-AI-Key`.
 
 ```json
 { "elementor_data": [] }
+```
+
+### `POST /wp-json/ai-executor/v1/elementor/normalize`
+
+Normalizes common Elementor JSON mistakes without writing anything. Requires
+`X-AI-Key`. Use this before `/elementor/page` or `/elementor/update` when an
+agent produced legacy sections/columns, `widget_type`, missing `widgetType`,
+missing `settings`, missing `elements`, or incomplete container defaults.
+
+It returns `normalized_elementor_data`, `change_counts`, a capped `changes`
+list, `before_errors`, `after_errors`, and audit `stats`.
+
+```json
+{
+  "elementor_data": [
+    {
+      "elType": "section",
+      "elements": [
+        {
+          "elType": "widget",
+          "widget_type": "heading",
+          "settings": { "title": "Hello" }
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ### `POST /wp-json/ai-executor/v1/elementor/page`
@@ -405,6 +435,9 @@ Follow the returned agent_prompt, embedded_skill_packs, frontend_design rules,
 custom_skills, wordpress_elementor workflow, page_meta contract,
 html_enhancement_policy, and verification_checklist. Then use /run for execution
 and verify the published URL plus Elementor metadata.
+Use /elementor/normalize before saving any Elementor JSON that contains legacy
+sections/columns, snake-case widget_type, missing widgetType, missing settings,
+missing elements arrays, or incomplete container defaults.
 
 Important: build Elementor page structure and content with native editable
 Elementor elements. Use containers and widget settings such as `heading`,

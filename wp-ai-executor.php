@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     2.0.0
+ * Version:     2.1.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '2.0.0';
+const WPAE_VERSION = '2.1.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -165,6 +165,12 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/elementor/validate', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_validate',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/normalize', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_normalize',
         'permission_callback' => 'wpae_auth',
     ] );
 
@@ -406,6 +412,14 @@ function wpae_summarize_response_for_log( array $response_data, int $status ): a
         $summary['errors_count'] = count( $response_data['errors'] );
     }
 
+    if ( isset( $response_data['after_errors'] ) && is_array( $response_data['after_errors'] ) ) {
+        $summary['after_errors_count'] = count( $response_data['after_errors'] );
+    }
+
+    if ( isset( $response_data['changes'] ) && is_array( $response_data['changes'] ) ) {
+        $summary['changes_count'] = count( $response_data['changes'] );
+    }
+
     if ( isset( $response_data['agent_conformance'] ) && is_array( $response_data['agent_conformance'] ) ) {
         $summary['agent_conformance_score'] = (int) ( $response_data['agent_conformance']['score'] ?? 0 );
         $summary['agent_conformance_level'] = (string) ( $response_data['agent_conformance']['level'] ?? '' );
@@ -466,6 +480,7 @@ function wpae_get_request_elementor_data_for_conformance( WP_REST_Request $reque
 
     if ( ! in_array( $route, [
         '/ai-executor/v1/elementor/validate',
+        '/ai-executor/v1/elementor/normalize',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
     ], true ) ) {
@@ -500,6 +515,9 @@ function wpae_count_elementor_validation_errors_by_type( array $errors ): array 
 function wpae_get_elementor_conformance_context( WP_REST_Request $request, array $response_data ): array {
     $route = (string) $request->get_route();
     $data = wpae_get_request_elementor_data_for_conformance( $request );
+    if ( $route === '/ai-executor/v1/elementor/normalize' && isset( $response_data['normalized_elementor_data'] ) && is_array( $response_data['normalized_elementor_data'] ) ) {
+        $data = $response_data['normalized_elementor_data'];
+    }
     $stats = [
         'containers' => 0,
         'containers_with_native_background' => 0,
@@ -524,12 +542,17 @@ function wpae_get_elementor_conformance_context( WP_REST_Request $request, array
         $validation_errors = array_merge( $validation_errors, $response_data['errors'] );
     }
 
+    if ( isset( $response_data['after_errors'] ) && is_array( $response_data['after_errors'] ) ) {
+        $validation_errors = array_merge( $validation_errors, $response_data['after_errors'] );
+    }
+
     if ( isset( $response_data['details']['errors'] ) && is_array( $response_data['details']['errors'] ) ) {
         $validation_errors = array_merge( $validation_errors, $response_data['details']['errors'] );
     }
 
     $is_elementor_route = in_array( $route, [
         '/ai-executor/v1/elementor/validate',
+        '/ai-executor/v1/elementor/normalize',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
         '/ai-executor/v1/audit',
@@ -746,7 +769,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '1.7.0',
+        'guide_version' => '1.8.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1102,7 +1125,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '1.7.0',
+        'guide_version' => '1.8.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1121,9 +1144,11 @@ function wpae_get_capabilities_payload(): array {
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
             'safe_endpoints' => [
                 'validate' => 'POST /wp-json/ai-executor/v1/elementor/validate',
+                'normalize' => 'POST /wp-json/ai-executor/v1/elementor/normalize',
                 'page' => 'POST /wp-json/ai-executor/v1/elementor/page',
                 'update' => 'POST /wp-json/ai-executor/v1/elementor/update',
             ],
+            'can_normalize' => true,
             'must_use_flex_containers' => true,
             'forbidden_eltypes' => [ 'section', 'column' ],
             'required_widget_key' => 'widgetType',
@@ -1222,6 +1247,7 @@ function wpae_get_capabilities_payload(): array {
                 '/media/upload' => ! empty( $settings['media_upload'] ),
                 '/exports/create' => ! empty( $settings['exports'] ),
                 '/elementor/validate' => true,
+                '/elementor/normalize' => true,
                 '/elementor/page' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/update' => ! empty( $settings['elementor_writes'] ),
                 '/audit' => true,
@@ -1586,6 +1612,176 @@ function wpae_validate_elementor_data_array( array $elementor_data ): array {
     return wpae_validate_elementor_data_string( (string) wp_json_encode( $elementor_data ) );
 }
 
+function wpae_elementor_default_id( string $path, array $element ): string {
+    return substr( md5( $path . '|' . wp_json_encode( $element ) ), 0, 7 );
+}
+
+function wpae_elementor_normalize_add_change( array &$report, string $type, string $path, string $message, array $details = [] ): void {
+    if ( ! isset( $report['counts'][ $type ] ) ) {
+        $report['counts'][ $type ] = 0;
+    }
+
+    $report['counts'][ $type ]++;
+
+    if ( count( $report['changes'] ) >= 200 ) {
+        return;
+    }
+
+    $report['changes'][] = [
+        'type' => $type,
+        'path' => $path,
+        'message' => $message,
+        'details' => $details,
+    ];
+}
+
+function wpae_elementor_infer_widget_type( array $element, array $settings ): string {
+    if ( ! empty( $element['widgetType'] ) ) {
+        return sanitize_key( (string) $element['widgetType'] );
+    }
+
+    if ( ! empty( $element['widget_type'] ) ) {
+        return sanitize_key( (string) $element['widget_type'] );
+    }
+
+    if ( isset( $settings['html'] ) ) {
+        return 'html';
+    }
+
+    if ( isset( $settings['title'] ) ) {
+        return 'heading';
+    }
+
+    if ( isset( $settings['text'] ) || isset( $settings['link'] ) ) {
+        return 'button';
+    }
+
+    return 'text-editor';
+}
+
+function wpae_elementor_normalize_elements( array $elements, array &$report, string $path = 'root' ): array {
+    $normalized = [];
+
+    foreach ( $elements as $index => $element ) {
+        $element_path = $path . '.' . $index;
+
+        if ( ! is_array( $element ) ) {
+            wpae_elementor_normalize_add_change( $report, 'removed_non_object_element', $element_path, 'Removed non-object Elementor element.' );
+            continue;
+        }
+
+        if ( empty( $element['id'] ) || ! is_string( $element['id'] ) ) {
+            $element['id'] = wpae_elementor_default_id( $element_path, $element );
+            wpae_elementor_normalize_add_change( $report, 'filled_missing_id', $element_path, 'Filled missing Elementor element id.', [ 'id' => $element['id'] ] );
+        }
+
+        $element_path = $path . '.' . $element['id'];
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        if ( ! isset( $element['settings'] ) || ! is_array( $element['settings'] ) ) {
+            $element['settings'] = [];
+            $settings = [];
+            wpae_elementor_normalize_add_change( $report, 'filled_settings', $element_path, 'Filled missing settings array.' );
+        }
+
+        $el_type = (string) ( $element['elType'] ?? '' );
+        if ( $el_type === 'section' || $el_type === 'column' ) {
+            $legacy_el_type = $el_type;
+            $element['elType'] = 'container';
+            $el_type = 'container';
+            wpae_elementor_normalize_add_change( $report, 'converted_legacy_eltype', $element_path, 'Converted legacy Elementor layout node to Flexbox Container.', [ 'from' => $legacy_el_type, 'to' => 'container' ] );
+        }
+
+        if ( $el_type === '' ) {
+            $el_type = ( isset( $element['widgetType'] ) || isset( $element['widget_type'] ) ) ? 'widget' : 'container';
+            $element['elType'] = $el_type;
+            wpae_elementor_normalize_add_change( $report, 'inferred_eltype', $element_path, 'Inferred missing elType.', [ 'elType' => $el_type ] );
+        }
+
+        if ( $el_type === 'widget' ) {
+            if ( array_key_exists( 'widget_type', $element ) ) {
+                if ( empty( $element['widgetType'] ) ) {
+                    $element['widgetType'] = sanitize_key( (string) $element['widget_type'] );
+                    wpae_elementor_normalize_add_change( $report, 'converted_widget_type_key', $element_path, 'Converted widget_type to camelCase widgetType.', [ 'widgetType' => $element['widgetType'] ] );
+                }
+
+                unset( $element['widget_type'] );
+                wpae_elementor_normalize_add_change( $report, 'removed_widget_type_key', $element_path, 'Removed forbidden snake-case widget_type key.' );
+            }
+
+            if ( empty( $element['widgetType'] ) ) {
+                $element['widgetType'] = wpae_elementor_infer_widget_type( $element, $settings );
+                wpae_elementor_normalize_add_change( $report, 'inferred_widget_type', $element_path, 'Filled missing widgetType with best-effort native widget type.', [ 'widgetType' => $element['widgetType'] ] );
+            }
+
+            if ( ! isset( $element['elements'] ) || ! is_array( $element['elements'] ) ) {
+                $element['elements'] = [];
+                wpae_elementor_normalize_add_change( $report, 'filled_elements', $element_path, 'Filled missing widget elements array.' );
+            }
+        } else {
+            $element['elType'] = 'container';
+
+            if ( ! isset( $element['elements'] ) || ! is_array( $element['elements'] ) ) {
+                $element['elements'] = [];
+                wpae_elementor_normalize_add_change( $report, 'filled_elements', $element_path, 'Filled missing container elements array.' );
+            }
+
+            foreach ( [
+                'content_width' => 'boxed',
+                'flex_direction' => 'column',
+                'background_background' => 'classic',
+                'background_color' => '#ffffff',
+            ] as $setting_key => $setting_value ) {
+                if ( empty( $element['settings'][ $setting_key ] ) ) {
+                    $element['settings'][ $setting_key ] = $setting_value;
+                    wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container setting.', [ 'setting' => $setting_key, 'value' => $setting_value ] );
+                }
+            }
+
+            if ( ! isset( $element['settings']['gap'] ) ) {
+                $element['settings']['gap'] = [
+                    'unit' => 'px',
+                    'size' => 24,
+                    'sizes' => [],
+                ];
+                wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container gap.', [ 'setting' => 'gap' ] );
+            }
+
+            if ( ! isset( $element['settings']['padding'] ) ) {
+                $element['settings']['padding'] = [
+                    'unit' => 'px',
+                    'top' => '24',
+                    'right' => '24',
+                    'bottom' => '24',
+                    'left' => '24',
+                    'isLinked' => true,
+                ];
+                wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container padding.', [ 'setting' => 'padding' ] );
+            }
+
+            $element['elements'] = wpae_elementor_normalize_elements( $element['elements'], $report, $element_path );
+        }
+
+        $normalized[] = $element;
+    }
+
+    return $normalized;
+}
+
+function wpae_elementor_normalize_data( array $elementor_data ): array {
+    $report = [
+        'counts' => [],
+        'changes' => [],
+    ];
+
+    $normalized = wpae_elementor_normalize_elements( $elementor_data, $report );
+    ksort( $report['counts'] );
+
+    return [
+        'data' => $normalized,
+        'report' => $report,
+    ];
+}
+
 function wpae_clear_elementor_cache( int $post_id ): void {
     delete_post_meta( $post_id, '_elementor_css' );
 
@@ -1633,6 +1829,39 @@ function wpae_elementor_validate( WP_REST_Request $request ): WP_REST_Response {
         'ok' => empty( $errors ),
         'errors' => $errors,
     ], empty( $errors ) ? 200 : 422 );
+}
+
+function wpae_elementor_normalize( WP_REST_Request $request ): WP_REST_Response {
+    $elementor_data = wpae_get_elementor_data_from_request( $request );
+    if ( is_wp_error( $elementor_data ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $elementor_data->get_error_message() ], 400 );
+    }
+
+    $before_errors = wpae_validate_elementor_data_array( $elementor_data );
+    $normalized = wpae_elementor_normalize_data( $elementor_data );
+    $normalized_data = $normalized['data'];
+    $after_errors = wpae_validate_elementor_data_array( $normalized_data );
+    $stats = [
+        'containers' => 0,
+        'containers_with_native_background' => 0,
+        'widgets' => 0,
+        'html_widgets' => 0,
+        'html_widget_layout_risks' => 0,
+        'empty_heading_widgets' => 0,
+        'empty_text_widgets' => 0,
+    ];
+    wpae_collect_elementor_audit_stats( $normalized_data, $stats );
+
+    return new WP_REST_Response( [
+        'ok' => empty( $after_errors ),
+        'changed' => ! empty( $normalized['report']['changes'] ),
+        'change_counts' => $normalized['report']['counts'],
+        'changes' => $normalized['report']['changes'],
+        'before_errors' => $before_errors,
+        'after_errors' => $after_errors,
+        'stats' => $stats,
+        'normalized_elementor_data' => $normalized_data,
+    ], empty( $after_errors ) ? 200 : 422 );
 }
 
 function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
@@ -2522,7 +2751,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.7.0',
+        'version' => '1.8.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -2545,15 +2774,16 @@ function wpae_agent_guide(): array {
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
-            '2. For page work, prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
-            '3. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
-            '4. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
-            '5. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
-            '6. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '7. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
-            '8. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
-            '9. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
-            '10. Read agent_conformance in write responses and fix weak/blocked criteria before considering the task complete.',
+            '2. For page work, prefer /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
+            '3. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, or incomplete elements arrays.',
+            '4. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
+            '5. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
+            '6. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
+            '7. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
+            '8. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '9. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '10. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '11. Read agent_conformance in write responses and fix weak/blocked criteria before considering the task complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -2642,6 +2872,19 @@ function wpae_agent_guide(): array {
             'runtime_elementor_validation' => [
                 'required' => true,
                 'rule' => 'The executor validates changed _elementor_data after each /run call and rejects invalid Elementor JSON even if the agent ignored the guide.',
+                'normalize_endpoint' => [
+                    'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/normalize',
+                    'writes' => false,
+                    'rule' => 'Use this before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings arrays, missing elements arrays, or incomplete container defaults.',
+                    'returns' => [
+                        'normalized_elementor_data',
+                        'change_counts',
+                        'changes',
+                        'before_errors',
+                        'after_errors',
+                        'stats',
+                    ],
+                ],
                 'blocked' => [
                     'Legacy elType=section.',
                     'Legacy elType=column.',
@@ -2855,7 +3098,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
