@@ -120,12 +120,49 @@ Important fields include:
   "can_create_exports": true,
   "can_manage_skills": true,
   "can_rollback": true,
-  "can_view_operation_logs": true
+  "can_view_operation_logs": true,
+  "can_score_agent_conformance": true
 }
 ```
 
 If a capability is disabled, the matching write endpoint returns `403` even
 with a valid key and guide token.
+
+### Agent conformance scoring
+
+Mutating and verification endpoints return an `agent_conformance` object. It is
+a runtime score for whether the agent followed the guide and site policy.
+The score is advisory, not a hard block: agents must treat `weak` or `blocked`
+as unfinished work and correct the operation before claiming success.
+
+Scored criteria include:
+
+- guide token flow
+- forbidden filesystem activity
+- native Elementor validation
+- Flexbox Containers only
+- camelCase `widgetType`
+- native visual settings for critical backgrounds/styles
+- explicit verification signal or `/audit`
+
+Example:
+
+```json
+{
+  "agent_conformance": {
+    "score": 92,
+    "level": "strong",
+    "blocking_errors": [],
+    "criteria": {
+      "guide_token_flow": { "status": "pass", "points": 15, "max": 15 },
+      "file_policy": { "status": "pass", "points": 15, "max": 15 }
+    }
+  }
+}
+```
+
+Operation logs also include the redacted `agent_conformance_score` and
+`agent_conformance_level` summary fields.
 
 ### `POST /wp-json/ai-executor/v1/elementor/validate`
 
@@ -400,7 +437,8 @@ By default `/run` rejects common filesystem write/delete operations and
 shell/process execution.
 Use only dedicated endpoints for allowed writes: `/self-update`,
 `/elementor/page`, `/elementor/update`, `/media/upload`, `/exports/create`,
-and `/skills`. Use `/audit` after page writes.
+and `/skills`. Use `/audit` after page writes. Read `agent_conformance` in
+write and audit responses; `weak` or `blocked` means the task is not complete.
 ```
 
 ### Agent quality gates
@@ -427,6 +465,7 @@ After writing, the agent should verify:
 - critical backgrounds, borders, spacing, and contrast exist in native Elementor settings
 - no external files, temporary loaders, mu-plugins, or scratch files are created
 - no obvious desktop/mobile overlap or horizontal overflow
+- `agent_conformance.level` is `strong` or at least `acceptable`
 
 ---
 

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     1.9.0
+ * Version:     2.0.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '1.9.0';
+const WPAE_VERSION = '2.0.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -406,7 +406,285 @@ function wpae_summarize_response_for_log( array $response_data, int $status ): a
         $summary['errors_count'] = count( $response_data['errors'] );
     }
 
+    if ( isset( $response_data['agent_conformance'] ) && is_array( $response_data['agent_conformance'] ) ) {
+        $summary['agent_conformance_score'] = (int) ( $response_data['agent_conformance']['score'] ?? 0 );
+        $summary['agent_conformance_level'] = (string) ( $response_data['agent_conformance']['level'] ?? '' );
+    }
+
     return $summary;
+}
+
+function wpae_should_score_conformance( WP_REST_Request $request ): bool {
+    $route = (string) $request->get_route();
+    $method = strtoupper( (string) $request->get_method() );
+
+    if ( strpos( $route, '/ai-executor/v1/' ) !== 0 ) {
+        return false;
+    }
+
+    if ( ! in_array( $method, [ 'POST', 'DELETE' ], true ) ) {
+        return false;
+    }
+
+    return ! in_array( $route, [
+        '/ai-executor/v1/key',
+        '/ai-executor/v1/guide',
+        '/ai-executor/v1/guide/session',
+        '/ai-executor/v1/guide/ack',
+        '/ai-executor/v1/capabilities',
+        '/ai-executor/v1/logs',
+        '/ai-executor/v1/skills/export',
+    ], true );
+}
+
+function wpae_route_requires_guide_token_for_conformance( string $route ): bool {
+    return in_array( $route, [
+        '/ai-executor/v1/run',
+        '/ai-executor/v1/rollback',
+        '/ai-executor/v1/elementor/page',
+        '/ai-executor/v1/elementor/update',
+        '/ai-executor/v1/skills',
+        '/ai-executor/v1/skills/import',
+        '/ai-executor/v1/media/upload',
+        '/ai-executor/v1/exports/create',
+        '/ai-executor/v1/self-update',
+    ], true ) || preg_match( '#^/ai-executor/v1/skills/[a-z0-9_-]+$#', $route );
+}
+
+function wpae_conformance_add_criterion( array &$criteria, string $key, string $status, int $points, int $max, string $message, array $evidence = [] ): void {
+    $criteria[ $key ] = [
+        'status' => $status,
+        'points' => max( 0, min( $points, $max ) ),
+        'max' => max( 0, $max ),
+        'message' => $message,
+        'evidence' => $evidence,
+    ];
+}
+
+function wpae_get_request_elementor_data_for_conformance( WP_REST_Request $request ) {
+    $route = (string) $request->get_route();
+
+    if ( ! in_array( $route, [
+        '/ai-executor/v1/elementor/validate',
+        '/ai-executor/v1/elementor/page',
+        '/ai-executor/v1/elementor/update',
+    ], true ) ) {
+        return null;
+    }
+
+    $data = wpae_get_elementor_data_from_request( $request );
+    return is_wp_error( $data ) ? null : $data;
+}
+
+function wpae_count_elementor_validation_errors_by_type( array $errors ): array {
+    $counts = [
+        'legacy_layout' => 0,
+        'widget_type' => 0,
+        'other' => 0,
+    ];
+
+    foreach ( $errors as $error ) {
+        $error = (string) $error;
+        if ( stripos( $error, 'elType=section' ) !== false || stripos( $error, 'elType=column' ) !== false ) {
+            $counts['legacy_layout']++;
+        } elseif ( stripos( $error, 'widgetType' ) !== false || stripos( $error, 'widget_type' ) !== false ) {
+            $counts['widget_type']++;
+        } else {
+            $counts['other']++;
+        }
+    }
+
+    return $counts;
+}
+
+function wpae_get_elementor_conformance_context( WP_REST_Request $request, array $response_data ): array {
+    $route = (string) $request->get_route();
+    $data = wpae_get_request_elementor_data_for_conformance( $request );
+    $stats = [
+        'containers' => 0,
+        'containers_with_native_background' => 0,
+        'widgets' => 0,
+        'html_widgets' => 0,
+        'html_widget_layout_risks' => 0,
+        'empty_heading_widgets' => 0,
+        'empty_text_widgets' => 0,
+    ];
+    $validation_errors = [];
+
+    if ( is_array( $data ) ) {
+        $validation_errors = wpae_validate_elementor_data_array( $data );
+        wpae_collect_elementor_audit_stats( $data, $stats );
+    }
+
+    if ( isset( $response_data['stats'] ) && is_array( $response_data['stats'] ) ) {
+        $stats = array_merge( $stats, array_intersect_key( $response_data['stats'], $stats ) );
+    }
+
+    if ( isset( $response_data['errors'] ) && is_array( $response_data['errors'] ) ) {
+        $validation_errors = array_merge( $validation_errors, $response_data['errors'] );
+    }
+
+    if ( isset( $response_data['details']['errors'] ) && is_array( $response_data['details']['errors'] ) ) {
+        $validation_errors = array_merge( $validation_errors, $response_data['details']['errors'] );
+    }
+
+    $is_elementor_route = in_array( $route, [
+        '/ai-executor/v1/elementor/validate',
+        '/ai-executor/v1/elementor/page',
+        '/ai-executor/v1/elementor/update',
+        '/ai-executor/v1/audit',
+    ], true );
+
+    return [
+        'applicable' => $is_elementor_route || is_array( $data ) || isset( $response_data['stats'] ),
+        'has_request_data' => is_array( $data ),
+        'stats' => $stats,
+        'validation_errors' => array_values( array_unique( array_map( 'strval', $validation_errors ) ) ),
+        'error_counts' => wpae_count_elementor_validation_errors_by_type( $validation_errors ),
+    ];
+}
+
+function wpae_build_agent_conformance( WP_REST_Request $request, array $response_data, int $status ): array {
+    $route = (string) $request->get_route();
+    $criteria = [];
+    $blocking_errors = [];
+    $guide_token = (string) ( $request->get_header( 'X-WPAE-Guide-Token' ) ?: $request->get_param( 'guide_token' ) );
+    $guide_hash = (string) ( $request->get_header( 'X-WPAE-Guide-Hash' ) ?: $request->get_param( 'guide_hash' ) );
+
+    if ( wpae_route_requires_guide_token_for_conformance( $route ) ) {
+        $guide_ok = $guide_token !== '' && $guide_hash !== '' && $status !== 403;
+        wpae_conformance_add_criterion(
+            $criteria,
+            'guide_token_flow',
+            $guide_ok ? 'pass' : 'fail',
+            $guide_ok ? 15 : 0,
+            15,
+            $guide_ok ? 'Write request used guide-token headers.' : 'Write request did not complete with a valid guide-token flow.',
+            [ 'has_guide_hash' => $guide_hash !== '' ]
+        );
+    }
+
+    $file_error = (string) ( $response_data['blocked_operation'] ?? '' );
+    $file_ok = $file_error === '' && stripos( (string) ( $response_data['error'] ?? '' ), 'Filesystem writes are disabled' ) === false;
+    wpae_conformance_add_criterion(
+        $criteria,
+        'file_policy',
+        $file_ok ? 'pass' : 'fail',
+        $file_ok ? 15 : 0,
+        15,
+        $file_ok ? 'No forbidden filesystem operation was detected.' : 'Forbidden filesystem operation was blocked.',
+        $file_error !== '' ? [ 'blocked_operation' => $file_error ] : []
+    );
+
+    $elementor = wpae_get_elementor_conformance_context( $request, $response_data );
+    if ( $elementor['applicable'] ) {
+        $errors = $elementor['validation_errors'];
+        $error_counts = $elementor['error_counts'];
+        $stats = $elementor['stats'];
+        $elementor_ok = empty( $errors ) && $status < 400;
+
+        wpae_conformance_add_criterion(
+            $criteria,
+            'elementor_policy',
+            $elementor_ok ? 'pass' : 'fail',
+            $elementor_ok ? 20 : 0,
+            20,
+            $elementor_ok ? 'Elementor data passed runtime validation.' : 'Elementor data failed runtime validation.',
+            [ 'errors_count' => count( $errors ) ]
+        );
+
+        $has_containers = (int) ( $stats['containers'] ?? 0 ) > 0;
+        $legacy_clean = (int) ( $error_counts['legacy_layout'] ?? 0 ) === 0;
+        wpae_conformance_add_criterion(
+            $criteria,
+            'native_flex_containers',
+            ( $has_containers && $legacy_clean ) ? 'pass' : 'warn',
+            ( $has_containers && $legacy_clean ) ? 15 : 7,
+            15,
+            $has_containers ? 'Elementor layout uses native containers.' : 'No native Elementor containers were detected.',
+            [ 'containers' => (int) ( $stats['containers'] ?? 0 ), 'legacy_layout_errors' => (int) ( $error_counts['legacy_layout'] ?? 0 ) ]
+        );
+
+        $widget_type_ok = (int) ( $error_counts['widget_type'] ?? 0 ) === 0;
+        wpae_conformance_add_criterion(
+            $criteria,
+            'widget_type_integrity',
+            $widget_type_ok ? 'pass' : 'fail',
+            $widget_type_ok ? 15 : 0,
+            15,
+            $widget_type_ok ? 'Widgets use valid camelCase widgetType metadata.' : 'Widget metadata has widgetType/widget_type problems.',
+            [ 'widget_type_errors' => (int) ( $error_counts['widget_type'] ?? 0 ) ]
+        );
+
+        $native_visual_ok = (int) ( $stats['containers_with_native_background'] ?? 0 ) > 0 || (int) ( $stats['containers'] ?? 0 ) === 0;
+        wpae_conformance_add_criterion(
+            $criteria,
+            'native_visual_settings',
+            $native_visual_ok ? 'pass' : 'warn',
+            $native_visual_ok ? 10 : 4,
+            10,
+            $native_visual_ok ? 'Native Elementor visual settings are present where detectable.' : 'No native container background settings were detected.',
+            [
+                'containers_with_native_background' => (int) ( $stats['containers_with_native_background'] ?? 0 ),
+                'html_widget_layout_risks' => (int) ( $stats['html_widget_layout_risks'] ?? 0 ),
+            ]
+        );
+    }
+
+    $verified = $route === '/ai-executor/v1/audit'
+        || (string) $request->get_header( 'X-WPAE-Verified' ) === '1'
+        || (bool) $request->get_param( 'verified' );
+    wpae_conformance_add_criterion(
+        $criteria,
+        'verification_signal',
+        $verified ? 'pass' : 'warn',
+        $verified ? 10 : 5,
+        10,
+        $verified ? 'Verification signal is present.' : 'No explicit post-write verification signal was provided.',
+        [ 'audit_endpoint' => $route === '/ai-executor/v1/audit' ]
+    );
+
+    $points = 0;
+    $max = 0;
+    foreach ( $criteria as $criterion ) {
+        $points += (int) ( $criterion['points'] ?? 0 );
+        $max += (int) ( $criterion['max'] ?? 0 );
+        if ( ( $criterion['status'] ?? '' ) === 'fail' ) {
+            $blocking_errors[] = $criterion['message'] ?? 'Conformance criterion failed.';
+        }
+    }
+
+    $score = $max > 0 ? (int) round( ( $points / $max ) * 100 ) : 100;
+    $level = $score >= 90 ? 'strong' : ( $score >= 75 ? 'acceptable' : ( $score >= 50 ? 'weak' : 'blocked' ) );
+
+    return [
+        'score' => $score,
+        'level' => $level,
+        'points' => $points,
+        'max_points' => $max,
+        'blocking_errors' => $blocking_errors,
+        'criteria' => $criteria,
+    ];
+}
+
+function wpae_attach_agent_conformance( WP_REST_Request $request, $response ) {
+    if ( ! wpae_should_score_conformance( $request ) || ! ( $response instanceof WP_HTTP_Response ) ) {
+        return $response;
+    }
+
+    $data = $response->get_data();
+    if ( ! is_array( $data ) ) {
+        return $response;
+    }
+
+    if ( isset( $data['agent_conformance'] ) ) {
+        return $response;
+    }
+
+    $data['agent_conformance'] = wpae_build_agent_conformance( $request, $data, (int) $response->get_status() );
+    $response->set_data( $data );
+
+    return $response;
 }
 
 function wpae_record_operation_log( WP_REST_Request $request, $response ): void {
@@ -438,6 +716,7 @@ function wpae_record_operation_log( WP_REST_Request $request, $response ): void 
 }
 
 add_filter( 'rest_post_dispatch', function ( $response, WP_REST_Server $server, WP_REST_Request $request ) {
+    $response = wpae_attach_agent_conformance( $request, $response );
     wpae_record_operation_log( $request, $response );
     return $response;
 }, 10, 3 );
@@ -467,7 +746,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '1.6.0',
+        'guide_version' => '1.7.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -823,7 +1102,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '1.6.0',
+        'guide_version' => '1.7.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -836,6 +1115,7 @@ function wpae_get_capabilities_payload(): array {
         'can_audit' => true,
         'can_rollback' => true,
         'can_view_operation_logs' => true,
+        'can_score_agent_conformance' => true,
         'requires_guide_token_for_writes' => true,
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
@@ -911,6 +1191,27 @@ function wpae_get_capabilities_payload(): array {
                 'raw_page_payloads',
                 'raw_response_payloads',
                 'secrets',
+            ],
+        ],
+        'agent_conformance' => [
+            'enabled' => true,
+            'returned_in_responses' => true,
+            'included_in_logs' => true,
+            'levels' => [ 'strong', 'acceptable', 'weak', 'blocked' ],
+            'criteria' => [
+                'guide_token_flow',
+                'file_policy',
+                'elementor_policy',
+                'native_flex_containers',
+                'widget_type_integrity',
+                'native_visual_settings',
+                'verification_signal',
+            ],
+            'score_meaning' => [
+                '90_100' => 'strong',
+                '75_89' => 'acceptable',
+                '50_74' => 'weak',
+                '0_49' => 'blocked',
             ],
         ],
         'file_write_policy' => [
@@ -2221,7 +2522,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.6.0',
+        'version' => '1.7.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -2252,6 +2553,7 @@ function wpae_agent_guide(): array {
             '7. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
             '8. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
             '9. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '10. Read agent_conformance in write responses and fix weak/blocked criteria before considering the task complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -2390,6 +2692,20 @@ function wpae_agent_guide(): array {
                     'raw page payloads',
                     'raw response payloads',
                     'secrets',
+                ],
+            ],
+            'agent_conformance_policy' => [
+                'returned_in_responses' => true,
+                'included_in_logs' => true,
+                'rule' => 'Every scored endpoint returns agent_conformance with score, level, criteria, and blocking_errors. A weak or blocked level means the agent should correct the operation or run verification before claiming success.',
+                'criteria' => [
+                    'guide_token_flow' => 'Write endpoints should use the required guide token and guide hash.',
+                    'file_policy' => 'No forbidden filesystem operations or scratch files.',
+                    'elementor_policy' => 'Elementor data passes runtime validation.',
+                    'native_flex_containers' => 'Elementor layout uses Flexbox Containers and no legacy section/column layout.',
+                    'widget_type_integrity' => 'Widgets use camelCase widgetType and never widget_type.',
+                    'native_visual_settings' => 'Critical visual state is present in native Elementor settings where detectable.',
+                    'verification_signal' => 'Use /audit or X-WPAE-Verified: 1 after writes.',
                 ],
             ],
             'native_elementor_first' => [
@@ -2539,7 +2855,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 

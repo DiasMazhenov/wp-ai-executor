@@ -19,14 +19,11 @@
 - Extend skill `enforce` rules for Elementor widget allowlists, forbidden widget types, required widget/container settings, and forbidden HTML widget patterns.
 - Add capped operation logs in `wp_options` with endpoint, actor hint, target IDs, guide hash, validation summary, and rollback snapshot ID.
 - Keep operation logs redacted: no API keys, guide tokens, raw page payloads, request bodies, response bodies, or secrets.
+- Add agent conformance scoring in responses and operation logs for guide-token flow, file policy, Elementor policy, Flex Containers, `widgetType`, native visual settings, and verification signal.
 
 ## Next
 
-1. Add agent conformance scoring.
-   - After each write, score whether the agent followed the guide: read guide token flow, no files, native Elementor, Flex Containers, correct `widgetType`, native critical styles, verification done.
-   - Return score and blocking errors in write responses.
-
-2. Add optional role-based keys.
+1. Add optional role-based keys.
    - Add only if a site needs different secrets for different agents or clients.
    - Possible roles: `run_key`, `guide_key`, `update_key`, and `readonly_key`.
    - Keep disabled by default to avoid unnecessary setup friction.
