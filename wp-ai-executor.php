@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     2.1.0
+ * Version:     2.2.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '2.1.0';
+const WPAE_VERSION = '2.2.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -171,6 +171,24 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/elementor/normalize', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_normalize',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/recipes', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_elementor_recipes',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/recipes/(?P<id>[a-z0-9_.-]+)', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_elementor_recipe',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/compose', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_compose',
         'permission_callback' => 'wpae_auth',
     ] );
 
@@ -769,7 +787,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '1.8.0',
+        'guide_version' => '1.9.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1125,7 +1143,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '1.8.0',
+        'guide_version' => '1.9.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1145,10 +1163,15 @@ function wpae_get_capabilities_payload(): array {
             'safe_endpoints' => [
                 'validate' => 'POST /wp-json/ai-executor/v1/elementor/validate',
                 'normalize' => 'POST /wp-json/ai-executor/v1/elementor/normalize',
+                'recipes' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
+                'recipe' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
+                'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
                 'page' => 'POST /wp-json/ai-executor/v1/elementor/page',
                 'update' => 'POST /wp-json/ai-executor/v1/elementor/update',
             ],
             'can_normalize' => true,
+            'can_use_recipes' => true,
+            'can_compose_sections' => true,
             'must_use_flex_containers' => true,
             'forbidden_eltypes' => [ 'section', 'column' ],
             'required_widget_key' => 'widgetType',
@@ -1248,6 +1271,8 @@ function wpae_get_capabilities_payload(): array {
                 '/exports/create' => ! empty( $settings['exports'] ),
                 '/elementor/validate' => true,
                 '/elementor/normalize' => true,
+                '/elementor/recipes' => true,
+                '/elementor/compose' => true,
                 '/elementor/page' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/update' => ! empty( $settings['elementor_writes'] ),
                 '/audit' => true,
@@ -1862,6 +1887,451 @@ function wpae_elementor_normalize( WP_REST_Request $request ): WP_REST_Response 
         'stats' => $stats,
         'normalized_elementor_data' => $normalized_data,
     ], empty( $after_errors ) ? 200 : 422 );
+}
+
+function wpae_el_spacing( int $top, int $right, int $bottom, int $left ): array {
+    return [
+        'unit' => 'px',
+        'top' => (string) $top,
+        'right' => (string) $right,
+        'bottom' => (string) $bottom,
+        'left' => (string) $left,
+        'isLinked' => false,
+    ];
+}
+
+function wpae_el_gap( int $size ): array {
+    return [
+        'unit' => 'px',
+        'size' => $size,
+        'sizes' => [],
+    ];
+}
+
+function wpae_el_container( string $id, array $settings = [], array $elements = [] ): array {
+    return [
+        'id' => $id,
+        'elType' => 'container',
+        'settings' => array_merge( [
+            'content_width' => 'boxed',
+            'flex_direction' => 'column',
+            'background_background' => 'classic',
+            'background_color' => '#ffffff',
+            'gap' => wpae_el_gap( 24 ),
+            'padding' => wpae_el_spacing( 48, 32, 48, 32 ),
+        ], $settings ),
+        'elements' => $elements,
+    ];
+}
+
+function wpae_el_widget( string $id, string $widget_type, array $settings = [] ): array {
+    return [
+        'id' => $id,
+        'elType' => 'widget',
+        'widgetType' => $widget_type,
+        'settings' => $settings,
+        'elements' => [],
+    ];
+}
+
+function wpae_elementor_recipe_definitions(): array {
+    return [
+        'hero.editorial' => [
+            'id' => 'hero.editorial',
+            'type' => 'section',
+            'title' => 'Editorial service hero',
+            'description' => 'A strong first screen with offer, proof line, CTA row, and a metric rail.',
+            'variants' => [ 'minimal', 'split-proof', 'metric-led' ],
+            'default_variant' => 'split-proof',
+            'slots' => [
+                'eyebrow' => [ 'required' => false, 'default' => 'Website build lab', 'max_chars' => 42 ],
+                'headline' => [ 'required' => true, 'default' => 'A page that explains the offer before visitors leave', 'max_chars' => 110 ],
+                'subheadline' => [ 'required' => true, 'default' => 'Editable Elementor structure with clear offer, proof, process, and action.', 'max_chars' => 180 ],
+                'cta_primary' => [ 'required' => true, 'default' => 'Discuss the page', 'max_chars' => 32 ],
+                'cta_secondary' => [ 'required' => false, 'default' => 'View process', 'max_chars' => 32 ],
+                'metric_1' => [ 'required' => false, 'default' => '7-14 days' ],
+                'metric_1_label' => [ 'required' => false, 'default' => 'typical launch window' ],
+                'metric_2' => [ 'required' => false, 'default' => '0 files' ],
+                'metric_2_label' => [ 'required' => false, 'default' => 'external scratch files' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'heroa01', [
+                    'background_color' => '#f6f0e6',
+                    'gap' => wpae_el_gap( 32 ),
+                    'padding' => wpae_el_spacing( 72, 40, 72, 40 ),
+                ], [
+                    wpae_el_widget( 'heroa02', 'heading', [ 'title' => '{{eyebrow}}', 'header_size' => 'h6', 'title_color' => '#c75b3b' ] ),
+                    wpae_el_container( 'heroa03', [
+                        'flex_direction' => 'row',
+                        'gap' => wpae_el_gap( 40 ),
+                        'background_color' => '#f6f0e6',
+                        'padding' => wpae_el_spacing( 0, 0, 0, 0 ),
+                    ], [
+                        wpae_el_container( 'heroa04', [ 'background_color' => '#f6f0e6', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
+                            wpae_el_widget( 'heroa05', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h1', 'title_color' => '#111827' ] ),
+                            wpae_el_widget( 'heroa06', 'text-editor', [ 'editor' => '{{subheadline}}', 'text_color' => '#374151' ] ),
+                            wpae_el_container( 'heroa07', [ 'flex_direction' => 'row', 'background_color' => '#f6f0e6', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
+                                wpae_el_widget( 'heroa08', 'button', [ 'text' => '{{cta_primary}}', 'button_type' => 'primary', 'background_color' => '#111827', 'text_color' => '#ffffff' ] ),
+                                wpae_el_widget( 'heroa09', 'button', [ 'text' => '{{cta_secondary}}', 'button_type' => 'secondary', 'background_color' => '#ffffff', 'text_color' => '#111827' ] ),
+                            ] ),
+                        ] ),
+                        wpae_el_container( 'heroa10', [ 'background_color' => '#111827', 'padding' => wpae_el_spacing( 32, 32, 32, 32 ) ], [
+                            wpae_el_widget( 'heroa11', 'heading', [ 'title' => '{{metric_1}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ),
+                            wpae_el_widget( 'heroa12', 'text-editor', [ 'editor' => '{{metric_1_label}}', 'text_color' => '#d1d5db' ] ),
+                            wpae_el_widget( 'heroa13', 'divider', [] ),
+                            wpae_el_widget( 'heroa14', 'heading', [ 'title' => '{{metric_2}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ),
+                            wpae_el_widget( 'heroa15', 'text-editor', [ 'editor' => '{{metric_2_label}}', 'text_color' => '#d1d5db' ] ),
+                        ] ),
+                    ] ),
+                ] ),
+            ],
+        ],
+        'feature.grid' => [
+            'id' => 'feature.grid',
+            'type' => 'section',
+            'title' => 'Feature grid',
+            'description' => 'Three native editable feature cards with a compact intro.',
+            'variants' => [ 'three-cards', 'dense', 'proof-led' ],
+            'default_variant' => 'three-cards',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'What the page must make obvious' ],
+                'intro' => [ 'required' => false, 'default' => 'Each block has a job: explain, prove, reduce friction, or move to action.' ],
+                'item_1_title' => [ 'required' => true, 'default' => 'Clear offer' ],
+                'item_1_text' => [ 'required' => true, 'default' => 'Visitors understand who it is for and what result they get.' ],
+                'item_2_title' => [ 'required' => true, 'default' => 'Trust structure' ],
+                'item_2_text' => [ 'required' => true, 'default' => 'Proof, process, and specifics replace vague promises.' ],
+                'item_3_title' => [ 'required' => true, 'default' => 'Editable system' ],
+                'item_3_text' => [ 'required' => true, 'default' => 'Built from native Elementor containers and widgets.' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'feat001', [ 'background_color' => '#ffffff' ], [
+                    wpae_el_widget( 'feat002', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2', 'title_color' => '#111827' ] ),
+                    wpae_el_widget( 'feat003', 'text-editor', [ 'editor' => '{{intro}}', 'text_color' => '#4b5563' ] ),
+                    wpae_el_container( 'feat004', [ 'flex_direction' => 'row', 'background_color' => '#ffffff', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
+                        wpae_el_container( 'feat005', [ 'background_color' => '#f3f4f6' ], [ wpae_el_widget( 'feat006', 'heading', [ 'title' => '{{item_1_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat007', 'text-editor', [ 'editor' => '{{item_1_text}}' ] ) ] ),
+                        wpae_el_container( 'feat008', [ 'background_color' => '#eef2ff' ], [ wpae_el_widget( 'feat009', 'heading', [ 'title' => '{{item_2_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat010', 'text-editor', [ 'editor' => '{{item_2_text}}' ] ) ] ),
+                        wpae_el_container( 'feat011', [ 'background_color' => '#ecfdf5' ], [ wpae_el_widget( 'feat012', 'heading', [ 'title' => '{{item_3_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat013', 'text-editor', [ 'editor' => '{{item_3_text}}' ] ) ] ),
+                    ] ),
+                ] ),
+            ],
+        ],
+        'process.steps' => [
+            'id' => 'process.steps',
+            'type' => 'section',
+            'title' => 'Process steps',
+            'description' => 'Numbered process with four editable steps.',
+            'variants' => [ 'linear', 'split', 'timeline' ],
+            'default_variant' => 'linear',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'How the work moves' ],
+                'step_1' => [ 'required' => true, 'default' => 'Brief and page job' ],
+                'step_2' => [ 'required' => true, 'default' => 'Structure and copy' ],
+                'step_3' => [ 'required' => true, 'default' => 'Elementor build' ],
+                'step_4' => [ 'required' => true, 'default' => 'Audit and launch' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'proc001', [ 'background_color' => '#111827' ], [
+                    wpae_el_widget( 'proc002', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ),
+                    wpae_el_widget( 'proc003', 'icon-list', [
+                        'icon_list' => [
+                            [ 'text' => '01 / {{step_1}}' ],
+                            [ 'text' => '02 / {{step_2}}' ],
+                            [ 'text' => '03 / {{step_3}}' ],
+                            [ 'text' => '04 / {{step_4}}' ],
+                        ],
+                        'text_color' => '#ffffff',
+                    ] ),
+                ] ),
+            ],
+        ],
+        'pricing.comparison' => [
+            'id' => 'pricing.comparison',
+            'type' => 'section',
+            'title' => 'Pricing comparison',
+            'description' => 'Two or three package cards with native buttons.',
+            'variants' => [ 'two-packages', 'three-packages' ],
+            'default_variant' => 'two-packages',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'Choose the right build depth' ],
+                'package_1' => [ 'required' => true, 'default' => 'Landing page' ],
+                'package_1_price' => [ 'required' => false, 'default' => 'from 350k KZT' ],
+                'package_2' => [ 'required' => true, 'default' => 'Service page system' ],
+                'package_2_price' => [ 'required' => false, 'default' => 'from 650k KZT' ],
+                'cta' => [ 'required' => true, 'default' => 'Request estimate' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'price01', [ 'background_color' => '#f9fafb' ], [
+                    wpae_el_widget( 'price02', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2' ] ),
+                    wpae_el_container( 'price03', [ 'flex_direction' => 'row', 'background_color' => '#f9fafb', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
+                        wpae_el_container( 'price04', [ 'background_color' => '#ffffff' ], [ wpae_el_widget( 'price05', 'heading', [ 'title' => '{{package_1}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'price06', 'heading', [ 'title' => '{{package_1_price}}', 'header_size' => 'h2' ] ), wpae_el_widget( 'price07', 'button', [ 'text' => '{{cta}}' ] ) ] ),
+                        wpae_el_container( 'price08', [ 'background_color' => '#111827' ], [ wpae_el_widget( 'price09', 'heading', [ 'title' => '{{package_2}}', 'header_size' => 'h3', 'title_color' => '#ffffff' ] ), wpae_el_widget( 'price10', 'heading', [ 'title' => '{{package_2_price}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ), wpae_el_widget( 'price11', 'button', [ 'text' => '{{cta}}', 'background_color' => '#ffffff', 'text_color' => '#111827' ] ) ] ),
+                    ] ),
+                ] ),
+            ],
+        ],
+        'faq.accordion' => [
+            'id' => 'faq.accordion',
+            'type' => 'section',
+            'title' => 'FAQ accordion',
+            'description' => 'Native Elementor accordion with editable questions.',
+            'variants' => [ 'simple', 'compact' ],
+            'default_variant' => 'simple',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'Questions before the start' ],
+                'q1' => [ 'required' => true, 'default' => 'Can I edit the page later?' ],
+                'a1' => [ 'required' => true, 'default' => 'Yes. Content is placed in native Elementor widgets.' ],
+                'q2' => [ 'required' => true, 'default' => 'Will it use external files?' ],
+                'a2' => [ 'required' => true, 'default' => 'No. The build uses WordPress metadata and native Elementor settings.' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'faq0001', [ 'background_color' => '#ffffff' ], [
+                    wpae_el_widget( 'faq0002', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2' ] ),
+                    wpae_el_widget( 'faq0003', 'accordion', [
+                        'tabs' => [
+                            [ 'tab_title' => '{{q1}}', 'tab_content' => '{{a1}}' ],
+                            [ 'tab_title' => '{{q2}}', 'tab_content' => '{{a2}}' ],
+                        ],
+                    ] ),
+                ] ),
+            ],
+        ],
+        'cta.band' => [
+            'id' => 'cta.band',
+            'type' => 'section',
+            'title' => 'CTA band',
+            'description' => 'Focused action band with heading, copy, and button.',
+            'variants' => [ 'dark', 'light', 'accent' ],
+            'default_variant' => 'dark',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'Ready to make the page clear?' ],
+                'text' => [ 'required' => true, 'default' => 'Send the brief and get a practical structure before development starts.' ],
+                'cta' => [ 'required' => true, 'default' => 'Start with a brief' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'cta0001', [ 'background_color' => '#111827' ], [
+                    wpae_el_widget( 'cta0002', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ),
+                    wpae_el_widget( 'cta0003', 'text-editor', [ 'editor' => '{{text}}', 'text_color' => '#d1d5db' ] ),
+                    wpae_el_widget( 'cta0004', 'button', [ 'text' => '{{cta}}', 'background_color' => '#ffffff', 'text_color' => '#111827' ] ),
+                ] ),
+            ],
+        ],
+        'proof.timeline' => [
+            'id' => 'proof.timeline',
+            'type' => 'section',
+            'title' => 'Proof timeline',
+            'description' => 'Trust-building sequence for proof, examples, and result.',
+            'variants' => [ 'three-points', 'case-led' ],
+            'default_variant' => 'three-points',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'Proof before promises' ],
+                'proof_1' => [ 'required' => true, 'default' => 'Process is visible before design starts.' ],
+                'proof_2' => [ 'required' => true, 'default' => 'Copy explains the offer, not just the brand.' ],
+                'proof_3' => [ 'required' => true, 'default' => 'The final page remains editable in Elementor.' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'proof01', [ 'background_color' => '#f6f0e6' ], [
+                    wpae_el_widget( 'proof02', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2' ] ),
+                    wpae_el_widget( 'proof03', 'icon-list', [
+                        'icon_list' => [
+                            [ 'text' => '{{proof_1}}' ],
+                            [ 'text' => '{{proof_2}}' ],
+                            [ 'text' => '{{proof_3}}' ],
+                        ],
+                    ] ),
+                ] ),
+            ],
+        ],
+        'contact.block' => [
+            'id' => 'contact.block',
+            'type' => 'section',
+            'title' => 'Contact block',
+            'description' => 'Simple contact section with direct action and context.',
+            'variants' => [ 'direct', 'split' ],
+            'default_variant' => 'direct',
+            'slots' => [
+                'headline' => [ 'required' => true, 'default' => 'Tell me what page you need' ],
+                'text' => [ 'required' => true, 'default' => 'Send the service, audience, and desired action. I will turn it into a page plan.' ],
+                'cta' => [ 'required' => true, 'default' => 'Send request' ],
+            ],
+            'elementor_data' => [
+                wpae_el_container( 'cont001', [ 'background_color' => '#ffffff' ], [
+                    wpae_el_widget( 'cont002', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2' ] ),
+                    wpae_el_widget( 'cont003', 'text-editor', [ 'editor' => '{{text}}' ] ),
+                    wpae_el_widget( 'cont004', 'button', [ 'text' => '{{cta}}' ] ),
+                ] ),
+            ],
+        ],
+    ];
+}
+
+function wpae_elementor_recipe_summary( array $recipe ): array {
+    return [
+        'id' => $recipe['id'],
+        'type' => $recipe['type'],
+        'title' => $recipe['title'],
+        'description' => $recipe['description'],
+        'variants' => $recipe['variants'],
+        'default_variant' => $recipe['default_variant'],
+        'slots' => $recipe['slots'],
+    ];
+}
+
+function wpae_sanitize_elementor_recipe_id( string $id ): string {
+    $id = strtolower( trim( $id ) );
+    $id = str_replace( '_', '.', $id );
+    return preg_replace( '/[^a-z0-9.-]/', '', $id );
+}
+
+function wpae_elementor_recipes(): WP_REST_Response {
+    $recipes = array_map( 'wpae_elementor_recipe_summary', array_values( wpae_elementor_recipe_definitions() ) );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'usage' => [
+            'list' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
+            'get_one' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
+            'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
+            'next_steps' => [ '/elementor/normalize', '/elementor/validate', '/elementor/page' ],
+        ],
+        'composition_policy' => [
+            'layout' => 'Native Elementor Flexbox Containers only.',
+            'content' => 'Native editable widgets only.',
+            'html_widget' => 'Enhancement-only CSS/JS zone; never main layout.',
+        ],
+        'primitives' => [
+            'container.stack',
+            'container.grid',
+            'container.split',
+            'widget.heading',
+            'widget.copy',
+            'widget.cta-row',
+            'widget.metric',
+            'widget.feature-item',
+            'widget.html-enhancement',
+        ],
+        'recipes' => $recipes,
+    ], 200 );
+}
+
+function wpae_elementor_recipe( WP_REST_Request $request ): WP_REST_Response {
+    $id = wpae_sanitize_elementor_recipe_id( (string) $request['id'] );
+    $recipes = wpae_elementor_recipe_definitions();
+
+    if ( ! isset( $recipes[ $id ] ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Recipe not found.', 'available' => array_keys( $recipes ) ], 404 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'recipe' => $recipes[ $id ],
+        'next_steps' => [ 'POST /elementor/compose', 'POST /elementor/normalize', 'POST /elementor/validate' ],
+    ], 200 );
+}
+
+function wpae_replace_placeholders_recursive( $value, array $slots ) {
+    if ( is_string( $value ) ) {
+        foreach ( $slots as $slot => $slot_value ) {
+            $value = str_replace( '{{' . $slot . '}}', (string) $slot_value, $value );
+        }
+        return $value;
+    }
+
+    if ( is_array( $value ) ) {
+        foreach ( $value as $key => $child ) {
+            $value[ $key ] = wpae_replace_placeholders_recursive( $child, $slots );
+        }
+    }
+
+    return $value;
+}
+
+function wpae_rekey_elementor_ids_recursive( array $elements, string $instance_id ): array {
+    foreach ( $elements as $index => $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $old_id = (string) ( $element['id'] ?? $index );
+        $element['id'] = substr( md5( $instance_id . '|' . $old_id . '|' . $index ), 0, 7 );
+
+        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+            $element['elements'] = wpae_rekey_elementor_ids_recursive( $element['elements'], $instance_id . '|' . $old_id );
+        }
+
+        $elements[ $index ] = $element;
+    }
+
+    return $elements;
+}
+
+function wpae_elementor_compose( WP_REST_Request $request ): WP_REST_Response {
+    $recipe_id = wpae_sanitize_elementor_recipe_id( (string) ( $request->get_param( 'recipe_id' ) ?: $request->get_param( 'id' ) ) );
+    $variant = sanitize_key( (string) $request->get_param( 'variant' ) );
+    $input_slots = $request->get_param( 'slots' );
+    $input_slots = is_array( $input_slots ) ? $input_slots : [];
+    $recipes = wpae_elementor_recipe_definitions();
+
+    if ( ! isset( $recipes[ $recipe_id ] ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Recipe not found.', 'available' => array_keys( $recipes ) ], 404 );
+    }
+
+    $recipe = $recipes[ $recipe_id ];
+    if ( $variant === '' ) {
+        $variant = (string) $recipe['default_variant'];
+    }
+
+    if ( ! in_array( $variant, $recipe['variants'], true ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Variant is not available for this recipe.', 'available_variants' => $recipe['variants'] ], 400 );
+    }
+
+    $slots = [];
+    $missing_required = [];
+    foreach ( $recipe['slots'] as $slot => $schema ) {
+        if ( array_key_exists( $slot, $input_slots ) && (string) $input_slots[ $slot ] !== '' ) {
+            $slots[ $slot ] = is_scalar( $input_slots[ $slot ] ) ? sanitize_text_field( (string) $input_slots[ $slot ] ) : wp_json_encode( $input_slots[ $slot ] );
+        } else {
+            if ( ! empty( $schema['required'] ) ) {
+                $missing_required[] = $slot;
+            }
+            $slots[ $slot ] = (string) ( $schema['default'] ?? '' );
+        }
+    }
+
+    $elementor_data = wpae_replace_placeholders_recursive( $recipe['elementor_data'], $slots );
+    $instance_id = sanitize_key( (string) ( $request->get_param( 'instance_id' ) ?: $recipe_id . '-' . $variant . '-' . substr( md5( wp_json_encode( $slots ) ), 0, 8 ) ) );
+    $elementor_data = wpae_rekey_elementor_ids_recursive( $elementor_data, $instance_id );
+    $normalized = wpae_elementor_normalize_data( $elementor_data );
+    $elementor_data = $normalized['data'];
+    $errors = wpae_validate_elementor_data_array( $elementor_data );
+    $stats = [
+        'containers' => 0,
+        'containers_with_native_background' => 0,
+        'widgets' => 0,
+        'html_widgets' => 0,
+        'html_widget_layout_risks' => 0,
+        'empty_heading_widgets' => 0,
+        'empty_text_widgets' => 0,
+    ];
+    wpae_collect_elementor_audit_stats( $elementor_data, $stats );
+
+    $ok = empty( $errors ) && empty( $missing_required );
+
+    return new WP_REST_Response( [
+        'ok' => $ok,
+        'recipe_id' => $recipe_id,
+        'variant' => $variant,
+        'instance_id' => $instance_id,
+        'missing_required_slots' => $missing_required,
+        'slots_used' => $slots,
+        'normalization' => [
+            'change_counts' => $normalized['report']['counts'],
+            'changes' => $normalized['report']['changes'],
+        ],
+        'errors' => $errors,
+        'stats' => $stats,
+        'elementor_data' => $elementor_data,
+        'next_steps' => [ 'POST /elementor/normalize', 'POST /elementor/validate', 'POST /elementor/page' ],
+    ], $ok ? 200 : 422 );
 }
 
 function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
@@ -2751,7 +3221,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '1.8.0',
+        'version' => '1.9.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -2775,15 +3245,16 @@ function wpae_agent_guide(): array {
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
             '2. For page work, prefer /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
-            '3. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, or incomplete elements arrays.',
-            '4. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
-            '5. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
-            '6. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
-            '7. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '8. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
-            '9. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
-            '10. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
-            '11. Read agent_conformance in write responses and fix weak/blocked criteria before considering the task complete.',
+            '3. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
+            '4. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, or incomplete elements arrays.',
+            '5. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
+            '6. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
+            '7. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
+            '8. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
+            '9. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '10. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '11. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '12. Read agent_conformance in write responses and fix weak/blocked criteria before considering the task complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -2892,6 +3363,46 @@ function wpae_agent_guide(): array {
                     'Any elType=widget element with missing or empty widgetType.',
                 ],
                 'rollback' => 'If invalid _elementor_data is detected, the changed _elementor_data meta is rolled back to its pre-run value when possible.',
+            ],
+            'recipes_policy' => [
+                'list_endpoint' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
+                'recipe_endpoint' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
+                'compose_endpoint' => 'POST /wp-json/ai-executor/v1/elementor/compose',
+                'writes' => false,
+                'rule' => 'Recipes are composition patterns, not rigid templates. Use variants and slots to build complex native Elementor sections while preserving editor usability.',
+                'available_sections' => [
+                    'hero.editorial',
+                    'feature.grid',
+                    'process.steps',
+                    'pricing.comparison',
+                    'faq.accordion',
+                    'cta.band',
+                    'proof.timeline',
+                    'contact.block',
+                ],
+                'available_primitives' => [
+                    'container.stack',
+                    'container.grid',
+                    'container.split',
+                    'widget.heading',
+                    'widget.copy',
+                    'widget.cta-row',
+                    'widget.metric',
+                    'widget.feature-item',
+                    'widget.html-enhancement',
+                ],
+                'workflow' => [
+                    'Call /elementor/recipes to inspect available patterns.',
+                    'Call /elementor/recipes/{id} to inspect slots and variants.',
+                    'Call /elementor/compose with recipe_id, variant, and slots.',
+                    'Run /elementor/normalize and /elementor/validate on the returned elementor_data before saving.',
+                ],
+                'constraints' => [
+                    'Layout must remain native Flexbox Containers.',
+                    'Main content must remain native editable widgets.',
+                    'HTML widgets are allowed only as scoped enhancement zones, not main layout.',
+                    'All required slots should be filled with project-specific content.',
+                ],
             ],
             'rollback_policy' => [
                 'endpoint' => 'POST /wp-json/ai-executor/v1/rollback',
@@ -3098,7 +3609,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 

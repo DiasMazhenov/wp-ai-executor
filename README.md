@@ -123,7 +123,9 @@ Important fields include:
   "can_view_operation_logs": true,
   "can_score_agent_conformance": true,
   "elementor": {
-    "can_normalize": true
+    "can_normalize": true,
+    "can_use_recipes": true,
+    "can_compose_sections": true
   }
 }
 ```
@@ -199,6 +201,57 @@ list, `before_errors`, `after_errors`, and audit `stats`.
       ]
     }
   ]
+}
+```
+
+### `GET /wp-json/ai-executor/v1/elementor/recipes`
+
+Returns reusable native Elementor composition patterns. Recipes are not rigid
+templates; they are safe primitives and section patterns with variants and
+slots. Agents should use them for complex sections instead of inventing raw
+Elementor structure from scratch.
+
+Available section recipes include:
+
+- `hero.editorial`
+- `feature.grid`
+- `process.steps`
+- `pricing.comparison`
+- `faq.accordion`
+- `cta.band`
+- `proof.timeline`
+- `contact.block`
+
+```bash
+curl -s "$SITE/wp-json/ai-executor/v1/elementor/recipes" \
+  -H "X-AI-Key: $KEY"
+```
+
+### `GET /wp-json/ai-executor/v1/elementor/recipes/{id}`
+
+Returns one recipe with its variants, slots, and native Elementor JSON pattern.
+
+```bash
+curl -s "$SITE/wp-json/ai-executor/v1/elementor/recipes/hero.editorial" \
+  -H "X-AI-Key: $KEY"
+```
+
+### `POST /wp-json/ai-executor/v1/elementor/compose`
+
+Composes a recipe variant with project-specific slot values and returns ready
+Elementor JSON without writing anything. The returned `elementor_data` should
+still be passed through `/elementor/normalize`, `/elementor/validate`, and then
+saved with `/elementor/page` or `/elementor/update`.
+
+```json
+{
+  "recipe_id": "hero.editorial",
+  "variant": "split-proof",
+  "slots": {
+    "headline": "A service page that makes the offer clear",
+    "subheadline": "Native Elementor structure with proof, process, and action.",
+    "cta_primary": "Discuss the page"
+  }
 }
 ```
 
@@ -438,6 +491,9 @@ and verify the published URL plus Elementor metadata.
 Use /elementor/normalize before saving any Elementor JSON that contains legacy
 sections/columns, snake-case widget_type, missing widgetType, missing settings,
 missing elements arrays, or incomplete container defaults.
+For complex or non-standard sections, call /elementor/recipes, inspect the
+recipe slots/variants, call /elementor/compose, then normalize and validate the
+returned elementor_data before saving.
 
 Important: build Elementor page structure and content with native editable
 Elementor elements. Use containers and widget settings such as `heading`,
