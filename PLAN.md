@@ -22,35 +22,32 @@
 - Add agent conformance scoring in responses and operation logs for guide-token flow, file policy, Elementor policy, Flex Containers, `widgetType`, native visual settings, and verification signal.
 - Add `/elementor/normalize` for common Elementor JSON mistakes: `widget_type`, legacy `section`/`column`, missing `settings`, missing `elements`, missing IDs, and baseline container settings.
 - Add `/elementor/recipes`, `/elementor/recipes/{id}`, and `/elementor/compose` for reusable native Flexbox Container composition patterns with variants and slots.
+- Expand agent conformance scoring into design quality gates: typography hierarchy, spacing consistency, CTA visibility, mobile readiness, palette quality, and native content completeness.
 
 ## Next
 
-1. Expand agent conformance scoring into design quality gates.
-   - Score typography hierarchy, spacing consistency, CTA visibility, mobile readiness, native backgrounds, HTML-widget layout risk, palette quality, and empty/hidden blocks.
-   - Keep scoring advisory at first, but make `weak`/`blocked` a clear "not done" signal in `/guide`.
-
-2. Add `/elementor/blueprint` for page planning before writing.
+1. Add `/elementor/blueprint` for page planning before writing.
    - Accept niche, goal, audience, offer, language, and preferred style.
    - Return required sections, native widgets, content roles, design tokens, CTA plan, and allowed enhancement CSS/JS zones.
    - Use it as the preferred first step before `/elementor/page`.
 
-3. Add project design tokens in the dashboard and `/guide`.
+2. Add project design tokens in the dashboard and `/guide`.
    - Store palette, typography roles, spacing scale, radii, button style, tone of voice, and design prohibitions in `wp_options`.
    - Return tokens in `/guide` and `/capabilities` so any agent can follow the site's visual system.
 
-4. Add stronger preflight checks before Elementor writes.
+3. Add stronger preflight checks before Elementor writes.
    - Verify no legacy sections/columns, no empty native widgets, no CSS-only critical backgrounds, no horizontal overflow risk markers, and no HTML widget used as main layout.
    - Require CTA presence and native critical visual settings for landing pages.
 
-5. Add after-save quality summary.
+4. Add after-save quality summary.
    - After `/elementor/page` or `/elementor/update`, return permalink, audit summary, conformance score, warnings, and concrete fixes.
    - Encourage agents to run `/audit` and address warnings before claiming completion.
 
-6. Consider a future `/visual-audit` endpoint.
+5. Consider a future `/visual-audit` endpoint.
    - Prefer server-side DOM/render checks only if technically reliable on typical WordPress hosting.
    - Target overflow, contrast, invisible text, suspicious empty blocks, huge spacing, and desktop/mobile screenshot metrics.
 
-7. Optionally add preset buttons for existing single-key capability toggles.
+6. Optionally add preset buttons for existing single-key capability toggles.
    - The core model is already implemented: one `X-AI-Key`, dashboard capability toggles, and `/capabilities` reflection.
    - Do not add separate `run_key`, `guide_key`, `update_key`, or `readonly_key`.
    - Presets, if needed, should only be UI shortcuts such as `read_only`, `elementor_safe`, `maintenance`, and `full_trusted`.

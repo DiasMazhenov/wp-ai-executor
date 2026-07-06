@@ -148,6 +148,12 @@ Scored criteria include:
 - Flexbox Containers only
 - camelCase `widgetType`
 - native visual settings for critical backgrounds/styles
+- native heading hierarchy
+- consistent native container padding/gaps
+- visible native button CTA
+- responsive Elementor settings
+- deliberate palette variety
+- populated native heading/text content
 - explicit verification signal or `/audit`
 
 Example:
