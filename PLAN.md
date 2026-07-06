@@ -23,7 +23,7 @@
 
 ## Next
 
-1. Add optional role-based keys.
-   - Add only if a site needs different secrets for different agents or clients.
-   - Possible roles: `run_key`, `guide_key`, `update_key`, and `readonly_key`.
-   - Keep disabled by default to avoid unnecessary setup friction.
+1. Add single-key access profiles through dashboard toggles.
+   - Keep one `X-AI-Key`; do not add separate `run_key`, `guide_key`, `update_key`, or `readonly_key`.
+   - Add owner-selectable presets such as `read_only`, `elementor_safe`, `maintenance`, and `full_trusted`.
+   - Profiles should only set existing capability toggles and be reflected in `/capabilities`.
