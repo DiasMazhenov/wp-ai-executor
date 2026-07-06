@@ -23,7 +23,7 @@
 
 ## Next
 
-1. Add single-key access profiles through dashboard toggles.
-   - Keep one `X-AI-Key`; do not add separate `run_key`, `guide_key`, `update_key`, or `readonly_key`.
-   - Add owner-selectable presets such as `read_only`, `elementor_safe`, `maintenance`, and `full_trusted`.
-   - Profiles should only set existing capability toggles and be reflected in `/capabilities`.
+1. Optionally add preset buttons for existing single-key capability toggles.
+   - The core model is already implemented: one `X-AI-Key`, dashboard capability toggles, and `/capabilities` reflection.
+   - Do not add separate `run_key`, `guide_key`, `update_key`, or `readonly_key`.
+   - Presets, if needed, should only be UI shortcuts such as `read_only`, `elementor_safe`, `maintenance`, and `full_trusted`.
