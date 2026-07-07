@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     02.08.00.00
+ * Version:     v02.08.01
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '02.08.00.00';
+const WPAE_VERSION = 'v02.08.01';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -209,7 +209,7 @@ function wpae_build_project_design_system( array $input = [] ): array {
     $system_id = wpae_get_design_system_id( $tokens );
 
     return [
-        'design_system_version' => '01.00.00.00',
+        'design_system_version' => 'v01.00.00',
         'system_id' => $system_id,
         'source' => 'wp_ai_executor_design_tokens',
         'tokens' => $tokens,
@@ -1312,7 +1312,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '02.05.00.00',
+        'guide_version' => 'v02.05.01',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1668,7 +1668,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '02.05.00.00',
+        'guide_version' => 'v02.05.01',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -3006,7 +3006,7 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
     return new WP_REST_Response( [
         'ok' => true,
         'writes' => false,
-        'blueprint_version' => '01.01.00.00',
+        'blueprint_version' => 'v01.01.00',
         'design_system_required' => true,
         'design_system' => $design_system,
         'input' => [
@@ -4295,7 +4295,7 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
 
     return [
         'ok' => ! $has_failures,
-        'visual_audit_version' => '01.01.00.00',
+        'visual_audit_version' => 'v01.01.00',
         'score' => $score,
         'level' => $level,
         'points' => $points,
@@ -4478,7 +4478,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '02.05.00.00',
+        'version' => 'v02.05.01',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -5490,7 +5490,7 @@ function wpae_settings_page() {
                 <p class="wpae-kicker">Панель управления агентами</p>
                 <h1 id="wpae-title" class="wpae-title">
                     WP AI Executor
-                    <span class="wpae-version">v<?php echo esc_html( WPAE_VERSION ); ?></span>
+                    <span class="wpae-version"><?php echo esc_html( WPAE_VERSION ); ?></span>
                 </h1>
                 <p class="wpae-lead">
                     REST-мост для Codex, Claude, GPT, Gemini, Qwen и других агентов.
