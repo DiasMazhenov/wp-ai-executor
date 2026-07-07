@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     02.06.00.00
+ * Version:     02.07.00.00
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '02.06.00.00';
+const WPAE_VERSION = '02.07.00.00';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -192,6 +192,52 @@ function wpae_update_project_design_tokens( array $input ): void {
     update_option( 'wp_ai_executor_design_tokens', wpae_sanitize_design_tokens( $input ), false );
 }
 
+function wpae_get_design_system_id( array $tokens = [] ): string {
+    if ( empty( $tokens ) ) {
+        $tokens = wpae_get_project_design_tokens();
+    }
+
+    return 'ds-' . substr( md5( wp_json_encode( $tokens ) ), 0, 8 );
+}
+
+function wpae_get_design_system_required_classes( array $tokens = [] ): array {
+    return [ 'wpae-ds', 'wpae-system-' . wpae_get_design_system_id( $tokens ) ];
+}
+
+function wpae_build_project_design_system( array $input = [] ): array {
+    $tokens = wpae_get_project_design_tokens();
+    $system_id = wpae_get_design_system_id( $tokens );
+
+    return [
+        'design_system_version' => '01.00.00.00',
+        'system_id' => $system_id,
+        'source' => 'wp_ai_executor_design_tokens',
+        'tokens' => $tokens,
+        'required_root_classes' => wpae_get_design_system_required_classes( $tokens ),
+        'mandatory_workflow' => [
+            '1. Before creating a page or adding a page block, call /elementor/design-system.',
+            '2. Treat returned tokens as the single visual source of truth.',
+            '3. Call /elementor/blueprint after the design system and keep the same system_id.',
+            '4. Every top-level page or block container must include required_root_classes in settings._css_classes.',
+            '5. Reuse the same palette, typography roles, spacing scale, radii, button style, and tone across all sections.',
+            '6. Run /elementor/visual-audit before and after writing; fix weak/blocked style consistency results.',
+        ],
+        'style_contract' => [
+            'single_system' => 'All new pages and new blocks must use one shared design system per site/project.',
+            'no_one_off_blocks' => 'Do not invent a new palette, heading style, button style, spacing rhythm, radius, or tone for a later block unless the user explicitly changes the design system.',
+            'native_settings_first' => 'Apply token colors, spacing, radii, and button style in native Elementor settings first.',
+            'block_consistency' => 'A new block must look like it belongs to the existing page: same type scale, same button treatment, same card/background grammar, same spacing rhythm.',
+            'allowed_variation' => 'Variation is allowed only through token roles, e.g. paper/surface/accent/support, not through unrelated colors or shapes.',
+        ],
+        'elementor_contract' => [
+            'root_marker' => 'settings._css_classes must include all required_root_classes on each top-level page/block container.',
+            'layout' => 'Flexbox Containers only.',
+            'content' => 'Native editable widgets first.',
+            'html_widget' => 'Enhancement-only CSS/JS; never main layout or content.',
+        ],
+    ];
+}
+
 // ── REST routes ────────────────────────────────────────────────────────────────
 add_action( 'rest_api_init', function () {
 
@@ -264,6 +310,12 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/elementor/blueprint', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_blueprint',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/design-system', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_design_system',
         'permission_callback' => 'wpae_auth',
     ] );
 
@@ -904,6 +956,16 @@ function wpae_build_agent_conformance( WP_REST_Request $request, array $response
         $errors = $elementor['validation_errors'];
         $error_counts = $elementor['error_counts'];
         $stats = $elementor['stats'];
+        $design_system_data = wpae_get_request_elementor_data_for_conformance( $request );
+        if ( ! is_array( $design_system_data ) && isset( $response_data['normalized_elementor_data'] ) && is_array( $response_data['normalized_elementor_data'] ) ) {
+            $design_system_data = $response_data['normalized_elementor_data'];
+        }
+        if ( ! is_array( $design_system_data ) && isset( $response_data['elementor_data'] ) && is_array( $response_data['elementor_data'] ) ) {
+            $design_system_data = $response_data['elementor_data'];
+        }
+        $design_system_contract = is_array( $design_system_data )
+            ? wpae_validate_design_system_contract( $design_system_data )
+            : [ 'ok' => true, 'errors' => [], 'stats' => [] ];
         $elementor_ok = empty( $errors ) && $status < 400;
 
         wpae_conformance_add_criterion(
@@ -950,6 +1012,19 @@ function wpae_build_agent_conformance( WP_REST_Request $request, array $response
             [
                 'containers_with_native_background' => (int) ( $stats['containers_with_native_background'] ?? 0 ),
                 'html_widget_layout_risks' => (int) ( $stats['html_widget_layout_risks'] ?? 0 ),
+            ]
+        );
+
+        wpae_conformance_add_criterion(
+            $criteria,
+            'design_system_consistency',
+            ! empty( $design_system_contract['ok'] ) ? 'pass' : 'fail',
+            ! empty( $design_system_contract['ok'] ) ? 15 : 0,
+            15,
+            ! empty( $design_system_contract['ok'] ) ? 'Elementor data follows the required project design system.' : 'Elementor data violates the required project design system.',
+            [
+                'errors' => $design_system_contract['errors'] ?? [],
+                'stats' => $design_system_contract['stats'] ?? [],
             ]
         );
 
@@ -1156,7 +1231,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '02.03.00.00',
+        'guide_version' => '02.04.00.00',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1512,7 +1587,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '02.02.00.00',
+        'guide_version' => '02.04.00.00',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1527,15 +1602,19 @@ function wpae_get_capabilities_payload(): array {
         'can_rollback' => true,
         'can_view_operation_logs' => true,
         'can_score_agent_conformance' => true,
+        'can_create_design_system' => true,
         'can_provide_project_design_tokens' => true,
+        'requires_design_system_before_elementor_build' => true,
         'requires_guide_token_for_writes' => true,
         'project_design_tokens' => wpae_get_project_design_tokens(),
+        'project_design_system' => wpae_build_project_design_system(),
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
             'safe_endpoints' => [
                 'validate' => 'POST /wp-json/ai-executor/v1/elementor/validate',
                 'normalize' => 'POST /wp-json/ai-executor/v1/elementor/normalize',
                 'blueprint' => 'POST /wp-json/ai-executor/v1/elementor/blueprint',
+                'design_system' => 'POST /wp-json/ai-executor/v1/elementor/design-system',
                 'recipes' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
                 'recipe' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
                 'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
@@ -1553,6 +1632,7 @@ function wpae_get_capabilities_payload(): array {
             'forbidden_widget_keys' => [ 'widget_type' ],
             'runtime_validation' => true,
             'static_visual_audit' => true,
+            'design_system_contract_enforced_on_writes' => true,
             'supports_dry_run' => [ '/elementor/page', '/elementor/update' ],
         ],
         'rollback' => [
@@ -1630,6 +1710,7 @@ function wpae_get_capabilities_payload(): array {
                 'widget_type_integrity',
                 'native_visual_settings',
                 'static_visual_audit',
+                'design_system_consistency',
                 'typography_hierarchy',
                 'spacing_consistency',
                 'cta_visibility',
@@ -1663,6 +1744,7 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/validate' => true,
                 '/elementor/normalize' => true,
                 '/elementor/blueprint' => true,
+                '/elementor/design-system' => true,
                 '/elementor/recipes' => true,
                 '/elementor/compose' => true,
                 '/elementor/visual-audit' => true,
@@ -2030,6 +2112,20 @@ function wpae_validate_elementor_data_array( array $elementor_data ): array {
     return wpae_validate_elementor_data_string( (string) wp_json_encode( $elementor_data ) );
 }
 
+function wpae_append_css_classes( $existing, array $classes ): string {
+    $current = preg_split( '/\s+/', trim( is_scalar( $existing ) ? (string) $existing : '' ) );
+    $current = is_array( $current ) ? array_filter( $current ) : [];
+
+    foreach ( $classes as $class ) {
+        $class = sanitize_html_class( (string) $class );
+        if ( $class !== '' && ! in_array( $class, $current, true ) ) {
+            $current[] = $class;
+        }
+    }
+
+    return trim( implode( ' ', array_values( array_unique( $current ) ) ) );
+}
+
 function wpae_elementor_default_id( string $path, array $element ): string {
     return substr( md5( $path . '|' . wp_json_encode( $element ) ), 0, 7 );
 }
@@ -2141,6 +2237,23 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
             if ( ! isset( $element['elements'] ) || ! is_array( $element['elements'] ) ) {
                 $element['elements'] = [];
                 wpae_elementor_normalize_add_change( $report, 'filled_elements', $element_path, 'Filled missing container elements array.' );
+            }
+
+            if ( $path === 'root' ) {
+                $required_classes = array_merge( wpae_get_design_system_required_classes(), [ 'wpae-block' ] );
+                $before_classes = (string) ( $element['settings']['_css_classes'] ?? '' );
+                $element['settings']['_css_classes'] = wpae_append_css_classes( $before_classes, $required_classes );
+                $element['settings']['_wpae_design_system_id'] = wpae_get_design_system_id();
+
+                if ( $element['settings']['_css_classes'] !== $before_classes ) {
+                    wpae_elementor_normalize_add_change(
+                        $report,
+                        'filled_design_system_marker',
+                        $element_path,
+                        'Added required design-system marker classes to top-level container.',
+                        [ 'classes' => $required_classes ]
+                    );
+                }
             }
 
             foreach ( [
@@ -2687,6 +2800,36 @@ function wpae_blueprint_palette_for_style( string $style ): array {
     ];
 }
 
+function wpae_elementor_design_system( WP_REST_Request $request ): WP_REST_Response {
+    $subject = wpae_blueprint_text_param( $request, 'subject', 'страница сайта', 140 );
+    $style = wpae_blueprint_text_param( $request, 'style', 'project default', 120 );
+    $language = wpae_blueprint_text_param( $request, 'language', 'ru', 24 );
+    $design_system = wpae_build_project_design_system( [
+        'subject' => $subject,
+        'style' => $style,
+        'language' => $language,
+    ] );
+
+    $design_system['input'] = [
+        'subject' => $subject,
+        'style' => $style,
+        'language' => $language,
+    ];
+    $design_system['next_steps'] = [
+        'POST /elementor/blueprint with the same subject/style and this system_id.',
+        'Build every page/block from native Flexbox Containers and widgets.',
+        'Put required_root_classes into settings._css_classes on every top-level container.',
+        'Run /elementor/normalize if a container is missing the marker.',
+        'Run /elementor/visual-audit before /elementor/page or /elementor/update.',
+    ];
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'writes' => false,
+        'design_system' => $design_system,
+    ], 200 );
+}
+
 function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response {
     $subject = wpae_blueprint_text_param( $request, 'subject', 'страница услуги', 140 );
     $audience = wpae_blueprint_text_param( $request, 'audience', 'клиенты, которым нужно быстро понять предложение', 180 );
@@ -2698,6 +2841,11 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
     $proof_points = wpae_blueprint_list_param( $request, 'proof_points', [ 'сроки', 'понятный процесс', 'редактируемая Elementor-структура' ] );
     $constraints = wpae_blueprint_list_param( $request, 'constraints', [ 'native Elementor Flexbox Containers only', 'no external files', 'HTML widget only for scoped CSS/JS enhancements' ] );
     $project_tokens = wpae_get_project_design_tokens();
+    $design_system = wpae_build_project_design_system( [
+        'subject' => $subject,
+        'style' => $style,
+        'language' => $language,
+    ] );
     $palette = ! empty( $project_tokens['palette'] ) ? $project_tokens['palette'] : wpae_blueprint_palette_for_style( $style );
     $primary_cta = wpae_blueprint_text_param( $request, 'primary_cta', 'Обсудить проект', 80 );
     $secondary_cta = wpae_blueprint_text_param( $request, 'secondary_cta', 'Посмотреть процесс', 80 );
@@ -2776,7 +2924,9 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
     return new WP_REST_Response( [
         'ok' => true,
         'writes' => false,
-        'blueprint_version' => '01.00.00.00',
+        'blueprint_version' => '01.01.00.00',
+        'design_system_required' => true,
+        'design_system' => $design_system,
         'input' => [
             'subject' => $subject,
             'audience' => $audience,
@@ -2806,6 +2956,8 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
             ],
         ],
         'elementor_contract' => [
+            'design_system' => 'Call /elementor/design-system before building. Every top-level page/block container must include required_root_classes in settings._css_classes.',
+            'required_root_classes' => $design_system['required_root_classes'],
             'layout' => 'Use elType=container only; never section/column.',
             'widgets' => 'Every widget must use camelCase widgetType.',
             'native_settings_first' => [ 'background_color', 'text colors', 'padding', 'gap', 'border', 'width', 'responsive settings' ],
@@ -2820,12 +2972,14 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
             'content_completeness' => 'No empty heading/text widgets or placeholder filler.',
         ],
         'agent_workflow' => [
-            '1. Use this blueprint as the page contract.',
-            '2. Compose available recipes with project-specific slots.',
-            '3. For custom sections, build native container/widget primitives.',
-            '4. Normalize and validate before writing.',
-            '5. Save with /elementor/page or /elementor/update using guide-token headers.',
-            '6. Verify with /audit and fix weak/blocked agent_conformance criteria.',
+            '1. Call /elementor/design-system first and keep its system_id.',
+            '2. Use this blueprint as the page/block contract.',
+            '3. Compose available recipes with project-specific slots.',
+            '4. For custom sections, build native container/widget primitives using the same design system.',
+            '5. Put required_root_classes on every top-level page/block container.',
+            '6. Normalize, validate, and visual-audit before writing.',
+            '7. Save with /elementor/page or /elementor/update using guide-token headers.',
+            '8. Verify with /audit and fix weak/blocked agent_conformance criteria.',
         ],
     ], 200 );
 }
@@ -2996,6 +3150,15 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    if ( ! $design_system_contract['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor data failed design-system contract.',
+            'details' => $design_system_contract,
+        ], 422 );
+    }
+
     if ( $dry_run ) {
         return new WP_REST_Response( [
             'ok' => true,
@@ -3054,6 +3217,15 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
             'ok' => false,
             'error' => 'Elementor data failed validation.',
             'details' => [ 'errors' => $validation_errors ],
+        ], 422 );
+    }
+
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    if ( ! $design_system_contract['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor data failed design-system contract.',
+            'details' => $design_system_contract,
         ], 422 );
     }
 
@@ -3723,6 +3895,101 @@ function wpae_collect_elementor_audit_stats( array $elements, array &$stats ): v
     }
 }
 
+function wpae_collect_design_system_stats( array $elements, array &$stats, int $depth = 0 ): void {
+    $tokens = wpae_get_project_design_tokens();
+    $palette = array_map( 'strtolower', array_values( (array) ( $tokens['palette'] ?? [] ) ) );
+    $required_classes = wpae_get_design_system_required_classes( $tokens );
+
+    if ( ! isset( $stats['design_system_marked_top_level_containers'] ) ) {
+        $stats['design_system_marked_top_level_containers'] = 0;
+        $stats['top_level_containers'] = 0;
+        $stats['token_color_hits'] = 0;
+        $stats['off_palette_color_count'] = 0;
+        $stats['off_palette_colors'] = [];
+    }
+
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $el_type = (string) ( $element['elType'] ?? '' );
+
+        if ( $depth === 0 && $el_type === 'container' ) {
+            $stats['top_level_containers']++;
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            $classes = is_array( $classes ) ? $classes : [];
+            $has_all = true;
+            foreach ( $required_classes as $required_class ) {
+                if ( ! in_array( $required_class, $classes, true ) ) {
+                    $has_all = false;
+                    break;
+                }
+            }
+            if ( $has_all ) {
+                $stats['design_system_marked_top_level_containers']++;
+            }
+        }
+
+        foreach ( $settings as $setting_value ) {
+            if ( ! is_string( $setting_value ) ) {
+                continue;
+            }
+            if ( preg_match_all( '/#[0-9a-f]{3,8}\b/i', $setting_value, $matches ) ) {
+                foreach ( $matches[0] as $color ) {
+                    $color = strtolower( $color );
+                    if ( in_array( $color, $palette, true ) ) {
+                        $stats['token_color_hits']++;
+                    } else {
+                        $stats['off_palette_colors'][ $color ] = true;
+                    }
+                }
+            }
+        }
+
+        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+            wpae_collect_design_system_stats( $element['elements'], $stats, $depth + 1 );
+        }
+    }
+
+    $stats['off_palette_color_count'] = count( (array) ( $stats['off_palette_colors'] ?? [] ) );
+}
+
+function wpae_finalize_design_system_stats( array &$stats ): void {
+    if ( isset( $stats['off_palette_colors'] ) && is_array( $stats['off_palette_colors'] ) ) {
+        $stats['off_palette_colors'] = array_keys( $stats['off_palette_colors'] );
+    }
+}
+
+function wpae_validate_design_system_contract( array $elementor_data ): array {
+    $stats = [];
+    wpae_collect_design_system_stats( $elementor_data, $stats );
+    wpae_finalize_design_system_stats( $stats );
+
+    $errors = [];
+    $top_level = (int) ( $stats['top_level_containers'] ?? 0 );
+    $marked = (int) ( $stats['design_system_marked_top_level_containers'] ?? 0 );
+
+    if ( $top_level <= 0 ) {
+        $errors[] = 'Design system contract requires at least one top-level Flexbox Container.';
+    } elseif ( $marked < $top_level ) {
+        $required = implode( ' ', wpae_get_design_system_required_classes() );
+        $errors[] = 'Every new page/block top-level container must include design-system classes in settings._css_classes: ' . $required . '.';
+    }
+
+    if ( (int) ( $stats['token_color_hits'] ?? 0 ) <= 0 ) {
+        $errors[] = 'Design system contract requires using project palette tokens in native Elementor color/background settings.';
+    }
+
+    return [
+        'ok' => empty( $errors ),
+        'errors' => $errors,
+        'stats' => $stats,
+        'design_system' => wpae_build_project_design_system(),
+    ];
+}
+
 function wpae_ratio( int $part, int $total ): float {
     if ( $total <= 0 ) {
         return 0.0;
@@ -3755,6 +4022,7 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
     wpae_finalize_elementor_audit_stats( $stats );
 
     $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
     $error_counts = wpae_count_elementor_validation_errors_by_type( $validation_errors );
     $checks = [];
     $container_count = (int) ( $stats['containers'] ?? 0 );
@@ -3776,6 +4044,21 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
         empty( $validation_errors ) ? 'Elementor data matches the required Flexbox Container contract.' : 'Elementor data violates the required Flexbox Container contract.',
         [ 'errors' => $validation_errors, 'error_counts' => $error_counts ],
         'Run /elementor/normalize, then /elementor/validate before writing.'
+    );
+
+    wpae_visual_audit_add_check(
+        $checks,
+        'design_system_contract',
+        $design_system_contract['ok'] ? 'pass' : 'fail',
+        $design_system_contract['ok'] ? 18 : 0,
+        18,
+        $design_system_contract['ok'] ? 'Elementor data follows the project design-system contract.' : 'Elementor data is missing required design-system markers or token usage.',
+        [
+            'errors' => $design_system_contract['errors'],
+            'stats' => $design_system_contract['stats'],
+            'required_root_classes' => $design_system_contract['design_system']['required_root_classes'] ?? [],
+        ],
+        'Call /elementor/design-system first, then add required_root_classes to every top-level page/block container and use project palette tokens.'
     );
 
     wpae_visual_audit_add_check(
@@ -3930,13 +4213,14 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
 
     return [
         'ok' => ! $has_failures,
-        'visual_audit_version' => '01.00.00.00',
+        'visual_audit_version' => '01.01.00.00',
         'score' => $score,
         'level' => $level,
         'points' => $points,
         'max_points' => $max,
         'context' => $context,
         'stats' => $stats,
+        'design_system' => $design_system_contract['design_system'],
         'checks' => $checks,
         'recommendations' => array_values( array_unique( $recommendations ) ),
         'contract' => [
@@ -4112,7 +4396,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '02.03.00.00',
+        'version' => '02.04.00.00',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -4121,6 +4405,7 @@ function wpae_agent_guide(): array {
         ],
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
         'project_design_tokens' => wpae_get_project_design_tokens(),
+        'project_design_system' => wpae_build_project_design_system(),
         'capabilities' => wpae_get_capabilities_payload(),
         'guide_token_protocol' => [
             'required_for_write_endpoints' => true,
@@ -4136,18 +4421,19 @@ function wpae_agent_guide(): array {
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
-            '2. For page work, call /elementor/blueprint before composing or writing Elementor data.',
-            '3. Prefer /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP through /run.',
-            '4. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
-            '5. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, or incomplete elements arrays.',
-            '6. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
-            '7. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
-            '8. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
-            '9. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '10. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
-            '11. Verify with /audit, /elementor/visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
-            '12. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
-            '13. Read agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
+            '2. Before any page or page-block work, call /elementor/design-system and treat it as the single style source.',
+            '3. For page work, call /elementor/blueprint after /elementor/design-system before composing or writing Elementor data.',
+            '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP through /run.',
+            '5. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
+            '6. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes.',
+            '7. Use /elementor/validate, /elementor/visual-audit, or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
+            '8. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
+            '9. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
+            '10. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element inside the returned design system.',
+            '11. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '12. Verify with /audit, /elementor/visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '13. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '14. Read agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -4182,6 +4468,7 @@ function wpae_agent_guide(): array {
                 'Native Elementor output must pass design quality gates: heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated content.',
             ],
             'project_tokens_rule' => 'Use project_design_tokens from this guide as the site visual system. They override generic defaults unless the user explicitly asks for a different direction.',
+            'design_system_first_rule' => 'Before creating a page or adding a page block, call /elementor/design-system. All later blocks must reuse the same system_id, palette, type roles, spacing, radii, button style, and tone.',
         ],
         'wordpress_elementor' => [
             'stack' => [
@@ -4234,6 +4521,15 @@ function wpae_agent_guide(): array {
                     'require_container_setting',
                     'forbid_html_pattern',
                 ],
+            ],
+            'design_system_policy' => [
+                'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/design-system',
+                'required' => true,
+                'rule' => 'Before creating a page or adding any new page block, create/read the design system and reuse it as the single visual source of truth.',
+                'write_enforcement' => 'POST /elementor/page and POST /elementor/update reject Elementor data whose top-level containers miss required_root_classes or do not use project palette tokens.',
+                'required_marker' => 'Every top-level page/block container must include required_root_classes in settings._css_classes.',
+                'block_rule' => 'A later block must inherit the same system_id, palette, typography roles, spacing, radii, button style, tone, and component grammar as the existing page.',
+                'normalize_support' => 'POST /elementor/normalize adds the required design-system marker classes to top-level containers when missing.',
             ],
             'runtime_elementor_validation' => [
                 'required' => true,
@@ -4553,7 +4849,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; fix weak or blocked visual audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; fix weak or blocked visual audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, design-system markers, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, consistent design system, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
@@ -5167,8 +5463,8 @@ function wpae_settings_page() {
             <div class="wpae-card wpae-card-wide">
                 <h2>Дизайн-токены проекта</h2>
                 <p>
-                    Эти настройки попадают в <code>/guide</code>, <code>/capabilities</code> и <code>/elementor/blueprint</code>.
-                    Агент должен использовать их как визуальную систему сайта.
+                    Эти настройки попадают в <code>/guide</code>, <code>/capabilities</code>, <code>/elementor/design-system</code> и <code>/elementor/blueprint</code>.
+                    Агент обязан использовать их как единую дизайн-систему для новых страниц и новых блоков.
                 </p>
 
                 <form method="post">
