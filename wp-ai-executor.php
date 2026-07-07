@@ -956,12 +956,15 @@ function wpae_build_agent_conformance( WP_REST_Request $request, array $response
         $errors = $elementor['validation_errors'];
         $error_counts = $elementor['error_counts'];
         $stats = $elementor['stats'];
-        $design_system_data = wpae_get_request_elementor_data_for_conformance( $request );
-        if ( ! is_array( $design_system_data ) && isset( $response_data['normalized_elementor_data'] ) && is_array( $response_data['normalized_elementor_data'] ) ) {
+        $design_system_data = null;
+        if ( isset( $response_data['normalized_elementor_data'] ) && is_array( $response_data['normalized_elementor_data'] ) ) {
             $design_system_data = $response_data['normalized_elementor_data'];
         }
         if ( ! is_array( $design_system_data ) && isset( $response_data['elementor_data'] ) && is_array( $response_data['elementor_data'] ) ) {
             $design_system_data = $response_data['elementor_data'];
+        }
+        if ( ! is_array( $design_system_data ) ) {
+            $design_system_data = wpae_get_request_elementor_data_for_conformance( $request );
         }
         $design_system_contract = is_array( $design_system_data )
             ? wpae_validate_design_system_contract( $design_system_data )
