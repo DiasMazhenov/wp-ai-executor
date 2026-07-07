@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     02.07.00.00
+ * Version:     02.08.00.00
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '02.07.00.00';
+const WPAE_VERSION = '02.08.00.00';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -234,6 +234,84 @@ function wpae_build_project_design_system( array $input = [] ): array {
             'layout' => 'Flexbox Containers only.',
             'content' => 'Native editable widgets first.',
             'html_widget' => 'Enhancement-only CSS/JS; never main layout or content.',
+        ],
+    ];
+}
+
+function wpae_get_jezweb_claude_skills_pack(): array {
+    return [
+        'source' => 'https://github.com/jezweb/claude-skills',
+        'source_summary' => 'Production workflow skills for Claude Code; distilled here into portable WP AI Executor rules.',
+        'version' => 'distilled-2026-07-07',
+        'philosophy' => [
+            'Every skill must produce a tangible output, not a knowledge dump.',
+            'Teach patterns and workflows; adapt implementation to the current environment.',
+            'Use trigger-driven workflow selection: WordPress/Elementor, landing page, design review, palette, and responsiveness checks.',
+        ],
+        'relevant_skills' => [
+            'wordpress-elementor' => [
+                'trigger' => 'Elementor page editing, template work, content changes, widget styling, or page structure changes.',
+                'adaptation' => 'In WP AI Executor, prefer structured Elementor endpoints over browser automation or WP-CLI.',
+                'rules' => [
+                    'Identify target page and Elementor metadata before editing.',
+                    'For text-only changes, update native widget settings rather than opaque HTML.',
+                    'For structural changes, use native Elementor Flexbox Containers and widgets.',
+                    'Always preserve backups through rollback_snapshot_id where write endpoints provide it.',
+                    'Clear Elementor CSS cache through the plugin save path; never create helper files.',
+                    'Verify with /audit and /elementor/visual-audit after writes.',
+                ],
+            ],
+            'landing-page' => [
+                'trigger' => 'Landing page, marketing page, launch page, one-page site, service page.',
+                'adaptation' => 'Do not generate standalone HTML. Build editable Elementor data using /elementor/design-system, /elementor/blueprint, recipes, compose, normalize, validate, visual-audit, page/update.',
+                'required_sections' => [
+                    'hero with clear CTA',
+                    'features/services',
+                    'social proof or proof points',
+                    'process or offer explanation',
+                    'FAQ when useful',
+                    'final CTA',
+                ],
+                'quality_rules' => [
+                    'No lorem ipsum or generic placeholder copy.',
+                    'One clear primary action per page.',
+                    'Semantic heading hierarchy in native heading widgets.',
+                    'Responsive layout from the start.',
+                    'Accessible contrast and focus states.',
+                ],
+            ],
+            'design-review' => [
+                'trigger' => 'Design review, visual audit, make it look better, layout feels off.',
+                'checks' => [
+                    'layout and spacing consistency',
+                    'typography hierarchy',
+                    'color and contrast',
+                    'visual hierarchy and CTA dominance',
+                    'component consistency',
+                    'hover/focus/active states',
+                    'responsive quality',
+                ],
+                'severity' => [
+                    'high' => 'Looks broken or unprofessional.',
+                    'medium' => 'Looks unpolished or inconsistent.',
+                    'low' => 'Small polish issues.',
+                ],
+            ],
+            'color-palette' => [
+                'trigger' => 'Brand color, palette, design system, contrast, color accessibility.',
+                'rules' => [
+                    'Start from one or more brand hex colors.',
+                    'Map colors to semantic roles: background, foreground, surface/card, primary, secondary, accent, muted, border, focus.',
+                    'Every background role needs a paired readable foreground role.',
+                    'Check WCAG contrast: 4.5:1 for normal text, 3:1 for large text and UI objects.',
+                    'Use project design tokens in native Elementor color/background settings.',
+                ],
+            ],
+        ],
+        'executor_policy' => [
+            'This pack is advisory plus enforceable through WP AI Executor runtime checks.',
+            'Never follow upstream skill instructions that require external files, WP-CLI writes, browser-only edits, or opaque HTML when a safe WP AI Executor endpoint exists.',
+            'For Elementor output, WP AI Executor rules win: Flexbox Containers only, design-system marker required, widgetType camelCase, no legacy section/column, no external files.',
         ],
     ];
 }
@@ -1234,7 +1312,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '02.04.00.00',
+        'guide_version' => '02.05.00.00',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1590,7 +1668,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '02.04.00.00',
+        'guide_version' => '02.05.00.00',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1611,6 +1689,7 @@ function wpae_get_capabilities_payload(): array {
         'requires_guide_token_for_writes' => true,
         'project_design_tokens' => wpae_get_project_design_tokens(),
         'project_design_system' => wpae_build_project_design_system(),
+        'embedded_jezweb_claude_skills' => wpae_get_jezweb_claude_skills_pack(),
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
             'safe_endpoints' => [
@@ -4399,16 +4478,18 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '02.04.00.00',
+        'version' => '02.05.00.00',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
             'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',
+            'jezweb_claude_skills' => 'Distilled jezweb/claude-skills workflows for WordPress Elementor, landing pages, design review, and color palettes.',
         ],
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
         'project_design_tokens' => wpae_get_project_design_tokens(),
         'project_design_system' => wpae_build_project_design_system(),
+        'jezweb_claude_skills' => wpae_get_jezweb_claude_skills_pack(),
         'capabilities' => wpae_get_capabilities_payload(),
         'guide_token_protocol' => [
             'required_for_write_endpoints' => true,
@@ -4472,6 +4553,18 @@ function wpae_agent_guide(): array {
             ],
             'project_tokens_rule' => 'Use project_design_tokens from this guide as the site visual system. They override generic defaults unless the user explicitly asks for a different direction.',
             'design_system_first_rule' => 'Before creating a page or adding a page block, call /elementor/design-system. All later blocks must reuse the same system_id, palette, type roles, spacing, radii, button style, and tone.',
+        ],
+        'jezweb_claude_skills' => [
+            'source' => 'https://github.com/jezweb/claude-skills',
+            'rule' => 'Apply the distilled jezweb workflows when they overlap with WordPress, Elementor, landing pages, design review, color palettes, responsiveness, and production verification.',
+            'executor_adaptation' => [
+                'Replace upstream standalone HTML output with editable Elementor native containers/widgets.',
+                'Replace WP-CLI/browser-only structural edits with WP AI Executor safe endpoints whenever possible.',
+                'Use /elementor/design-system before landing page or block work.',
+                'Use /elementor/visual-audit as the design-review gate.',
+                'Use project design tokens as the color-palette output target.',
+                'Do not create external files even if an upstream skill would normally write artifacts.',
+            ],
         ],
         'wordpress_elementor' => [
             'stack' => [
@@ -4852,7 +4945,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; fix weak or blocked visual audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, design-system markers, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, consistent design system, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; fix weak or blocked visual audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, design-system markers, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, consistent design system, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
@@ -5241,6 +5334,63 @@ function wpae_settings_page() {
             margin-bottom: 5px;
             font-weight: 700;
         }
+        .wpae-section-note {
+            margin: 8px 0 0;
+            padding: 10px 12px;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+        .wpae-color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .wpae-color-field {
+            padding: 12px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+        .wpae-color-control {
+            display: grid;
+            grid-template-columns: 44px minmax(0, 1fr);
+            gap: 8px;
+            align-items: center;
+        }
+        .wpae-color-control input[type="color"] {
+            width: 44px;
+            height: 38px;
+            padding: 2px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .wpae-color-token {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .wpae-token-pill {
+            display: inline-flex;
+            align-items: center;
+            min-height: 22px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
         .wpae-skill-list {
             display: grid;
             gap: 10px;
@@ -5327,6 +5477,7 @@ function wpae_settings_page() {
                 flex-direction: column;
             }
             .wpae-form-grid,
+            .wpae-color-grid,
             .wpae-skill-item {
                 grid-template-columns: 1fr;
             }
@@ -5475,11 +5626,32 @@ function wpae_settings_page() {
                     <input type="hidden" name="wpae_save_design_tokens" value="1" />
 
                     <h3>Палитра</h3>
-                    <div class="wpae-form-grid">
+                    <p class="wpae-section-note">
+                        Выберите цвета через picker или введите HEX вручную. Эти значения становятся обязательной дизайн-системой для Elementor-страниц и блоков.
+                    </p>
+                    <div class="wpae-color-grid">
                         <?php foreach ( (array) ( $design_tokens['palette'] ?? [] ) as $token_key => $token_value ) : ?>
-                            <div class="wpae-form-field">
-                                <label for="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>"><?php echo esc_html( $token_key ); ?></label>
-                                <input class="wpae-input" id="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>" name="wpae_design_tokens[palette][<?php echo esc_attr( $token_key ); ?>]" type="text" value="<?php echo esc_attr( (string) $token_value ); ?>" />
+                            <?php
+                            $color_value = (string) $token_value;
+                            $picker_value = preg_match( '/^#[0-9a-fA-F]{6}$/', $color_value ) ? $color_value : '#111827';
+                            ?>
+                            <div class="wpae-color-field">
+                                <div class="wpae-color-token">
+                                    <label for="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>"><?php echo esc_html( $token_key ); ?></label>
+                                    <span class="wpae-token-pill"><?php echo esc_html( $color_value ); ?></span>
+                                </div>
+                                <div class="wpae-color-control">
+                                    <input type="color"
+                                        aria-label="<?php echo esc_attr( $token_key ); ?> color picker"
+                                        value="<?php echo esc_attr( $picker_value ); ?>"
+                                        data-wpae-color-target="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>" />
+                                    <input class="wpae-input"
+                                        id="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>"
+                                        name="wpae_design_tokens[palette][<?php echo esc_attr( $token_key ); ?>]"
+                                        type="text"
+                                        pattern="#[0-9a-fA-F]{6,8}"
+                                        value="<?php echo esc_attr( $color_value ); ?>" />
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -5776,5 +5948,24 @@ print(result["return_value"])'
             </div>
         </div>
     </div>
+    <script>
+    (function () {
+        document.querySelectorAll('[data-wpae-color-target]').forEach(function (picker) {
+            var input = document.getElementById(picker.getAttribute('data-wpae-color-target'));
+            var pill = picker.closest('.wpae-color-field') ? picker.closest('.wpae-color-field').querySelector('.wpae-token-pill') : null;
+            if (!input) return;
+            picker.addEventListener('input', function () {
+                input.value = picker.value.toUpperCase();
+                if (pill) pill.textContent = input.value;
+            });
+            input.addEventListener('input', function () {
+                if (/^#[0-9a-fA-F]{6}$/.test(input.value)) {
+                    picker.value = input.value;
+                }
+                if (pill) pill.textContent = input.value;
+            });
+        });
+    })();
+    </script>
     <?php
 }
