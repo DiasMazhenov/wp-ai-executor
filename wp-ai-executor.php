@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.01
+ * Version:     v02.08.02
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.01';
+const WPAE_VERSION = 'v02.08.02';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -121,13 +121,19 @@ function wpae_project_design_token_defaults(): array {
             'utility' => 'Small uppercase eyebrow/labels used only where they carry meaning.',
         ],
         'spacing_scale' => [
-            'section_padding_desktop' => '72px top/bottom',
-            'section_padding_mobile' => '32px top/bottom',
-            'container_gap_desktop' => '24-40px',
-            'container_gap_mobile' => '16-20px',
+            'section_padding_desktop' => '4.5rem top/bottom',
+            'section_padding_mobile' => '2rem top/bottom',
+            'container_gap_desktop' => '1.5rem-2.5rem',
+            'container_gap_mobile' => '1rem-1.25rem',
+        ],
+        'unit_policy' => [
+            'spacing_and_type' => 'Prefer rem/em for spacing, typography, gap, padding, margin, border radius, icon sizing, and component dimensions when practical.',
+            'height' => 'Prefer vh/svh/min-height for viewport-height sections; avoid fixed px heights unless the element is a small control or icon.',
+            'width' => 'Prefer percentages, max-width, flex basis, and responsive constraints for width; avoid fixed px widths for main layout containers.',
+            'allowed_px_exceptions' => 'Use px only for hairline borders, very small icons, shadows, precise editor controls, or when Elementor control compatibility requires px.',
         ],
         'radii' => [
-            'cards' => '8px or less unless the site design system says otherwise',
+            'cards' => '0.5rem or less unless the site design system says otherwise',
             'buttons' => 'match site style; avoid oversized pill defaults unless intentional',
         ],
         'button_style' => 'Native Elementor button widget with clear label, high contrast, and no oversized pill default unless intentional.',
@@ -783,6 +789,12 @@ function wpae_default_elementor_audit_stats(): array {
         'elements_with_responsive_settings' => 0,
         'unique_color_count' => 0,
         'color_values' => [],
+        'px_unit_count' => 0,
+        'relative_unit_count' => 0,
+        'viewport_unit_count' => 0,
+        'percent_unit_count' => 0,
+        'fixed_width_risk_count' => 0,
+        'fixed_height_risk_count' => 0,
     ];
 }
 
@@ -800,6 +812,61 @@ function wpae_collect_elementor_setting_colors( array $settings, array &$stats )
         if ( preg_match_all( '/#[0-9a-f]{3,8}\b/i', $value, $matches ) ) {
             foreach ( $matches[0] as $color ) {
                 $stats['color_values'][ strtolower( $color ) ] = true;
+            }
+        }
+    }
+}
+
+function wpae_collect_elementor_setting_units( array $settings, array &$stats ): void {
+    foreach ( $settings as $key => $value ) {
+        $key = (string) $key;
+
+        if ( is_array( $value ) ) {
+            $unit = strtolower( (string) ( $value['unit'] ?? '' ) );
+            if ( $unit !== '' ) {
+                if ( $unit === 'px' ) {
+                    $stats['px_unit_count']++;
+                    if ( preg_match( '/width|basis|size/i', $key ) ) {
+                        $stats['fixed_width_risk_count']++;
+                    }
+                    if ( preg_match( '/height|min_height|max_height/i', $key ) ) {
+                        $stats['fixed_height_risk_count']++;
+                    }
+                } elseif ( in_array( $unit, [ 'rem', 'em' ], true ) ) {
+                    $stats['relative_unit_count']++;
+                } elseif ( in_array( $unit, [ '%', 'vw', 'dvw', 'lvw' ], true ) ) {
+                    $stats['percent_unit_count']++;
+                } elseif ( in_array( $unit, [ 'vh', 'svh', 'dvh', 'lvh' ], true ) ) {
+                    $stats['viewport_unit_count']++;
+                }
+            }
+
+            wpae_collect_elementor_setting_units( $value, $stats );
+            continue;
+        }
+
+        if ( ! is_string( $value ) ) {
+            continue;
+        }
+
+        if ( preg_match_all( '/-?\d*\.?\d+(px|rem|em|%|vh|svh|dvh|lvh|vw|dvw|lvw)\b/i', $value, $matches, PREG_SET_ORDER ) ) {
+            foreach ( $matches as $match ) {
+                $unit = strtolower( (string) ( $match[1] ?? '' ) );
+                if ( $unit === 'px' ) {
+                    $stats['px_unit_count']++;
+                    if ( preg_match( '/width|basis|size/i', $key ) ) {
+                        $stats['fixed_width_risk_count']++;
+                    }
+                    if ( preg_match( '/height|min_height|max_height/i', $key ) ) {
+                        $stats['fixed_height_risk_count']++;
+                    }
+                } elseif ( in_array( $unit, [ 'rem', 'em' ], true ) ) {
+                    $stats['relative_unit_count']++;
+                } elseif ( in_array( $unit, [ '%', 'vw', 'dvw', 'lvw' ], true ) ) {
+                    $stats['percent_unit_count']++;
+                } elseif ( in_array( $unit, [ 'vh', 'svh', 'dvh', 'lvh' ], true ) ) {
+                    $stats['viewport_unit_count']++;
+                }
             }
         }
     }
@@ -864,6 +931,7 @@ function wpae_collect_elementor_design_quality_stats( array $elements, array &$s
         $el_type = (string) ( $element['elType'] ?? '' );
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         wpae_collect_elementor_setting_colors( $settings, $stats );
+        wpae_collect_elementor_setting_units( $settings, $stats );
 
         foreach ( array_keys( $settings ) as $setting_key ) {
             if ( preg_match( '/(_mobile|_tablet|mobile_|tablet_|mobile|tablet)/i', (string) $setting_key ) ) {
@@ -1166,6 +1234,25 @@ function wpae_build_agent_conformance( WP_REST_Request $request, array $response
             [ 'elements_with_responsive_settings' => $responsive_count ]
         );
 
+        $unit_risks = (int) ( $stats['fixed_width_risk_count'] ?? 0 ) + (int) ( $stats['fixed_height_risk_count'] ?? 0 );
+        $relative_unit_count = (int) ( $stats['relative_unit_count'] ?? 0 ) + (int) ( $stats['percent_unit_count'] ?? 0 ) + (int) ( $stats['viewport_unit_count'] ?? 0 );
+        wpae_conformance_add_criterion(
+            $criteria,
+            'responsive_unit_policy',
+            $unit_risks === 0 && $relative_unit_count > 0 ? 'pass' : 'warn',
+            $unit_risks === 0 && $relative_unit_count > 0 ? 8 : 4,
+            8,
+            $unit_risks === 0 && $relative_unit_count > 0 ? 'Responsive-friendly units are present.' : 'Prefer rem/em, vh, and percentages over fixed px units where practical.',
+            [
+                'px_unit_count' => (int) ( $stats['px_unit_count'] ?? 0 ),
+                'relative_unit_count' => (int) ( $stats['relative_unit_count'] ?? 0 ),
+                'percent_unit_count' => (int) ( $stats['percent_unit_count'] ?? 0 ),
+                'viewport_unit_count' => (int) ( $stats['viewport_unit_count'] ?? 0 ),
+                'fixed_width_risk_count' => (int) ( $stats['fixed_width_risk_count'] ?? 0 ),
+                'fixed_height_risk_count' => (int) ( $stats['fixed_height_risk_count'] ?? 0 ),
+            ]
+        );
+
         $color_count = (int) ( $stats['unique_color_count'] ?? 0 );
         $palette_ok = $color_count >= 3 && $color_count <= 10;
         wpae_conformance_add_criterion(
@@ -1312,7 +1399,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.01',
+        'guide_version' => 'v02.05.02',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1668,7 +1755,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.01',
+        'guide_version' => 'v02.05.02',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1685,6 +1772,8 @@ function wpae_get_capabilities_payload(): array {
         'can_score_agent_conformance' => true,
         'can_create_design_system' => true,
         'can_provide_project_design_tokens' => true,
+        'can_run_elementor_preflight' => true,
+        'can_return_after_save_quality_summary' => true,
         'requires_design_system_before_elementor_build' => true,
         'requires_guide_token_for_writes' => true,
         'project_design_tokens' => wpae_get_project_design_tokens(),
@@ -1714,7 +1803,15 @@ function wpae_get_capabilities_payload(): array {
             'forbidden_widget_keys' => [ 'widget_type' ],
             'runtime_validation' => true,
             'static_visual_audit' => true,
+            'preflight_before_writes' => true,
+            'after_save_quality_summary' => true,
             'design_system_contract_enforced_on_writes' => true,
+            'unit_policy' => [
+                'spacing_and_type' => 'Prefer rem/em.',
+                'height' => 'Prefer vh/svh/min-height for viewport sections.',
+                'width' => 'Prefer %, flex basis, max-width, and responsive constraints.',
+                'px_exceptions' => 'Hairline borders, tiny controls/icons, shadows, and Elementor compatibility exceptions.',
+            ],
             'supports_dry_run' => [ '/elementor/page', '/elementor/update' ],
         ],
         'rollback' => [
@@ -1799,6 +1896,7 @@ function wpae_get_capabilities_payload(): array {
                 'mobile_readiness',
                 'palette_quality',
                 'content_completeness',
+                'responsive_unit_policy',
                 'verification_signal',
             ],
             'design_quality_gates' => [
@@ -1808,6 +1906,7 @@ function wpae_get_capabilities_payload(): array {
                 'mobile_readiness' => 'Include responsive Elementor settings for complex layouts.',
                 'palette_quality' => 'Use a deliberate palette with detectable color variety.',
                 'content_completeness' => 'Avoid empty native heading/text widgets and sparse placeholder content.',
+                'responsive_unit_policy' => 'Prefer rem/em for spacing/type, vh/svh for height, and percentages/flex constraints for width.',
             ],
             'score_meaning' => [
                 '90_100' => 'strong',
@@ -2352,8 +2451,8 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
 
             if ( ! isset( $element['settings']['gap'] ) ) {
                 $element['settings']['gap'] = [
-                    'unit' => 'px',
-                    'size' => 24,
+                    'unit' => 'rem',
+                    'size' => 1.5,
                     'sizes' => [],
                 ];
                 wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container gap.', [ 'setting' => 'gap' ] );
@@ -2361,11 +2460,11 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
 
             if ( ! isset( $element['settings']['padding'] ) ) {
                 $element['settings']['padding'] = [
-                    'unit' => 'px',
-                    'top' => '24',
-                    'right' => '24',
-                    'bottom' => '24',
-                    'left' => '24',
+                    'unit' => 'rem',
+                    'top' => '1.5',
+                    'right' => '1.5',
+                    'bottom' => '1.5',
+                    'left' => '1.5',
                     'isLinked' => true,
                 ];
                 wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container padding.', [ 'setting' => 'padding' ] );
@@ -3241,6 +3340,19 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
+    $preflight = wpae_build_elementor_preflight( $elementor_data, $request, [
+        'post_id' => $post_id,
+        'template' => $template,
+        'operation' => 'update',
+    ] );
+    if ( ! $preflight['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor preflight failed.',
+            'preflight' => $preflight,
+        ], 422 );
+    }
+
     if ( $dry_run ) {
         return new WP_REST_Response( [
             'ok' => true,
@@ -3253,6 +3365,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
                 '_elementor_version',
                 '_wp_page_template',
             ],
+            'preflight' => $preflight,
         ], 200 );
     }
 
@@ -3272,6 +3385,8 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         'url' => get_permalink( $post_id ),
         'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+        'preflight' => $preflight,
+        'quality_summary' => wpae_build_after_save_quality_summary( $post_id, $elementor_data, $preflight ),
     ], 200 );
 }
 
@@ -3311,6 +3426,21 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
+    $preflight = wpae_build_elementor_preflight( $elementor_data, $request, [
+        'post_id' => $post_id ?: null,
+        'template' => $template,
+        'operation' => $post_id > 0 ? 'page_update' : 'page_create',
+        'title' => $title,
+        'slug' => $slug,
+    ] );
+    if ( ! $preflight['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor preflight failed.',
+            'preflight' => $preflight,
+        ], 422 );
+    }
+
     if ( $post_id > 0 && get_post( $post_id ) === null ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'Target post_id does not exist.' ], 404 );
     }
@@ -3324,6 +3454,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
             'slug' => $slug,
             'status' => $status,
             'template' => $template,
+            'preflight' => $preflight,
         ], 200 );
     }
 
@@ -3376,6 +3507,8 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         'status' => get_post_status( $post_id ),
         'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+        'preflight' => $preflight,
+        'quality_summary' => wpae_build_after_save_quality_summary( $post_id, $elementor_data, $preflight ),
     ], 200 );
 }
 
@@ -4232,6 +4365,27 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
         'Add mobile/tablet Elementor settings for complex split, grid, and hero layouts.'
     );
 
+    $relative_units = (int) ( $stats['relative_unit_count'] ?? 0 ) + (int) ( $stats['percent_unit_count'] ?? 0 ) + (int) ( $stats['viewport_unit_count'] ?? 0 );
+    $px_units = (int) ( $stats['px_unit_count'] ?? 0 );
+    $unit_ok = $relative_units > 0 && ( (int) ( $stats['fixed_width_risk_count'] ?? 0 ) + (int) ( $stats['fixed_height_risk_count'] ?? 0 ) ) === 0;
+    wpae_visual_audit_add_check(
+        $checks,
+        'responsive_unit_policy',
+        $unit_ok ? 'pass' : 'warn',
+        $unit_ok ? 8 : 4,
+        8,
+        $unit_ok ? 'Responsive-friendly units are used in Elementor settings.' : 'Elementor settings rely too much on fixed px units.',
+        [
+            'px_unit_count' => $px_units,
+            'relative_unit_count' => (int) ( $stats['relative_unit_count'] ?? 0 ),
+            'percent_unit_count' => (int) ( $stats['percent_unit_count'] ?? 0 ),
+            'viewport_unit_count' => (int) ( $stats['viewport_unit_count'] ?? 0 ),
+            'fixed_width_risk_count' => (int) ( $stats['fixed_width_risk_count'] ?? 0 ),
+            'fixed_height_risk_count' => (int) ( $stats['fixed_height_risk_count'] ?? 0 ),
+        ],
+        'Prefer rem/em for spacing and type, vh/svh for viewport-height sections, and percentages/flex constraints for widths; keep px for tiny controls, borders, and compatibility exceptions.'
+    );
+
     $html_layout_risks = (int) ( $stats['html_widget_layout_risks'] ?? 0 );
     wpae_visual_audit_add_check(
         $checks,
@@ -4295,7 +4449,7 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
 
     return [
         'ok' => ! $has_failures,
-        'visual_audit_version' => 'v01.01.00',
+        'visual_audit_version' => 'v01.02.00',
         'score' => $score,
         'level' => $level,
         'points' => $points,
@@ -4310,6 +4464,211 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
             'critical_visuals' => 'Backgrounds, readable text colors, borders, spacing, dimensions, and CTA styling should be present in native Elementor settings first.',
             'html_widget' => 'Allowed only for scoped CSS/JS enhancement, not as main layout or content.',
         ],
+    ];
+}
+
+function wpae_is_landing_page_request( WP_REST_Request $request, string $template = '' ): bool {
+    foreach ( [ 'page_kind', 'page_type', 'intent', 'goal', 'style', 'title', 'slug' ] as $param ) {
+        $value = strtolower( (string) $request->get_param( $param ) );
+        if ( preg_match( '/landing|лендинг|service page|страница услуги|sales|продаж/i', $value ) ) {
+            return true;
+        }
+    }
+
+    return $template === 'elementor_canvas' && (string) $request->get_route() === '/ai-executor/v1/elementor/page';
+}
+
+function wpae_preflight_add_check( array &$checks, string $code, string $status, string $message, array $details = [], string $fix = '' ): void {
+    $check = [
+        'code' => $code,
+        'status' => $status,
+        'message' => $message,
+        'details' => $details,
+    ];
+
+    if ( $fix !== '' ) {
+        $check['fix'] = $fix;
+    }
+
+    $checks[] = $check;
+}
+
+function wpae_build_elementor_preflight( array $elementor_data, WP_REST_Request $request, array $context = [] ): array {
+    $template_value = $context['template'] ?? $request->get_param( 'template' );
+    if ( $template_value === null || $template_value === '' ) {
+        $template_value = 'elementor_canvas';
+    }
+    $template = sanitize_key( (string) $template_value );
+    $is_landing = wpae_is_landing_page_request( $request, $template );
+    $visual_audit = wpae_build_elementor_visual_audit( $elementor_data, array_merge( $context, [
+        'source' => 'preflight',
+        'landing_page_required' => $is_landing,
+    ] ) );
+    $stats = (array) ( $visual_audit['stats'] ?? [] );
+    $checks = [];
+
+    $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
+    wpae_preflight_add_check(
+        $checks,
+        'elementor_contract',
+        empty( $validation_errors ) ? 'pass' : 'fail',
+        empty( $validation_errors ) ? 'Elementor contract is valid.' : 'Elementor contract has blocking errors.',
+        [ 'errors' => $validation_errors ],
+        'Run /elementor/normalize and /elementor/validate before writing.'
+    );
+
+    $design_system = wpae_validate_design_system_contract( $elementor_data );
+    wpae_preflight_add_check(
+        $checks,
+        'design_system_contract',
+        $design_system['ok'] ? 'pass' : 'fail',
+        $design_system['ok'] ? 'Design-system markers and token usage are present.' : 'Design-system contract is missing required markers or token usage.',
+        $design_system,
+        'Call /elementor/design-system first, add required_root_classes to top-level containers, and use palette tokens in native settings.'
+    );
+
+    $empty_content = (int) ( $stats['empty_heading_widgets'] ?? 0 ) + (int) ( $stats['empty_text_widgets'] ?? 0 );
+    wpae_preflight_add_check(
+        $checks,
+        'native_content_complete',
+        $empty_content === 0 ? 'pass' : 'fail',
+        $empty_content === 0 ? 'Native heading/text widgets are populated.' : 'Native heading/text widgets include empty content.',
+        [
+            'empty_heading_widgets' => (int) ( $stats['empty_heading_widgets'] ?? 0 ),
+            'empty_text_widgets' => (int) ( $stats['empty_text_widgets'] ?? 0 ),
+        ],
+        'Fill all heading settings.title and text-editor settings.editor values before writing.'
+    );
+
+    $html_layout_risks = (int) ( $stats['html_widget_layout_risks'] ?? 0 );
+    wpae_preflight_add_check(
+        $checks,
+        'html_widget_scope',
+        $html_layout_risks === 0 ? 'pass' : 'fail',
+        $html_layout_risks === 0 ? 'HTML widgets are enhancement-only.' : 'HTML widgets appear to contain layout/content markup.',
+        [
+            'html_widgets' => (int) ( $stats['html_widgets'] ?? 0 ),
+            'html_widget_layout_risks' => $html_layout_risks,
+        ],
+        'Move content/layout into native Elementor containers and widgets; keep HTML widgets only for scoped CSS/JS.'
+    );
+
+    $has_cta = (int) ( $stats['button_widgets'] ?? 0 ) > 0;
+    wpae_preflight_add_check(
+        $checks,
+        'landing_page_cta',
+        ( ! $is_landing || $has_cta ) ? 'pass' : 'fail',
+        ( ! $is_landing || $has_cta ) ? 'CTA requirement is satisfied.' : 'Landing pages require at least one native Elementor button CTA.',
+        [
+            'landing_page_required' => $is_landing,
+            'button_widgets' => (int) ( $stats['button_widgets'] ?? 0 ),
+        ],
+        'Add a native button widget with clear text and link settings.'
+    );
+
+    $has_native_visuals = (int) ( $stats['containers_with_native_background'] ?? 0 ) > 0
+        && ( (int) ( $stats['containers_with_native_text_color'] ?? 0 ) + (int) ( $stats['widgets_with_native_text_color'] ?? 0 ) ) > 0
+        && (int) ( $stats['containers_with_padding'] ?? 0 ) > 0
+        && (int) ( $stats['containers_with_gap'] ?? 0 ) > 0;
+    wpae_preflight_add_check(
+        $checks,
+        'native_critical_visual_settings',
+        ( ! $is_landing || $has_native_visuals ) ? 'pass' : 'fail',
+        ( ! $is_landing || $has_native_visuals ) ? 'Native critical visual settings are sufficient.' : 'Landing pages require native backgrounds, readable text colors, padding, and gaps before write.',
+        [
+            'landing_page_required' => $is_landing,
+            'containers_with_native_background' => (int) ( $stats['containers_with_native_background'] ?? 0 ),
+            'containers_with_native_text_color' => (int) ( $stats['containers_with_native_text_color'] ?? 0 ),
+            'widgets_with_native_text_color' => (int) ( $stats['widgets_with_native_text_color'] ?? 0 ),
+            'containers_with_padding' => (int) ( $stats['containers_with_padding'] ?? 0 ),
+            'containers_with_gap' => (int) ( $stats['containers_with_gap'] ?? 0 ),
+        ],
+        'Set background, color, padding, and gap in native Elementor settings first; CSS may only reinforce them.'
+    );
+
+    $unit_risks = (int) ( $stats['fixed_width_risk_count'] ?? 0 ) + (int) ( $stats['fixed_height_risk_count'] ?? 0 );
+    wpae_preflight_add_check(
+        $checks,
+        'responsive_unit_policy',
+        $unit_risks === 0 ? 'pass' : 'warn',
+        $unit_risks === 0 ? 'No risky fixed px width/height settings were detected.' : 'Fixed px width/height settings may harm responsiveness.',
+        [
+            'px_unit_count' => (int) ( $stats['px_unit_count'] ?? 0 ),
+            'relative_unit_count' => (int) ( $stats['relative_unit_count'] ?? 0 ),
+            'percent_unit_count' => (int) ( $stats['percent_unit_count'] ?? 0 ),
+            'viewport_unit_count' => (int) ( $stats['viewport_unit_count'] ?? 0 ),
+            'fixed_width_risk_count' => (int) ( $stats['fixed_width_risk_count'] ?? 0 ),
+            'fixed_height_risk_count' => (int) ( $stats['fixed_height_risk_count'] ?? 0 ),
+        ],
+        'Use rem/em where practical, vh/svh for viewport-height sections, and %/flex/max-width for widths. Keep px only for small exceptions.'
+    );
+
+    $blocking = [];
+    $warnings = [];
+    $fixes = [];
+    foreach ( $checks as $check ) {
+        if ( ( $check['status'] ?? '' ) === 'fail' ) {
+            $blocking[] = $check['message'];
+        } elseif ( ( $check['status'] ?? '' ) === 'warn' ) {
+            $warnings[] = $check['message'];
+        }
+        if ( ( $check['status'] ?? '' ) !== 'pass' && ! empty( $check['fix'] ) ) {
+            $fixes[] = $check['fix'];
+        }
+    }
+
+    return [
+        'ok' => empty( $blocking ),
+        'preflight_version' => 'v01.00.00',
+        'landing_page_required' => $is_landing,
+        'blocking_errors' => array_values( array_unique( $blocking ) ),
+        'warnings' => array_values( array_unique( $warnings ) ),
+        'fixes' => array_values( array_unique( $fixes ) ),
+        'checks' => $checks,
+        'visual_audit_summary' => [
+            'score' => (int) ( $visual_audit['score'] ?? 0 ),
+            'level' => (string) ( $visual_audit['level'] ?? '' ),
+            'recommendations' => (array) ( $visual_audit['recommendations'] ?? [] ),
+        ],
+    ];
+}
+
+function wpae_build_after_save_quality_summary( int $post_id, array $elementor_data, array $preflight = [] ): array {
+    $visual_audit = wpae_build_elementor_visual_audit( $elementor_data, [
+        'source' => 'after_save',
+        'post_id' => $post_id,
+        'post_status' => get_post_status( $post_id ),
+        'url' => get_permalink( $post_id ),
+    ] );
+
+    $fixes = array_values( array_unique( array_merge(
+        (array) ( $preflight['fixes'] ?? [] ),
+        (array) ( $visual_audit['recommendations'] ?? [] )
+    ) ) );
+
+    return [
+        'post_id' => $post_id,
+        'url' => get_permalink( $post_id ),
+        'status' => get_post_status( $post_id ),
+        'visual_audit' => [
+            'score' => (int) ( $visual_audit['score'] ?? 0 ),
+            'level' => (string) ( $visual_audit['level'] ?? '' ),
+            'warnings' => array_values( array_filter( array_map(
+                static function ( $check ) {
+                    return is_array( $check ) && ( $check['status'] ?? '' ) !== 'pass'
+                        ? (string) ( $check['message'] ?? '' )
+                        : '';
+                },
+                (array) ( $visual_audit['checks'] ?? [] )
+            ) ) ),
+        ],
+        'preflight' => [
+            'ok' => (bool) ( $preflight['ok'] ?? false ),
+            'warnings' => (array) ( $preflight['warnings'] ?? [] ),
+            'blocking_errors' => (array) ( $preflight['blocking_errors'] ?? [] ),
+        ],
+        'fixes' => $fixes,
+        'completion_rule' => 'If visual_audit.level is weak/blocked or fixes are present, the agent must correct them before claiming the page is finished.',
     ];
 }
 
@@ -4478,7 +4837,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.01',
+        'version' => 'v02.05.02',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -4510,14 +4869,15 @@ function wpae_agent_guide(): array {
             '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP through /run.',
             '5. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
             '6. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes.',
-            '7. Use /elementor/validate, /elementor/visual-audit, or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
+            '7. Use /elementor/validate, /elementor/visual-audit, or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages; structured writes also run strict preflight checks.',
             '8. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
             '9. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
             '10. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element inside the returned design system.',
-            '11. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
-            '12. Verify with /audit, /elementor/visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
-            '13. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
-            '14. Read agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
+            '11. Prefer rem/em for spacing and typography, vh/svh for viewport-height sections, and %/flex/max-width constraints for widths; use px only for small exceptions or Elementor compatibility.',
+            '12. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '13. Verify with /audit, /elementor/visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '14. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '15. Read preflight and agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -4547,6 +4907,7 @@ function wpae_agent_guide(): array {
                 'Hero must be the design thesis and should contain the page signature.',
                 'Typography must use deliberate roles: display, body, utility/caption.',
                 'Layout must be stable at desktop, tablet, and mobile widths.',
+                'Use responsive units deliberately: rem/em for spacing and type, vh/svh for viewport-height sections, and percentages/flex constraints for width.',
                 'Motion must support comprehension: reveal, hover, progress, or focused ambient animation.',
                 'Copy must be concrete and action-oriented.',
                 'Native Elementor output must pass design quality gates: heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated content.',
@@ -4618,17 +4979,53 @@ function wpae_agent_guide(): array {
                     'forbid_html_pattern',
                 ],
             ],
-            'design_system_policy' => [
-                'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/design-system',
-                'required' => true,
+        'design_system_policy' => [
+            'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/design-system',
+            'required' => true,
                 'rule' => 'Before creating a page or adding any new page block, create/read the design system and reuse it as the single visual source of truth.',
                 'write_enforcement' => 'POST /elementor/page and POST /elementor/update reject Elementor data whose top-level containers miss required_root_classes or do not use project palette tokens.',
                 'required_marker' => 'Every top-level page/block container must include required_root_classes in settings._css_classes.',
                 'block_rule' => 'A later block must inherit the same system_id, palette, typography roles, spacing, radii, button style, tone, and component grammar as the existing page.',
-                'normalize_support' => 'POST /elementor/normalize adds the required design-system marker classes to top-level containers when missing.',
+            'normalize_support' => 'POST /elementor/normalize adds the required design-system marker classes to top-level containers when missing.',
+        ],
+        'responsive_unit_policy' => [
+            'required' => true,
+            'rule' => 'Use responsive units wherever practical: rem/em for spacing, typography, gaps, padding, margins, radii, and component dimensions; vh/svh/min-height for viewport-height sections; percentages, flex basis, max-width, and responsive constraints for widths.',
+            'px_exceptions' => [
+                '1px borders and hairlines.',
+                'Tiny icons and editor controls.',
+                'Box shadows.',
+                'Elementor controls that do not accept relative units reliably.',
             ],
-            'runtime_elementor_validation' => [
-                'required' => true,
+            'preflight' => 'Structured Elementor writes warn when fixed px width/height settings are detected.',
+        ],
+        'elementor_preflight_policy' => [
+            'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update' ],
+            'returned_as' => 'preflight',
+            'blocks' => [
+                'Invalid Elementor contract or design-system contract.',
+                'Empty native heading/text widgets.',
+                'HTML widget used as main layout/content.',
+                'Landing page without a native button CTA.',
+                'Landing page without native background, text color, padding, and gap settings.',
+            ],
+            'warns' => [
+                'Fixed px width/height risks instead of responsive units.',
+            ],
+        ],
+        'after_save_quality_summary_policy' => [
+            'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update' ],
+            'returned_as' => 'quality_summary',
+            'contains' => [
+                'permalink and post status.',
+                'visual audit score and level.',
+                'preflight warnings and blocking status.',
+                'concrete fixes the agent should apply before claiming completion.',
+            ],
+            'rule' => 'If quality_summary.visual_audit.level is weak/blocked or fixes are present, the agent must continue correcting the page before reporting completion.',
+        ],
+        'runtime_elementor_validation' => [
+            'required' => true,
                 'rule' => 'The executor validates changed _elementor_data after each /run call and rejects invalid Elementor JSON even if the agent ignored the guide.',
                 'normalize_endpoint' => [
                     'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/normalize',
@@ -4910,6 +5307,7 @@ function wpae_agent_guide(): array {
                 'If elType is widget and widgetType is missing or empty, Elementor will render an empty/broken widget; treat this as a blocker.',
                 'Never emit legacy elType=section or elType=column. If source data contains them, convert to nested elType=container before saving.',
                 'Use Flexbox Container settings for layout: flex_direction, content_width, width, min_height, gap, padding, margin, justify_content, align_items, flex_wrap, and responsive variants.',
+                'Use rem/em where practical for gap, padding, margin, typography, radii, and component dimensions; use vh/svh/min-height for viewport sections and percentages/flex/max-width for widths.',
                 'Use deterministic short ids when possible so future updates can target stable elements.',
                 'Use _css_classes in settings to attach scoped enhancement styles.',
                 'For readable sections and cards, duplicate essential styling in settings before adding CSS: background_background, background_color, title/text colors, border_border, border_color, border_width, border_radius, padding, margin, gap, width, min-height, and alignment.',
@@ -4945,7 +5343,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; fix weak or blocked visual audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, design-system markers, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, consistent design system, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; fix weak or blocked visual audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
