@@ -256,6 +256,22 @@ The response includes design tokens, section plan, recipe IDs/variants, slot
 suggestions, native widget requirements, HTML enhancement zones, and design
 quality gates.
 
+### Project design tokens
+
+The dashboard stores project design tokens in `wp_options`. They are returned
+from `/guide`, `/capabilities`, and `/elementor/blueprint`, so agents can follow
+the site's visual system before writing Elementor data.
+
+Stored token groups:
+
+- palette
+- typography roles
+- spacing scale
+- radii
+- button style
+- tone of voice
+- design prohibitions
+
 ### `GET /wp-json/ai-executor/v1/elementor/recipes/{id}`
 
 Returns one recipe with its variants, slots, and native Elementor JSON pattern.

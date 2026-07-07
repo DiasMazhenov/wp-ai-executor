@@ -24,26 +24,23 @@
 - Добавлены `/elementor/recipes`, `/elementor/recipes/{id}` и `/elementor/compose` для переиспользуемых native Flexbox Container composition patterns с variants и slots.
 - Agent conformance scoring расширен до design quality gates: typography hierarchy, spacing consistency, CTA visibility, mobile readiness, palette quality и native content completeness.
 - Добавлен `/elementor/blueprint` для read-only планирования страницы перед записью: subject, goal, audience, offer, language, style, section map, design tokens, CTA plan, recipes и enhancement zones.
+- Добавлены project design tokens в dashboard, `/guide`, `/capabilities` и `/elementor/blueprint`: palette, typography roles, spacing scale, radii, button style, tone of voice и design prohibitions.
 
 ## Далее
 
-1. Добавить project design tokens в dashboard и `/guide`.
-   - Хранить palette, typography roles, spacing scale, radii, button style, tone of voice и design prohibitions в `wp_options`.
-   - Возвращать tokens в `/guide` и `/capabilities`, чтобы любой агент мог следовать визуальной системе сайта.
-
-2. Добавить более строгие preflight checks перед Elementor writes.
+1. Добавить более строгие preflight checks перед Elementor writes.
    - Проверять отсутствие legacy sections/columns, пустых native widgets, CSS-only critical backgrounds, признаков horizontal overflow и HTML widget как main layout.
    - Требовать CTA presence и native critical visual settings для landing pages.
 
-3. Добавить after-save quality summary.
+2. Добавить after-save quality summary.
    - После `/elementor/page` или `/elementor/update` возвращать permalink, audit summary, conformance score, warnings и конкретные fixes.
    - Подталкивать агентов запускать `/audit` и исправлять warnings до сообщения о завершении.
 
-4. Рассмотреть будущий endpoint `/visual-audit`.
+3. Рассмотреть будущий endpoint `/visual-audit`.
    - Использовать server-side DOM/render checks только если это будет надежно работать на типичном WordPress hosting.
    - Цели проверки: overflow, contrast, invisible text, подозрительные empty blocks, слишком большие отступы и desktop/mobile screenshot metrics.
 
-5. Опционально добавить preset buttons для существующих single-key capability toggles.
+4. Опционально добавить preset buttons для существующих single-key capability toggles.
    - Базовая модель уже реализована: один `X-AI-Key`, capability toggles в dashboard и отражение в `/capabilities`.
    - Не добавлять отдельные `run_key`, `guide_key`, `update_key` или `readonly_key`.
    - Presets, если понадобятся, должны быть только UI shortcuts: `read_only`, `elementor_safe`, `maintenance`, `full_trusted`.

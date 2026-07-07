@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     2.4.0
+ * Version:     2.5.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '2.4.0';
+const WPAE_VERSION = '2.5.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -103,6 +103,93 @@ function wpae_can_run_filesystem_operations(): bool {
     }
 
     return wpae_capability_enabled( 'filesystem_writes' );
+}
+
+function wpae_project_design_token_defaults(): array {
+    return [
+        'palette' => [
+            'ink' => '#111827',
+            'paper' => '#f6f0e6',
+            'surface' => '#ffffff',
+            'accent' => '#c75b3b',
+            'support' => '#2563eb',
+            'muted' => '#6b7280',
+        ],
+        'typography_roles' => [
+            'display' => 'Large high-contrast H1/H2 headings; avoid generic template scale.',
+            'body' => 'Readable native text-editor copy with 1.5-1.7 line-height.',
+            'utility' => 'Small uppercase eyebrow/labels used only where they carry meaning.',
+        ],
+        'spacing_scale' => [
+            'section_padding_desktop' => '72px top/bottom',
+            'section_padding_mobile' => '32px top/bottom',
+            'container_gap_desktop' => '24-40px',
+            'container_gap_mobile' => '16-20px',
+        ],
+        'radii' => [
+            'cards' => '8px or less unless the site design system says otherwise',
+            'buttons' => 'match site style; avoid oversized pill defaults unless intentional',
+        ],
+        'button_style' => 'Native Elementor button widget with clear label, high contrast, and no oversized pill default unless intentional.',
+        'tone_of_voice' => 'Concrete, confident, and useful; avoid filler marketing language.',
+        'design_prohibitions' => [
+            'No generic template gradients as the main visual idea.',
+            'No legacy Elementor sections or columns.',
+            'No HTML widget as main layout or content container.',
+            'No CSS-only critical backgrounds, contrast, spacing, or borders.',
+        ],
+    ];
+}
+
+function wpae_sanitize_design_token_text( $value, int $max_length = 240 ): string {
+    $value = trim( sanitize_text_field( is_scalar( $value ) ? (string) $value : '' ) );
+    return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $max_length ) : substr( $value, 0, $max_length );
+}
+
+function wpae_sanitize_design_tokens( array $input ): array {
+    $defaults = wpae_project_design_token_defaults();
+    $tokens = $defaults;
+
+    foreach ( [ 'palette', 'typography_roles', 'spacing_scale', 'radii' ] as $group ) {
+        $incoming = is_array( $input[ $group ] ?? null ) ? $input[ $group ] : [];
+        foreach ( $defaults[ $group ] as $key => $default ) {
+            $value = $incoming[ $key ] ?? $default;
+            $tokens[ $group ][ $key ] = wpae_sanitize_design_token_text( $value, $group === 'palette' ? 32 : 180 );
+        }
+    }
+
+    $tokens['button_style'] = wpae_sanitize_design_token_text( $input['button_style'] ?? $defaults['button_style'], 240 );
+    $tokens['tone_of_voice'] = wpae_sanitize_design_token_text( $input['tone_of_voice'] ?? $defaults['tone_of_voice'], 240 );
+
+    $prohibitions = $input['design_prohibitions'] ?? $defaults['design_prohibitions'];
+    if ( is_string( $prohibitions ) ) {
+        $prohibitions = preg_split( '/\r\n|\r|\n/', $prohibitions );
+    }
+    if ( ! is_array( $prohibitions ) ) {
+        $prohibitions = $defaults['design_prohibitions'];
+    }
+
+    $tokens['design_prohibitions'] = [];
+    foreach ( $prohibitions as $item ) {
+        $item = wpae_sanitize_design_token_text( $item, 180 );
+        if ( $item !== '' ) {
+            $tokens['design_prohibitions'][] = $item;
+        }
+    }
+    if ( empty( $tokens['design_prohibitions'] ) ) {
+        $tokens['design_prohibitions'] = $defaults['design_prohibitions'];
+    }
+
+    return $tokens;
+}
+
+function wpae_get_project_design_tokens(): array {
+    $stored = get_option( 'wp_ai_executor_design_tokens', [] );
+    return wpae_sanitize_design_tokens( is_array( $stored ) ? $stored : [] );
+}
+
+function wpae_update_project_design_tokens( array $input ): void {
+    update_option( 'wp_ai_executor_design_tokens', wpae_sanitize_design_tokens( $input ), false );
 }
 
 // ── REST routes ────────────────────────────────────────────────────────────────
@@ -996,7 +1083,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '2.1.0',
+        'guide_version' => '2.2.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1352,7 +1439,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '2.1.0',
+        'guide_version' => '2.2.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1366,7 +1453,9 @@ function wpae_get_capabilities_payload(): array {
         'can_rollback' => true,
         'can_view_operation_logs' => true,
         'can_score_agent_conformance' => true,
+        'can_provide_project_design_tokens' => true,
         'requires_guide_token_for_writes' => true,
+        'project_design_tokens' => wpae_get_project_design_tokens(),
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
             'safe_endpoints' => [
@@ -2530,7 +2619,8 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
     $tone = wpae_blueprint_text_param( $request, 'tone', 'конкретный, уверенный, без лишней рекламности', 140 );
     $proof_points = wpae_blueprint_list_param( $request, 'proof_points', [ 'сроки', 'понятный процесс', 'редактируемая Elementor-структура' ] );
     $constraints = wpae_blueprint_list_param( $request, 'constraints', [ 'native Elementor Flexbox Containers only', 'no external files', 'HTML widget only for scoped CSS/JS enhancements' ] );
-    $palette = wpae_blueprint_palette_for_style( $style );
+    $project_tokens = wpae_get_project_design_tokens();
+    $palette = ! empty( $project_tokens['palette'] ) ? $project_tokens['palette'] : wpae_blueprint_palette_for_style( $style );
     $primary_cta = wpae_blueprint_text_param( $request, 'primary_cta', 'Обсудить проект', 80 );
     $secondary_cta = wpae_blueprint_text_param( $request, 'secondary_cta', 'Посмотреть процесс', 80 );
     $recipes = wpae_elementor_recipe_definitions();
@@ -2622,21 +2712,12 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
         ],
         'design_tokens' => [
             'palette' => $palette,
-            'typography_roles' => [
-                'display' => 'Large high-contrast H1/H2 headings; avoid generic template scale.',
-                'body' => 'Readable native text-editor copy with 1.5-1.7 line-height.',
-                'utility' => 'Small uppercase eyebrow/labels used only where they carry meaning.',
-            ],
-            'spacing_scale' => [
-                'section_padding_desktop' => '72px top/bottom',
-                'section_padding_mobile' => '32px top/bottom',
-                'container_gap_desktop' => '24-40px',
-                'container_gap_mobile' => '16-20px',
-            ],
-            'radii' => [
-                'cards' => '8px or less unless the site design system says otherwise',
-                'buttons' => 'match site style; avoid oversized pill defaults unless intentional',
-            ],
+            'typography_roles' => $project_tokens['typography_roles'] ?? [],
+            'spacing_scale' => $project_tokens['spacing_scale'] ?? [],
+            'radii' => $project_tokens['radii'] ?? [],
+            'button_style' => $project_tokens['button_style'] ?? '',
+            'tone_of_voice' => $project_tokens['tone_of_voice'] ?? '',
+            'design_prohibitions' => $project_tokens['design_prohibitions'] ?? [],
         ],
         'sections' => $sections,
         'html_enhancement_zones' => [
@@ -3667,7 +3748,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '2.1.0',
+        'version' => '2.2.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -3675,6 +3756,7 @@ function wpae_agent_guide(): array {
             'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',
         ],
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
+        'project_design_tokens' => wpae_get_project_design_tokens(),
         'capabilities' => wpae_get_capabilities_payload(),
         'guide_token_protocol' => [
             'required_for_write_endpoints' => true,
@@ -3735,6 +3817,7 @@ function wpae_agent_guide(): array {
                 'Copy must be concrete and action-oriented.',
                 'Native Elementor output must pass design quality gates: heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated content.',
             ],
+            'project_tokens_rule' => 'Use project_design_tokens from this guide as the site visual system. They override generic defaults unless the user explicitly asks for a different direction.',
         ],
         'wordpress_elementor' => [
             'stack' => [
@@ -4089,7 +4172,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
@@ -4181,6 +4264,19 @@ add_action( 'admin_init', function () {
     }
 
     if (
+        isset( $_POST['wpae_save_design_tokens'] ) &&
+        check_admin_referer( 'wpae_save_design_tokens' )
+    ) {
+        $input = isset( $_POST['wpae_design_tokens'] ) && is_array( $_POST['wpae_design_tokens'] )
+            ? wp_unslash( $_POST['wpae_design_tokens'] )
+            : [];
+
+        wpae_update_project_design_tokens( $input );
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&design_tokens_saved=1' ) );
+        exit;
+    }
+
+    if (
         isset( $_POST['wpae_save_skill_ui'] ) &&
         check_admin_referer( 'wpae_save_skill_ui' )
     ) {
@@ -4256,6 +4352,7 @@ function wpae_settings_page() {
     $logs_url           = get_rest_url( null, 'ai-executor/v1/logs' );
     $regen              = isset( $_GET['regenerated'] );
     $capabilities_saved = isset( $_GET['capabilities_saved'] );
+    $design_tokens_saved = isset( $_GET['design_tokens_saved'] );
     $skill_saved        = isset( $_GET['skill_saved'] );
     $skill_deleted      = isset( $_GET['skill_deleted'] );
     $skill_error        = isset( $_GET['skill_error'] );
@@ -4263,6 +4360,7 @@ function wpae_settings_page() {
     $skill_import_error = isset( $_GET['skill_import_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
+    $design_tokens      = wpae_get_project_design_tokens();
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
     $operation_logs     = array_slice( wpae_get_operation_logs_store(), 0, 8 );
     $skill_bundle_json  = wp_json_encode( wpae_build_skill_bundle(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
@@ -4599,6 +4697,10 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status">Настройки разрешений сохранены.</div>
         <?php endif; ?>
 
+        <?php if ( $design_tokens_saved ) : ?>
+            <div class="wpae-alert" role="status">Дизайн-токены проекта сохранены.</div>
+        <?php endif; ?>
+
         <?php if ( $skill_saved ) : ?>
             <div class="wpae-alert" role="status">Custom skill сохранен.</div>
         <?php endif; ?>
@@ -4677,6 +4779,75 @@ function wpae_settings_page() {
 
                     <p style="margin-top:14px">
                         <button type="submit" class="button button-primary wpae-button">Сохранить разрешения</button>
+                    </p>
+                </form>
+            </div>
+
+            <div class="wpae-card wpae-card-wide">
+                <h2>Дизайн-токены проекта</h2>
+                <p>
+                    Эти настройки попадают в <code>/guide</code>, <code>/capabilities</code> и <code>/elementor/blueprint</code>.
+                    Агент должен использовать их как визуальную систему сайта.
+                </p>
+
+                <form method="post">
+                    <?php wp_nonce_field( 'wpae_save_design_tokens' ); ?>
+                    <input type="hidden" name="wpae_save_design_tokens" value="1" />
+
+                    <h3>Палитра</h3>
+                    <div class="wpae-form-grid">
+                        <?php foreach ( (array) ( $design_tokens['palette'] ?? [] ) as $token_key => $token_value ) : ?>
+                            <div class="wpae-form-field">
+                                <label for="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>"><?php echo esc_html( $token_key ); ?></label>
+                                <input class="wpae-input" id="wpae-token-palette-<?php echo esc_attr( $token_key ); ?>" name="wpae_design_tokens[palette][<?php echo esc_attr( $token_key ); ?>]" type="text" value="<?php echo esc_attr( (string) $token_value ); ?>" />
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <h3>Типографика</h3>
+                    <div class="wpae-form-grid">
+                        <?php foreach ( (array) ( $design_tokens['typography_roles'] ?? [] ) as $token_key => $token_value ) : ?>
+                            <div class="wpae-form-field">
+                                <label for="wpae-token-type-<?php echo esc_attr( $token_key ); ?>"><?php echo esc_html( $token_key ); ?></label>
+                                <input class="wpae-input" id="wpae-token-type-<?php echo esc_attr( $token_key ); ?>" name="wpae_design_tokens[typography_roles][<?php echo esc_attr( $token_key ); ?>]" type="text" value="<?php echo esc_attr( (string) $token_value ); ?>" />
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <h3>Spacing и radii</h3>
+                    <div class="wpae-form-grid">
+                        <?php foreach ( (array) ( $design_tokens['spacing_scale'] ?? [] ) as $token_key => $token_value ) : ?>
+                            <div class="wpae-form-field">
+                                <label for="wpae-token-spacing-<?php echo esc_attr( $token_key ); ?>"><?php echo esc_html( $token_key ); ?></label>
+                                <input class="wpae-input" id="wpae-token-spacing-<?php echo esc_attr( $token_key ); ?>" name="wpae_design_tokens[spacing_scale][<?php echo esc_attr( $token_key ); ?>]" type="text" value="<?php echo esc_attr( (string) $token_value ); ?>" />
+                            </div>
+                        <?php endforeach; ?>
+                        <?php foreach ( (array) ( $design_tokens['radii'] ?? [] ) as $token_key => $token_value ) : ?>
+                            <div class="wpae-form-field">
+                                <label for="wpae-token-radii-<?php echo esc_attr( $token_key ); ?>"><?php echo esc_html( $token_key ); ?></label>
+                                <input class="wpae-input" id="wpae-token-radii-<?php echo esc_attr( $token_key ); ?>" name="wpae_design_tokens[radii][<?php echo esc_attr( $token_key ); ?>]" type="text" value="<?php echo esc_attr( (string) $token_value ); ?>" />
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <div class="wpae-form-grid">
+                        <div class="wpae-form-field">
+                            <label for="wpae-token-button-style">Стиль кнопок</label>
+                            <input class="wpae-input" id="wpae-token-button-style" name="wpae_design_tokens[button_style]" type="text" value="<?php echo esc_attr( (string) ( $design_tokens['button_style'] ?? '' ) ); ?>" />
+                        </div>
+                        <div class="wpae-form-field">
+                            <label for="wpae-token-tone">Тон коммуникации</label>
+                            <input class="wpae-input" id="wpae-token-tone" name="wpae_design_tokens[tone_of_voice]" type="text" value="<?php echo esc_attr( (string) ( $design_tokens['tone_of_voice'] ?? '' ) ); ?>" />
+                        </div>
+                    </div>
+
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-token-prohibitions">Дизайн-запреты</label>
+                        <textarea class="wpae-textarea" id="wpae-token-prohibitions" name="wpae_design_tokens[design_prohibitions]" style="min-height:120px"><?php echo esc_textarea( implode( "\n", (array) ( $design_tokens['design_prohibitions'] ?? [] ) ) ); ?></textarea>
+                    </div>
+
+                    <p style="margin-top:14px">
+                        <button type="submit" class="button button-primary wpae-button">Сохранить дизайн-токены</button>
                     </p>
                 </form>
             </div>
