@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     2.3.0
+ * Version:     2.4.0
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = '2.3.0';
+const WPAE_VERSION = '2.4.0';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -171,6 +171,12 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/elementor/normalize', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_normalize',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blueprint', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_blueprint',
         'permission_callback' => 'wpae_auth',
     ] );
 
@@ -990,7 +996,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => '2.0.0',
+        'guide_version' => '2.1.0',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1346,7 +1352,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => '2.0.0',
+        'guide_version' => '2.1.0',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1366,6 +1372,7 @@ function wpae_get_capabilities_payload(): array {
             'safe_endpoints' => [
                 'validate' => 'POST /wp-json/ai-executor/v1/elementor/validate',
                 'normalize' => 'POST /wp-json/ai-executor/v1/elementor/normalize',
+                'blueprint' => 'POST /wp-json/ai-executor/v1/elementor/blueprint',
                 'recipes' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
                 'recipe' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
                 'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
@@ -1373,6 +1380,7 @@ function wpae_get_capabilities_payload(): array {
                 'update' => 'POST /wp-json/ai-executor/v1/elementor/update',
             ],
             'can_normalize' => true,
+            'can_blueprint' => true,
             'can_use_recipes' => true,
             'can_compose_sections' => true,
             'must_use_flex_containers' => true,
@@ -1488,6 +1496,7 @@ function wpae_get_capabilities_payload(): array {
                 '/exports/create' => ! empty( $settings['exports'] ),
                 '/elementor/validate' => true,
                 '/elementor/normalize' => true,
+                '/elementor/blueprint' => true,
                 '/elementor/recipes' => true,
                 '/elementor/compose' => true,
                 '/elementor/page' => ! empty( $settings['elementor_writes'] ),
@@ -2402,6 +2411,7 @@ function wpae_elementor_recipes(): WP_REST_Response {
     return new WP_REST_Response( [
         'ok' => true,
         'usage' => [
+            'blueprint' => 'POST /wp-json/ai-executor/v1/elementor/blueprint',
             'list' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
             'get_one' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
             'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
@@ -2439,6 +2449,225 @@ function wpae_elementor_recipe( WP_REST_Request $request ): WP_REST_Response {
         'ok' => true,
         'recipe' => $recipes[ $id ],
         'next_steps' => [ 'POST /elementor/compose', 'POST /elementor/normalize', 'POST /elementor/validate' ],
+    ], 200 );
+}
+
+function wpae_blueprint_text_param( WP_REST_Request $request, string $key, string $default = '', int $max_length = 180 ): string {
+    $value = trim( sanitize_text_field( (string) $request->get_param( $key ) ) );
+    if ( $value === '' ) {
+        $value = $default;
+    }
+
+    return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $max_length ) : substr( $value, 0, $max_length );
+}
+
+function wpae_blueprint_list_param( WP_REST_Request $request, string $key, array $fallback = [] ): array {
+    $value = $request->get_param( $key );
+    if ( is_string( $value ) ) {
+        $value = preg_split( '/[,;\n]+/', $value );
+    }
+
+    if ( ! is_array( $value ) ) {
+        return $fallback;
+    }
+
+    $items = [];
+    foreach ( $value as $item ) {
+        if ( ! is_scalar( $item ) ) {
+            continue;
+        }
+
+        $item = trim( sanitize_text_field( (string) $item ) );
+        if ( $item !== '' ) {
+            $items[] = function_exists( 'mb_substr' ) ? mb_substr( $item, 0, 90 ) : substr( $item, 0, 90 );
+        }
+    }
+
+    return ! empty( $items ) ? array_values( array_unique( $items ) ) : $fallback;
+}
+
+function wpae_blueprint_palette_for_style( string $style ): array {
+    $style = strtolower( $style );
+    if ( preg_match( '/premium|editorial|lux|minimal|clean|эксперт|преми/i', $style ) ) {
+        return [
+            'ink' => '#111827',
+            'paper' => '#f6f0e6',
+            'surface' => '#ffffff',
+            'accent' => '#c75b3b',
+            'muted' => '#6b7280',
+            'line' => '#d8cfc2',
+        ];
+    }
+
+    if ( preg_match( '/tech|saas|software|digital|тех|софт|айти/i', $style ) ) {
+        return [
+            'ink' => '#101828',
+            'paper' => '#f8fafc',
+            'surface' => '#ffffff',
+            'accent' => '#2563eb',
+            'support' => '#14b8a6',
+            'muted' => '#667085',
+        ];
+    }
+
+    return [
+        'ink' => '#111827',
+        'paper' => '#f7f2ea',
+        'surface' => '#ffffff',
+        'accent' => '#d97706',
+        'support' => '#2563eb',
+        'muted' => '#4b5563',
+    ];
+}
+
+function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response {
+    $subject = wpae_blueprint_text_param( $request, 'subject', 'страница услуги', 140 );
+    $audience = wpae_blueprint_text_param( $request, 'audience', 'клиенты, которым нужно быстро понять предложение', 180 );
+    $goal = wpae_blueprint_text_param( $request, 'goal', 'получить заявку', 140 );
+    $offer = wpae_blueprint_text_param( $request, 'offer', $subject, 180 );
+    $language = wpae_blueprint_text_param( $request, 'language', 'ru', 24 );
+    $style = wpae_blueprint_text_param( $request, 'style', 'editorial premium service page', 120 );
+    $tone = wpae_blueprint_text_param( $request, 'tone', 'конкретный, уверенный, без лишней рекламности', 140 );
+    $proof_points = wpae_blueprint_list_param( $request, 'proof_points', [ 'сроки', 'понятный процесс', 'редактируемая Elementor-структура' ] );
+    $constraints = wpae_blueprint_list_param( $request, 'constraints', [ 'native Elementor Flexbox Containers only', 'no external files', 'HTML widget only for scoped CSS/JS enhancements' ] );
+    $palette = wpae_blueprint_palette_for_style( $style );
+    $primary_cta = wpae_blueprint_text_param( $request, 'primary_cta', 'Обсудить проект', 80 );
+    $secondary_cta = wpae_blueprint_text_param( $request, 'secondary_cta', 'Посмотреть процесс', 80 );
+    $recipes = wpae_elementor_recipe_definitions();
+
+    $sections = [
+        [
+            'id' => 'hero',
+            'recipe_id' => 'hero.editorial',
+            'variant' => 'split-proof',
+            'job' => 'Immediately state the offer, audience fit, proof line, and primary action.',
+            'native_widgets' => [ 'heading', 'text-editor', 'button' ],
+            'slots' => [
+                'eyebrow' => $subject,
+                'headline' => $offer,
+                'subheadline' => 'Для ' . $audience . ': ' . $goal . '.',
+                'cta_primary' => $primary_cta,
+                'cta_secondary' => $secondary_cta,
+                'metric_1' => '7-14',
+                'metric_1_label' => 'дней до запуска типовой страницы',
+                'metric_2' => '0',
+                'metric_2_label' => 'внешних файлов на сервере',
+            ],
+        ],
+        [
+            'id' => 'trust',
+            'recipe_id' => 'feature.grid',
+            'variant' => 'three-cards',
+            'job' => 'Turn proof points into concrete reasons to trust the offer.',
+            'native_widgets' => [ 'heading', 'text-editor', 'icon-list' ],
+            'content_roles' => $proof_points,
+        ],
+        [
+            'id' => 'process',
+            'recipe_id' => 'process.steps',
+            'variant' => 'linear',
+            'job' => 'Show the path from request to launch without hiding complexity.',
+            'native_widgets' => [ 'heading', 'text-editor' ],
+            'steps' => [ 'бриф и структура', 'Elementor-сборка', 'проверка и правки', 'публикация' ],
+        ],
+        [
+            'id' => 'offer',
+            'recipe_id' => 'pricing.comparison',
+            'variant' => 'two-packages',
+            'job' => 'Explain what is included, what is not included, and the expected result.',
+            'native_widgets' => [ 'heading', 'text-editor', 'button' ],
+        ],
+        [
+            'id' => 'faq',
+            'recipe_id' => 'faq.accordion',
+            'variant' => 'compact',
+            'job' => 'Remove objections before the final CTA.',
+            'native_widgets' => [ 'heading', 'accordion' ],
+        ],
+        [
+            'id' => 'final_cta',
+            'recipe_id' => 'cta.band',
+            'variant' => 'dark',
+            'job' => 'Give one clear next step.',
+            'native_widgets' => [ 'heading', 'text-editor', 'button' ],
+            'slots' => [
+                'headline' => 'Готовы обсудить страницу?',
+                'subheadline' => 'Коротко разберем задачу, аудиторию и нужный результат.',
+                'cta_primary' => $primary_cta,
+            ],
+        ],
+    ];
+
+    $available_recipes = array_keys( $recipes );
+    foreach ( $sections as &$section ) {
+        $section['recipe_available'] = in_array( $section['recipe_id'], $available_recipes, true );
+        $section['fallback_if_recipe_not_enough'] = 'Build from native container primitives and widgets, then run /elementor/normalize and /elementor/validate.';
+    }
+    unset( $section );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'writes' => false,
+        'blueprint_version' => '1.0.0',
+        'input' => [
+            'subject' => $subject,
+            'audience' => $audience,
+            'goal' => $goal,
+            'offer' => $offer,
+            'language' => $language,
+            'style' => $style,
+            'tone' => $tone,
+            'proof_points' => $proof_points,
+            'constraints' => $constraints,
+        ],
+        'design_tokens' => [
+            'palette' => $palette,
+            'typography_roles' => [
+                'display' => 'Large high-contrast H1/H2 headings; avoid generic template scale.',
+                'body' => 'Readable native text-editor copy with 1.5-1.7 line-height.',
+                'utility' => 'Small uppercase eyebrow/labels used only where they carry meaning.',
+            ],
+            'spacing_scale' => [
+                'section_padding_desktop' => '72px top/bottom',
+                'section_padding_mobile' => '32px top/bottom',
+                'container_gap_desktop' => '24-40px',
+                'container_gap_mobile' => '16-20px',
+            ],
+            'radii' => [
+                'cards' => '8px or less unless the site design system says otherwise',
+                'buttons' => 'match site style; avoid oversized pill defaults unless intentional',
+            ],
+        ],
+        'sections' => $sections,
+        'html_enhancement_zones' => [
+            [
+                'zone' => 'global_page_enhancement',
+                'allowed' => [ 'Google Fonts loader', 'scoped CSS polish', 'small vanilla JS reveal/counter interactions' ],
+                'forbidden' => [ 'main page markup', 'layout wrappers', 'content hidden inside HTML widget', 'external files' ],
+            ],
+        ],
+        'elementor_contract' => [
+            'layout' => 'Use elType=container only; never section/column.',
+            'widgets' => 'Every widget must use camelCase widgetType.',
+            'native_settings_first' => [ 'background_color', 'text colors', 'padding', 'gap', 'border', 'width', 'responsive settings' ],
+            'next_endpoints' => [ 'GET /elementor/recipes', 'POST /elementor/compose', 'POST /elementor/normalize', 'POST /elementor/validate', 'POST /elementor/page' ],
+        ],
+        'design_quality_gates' => [
+            'typography_hierarchy' => 'At least H1 plus meaningful H2/H3 sections.',
+            'spacing_consistency' => 'Native padding and gap on containers.',
+            'cta_visibility' => 'Native button CTA in hero and final CTA.',
+            'mobile_readiness' => 'Responsive Elementor settings for split/grid sections.',
+            'palette_quality' => '3-8 intentional colors from the design tokens.',
+            'content_completeness' => 'No empty heading/text widgets or placeholder filler.',
+        ],
+        'agent_workflow' => [
+            '1. Use this blueprint as the page contract.',
+            '2. Compose available recipes with project-specific slots.',
+            '3. For custom sections, build native container/widget primitives.',
+            '4. Normalize and validate before writing.',
+            '5. Save with /elementor/page or /elementor/update using guide-token headers.',
+            '6. Verify with /audit and fix weak/blocked agent_conformance criteria.',
+        ],
     ], 200 );
 }
 
@@ -3438,7 +3667,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => '2.0.0',
+        'version' => '2.1.0',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -3461,17 +3690,18 @@ function wpae_agent_guide(): array {
         'agent_prompt' => wpae_agent_prompt(),
         'workflow' => [
             '1. Inspect WordPress, PHP, theme, and Elementor status with a small read-only PHP request.',
-            '2. For page work, prefer /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
-            '3. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
-            '4. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, or incomplete elements arrays.',
-            '5. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
-            '6. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
-            '7. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
-            '8. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
-            '9. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
-            '10. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
-            '11. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
-            '12. Read agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
+            '2. For page work, call /elementor/blueprint before composing or writing Elementor data.',
+            '3. Prefer /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP through /run.',
+            '4. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
+            '5. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, or incomplete elements arrays.',
+            '6. Use /elementor/validate or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages.',
+            '7. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
+            '8. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
+            '9. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element.',
+            '10. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '11. Verify with /audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '12. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '13. Read agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -3581,6 +3811,27 @@ function wpae_agent_guide(): array {
                     'Any elType=widget element with missing or empty widgetType.',
                 ],
                 'rollback' => 'If invalid _elementor_data is detected, the changed _elementor_data meta is rolled back to its pre-run value when possible.',
+            ],
+            'blueprint_policy' => [
+                'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/blueprint',
+                'writes' => false,
+                'rule' => 'Before building a new Elementor page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof_points, and CTA labels.',
+                'returns' => [
+                    'design_tokens',
+                    'section plan',
+                    'recipe IDs and variants',
+                    'slot suggestions',
+                    'native widget requirements',
+                    'HTML enhancement zones',
+                    'design quality gates',
+                    'agent workflow',
+                ],
+                'usage' => [
+                    'Treat the blueprint as the page contract.',
+                    'Use recipes when recipe_available=true.',
+                    'For custom sections, use native Flexbox Container primitives and then normalize/validate.',
+                    'Do not write a page until the intended sections map back to the blueprint.',
+                ],
             ],
             'recipes_policy' => [
                 'list_endpoint' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
@@ -3838,7 +4089,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, or incomplete container defaults. Use dry_run=true on /elementor/page or /elementor/update before complex writes; arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, layout, and one distinctive signature element. Apply the embedded frontend_design pack to avoid generic pages, and apply the wordpress_elementor_dev pack to build editable Elementor output. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, and alignment into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit and the verification checklist: published URL, Elementor meta, decoded _elementor_data, zero section/column elements, no external files, native widget content placement, native critical visual settings, and html widgets enhancement-only. Read agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, responsive settings, deliberate palette, and populated native content. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 

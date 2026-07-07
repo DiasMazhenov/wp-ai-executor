@@ -233,6 +233,29 @@ curl -s "$SITE/wp-json/ai-executor/v1/elementor/recipes" \
   -H "X-AI-Key: $KEY"
 ```
 
+### `POST /wp-json/ai-executor/v1/elementor/blueprint`
+
+Returns a read-only page plan before any Elementor JSON is generated. Agents
+should call it first for new page work, then compose recipes or native
+container/widget primitives against the returned contract.
+
+```json
+{
+  "subject": "website service landing page",
+  "audience": "business owners who need a clear offer page",
+  "goal": "get a consultation request",
+  "offer": "Landing page built in editable Elementor",
+  "language": "ru",
+  "style": "editorial premium service page",
+  "proof_points": ["7-14 day launch", "native Elementor", "no external files"],
+  "primary_cta": "Discuss the page"
+}
+```
+
+The response includes design tokens, section plan, recipe IDs/variants, slot
+suggestions, native widget requirements, HTML enhancement zones, and design
+quality gates.
+
 ### `GET /wp-json/ai-executor/v1/elementor/recipes/{id}`
 
 Returns one recipe with its variants, slots, and native Elementor JSON pattern.
