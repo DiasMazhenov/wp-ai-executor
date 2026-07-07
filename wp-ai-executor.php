@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.02
+ * Version:     v02.08.03
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.02';
+const WPAE_VERSION = 'v02.08.03';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -1399,7 +1399,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.02',
+        'guide_version' => 'v02.05.03',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1418,22 +1418,137 @@ function wpae_update_guide_sessions( array $sessions ): void {
     update_option( 'wp_ai_executor_guide_sessions', $sessions, false );
 }
 
+function wpae_normalize_guide_session_id( string $session_id ): string {
+    return preg_match( '/^[a-f0-9]{32}$/', $session_id ) ? $session_id : '';
+}
+
+function wpae_guide_session_option_name( string $session_id ): string {
+    return 'wp_ai_executor_guide_session_' . wpae_normalize_guide_session_id( $session_id );
+}
+
+function wpae_guide_token_option_name( string $token_hash ): string {
+    $token_hash = preg_match( '/^[a-f0-9]{64}$/', $token_hash ) ? $token_hash : '';
+    return 'wp_ai_executor_guide_token_' . $token_hash;
+}
+
+function wpae_get_stored_guide_session( string $session_id ) {
+    $session_id = wpae_normalize_guide_session_id( $session_id );
+    if ( $session_id === '' ) {
+        return null;
+    }
+
+    $session = get_option( wpae_guide_session_option_name( $session_id ), null );
+    if ( is_array( $session ) ) {
+        return $session;
+    }
+
+    $sessions = wpae_get_guide_sessions();
+    return is_array( $sessions[ $session_id ] ?? null ) ? $sessions[ $session_id ] : null;
+}
+
+function wpae_save_guide_session( array $session ): bool {
+    $session_id = wpae_normalize_guide_session_id( (string) ( $session['id'] ?? '' ) );
+    if ( $session_id === '' ) {
+        return false;
+    }
+
+    $session['id'] = $session_id;
+    update_option( wpae_guide_session_option_name( $session_id ), $session, false );
+
+    $sessions = wpae_prune_guide_sessions( wpae_get_guide_sessions() );
+    $sessions[ $session_id ] = $session;
+    wpae_update_guide_sessions( $sessions );
+
+    return is_array( get_option( wpae_guide_session_option_name( $session_id ), null ) );
+}
+
+function wpae_delete_guide_session( string $session_id ): void {
+    $session_id = wpae_normalize_guide_session_id( $session_id );
+    if ( $session_id === '' ) {
+        return;
+    }
+
+    delete_option( wpae_guide_session_option_name( $session_id ) );
+    $sessions = wpae_get_guide_sessions();
+    unset( $sessions[ $session_id ] );
+    wpae_update_guide_sessions( $sessions );
+}
+
+function wpae_save_guide_token_record( string $token_hash, array $session ): void {
+    if ( ! preg_match( '/^[a-f0-9]{64}$/', $token_hash ) ) {
+        return;
+    }
+
+    $option_name = wpae_guide_token_option_name( $token_hash );
+    update_option( $option_name, [
+        'token_hash' => $token_hash,
+        'session_id' => (string) ( $session['id'] ?? '' ),
+        'guide_hash' => (string) ( $session['guide_hash'] ?? '' ),
+        'expires_at' => (string) ( $session['expires_at'] ?? '' ),
+        'expires_at_unix' => (int) ( $session['expires_at_unix'] ?? 0 ),
+    ], false );
+}
+
+function wpae_get_guide_token_record( string $token_hash ) {
+    $record = get_option( wpae_guide_token_option_name( $token_hash ), null );
+    return is_array( $record ) ? $record : null;
+}
+
 function wpae_prune_guide_sessions( array $sessions ): array {
     $now = time();
     foreach ( $sessions as $id => $session ) {
         if ( (int) ( $session['expires_at_unix'] ?? 0 ) < $now ) {
             unset( $sessions[ $id ] );
+            delete_option( wpae_guide_session_option_name( (string) $id ) );
         }
     }
     return $sessions;
 }
 
+function wpae_get_request_json_body_array( WP_REST_Request $request ): array {
+    $body = trim( (string) $request->get_body() );
+    if ( $body === '' || $body[0] !== '{' ) {
+        return [];
+    }
+
+    $decoded = json_decode( $body, true );
+    return is_array( $decoded ) ? $decoded : [];
+}
+
+function wpae_get_guide_ack_payload( WP_REST_Request $request ): array {
+    $raw_body = wpae_get_request_json_body_array( $request );
+    $session_id = (string) ( $request->get_param( 'guide_session_id' ) ?: ( $raw_body['guide_session_id'] ?? '' ) );
+    $ack = $request->get_param( 'ack' );
+    if ( ! is_array( $ack ) && isset( $raw_body['ack'] ) && is_array( $raw_body['ack'] ) ) {
+        $ack = $raw_body['ack'];
+    }
+
+    if ( ! is_array( $ack ) ) {
+        $ack = [];
+        foreach ( wpae_required_ack_schema() as $field => $required_value ) {
+            $value = $request->get_param( $field );
+            if ( $value === null && array_key_exists( $field, $raw_body ) ) {
+                $value = $raw_body[ $field ];
+            }
+            if ( $value !== null ) {
+                $ack[ $field ] = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+            }
+        }
+    }
+
+    return [
+        'guide_session_id' => wpae_normalize_guide_session_id( sanitize_text_field( $session_id ) ),
+        'ack' => $ack,
+        'raw_json_body_detected' => ! empty( $raw_body ),
+    ];
+}
+
 function wpae_create_guide_session(): WP_REST_Response {
-    $sessions = wpae_prune_guide_sessions( wpae_get_guide_sessions() );
+    wpae_update_guide_sessions( wpae_prune_guide_sessions( wpae_get_guide_sessions() ) );
     $session_id = bin2hex( random_bytes( 16 ) );
     $expires_at_unix = time() + 15 * MINUTE_IN_SECONDS;
 
-    $sessions[ $session_id ] = [
+    $session = [
         'id' => $session_id,
         'guide_hash' => wpae_get_guide_hash(),
         'created_at' => gmdate( 'c' ),
@@ -1442,12 +1557,16 @@ function wpae_create_guide_session(): WP_REST_Response {
         'acked' => false,
     ];
 
-    wpae_update_guide_sessions( $sessions );
+    $stored = wpae_save_guide_session( $session );
 
     return new WP_REST_Response( [
         'guide_session_id' => $session_id,
-        'guide_hash' => $sessions[ $session_id ]['guide_hash'],
-        'expires_at' => $sessions[ $session_id ]['expires_at'],
+        'guide_hash' => $session['guide_hash'],
+        'expires_at' => $session['expires_at'],
+        'storage' => [
+            'type' => 'wp_options_per_session',
+            'stored' => $stored,
+        ],
         'required_ack_schema' => wpae_required_ack_schema(),
         'next_steps' => [
             'Read /guide and /capabilities.',
@@ -1458,13 +1577,23 @@ function wpae_create_guide_session(): WP_REST_Response {
 }
 
 function wpae_ack_guide_session( WP_REST_Request $request ) {
-    $session_id = sanitize_text_field( (string) $request->get_param( 'guide_session_id' ) );
-    $ack = $request->get_param( 'ack' );
-    $sessions = wpae_prune_guide_sessions( wpae_get_guide_sessions() );
+    $payload = wpae_get_guide_ack_payload( $request );
+    $session_id = $payload['guide_session_id'];
+    $ack = $payload['ack'];
+    wpae_update_guide_sessions( wpae_prune_guide_sessions( wpae_get_guide_sessions() ) );
+    $session = $session_id !== '' ? wpae_get_stored_guide_session( $session_id ) : null;
 
-    if ( $session_id === '' || ! isset( $sessions[ $session_id ] ) ) {
-        wpae_update_guide_sessions( $sessions );
-        return new WP_REST_Response( [ 'error' => 'Invalid or expired guide_session_id.' ], 404 );
+    if ( ! is_array( $session ) ) {
+        return new WP_REST_Response( [
+            'error' => 'Invalid or expired guide_session_id.',
+            'diagnostics' => [
+                'received_guide_session_id' => $session_id !== '',
+                'raw_json_body_detected' => (bool) $payload['raw_json_body_detected'],
+                'legacy_session_count' => count( wpae_get_guide_sessions() ),
+                'storage' => 'wp_options_per_session',
+                'hint' => 'Send Content-Type: application/json or put guide_session_id and ack fields in form data.',
+            ],
+        ], 404 );
     }
 
     if ( ! is_array( $ack ) ) {
@@ -1487,9 +1616,8 @@ function wpae_ack_guide_session( WP_REST_Request $request ) {
     }
 
     $current_hash = wpae_get_guide_hash();
-    if ( ! hash_equals( (string) $sessions[ $session_id ]['guide_hash'], $current_hash ) ) {
-        unset( $sessions[ $session_id ] );
-        wpae_update_guide_sessions( $sessions );
+    if ( ! hash_equals( (string) $session['guide_hash'], $current_hash ) ) {
+        wpae_delete_guide_session( $session_id );
         return new WP_REST_Response( [ 'error' => 'Guide changed. Start a new /guide/session.', 'guide_hash' => $current_hash ], 409 );
     }
 
@@ -1497,20 +1625,21 @@ function wpae_ack_guide_session( WP_REST_Request $request ) {
     $token_hash = hash( 'sha256', $token );
     $expires_at_unix = time() + 15 * MINUTE_IN_SECONDS;
 
-    $sessions[ $session_id ]['acked'] = true;
-    $sessions[ $session_id ]['ack'] = array_intersect_key( $ack, wpae_required_ack_schema() );
-    $sessions[ $session_id ]['token_hash'] = $token_hash;
-    $sessions[ $session_id ]['expires_at'] = gmdate( 'c', $expires_at_unix );
-    $sessions[ $session_id ]['expires_at_unix'] = $expires_at_unix;
-    $sessions[ $session_id ]['acked_at'] = gmdate( 'c' );
+    $session['acked'] = true;
+    $session['ack'] = array_intersect_key( $ack, wpae_required_ack_schema() );
+    $session['token_hash'] = $token_hash;
+    $session['expires_at'] = gmdate( 'c', $expires_at_unix );
+    $session['expires_at_unix'] = $expires_at_unix;
+    $session['acked_at'] = gmdate( 'c' );
 
-    wpae_update_guide_sessions( $sessions );
+    wpae_save_guide_session( $session );
+    wpae_save_guide_token_record( $token_hash, $session );
 
     return new WP_REST_Response( [
         'ok' => true,
         'guide_token' => $token,
         'guide_hash' => $current_hash,
-        'expires_at' => $sessions[ $session_id ]['expires_at'],
+        'expires_at' => $session['expires_at'],
         'headers' => [
             'X-WPAE-Guide-Token' => $token,
             'X-WPAE-Guide-Hash' => $current_hash,
@@ -1532,14 +1661,26 @@ function wpae_validate_guide_token( string $token, string $guide_hash ) {
     $token_hash = hash( 'sha256', $token );
     $valid = false;
 
-    foreach ( $sessions as $session ) {
-        if (
-            ! empty( $session['acked'] ) &&
-            hash_equals( (string) ( $session['guide_hash'] ?? '' ), $current_hash ) &&
-            hash_equals( (string) ( $session['token_hash'] ?? '' ), $token_hash )
-        ) {
-            $valid = true;
-            break;
+    $token_record = wpae_get_guide_token_record( $token_hash );
+    if (
+        is_array( $token_record ) &&
+        (int) ( $token_record['expires_at_unix'] ?? 0 ) >= time() &&
+        hash_equals( (string) ( $token_record['guide_hash'] ?? '' ), $current_hash ) &&
+        hash_equals( (string) ( $token_record['token_hash'] ?? '' ), $token_hash )
+    ) {
+        $valid = true;
+    }
+
+    if ( ! $valid ) {
+        foreach ( $sessions as $session ) {
+            if (
+                ! empty( $session['acked'] ) &&
+                hash_equals( (string) ( $session['guide_hash'] ?? '' ), $current_hash ) &&
+                hash_equals( (string) ( $session['token_hash'] ?? '' ), $token_hash )
+            ) {
+                $valid = true;
+                break;
+            }
         }
     }
 
@@ -1755,7 +1896,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.02',
+        'guide_version' => 'v02.05.03',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1776,6 +1917,11 @@ function wpae_get_capabilities_payload(): array {
         'can_return_after_save_quality_summary' => true,
         'requires_design_system_before_elementor_build' => true,
         'requires_guide_token_for_writes' => true,
+        'guide_token_storage' => [
+            'session_storage' => 'wp_options_per_session_with_legacy_index',
+            'token_storage' => 'wp_options_per_token_hash',
+            'ack_body_formats' => [ 'application/json', 'raw_json_body_fallback', 'form_fields' ],
+        ],
         'project_design_tokens' => wpae_get_project_design_tokens(),
         'project_design_system' => wpae_build_project_design_system(),
         'embedded_jezweb_claude_skills' => wpae_get_jezweb_claude_skills_pack(),
@@ -1944,6 +2090,12 @@ function wpae_get_capabilities_payload(): array {
             'ack_endpoint' => 'POST /wp-json/ai-executor/v1/guide/ack',
             'required_headers_for_writes' => [ 'X-WPAE-Guide-Token', 'X-WPAE-Guide-Hash' ],
             'ttl_minutes' => 15,
+            'storage' => 'Guide sessions are stored as individual wp_options plus a legacy index; guide tokens are also stored by token hash for write validation.',
+            'ack_body_formats' => [
+                'JSON body with guide_session_id and ack object.',
+                'Raw JSON body fallback even if Content-Type is missing or wrong.',
+                'Form fields: guide_session_id plus required ack fields.',
+            ],
         ],
     ];
 }
@@ -4837,7 +4989,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.02',
+        'version' => 'v02.05.03',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -4859,6 +5011,12 @@ function wpae_agent_guide(): array {
                 'X-WPAE-Guide-Hash',
             ],
             'ttl_minutes' => 15,
+            'storage' => 'Guide sessions are stored as individual wp_options plus a legacy index; guide tokens are stored by token hash so write validation does not depend only on one shared session array.',
+            'ack_body_formats' => [
+                'application/json body: {"guide_session_id":"...","ack":{...}}',
+                'raw JSON body fallback even when Content-Type is missing/wrong',
+                'form fields: guide_session_id plus read_agent_prompt/read_custom_skills/read_capabilities/will_follow_skills/will_follow_runtime_rules',
+            ],
             'rule' => 'Before any write endpoint, create a guide session, read /guide and /capabilities, acknowledge all required fields, then send the returned guide token and hash with the write request.',
         ],
         'agent_prompt' => wpae_agent_prompt(),
