@@ -36,6 +36,7 @@
 - Добавлено обязательное правило mobile-first: агент должен сначала проектировать мобильную композицию, типографику, CTA, tap targets и responsive Elementor settings, а уже потом расширять tablet/desktop.
 - Добавлен read-only endpoint `/visual-audit` для публичного HTML-аудита same-site страниц: fetch/status, viewport/title/copy, overflow risks, invisible text, empty blocks, CTA и mobile-first CSS signals. Screenshot/render metrics оставлены для публичной browser-проверки.
 - Добавлено обязательное правило native style settings first: стили элемента меняются через нативные Elementor settings/style controls; CSS допускается только как scoped exception для сложных случаев, которых нет в настройках.
+- Добавлено защитное правило preserve existing enhancements: native-first не разрешает массово переписывать страницу или удалять рабочие CSS/JS/WebGL/Three.js/GSAP/canvas/animation HTML widgets без явного запроса.
 
 ## Далее
 
