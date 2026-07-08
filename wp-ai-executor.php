@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.08
+ * Version:     v02.08.09
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.08';
+const WPAE_VERSION = 'v02.08.09';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -232,7 +232,7 @@ function wpae_build_project_design_system( array $input = [] ): array {
         'style_contract' => [
             'single_system' => 'All new pages and new blocks must use one shared design system per site/project.',
             'no_one_off_blocks' => 'Do not invent a new palette, heading style, button style, spacing rhythm, radius, or tone for a later block unless the user explicitly changes the design system.',
-            'native_settings_first' => 'Apply token colors, spacing, radii, and button style in native Elementor settings first.',
+            'native_settings_first' => 'Apply token colors, spacing, radii, button style, and element styling through native Elementor settings/style controls first.',
             'block_consistency' => 'A new block must look like it belongs to the existing page: same type scale, same button treatment, same card/background grammar, same spacing rhythm.',
             'allowed_variation' => 'Variation is allowed only through token roles, e.g. paper/surface/accent/support, not through unrelated colors or shapes.',
         ],
@@ -1406,7 +1406,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.08',
+        'guide_version' => 'v02.05.09',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1903,7 +1903,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.08',
+        'guide_version' => 'v02.05.09',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -1925,6 +1925,7 @@ function wpae_get_capabilities_payload(): array {
         'can_return_after_save_quality_summary' => true,
         'requires_design_system_before_elementor_build' => true,
         'requires_mobile_first_design' => true,
+        'requires_native_style_settings_first' => true,
         'can_migrate_design_system_markers' => true,
         'forbids_wp_admin_credentials' => true,
         'forbids_browser_automation_writes' => true,
@@ -1993,6 +1994,41 @@ function wpae_get_capabilities_payload(): array {
             'design_system_contract_enforced_on_writes' => true,
             'design_system_marker_migration' => true,
             'mobile_first_design_required' => true,
+            'native_style_settings_required' => true,
+            'native_style_policy' => [
+                'required' => true,
+                'rule' => 'Change element styling through native Elementor settings/style controls first; CSS is allowed only for exceptional enhancements that Elementor cannot express.',
+                'native_first_settings' => [
+                    'background_background',
+                    'background_color',
+                    '_background_background',
+                    '_background_color',
+                    'title_color',
+                    'text_color',
+                    'button_text_color',
+                    'button_background_color',
+                    'border_border',
+                    'border_color',
+                    'border_width',
+                    'border_radius',
+                    'padding',
+                    'margin',
+                    'gap',
+                    'width',
+                    'min_height',
+                    'align_items',
+                    'justify_content',
+                    'flex_direction',
+                    'flex_wrap',
+                    'responsive mobile/tablet variants',
+                ],
+                'css_exception_rule' => 'Use scoped CSS only for complex responsive behavior, animations, hover/focus refinements, browser fixes, or theme specificity conflicts after native settings are set.',
+                'forbidden' => [
+                    'CSS-only backgrounds, contrast, spacing, borders, typography, or layout when native Elementor settings can express them.',
+                    'Full page or block styling hidden inside an HTML widget instead of editable Elementor controls.',
+                    'Unscoped global CSS for page-specific styling.',
+                ],
+            ],
             'mobile_first_policy' => [
                 'required' => true,
                 'rule' => 'Design and validate the mobile layout first, then enhance tablet and desktop.',
@@ -5450,7 +5486,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.08',
+        'version' => 'v02.05.09',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -5497,11 +5533,12 @@ function wpae_agent_guide(): array {
             '9. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
             '10. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element inside the returned design system.',
             '11. Prefer rem/em for spacing and typography, vh/svh for viewport-height sections, and %/flex/max-width constraints for widths; use px only for small exceptions or Elementor compatibility.',
-            '12. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
-            '13. Verify with /audit, /elementor/visual-audit, /visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
-            '14. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
-            '15. Read preflight and agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
-            '16. If any endpoint or verification step fails, report concrete error details: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix.',
+            '12. Change element styles through native Elementor settings/style controls first; use scoped CSS only for exceptional enhancements that cannot reasonably be expressed with native settings.',
+            '13. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '14. Verify with /audit, /elementor/visual-audit, /visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
+            '15. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
+            '16. Read preflight and agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
+            '17. If any endpoint or verification step fails, report concrete error details: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -5539,6 +5576,7 @@ function wpae_agent_guide(): array {
             ],
             'project_tokens_rule' => 'Use project_design_tokens from this guide as the site visual system. They override generic defaults unless the user explicitly asks for a different direction.',
             'design_system_first_rule' => 'Before creating a page or adding a page block, call /elementor/design-system. All later blocks must reuse the same system_id, palette, type roles, spacing, radii, button style, and tone.',
+            'native_style_first_rule' => 'When changing any element style, write it to native Elementor settings/style controls first. CSS is only an exception for complex behavior, animations, hover/focus refinements, browser fixes, or specificity conflicts after native settings exist.',
         ],
         'jezweb_claude_skills' => [
             'source' => 'https://github.com/jezweb/claude-skills',
@@ -5631,6 +5669,28 @@ function wpae_agent_guide(): array {
                 'Elementor controls that do not accept relative units reliably.',
             ],
             'preflight' => 'Structured Elementor writes warn when fixed px width/height settings are detected.',
+        ],
+        'native_style_settings_policy' => [
+            'required' => true,
+            'rule' => 'For every element style change, use native Elementor settings/style controls first. CSS is an exception, not the default.',
+            'native_first' => [
+                'Backgrounds, text colors, button colors, borders, radii, spacing, width, min-height, flex layout, alignment, and responsive variants must be stored in element/container/widget settings when Elementor supports them.',
+                'CSS may refine or reinforce a style, but it must not be the only source of essential background, contrast, spacing, border, typography, or layout.',
+                'When CSS is used, scope it under page/project classes and keep the affected content editable through native widgets.',
+            ],
+            'css_allowed_only_for' => [
+                'Small JavaScript support styles.',
+                'Complex responsive behavior that Elementor controls cannot express cleanly.',
+                'Animations, transitions, hover/focus refinements, and progressive enhancement.',
+                'Browser quirks or theme specificity conflicts after native settings are already present.',
+                'Tiny visual details such as pseudo-elements, masks, advanced gradients, or decorative accents.',
+            ],
+            'css_forbidden_for' => [
+                'Main page layout or content structure.',
+                'Styles that Elementor has native controls for but the agent skipped.',
+                'Global unscoped page-specific styles.',
+                'Hiding missing native backgrounds, spacing, borders, typography, or contrast behind an HTML widget.',
+            ],
         ],
         'mobile_first_policy' => [
             'required' => true,
@@ -5944,6 +6004,17 @@ function wpae_agent_guide(): array {
                 'conditional_widget_types' => [
                     'html' => 'Allowed only for small JavaScript snippets or complex CSS enhancements that cannot reasonably be expressed with native Elementor settings. Never use it as the main page markup/content/layout container.',
                 ],
+                'native_style_settings' => [
+                    'required' => true,
+                    'rule' => 'Element style changes must be made in native Elementor settings/style controls first.',
+                    'examples' => [
+                        'Use background_color/background_background for section and card backgrounds.',
+                        'Use title_color/text_color/button color controls for readable text and CTA contrast.',
+                        'Use border, radius, padding, margin, gap, width, min-height, flex direction, wrap, justify, align, and responsive controls for layout and spacing.',
+                        'Use _css_classes only to attach scoped enhancements after native settings are present.',
+                    ],
+                    'css_exception' => 'Use CSS only when a native setting cannot express the requested behavior or when refining an already native-styled element.',
+                ],
                 'content_placement' => [
                     'Headlines must live in heading widget settings.title.',
                     'Body copy must live in text-editor widget settings.editor.',
@@ -5958,6 +6029,8 @@ function wpae_agent_guide(): array {
                     'Do not put full page markup into an Elementor HTML widget.',
                     'Do not use inline CSS/JS blobs to fake the main page structure.',
                     'Do not replace editable Elementor controls with opaque HTML.',
+                    'Do not use CSS as the default way to change element styling when Elementor has native style controls.',
+                    'Do not use CSS-only critical backgrounds, contrast, spacing, borders, or typography when native settings can express them.',
                     'Do not rely on enhancement CSS as the only source for essential backgrounds, contrast, spacing, or card borders.',
                 ],
                 'verification' => [
@@ -5967,11 +6040,13 @@ function wpae_agent_guide(): array {
                     'Confirm there are zero elements with elType=section or elType=column.',
                     'If html widgets exist, confirm each one is limited to JS or complex CSS enhancements, not page content/layout.',
                     'Confirm important text lives in heading/text-editor/button/icon-list settings.',
+                    'Confirm each changed element style exists in native Elementor settings first, with CSS only as an explained exception.',
                     'Confirm any visually critical card, panel, hero, or dark section has native Elementor background and border settings before relying on CSS.',
                 ],
             ],
             'html_enhancement_policy' => [
                 'allowed' => true,
+                'rule' => 'HTML widget CSS is exceptional enhancement only. If Elementor has a native control for the style, set the native control first.',
                 'allowed_for' => [
                     'Google Fonts or other font loading when the site has no better typography pipeline.',
                     'Scoped CSS polish for classed Elementor containers/widgets.',
@@ -5983,6 +6058,7 @@ function wpae_agent_guide(): array {
                     'Do not target .elementor-widget-container as the primary selector.',
                     'Use !important only as an enhancement fallback for scoped selectors when Elementor/theme CSS wins specificity.',
                     'Do not use !important to compensate for missing native Elementor settings on critical backgrounds, colors, borders, spacing, or layout.',
+                    'When CSS is used, state why native Elementor settings were insufficient.',
                     'Respect prefers-reduced-motion for animation.',
                     'Use vanilla JavaScript in an IIFE; avoid jQuery unless WordPress/Elementor dependency forces it.',
                     'HTML widget must be enhancement-only and removable without losing the page content.',
@@ -6036,6 +6112,7 @@ function wpae_agent_guide(): array {
                 'Core text is stored in native widget settings, not opaque HTML.',
                 'Any html widget is enhancement-only.',
                 'Critical backgrounds, borders, spacing, and contrast are present in native Elementor settings, with CSS only refining or reinforcing them.',
+                'Changed element styles are stored in native Elementor settings first; CSS usage is scoped and justified as an exception.',
                 '/visual-audit passes or returns only explained warnings.',
                 'No external files, temporary loaders, mu-plugins, scratch files, or filesystem writes were created or required.',
                 'Desktop and mobile layout should not have obvious overlap or horizontal overflow.',
@@ -6058,7 +6135,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. Design mobile first: plan the mobile stack, type scale, spacing, CTA visibility, tap targets, section order, and responsive Elementor settings before expanding tablet and desktop layouts. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never request or use WP Admin login/password, admin cookies, WordPress REST nonces, or browser sessions; if auth fails, report endpoint/status/body and verify X-AI-Key instead of asking for credentials. Never use Playwright, WP Admin, or Elementor editor to write changes; browser automation is allowed only to inspect public pages after REST API writes. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same design-system/preflight contract and rolled back on failure. If an existing page has old or different wpae-system-* marker classes, migrate it to the current main design system with /elementor/normalize, preserve non-WPAE custom classes, then run /elementor/update dry_run. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; use /visual-audit on the public page after writing; fix weak mobile_readiness, public HTML warnings, or other blocked audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, mobile-first layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put critical backgrounds, readable text colors, borders, spacing, dimensions, alignment, and responsive mobile settings into native Elementor settings first; scoped CSS, including selective !important, may reinforce or refine them but must not be the only source of essential contrast or layout. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, /visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, public HTML audit, zero section/column elements, no external files, native widget content placement, native critical visual settings, mobile-first responsive settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, visual audits, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, mobile-first responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. If any endpoint or verification step fails, include concrete error details in the response: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. Design mobile first: plan the mobile stack, type scale, spacing, CTA visibility, tap targets, section order, and responsive Elementor settings before expanding tablet and desktop layouts. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never request or use WP Admin login/password, admin cookies, WordPress REST nonces, or browser sessions; if auth fails, report endpoint/status/body and verify X-AI-Key instead of asking for credentials. Never use Playwright, WP Admin, or Elementor editor to write changes; browser automation is allowed only to inspect public pages after REST API writes. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same design-system/preflight contract and rolled back on failure. If an existing page has old or different wpae-system-* marker classes, migrate it to the current main design system with /elementor/normalize, preserve non-WPAE custom classes, then run /elementor/update dry_run. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; use /visual-audit on the public page after writing; fix weak mobile_readiness, public HTML warnings, or other blocked audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, mobile-first layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put all element style changes into native Elementor settings/style controls first, including critical backgrounds, readable text colors, borders, spacing, dimensions, alignment, typography, buttons, and responsive mobile settings. CSS is an exception only for complex behavior, animation, hover/focus polish, browser fixes, or specificity conflicts after native settings are present; scoped CSS, including selective !important, may reinforce or refine styles but must not be the default styling method or the only source of essential contrast or layout. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. The Elementor HTML widget is allowed only for small JavaScript snippets or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, run /audit, /elementor/visual-audit, /visual-audit, and the verification checklist: published URL, Elementor meta, decoded _elementor_data, public HTML audit, zero section/column elements, no external files, native widget content placement, native critical visual settings, native style settings before CSS, mobile-first responsive settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, visual audits, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, mobile-first responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. If any endpoint or verification step fails, include concrete error details in the response: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
