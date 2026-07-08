@@ -34,14 +34,11 @@
 - Добавлена миграция design-system markers: `/elementor/normalize` заменяет старые `wpae-system-*` на текущую основную дизайн-систему, сохраняя остальные CSS classes.
 - Запрещены запросы WP Admin логина/пароля, admin cookies, nonces и browser sessions; Playwright/WP Admin нельзя использовать для правок, только для публичной проверки после REST API writes.
 - Добавлено обязательное правило mobile-first: агент должен сначала проектировать мобильную композицию, типографику, CTA, tap targets и responsive Elementor settings, а уже потом расширять tablet/desktop.
+- Добавлен read-only endpoint `/visual-audit` для публичного HTML-аудита same-site страниц: fetch/status, viewport/title/copy, overflow risks, invisible text, empty blocks, CTA и mobile-first CSS signals. Screenshot/render metrics оставлены для публичной browser-проверки.
 
 ## Далее
 
-1. Рассмотреть будущий endpoint `/visual-audit`.
-   - Использовать server-side DOM/render checks только если это будет надежно работать на типичном WordPress hosting.
-   - Цели проверки: overflow, contrast, invisible text, подозрительные empty blocks, слишком большие отступы и desktop/mobile screenshot metrics.
-
-2. Опционально добавить preset buttons для существующих single-key capability toggles.
+1. Опционально добавить preset buttons для существующих single-key capability toggles.
    - Базовая модель уже реализована: один `X-AI-Key`, capability toggles в dashboard и отражение в `/capabilities`.
    - Не добавлять отдельные `run_key`, `guide_key`, `update_key` или `readonly_key`.
    - Presets, если понадобятся, должны быть только UI shortcuts: `read_only`, `elementor_safe`, `maintenance`, `full_trusted`.
