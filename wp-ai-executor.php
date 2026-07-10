@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.12
+ * Version:     v02.08.13
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.12';
+const WPAE_VERSION = 'v02.08.13';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -27,7 +27,7 @@ function wpae_get_key(): string {
 
 function wpae_capability_defaults(): array {
     return [
-        'run' => true,
+        'run' => false,
         'self_update' => true,
         'elementor_writes' => true,
         'media_upload' => true,
@@ -36,6 +36,24 @@ function wpae_capability_defaults(): array {
         'filesystem_writes' => false,
     ];
 }
+
+// Disable the historically enabled arbitrary-PHP capability once on upgrade.
+// Site owners can explicitly re-enable it from the dashboard when required.
+add_action( 'init', function (): void {
+    if ( get_option( 'wp_ai_executor_security_hardening_v1', false ) ) {
+        return;
+    }
+
+    $stored = get_option( 'wp_ai_executor_capabilities', [] );
+    if ( ! is_array( $stored ) ) {
+        $stored = [];
+    }
+
+    $stored['run'] = false;
+    $stored['filesystem_writes'] = false;
+    update_option( 'wp_ai_executor_capabilities', $stored, false );
+    update_option( 'wp_ai_executor_security_hardening_v1', gmdate( 'c' ), false );
+}, 1 );
 
 function wpae_capability_labels(): array {
     return [
@@ -1406,7 +1424,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.12',
+        'guide_version' => 'v02.05.13',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1903,7 +1921,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.12',
+        'guide_version' => 'v02.05.13',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -4274,14 +4292,13 @@ function wpae_create_export( WP_REST_Request $request ) {
 }
 
 function wpae_self_update( WP_REST_Request $request ) {
-    $default_url = 'https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/main/wp-ai-executor.php';
-    $source_url  = trim( (string) ( $request->get_param( 'source_url' ) ?: $default_url ) );
+    $source_url = trim( (string) $request->get_param( 'source_url' ) );
     $dry_run     = (bool) $request->get_param( 'dry_run' );
 
-    if ( ! wpae_is_allowed_self_update_url( $source_url ) ) {
+    if ( $source_url === '' || ! wpae_is_allowed_self_update_url( $source_url ) ) {
         return new WP_REST_Response( [
-            'error' => 'Self-update source_url is not allowed.',
-            'allowed' => 'https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.php',
+            'error' => 'Self-update requires an immutable Git commit URL.',
+            'allowed' => 'https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/<40-char-commit-sha>/wp-ai-executor.php',
         ], 400 );
     }
 
@@ -4331,10 +4348,32 @@ function wpae_self_update( WP_REST_Request $request ) {
         ], 200 );
     }
 
-    $written = file_put_contents( $target, $body, LOCK_EX );
-    if ( $written === false ) {
+    $temp = tempnam( dirname( $target ), '.wpae-update-' );
+    if ( $temp === false ) {
         return new WP_REST_Response( [
-            'error' => 'Failed to write plugin file.',
+            'error' => 'Failed to create atomic update temp file.',
+            'target' => $target,
+        ], 500 );
+    }
+
+    $written = file_put_contents( $temp, $body, LOCK_EX );
+    if ( $written === false ) {
+        @unlink( $temp );
+        return new WP_REST_Response( [
+            'error' => 'Failed to write plugin update temp file.',
+            'target' => $target,
+        ], 500 );
+    }
+
+    $target_mode = @fileperms( $target );
+    if ( $target_mode !== false ) {
+        @chmod( $temp, $target_mode & 0777 );
+    }
+
+    if ( ! @rename( $temp, $target ) ) {
+        @unlink( $temp );
+        return new WP_REST_Response( [
+            'error' => 'Failed to atomically replace plugin file.',
             'target' => $target,
         ], 500 );
     }
@@ -4366,7 +4405,7 @@ function wpae_is_allowed_self_update_url( string $source_url ): bool {
     }
 
     $path = $parts['path'] ?? '';
-    return (bool) preg_match( '#^/DiasMazhenov/wp-ai-executor/[^/]+/wp-ai-executor\.php$#', $path );
+    return (bool) preg_match( '#^/DiasMazhenov/wp-ai-executor/[a-f0-9]{40}/wp-ai-executor\.php$#', $path );
 }
 
 function wpae_validate_self_update_file( string $contents ): array {
@@ -5552,7 +5591,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.12',
+        'version' => 'v02.05.13',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [

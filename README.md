@@ -84,7 +84,7 @@ curl -s "$SITE/wp-json/ai-executor/v1/guide" \
 ### `POST /wp-json/ai-executor/v1/self-update`
 
 Safely updates only the plugin's own `wp-ai-executor.php` file from the
-allowlisted GitHub source. This is the only supported filesystem write path.
+an immutable Git commit URL. This is the only supported filesystem write path.
 General filesystem writes through `/run` remain blocked.
 The downloaded file must pass required plugin marker validation before writing.
 
@@ -94,13 +94,13 @@ curl -s -X POST "$SITE/wp-json/ai-executor/v1/self-update" \
   -H "X-WPAE-Guide-Token: $GUIDE_TOKEN" \
   -H "X-WPAE-Guide-Hash: $GUIDE_HASH" \
   -H "Content-Type: application/json" \
-  -d '{"dry_run": true}'
+  -d '{"source_url":"https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/<40-char-commit-sha>/wp-ai-executor.php","dry_run":true}'
 ```
 
 Accepted source URLs must match:
 
 ```text
-https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/*/wp-ai-executor.php
+https://raw.githubusercontent.com/DiasMazhenov/wp-ai-executor/<40-char-commit-sha>/wp-ai-executor.php
 ```
 
 ### `GET /wp-json/ai-executor/v1/capabilities`
@@ -112,7 +112,7 @@ Important fields include:
 
 ```json
 {
-  "can_execute_php": true,
+  "can_execute_php": false,
   "can_write_elementor": true,
   "can_write_files_via_run": false,
   "can_self_update_plugin": true,
@@ -605,18 +605,18 @@ After writing, the agent should verify:
 
 ## Security
 
-- All requests require the `X-AI-Key` header (or `?key=` query param)
+- All requests require the `X-AI-Key` header
 - Key is a 64-char cryptographically random hex string
 - Key comparison uses `hash_equals()` to prevent timing attacks
 - The `/key` endpoint is restricted to `127.0.0.1` / `::1` only
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
-- Site-owner capability toggles in **Settings → AI Executor** can disable `/run`, self-update, Elementor writes, media upload, exports, skills management, and filesystem writes
-- `/run` blocks common filesystem write/delete functions and shell/process execution by default
+- Site-owner capability toggles in **Settings → AI Executor** can enable `/run`, self-update, Elementor writes, media upload, exports, skills management, and filesystem writes
+- `/run` is disabled by default and blocks common filesystem write/delete functions and shell/process execution when explicitly enabled
 - `/run` validates changed Elementor data and blocks legacy sections/columns or missing `widgetType`
 - `/elementor/validate`, `/elementor/page`, and `/elementor/update` provide structured Elementor JSON validation and saving
 - `/audit` returns machine-readable page verification findings
 - write endpoints require a fresh guide token from `/guide/session` + `/guide/ack`
-- `/self-update` is the only allowed plugin file write path and only writes the current plugin file from the allowlisted GitHub source
+- `/self-update` is the only allowed plugin file write path and only writes the current plugin file from an immutable Git commit URL using an atomic replacement
 - `/skills` stores custom skills in the database, not as files
 - skills can include limited `enforce` rules that runtime validators apply
 - `/media/upload` and `/exports/create` are the only non-plugin file write endpoints
