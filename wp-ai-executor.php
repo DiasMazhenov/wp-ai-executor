@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.19
+ * Version:     v02.08.21
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.19';
+const WPAE_VERSION = 'v02.08.21';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -1523,7 +1523,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.19',
+        'guide_version' => 'v02.05.21',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1936,6 +1936,77 @@ function wpae_filter_managed_post_meta_snapshot( array $meta ): array {
     return array_intersect_key( $meta, $allowed );
 }
 
+function wpae_prepare_restored_post_meta_value( string $meta_key, $value ) {
+    if ( $meta_key === '_elementor_data' && is_string( $value ) ) {
+        return wp_slash( $value );
+    }
+
+    return $value;
+}
+
+function wpae_validate_snapshot_elementor_meta( array $meta ): ?array {
+    if ( ! array_key_exists( '_elementor_data', $meta ) ) {
+        return null;
+    }
+
+    $values = is_array( $meta['_elementor_data'] ) ? $meta['_elementor_data'] : [ $meta['_elementor_data'] ];
+    $raw_data = (string) ( $values[0] ?? '' );
+    if ( trim( $raw_data ) === '' ) {
+        return [
+            'code' => 'empty_snapshot_elementor_data',
+            'message' => 'Rollback snapshot contains an empty _elementor_data value.',
+        ];
+    }
+
+    $decoded = json_decode( $raw_data, true );
+    if ( is_array( $decoded ) ) {
+        return null;
+    }
+
+    return [
+        'code' => 'invalid_snapshot_elementor_data',
+        'message' => 'Rollback snapshot _elementor_data is not valid JSON array data.',
+        'json_error' => json_last_error_msg(),
+    ];
+}
+
+function wpae_replace_managed_post_meta( int $post_id, array $meta ): void {
+    $meta = wpae_filter_managed_post_meta_snapshot( $meta );
+    $managed_keys = array_unique( array_merge( wpae_managed_rollback_post_meta_keys(), array_keys( $meta ) ) );
+
+    foreach ( $managed_keys as $meta_key ) {
+        delete_post_meta( $post_id, $meta_key );
+    }
+
+    foreach ( $meta as $meta_key => $values ) {
+        if ( ! is_array( $values ) ) {
+            $values = [ $values ];
+        }
+
+        foreach ( $values as $value ) {
+            add_post_meta( $post_id, $meta_key, wpae_prepare_restored_post_meta_value( (string) $meta_key, $value ) );
+        }
+    }
+}
+
+function wpae_validate_restored_elementor_meta( int $post_id ): ?array {
+    $raw_data = get_post_meta( $post_id, '_elementor_data', true );
+    if ( ! is_string( $raw_data ) || trim( $raw_data ) === '' ) {
+        return null;
+    }
+
+    $decoded = json_decode( $raw_data, true );
+    if ( is_array( $decoded ) ) {
+        return null;
+    }
+
+    return [
+        'code' => 'invalid_restored_elementor_data',
+        'message' => '_elementor_data was restored but does not decode as a JSON array.',
+        'json_error' => json_last_error_msg(),
+    ];
+}
+
 function wpae_create_rollback_snapshot( string $label, array $post_ids = [], array $option_names = [], array $created_post_ids = [] ): ?array {
     $post_ids = wpae_sanitize_rollback_post_ids( $post_ids );
     $option_names = wpae_sanitize_rollback_option_names( $option_names );
@@ -1987,6 +2058,18 @@ function wpae_restore_post_snapshot( int $post_id, array $snapshot ): array {
         return [ 'post_id' => $post_id, 'action' => 'deleted_created_post' ];
     }
 
+    $meta = is_array( $snapshot['meta'] ?? null ) ? $snapshot['meta'] : [];
+    $meta = wpae_filter_managed_post_meta_snapshot( $meta );
+    $snapshot_validation_error = wpae_validate_snapshot_elementor_meta( $meta );
+    if ( $snapshot_validation_error !== null ) {
+        return [
+            'post_id' => $post_id,
+            'action' => 'failed_preflight',
+            'error' => $snapshot_validation_error,
+        ];
+    }
+
+    $before = wpae_capture_post_snapshot( $post_id );
     $post = is_array( $snapshot['post'] ?? null ) ? $snapshot['post'] : [];
     if ( empty( $post['ID'] ) ) {
         $post['ID'] = $post_id;
@@ -1997,24 +2080,36 @@ function wpae_restore_post_snapshot( int $post_id, array $snapshot ): array {
         return [ 'post_id' => $post_id, 'action' => 'failed', 'error' => $result->get_error_message() ];
     }
 
-    $meta = is_array( $snapshot['meta'] ?? null ) ? $snapshot['meta'] : [];
-    $meta = wpae_filter_managed_post_meta_snapshot( $meta );
-    $managed_keys = array_unique( array_merge( wpae_managed_rollback_post_meta_keys(), array_keys( $meta ) ) );
-
-    foreach ( $managed_keys as $meta_key ) {
-        delete_post_meta( $post_id, $meta_key );
-    }
-
-    foreach ( $meta as $meta_key => $values ) {
-        if ( ! is_array( $values ) ) {
-            $values = [ $values ];
-        }
-        foreach ( $values as $value ) {
-            add_post_meta( $post_id, $meta_key, $value );
-        }
-    }
+    wpae_replace_managed_post_meta( $post_id, $meta );
 
     wpae_clear_elementor_cache( $post_id );
+
+    $elementor_validation_error = wpae_validate_restored_elementor_meta( $post_id );
+    if ( $elementor_validation_error !== null ) {
+        $before_meta = is_array( $before['meta'] ?? null ) ? $before['meta'] : [];
+        $before_meta = wpae_filter_managed_post_meta_snapshot( $before_meta );
+        $before_validation_error = wpae_validate_snapshot_elementor_meta( $before_meta );
+
+        if ( empty( $before['exists'] ) || $before_validation_error !== null ) {
+            return [
+                'post_id' => $post_id,
+                'action' => 'failed_after_write',
+                'error' => $elementor_validation_error,
+                'recovery' => 'unavailable',
+            ];
+        }
+
+        wpae_replace_managed_post_meta( $post_id, $before_meta );
+        wp_update_post( (array) ( $before['post'] ?? [] ) );
+        wpae_clear_elementor_cache( $post_id );
+
+        return [
+            'post_id' => $post_id,
+            'action' => 'failed_after_write_recovered',
+            'error' => $elementor_validation_error,
+            'recovery' => 'previous_post_and_meta_restored',
+        ];
+    }
 
     return [ 'post_id' => $post_id, 'action' => 'restored' ];
 }
@@ -2048,6 +2143,22 @@ function wpae_rollback( WP_REST_Request $request ): WP_REST_Response {
 
     foreach ( (array) ( $snapshot['options'] ?? [] ) as $option_name => $option_snapshot ) {
         $restored_options[] = wpae_restore_option_snapshot( sanitize_key( (string) $option_name ), (array) $option_snapshot );
+    }
+
+    $failed_posts = array_values( array_filter( $restored_posts, function ( array $result ): bool {
+        return strpos( (string) ( $result['action'] ?? '' ), 'failed' ) === 0;
+    } ) );
+
+    if ( ! empty( $failed_posts ) ) {
+        wpae_update_rollback_snapshots( $snapshots );
+        return new WP_REST_Response( [
+            'ok' => false,
+            'snapshot_id' => $snapshot_id,
+            'label' => $snapshot['label'] ?? '',
+            'error' => 'Rollback did not complete. The snapshot has been retained for recovery.',
+            'restored_posts' => $restored_posts,
+            'restored_options' => $restored_options,
+        ], 422 );
     }
 
     unset( $snapshots[ $snapshot_id ] );
@@ -2268,7 +2379,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.19',
+        'guide_version' => 'v02.05.21',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -6309,7 +6420,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.19',
+        'version' => 'v02.05.21',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -6381,6 +6492,7 @@ function wpae_agent_guide(): array {
             '12. Change element styles through native Elementor settings/style controls first; use scoped CSS only for exceptional enhancements that cannot reasonably be expressed with native settings.',
             '13. On existing pages, preserve unrelated working CSS/JS/WebGL/Three.js/GSAP/canvas/shader/animation HTML widgets and scoped CSS; do not perform a page-wide restyle or cleanup unless explicitly requested.',
             '14. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
+            '14a. If /rollback returns ok=false, stop. Report its status/error/restored_posts details, keep the retained snapshot, and do not attempt a manual metadata rewrite, /run workaround, WP Admin edit, or browser-based write.',
             '15. Verify with /audit, /elementor/visual-audit, /visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
             '16. After any page write, rollback, typography migration, or revision restore, perform real browser screenshot verification on the public URL before claiming success; HTML/CSS audits alone are not enough.',
             '17. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
@@ -6784,7 +6896,7 @@ function wpae_agent_guide(): array {
                 'endpoint' => 'POST /wp-json/ai-executor/v1/rollback',
                 'storage' => 'Short-lived snapshots are stored in wp_options, never in files.',
                 'ttl_seconds' => WPAE_ROLLBACK_TTL_SECONDS,
-                'rule' => 'For structured Elementor writes, read rollback_snapshot_id and rollback_expires_at from the response. To revert, call /rollback with the snapshot_id and valid guide-token headers.',
+                'rule' => 'For structured Elementor writes, read rollback_snapshot_id and rollback_expires_at from the response. To revert, call /rollback with the snapshot_id and valid guide-token headers. Rollback validates _elementor_data before replacing metadata; if it fails, the snapshot is retained and the agent must stop, report the endpoint/status/error details, and never bypass recovery through /run, WP Admin, or browser automation.',
                 'dry_run' => [
                     '/elementor/page' => 'Pass dry_run=true to validate the requested create/update without writing.',
                     '/elementor/update' => 'Pass dry_run=true to validate the requested metadata update without writing.',
