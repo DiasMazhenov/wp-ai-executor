@@ -45,6 +45,7 @@
 - В `/guide` добавлены явные runtime notes для агентов: rollback scope, automatic orphan cleanup для `/elementor/page`, binary signature check в `/media/upload` и database-only `/exports/create`.
 - Добавлен `/elementor/typography-unlock`: безопасная миграция страниц, где сторонний агент зашил локальные `typography_*` overrides в каждый виджет и тем самым сломал глобальное управление типографикой через Elementor.
 - В guide добавлено правило typography editability: native settings first не означает дублировать `typography_*` на каждом widget; глобально управляемая типографика должна идти через роли/наследование, локальные overrides только для осознанных исключений.
+- Уточнено правило Elementor editor editability: все дизайн-свойства, которые Elementor умеет редактировать, должны оставаться в native settings/controls; native settings нельзя удалять ради “редактируемости”, потому что они и есть редактируемый источник. CSS/HTML widget не должны быть единственным источником управляемого дизайна.
 
 ## Далее
 
