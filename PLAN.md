@@ -40,15 +40,13 @@
 - В guide добавлен подробный CSS-to-native Elementor mapping: typography_*, colors, padding/margin/radius/min_height/flex/gap/wrap, unitless line-height для multi-line и обязательная очистка Elementor/WP Rocket CSS cache после native changes.
 - Уточнено по `wordpress-elementor-dev`: обычные и hover gradients через Elementor `Group_Control_Background` являются native settings; `z-index` и fixed/sticky сначала через Elementor advanced/positioning/motion controls, CSS только если native controls недостаточны для overlay/off-canvas/system layers.
 - Усилена безопасность: `/run` выключен по умолчанию и однократно отключается при обновлении существующей установки; self-update принимает только immutable Git commit URL и заменяет файл атомарно.
+- Усилены пункты безопасности 4–6: `/visual-audit` проверяет DNS/IP и использует safe HTTP fetch, API-ключ принимается только в `X-AI-Key`, просроченные guide-token options очищаются автоматически.
 
 ## Далее
 
 1. Исправить rollback: восстанавливать только управляемые плагином meta/options и не удалять сторонние post meta.
 2. Удалять автоматически созданную страницу при ошибке сохранения Elementor metadata.
 3. Защитить exports: не публиковать JSON в открытом uploads или выдавать временные ссылки.
-4. Усилить SSRF-защиту `/visual-audit`: разрешать только безопасные same-site targets и проверять resolved IP.
-5. Убрать API-ключ из query string, оставить только `X-AI-Key`.
-6. Периодически удалять просроченные guide token options.
 7. Проверять фактический MIME/signature файлов в `/media/upload`.
 8. Опционально добавить preset buttons для существующих single-key capability toggles.
    - Базовая модель уже реализована: один `X-AI-Key`, capability toggles в dashboard и отражение в `/capabilities`.

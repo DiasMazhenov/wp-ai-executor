@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.13
+ * Version:     v02.08.14
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.13';
+const WPAE_VERSION = 'v02.08.14';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -515,9 +515,7 @@ add_action( 'rest_api_init', function () {
 } );
 
 function wpae_auth( WP_REST_Request $r ): bool {
-    $provided = $r->get_header( 'X-AI-Key' )
-             ?? $r->get_header( 'X-Claude-Key' )
-             ?? $r->get_param( 'key' );
+    $provided = $r->get_header( 'X-AI-Key' );
     return hash_equals( wpae_get_key(), (string) $provided );
 }
 
@@ -1424,7 +1422,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.13',
+        'guide_version' => 'v02.05.14',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1454,6 +1452,23 @@ function wpae_guide_session_option_name( string $session_id ): string {
 function wpae_guide_token_option_name( string $token_hash ): string {
     $token_hash = preg_match( '/^[a-f0-9]{64}$/', $token_hash ) ? $token_hash : '';
     return 'wp_ai_executor_guide_token_' . $token_hash;
+}
+
+function wpae_prune_guide_token_records(): void {
+    global $wpdb;
+
+    $prefix = $wpdb->esc_like( 'wp_ai_executor_guide_token_' ) . '%';
+    $option_names = $wpdb->get_col( $wpdb->prepare(
+        "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+        $prefix
+    ) );
+
+    foreach ( (array) $option_names as $option_name ) {
+        $record = get_option( $option_name, null );
+        if ( ! is_array( $record ) || (int) ( $record['expires_at_unix'] ?? 0 ) < time() ) {
+            delete_option( $option_name );
+        }
+    }
 }
 
 function wpae_get_stored_guide_session( string $session_id ) {
@@ -1491,6 +1506,11 @@ function wpae_delete_guide_session( string $session_id ): void {
     $session_id = wpae_normalize_guide_session_id( $session_id );
     if ( $session_id === '' ) {
         return;
+    }
+
+    $session = wpae_get_stored_guide_session( $session_id );
+    if ( is_array( $session ) && ! empty( $session['token_hash'] ) ) {
+        delete_option( wpae_guide_token_option_name( (string) $session['token_hash'] ) );
     }
 
     delete_option( wpae_guide_session_option_name( $session_id ) );
@@ -1569,6 +1589,7 @@ function wpae_get_guide_ack_payload( WP_REST_Request $request ): array {
 }
 
 function wpae_create_guide_session(): WP_REST_Response {
+    wpae_prune_guide_token_records();
     wpae_update_guide_sessions( wpae_prune_guide_sessions( wpae_get_guide_sessions() ) );
     $session_id = bin2hex( random_bytes( 16 ) );
     $expires_at_unix = time() + 15 * MINUTE_IN_SECONDS;
@@ -1602,6 +1623,7 @@ function wpae_create_guide_session(): WP_REST_Response {
 }
 
 function wpae_ack_guide_session( WP_REST_Request $request ) {
+    wpae_prune_guide_token_records();
     $payload = wpae_get_guide_ack_payload( $request );
     $session_id = $payload['guide_session_id'];
     $ack = $payload['ack'];
@@ -1673,6 +1695,7 @@ function wpae_ack_guide_session( WP_REST_Request $request ) {
 }
 
 function wpae_validate_guide_token( string $token, string $guide_hash ) {
+    wpae_prune_guide_token_records();
     if ( $token === '' || $guide_hash === '' ) {
         return [ 'error' => 'missing_guide_token_or_hash' ];
     }
@@ -1921,7 +1944,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.13',
+        'guide_version' => 'v02.05.14',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -3692,9 +3715,11 @@ function wpae_visual_audit_page( WP_REST_Request $request ): WP_REST_Response {
         ], 400 );
     }
 
-    $response = wp_remote_get( $target['url'], [
+    $response = wp_safe_remote_get( $target['url'], [
         'timeout' => 15,
         'redirection' => 3,
+        'limit_response_size' => 4 * 1024 * 1024,
+        'reject_unsafe_urls' => true,
         'user-agent' => 'WP AI Executor Visual Audit/' . WPAE_VERSION,
     ] );
 
@@ -3743,6 +3768,10 @@ function wpae_resolve_public_visual_audit_target( WP_REST_Request $request ) {
             return new WP_Error( 'missing_permalink', 'Post permalink is unavailable.' );
         }
 
+        if ( ! wpae_is_safe_visual_audit_url( $permalink ) ) {
+            return new WP_Error( 'unsafe_target', 'The page URL resolves to a private, reserved, or unsafe network address.' );
+        }
+
         return [
             'type' => 'post',
             'post_id' => $post_id,
@@ -3770,10 +3799,82 @@ function wpae_resolve_public_visual_audit_target( WP_REST_Request $request ) {
         return new WP_Error( 'external_url_forbidden', 'Only same-site URLs can be audited.' );
     }
 
+    if ( ! wpae_is_safe_visual_audit_url( $url ) ) {
+        return new WP_Error( 'unsafe_target', 'The page URL resolves to a private, reserved, or unsafe network address.' );
+    }
+
     return [
         'type' => 'url',
         'url' => $url,
     ];
+}
+
+function wpae_is_safe_visual_audit_url( string $url ): bool {
+    $parts = wp_parse_url( $url );
+    $home_parts = wp_parse_url( home_url() );
+
+    if ( ! is_array( $parts ) || ! is_array( $home_parts ) ) {
+        return false;
+    }
+
+    if ( ! in_array( strtolower( (string) ( $parts['scheme'] ?? '' ) ), [ 'http', 'https' ], true ) ) {
+        return false;
+    }
+
+    if ( ! empty( $parts['user'] ) || ! empty( $parts['pass'] ) || ! empty( $parts['port'] ) ) {
+        return false;
+    }
+
+    $host = strtolower( rtrim( (string) ( $parts['host'] ?? '' ), '.' ) );
+    $home_host = strtolower( rtrim( (string) ( $home_parts['host'] ?? '' ), '.' ) );
+    if ( $host === '' || $host !== $home_host ) {
+        return false;
+    }
+
+    if ( function_exists( 'wp_http_validate_url' ) && ! wp_http_validate_url( $url ) ) {
+        return false;
+    }
+
+    $ips = [];
+    if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+        $ips[] = $host;
+    } else {
+        $ips = array_merge( $ips, (array) gethostbynamel( $host ) );
+        if ( function_exists( 'dns_get_record' ) ) {
+            $dns_types = 0;
+            if ( defined( 'DNS_A' ) ) {
+                $dns_types |= DNS_A;
+            }
+            if ( defined( 'DNS_AAAA' ) ) {
+                $dns_types |= DNS_AAAA;
+            }
+
+            if ( $dns_types !== 0 ) {
+                $records = dns_get_record( $host, $dns_types );
+                foreach ( (array) $records as $record ) {
+                    if ( ! empty( $record['ip'] ) ) {
+                        $ips[] = $record['ip'];
+                    }
+                    if ( ! empty( $record['ipv6'] ) ) {
+                        $ips[] = $record['ipv6'];
+                    }
+                }
+            }
+        }
+    }
+
+    $ips = array_values( array_unique( array_filter( array_map( 'strval', $ips ) ) ) );
+    if ( empty( $ips ) ) {
+        return false;
+    }
+
+    foreach ( $ips as $ip ) {
+        if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) === false ) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function wpae_count_regex_matches( string $pattern, string $subject ): int {
@@ -5591,7 +5692,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.13',
+        'version' => 'v02.05.14',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
