@@ -2,17 +2,19 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.14
+ * Version:     v02.08.15
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.14';
+const WPAE_VERSION = 'v02.08.15';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
+const WPAE_EXPORT_TTL_SECONDS = 3600;
+const WPAE_EXPORT_MAX_ENTRIES = 20;
 
 // ── Key management ─────────────────────────────────────────────────────────────
 function wpae_get_key(): string {
@@ -75,7 +77,7 @@ function wpae_capability_labels(): array {
         ],
         'exports' => [
             'label' => 'Разрешить JSON-экспорты',
-            'description' => 'Позволяет /exports/create создавать JSON-файлы в uploads/wp-ai-executor/exports.',
+            'description' => 'Позволяет /exports/create создавать короткоживущие JSON-экспорты в wp_options без публичных файлов.',
         ],
         'manage_skills' => [
             'label' => 'Разрешить управление skills',
@@ -108,6 +110,73 @@ function wpae_update_capability_settings( array $input ): void {
         $settings[ $key ] = ! empty( $input[ $key ] );
     }
     update_option( 'wp_ai_executor_capabilities', $settings, false );
+}
+
+function wpae_capability_presets(): array {
+    return [
+        'read_only' => [
+            'label' => 'Только чтение',
+            'description' => 'Отключает все write-возможности. Подходит для диагностики, guide, capabilities, audits и logs.',
+            'capabilities' => [
+                'run' => false,
+                'self_update' => false,
+                'elementor_writes' => false,
+                'media_upload' => false,
+                'exports' => false,
+                'manage_skills' => false,
+                'filesystem_writes' => false,
+            ],
+        ],
+        'elementor_safe' => [
+            'label' => 'Elementor safe',
+            'description' => 'Разрешает структурированные Elementor-правки, медиа и exports без PHP /run, self-update и файловых операций.',
+            'capabilities' => [
+                'run' => false,
+                'self_update' => false,
+                'elementor_writes' => true,
+                'media_upload' => true,
+                'exports' => true,
+                'manage_skills' => false,
+                'filesystem_writes' => false,
+            ],
+        ],
+        'maintenance' => [
+            'label' => 'Обслуживание',
+            'description' => 'Разрешает Elementor, media, exports, skills и self-update. PHP /run и файловые операции остаются выключены.',
+            'capabilities' => [
+                'run' => false,
+                'self_update' => true,
+                'elementor_writes' => true,
+                'media_upload' => true,
+                'exports' => true,
+                'manage_skills' => true,
+                'filesystem_writes' => false,
+            ],
+        ],
+        'full_trusted' => [
+            'label' => 'Полный доверенный',
+            'description' => 'Включает все возможности, включая PHP /run и файловые операции. Используйте только для полностью доверенного агента.',
+            'capabilities' => [
+                'run' => true,
+                'self_update' => true,
+                'elementor_writes' => true,
+                'media_upload' => true,
+                'exports' => true,
+                'manage_skills' => true,
+                'filesystem_writes' => true,
+            ],
+        ],
+    ];
+}
+
+function wpae_apply_capability_preset( string $preset_id ): bool {
+    $presets = wpae_capability_presets();
+    if ( ! isset( $presets[ $preset_id ] ) ) {
+        return false;
+    }
+
+    wpae_update_capability_settings( (array) $presets[ $preset_id ]['capabilities'] );
+    return true;
 }
 
 function wpae_capability_enabled( string $capability ): bool {
@@ -504,6 +573,12 @@ add_action( 'rest_api_init', function () {
         'methods'             => 'POST',
         'callback'            => 'wpae_create_export',
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'exports' ),
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/exports/(?P<id>[a-f0-9]{24})', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_get_export',
+        'permission_callback' => 'wpae_auth',
     ] );
 
     register_rest_route( 'ai-executor/v1', '/self-update', [
@@ -1422,7 +1497,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.14',
+        'guide_version' => 'v02.05.15',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -1797,7 +1872,7 @@ function wpae_capture_post_snapshot( int $post_id ): array {
     return [
         'exists' => true,
         'post' => $post,
-        'meta' => get_post_meta( $post_id ),
+        'meta' => wpae_filter_managed_post_meta_snapshot( get_post_meta( $post_id ) ),
     ];
 }
 
@@ -1813,6 +1888,26 @@ function wpae_capture_option_snapshot( string $option_name ): array {
         'exists' => true,
         'value' => $value,
     ];
+}
+
+function wpae_managed_rollback_post_meta_keys(): array {
+    return [
+        '_elementor_data',
+        '_elementor_edit_mode',
+        '_elementor_template_type',
+        '_elementor_version',
+        '_elementor_css',
+        '_wp_page_template',
+        '_wpae_design_system_id',
+        '_wpae_design_system_hash',
+        '_wpae_blueprint',
+        '_wpae_quality_summary',
+    ];
+}
+
+function wpae_filter_managed_post_meta_snapshot( array $meta ): array {
+    $allowed = array_fill_keys( wpae_managed_rollback_post_meta_keys(), true );
+    return array_intersect_key( $meta, $allowed );
 }
 
 function wpae_create_rollback_snapshot( string $label, array $post_ids = [], array $option_names = [], array $created_post_ids = [] ): ?array {
@@ -1876,12 +1971,14 @@ function wpae_restore_post_snapshot( int $post_id, array $snapshot ): array {
         return [ 'post_id' => $post_id, 'action' => 'failed', 'error' => $result->get_error_message() ];
     }
 
-    $current_meta = get_post_meta( $post_id );
-    foreach ( array_keys( $current_meta ) as $meta_key ) {
+    $meta = is_array( $snapshot['meta'] ?? null ) ? $snapshot['meta'] : [];
+    $meta = wpae_filter_managed_post_meta_snapshot( $meta );
+    $managed_keys = array_unique( array_merge( wpae_managed_rollback_post_meta_keys(), array_keys( $meta ) ) );
+
+    foreach ( $managed_keys as $meta_key ) {
         delete_post_meta( $post_id, $meta_key );
     }
 
-    $meta = is_array( $snapshot['meta'] ?? null ) ? $snapshot['meta'] : [];
     foreach ( $meta as $meta_key => $values ) {
         if ( ! is_array( $values ) ) {
             $values = [ $values ];
@@ -1944,7 +2041,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.14',
+        'guide_version' => 'v02.05.15',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -4254,11 +4351,21 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
 
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
+        $cleanup = null;
+        if ( $is_new_post && get_post( $post_id ) !== null ) {
+            $deleted = wp_delete_post( $post_id, true );
+            $cleanup = [
+                'created_post_deleted' => $deleted !== false && $deleted !== null,
+                'reason' => 'elementor_metadata_save_failed',
+            ];
+        }
+
         return new WP_REST_Response( [
             'ok' => false,
             'error' => $saved->get_error_message(),
             'details' => $saved->get_error_data(),
             'post_id' => $post_id,
+            'cleanup' => $cleanup,
             'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
             'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
@@ -4307,6 +4414,15 @@ function wpae_upload_media( WP_REST_Request $request ) {
         return new WP_REST_Response( [ 'error' => 'Media file exceeds 8 MB limit.' ], 413 );
     }
 
+    $detected_mime = wpae_detect_media_mime_from_bytes( $bytes );
+    if ( $detected_mime !== $mime_type ) {
+        return new WP_REST_Response( [
+            'error' => 'Media binary signature does not match mime_type.',
+            'mime_type' => $mime_type,
+            'detected_mime_type' => $detected_mime,
+        ], 400 );
+    }
+
     $extension = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
     if ( $extension !== $allowed_mimes[ $mime_type ] ) {
         $filename .= '.' . $allowed_mimes[ $mime_type ];
@@ -4343,6 +4459,54 @@ function wpae_upload_media( WP_REST_Request $request ) {
     ], 200 );
 }
 
+function wpae_detect_media_mime_from_bytes( string $bytes ): ?string {
+    if ( str_starts_with( $bytes, "\xFF\xD8\xFF" ) ) {
+        return 'image/jpeg';
+    }
+
+    if ( str_starts_with( $bytes, "\x89PNG\r\n\x1A\n" ) ) {
+        return 'image/png';
+    }
+
+    if ( str_starts_with( $bytes, 'GIF87a' ) || str_starts_with( $bytes, 'GIF89a' ) ) {
+        return 'image/gif';
+    }
+
+    if ( strlen( $bytes ) >= 12 && substr( $bytes, 0, 4 ) === 'RIFF' && substr( $bytes, 8, 4 ) === 'WEBP' ) {
+        return 'image/webp';
+    }
+
+    if ( str_starts_with( $bytes, '%PDF-' ) ) {
+        return 'application/pdf';
+    }
+
+    return null;
+}
+
+function wpae_get_export_store(): array {
+    $exports = get_option( 'wp_ai_executor_exports', [] );
+    return is_array( $exports ) ? $exports : [];
+}
+
+function wpae_update_export_store( array $exports ): void {
+    update_option( 'wp_ai_executor_exports', $exports, false );
+}
+
+function wpae_prune_export_store( array $exports ): array {
+    $now = time();
+    foreach ( $exports as $id => $export ) {
+        if ( (int) ( $export['expires_at_unix'] ?? 0 ) < $now ) {
+            unset( $exports[ $id ] );
+        }
+    }
+
+    uasort( $exports, function ( array $a, array $b ): int {
+        return (int) ( $b['created_at_unix'] ?? 0 ) <=> (int) ( $a['created_at_unix'] ?? 0 );
+    } );
+
+    return array_slice( $exports, 0, WPAE_EXPORT_MAX_ENTRIES, true );
+}
+
 function wpae_create_export( WP_REST_Request $request ) {
     $filename = sanitize_file_name( (string) ( $request->get_param( 'filename' ) ?: 'wp-ai-export-' . gmdate( 'Ymd-His' ) . '.json' ) );
     $payload = $request->get_param( 'data' );
@@ -4368,28 +4532,54 @@ function wpae_create_export( WP_REST_Request $request ) {
         return new WP_REST_Response( [ 'error' => 'Export data must be valid JSON.' ], 400 );
     }
 
-    $upload_dir = wp_upload_dir();
-    if ( ! empty( $upload_dir['error'] ) ) {
-        return new WP_REST_Response( [ 'error' => $upload_dir['error'] ], 500 );
-    }
-
-    $dir = trailingslashit( $upload_dir['basedir'] ) . 'wp-ai-executor/exports';
-    if ( ! wp_mkdir_p( $dir ) ) {
-        return new WP_REST_Response( [ 'error' => 'Could not create exports directory.' ], 500 );
-    }
-
-    $path = trailingslashit( $dir ) . $filename;
-    $written = file_put_contents( $path, $json, LOCK_EX );
-    if ( $written === false ) {
-        return new WP_REST_Response( [ 'error' => 'Could not write export file.' ], 500 );
-    }
+    $now = time();
+    $export_id = bin2hex( random_bytes( 12 ) );
+    $exports = wpae_prune_export_store( wpae_get_export_store() );
+    $exports[ $export_id ] = [
+        'id' => $export_id,
+        'filename' => $filename,
+        'json' => $json,
+        'bytes' => strlen( $json ),
+        'created_at' => gmdate( 'c', $now ),
+        'created_at_unix' => $now,
+        'expires_at' => gmdate( 'c', $now + WPAE_EXPORT_TTL_SECONDS ),
+        'expires_at_unix' => $now + WPAE_EXPORT_TTL_SECONDS,
+    ];
+    wpae_update_export_store( wpae_prune_export_store( $exports ) );
 
     return new WP_REST_Response( [
         'ok' => true,
+        'id' => $export_id,
         'filename' => $filename,
-        'bytes' => $written,
-        'url' => trailingslashit( $upload_dir['baseurl'] ) . 'wp-ai-executor/exports/' . rawurlencode( $filename ),
+        'bytes' => strlen( $json ),
+        'expires_at' => $exports[ $export_id ]['expires_at'],
+        'endpoint' => get_rest_url( null, 'ai-executor/v1/exports/' . $export_id ),
+        'storage' => 'wp_options',
+        'public_url' => null,
     ], 200 );
+}
+
+function wpae_get_export( WP_REST_Request $request ): WP_REST_Response {
+    $export_id = sanitize_text_field( (string) $request->get_param( 'id' ) );
+    $exports = wpae_prune_export_store( wpae_get_export_store() );
+
+    if ( $export_id === '' || ! isset( $exports[ $export_id ] ) ) {
+        wpae_update_export_store( $exports );
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Invalid or expired export.' ], 404 );
+    }
+
+    $export = $exports[ $export_id ];
+    $response = new WP_REST_Response( [
+        'ok' => true,
+        'id' => $export_id,
+        'filename' => $export['filename'] ?? 'wp-ai-export.json',
+        'data' => json_decode( (string) ( $export['json'] ?? '{}' ), true ),
+        'bytes' => (int) ( $export['bytes'] ?? 0 ),
+        'expires_at' => $export['expires_at'] ?? null,
+    ], 200 );
+    $response->header( 'Cache-Control', 'no-store, private' );
+
+    return $response;
 }
 
 function wpae_self_update( WP_REST_Request $request ) {
@@ -5692,7 +5882,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.14',
+        'version' => 'v02.05.15',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -5827,7 +6017,7 @@ function wpae_agent_guide(): array {
                     'Use Elementor cache APIs to clear/regenerate generated CSS; do not write CSS files manually.',
                     'Return data directly from /run instead of writing temporary files.',
                     'Use /media/upload for validated media library files.',
-                    'Use /exports/create for JSON export files under uploads/wp-ai-executor/exports.',
+                    'Use /exports/create for short-lived JSON exports stored in wp_options; fetch them through the authenticated /exports/{id} endpoint and never expect public uploads URLs.',
                 ],
                 'runtime_enforcement' => 'By default, /run rejects common filesystem write/delete operations unless the site owner enables the filesystem_writes capability or WP_AI_EXECUTOR_ALLOW_FILE_WRITES is explicitly defined.',
                 'self_update_policy' => [
@@ -6494,6 +6684,16 @@ add_action( 'admin_init', function () {
     }
 
     if (
+        isset( $_POST['wpae_apply_capability_preset'] ) &&
+        check_admin_referer( 'wpae_apply_capability_preset' )
+    ) {
+        $preset_id = sanitize_key( (string) wp_unslash( $_POST['wpae_capability_preset'] ?? '' ) );
+        $result = wpae_apply_capability_preset( $preset_id ) ? 'capability_preset_saved' : 'capability_preset_error';
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . $result . '=1' ) );
+        exit;
+    }
+
+    if (
         isset( $_POST['wpae_save_design_tokens'] ) &&
         check_admin_referer( 'wpae_save_design_tokens' )
     ) {
@@ -6582,6 +6782,8 @@ function wpae_settings_page() {
     $logs_url           = get_rest_url( null, 'ai-executor/v1/logs' );
     $regen              = isset( $_GET['regenerated'] );
     $capabilities_saved = isset( $_GET['capabilities_saved'] );
+    $capability_preset_saved = isset( $_GET['capability_preset_saved'] );
+    $capability_preset_error = isset( $_GET['capability_preset_error'] );
     $design_tokens_saved = isset( $_GET['design_tokens_saved'] );
     $skill_saved        = isset( $_GET['skill_saved'] );
     $skill_deleted      = isset( $_GET['skill_deleted'] );
@@ -6590,6 +6792,7 @@ function wpae_settings_page() {
     $skill_import_error = isset( $_GET['skill_import_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
+    $capability_presets = wpae_capability_presets();
     $design_tokens      = wpae_get_project_design_tokens();
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
     $operation_logs     = array_slice( wpae_get_operation_logs_store(), 0, 8 );
@@ -6877,6 +7080,34 @@ function wpae_settings_page() {
             gap: 10px;
             margin-top: 14px;
         }
+        .wpae-preset-list {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin: 14px 0 16px;
+        }
+        .wpae-preset {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+            min-height: 154px;
+            padding: 13px;
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            background: var(--wpae-panel-soft);
+        }
+        .wpae-preset strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--wpae-text);
+        }
+        .wpae-preset span {
+            display: block;
+            color: var(--wpae-muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
         .wpae-toggle {
             display: flex;
             gap: 10px;
@@ -6935,6 +7166,7 @@ function wpae_settings_page() {
             }
             .wpae-form-grid,
             .wpae-color-grid,
+            .wpae-preset-list,
             .wpae-skill-item {
                 grid-template-columns: 1fr;
             }
@@ -6983,6 +7215,14 @@ function wpae_settings_page() {
 
         <?php if ( $capabilities_saved ) : ?>
             <div class="wpae-alert" role="status">Настройки разрешений сохранены.</div>
+        <?php endif; ?>
+
+        <?php if ( $capability_preset_saved ) : ?>
+            <div class="wpae-alert" role="status">Профиль разрешений применен.</div>
+        <?php endif; ?>
+
+        <?php if ( $capability_preset_error ) : ?>
+            <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось применить профиль разрешений.</div>
         <?php endif; ?>
 
         <?php if ( $design_tokens_saved ) : ?>
@@ -7042,6 +7282,21 @@ function wpae_settings_page() {
                     Ключ остается один, но владелец сайта управляет тем, что агенту разрешено делать.
                     Все write endpoints дополнительно требуют свежий guide token.
                 </p>
+
+                <div class="wpae-preset-list">
+                    <?php foreach ( $capability_presets as $preset_id => $preset ) : ?>
+                        <form class="wpae-preset" method="post">
+                            <?php wp_nonce_field( 'wpae_apply_capability_preset' ); ?>
+                            <input type="hidden" name="wpae_apply_capability_preset" value="1" />
+                            <input type="hidden" name="wpae_capability_preset" value="<?php echo esc_attr( $preset_id ); ?>" />
+                            <span>
+                                <strong><?php echo esc_html( $preset['label'] ); ?></strong>
+                                <span><?php echo esc_html( $preset['description'] ); ?></span>
+                            </span>
+                            <button type="submit" class="button wpae-button">Применить</button>
+                        </form>
+                    <?php endforeach; ?>
+                </div>
 
                 <form method="post">
                     <?php wp_nonce_field( 'wpae_save_capabilities' ); ?>

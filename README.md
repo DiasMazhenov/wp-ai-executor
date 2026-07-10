@@ -458,12 +458,18 @@ Deletes a custom skill from the database.
 ### `POST /wp-json/ai-executor/v1/media/upload`
 
 Uploads validated media through the WordPress uploads API. Allowed MIME types:
-JPEG, PNG, WebP, GIF, PDF. Max size: 8 MB.
+JPEG, PNG, WebP, GIF, PDF. Max size: 8 MB. The binary signature must match
+the requested `mime_type`.
 
 ### `POST /wp-json/ai-executor/v1/exports/create`
 
-Creates a JSON export under `wp-content/uploads/wp-ai-executor/exports/`.
-Max size: 1 MB. PHP and arbitrary paths are not allowed.
+Creates a short-lived JSON export in `wp_options`, not in public uploads.
+Max size: 1 MB. The response includes an authenticated `/exports/{id}`
+endpoint and no public URL.
+
+### `GET /wp-json/ai-executor/v1/exports/{id}`
+
+Returns a non-public export by ID with `X-AI-Key`. Expired exports return 404.
 
 ### `GET /wp-json/ai-executor/v1/logs`
 
@@ -619,7 +625,7 @@ After writing, the agent should verify:
 - `/self-update` is the only allowed plugin file write path and only writes the current plugin file from an immutable Git commit URL using an atomic replacement
 - `/skills` stores custom skills in the database, not as files
 - skills can include limited `enforce` rules that runtime validators apply
-- `/media/upload` and `/exports/create` are the only non-plugin file write endpoints
+- `/media/upload` is the only non-plugin file write endpoint; `/exports/create` stores short-lived JSON in `wp_options`
 - For extra security on production, hard-code the key in `wp-config.php` and delete it from `wp_options`
 
 ---

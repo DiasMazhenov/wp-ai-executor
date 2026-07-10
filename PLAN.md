@@ -41,14 +41,10 @@
 - Уточнено по `wordpress-elementor-dev`: обычные и hover gradients через Elementor `Group_Control_Background` являются native settings; `z-index` и fixed/sticky сначала через Elementor advanced/positioning/motion controls, CSS только если native controls недостаточны для overlay/off-canvas/system layers.
 - Усилена безопасность: `/run` выключен по умолчанию и однократно отключается при обновлении существующей установки; self-update принимает только immutable Git commit URL и заменяет файл атомарно.
 - Усилены пункты безопасности 4–6: `/visual-audit` проверяет DNS/IP и использует safe HTTP fetch, API-ключ принимается только в `X-AI-Key`, просроченные guide-token options очищаются автоматически.
+- Усилены оставшиеся пункты безопасности: rollback восстанавливает только управляемые Elementor/WPAE meta, новая страница удаляется при ошибке сохранения Elementor metadata, exports хранятся в `wp_options` без публичных файлов, `/media/upload` проверяет фактическую binary signature, а dashboard получил preset-кнопки single-key capability modes.
 
 ## Далее
 
-1. Исправить rollback: восстанавливать только управляемые плагином meta/options и не удалять сторонние post meta.
-2. Удалять автоматически созданную страницу при ошибке сохранения Elementor metadata.
-3. Защитить exports: не публиковать JSON в открытом uploads или выдавать временные ссылки.
-7. Проверять фактический MIME/signature файлов в `/media/upload`.
-8. Опционально добавить preset buttons для существующих single-key capability toggles.
-   - Базовая модель уже реализована: один `X-AI-Key`, capability toggles в dashboard и отражение в `/capabilities`.
-   - Не добавлять отдельные `run_key`, `guide_key`, `update_key` или `readonly_key`.
-   - Presets, если понадобятся, должны быть только UI shortcuts: `read_only`, `elementor_safe`, `maintenance`, `full_trusted`.
+1. Прогнать еще один review после живого использования новых endpoints агентами.
+2. При необходимости добавить REST endpoint для удаления просроченных exports вручную из dashboard.
+3. При необходимости добавить расширенный audit для найденных внешними агентами повторяющихся ошибок.
