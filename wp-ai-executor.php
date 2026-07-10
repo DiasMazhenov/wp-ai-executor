@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.21
+ * Version:     v02.08.22
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.21';
+const WPAE_VERSION = 'v02.08.22';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -542,6 +542,12 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/elementor/typography-unlock', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_typography_unlock',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/resolve-typography-overrides', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_resolve_typography_overrides',
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
     ] );
 
@@ -1523,7 +1529,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.21',
+        'guide_version' => 'v02.05.22',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2379,7 +2385,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.21',
+        'guide_version' => 'v02.05.22',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -2713,6 +2719,7 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/compose' => true,
                 '/elementor/visual-audit' => true,
                 '/elementor/typography-unlock' => ! empty( $settings['elementor_writes'] ),
+                '/elementor/resolve-typography-overrides' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/revisions' => true,
                 '/elementor/restore-revision' => ! empty( $settings['elementor_writes'] ),
                 '/visual-audit' => true,
@@ -3581,6 +3588,206 @@ function wpae_elementor_typography_unlock( WP_REST_Request $request ): WP_REST_R
     }
 
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_typography_unlock:' . $post_id, [ $post_id ] );
+    $saved = wpae_save_elementor_page_data( $post_id, $updated_data, $template );
+    if ( is_wp_error( $saved ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $saved->get_error_message(),
+            'details' => $saved->get_error_data(),
+            'report' => $report,
+        ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'post_id' => $post_id,
+        'url' => get_permalink( $post_id ),
+        'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+        'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+        'report' => $report,
+        'quality_summary' => wpae_build_after_save_quality_summary( $post_id, $updated_data, [] ),
+    ], 200 );
+}
+
+function wpae_sanitize_typography_override_patches( $raw_patches ): array {
+    if ( ! is_array( $raw_patches ) ) {
+        return [];
+    }
+
+    $allowed_keys = [
+        'typography_typography',
+        'typography_font_family',
+        'typography_font_weight',
+        'typography_font_style',
+        'typography_text_transform',
+        'typography_text_decoration',
+        'typography_letter_spacing',
+        'typography_word_spacing',
+        'typography_line_height',
+        'typography_font_size',
+        'typography_font_size_tablet',
+        'typography_font_size_mobile',
+    ];
+    $patches = [];
+
+    foreach ( $raw_patches as $element_id => $settings ) {
+        $element_id = sanitize_key( (string) $element_id );
+        if ( $element_id === '' || ! is_array( $settings ) ) {
+            continue;
+        }
+
+        foreach ( $settings as $key => $value ) {
+            if ( ! in_array( $key, $allowed_keys, true ) || ! is_scalar( $value ) ) {
+                continue;
+            }
+
+            $patches[ $element_id ][ $key ] = sanitize_text_field( (string) $value );
+        }
+    }
+
+    return $patches;
+}
+
+function wpae_relax_heading_typography_important( string $content, array &$report ): string {
+    $result = preg_replace_callback( '/([^{}]+)\{([^{}]*)\}/s', function ( array $match ) use ( &$report ): string {
+        $selector = $match[1];
+        if ( stripos( $selector, '.elementor-heading-title' ) === false ) {
+            return $match[0];
+        }
+
+        $changed = false;
+        $declarations = preg_replace_callback(
+            '/\b(font-family|font-size|font-weight|font-style|line-height|letter-spacing|word-spacing|text-transform|text-decoration)\s*:\s*([^;{}]*?)\s*!important(\s*;?)/i',
+            function ( array $declaration ) use ( &$report, &$changed ): string {
+                $changed = true;
+                $report['html_typography_important_removed']++;
+                return $declaration[1] . ': ' . trim( $declaration[2] ) . $declaration[3];
+            },
+            $match[2]
+        );
+
+        if ( $changed ) {
+            $report['html_rules_relaxed']++;
+        }
+
+        return $selector . '{' . $declarations . '}';
+    }, $content );
+
+    return is_string( $result ) ? $result : $content;
+}
+
+function wpae_resolve_heading_typography_overrides( array $elements, array $patches, array &$report, string $path = 'root' ): array {
+    foreach ( $elements as $index => $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $element_id = sanitize_key( (string) ( $element['id'] ?? $index ) );
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $widget_type = (string) ( $element['widgetType'] ?? '' );
+
+        if ( $widget_type === 'heading' && isset( $patches[ $element_id ] ) ) {
+            $changed_keys = [];
+            foreach ( $patches[ $element_id ] as $key => $value ) {
+                if ( ! array_key_exists( $key, $settings ) || $settings[ $key ] !== $value ) {
+                    $settings[ $key ] = $value;
+                    $changed_keys[] = $key;
+                }
+            }
+
+            if ( isset( $settings['typography_font_family'] ) && empty( $settings['typography_typography'] ) ) {
+                $settings['typography_typography'] = 'custom';
+                $changed_keys[] = 'typography_typography';
+            }
+
+            $report['patched_ids'][ $element_id ] = true;
+            if ( ! empty( $changed_keys ) ) {
+                $report['native_widgets_changed']++;
+                $report['native_changes'][] = [
+                    'path' => $path . '.' . $element_id,
+                    'id' => $element_id,
+                    'changed' => $changed_keys,
+                ];
+            }
+        }
+
+        if ( $widget_type === 'html' ) {
+            foreach ( [ 'html', 'content', 'code' ] as $content_key ) {
+                if ( ! is_string( $settings[ $content_key ] ?? null ) || $settings[ $content_key ] === '' ) {
+                    continue;
+                }
+
+                $before = $settings[ $content_key ];
+                $settings[ $content_key ] = wpae_relax_heading_typography_important( $before, $report );
+                if ( $settings[ $content_key ] !== $before ) {
+                    $report['html_widgets_changed']++;
+                    $report['html_widget_ids'][] = $element_id;
+                }
+                break;
+            }
+        }
+
+        $element['settings'] = $settings;
+        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+            $element['elements'] = wpae_resolve_heading_typography_overrides( $element['elements'], $patches, $report, $path . '.' . $element_id );
+        }
+        $elements[ $index ] = $element;
+    }
+
+    return $elements;
+}
+
+function wpae_elementor_resolve_typography_overrides( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    $dry_run = (bool) $request->get_param( 'dry_run' );
+    $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
+    $patches = wpae_sanitize_typography_override_patches( $request->get_param( 'native_typography_patches' ) );
+
+    if ( $post_id <= 0 || get_post( $post_id ) === null ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'A valid post_id is required.' ], 400 );
+    }
+
+    $raw_data = (string) get_post_meta( $post_id, '_elementor_data', true );
+    $elementor_data = json_decode( $raw_data, true );
+    if ( ! is_array( $elementor_data ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => '_elementor_data is not valid JSON array data.', 'post_id' => $post_id ], 422 );
+    }
+
+    $report = [
+        'native_widgets_changed' => 0,
+        'native_changes' => [],
+        'patched_ids' => [],
+        'html_widgets_changed' => 0,
+        'html_widget_ids' => [],
+        'html_rules_relaxed' => 0,
+        'html_typography_important_removed' => 0,
+    ];
+    $updated_data = wpae_resolve_heading_typography_overrides( $elementor_data, $patches, $report );
+    $report['patched_ids'] = array_values( array_keys( $report['patched_ids'] ) );
+    $report['html_widget_ids'] = array_values( array_unique( $report['html_widget_ids'] ) );
+    $report['missing_patch_ids'] = array_values( array_diff( array_keys( $patches ), $report['patched_ids'] ) );
+    $report['changed'] = $report['native_widgets_changed'] > 0 || $report['html_widgets_changed'] > 0;
+
+    $validation_errors = wpae_validate_elementor_data_array( $updated_data );
+    if ( ! empty( $validation_errors ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Typography override migration produced invalid Elementor data.',
+            'details' => [ 'errors' => $validation_errors ],
+            'report' => $report,
+        ], 422 );
+    }
+
+    if ( $dry_run ) {
+        return new WP_REST_Response( [
+            'ok' => true,
+            'dry_run' => true,
+            'post_id' => $post_id,
+            'report' => $report,
+        ], 200 );
+    }
+
+    $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_resolve_typography_overrides:' . $post_id, [ $post_id ] );
     $saved = wpae_save_elementor_page_data( $post_id, $updated_data, $template );
     if ( is_wp_error( $saved ) ) {
         return new WP_REST_Response( [
@@ -5532,6 +5739,13 @@ function wpae_validate_elementor_data_string( string $raw_data ): array {
     return $errors;
 }
 
+function wpae_html_has_blocking_heading_typography_override( string $html ): bool {
+    return (bool) preg_match(
+        '/\.elementor-heading-title[^{}]*\{[^{}]*\b(?:font-family|font-size|font-weight|font-style|line-height|letter-spacing|word-spacing|text-transform|text-decoration)\s*:[^;{}]*!important/i',
+        $html
+    );
+}
+
 function wpae_validate_elementor_elements_recursive( array $elements, string $path, array &$errors, array $skill_rules = [] ): void {
     $allowed_widget_types = [];
     foreach ( $skill_rules as $rule ) {
@@ -5560,6 +5774,14 @@ function wpae_validate_elementor_elements_recursive( array $elements, string $pa
 
         if ( $el_type === 'widget' && empty( $element['widgetType'] ) ) {
             $errors[] = "{$element_path}: widget element must have non-empty camelCase widgetType.";
+        }
+
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        if ( (string) ( $element['widgetType'] ?? '' ) === 'html' ) {
+            $html = (string) ( $settings['html'] ?? $settings['content'] ?? $settings['code'] ?? '' );
+            if ( $html !== '' && wpae_html_has_blocking_heading_typography_override( $html ) ) {
+                $errors[] = "{$element_path}: HTML widget typography !important overrides native heading controls; use /elementor/resolve-typography-overrides.";
+            }
         }
 
         foreach ( $skill_rules as $rule ) {
@@ -6420,7 +6642,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.21',
+        'version' => 'v02.05.22',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -6478,7 +6700,7 @@ function wpae_agent_guide(): array {
             '2. Before any page or page-block work, call /elementor/design-system and treat it as the single style source.',
             '3. For page work, call /elementor/blueprint after /elementor/design-system before composing or writing Elementor data.',
             '3a. Design mobile first: define mobile stacking, type scale, spacing, CTA visibility, tap targets, and responsive Elementor settings before expanding tablet and desktop layouts.',
-            '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /elementor/page, and /elementor/update over raw PHP through /run.',
+            '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /elementor/resolve-typography-overrides, /elementor/page, and /elementor/update over raw PHP through /run.',
             '4a. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same contract and rolled back on failure.',
             '4b. If an existing page has old or different wpae-system-* classes, migrate it to the current main design system with /elementor/normalize, then run /elementor/update dry_run; preserve non-WPAE custom classes.',
             '4c. Never ask for WP Admin login/password, admin cookies, nonces, or browser sessions. Do not use Playwright/WP Admin/Elementor editor for writes; browser automation is allowed only to inspect public pages after API writes.',
@@ -7035,6 +7257,7 @@ function wpae_agent_guide(): array {
                     'rule' => 'Element style changes must be made in native Elementor settings/style controls first.',
                     'typography_editability_rule' => 'Native typography does not mean every widget must receive explicit typography_* values. Repeated local typography_font_family, typography_font_size, typography_font_weight, typography_line_height, typography_letter_spacing, typography_text_transform, typography_font_style, typography_text_decoration, or typography_word_spacing settings block global typography edits. Use local typography only where the design intentionally needs a one-off exception.',
                     'unlock_endpoint' => 'If a page already has excessive local typography overrides, use POST /wp-json/ai-executor/v1/elementor/typography-unlock with dry_run=true first, then apply it with preserve_ids/preserve_classes for intentional exceptions.',
+                    'override_resolution_endpoint' => 'If an HTML widget CSS rule uses !important to override native heading typography, use POST /wp-json/ai-executor/v1/elementor/resolve-typography-overrides with dry_run=true and explicit native_typography_patches. It only relaxes typography !important tokens on heading selectors and preserves the rest of the HTML widget.',
                     'examples' => [
                         'Use background_color/background_background for section and card backgrounds.',
                         'Use title_color/text_color/button color controls for readable text and CTA contrast.',
@@ -7167,7 +7390,7 @@ function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
 Current runtime notes: rollback restores only plugin-managed Elementor/WPAE meta plus the post record and does not remove unrelated third-party post meta; /elementor/page attempts to delete a newly created page if Elementor metadata saving fails and reports cleanup.created_post_deleted; /media/upload rejects files whose binary signature does not match mime_type; /exports/create stores short-lived JSON in wp_options and returns an authenticated /exports/{id} endpoint, never a public uploads file.
-Typography editability note: if the user should control typography globally or through Elementor design roles, do not hardcode typography_* settings on every widget; repeated local typography overrides block global edits. Use /elementor/typography-unlock with dry_run=true to remove excessive local typography overrides while preserving intentional exceptions.
+Typography editability note: if the user should control typography globally or through Elementor design roles, do not hardcode typography_* settings on every widget; repeated local typography overrides block global edits. Use /elementor/typography-unlock with dry_run=true to remove excessive local typography overrides while preserving intentional exceptions. If an HTML widget CSS selector with !important is blocking a native heading control, do not delete or rewrite the HTML widget: call /elementor/resolve-typography-overrides with dry_run=true and explicit native_typography_patches, then verify the returned report before saving.
 Elementor editor editability note: design properties must stay editable through native Elementor controls/settings. Do not move editable properties into CSS/HTML, and do not remove native settings unless the user explicitly asks for global inheritance from Elementor styles/design tokens.
 Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. Design mobile first: plan the mobile stack, type scale, spacing, CTA visibility, tap targets, section order, and responsive Elementor settings before expanding tablet and desktop layouts. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never request or use WP Admin login/password, admin cookies, WordPress REST nonces, or browser sessions; if auth fails, report endpoint/status/body and verify X-AI-Key instead of asking for credentials. Never use Playwright, WP Admin, or Elementor editor to write changes; browser automation is allowed only to inspect public pages after REST API writes. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same design-system/preflight contract and rolled back on failure. If an existing page has old or different wpae-system-* marker classes, migrate it to the current main design system with /elementor/normalize, preserve non-WPAE custom classes, then run /elementor/update dry_run. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; use /visual-audit on the public page after writing; fix weak mobile_readiness, public HTML warnings, or other blocked audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, mobile-first layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put all Elementor-supported styles into native settings/style controls: typography_font_family, typography_font_size plus mobile/tablet variants, typography_font_weight, typography_line_height with unitless ratio for multi-line text, typography_letter_spacing, typography_text_transform, title_color/text_color, background_background/background_color/background_color_b/background_gradient_type/background_gradient_angle/background_gradient_position, background_overlay_background/background_overlay_color/background_overlay_color_b, border_border/border_color, padding, margin, border_radius, min_height, flex_direction, justify_content, align_items, gap, flex_wrap, native z-index controls (_z_index/z_index), and native Elementor positioning/sticky controls (_position/sticky/sticky_on/sticky_offset/sticky_effects_offset/sticky_parent) when available. Elementor-generated CSS from native settings is expected and editable in the Elementor panel; do not treat it as forbidden external CSS. CSS is an exception only for animations, pseudo-elements, WebGL/canvas, gradients/patterns that Elementor Group_Control_Background cannot express, fixed/sticky global overlays or off-canvas UI when native positioning controls are insufficient, custom systemic z-index layers when native z-index controls are insufficient, Google Fonts @import, media queries Elementor cannot express, hover/focus polish, browser fixes, or specificity conflicts after native settings are present; scoped CSS, including selective !important, may reinforce or refine styles but must not be the default styling method or the only source of essential contrast or layout. Native style migration must be targeted to requested elements only: do not rewrite the whole page, do not remove working scoped CSS/JS/WebGL/Three.js/GSAP/canvas/shader/animation code, and preserve unrelated HTML widget content, classes, IDs, script order, and dependencies unless the user explicitly asks to change them. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. After changing native settings, clear Elementor CSS cache: delete_post_meta(post_id, "_elementor_css"), delete_option("_elementor_global_css"), Elementor files cache when available, and rocket_clean_domain() when WP Rocket exists. The Elementor HTML widget is allowed only for small JavaScript snippets, WebGL/canvas/animation code, or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, rollback, typography migration, or revision restore, run /audit, /elementor/visual-audit, /visual-audit, and real browser screenshot verification of the public URL; HTML/CSS audits alone are not enough. Then complete the verification checklist: published URL, Elementor meta, decoded _elementor_data, public HTML audit, zero section/column elements, no external files, native widget content placement, native critical visual settings, native style settings before CSS, preserved unrelated enhancements, mobile-first responsive settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, visual audits, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, mobile-first responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. If any endpoint or verification step fails, include concrete error details in the response: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
