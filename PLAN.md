@@ -38,6 +38,7 @@
 - Добавлено обязательное правило native style settings first: стили элемента меняются через нативные Elementor settings/style controls; CSS допускается только как scoped exception для сложных случаев, которых нет в настройках.
 - Добавлено защитное правило preserve existing enhancements: native-first не разрешает массово переписывать страницу или удалять рабочие CSS/JS/WebGL/Three.js/GSAP/canvas/animation HTML widgets без явного запроса.
 - В guide добавлен подробный CSS-to-native Elementor mapping: typography_*, colors, padding/margin/radius/min_height/flex/gap/wrap, unitless line-height для multi-line и обязательная очистка Elementor/WP Rocket CSS cache после native changes.
+- Уточнено по `wordpress-elementor-dev`: обычные и hover gradients через Elementor `Group_Control_Background` являются native settings; `z-index` и fixed/sticky сначала через Elementor advanced/positioning/motion controls, CSS только если native controls недостаточны для overlay/off-canvas/system layers.
 
 ## Далее
 
