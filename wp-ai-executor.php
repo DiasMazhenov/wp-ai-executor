@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.29
+ * Version:     v02.08.31
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.29';
+const WPAE_VERSION = 'v02.08.31';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -1579,7 +1579,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.29',
+        'guide_version' => 'v02.05.31',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2450,7 +2450,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.29',
+        'guide_version' => 'v02.05.31',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -2569,6 +2569,17 @@ function wpae_get_capabilities_payload(): array {
                     'quality_summary',
                 ],
             ],
+            'protected_enhancement_zones' => [
+                'enabled' => true,
+                'marker' => 'wpae-protected-zone CSS class or data-wpae-protected attribute.',
+                'automatic_detection' => 'HTML widgets containing WebGL, Three.js, GSAP, canvas, shader, or Babylon enhancement code.',
+                'guarded_endpoints' => [ '/elementor/page', '/elementor/update', '/elementor/patch' ],
+                'default' => 'Block removal or modification of an existing protected zone.',
+                'explicit_override' => [
+                    'allow_protected_zone_changes' => true,
+                    'protected_zone_reason' => 'Concrete reason of at least 10 characters.',
+                ],
+            ],
             'after_save_quality_summary' => true,
             'design_system_contract_enforced_on_writes' => true,
             'design_system_marker_migration' => true,
@@ -2665,7 +2676,7 @@ function wpae_get_capabilities_payload(): array {
                     'typography_text_transform',
                     'responsive mobile/tablet variants',
                 ],
-                'css_exception_rule' => 'Use scoped CSS only for animations, pseudo-elements, WebGL/canvas styling, gradients/patterns that Elementor Group_Control_Background cannot express, fixed/sticky global overlays or off-canvas UI when native positioning controls are insufficient, custom systemic z-index layers when native z-index controls are insufficient, Google Fonts @import, media queries that responsive controls cannot express, complex responsive behavior, hover/focus refinements, browser fixes, or theme specificity conflicts after native settings are set. Never use <script>-injected <style> elements for properties in css_to_native_map; script-injected CSS is permitted only for @import fonts, WebGL/canvas support, @keyframes, browser fixes, media queries, and properties without native Elementor equivalents.',
+                'css_exception_rule' => 'Use scoped CSS only for animations, pseudo-elements, WebGL/canvas styling, gradients/patterns that Elementor Group_Control_Background cannot express, fixed/sticky global overlays or off-canvas UI when native positioning controls are insufficient, custom systemic z-index layers when native z-index controls are insufficient, Google Fonts @import, media queries that responsive controls cannot express, complex responsive behavior, hover/focus refinements, browser fixes, or theme specificity conflicts after native settings are set. The script-injected CSS validator inspects only static CSS declarations assigned to an injected style node; it excludes JavaScript object properties, @import, :root custom properties, and documented @media/@keyframes/@supports/@container exceptions.',
                 'cache_rule' => 'After changing native Elementor settings, clear Elementor CSS cache: delete_post_meta(post_id, "_elementor_css"), delete_option("_elementor_global_css"), Elementor files cache when available, and rocket_clean_domain() when WP Rocket exists.',
                 'forbidden' => [
                     'CSS-only backgrounds, contrast, spacing, borders, typography, or layout when native Elementor settings can express them.',
@@ -2678,7 +2689,7 @@ function wpae_get_capabilities_payload(): array {
                         'code' => 'html_widget_script_injected_css',
                         'severity' => 'blocking',
                         'check' => 'Detect <script> tags in HTML widgets that inject <style> targeting properties listed in css_to_native_map.',
-                        'message' => 'HTML widget contains <script>-injected CSS for native properties. Migrate mapped declarations to widget/container native settings.',
+                        'message' => 'HTML widget contains static <script>-injected CSS declarations for native properties. Migrate only those declarations to widget/container native settings.',
                     ],
                 ],
             ],
@@ -3439,6 +3450,91 @@ function wpae_get_elementor_data_for_post( int $post_id ) {
     }
 
     return $decoded;
+}
+
+function wpae_elementor_protected_zone_kind( array $element ): string {
+    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+    $classes = strtolower( (string) ( $settings['_css_classes'] ?? $settings['css_classes'] ?? '' ) );
+    $html = strtolower( (string) ( $settings['html'] ?? '' ) );
+    $marker = strpos( $classes, 'wpae-protected-zone' ) !== false || strpos( $html, 'data-wpae-protected' ) !== false;
+    $enhancement = (string) ( $element['widgetType'] ?? '' ) === 'html'
+        && (bool) preg_match( '/\b(webgl|three(?:\.js)?|gsap|canvas|shader|babylon)\b/i', $html );
+
+    if ( ! $marker && ! $enhancement ) {
+        return '';
+    }
+
+    return $enhancement ? 'enhancement' : 'marked';
+}
+
+function wpae_collect_elementor_protected_zones( array $elements, array &$zones = [], string $path = 'root' ): array {
+    foreach ( $elements as $index => $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $element_path = $path . '.' . $index;
+        $element_id = (string) ( $element['id'] ?? '' );
+        $kind = wpae_elementor_protected_zone_kind( $element );
+        if ( $kind !== '' && $element_id !== '' ) {
+            $zones[ $element_id ] = [
+                'id' => $element_id,
+                'kind' => $kind,
+                'path' => $element_path,
+                'hash' => hash( 'sha256', (string) wp_json_encode( $element ) ),
+            ];
+        }
+
+        if ( is_array( $element['elements'] ?? null ) ) {
+            wpae_collect_elementor_protected_zones( $element['elements'], $zones, $element_path . '.elements' );
+        }
+    }
+
+    return $zones;
+}
+
+function wpae_validate_elementor_protected_zones( array $existing_data, array $next_data, WP_REST_Request $request ): array {
+    $before = wpae_collect_elementor_protected_zones( $existing_data );
+    if ( empty( $before ) ) {
+        return [ 'ok' => true, 'protected_zones' => [] ];
+    }
+
+    $after = wpae_collect_elementor_protected_zones( $next_data );
+    $changes = [];
+    foreach ( $before as $id => $zone ) {
+        if ( ! isset( $after[ $id ] ) ) {
+            $changes[] = [ 'element_id' => $id, 'kind' => $zone['kind'], 'change' => 'removed' ];
+        } elseif ( ! hash_equals( $zone['hash'], $after[ $id ]['hash'] ) ) {
+            $changes[] = [ 'element_id' => $id, 'kind' => $zone['kind'], 'change' => 'modified' ];
+        }
+    }
+
+    if ( empty( $changes ) ) {
+        return [ 'ok' => true, 'protected_zones' => array_values( $before ) ];
+    }
+
+    $reason = trim( sanitize_textarea_field( (string) $request->get_param( 'protected_zone_reason' ) ) );
+    if ( (bool) $request->get_param( 'allow_protected_zone_changes' ) && strlen( $reason ) >= 10 ) {
+        return [
+            'ok' => true,
+            'override_used' => true,
+            'reason' => $reason,
+            'changes' => $changes,
+            'protected_zones' => array_values( $before ),
+        ];
+    }
+
+    return [
+        'ok' => false,
+        'error_code' => 'wpae_protected_zone_change_blocked',
+        'message' => 'Protected WebGL/Three.js/GSAP/canvas enhancement zone would be modified or removed.',
+        'changes' => $changes,
+        'protected_zones' => array_values( $before ),
+        'required_override' => [
+            'allow_protected_zone_changes' => true,
+            'protected_zone_reason' => 'A concrete reason of at least 10 characters.',
+        ],
+    ];
 }
 
 function wpae_is_allowed_elementor_patch_path( string $path ): bool {
@@ -5592,6 +5688,25 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'A valid post_id is required.' ], 400 );
     }
 
+    $existing_data = wpae_get_elementor_data_for_post( $post_id );
+    if ( is_wp_error( $existing_data ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $existing_data->get_error_message(),
+            'details' => $existing_data->get_error_data(),
+        ], 422 );
+    }
+
+    $protected_zone_guard = wpae_validate_elementor_protected_zones( $existing_data, $elementor_data, $request );
+    if ( ! $protected_zone_guard['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $protected_zone_guard['message'],
+            'code' => $protected_zone_guard['error_code'],
+            'protected_zone_guard' => $protected_zone_guard,
+        ], 422 );
+    }
+
     $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
     if ( ! empty( $validation_errors ) ) {
         return new WP_REST_Response( [
@@ -5636,6 +5751,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
                 '_wp_page_template',
             ],
             'preflight' => $preflight,
+            'protected_zone_guard' => $protected_zone_guard,
         ], 200 );
     }
 
@@ -5676,6 +5792,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         'preflight' => $preflight,
+        'protected_zone_guard' => $protected_zone_guard,
         'transaction' => $finalized['transaction'],
         'quality_summary' => $finalized['quality_summary'],
     ], 200 );
@@ -5723,6 +5840,17 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
+    $protected_zone_guard = wpae_validate_elementor_protected_zones( $existing_data, $elementor_data, $request );
+    if ( ! $protected_zone_guard['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $protected_zone_guard['message'],
+            'code' => $protected_zone_guard['error_code'],
+            'protected_zone_guard' => $protected_zone_guard,
+            'patch_report' => $patch_report,
+        ], 422 );
+    }
+
     $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
     if ( ! empty( $validation_errors ) ) {
         return new WP_REST_Response( [
@@ -5765,6 +5893,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
             'post_id' => $post_id,
             'patch_report' => $patch_report,
             'preflight' => $preflight,
+            'protected_zone_guard' => $protected_zone_guard,
             'elementor_data' => $elementor_data,
         ], 200 );
     }
@@ -5810,6 +5939,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         'patch_report' => $patch_report,
         'preflight' => $preflight,
+        'protected_zone_guard' => $protected_zone_guard,
         'transaction' => $finalized['transaction'],
         'quality_summary' => $finalized['quality_summary'],
     ], 200 );
@@ -5870,6 +6000,27 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'Target post_id does not exist.' ], 404 );
     }
 
+    $protected_zone_guard = [ 'ok' => true, 'protected_zones' => [] ];
+    if ( $post_id > 0 ) {
+        $existing_data = wpae_get_elementor_data_for_post( $post_id );
+        if ( is_wp_error( $existing_data ) ) {
+            return new WP_REST_Response( [
+                'ok' => false,
+                'error' => $existing_data->get_error_message(),
+                'details' => $existing_data->get_error_data(),
+            ], 422 );
+        }
+        $protected_zone_guard = wpae_validate_elementor_protected_zones( $existing_data, $elementor_data, $request );
+        if ( ! $protected_zone_guard['ok'] ) {
+            return new WP_REST_Response( [
+                'ok' => false,
+                'error' => $protected_zone_guard['message'],
+                'code' => $protected_zone_guard['error_code'],
+                'protected_zone_guard' => $protected_zone_guard,
+            ], 422 );
+        }
+    }
+
     if ( $dry_run ) {
         return new WP_REST_Response( [
             'ok' => true,
@@ -5880,6 +6031,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
             'status' => $status,
             'template' => $template,
             'preflight' => $preflight,
+            'protected_zone_guard' => $protected_zone_guard,
         ], 200 );
     }
 
@@ -5954,6 +6106,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         'preflight' => $preflight,
+        'protected_zone_guard' => $protected_zone_guard,
         'transaction' => $finalized['transaction'],
         'quality_summary' => $finalized['quality_summary'],
     ], 200 );
@@ -6687,11 +6840,34 @@ function wpae_html_script_injects_native_css( string $html ): array {
         return [];
     }
 
+    // Inspect static CSS assigned to a style node, never the full JavaScript source.
+    preg_match_all( '/(?:textContent|innerHTML|innerText)\s*=\s*(`(?:\\\\.|[^`])*`|\'(?:\\\\.|[^\'])*\'|"(?:\\\\.|[^"])*")/s', $html, $matches );
+    $sources = (array) ( $matches[1] ?? [] );
+    if ( empty( $sources ) ) {
+        return [];
+    }
+
     $blocked = [];
-    foreach ( wpae_native_css_property_names() as $property ) {
-        $pattern = '/(?:^|[\\s{;\'"`])' . preg_quote( $property, '/' ) . '\s*:/i';
-        if ( preg_match( $pattern, $html ) ) {
-            $blocked[] = $property;
+    foreach ( $sources as $source ) {
+        $source = (string) $source;
+        if ( strlen( $source ) < 2 ) {
+            continue;
+        }
+        $css = substr( $source, 1, -1 );
+        if ( $source[0] !== '`' ) {
+            $css = stripcslashes( $css );
+        }
+
+        $css = preg_replace( '/\/\*.*?\*\//s', '', $css );
+        $css = preg_replace( '/@import\s+[^;]+;/i', '', $css );
+        $css = preg_replace( '/:root\s*\{[^{}]*\}/si', '', $css );
+        $css = preg_replace( '/@(media|supports|container|keyframes)\b[^{}]*\{(?:[^{}]|\{[^{}]*\})*\}/si', '', $css );
+
+        foreach ( wpae_native_css_property_names() as $property ) {
+            $pattern = '/(?:^|[;{])\s*' . preg_quote( $property, '/' ) . '\s*:/i';
+            if ( preg_match( $pattern, $css ) ) {
+                $blocked[] = $property;
+            }
         }
     }
 
@@ -7757,7 +7933,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.29',
+        'version' => 'v02.05.31',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -7844,6 +8020,7 @@ function wpae_agent_guide(): array {
             '11. Prefer rem/em for spacing and typography, vh/svh for viewport-height sections, and %/flex/max-width constraints for widths; use px only for small exceptions or Elementor compatibility.',
             '12. Change element styles through native Elementor settings/style controls first; use scoped CSS only for exceptional enhancements that cannot reasonably be expressed with native settings.',
             '13. On existing pages, preserve unrelated working CSS/JS/WebGL/Three.js/GSAP/canvas/shader/animation HTML widgets and scoped CSS; do not perform a page-wide restyle or cleanup unless explicitly requested.',
+            '13a. Protected enhancement zones are enforced on structured updates. Do not modify or remove them unless the task explicitly requires it; then send allow_protected_zone_changes=true with a concrete protected_zone_reason and verify the public animation afterwards.',
             '14. Save the returned rollback_snapshot_id after writes and use /rollback if the result is wrong.',
             '14a. If /rollback returns ok=false, stop. Report its status/error/restored_posts details, keep the retained snapshot, and do not attempt a manual metadata rewrite, /run workaround, WP Admin edit, or browser-based write.',
             '15. Verify with /audit, /elementor/visual-audit, /visual-audit, HTTP status, permalink, post status, _elementor_edit_mode, _elementor_data, visible HTML text, and inspect any html widgets if present.',
@@ -8221,6 +8398,14 @@ function wpae_agent_guide(): array {
                 'arbitrary structural rewrites',
             ],
             'validation' => 'Patch output runs the same Elementor validation, design-system contract, preflight, atomic transaction, cache refresh, and rollback path as /elementor/update.',
+        ],
+        'protected_enhancement_zones_policy' => [
+            'required' => true,
+            'purpose' => 'Prevent native-style migrations and targeted edits from breaking working WebGL, Three.js, GSAP, canvas, shader, or HTML enhancement blocks.',
+            'how_to_mark' => 'Add the wpae-protected-zone class to the owning Elementor element or data-wpae-protected to its HTML. HTML widgets with enhancement keywords are also protected automatically.',
+            'enforcement' => 'On existing pages, /elementor/page updates, /elementor/update, and /elementor/patch block removal or byte-level modification of protected zones by default.',
+            'override' => 'Only change a protected zone when the task explicitly requires it. Send allow_protected_zone_changes=true and a concrete protected_zone_reason of at least 10 characters, then verify the public animation after write.',
+            'agent_rule' => 'Do not use an override for unrelated typography, spacing, or layout work. Preserve the protected widget, its IDs/classes, script order, and dependencies byte-for-byte.',
         ],
         'repeated_agent_error_audit_policy' => [
             'returned_in' => [ 'POST /elementor/visual-audit', 'POST /audit' ],

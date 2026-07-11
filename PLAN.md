@@ -74,7 +74,7 @@
 
 ## Приоритет внедрения
 
-1. Protected zones для WebGL/Three.js/GSAP/canvas.
+1. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
 2. Visual regression gate.
 3. Elementor editability tests.
 4. CSS-to-native migrator.
