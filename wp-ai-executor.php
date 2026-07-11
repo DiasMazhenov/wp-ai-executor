@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.26
+ * Version:     v02.08.27
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.26';
+const WPAE_VERSION = 'v02.08.27';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -1570,7 +1570,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.26',
+        'guide_version' => 'v02.05.27',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2426,7 +2426,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.26',
+        'guide_version' => 'v02.05.27',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -7212,7 +7212,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.26',
+        'version' => 'v02.05.27',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -7225,6 +7225,20 @@ function wpae_agent_guide(): array {
         'project_design_system' => wpae_build_project_design_system(),
         'jezweb_claude_skills' => wpae_get_jezweb_claude_skills_pack(),
         'capabilities' => wpae_get_capabilities_payload(),
+        'repeated_agent_error_audit_policy' => [
+            'returned_in' => [ 'POST /elementor/visual-audit', 'POST /audit' ],
+            'rule' => 'Agents must read repeated_agent_error_audit and fix every fail check before claiming success; warn checks must be either fixed or explicitly explained.',
+            'checks' => [
+                'legacy_sections_columns',
+                'snake_case_widget_type',
+                'html_widget_layout_or_content',
+                'script_injected_native_css',
+                'heading_typography_important_override',
+                'excessive_local_typography_overrides',
+                'design_system_marker_drift',
+                'fixed_px_layout_risk',
+            ],
+        ],
         'guide_token_protocol' => [
             'required_for_write_endpoints' => true,
             'session_endpoint' => 'POST /wp-json/ai-executor/v1/guide/session',
