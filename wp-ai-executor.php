@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.24
+ * Version:     v02.08.25
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.24';
+const WPAE_VERSION = 'v02.08.25';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -611,6 +611,18 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'exports' ),
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/exports', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_get_exports_summary',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/exports/prune', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_prune_exports',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'exports' ),
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/exports/(?P<id>[a-f0-9]{24})', [
         'methods'             => 'GET',
         'callback'            => 'wpae_get_export',
@@ -850,6 +862,7 @@ function wpae_route_requires_guide_token_for_conformance( string $route ): bool 
         '/ai-executor/v1/skills/import',
         '/ai-executor/v1/media/upload',
         '/ai-executor/v1/exports/create',
+        '/ai-executor/v1/exports/prune',
         '/ai-executor/v1/self-update',
     ], true ) || preg_match( '#^/ai-executor/v1/skills/[a-z0-9_-]+$#', $route );
 }
@@ -1535,7 +1548,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.24',
+        'guide_version' => 'v02.05.25',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2391,7 +2404,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.24',
+        'guide_version' => 'v02.05.25',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -2667,6 +2680,18 @@ function wpae_get_capabilities_payload(): array {
                 'forbid_html_pattern',
             ],
         ],
+        'exports' => [
+            'storage' => 'wp_options',
+            'ttl_seconds' => WPAE_EXPORT_TTL_SECONDS,
+            'max_entries' => WPAE_EXPORT_MAX_ENTRIES,
+            'endpoints' => [
+                'summary' => 'GET /wp-json/ai-executor/v1/exports',
+                'create' => 'POST /wp-json/ai-executor/v1/exports/create',
+                'fetch_one' => 'GET /wp-json/ai-executor/v1/exports/{id}',
+                'prune_expired' => 'POST /wp-json/ai-executor/v1/exports/prune',
+            ],
+            'file_policy' => 'Exports are never public uploads files; prune removes expired wp_options entries only.',
+        ],
         'operation_logs' => [
             'endpoint' => 'GET /wp-json/ai-executor/v1/logs',
             'storage' => 'wp_options',
@@ -2737,7 +2762,9 @@ function wpae_get_capabilities_payload(): array {
             'allowed_endpoints' => [
                 '/self-update' => ! empty( $settings['self_update'] ),
                 '/media/upload' => ! empty( $settings['media_upload'] ),
+                '/exports' => true,
                 '/exports/create' => ! empty( $settings['exports'] ),
+                '/exports/prune' => ! empty( $settings['exports'] ),
                 '/elementor/validate' => true,
                 '/elementor/normalize' => true,
                 '/elementor/blueprint' => true,
@@ -5473,6 +5500,60 @@ function wpae_prune_export_store( array $exports ): array {
     return array_slice( $exports, 0, WPAE_EXPORT_MAX_ENTRIES, true );
 }
 
+function wpae_build_exports_summary( array $exports ): array {
+    $now = time();
+    $active = [];
+    $expired_count = 0;
+    $total_bytes = 0;
+
+    foreach ( $exports as $id => $export ) {
+        $expires_at_unix = (int) ( $export['expires_at_unix'] ?? 0 );
+        if ( $expires_at_unix > 0 && $expires_at_unix < $now ) {
+            $expired_count++;
+            continue;
+        }
+
+        $bytes = (int) ( $export['bytes'] ?? 0 );
+        $total_bytes += $bytes;
+        $active[] = [
+            'id' => (string) $id,
+            'filename' => (string) ( $export['filename'] ?? 'wp-ai-export.json' ),
+            'bytes' => $bytes,
+            'created_at' => $export['created_at'] ?? null,
+            'expires_at' => $export['expires_at'] ?? null,
+            'endpoint' => get_rest_url( null, 'ai-executor/v1/exports/' . (string) $id ),
+        ];
+    }
+
+    return [
+        'active_count' => count( $active ),
+        'expired_count' => $expired_count,
+        'max_entries' => WPAE_EXPORT_MAX_ENTRIES,
+        'ttl_seconds' => WPAE_EXPORT_TTL_SECONDS,
+        'total_active_bytes' => $total_bytes,
+        'storage' => 'wp_options',
+        'exports' => $active,
+    ];
+}
+
+function wpae_get_exports_summary(): WP_REST_Response {
+    $exports = wpae_get_export_store();
+    return new WP_REST_Response( array_merge( [ 'ok' => true ], wpae_build_exports_summary( $exports ) ), 200 );
+}
+
+function wpae_prune_exports(): WP_REST_Response {
+    $before = wpae_get_export_store();
+    $after = wpae_prune_export_store( $before );
+    wpae_update_export_store( $after );
+
+    return new WP_REST_Response( array_merge( [
+        'ok' => true,
+        'removed_count' => max( 0, count( $before ) - count( $after ) ),
+        'before_count' => count( $before ),
+        'after_count' => count( $after ),
+    ], wpae_build_exports_summary( $after ) ), 200 );
+}
+
 function wpae_create_export( WP_REST_Request $request ) {
     $filename = sanitize_file_name( (string) ( $request->get_param( 'filename' ) ?: 'wp-ai-export-' . gmdate( 'Ymd-His' ) . '.json' ) );
     $payload = $request->get_param( 'data' );
@@ -6934,7 +7015,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.24',
+        'version' => 'v02.05.25',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -6983,6 +7064,8 @@ function wpae_agent_guide(): array {
             ],
             'exports_storage' => [
                 'behavior' => '/exports/create stores short-lived JSON exports in wp_options and returns an authenticated /exports/{id} endpoint.',
+                'summary_endpoint' => 'GET /wp-json/ai-executor/v1/exports returns metadata only, never raw export JSON.',
+                'prune_endpoint' => 'POST /wp-json/ai-executor/v1/exports/prune removes expired wp_options export records and requires the exports capability plus guide token.',
                 'agent_instruction' => 'Never expect public uploads export files or a public URL from /exports/create.',
             ],
         ],
@@ -7691,7 +7774,7 @@ function wpae_agent_guide(): array {
 function wpae_agent_prompt(): string {
     return <<<'PROMPT'
 You are operating a remote WordPress site through WP AI Executor.
-Current runtime notes: rollback restores only plugin-managed Elementor/WPAE meta plus the post record and does not remove unrelated third-party post meta; /elementor/page attempts to delete a newly created page if Elementor metadata saving fails and reports cleanup.created_post_deleted; /media/upload rejects files whose binary signature does not match mime_type; /exports/create stores short-lived JSON in wp_options and returns an authenticated /exports/{id} endpoint, never a public uploads file.
+Current runtime notes: rollback restores only plugin-managed Elementor/WPAE meta plus the post record and does not remove unrelated third-party post meta; /elementor/page attempts to delete a newly created page if Elementor metadata saving fails and reports cleanup.created_post_deleted; /media/upload rejects files whose binary signature does not match mime_type; /exports/create stores short-lived JSON in wp_options and returns an authenticated /exports/{id} endpoint, never a public uploads file; use GET /exports for metadata and POST /exports/prune to remove expired export records.
 Typography editability note: if the user should control typography globally or through Elementor design roles, do not hardcode typography_* settings on every widget; repeated local typography overrides block global edits. Use /elementor/typography-unlock with dry_run=true to remove excessive local typography overrides while preserving intentional exceptions. If an HTML widget CSS selector with !important is blocking a native heading control, do not delete or rewrite the HTML widget: call /elementor/resolve-typography-overrides with dry_run=true and explicit native_typography_patches, then verify the returned report before saving.
 Elementor editor editability note: design properties must stay editable through native Elementor controls/settings. Do not move editable properties into CSS/HTML, and do not remove native settings unless the user explicitly asks for global inheritance from Elementor styles/design tokens.
 Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read every enabled custom_skills item in this guide before any WordPress/Elementor work and apply those skills as mandatory project rules by priority; if a skill conflicts with WP AI Executor policy, WP AI Executor policy wins. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. Design mobile first: plan the mobile stack, type scale, spacing, CTA visibility, tap targets, section order, and responsive Elementor settings before expanding tablet and desktop layouts. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never request or use WP Admin login/password, admin cookies, WordPress REST nonces, or browser sessions; if auth fails, report endpoint/status/body and verify X-AI-Key instead of asking for credentials. Never use Playwright, WP Admin, or Elementor editor to write changes; browser automation is allowed only to inspect public pages after REST API writes. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same design-system/preflight contract and rolled back on failure. If an existing page has old or different wpae-system-* marker classes, migrate it to the current main design system with /elementor/normalize, preserve non-WPAE custom classes, then run /elementor/update dry_run. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; use /visual-audit on the public page after writing; fix weak mobile_readiness, public HTML warnings, or other blocked audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, mobile-first layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put all Elementor-supported styles into native settings/style controls: typography_font_family, typography_font_size plus mobile/tablet variants, typography_font_weight, typography_line_height with unitless ratio for multi-line text, typography_letter_spacing, typography_text_transform, title_color/text_color, background_background/background_color/background_color_b/background_gradient_type/background_gradient_angle/background_gradient_position, background_overlay_background/background_overlay_color/background_overlay_color_b, border_border/border_color, padding, margin, border_radius, min_height, flex_direction, justify_content, align_items, gap, flex_wrap, native z-index controls (_z_index/z_index), and native Elementor positioning/sticky controls (_position/sticky/sticky_on/sticky_offset/sticky_effects_offset/sticky_parent) when available. Elementor-generated CSS from native settings is expected and editable in the Elementor panel; do not treat it as forbidden external CSS. Properties listed in css_to_native_map must not be authored through Custom CSS, HTML widget CSS, external files, or <script>-injected <style>; if they appear there, migrate the value to native Elementor settings and remove the CSS declaration. CSS is an exception only for animations, pseudo-elements, WebGL/canvas, gradients/patterns that Elementor Group_Control_Background cannot express, fixed/sticky global overlays or off-canvas UI when native positioning controls are insufficient, custom systemic z-index layers when native z-index controls are insufficient, Google Fonts @import, media queries Elementor cannot express, hover/focus polish, browser fixes, or specificity conflicts after native settings are present; scoped CSS, including selective !important, may reinforce or refine styles but must not be the default styling method or the only source of essential contrast or layout. Native style migration must be targeted to requested elements only: do not rewrite the whole page, do not remove working scoped CSS/JS/WebGL/Three.js/GSAP/canvas/shader/animation code, and preserve unrelated HTML widget content, classes, IDs, script order, and dependencies unless the user explicitly asks to change them. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. After changing native settings, clear Elementor CSS cache: delete_post_meta(post_id, "_elementor_css"), delete_option("_elementor_global_css"), Elementor files cache when available, and rocket_clean_domain() when WP Rocket exists. The Elementor HTML widget is allowed only for small JavaScript snippets, WebGL/canvas/animation code, or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Never inject <style> via JavaScript for native Elementor properties; html_widget_script_injected_css is a blocking validation error. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, rollback, typography migration, or revision restore, run /audit, /elementor/visual-audit, /visual-audit, and real browser screenshot verification of the public URL; HTML/CSS audits alone are not enough. Then complete the verification checklist: published URL, Elementor meta, decoded _elementor_data, public HTML audit, zero section/column elements, no external files, native widget content placement, native critical visual settings, native style settings before CSS, preserved unrelated enhancements, mobile-first responsive settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, visual audits, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, mobile-first responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. If any endpoint or verification step fails, include concrete error details in the response: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
@@ -7934,6 +8017,18 @@ add_action( 'admin_init', function () {
         wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . ( is_wp_error( $result ) ? 'skill_url_error' : 'skill_url_imported' ) . '=1' ) );
         exit;
     }
+
+    if (
+        isset( $_POST['wpae_prune_exports_ui'] ) &&
+        check_admin_referer( 'wpae_prune_exports_ui' )
+    ) {
+        $before = wpae_get_export_store();
+        $after = wpae_prune_export_store( $before );
+        wpae_update_export_store( $after );
+
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&exports_pruned=' . max( 0, count( $before ) - count( $after ) ) ) );
+        exit;
+    }
 } );
 
 function wpae_settings_page() {
@@ -7954,12 +8049,14 @@ function wpae_settings_page() {
     $skill_import_error = isset( $_GET['skill_import_error'] );
     $skill_url_imported = isset( $_GET['skill_url_imported'] );
     $skill_url_error    = isset( $_GET['skill_url_error'] );
+    $exports_pruned     = isset( $_GET['exports_pruned'] ) ? absint( $_GET['exports_pruned'] ) : null;
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $capability_presets = wpae_capability_presets();
     $design_tokens      = wpae_get_project_design_tokens();
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
     $operation_logs     = array_slice( wpae_get_operation_logs_store(), 0, 8 );
+    $exports_summary    = wpae_build_exports_summary( wpae_get_export_store() );
     $skill_bundle_json  = wp_json_encode( wpae_build_skill_bundle(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
     $enabled_count      = count( array_filter( $capabilities ) );
     $total_count        = count( $capabilities );
@@ -8421,6 +8518,10 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось импортировать skill из GitHub URL: проверьте ссылку, доступность файла и размер.</div>
         <?php endif; ?>
 
+        <?php if ( $exports_pruned !== null ) : ?>
+            <div class="wpae-alert" role="status">Очистка exports завершена. Удалено записей: <?php echo esc_html( (string) $exports_pruned ); ?>.</div>
+        <?php endif; ?>
+
         <div class="wpae-grid">
             <div class="wpae-card">
                 <h2>REST endpoint</h2>
@@ -8445,6 +8546,36 @@ function wpae_settings_page() {
                     <?php wp_nonce_field( 'wpae_regenerate_key' ); ?>
                     <input type="hidden" name="wpae_regenerate" value="1" />
                     <button type="submit" class="button wpae-button wpae-danger-button">Сгенерировать новый ключ</button>
+                </form>
+            </div>
+
+            <div class="wpae-card wpae-card-wide">
+                <h2>Короткоживущие exports</h2>
+                <p>
+                    JSON-экспорты хранятся в <code>wp_options</code>, не создают публичных файлов и автоматически ограничены по TTL и количеству.
+                </p>
+                <div class="wpae-status-grid" style="padding:0;margin-top:12px">
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Активные exports</p>
+                        <p class="wpae-stat-value"><?php echo esc_html( (string) ( $exports_summary['active_count'] ?? 0 ) ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Просроченные</p>
+                        <p class="wpae-stat-value"><?php echo esc_html( (string) ( $exports_summary['expired_count'] ?? 0 ) ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Активный размер</p>
+                        <p class="wpae-stat-value"><?php echo esc_html( size_format( (int) ( $exports_summary['total_active_bytes'] ?? 0 ) ) ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">TTL</p>
+                        <p class="wpae-stat-value"><?php echo esc_html( (string) ( (int) WPAE_EXPORT_TTL_SECONDS / 60 ) ); ?> мин</p>
+                    </div>
+                </div>
+                <form method="post" style="margin-top:12px">
+                    <?php wp_nonce_field( 'wpae_prune_exports_ui' ); ?>
+                    <input type="hidden" name="wpae_prune_exports_ui" value="1" />
+                    <button type="submit" class="button wpae-button">Очистить просроченные exports</button>
                 </form>
             </div>
 

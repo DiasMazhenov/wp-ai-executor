@@ -467,6 +467,18 @@ Creates a short-lived JSON export in `wp_options`, not in public uploads.
 Max size: 1 MB. The response includes an authenticated `/exports/{id}`
 endpoint and no public URL.
 
+### `GET /wp-json/ai-executor/v1/exports`
+
+Returns export metadata only: active count, expired count, storage limits,
+total active bytes, and authenticated export endpoints. It does not return raw
+export JSON.
+
+### `POST /wp-json/ai-executor/v1/exports/prune`
+
+Deletes expired export records from `wp_options`. Requires the `exports`
+capability and a fresh guide token. The dashboard exposes the same cleanup as
+a button under **Короткоживущие exports**.
+
 ### `GET /wp-json/ai-executor/v1/exports/{id}`
 
 Returns a non-public export by ID with `X-AI-Key`. Expired exports return 404.

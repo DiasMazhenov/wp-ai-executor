@@ -47,9 +47,9 @@
 - В guide добавлено правило typography editability: native settings first не означает дублировать `typography_*` на каждом widget; глобально управляемая типографика должна идти через роли/наследование, локальные overrides только для осознанных исключений.
 - Уточнено правило Elementor editor editability: все дизайн-свойства, которые Elementor умеет редактировать, должны оставаться в native settings/controls; native settings нельзя удалять ради “редактируемости”, потому что они и есть редактируемый источник. CSS/HTML widget не должны быть единственным источником управляемого дизайна.
 - Добавлены endpoints для аварийного восстановления: `/rollback/snapshots`, `/elementor/revisions`, `/elementor/restore-revision`. После любых page writes/rollback/migration/restore теперь требуется реальный browser screenshot публичной страницы; HTML/CSS-аудита недостаточно.
+- Добавлены `/exports` и `/exports/prune`, а также карточка в dashboard для просмотра metadata короткоживущих JSON exports и ручной очистки просроченных записей из `wp_options`.
 
 ## Далее
 
 1. Прогнать еще один review после живого использования новых endpoints агентами.
-2. При необходимости добавить REST endpoint для удаления просроченных exports вручную из dashboard.
-3. При необходимости добавить расширенный audit для найденных внешними агентами повторяющихся ошибок.
+2. При необходимости добавить расширенный audit для найденных внешними агентами повторяющихся ошибок.
