@@ -54,3 +54,27 @@
 ## Далее
 
 1. Наблюдать новые live-логи и добавлять точечные validators, если внешние агенты найдут новый повторяющийся анти-паттерн.
+
+## Killer Features
+
+1. Transaction write mode для Elementor: каждый `/elementor/page` и `/elementor/update` должен уметь работать как атомарная операция с auto-rollback при failed validation, failed cache refresh или failed public verification.
+2. Patch API по `element_id` и native property path: агент должен менять точечные свойства вроде `heading.typography_font_size` или `container.background_color`, не пересобирая всю страницу.
+3. Protected zones: маркировать WebGL/Three.js/GSAP/canvas/HTML enhancement blocks как защищенные, чтобы миграции native settings не ломали рабочие анимации и скрипты.
+4. Visual regression gate: перед risky write сохранять lightweight baseline публичной страницы, после write сравнивать ключевые признаки layout/copy/CTA/overflow и блокировать явные поломки.
+5. Elementor editability tests: отдельная проверка, что свойства из `css_to_native_map` реально управляются через Elementor native settings, а не перебиваются CSS/HTML/script-injected styles.
+6. CSS-to-native migrator: endpoint, который находит native-supported CSS declarations, переносит их в settings виджетов/контейнеров и аккуратно удаляет только перенесенные CSS rules.
+7. Design system registry: хранить несколько named design systems, фиксировать active system per page и явно мигрировать страницу между системами через dry-run.
+8. Pattern library builder: сохранять удачные sections как reusable Flexbox Container patterns с slots, variants, required settings и quality score.
+9. Preview -> approve -> publish flow: агент сначала создает draft/preview, отдает audit summary и только после approval публикует или заменяет live page.
+10. Agent contract handshake: write endpoints требуют явного подтверждения, что агент прочитал `/guide`, `/capabilities`, enabled skills, design system и текущие ограничения.
+11. Recovery assistant actions: при ошибке endpoint должен возвращать не только code/message, но и безопасный следующий endpoint/payload skeleton для исправления.
+12. Расширенный Agent Conformance Scoring: учитывать не только нарушения, но и качество процесса: blueprint used, recipe/compose used, native settings coverage, mobile-first coverage, visual verification evidence и number of retries.
+
+## Приоритет внедрения
+
+1. Transaction write mode + более сильный rollback.
+2. Patch API по `element_id` и native property path.
+3. Protected zones для WebGL/Three.js/GSAP/canvas.
+4. Visual regression gate.
+5. Elementor editability tests.
+6. CSS-to-native migrator.
