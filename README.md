@@ -175,6 +175,24 @@ Example:
 Operation logs also include the redacted `agent_conformance_score` and
 `agent_conformance_level` summary fields.
 
+### Repeated external-agent error audit
+
+`/audit` and `/elementor/visual-audit` also return
+`repeated_agent_error_audit`. It turns common third-party agent mistakes into
+explicit checks with safe next fixes:
+
+- legacy `section` / `column`
+- snake-case `widget_type`
+- HTML widget used as layout/content
+- JavaScript-injected CSS for native Elementor properties
+- `!important` heading typography overrides
+- excessive local typography overrides
+- design-system marker drift
+- fixed px layout risks
+
+Agents must fix every `fail` check before claiming success. `warn` checks must
+be fixed or explicitly explained.
+
 ### `POST /wp-json/ai-executor/v1/elementor/validate`
 
 Validates Elementor JSON without writing anything. Requires `X-AI-Key`.
