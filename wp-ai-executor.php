@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.23
+ * Version:     v02.08.24
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.23';
+const WPAE_VERSION = 'v02.08.24';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -584,6 +584,12 @@ add_action( 'rest_api_init', function () {
     register_rest_route( 'ai-executor/v1', '/skills/import', [
         'methods'             => 'POST',
         'callback'            => 'wpae_import_skills',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'manage_skills' ),
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/skills/import-url', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_import_skill_from_url',
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'manage_skills' ),
     ] );
 
@@ -1529,7 +1535,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.23',
+        'guide_version' => 'v02.05.24',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2385,7 +2391,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.23',
+        'guide_version' => 'v02.05.24',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -2635,8 +2641,18 @@ function wpae_get_capabilities_payload(): array {
                 'delete_one' => 'DELETE /wp-json/ai-executor/v1/skills/{id}',
                 'export_bundle' => 'GET /wp-json/ai-executor/v1/skills/export',
                 'import_bundle' => 'POST /wp-json/ai-executor/v1/skills/import',
+                'import_from_github_url' => 'POST /wp-json/ai-executor/v1/skills/import-url',
             ],
             'import_modes' => [ 'merge', 'replace' ],
+            'github_import' => [
+                'storage' => 'Downloaded skills are normalized and stored in wp_options; no server files are created.',
+                'accepted_urls' => [
+                    'https://github.com/{owner}/{repo}/blob/{ref}/path/SKILL.md',
+                    'https://github.com/{owner}/{repo}/tree/{ref}/path/to/skill-folder',
+                    'https://raw.githubusercontent.com/{owner}/{repo}/{ref}/path/SKILL.md',
+                    'https://raw.githubusercontent.com/{owner}/{repo}/{ref}/bundle.json',
+                ],
+            ],
             'bundle_schema' => 'wp-ai-executor.skill-bundle',
             'max_skills_per_bundle' => 100,
             'max_content_bytes_per_skill' => 120000,
@@ -2742,6 +2758,7 @@ function wpae_get_capabilities_payload(): array {
                 '/skills' => ! empty( $settings['manage_skills'] ),
                 '/skills/export' => true,
                 '/skills/import' => ! empty( $settings['manage_skills'] ),
+                '/skills/import-url' => ! empty( $settings['manage_skills'] ),
             ],
         ],
         'guide_token_protocol' => [
@@ -2830,6 +2847,10 @@ function wpae_normalize_skill_data( array $data, array $existing_skills = [] ) {
         'priority' => max( -100, min( 100, (int) ( $data['priority'] ?? 0 ) ) ),
         'created_at' => $existing_skills[ $id ]['created_at'] ?? $now,
         'updated_at' => $now,
+        'source_url' => esc_url_raw( (string) ( $data['source_url'] ?? ( $existing_skills[ $id ]['source_url'] ?? '' ) ) ),
+        'source_type' => sanitize_key( (string) ( $data['source_type'] ?? ( $existing_skills[ $id ]['source_type'] ?? 'manual' ) ) ),
+        'source_sha256' => sanitize_text_field( (string) ( $data['source_sha256'] ?? ( $existing_skills[ $id ]['source_sha256'] ?? '' ) ) ),
+        'imported_at' => sanitize_text_field( (string) ( $data['imported_at'] ?? ( $existing_skills[ $id ]['imported_at'] ?? '' ) ) ),
     ];
 }
 
@@ -2961,6 +2982,194 @@ function wpae_import_skills( WP_REST_Request $request ) {
     return new WP_REST_Response( array_merge( [ 'ok' => true ], $result ), 200 );
 }
 
+function wpae_normalize_github_skill_url( string $source_url ) {
+    $source_url = trim( $source_url );
+    $parts = wp_parse_url( $source_url );
+
+    if ( ! is_array( $parts ) || ( $parts['scheme'] ?? '' ) !== 'https' ) {
+        return new WP_Error( 'wpae_invalid_skill_url', 'Skill URL must be an HTTPS GitHub URL.' );
+    }
+
+    $host = strtolower( (string) ( $parts['host'] ?? '' ) );
+    $path = (string) ( $parts['path'] ?? '' );
+
+    if ( $host === 'raw.githubusercontent.com' ) {
+        if ( ! preg_match( '#^/[^/]+/[^/]+/.+\.(?:md|json)$#i', $path ) ) {
+            return new WP_Error( 'wpae_invalid_skill_url', 'Raw GitHub skill URL must point to an .md or .json file.' );
+        }
+
+        return $source_url;
+    }
+
+    if ( $host !== 'github.com' ) {
+        return new WP_Error( 'wpae_invalid_skill_url', 'Only github.com and raw.githubusercontent.com skill URLs are allowed.' );
+    }
+
+    $segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ), 'strlen' ) );
+    if ( count( $segments ) < 2 ) {
+        return new WP_Error( 'wpae_invalid_skill_url', 'GitHub skill URL must include owner and repository.' );
+    }
+
+    $owner = rawurlencode( $segments[0] );
+    $repo = rawurlencode( $segments[1] );
+
+    if ( isset( $segments[2] ) && $segments[2] === 'blob' && count( $segments ) >= 5 ) {
+        $ref = rawurlencode( $segments[3] );
+        $file_path = implode( '/', array_map( 'rawurlencode', array_slice( $segments, 4 ) ) );
+
+        return "https://raw.githubusercontent.com/{$owner}/{$repo}/{$ref}/{$file_path}";
+    }
+
+    if ( isset( $segments[2] ) && $segments[2] === 'tree' && count( $segments ) >= 4 ) {
+        $ref = rawurlencode( $segments[3] );
+        $dir_path = implode( '/', array_map( 'rawurlencode', array_slice( $segments, 4 ) ) );
+        $suffix = $dir_path !== '' ? '/' . $dir_path : '';
+
+        return "https://raw.githubusercontent.com/{$owner}/{$repo}/{$ref}{$suffix}/SKILL.md";
+    }
+
+    return new WP_Error( 'wpae_invalid_skill_url', 'Use a GitHub blob URL to SKILL.md/.json or a tree URL to a skill folder.' );
+}
+
+function wpae_guess_skill_name_from_url( string $source_url ): string {
+    $path = (string) ( wp_parse_url( $source_url, PHP_URL_PATH ) ?: '' );
+    $segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ), 'strlen' ) );
+    $filename = end( $segments );
+    $parent = count( $segments ) >= 2 ? $segments[ count( $segments ) - 2 ] : '';
+
+    if ( is_string( $filename ) && strtolower( $filename ) !== 'skill.md' && $filename !== '' ) {
+        $guessed = preg_replace( '/\.(md|json)$/i', '', sanitize_title( $filename ) );
+        return is_string( $guessed ) && $guessed !== '' ? $guessed : 'github-skill';
+    }
+
+    return $parent !== '' ? sanitize_title( $parent ) : 'github-skill';
+}
+
+function wpae_build_skill_from_markdown( string $content, string $source_url, array $request_data = [] ): array {
+    $name = sanitize_text_field( (string) ( $request_data['name'] ?? '' ) );
+    if ( $name === '' && preg_match( '/^\s*#\s+(.+)$/m', $content, $matches ) ) {
+        $name = sanitize_text_field( trim( (string) $matches[1] ) );
+    }
+    if ( $name === '' ) {
+        $name = wpae_guess_skill_name_from_url( $source_url );
+    }
+
+    $description = sanitize_textarea_field( (string) ( $request_data['description'] ?? '' ) );
+    if ( $description === '' && preg_match( '/^\s*(?:description|desc)\s*:\s*(.+)$/mi', $content, $matches ) ) {
+        $description = sanitize_textarea_field( trim( (string) $matches[1] ) );
+    }
+
+    return [
+        'id' => (string) ( $request_data['id'] ?? wpae_normalize_skill_id( $name ) ),
+        'name' => $name,
+        'description' => $description,
+        'content' => $content,
+        'enabled' => array_key_exists( 'enabled', $request_data ) ? (bool) $request_data['enabled'] : true,
+        'priority' => (int) ( $request_data['priority'] ?? 10 ),
+        'enforce' => is_array( $request_data['enforce'] ?? null ) ? $request_data['enforce'] : [],
+        'source_url' => $source_url,
+        'source_type' => 'github_url',
+        'source_sha256' => hash( 'sha256', $content ),
+        'imported_at' => gmdate( 'c' ),
+    ];
+}
+
+function wpae_import_skill_from_url( WP_REST_Request $request ) {
+    $source_url = trim( (string) ( $request->get_param( 'source_url' ) ?: $request->get_param( 'url' ) ) );
+    $raw_url = wpae_normalize_github_skill_url( $source_url );
+
+    if ( is_wp_error( $raw_url ) ) {
+        return new WP_REST_Response( [ 'error' => $raw_url->get_error_message() ], 400 );
+    }
+
+    $response = wp_remote_get( $raw_url, [
+        'timeout' => 20,
+        'redirection' => 3,
+        'limit_response_size' => 150000,
+    ] );
+
+    if ( is_wp_error( $response ) ) {
+        return new WP_REST_Response( [
+            'error' => 'Failed to download skill.',
+            'message' => $response->get_error_message(),
+        ], 502 );
+    }
+
+    $status = (int) wp_remote_retrieve_response_code( $response );
+    $content = (string) wp_remote_retrieve_body( $response );
+
+    if ( $status !== 200 ) {
+        return new WP_REST_Response( [
+            'error' => 'Skill download returned non-200 status.',
+            'status' => $status,
+            'raw_url' => $raw_url,
+        ], 502 );
+    }
+
+    if ( trim( $content ) === '' ) {
+        return new WP_REST_Response( [ 'error' => 'Downloaded skill is empty.' ], 422 );
+    }
+
+    $request_data = [
+        'id' => $request->get_param( 'id' ),
+        'name' => $request->get_param( 'name' ),
+        'description' => $request->get_param( 'description' ),
+        'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
+        'priority' => $request->get_param( 'priority' ),
+        'enforce' => $request->get_param( 'enforce' ),
+    ];
+
+    $trimmed = ltrim( $content );
+    if ( $trimmed !== '' && ( $trimmed[0] === '{' || $trimmed[0] === '[' ) ) {
+        $decoded = json_decode( $content, true );
+        $items = wpae_extract_skill_import_items( $decoded );
+        if ( is_wp_error( $items ) ) {
+            return new WP_REST_Response( [ 'error' => $items->get_error_message() ], 422 );
+        }
+
+        foreach ( $items as &$item ) {
+            if ( is_array( $item ) ) {
+                $item['source_url'] = $raw_url;
+                $item['source_type'] = 'github_bundle';
+                $item['source_sha256'] = hash( 'sha256', $content );
+                $item['imported_at'] = gmdate( 'c' );
+            }
+        }
+        unset( $item );
+
+        $result = wpae_import_skill_items( $items, sanitize_key( (string) ( $request->get_param( 'mode' ) ?: 'merge' ) ) );
+        if ( is_wp_error( $result ) ) {
+            return new WP_REST_Response( [
+                'error' => $result->get_error_message(),
+                'details' => $result->get_error_data(),
+            ], 422 );
+        }
+
+        return new WP_REST_Response( array_merge( [
+            'ok' => true,
+            'source_url' => $source_url,
+            'raw_url' => $raw_url,
+            'source_sha256' => hash( 'sha256', $content ),
+        ], $result ), 200 );
+    }
+
+    $skill_data = wpae_build_skill_from_markdown( $content, $raw_url, $request_data );
+    $skill = wpae_upsert_skill( $skill_data );
+    if ( is_wp_error( $skill ) ) {
+        $status_code = $skill->get_error_code() === 'wpae_skill_too_large' ? 413 : 422;
+        return new WP_REST_Response( [ 'error' => $skill->get_error_message() ], $status_code );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'source_url' => $source_url,
+        'raw_url' => $raw_url,
+        'source_sha256' => $skill['source_sha256'] ?? hash( 'sha256', $content ),
+        'imported_count' => 1,
+        'skill' => $skill,
+    ], 200 );
+}
+
 function wpae_save_skill( WP_REST_Request $request ) {
     $skill = wpae_upsert_skill( [
         'id' => $request->get_param( 'id' ),
@@ -2970,6 +3179,7 @@ function wpae_save_skill( WP_REST_Request $request ) {
         'enforce' => $request->get_param( 'enforce' ),
         'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
         'priority' => $request->get_param( 'priority' ),
+        'source_type' => 'manual',
     ] );
 
     if ( is_wp_error( $skill ) ) {
@@ -6724,7 +6934,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.23',
+        'version' => 'v02.05.24',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -6897,9 +7107,10 @@ function wpae_agent_guide(): array {
                 ],
             ],
             'custom_skills_policy' => [
-                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills plus GET /skills/export and POST /skills/import',
+                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills plus GET /skills/export, POST /skills/import, and POST /skills/import-url',
                 'storage' => 'Skills are stored in wp_options as text/JSON, not as files.',
-                'rule' => 'Agents must read custom_skills in this guide and apply enabled skills by priority.',
+                'rule' => 'Agents must read every enabled custom_skills item in this guide before any WordPress/Elementor work and apply them as mandatory project rules by priority. If a custom skill conflicts with WP AI Executor policy, WP AI Executor policy wins.',
+                'github_import' => 'GitHub skills are downloaded by the plugin, normalized, stored in wp_options, included in guide_hash, and exposed through /guide so agents do not need remote internet access to read them.',
                 'limits' => 'Each skill content is limited to 120 KB and is never executed as code.',
                 'bundle_import_export' => 'Skill bundles are JSON objects with schema=wp-ai-executor.skill-bundle and a skills array. Import mode can be merge or replace. Bundles are stored in the database only.',
                 'enforceable_rules' => [
@@ -7483,7 +7694,7 @@ You are operating a remote WordPress site through WP AI Executor.
 Current runtime notes: rollback restores only plugin-managed Elementor/WPAE meta plus the post record and does not remove unrelated third-party post meta; /elementor/page attempts to delete a newly created page if Elementor metadata saving fails and reports cleanup.created_post_deleted; /media/upload rejects files whose binary signature does not match mime_type; /exports/create stores short-lived JSON in wp_options and returns an authenticated /exports/{id} endpoint, never a public uploads file.
 Typography editability note: if the user should control typography globally or through Elementor design roles, do not hardcode typography_* settings on every widget; repeated local typography overrides block global edits. Use /elementor/typography-unlock with dry_run=true to remove excessive local typography overrides while preserving intentional exceptions. If an HTML widget CSS selector with !important is blocking a native heading control, do not delete or rewrite the HTML widget: call /elementor/resolve-typography-overrides with dry_run=true and explicit native_typography_patches, then verify the returned report before saving.
 Elementor editor editability note: design properties must stay editable through native Elementor controls/settings. Do not move editable properties into CSS/HTML, and do not remove native settings unless the user explicitly asks for global inheritance from Elementor styles/design tokens.
-Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read and apply any enabled custom_skills by priority. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. Design mobile first: plan the mobile stack, type scale, spacing, CTA visibility, tap targets, section order, and responsive Elementor settings before expanding tablet and desktop layouts. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never request or use WP Admin login/password, admin cookies, WordPress REST nonces, or browser sessions; if auth fails, report endpoint/status/body and verify X-AI-Key instead of asking for credentials. Never use Playwright, WP Admin, or Elementor editor to write changes; browser automation is allowed only to inspect public pages after REST API writes. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same design-system/preflight contract and rolled back on failure. If an existing page has old or different wpae-system-* marker classes, migrate it to the current main design system with /elementor/normalize, preserve non-WPAE custom classes, then run /elementor/update dry_run. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; use /visual-audit on the public page after writing; fix weak mobile_readiness, public HTML warnings, or other blocked audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, mobile-first layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put all Elementor-supported styles into native settings/style controls: typography_font_family, typography_font_size plus mobile/tablet variants, typography_font_weight, typography_line_height with unitless ratio for multi-line text, typography_letter_spacing, typography_text_transform, title_color/text_color, background_background/background_color/background_color_b/background_gradient_type/background_gradient_angle/background_gradient_position, background_overlay_background/background_overlay_color/background_overlay_color_b, border_border/border_color, padding, margin, border_radius, min_height, flex_direction, justify_content, align_items, gap, flex_wrap, native z-index controls (_z_index/z_index), and native Elementor positioning/sticky controls (_position/sticky/sticky_on/sticky_offset/sticky_effects_offset/sticky_parent) when available. Elementor-generated CSS from native settings is expected and editable in the Elementor panel; do not treat it as forbidden external CSS. Properties listed in css_to_native_map must not be authored through Custom CSS, HTML widget CSS, external files, or <script>-injected <style>; if they appear there, migrate the value to native Elementor settings and remove the CSS declaration. CSS is an exception only for animations, pseudo-elements, WebGL/canvas, gradients/patterns that Elementor Group_Control_Background cannot express, fixed/sticky global overlays or off-canvas UI when native positioning controls are insufficient, custom systemic z-index layers when native z-index controls are insufficient, Google Fonts @import, media queries Elementor cannot express, hover/focus polish, browser fixes, or specificity conflicts after native settings are present; scoped CSS, including selective !important, may reinforce or refine styles but must not be the default styling method or the only source of essential contrast or layout. Native style migration must be targeted to requested elements only: do not rewrite the whole page, do not remove working scoped CSS/JS/WebGL/Three.js/GSAP/canvas/shader/animation code, and preserve unrelated HTML widget content, classes, IDs, script order, and dependencies unless the user explicitly asks to change them. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. After changing native settings, clear Elementor CSS cache: delete_post_meta(post_id, "_elementor_css"), delete_option("_elementor_global_css"), Elementor files cache when available, and rocket_clean_domain() when WP Rocket exists. The Elementor HTML widget is allowed only for small JavaScript snippets, WebGL/canvas/animation code, or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Never inject <style> via JavaScript for native Elementor properties; html_widget_script_injected_css is a blocking validation error. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, rollback, typography migration, or revision restore, run /audit, /elementor/visual-audit, /visual-audit, and real browser screenshot verification of the public URL; HTML/CSS audits alone are not enough. Then complete the verification checklist: published URL, Elementor meta, decoded _elementor_data, public HTML audit, zero section/column elements, no external files, native widget content placement, native critical visual settings, native style settings before CSS, preserved unrelated enhancements, mobile-first responsive settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, visual audits, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, mobile-first responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. If any endpoint or verification step fails, include concrete error details in the response: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
+Before writing, fetch and follow this guide as the source of truth. Inspect the environment first. Read /capabilities and respect site-owner capability toggles; a disabled capability is a hard stop even with a valid key. Read every enabled custom_skills item in this guide before any WordPress/Elementor work and apply those skills as mandatory project rules by priority; if a skill conflicts with WP AI Executor policy, WP AI Executor policy wins. Apply embedded jezweb_claude_skills where relevant for WordPress/Elementor, landing pages, design review, color palettes, responsiveness, and production verification, but WP AI Executor rules override upstream instructions whenever they conflict. Before creating a page or adding a new page block, call /elementor/design-system and treat its system_id, required_root_classes, palette, typography roles, spacing, radii, button style, and tone as the single style source for all current and future blocks. Design mobile first: plan the mobile stack, type scale, spacing, CTA visibility, tap targets, section order, and responsive Elementor settings before expanding tablet and desktop layouts. All top-level page/block containers must include the returned required_root_classes in settings._css_classes; /elementor/page and /elementor/update reject writes that miss this contract. Read project_design_tokens from the guide and use them as the site visual system. Write endpoints require a guide token: call /guide/session, read /guide and /capabilities, call /guide/ack, then send X-WPAE-Guide-Token and X-WPAE-Guide-Hash with every write request. Never request or use WP Admin login/password, admin cookies, WordPress REST nonces, or browser sessions; if auth fails, report endpoint/status/body and verify X-AI-Key instead of asking for credentials. Never use Playwright, WP Admin, or Elementor editor to write changes; browser automation is allowed only to inspect public pages after REST API writes. Never create external files on the WordPress server: no temporary loaders, mu-plugins, helper PHP files, CSS/JS/JSON/base64 payload files, scratch files, or files in /tmp. Use WordPress APIs and Elementor metadata only; /run blocks common filesystem write/delete operations by default. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /visual-audit, /elementor/page, and /elementor/update over raw PHP for Elementor pages. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same design-system/preflight contract and rolled back on failure. If an existing page has old or different wpae-system-* marker classes, migrate it to the current main design system with /elementor/normalize, preserve non-WPAE custom classes, then run /elementor/update dry_run. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with project-specific slots. Use /elementor/normalize before saving when JSON has legacy section/column layout, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes. Use /elementor/visual-audit on composed elementor_data before writing and on post_id after writing; use /visual-audit on the public page after writing; fix weak mobile_readiness, public HTML warnings, or other blocked audit results before claiming completion. Use dry_run=true on /elementor/page or /elementor/update before complex writes; structured writes return preflight and block invalid contracts, empty native content, HTML-widget layout misuse, missing landing-page CTA, and missing native critical visual settings. Successful structured writes return quality_summary with permalink, visual audit score/level, warnings, and fixes; keep correcting until quality_summary has no required fixes and the audit is acceptable. Arbitrary /run dry_run is not supported, so pass rollback_targets.post_ids and rollback_targets.option_names before risky /run mutations. Save rollback_snapshot_id from write responses and call /rollback with snapshot_id if the result must be reverted. For Elementor pages, design first: define subject, audience, single page job, palette, type roles, mobile-first layout, and one distinctive signature element inside the design system. Apply the embedded frontend_design pack to avoid generic pages, apply the wordpress_elementor_dev pack to build editable Elementor output, and apply the jezweb landing-page/design-review/color-palette workflow to produce tangible, polished results. Use only native Elementor Flexbox Containers for layout: elType=container plus editable native widgets. Never use legacy Elementor Sections or Columns; elType=section and elType=column are forbidden and must be converted to containers before saving. Every widget must use the exact camelCase widgetType key; widget_type is forbidden and causes empty widgets. Put all Elementor-supported styles into native settings/style controls: typography_font_family, typography_font_size plus mobile/tablet variants, typography_font_weight, typography_line_height with unitless ratio for multi-line text, typography_letter_spacing, typography_text_transform, title_color/text_color, background_background/background_color/background_color_b/background_gradient_type/background_gradient_angle/background_gradient_position, background_overlay_background/background_overlay_color/background_overlay_color_b, border_border/border_color, padding, margin, border_radius, min_height, flex_direction, justify_content, align_items, gap, flex_wrap, native z-index controls (_z_index/z_index), and native Elementor positioning/sticky controls (_position/sticky/sticky_on/sticky_offset/sticky_effects_offset/sticky_parent) when available. Elementor-generated CSS from native settings is expected and editable in the Elementor panel; do not treat it as forbidden external CSS. Properties listed in css_to_native_map must not be authored through Custom CSS, HTML widget CSS, external files, or <script>-injected <style>; if they appear there, migrate the value to native Elementor settings and remove the CSS declaration. CSS is an exception only for animations, pseudo-elements, WebGL/canvas, gradients/patterns that Elementor Group_Control_Background cannot express, fixed/sticky global overlays or off-canvas UI when native positioning controls are insufficient, custom systemic z-index layers when native z-index controls are insufficient, Google Fonts @import, media queries Elementor cannot express, hover/focus polish, browser fixes, or specificity conflicts after native settings are present; scoped CSS, including selective !important, may reinforce or refine styles but must not be the default styling method or the only source of essential contrast or layout. Native style migration must be targeted to requested elements only: do not rewrite the whole page, do not remove working scoped CSS/JS/WebGL/Three.js/GSAP/canvas/shader/animation code, and preserve unrelated HTML widget content, classes, IDs, script order, and dependencies unless the user explicitly asks to change them. Prefer rem/em for spacing, typography, gap, padding, margin, radii, and component dimensions; use vh/svh/min-height for viewport-height sections; use percentages, flex basis, max-width, and responsive constraints for widths. Use px only for hairline borders, tiny icons/controls, shadows, or Elementor compatibility exceptions. After changing native settings, clear Elementor CSS cache: delete_post_meta(post_id, "_elementor_css"), delete_option("_elementor_global_css"), Elementor files cache when available, and rocket_clean_domain() when WP Rocket exists. The Elementor HTML widget is allowed only for small JavaScript snippets, WebGL/canvas/animation code, or complex CSS enhancements when native settings are not enough; never use it as the main page markup/content/layout container. Never inject <style> via JavaScript for native Elementor properties; html_widget_script_injected_css is a blocking validation error. Do not use shortcode widgets, Oxygen, or Novamira for page layout/content. After writing, rollback, typography migration, or revision restore, run /audit, /elementor/visual-audit, /visual-audit, and real browser screenshot verification of the public URL; HTML/CSS audits alone are not enough. Then complete the verification checklist: published URL, Elementor meta, decoded _elementor_data, public HTML audit, zero section/column elements, no external files, native widget content placement, native critical visual settings, native style settings before CSS, preserved unrelated enhancements, mobile-first responsive settings, design-system markers, and html widgets enhancement-only. Read preflight, quality_summary, visual audits, and agent_conformance in responses and fix weak or blocked criteria before claiming completion; design quality gates require native heading hierarchy, native spacing, visible CTA, mobile-first responsive settings, deliberate palette, consistent design system, responsive unit policy, and populated native content. If any endpoint or verification step fails, include concrete error details in the response: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix. Use /logs for recent operation metadata when debugging; logs never include API keys, guide tokens, raw request bodies, raw page payloads, or secrets. Do not expose API keys.
 PROMPT;
 }
 
@@ -7663,6 +7874,66 @@ add_action( 'admin_init', function () {
         wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . ( is_wp_error( $result ) ? 'skill_import_error' : 'skill_imported' ) . '=1' ) );
         exit;
     }
+
+    if (
+        isset( $_POST['wpae_import_skill_url_ui'] ) &&
+        check_admin_referer( 'wpae_import_skill_url_ui' )
+    ) {
+        $source_url = isset( $_POST['wpae_skill_source_url'] )
+            ? trim( (string) wp_unslash( $_POST['wpae_skill_source_url'] ) )
+            : '';
+        $raw_url = wpae_normalize_github_skill_url( $source_url );
+        $result = $raw_url;
+
+        if ( ! is_wp_error( $raw_url ) ) {
+            $response = wp_remote_get( $raw_url, [
+                'timeout' => 20,
+                'redirection' => 3,
+                'limit_response_size' => 150000,
+            ] );
+
+            if ( is_wp_error( $response ) ) {
+                $result = $response;
+            } elseif ( (int) wp_remote_retrieve_response_code( $response ) !== 200 ) {
+                $result = new WP_Error( 'wpae_skill_download_failed', 'Skill download returned non-200 status.' );
+            } else {
+                $content = (string) wp_remote_retrieve_body( $response );
+                $request_data = [
+                    'id' => isset( $_POST['wpae_skill_url_id'] ) ? wp_unslash( $_POST['wpae_skill_url_id'] ) : '',
+                    'name' => isset( $_POST['wpae_skill_url_name'] ) ? wp_unslash( $_POST['wpae_skill_url_name'] ) : '',
+                    'description' => '',
+                    'enabled' => ! empty( $_POST['wpae_skill_url_enabled'] ),
+                    'priority' => isset( $_POST['wpae_skill_url_priority'] ) ? wp_unslash( $_POST['wpae_skill_url_priority'] ) : 10,
+                    'enforce' => [],
+                ];
+                $trimmed = ltrim( $content );
+
+                if ( $trimmed !== '' && ( $trimmed[0] === '{' || $trimmed[0] === '[' ) ) {
+                    $decoded = json_decode( $content, true );
+                    $items = wpae_extract_skill_import_items( $decoded );
+                    if ( is_wp_error( $items ) ) {
+                        $result = $items;
+                    } else {
+                        foreach ( $items as &$item ) {
+                            if ( is_array( $item ) ) {
+                                $item['source_url'] = $raw_url;
+                                $item['source_type'] = 'github_bundle';
+                                $item['source_sha256'] = hash( 'sha256', $content );
+                                $item['imported_at'] = gmdate( 'c' );
+                            }
+                        }
+                        unset( $item );
+                        $result = wpae_import_skill_items( $items, 'merge' );
+                    }
+                } else {
+                    $result = wpae_upsert_skill( wpae_build_skill_from_markdown( $content, $raw_url, $request_data ) );
+                }
+            }
+        }
+
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . ( is_wp_error( $result ) ? 'skill_url_error' : 'skill_url_imported' ) . '=1' ) );
+        exit;
+    }
 } );
 
 function wpae_settings_page() {
@@ -7681,6 +7952,8 @@ function wpae_settings_page() {
     $skill_error        = isset( $_GET['skill_error'] );
     $skill_imported     = isset( $_GET['skill_imported'] );
     $skill_import_error = isset( $_GET['skill_import_error'] );
+    $skill_url_imported = isset( $_GET['skill_url_imported'] );
+    $skill_url_error    = isset( $_GET['skill_url_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $capability_presets = wpae_capability_presets();
@@ -8140,6 +8413,14 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось импортировать пакет: проверьте JSON, поле skills и содержимое каждого skill.</div>
         <?php endif; ?>
 
+        <?php if ( $skill_url_imported ) : ?>
+            <div class="wpae-alert" role="status">Skill из GitHub URL импортирован.</div>
+        <?php endif; ?>
+
+        <?php if ( $skill_url_error ) : ?>
+            <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось импортировать skill из GitHub URL: проверьте ссылку, доступность файла и размер.</div>
+        <?php endif; ?>
+
         <div class="wpae-grid">
             <div class="wpae-card">
                 <h2>REST endpoint</h2>
@@ -8362,6 +8643,42 @@ function wpae_settings_page() {
 
                 <div class="wpae-grid wpae-grid-two" style="margin-top:18px">
                     <form method="post" style="border:1px solid var(--wpae-border);border-radius:12px;padding:16px;background:#fff">
+                        <?php wp_nonce_field( 'wpae_import_skill_url_ui' ); ?>
+                        <input type="hidden" name="wpae_import_skill_url_ui" value="1" />
+                        <h3 style="margin-top:0">Импорт из GitHub URL</h3>
+                        <p>Вставьте ссылку на <code>SKILL.md</code>, папку skill на GitHub или JSON bundle. Плагин скачает содержимое и сохранит его в базе, без файлов на сервере.</p>
+                        <div class="wpae-form-field">
+                            <label for="wpae-skill-source-url">GitHub URL</label>
+                            <input class="wpae-input" id="wpae-skill-source-url" name="wpae_skill_source_url" type="url" placeholder="https://github.com/owner/repo/blob/main/path/SKILL.md" required />
+                        </div>
+                        <div class="wpae-form-grid">
+                            <div class="wpae-form-field">
+                                <label for="wpae-skill-url-name">Название, если нужно</label>
+                                <input class="wpae-input" id="wpae-skill-url-name" name="wpae_skill_url_name" type="text" placeholder="frontend-design" />
+                            </div>
+                            <div class="wpae-form-field">
+                                <label for="wpae-skill-url-id">ID, если нужно</label>
+                                <input class="wpae-input" id="wpae-skill-url-id" name="wpae_skill_url_id" type="text" placeholder="frontend-design" />
+                            </div>
+                            <div class="wpae-form-field">
+                                <label for="wpae-skill-url-priority">Приоритет</label>
+                                <input class="wpae-input" id="wpae-skill-url-priority" name="wpae_skill_url_priority" type="number" min="-100" max="100" value="10" />
+                            </div>
+                            <div class="wpae-form-field">
+                                <label for="wpae-skill-url-enabled">Статус</label>
+                                <label class="wpae-toggle" style="min-height:38px;padding:9px;margin:0">
+                                    <input id="wpae-skill-url-enabled" name="wpae_skill_url_enabled" type="checkbox" value="1" checked />
+                                    <span><strong>Включить skill</strong></span>
+                                </label>
+                            </div>
+                        </div>
+                        <p class="wpae-section-note">Поддерживаются только HTTPS-ссылки <code>github.com</code> и <code>raw.githubusercontent.com</code>. При импорте меняется <code>guide_hash</code>, поэтому агенту нужно заново пройти guide ack.</p>
+                        <p style="margin-top:14px">
+                            <button type="submit" class="button button-primary wpae-button">Импортировать из GitHub</button>
+                        </p>
+                    </form>
+
+                    <form method="post" style="border:1px solid var(--wpae-border);border-radius:12px;padding:16px;background:#fff">
                         <?php wp_nonce_field( 'wpae_import_skills_ui' ); ?>
                         <input type="hidden" name="wpae_import_skills_ui" value="1" />
                         <h3 style="margin-top:0">Импорт пакета</h3>
@@ -8410,6 +8727,13 @@ function wpae_settings_page() {
                                     </div>
                                     <?php if ( ! empty( $skill['description'] ) ) : ?>
                                         <div class="wpae-skill-meta"><?php echo esc_html( (string) $skill['description'] ); ?></div>
+                                    <?php endif; ?>
+                                    <?php if ( ! empty( $skill['source_url'] ) ) : ?>
+                                        <div class="wpae-skill-meta">
+                                            source: <code><?php echo esc_html( (string) $skill['source_type'] ); ?></code>
+                                            · hash: <code><?php echo esc_html( substr( (string) ( $skill['source_sha256'] ?? '' ), 0, 12 ) ); ?></code>
+                                            · <a href="<?php echo esc_url( (string) $skill['source_url'] ); ?>" target="_blank" rel="noreferrer">открыть источник</a>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                                 <form method="post" onsubmit="return confirm('Удалить custom skill?')">
