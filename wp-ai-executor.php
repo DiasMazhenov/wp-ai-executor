@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.27
+ * Version:     v02.08.28
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.27';
+const WPAE_VERSION = 'v02.08.28';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -1570,7 +1570,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.27',
+        'guide_version' => 'v02.05.28',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2171,13 +2171,17 @@ function wpae_restore_option_snapshot( string $option_name, array $snapshot ): a
     return [ 'option' => $option_name, 'action' => 'restored' ];
 }
 
-function wpae_rollback( WP_REST_Request $request ): WP_REST_Response {
-    $snapshot_id = sanitize_text_field( (string) $request->get_param( 'snapshot_id' ) );
+function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consume = true ): array {
     $snapshots = wpae_prune_rollback_snapshots( wpae_get_rollback_snapshots() );
 
     if ( $snapshot_id === '' || ! isset( $snapshots[ $snapshot_id ] ) ) {
         wpae_update_rollback_snapshots( $snapshots );
-        return new WP_REST_Response( [ 'ok' => false, 'error' => 'Invalid or expired rollback snapshot.' ], 404 );
+        return [
+            'ok' => false,
+            'status' => 404,
+            'snapshot_id' => $snapshot_id,
+            'error' => 'Invalid or expired rollback snapshot.',
+        ];
     }
 
     $snapshot = $snapshots[ $snapshot_id ];
@@ -2198,26 +2202,37 @@ function wpae_rollback( WP_REST_Request $request ): WP_REST_Response {
 
     if ( ! empty( $failed_posts ) ) {
         wpae_update_rollback_snapshots( $snapshots );
-        return new WP_REST_Response( [
+        return [
             'ok' => false,
+            'status' => 422,
             'snapshot_id' => $snapshot_id,
             'label' => $snapshot['label'] ?? '',
             'error' => 'Rollback did not complete. The snapshot has been retained for recovery.',
             'restored_posts' => $restored_posts,
             'restored_options' => $restored_options,
-        ], 422 );
+        ];
     }
 
-    unset( $snapshots[ $snapshot_id ] );
+    if ( $consume ) {
+        unset( $snapshots[ $snapshot_id ] );
+    }
     wpae_update_rollback_snapshots( $snapshots );
 
-    return new WP_REST_Response( [
+    return [
         'ok' => true,
+        'status' => 200,
         'snapshot_id' => $snapshot_id,
         'label' => $snapshot['label'] ?? '',
         'restored_posts' => $restored_posts,
         'restored_options' => $restored_options,
-    ], 200 );
+    ];
+}
+
+function wpae_rollback( WP_REST_Request $request ): WP_REST_Response {
+    $snapshot_id = sanitize_text_field( (string) $request->get_param( 'snapshot_id' ) );
+    $rollback = wpae_restore_rollback_snapshot_by_id( $snapshot_id, true );
+
+    return new WP_REST_Response( $rollback, (int) ( $rollback['status'] ?? ( ! empty( $rollback['ok'] ) ? 200 : 422 ) ) );
 }
 
 function wpae_list_rollback_snapshots( WP_REST_Request $request ): WP_REST_Response {
@@ -2426,7 +2441,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.27',
+        'guide_version' => 'v02.05.28',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -2448,6 +2463,7 @@ function wpae_get_capabilities_payload(): array {
         'can_provide_project_design_tokens' => true,
         'can_run_elementor_preflight' => true,
         'can_return_after_save_quality_summary' => true,
+        'can_run_atomic_elementor_transactions' => true,
         'requires_design_system_before_elementor_build' => true,
         'requires_mobile_first_design' => true,
         'requires_native_style_settings_first' => true,
@@ -2518,6 +2534,31 @@ function wpae_get_capabilities_payload(): array {
             'runtime_validation' => true,
             'static_visual_audit' => true,
             'preflight_before_writes' => true,
+            'transaction_write_mode' => [
+                'mode' => 'atomic',
+                'default_for' => [ '/elementor/page', '/elementor/update' ],
+                'auto_rollback_on' => [
+                    'metadata_save_error',
+                    'invalid_saved_elementor_json',
+                    'post_save_contract_failure',
+                    'cache_clear_failure',
+                    'public_verification_failure_when_requested',
+                    'strict_quality_failure_when_requested',
+                ],
+                'optional_request_flags' => [
+                    'transaction_verify_public' => 'When true, fetch and audit the public permalink after save; failure triggers auto-rollback.',
+                    'transaction_strict_quality' => 'When true, weak/blocked static quality after save triggers auto-rollback.',
+                ],
+                'response_fields' => [
+                    'transaction',
+                    'transaction.checks',
+                    'transaction.failed_checks',
+                    'transaction.auto_rollback',
+                    'rollback_snapshot_id',
+                    'rollback_expires_at',
+                    'quality_summary',
+                ],
+            ],
             'after_save_quality_summary' => true,
             'design_system_contract_enforced_on_writes' => true,
             'design_system_marker_migration' => true,
@@ -3624,28 +3665,56 @@ function wpae_elementor_normalize_data( array $elementor_data ): array {
     ];
 }
 
-function wpae_clear_elementor_cache( int $post_id ): void {
+function wpae_clear_elementor_cache( int $post_id ): array {
+    $report = [
+        'post_id' => $post_id,
+        'post_css_meta_deleted' => false,
+        'global_css_option_deleted' => false,
+        'elementor_files_cache_cleared' => null,
+        'wp_rocket_domain_cleaned' => null,
+        'errors' => [],
+    ];
+
     delete_post_meta( $post_id, '_elementor_css' );
+    $report['post_css_meta_deleted'] = get_post_meta( $post_id, '_elementor_css', true ) === '';
+
     delete_option( '_elementor_global_css' );
+    $report['global_css_option_deleted'] = get_option( '_elementor_global_css', null ) === null;
 
     if ( class_exists( '\Elementor\Plugin' ) ) {
         try {
             $elementor = \Elementor\Plugin::$instance;
             if ( isset( $elementor->files_manager ) && method_exists( $elementor->files_manager, 'clear_cache' ) ) {
                 $elementor->files_manager->clear_cache();
+                $report['elementor_files_cache_cleared'] = true;
+            } else {
+                $report['elementor_files_cache_cleared'] = false;
             }
         } catch ( Throwable $e ) {
-            // Cache clearing is best effort; saving valid metadata is the critical path.
+            $report['elementor_files_cache_cleared'] = false;
+            $report['errors'][] = [
+                'scope' => 'elementor_files_cache',
+                'message' => $e->getMessage(),
+            ];
         }
     }
 
     if ( function_exists( 'rocket_clean_domain' ) ) {
         try {
             rocket_clean_domain();
+            $report['wp_rocket_domain_cleaned'] = true;
         } catch ( Throwable $e ) {
-            // WP Rocket cache clearing is best effort.
+            $report['wp_rocket_domain_cleaned'] = false;
+            $report['errors'][] = [
+                'scope' => 'wp_rocket',
+                'message' => $e->getMessage(),
+            ];
         }
     }
+
+    $report['ok'] = $report['post_css_meta_deleted'] && empty( $report['errors'] );
+
+    return $report;
 }
 
 function wpae_save_elementor_page_data( int $post_id, array $elementor_data, string $template = 'elementor_canvas' ) {
@@ -3663,9 +3732,157 @@ function wpae_save_elementor_page_data( int $post_id, array $elementor_data, str
     update_post_meta( $post_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
     update_post_meta( $post_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
     update_post_meta( $post_id, '_wp_page_template', $template ?: 'elementor_canvas' );
-    wpae_clear_elementor_cache( $post_id );
+    $cache = wpae_clear_elementor_cache( $post_id );
+    if ( empty( $cache['ok'] ) ) {
+        return new WP_Error( 'wpae_elementor_cache_clear_failed', 'Elementor cache clearing failed after metadata write.', [ 'cache' => $cache ] );
+    }
 
     return true;
+}
+
+function wpae_build_elementor_transaction_status( string $operation, int $post_id, ?array $rollback_snapshot, array $checks = [] ): array {
+    return [
+        'mode' => 'atomic',
+        'operation' => $operation,
+        'post_id' => $post_id,
+        'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+        'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+        'checks' => $checks,
+        'auto_rollback_on' => [
+            'metadata_save_error',
+            'invalid_saved_elementor_json',
+            'post_save_contract_failure',
+            'cache_clear_failure',
+            'public_verification_failure_when_requested',
+            'strict_quality_failure_when_requested',
+        ],
+    ];
+}
+
+function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_elementor_data, array $preflight, WP_REST_Request $request ): array {
+    $checks = [];
+    $raw_data = get_post_meta( $post_id, '_elementor_data', true );
+    $decoded = is_string( $raw_data ) ? json_decode( $raw_data, true ) : null;
+    $saved_valid = is_array( $decoded ) && empty( wpae_validate_elementor_data_array( $decoded ) );
+
+    $checks['saved_elementor_data'] = [
+        'ok' => $saved_valid,
+        'message' => $saved_valid ? 'Saved _elementor_data decodes as valid Elementor array.' : 'Saved _elementor_data is missing, invalid JSON, or fails Elementor validation.',
+        'json_error' => is_string( $raw_data ) && ! is_array( $decoded ) ? json_last_error_msg() : null,
+    ];
+
+    $design_contract = is_array( $decoded ) ? wpae_validate_design_system_contract( $decoded ) : [ 'ok' => false ];
+    $checks['design_system_contract'] = [
+        'ok' => ! empty( $design_contract['ok'] ),
+        'message' => ! empty( $design_contract['ok'] ) ? 'Saved data keeps the active design-system contract.' : 'Saved data violates the active design-system contract.',
+        'details' => $design_contract,
+    ];
+
+    $cache = wpae_clear_elementor_cache( $post_id );
+    $checks['cache_refresh'] = [
+        'ok' => ! empty( $cache['ok'] ),
+        'message' => ! empty( $cache['ok'] ) ? 'Elementor cache refresh completed.' : 'Elementor cache refresh failed.',
+        'details' => $cache,
+    ];
+
+    $quality_summary = wpae_build_after_save_quality_summary( $post_id, $expected_elementor_data, $preflight );
+    $strict_quality = (bool) $request->get_param( 'transaction_strict_quality' );
+    $quality_level = (string) ( $quality_summary['visual_audit']['level'] ?? '' );
+    $quality_ok = ! $strict_quality || in_array( $quality_level, [ 'strong', 'acceptable' ], true );
+    $checks['quality_gate'] = [
+        'ok' => $quality_ok,
+        'strict' => $strict_quality,
+        'message' => $quality_ok ? 'Static quality gate passed for the requested transaction mode.' : 'Strict quality gate failed.',
+        'details' => [
+            'level' => $quality_level,
+            'score' => (int) ( $quality_summary['visual_audit']['score'] ?? 0 ),
+        ],
+    ];
+
+    $public_verification = (bool) $request->get_param( 'transaction_verify_public' );
+    if ( $public_verification ) {
+        $public_target = get_permalink( $post_id );
+        $public_ok = false;
+        $public_details = [ 'url' => $public_target ];
+        if ( is_string( $public_target ) && $public_target !== '' && wpae_is_safe_visual_audit_url( $public_target ) ) {
+            $response = wp_remote_get( $public_target, [
+                'timeout' => 10,
+                'redirection' => 3,
+                'user-agent' => 'WP AI Executor Transaction Verify/' . WPAE_VERSION,
+            ] );
+            if ( is_wp_error( $response ) ) {
+                $public_details['error'] = $response->get_error_message();
+            } else {
+                $code = (int) wp_remote_retrieve_response_code( $response );
+                $html = (string) wp_remote_retrieve_body( $response );
+                $public_audit = wpae_build_public_html_visual_audit( $html, [
+                    'source' => 'transaction_verify_public',
+                    'url' => $public_target,
+                    'post_id' => $post_id,
+                ] );
+                $public_ok = $code >= 200 && $code < 400 && ! empty( $public_audit['ok'] );
+                $public_details['http_status'] = $code;
+                $public_details['audit'] = [
+                    'ok' => (bool) ( $public_audit['ok'] ?? false ),
+                    'score' => (int) ( $public_audit['score'] ?? 0 ),
+                    'level' => (string) ( $public_audit['level'] ?? '' ),
+                    'recommendations' => (array) ( $public_audit['recommendations'] ?? [] ),
+                ];
+            }
+        } else {
+            $public_details['error'] = 'Unsafe or empty permalink for public verification.';
+        }
+
+        $checks['public_verification'] = [
+            'ok' => $public_ok,
+            'requested' => true,
+            'message' => $public_ok ? 'Public verification passed.' : 'Public verification failed.',
+            'details' => $public_details,
+        ];
+    }
+
+    $failed = [];
+    foreach ( $checks as $code => $check ) {
+        if ( empty( $check['ok'] ) ) {
+            $failed[] = $code;
+        }
+    }
+
+    return [
+        'ok' => empty( $failed ),
+        'checks' => $checks,
+        'failed_checks' => $failed,
+        'quality_summary' => $quality_summary,
+    ];
+}
+
+function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?array $rollback_snapshot, array $elementor_data, array $preflight, WP_REST_Request $request ) {
+    $transaction = wpae_build_elementor_transaction_status( $operation, $post_id, $rollback_snapshot );
+    $verification = wpae_verify_saved_elementor_transaction( $post_id, $elementor_data, $preflight, $request );
+    $transaction['checks'] = $verification['checks'];
+    $transaction['failed_checks'] = $verification['failed_checks'];
+    $transaction['ok'] = ! empty( $verification['ok'] );
+
+    if ( ! $transaction['ok'] ) {
+        $rollback = ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            : [ 'ok' => false, 'error' => 'No rollback snapshot was available.' ];
+        $transaction['auto_rollback'] = $rollback;
+
+        return new WP_Error(
+            'wpae_elementor_transaction_failed',
+            'Elementor transaction failed after write and was rolled back when possible.',
+            [
+                'transaction' => $transaction,
+                'quality_summary' => $verification['quality_summary'],
+            ]
+        );
+    }
+
+    return [
+        'transaction' => $transaction,
+        'quality_summary' => $verification['quality_summary'],
+    ];
 }
 
 function wpae_elementor_validate( WP_REST_Request $request ): WP_REST_Response {
@@ -5264,11 +5481,31 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
+        $rollback = ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            : null;
         return new WP_REST_Response( [
             'ok' => false,
             'error' => $saved->get_error_message(),
             'details' => $saved->get_error_data(),
+            'transaction' => wpae_build_elementor_transaction_status( 'elementor_update', $post_id, $rollback_snapshot, [
+                'metadata_save' => [
+                    'ok' => false,
+                    'message' => $saved->get_error_message(),
+                    'details' => $saved->get_error_data(),
+                ],
+            ] ),
+            'auto_rollback' => $rollback,
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    $finalized = wpae_finalize_elementor_transaction( 'elementor_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request );
+    if ( is_wp_error( $finalized ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $finalized->get_error_message(),
+            'details' => $finalized->get_error_data(),
+        ], 422 );
     }
 
     return new WP_REST_Response( [
@@ -5278,7 +5515,8 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         'preflight' => $preflight,
-        'quality_summary' => wpae_build_after_save_quality_summary( $post_id, $elementor_data, $preflight ),
+        'transaction' => $finalized['transaction'],
+        'quality_summary' => $finalized['quality_summary'],
     ], 200 );
 }
 
@@ -5382,24 +5620,35 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
 
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
-        $cleanup = null;
-        if ( $is_new_post && get_post( $post_id ) !== null ) {
-            $deleted = wp_delete_post( $post_id, true );
-            $cleanup = [
-                'created_post_deleted' => $deleted !== false && $deleted !== null,
-                'reason' => 'elementor_metadata_save_failed',
-            ];
-        }
+        $rollback = ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            : null;
 
         return new WP_REST_Response( [
             'ok' => false,
             'error' => $saved->get_error_message(),
             'details' => $saved->get_error_data(),
             'post_id' => $post_id,
-            'cleanup' => $cleanup,
             'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
             'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+            'transaction' => wpae_build_elementor_transaction_status( $is_new_post ? 'elementor_page_create' : 'elementor_page_update', $post_id, $rollback_snapshot, [
+                'metadata_save' => [
+                    'ok' => false,
+                    'message' => $saved->get_error_message(),
+                    'details' => $saved->get_error_data(),
+                ],
+            ] ),
+            'auto_rollback' => $rollback,
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    $finalized = wpae_finalize_elementor_transaction( $is_new_post ? 'elementor_page_create' : 'elementor_page_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request );
+    if ( is_wp_error( $finalized ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $finalized->get_error_message(),
+            'details' => $finalized->get_error_data(),
+        ], 422 );
     }
 
     return new WP_REST_Response( [
@@ -5410,7 +5659,8 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         'preflight' => $preflight,
-        'quality_summary' => wpae_build_after_save_quality_summary( $post_id, $elementor_data, $preflight ),
+        'transaction' => $finalized['transaction'],
+        'quality_summary' => $finalized['quality_summary'],
     ], 200 );
 }
 
@@ -7212,7 +7462,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.27',
+        'version' => 'v02.05.28',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -7623,6 +7873,25 @@ function wpae_agent_guide(): array {
                 'concrete fixes the agent should apply before claiming completion.',
             ],
             'rule' => 'If quality_summary.visual_audit.level is weak/blocked or fixes are present, the agent must continue correcting the page before reporting completion.',
+        ],
+        'transaction_write_policy' => [
+            'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update' ],
+            'mode' => 'atomic',
+            'returned_as' => 'transaction',
+            'rule' => 'Structured Elementor writes create a rollback snapshot before writing, verify saved metadata and cache refresh after writing, and automatically roll back on transaction failure.',
+            'auto_rollback_on' => [
+                'metadata save error.',
+                'saved _elementor_data is missing, invalid JSON, or fails Elementor validation.',
+                'saved data violates the active design-system contract.',
+                'Elementor CSS cache clear reports an error.',
+                'public verification fails when transaction_verify_public=true.',
+                'static quality is weak/blocked when transaction_strict_quality=true.',
+            ],
+            'optional_request_flags' => [
+                'transaction_verify_public=true fetches the public permalink after save and runs /visual-audit style checks; failure triggers rollback.',
+                'transaction_strict_quality=true treats weak/blocked static visual audit as a transaction failure.',
+            ],
+            'failure_rule' => 'If transaction.ok=false, read transaction.failed_checks and transaction.auto_rollback. Do not retry through /run, WP Admin, browser writes, or direct metadata edits. Fix the payload and repeat dry_run first.',
         ],
         'repeated_agent_error_audit_policy' => [
             'returned_in' => [ 'POST /elementor/visual-audit', 'POST /audit' ],

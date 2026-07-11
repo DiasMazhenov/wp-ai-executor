@@ -50,6 +50,7 @@
 - Добавлены `/exports` и `/exports/prune`, а также карточка в dashboard для просмотра metadata короткоживущих JSON exports и ручной очистки просроченных записей из `wp_options`.
 - Проведен review после живого использования новых endpoints: добавлен `/skills/import-url` в conformance guide-token route list и исправлена передача `target` в skill enforce rules.
 - Добавлен `repeated_agent_error_audit` в `/audit` и `/elementor/visual-audit`: legacy sections/columns, `widget_type`, HTML widget layout/content, script-injected native CSS, heading typography `!important`, excessive local typography overrides, design-system marker drift и fixed px layout risks.
+- Добавлен transaction write mode для `/elementor/page` и `/elementor/update`: atomic write, post-save metadata verification, cache refresh verification, optional public verification, optional strict quality gate и auto-rollback через rollback snapshot при провале.
 
 ## Далее
 
@@ -72,9 +73,8 @@
 
 ## Приоритет внедрения
 
-1. Transaction write mode + более сильный rollback.
-2. Patch API по `element_id` и native property path.
-3. Protected zones для WebGL/Three.js/GSAP/canvas.
-4. Visual regression gate.
-5. Elementor editability tests.
-6. CSS-to-native migrator.
+1. Patch API по `element_id` и native property path.
+2. Protected zones для WebGL/Three.js/GSAP/canvas.
+3. Visual regression gate.
+4. Elementor editability tests.
+5. CSS-to-native migrator.
