@@ -74,7 +74,7 @@
 
 ## Приоритет внедрения
 
-1. Модульная архитектура плагина. В работе: package updater готов; начат bootstrap, первый модуль `includes/updates/package-updater.php`, далее постепенный перенос доменов в `includes/` без изменения REST API.
+1. Модульная архитектура плагина. В работе: package updater готов; начат bootstrap, модули `includes/updates/package-updater.php` и `includes/security/capabilities.php`, далее постепенный перенос доменов в `includes/` без изменения REST API.
 2. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
 3. Visual regression gate.
 4. Elementor editability tests.
@@ -83,6 +83,6 @@
 ### Миграция на модули
 
 1. Package updater: ZIP из immutable Git commit, manifest с SHA-256, staging и замена bootstrap последней. Готово.
-2. Минимальный `wp-ai-executor.php`: header, constants, autoload модулей и compatibility bootstrap. Начато: updater вынесен в `includes/updates/package-updater.php`.
-3. Перенос по доменам: security, REST, Elementor, guide, skills, admin, support.
+2. Минимальный `wp-ai-executor.php`: header, constants, autoload модулей и compatibility bootstrap. Начато: updater и capabilities вынесены в `includes/`.
+3. Перенос по доменам: security, REST, Elementor, guide, skills, admin, support. Security начат с key/capabilities.
 4. Live dry-run package update, затем реальный rollout с возможностью отката.
