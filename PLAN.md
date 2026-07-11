@@ -74,7 +74,7 @@
 
 ## Приоритет внедрения
 
-1. Модульная архитектура плагина. В работе: package updater готов; начат bootstrap, модули `includes/updates/package-updater.php`, `includes/security/capabilities.php`, `includes/rest/routes.php`, `includes/guide/session.php`, далее перенос доменов в `includes/` без изменения REST API.
+1. Модульная архитектура плагина. В работе: package updater готов; начат bootstrap, модули `includes/updates/package-updater.php`, `includes/security/capabilities.php`, `includes/skills/skills.php`, `includes/rest/routes.php`, `includes/guide/session.php`, далее перенос доменов в `includes/` без изменения REST API.
 2. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
 3. Visual regression gate.
 4. Elementor editability tests.
@@ -83,6 +83,6 @@
 ### Миграция на модули
 
 1. Package updater: ZIP из immutable Git commit, manifest с SHA-256, staging и замена bootstrap последней. Готово.
-2. Минимальный `wp-ai-executor.php`: header, constants, autoload модулей и compatibility bootstrap. Начато: updater, capabilities, REST routes и guide sessions вынесены в `includes/`.
-3. Перенос по доменам: security, REST, Elementor, guide, skills, admin, support. Security, REST и guide-token flow начаты.
+2. Минимальный `wp-ai-executor.php`: header, constants, autoload модулей и compatibility bootstrap. Начато: updater, capabilities, skills, REST routes и guide sessions вынесены в `includes/`.
+3. Перенос по доменам: security, REST, Elementor, guide, skills, admin, support. Security, REST, skills и guide-token flow начаты.
 4. Live dry-run package update, затем реальный rollout с возможностью отката.

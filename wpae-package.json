@@ -3,10 +3,11 @@
   "plugin": "wp-ai-executor",
   "entrypoint": "wp-ai-executor.php",
   "files": {
-    "wp-ai-executor.php": "1bff1191ddf846524e30d09fc472b6e9b798283abdf116c98641b46eb8f3828c",
+    "wp-ai-executor.php": "4234eed20ae41ee68e1c81e0326ed66d4d9524b847ce0df760ce49d32f0c90b2",
     "includes/updates/package-updater.php": "41791f909d8315875f292476e886d84c4d2f2b98fb6a3534ee9b86f5bada194b",
     "includes/security/capabilities.php": "90b900019f58d9de890026d3b5c94340839c059f9046ec72b7f6ee05dca7a146",
-    "includes/guide/session.php": "761d33dbc106f228e8a9097de9bf7ef904e53a44e31e9eafd1d08e72cacc33c6",
+    "includes/skills/skills.php": "af111ef9b1b071c138aaf9c55cf11da2708e8137c7ec249ad79a3d236b8d6b3b",
+    "includes/guide/session.php": "f1fc66d8c5a1708066858a790a2a133fdb0d664f2fa50f916b04d82e2f2146b8",
     "includes/rest/routes.php": "05c68b767605c02f6affb201945a60e70077f7632dfe44f6b6042f4138a5392a"
   }
 }
