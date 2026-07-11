@@ -74,7 +74,15 @@
 
 ## Приоритет внедрения
 
-1. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
-2. Visual regression gate.
-3. Elementor editability tests.
-4. CSS-to-native migrator.
+1. Модульная архитектура плагина. В работе: сначала manifest-based package updater, затем bootstrap и постепенный перенос доменов в `includes/` без изменения REST API.
+2. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
+3. Visual regression gate.
+4. Elementor editability tests.
+5. CSS-to-native migrator.
+
+### Миграция на модули
+
+1. Package updater: ZIP из immutable Git commit, manifest с SHA-256, staging и замена bootstrap последней.
+2. Минимальный `wp-ai-executor.php`: header, constants, autoload модулей и compatibility bootstrap.
+3. Перенос по доменам: security, REST, Elementor, guide, skills, admin, support.
+4. Live dry-run package update, затем реальный rollout с возможностью отката.

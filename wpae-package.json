@@ -1,0 +1,8 @@
+{
+  "format": "wpae-plugin-package-v1",
+  "plugin": "wp-ai-executor",
+  "entrypoint": "wp-ai-executor.php",
+  "files": {
+    "wp-ai-executor.php": "d7ad6ef674dfeddfb6ec6837090b5e31839447b825f5db4e8750400257ff9f01"
+  }
+}
