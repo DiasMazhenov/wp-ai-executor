@@ -2,14 +2,14 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.28
+ * Version:     v02.08.29
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.28';
+const WPAE_VERSION = 'v02.08.29';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -563,6 +563,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/patch', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_patch',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/skills', [
         'methods'             => 'GET',
         'callback'            => 'wpae_get_skills',
@@ -856,6 +862,7 @@ function wpae_route_requires_guide_token_for_conformance( string $route ): bool 
         '/ai-executor/v1/rollback',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
+        '/ai-executor/v1/elementor/patch',
         '/ai-executor/v1/elementor/typography-unlock',
         '/ai-executor/v1/elementor/restore-revision',
         '/ai-executor/v1/skills',
@@ -887,6 +894,7 @@ function wpae_get_request_elementor_data_for_conformance( WP_REST_Request $reque
         '/ai-executor/v1/elementor/visual-audit',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
+        '/ai-executor/v1/elementor/patch',
     ], true ) ) {
         return null;
     }
@@ -1224,6 +1232,7 @@ function wpae_get_elementor_conformance_context( WP_REST_Request $request, array
         '/ai-executor/v1/elementor/visual-audit',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
+        '/ai-executor/v1/elementor/patch',
         '/ai-executor/v1/audit',
     ], true );
 
@@ -1570,7 +1579,7 @@ function wpae_required_ack_schema(): array {
 
 function wpae_get_guide_hash(): string {
     $payload = [
-        'guide_version' => 'v02.05.28',
+        'guide_version' => 'v02.05.29',
         'plugin_version' => WPAE_VERSION,
         'agent_prompt' => wpae_agent_prompt(),
         'custom_skills' => wpae_get_enabled_skills_for_guide(),
@@ -2441,7 +2450,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.28',
+        'guide_version' => 'v02.05.29',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -2522,6 +2531,7 @@ function wpae_get_capabilities_payload(): array {
                 'restore_revision' => 'POST /wp-json/ai-executor/v1/elementor/restore-revision',
                 'page' => 'POST /wp-json/ai-executor/v1/elementor/page',
                 'update' => 'POST /wp-json/ai-executor/v1/elementor/update',
+                'patch' => 'POST /wp-json/ai-executor/v1/elementor/patch',
             ],
             'can_normalize' => true,
             'can_blueprint' => true,
@@ -2536,7 +2546,7 @@ function wpae_get_capabilities_payload(): array {
             'preflight_before_writes' => true,
             'transaction_write_mode' => [
                 'mode' => 'atomic',
-                'default_for' => [ '/elementor/page', '/elementor/update' ],
+                'default_for' => [ '/elementor/page', '/elementor/update', '/elementor/patch' ],
                 'auto_rollback_on' => [
                     'metadata_save_error',
                     'invalid_saved_elementor_json',
@@ -2694,7 +2704,7 @@ function wpae_get_capabilities_payload(): array {
                 'width' => 'Prefer %, flex basis, max-width, and responsive constraints.',
                 'px_exceptions' => 'Hairline borders, tiny controls/icons, shadows, and Elementor compatibility exceptions.',
             ],
-            'supports_dry_run' => [ '/elementor/page', '/elementor/update' ],
+            'supports_dry_run' => [ '/elementor/page', '/elementor/update', '/elementor/patch' ],
         ],
         'rollback' => [
             'endpoint' => 'POST /wp-json/ai-executor/v1/rollback',
@@ -2857,6 +2867,7 @@ function wpae_get_capabilities_payload(): array {
                 '/visual-audit' => true,
                 '/elementor/page' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/update' => ! empty( $settings['elementor_writes'] ),
+                '/elementor/patch' => ! empty( $settings['elementor_writes'] ),
                 '/audit' => true,
                 '/logs' => true,
                 '/rollback' => true,
@@ -3414,6 +3425,156 @@ function wpae_get_elementor_data_from_request( WP_REST_Request $request ) {
     }
 
     return $data;
+}
+
+function wpae_get_elementor_data_for_post( int $post_id ) {
+    $raw_data = get_post_meta( $post_id, '_elementor_data', true );
+    if ( ! is_string( $raw_data ) || trim( $raw_data ) === '' ) {
+        return new WP_Error( 'wpae_missing_saved_elementor_data', 'Target post does not have saved _elementor_data.' );
+    }
+
+    $decoded = json_decode( $raw_data, true );
+    if ( ! is_array( $decoded ) ) {
+        return new WP_Error( 'wpae_invalid_saved_elementor_data', 'Saved _elementor_data is not valid JSON array data.', [ 'json_error' => json_last_error_msg() ] );
+    }
+
+    return $decoded;
+}
+
+function wpae_is_allowed_elementor_patch_path( string $path ): bool {
+    if ( $path === '' || strlen( $path ) > 160 ) {
+        return false;
+    }
+
+    if ( strpos( $path, '..' ) !== false || preg_match( '/[^A-Za-z0-9_.-]/', $path ) ) {
+        return false;
+    }
+
+    if ( preg_match( '/(^|\\.)(__|constructor|prototype|GLOBALS|_REQUEST|_POST|_GET|_SERVER)(\\.|$)/i', $path ) ) {
+        return false;
+    }
+
+    return (bool) preg_match( '/^(settings|elements\\.[0-9]+\\.settings)\\.[A-Za-z0-9_.-]+$/', $path );
+}
+
+function wpae_set_array_path_value( array &$target, array $segments, $value ): void {
+    $cursor =& $target;
+    $last_index = count( $segments ) - 1;
+    foreach ( $segments as $index => $segment ) {
+        $key = ctype_digit( (string) $segment ) ? (int) $segment : (string) $segment;
+        if ( $index === $last_index ) {
+            $cursor[ $key ] = $value;
+            return;
+        }
+        if ( ! isset( $cursor[ $key ] ) || ! is_array( $cursor[ $key ] ) ) {
+            $cursor[ $key ] = [];
+        }
+        $cursor =& $cursor[ $key ];
+    }
+}
+
+function wpae_delete_array_path_value( array &$target, array $segments ): bool {
+    $cursor =& $target;
+    $last_index = count( $segments ) - 1;
+    foreach ( $segments as $index => $segment ) {
+        $key = ctype_digit( (string) $segment ) ? (int) $segment : (string) $segment;
+        if ( $index === $last_index ) {
+            if ( array_key_exists( $key, $cursor ) ) {
+                unset( $cursor[ $key ] );
+                return true;
+            }
+            return false;
+        }
+        if ( ! isset( $cursor[ $key ] ) || ! is_array( $cursor[ $key ] ) ) {
+            return false;
+        }
+        $cursor =& $cursor[ $key ];
+    }
+
+    return false;
+}
+
+function wpae_apply_elementor_patch_to_element( array &$elements, string $element_id, array $patch, array &$report, string $path = 'root' ): bool {
+    foreach ( $elements as $index => &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $current_path = $path . '.' . $index;
+        if ( (string) ( $element['id'] ?? '' ) === $element_id ) {
+            $property_path = trim( (string) ( $patch['path'] ?? '' ) );
+            $op = sanitize_key( (string) ( $patch['op'] ?? 'set' ) );
+            if ( ! in_array( $op, [ 'set', 'delete' ], true ) ) {
+                $op = 'set';
+            }
+
+            if ( ! wpae_is_allowed_elementor_patch_path( $property_path ) ) {
+                $report['errors'][] = [
+                    'element_id' => $element_id,
+                    'path' => $property_path,
+                    'message' => 'Patch path is not allowed. Use native Elementor settings paths such as settings.typography_font_size.',
+                ];
+                return true;
+            }
+
+            $segments = explode( '.', $property_path );
+            if ( $op === 'delete' ) {
+                $changed = wpae_delete_array_path_value( $element, $segments );
+            } else {
+                wpae_set_array_path_value( $element, $segments, $patch['value'] ?? null );
+                $changed = true;
+            }
+
+            $report['changes'][] = [
+                'element_id' => $element_id,
+                'path' => $property_path,
+                'op' => $op,
+                'changed' => $changed,
+                'element_path' => $current_path,
+            ];
+            return true;
+        }
+
+        if ( isset( $element['elements'] ) && is_array( $element['elements'] ) ) {
+            if ( wpae_apply_elementor_patch_to_element( $element['elements'], $element_id, $patch, $report, $current_path . '.elements' ) ) {
+                return true;
+            }
+        }
+    }
+    unset( $element );
+
+    return false;
+}
+
+function wpae_apply_elementor_patches( array $elementor_data, array $patches ): array {
+    $report = [
+        'changes' => [],
+        'errors' => [],
+        'missing_element_ids' => [],
+    ];
+
+    foreach ( array_slice( $patches, 0, 50 ) as $patch ) {
+        if ( ! is_array( $patch ) ) {
+            $report['errors'][] = [ 'message' => 'Each patch must be an object.' ];
+            continue;
+        }
+
+        $element_id = sanitize_text_field( (string) ( $patch['element_id'] ?? $patch['id'] ?? '' ) );
+        if ( $element_id === '' ) {
+            $report['errors'][] = [ 'message' => 'Patch is missing element_id.' ];
+            continue;
+        }
+
+        $found = wpae_apply_elementor_patch_to_element( $elementor_data, $element_id, $patch, $report );
+        if ( ! $found ) {
+            $report['missing_element_ids'][] = $element_id;
+        }
+    }
+
+    return [
+        'data' => $elementor_data,
+        'report' => $report,
+    ];
 }
 
 function wpae_validate_elementor_data_array( array $elementor_data ): array {
@@ -5520,6 +5681,140 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     ], 200 );
 }
 
+function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
+    $dry_run = (bool) $request->get_param( 'dry_run' );
+    $patches = $request->get_param( 'patches' );
+    if ( is_array( $patches ) && ( isset( $patches['element_id'] ) || isset( $patches['id'] ) ) ) {
+        $patches = [ $patches ];
+    }
+    if ( ! is_array( $patches ) ) {
+        $single_patch = $request->get_param( 'patch' );
+        $patches = is_array( $single_patch ) ? [ $single_patch ] : [];
+    }
+
+    if ( $post_id <= 0 || get_post( $post_id ) === null ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'A valid post_id is required.' ], 400 );
+    }
+
+    if ( empty( $patches ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'patches array is required.' ], 400 );
+    }
+
+    $existing_data = wpae_get_elementor_data_for_post( $post_id );
+    if ( is_wp_error( $existing_data ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $existing_data->get_error_message(),
+            'details' => $existing_data->get_error_data(),
+        ], 422 );
+    }
+
+    $patched = wpae_apply_elementor_patches( $existing_data, $patches );
+    $elementor_data = $patched['data'];
+    $patch_report = $patched['report'];
+
+    if ( ! empty( $patch_report['errors'] ) || ! empty( $patch_report['missing_element_ids'] ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Elementor patch failed before validation.',
+            'patch_report' => $patch_report,
+        ], 422 );
+    }
+
+    $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
+    if ( ! empty( $validation_errors ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Patched Elementor data failed validation.',
+            'details' => [ 'errors' => $validation_errors ],
+            'patch_report' => $patch_report,
+        ], 422 );
+    }
+
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    if ( ! $design_system_contract['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Patched Elementor data failed design-system contract.',
+            'details' => $design_system_contract,
+            'patch_report' => $patch_report,
+        ], 422 );
+    }
+
+    $preflight = wpae_build_elementor_preflight( $elementor_data, $request, [
+        'post_id' => $post_id,
+        'template' => $template,
+        'operation' => 'patch',
+        'patch_count' => count( $patch_report['changes'] ),
+    ] );
+    if ( ! $preflight['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Patched Elementor data failed preflight.',
+            'preflight' => $preflight,
+            'patch_report' => $patch_report,
+        ], 422 );
+    }
+
+    if ( $dry_run ) {
+        return new WP_REST_Response( [
+            'ok' => true,
+            'dry_run' => true,
+            'post_id' => $post_id,
+            'patch_report' => $patch_report,
+            'preflight' => $preflight,
+            'elementor_data' => $elementor_data,
+        ], 200 );
+    }
+
+    $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . $post_id, [ $post_id ] );
+    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
+    if ( is_wp_error( $saved ) ) {
+        $rollback = ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            : null;
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $saved->get_error_message(),
+            'details' => $saved->get_error_data(),
+            'post_id' => $post_id,
+            'patch_report' => $patch_report,
+            'transaction' => wpae_build_elementor_transaction_status( 'elementor_patch', $post_id, $rollback_snapshot, [
+                'metadata_save' => [
+                    'ok' => false,
+                    'message' => $saved->get_error_message(),
+                    'details' => $saved->get_error_data(),
+                ],
+            ] ),
+            'auto_rollback' => $rollback,
+        ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    $finalized = wpae_finalize_elementor_transaction( 'elementor_patch', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request );
+    if ( is_wp_error( $finalized ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $finalized->get_error_message(),
+            'details' => $finalized->get_error_data(),
+            'patch_report' => $patch_report,
+        ], 422 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'post_id' => $post_id,
+        'url' => get_permalink( $post_id ),
+        'rollback_snapshot_id' => $rollback_snapshot['id'] ?? null,
+        'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
+        'patch_report' => $patch_report,
+        'preflight' => $preflight,
+        'transaction' => $finalized['transaction'],
+        'quality_summary' => $finalized['quality_summary'],
+    ], 200 );
+}
+
 function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
     $post_id = absint( $request->get_param( 'post_id' ) );
     $title = sanitize_text_field( (string) ( $request->get_param( 'title' ) ?: 'Elementor Page' ) );
@@ -7462,7 +7757,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.28',
+        'version' => 'v02.05.29',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -7536,13 +7831,13 @@ function wpae_agent_guide(): array {
             '2. Before any page or page-block work, call /elementor/design-system and treat it as the single style source.',
             '3. For page work, call /elementor/blueprint after /elementor/design-system before composing or writing Elementor data.',
             '3a. Design mobile first: define mobile stacking, type scale, spacing, CTA visibility, tap targets, and responsive Elementor settings before expanding tablet and desktop layouts.',
-            '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /elementor/resolve-typography-overrides, /elementor/page, and /elementor/update over raw PHP through /run.',
+            '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/typography-unlock, /elementor/resolve-typography-overrides, /elementor/patch, /elementor/page, and /elementor/update over raw PHP through /run.',
             '4a. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same contract and rolled back on failure.',
             '4b. If an existing page has old or different wpae-system-* classes, migrate it to the current main design system with /elementor/normalize, then run /elementor/update dry_run; preserve non-WPAE custom classes.',
             '4c. Never ask for WP Admin login/password, admin cookies, nonces, or browser sessions. Do not use Playwright/WP Admin/Elementor editor for writes; browser automation is allowed only to inspect public pages after API writes.',
             '5. Before building a new page, call /elementor/blueprint with subject, audience, goal, offer, language, style, proof points, and CTA labels. For complex or non-standard sections, call /elementor/recipes, choose a recipe/variant, then call /elementor/compose with slots.',
             '6. Use /elementor/normalize when Elementor JSON contains legacy sections/columns, widget_type, missing widgetType, missing settings, missing elements arrays, incomplete container defaults, or missing design-system marker classes.',
-            '7. Use /elementor/validate, /elementor/visual-audit, or dry_run=true on /elementor/page and /elementor/update before a real write when building complex pages; structured writes also run strict preflight checks.',
+            '7. Use /elementor/validate, /elementor/visual-audit, or dry_run=true on /elementor/patch, /elementor/page, and /elementor/update before a real write when building complex pages; structured writes also run strict preflight checks.',
             '8. Use native Elementor Flexbox Containers only for layout: elType=container plus native widgets. Never use legacy elType=section or elType=column.',
             '9. Never create external files. Use WordPress APIs and database metadata only; no temp files, loaders, mu-plugins, PHP/JS/CSS/JSON files, or filesystem writes.',
             '10. Design the page before building: define subject, audience, job, palette, type roles, layout, and one signature element inside the returned design system.',
@@ -7875,7 +8170,7 @@ function wpae_agent_guide(): array {
             'rule' => 'If quality_summary.visual_audit.level is weak/blocked or fixes are present, the agent must continue correcting the page before reporting completion.',
         ],
         'transaction_write_policy' => [
-            'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update' ],
+            'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update', 'POST /elementor/patch' ],
             'mode' => 'atomic',
             'returned_as' => 'transaction',
             'rule' => 'Structured Elementor writes create a rollback snapshot before writing, verify saved metadata and cache refresh after writing, and automatically roll back on transaction failure.',
@@ -7892,6 +8187,40 @@ function wpae_agent_guide(): array {
                 'transaction_strict_quality=true treats weak/blocked static visual audit as a transaction failure.',
             ],
             'failure_rule' => 'If transaction.ok=false, read transaction.failed_checks and transaction.auto_rollback. Do not retry through /run, WP Admin, browser writes, or direct metadata edits. Fix the payload and repeat dry_run first.',
+        ],
+        'elementor_patch_policy' => [
+            'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/patch',
+            'preferred_for' => 'Small targeted native Elementor settings changes by element_id, such as typography, colors, spacing, gap, alignment, min-height, border, radius, links, and widget content.',
+            'rule' => 'Use /elementor/patch instead of rebuilding the whole page when only specific element settings need to change.',
+            'payload_shape' => [
+                'post_id' => 123,
+                'dry_run' => true,
+                'patches' => [
+                    [
+                        'element_id' => 'hero_title',
+                        'path' => 'settings.typography_font_size',
+                        'op' => 'set',
+                        'value' => [ 'unit' => 'rem', 'size' => 4.5 ],
+                    ],
+                    [
+                        'element_id' => 'hero_title',
+                        'path' => 'settings.title_color',
+                        'op' => 'set',
+                        'value' => '#111827',
+                    ],
+                ],
+            ],
+            'allowed_paths' => [
+                'settings.*',
+                'elements.{index}.settings.* for tightly scoped nested settings only',
+            ],
+            'blocked_paths' => [
+                'elType',
+                'widgetType',
+                'id',
+                'arbitrary structural rewrites',
+            ],
+            'validation' => 'Patch output runs the same Elementor validation, design-system contract, preflight, atomic transaction, cache refresh, and rollback path as /elementor/update.',
         ],
         'repeated_agent_error_audit_policy' => [
             'returned_in' => [ 'POST /elementor/visual-audit', 'POST /audit' ],
@@ -8000,6 +8329,7 @@ function wpae_agent_guide(): array {
                 'dry_run' => [
                     '/elementor/page' => 'Pass dry_run=true to validate the requested create/update without writing.',
                     '/elementor/update' => 'Pass dry_run=true to validate the requested metadata update without writing.',
+                    '/elementor/patch' => 'Pass dry_run=true to validate targeted element_id/property changes without writing.',
                     '/run' => 'Arbitrary PHP dry_run is not supported because the plugin cannot reliably simulate unknown mutations. Use rollback_targets instead.',
                 ],
                 'run_rollback_targets' => [

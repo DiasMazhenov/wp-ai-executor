@@ -51,6 +51,7 @@
 - Проведен review после живого использования новых endpoints: добавлен `/skills/import-url` в conformance guide-token route list и исправлена передача `target` в skill enforce rules.
 - Добавлен `repeated_agent_error_audit` в `/audit` и `/elementor/visual-audit`: legacy sections/columns, `widget_type`, HTML widget layout/content, script-injected native CSS, heading typography `!important`, excessive local typography overrides, design-system marker drift и fixed px layout risks.
 - Добавлен transaction write mode для `/elementor/page` и `/elementor/update`: atomic write, post-save metadata verification, cache refresh verification, optional public verification, optional strict quality gate и auto-rollback через rollback snapshot при провале.
+- Добавлен `/elementor/patch` для точечных native Elementor правок по `element_id` и property path без пересборки всей страницы; patch проходит validation, design-system contract, preflight, atomic transaction, cache refresh и rollback.
 
 ## Далее
 
@@ -73,8 +74,7 @@
 
 ## Приоритет внедрения
 
-1. Patch API по `element_id` и native property path.
-2. Protected zones для WebGL/Three.js/GSAP/canvas.
-3. Visual regression gate.
-4. Elementor editability tests.
-5. CSS-to-native migrator.
+1. Protected zones для WebGL/Three.js/GSAP/canvas.
+2. Visual regression gate.
+3. Elementor editability tests.
+4. CSS-to-native migrator.
