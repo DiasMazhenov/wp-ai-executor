@@ -884,3 +884,38 @@ $page_id = wp_insert_post([
 if ( is_wp_error( $page_id ) ) {
     return [ 'ok' => false, 'error' => $page_id->get_error_message() ];
 }
+
+$elementor_data = [
+    [
+        'id'       => 'hero01',
+        'elType'   => 'container',
+        'isInner'  => false,
+        'settings' => [
+            'content_width'  => 'boxed',
+            'flex_direction' => 'column',
+        ],
+        'elements' => [
+            [
+                'id'         => 'title01',
+                'elType'     => 'widget',
+                'widgetType' => 'heading',
+                'isInner'    => false,
+                'settings'   => [
+                    'title'       => 'Landing headline',
+                    'header_size' => 'h1',
+                ],
+                'elements'   => [],
+            ],
+        ],
+    ],
+];
+
+update_post_meta( $page_id, '_elementor_edit_mode', 'builder' );
+update_post_meta( $page_id, '_elementor_template_type', 'wp-page' );
+update_post_meta( $page_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
+update_post_meta( $page_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
+update_post_meta( $page_id, '_wp_page_template', 'elementor_canvas' );
+
+return [ 'ok' => true, 'id' => $page_id, 'url' => get_permalink( $page_id ) ];
+PHP;
+}
