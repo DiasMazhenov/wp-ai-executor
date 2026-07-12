@@ -1,5 +1,7 @@
 {
-  "version": "v02.08.44",
+  "format": "wpae-plugin-package-v1",
+  "plugin": "wp-ai-executor",
+  "entrypoint": "wp-ai-executor.php",
   "files": {
     "wp-ai-executor.php": "830dbc9bc135222ac9d32c9b2ebc8e5c359ba1a94949184216df58d5949ba6b6",
     "includes/admin/dashboard.php": "a54c2edeebab2975f23d5e90c0f873e4a11efd9af5a249d2e02675febe49f217",
