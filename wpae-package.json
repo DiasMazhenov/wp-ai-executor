@@ -3,7 +3,7 @@
   "plugin": "wp-ai-executor",
   "entrypoint": "wp-ai-executor.php",
   "files": {
-    "wp-ai-executor.php": "e2ac5d282fcf37b4f35ed544cb15fd4596adc029c845f09a20ce0f0650d977fb",
+    "wp-ai-executor.php": "58c19c2a8e5fc57cac059eda8f912a250aa7aceaa013553b3518b23b7648ff82",
     "includes/admin/dashboard.php": "4bb6724cfb125e1f6089bf08a964633c980b99af250a2e2432c09400d82e4cca",
     "includes/design/system.php": "b70fdb22c5dee74fe3b41bb5eae44a0d15eb920d974fa024c2a84dfc21f1fa86",
     "includes/elementor/blueprint.php": "6ab4c03d7f6eeaf93b576bbdd7590bbc4bfd2f3c95611c9c04ef11bdef735a2f",
