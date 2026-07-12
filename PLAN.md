@@ -56,6 +56,7 @@
 - Добавлен `/elementor/editability-audit`: проверяет native Elementor editability coverage для типографики, цветов, фонов, spacing/flex settings и ловит HTML/script CSS overrides для свойств, которые должны редактироваться через Elementor.
 - Добавлен `/elementor/css-to-native`: переносит уверенно распознанные CSS declarations из HTML widget `<style>` в native Elementor settings по `data-id`/`elementor-element-*` selectors, с обязательным `dry_run`-workflow и пропуском protected enhancement zones.
 - Продолжено дробление Elementor-модулей: editability audit вынесен из `validation.php` в отдельный `includes/elementor/editability.php`, CSS migrator добавлен как отдельный `includes/elementor/css-native.php`.
+- Продолжено постепенное дробление `validation.php`: базовые Elementor validation rules вынесены в `includes/elementor/validation-rules.php`, design-system contract вынесен в `includes/elementor/design-contract.php`.
 
 ## Далее
 
@@ -88,5 +89,6 @@
 
 1. Package updater: ZIP из immutable Git commit, manifest с SHA-256, staging и замена bootstrap последней. Готово.
 2. Минимальный `wp-ai-executor.php`: header, constants и require модулей. Готово.
+3. Elementor validation layer: базовые rules и design-system contract вынесены в отдельные файлы. Готово.
 3. Перенос по доменам: security, REST, Elementor, guide, skills, admin, support. Готово в первом крупном разрезе.
 4. Live dry-run package update, затем реальный rollout с возможностью отката. Выполняется для каждого пакетного релиза.
