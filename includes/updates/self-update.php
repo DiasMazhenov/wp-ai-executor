@@ -142,7 +142,8 @@ function wpae_validate_self_update_file( string $contents ): array {
         'Plugin Name: WP AI Executor',
         "defined( 'ABSPATH' ) || exit;",
         "require_once __DIR__ . '/includes/security/capabilities.php';",
-        "require_once __DIR__ . '/includes/elementor/core.php';",
+        "require_once __DIR__ . '/includes/elementor/data.php';",
+        "require_once __DIR__ . '/includes/elementor/page-update.php';",
         "require_once __DIR__ . '/includes/rest/routes.php';",
     ] : [
         'Plugin Name: WP AI Executor',
