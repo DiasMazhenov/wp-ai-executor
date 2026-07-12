@@ -707,7 +707,7 @@ function wpae_settings_page() {
 
             <div class="wpae-card">
                 <h2>Секретный ключ</h2>
-                <p>Передавайте этот ключ в заголовке <code>X-AI-Key</code>. Не публикуйте его в frontend-коде.</p>
+                <p>Передавайте этот ключ в заголовке <code>X-AI-Key</code>. Старый <code>X-WPAE-API-Key</code> принимается только как deprecated alias и возвращает предупреждение. Не публикуйте ключ в frontend-коде.</p>
                 <label for="wpae-key">X-AI-Key</label>
                 <div class="wpae-field-row" style="margin-top:6px">
                     <input class="wpae-input" type="text" id="wpae-key" value="<?php echo esc_attr( $key ); ?>" readonly onclick="this.select()" />

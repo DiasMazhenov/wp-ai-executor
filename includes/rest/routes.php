@@ -254,9 +254,45 @@ add_action( 'rest_api_init', function () {
 } );
 
 function wpae_auth( WP_REST_Request $r ): bool {
-    $provided = $r->get_header( 'X-AI-Key' );
+    $provided = wpae_get_request_api_key( $r );
     return hash_equals( wpae_get_key(), (string) $provided );
 }
+
+function wpae_get_request_api_key( WP_REST_Request $request ): string {
+    $canonical = (string) $request->get_header( 'X-AI-Key' );
+    if ( $canonical !== '' ) {
+        return $canonical;
+    }
+
+    return (string) $request->get_header( 'X-WPAE-API-Key' );
+}
+
+function wpae_request_used_deprecated_api_key_header( WP_REST_Request $request ): bool {
+    return (string) $request->get_header( 'X-AI-Key' ) === ''
+        && (string) $request->get_header( 'X-WPAE-API-Key' ) !== '';
+}
+
+add_filter( 'rest_post_dispatch', function ( $response, WP_REST_Server $server, WP_REST_Request $request ) {
+    unset( $server );
+
+    if ( strpos( (string) $request->get_route(), '/ai-executor/v1/' ) !== 0 || ! wpae_request_used_deprecated_api_key_header( $request ) ) {
+        return $response;
+    }
+
+    $warning = 'X-WPAE-API-Key is deprecated. Use X-AI-Key.';
+    $response->header( 'X-WPAE-Deprecated-Header', 'X-WPAE-API-Key' );
+    $response->header( 'X-WPAE-Auth-Warning', $warning );
+
+    $data = $response->get_data();
+    if ( is_array( $data ) ) {
+        $warnings = isset( $data['warnings'] ) && is_array( $data['warnings'] ) ? $data['warnings'] : [];
+        $warnings['auth_header_alias'] = $warning;
+        $data['warnings'] = $warnings;
+        $response->set_data( $data );
+    }
+
+    return $response;
+}, 10, 3 );
 
 function wpae_auth_with_guide_token( WP_REST_Request $request ) {
     if ( ! wpae_auth( $request ) ) {

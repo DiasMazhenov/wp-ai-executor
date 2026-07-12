@@ -183,7 +183,14 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.40',
+        'guide_version' => 'v02.05.41',
+        'auth' => [
+            'canonical_header' => 'X-AI-Key',
+            'deprecated_aliases' => [
+                'X-WPAE-API-Key' => 'Accepted for backwards compatibility only. New agents must use X-AI-Key.',
+            ],
+            'warning_header_for_alias' => 'X-WPAE-Auth-Warning',
+        ],
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
