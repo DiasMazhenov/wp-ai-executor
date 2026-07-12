@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.38',
+        'guide_version' => 'v02.05.39',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -260,6 +260,7 @@ function wpae_get_capabilities_payload(): array {
                 'recipe' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
                 'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
                 'visual_audit' => 'POST /wp-json/ai-executor/v1/elementor/visual-audit',
+                'editability_audit' => 'POST /wp-json/ai-executor/v1/elementor/editability-audit',
                 'public_visual_audit' => 'POST /wp-json/ai-executor/v1/visual-audit',
                 'revisions' => 'GET /wp-json/ai-executor/v1/elementor/revisions',
                 'restore_revision' => 'POST /wp-json/ai-executor/v1/elementor/restore-revision',
@@ -287,10 +288,12 @@ function wpae_get_capabilities_payload(): array {
                     'post_save_contract_failure',
                     'cache_clear_failure',
                     'public_verification_failure_when_requested',
+                    'visual_regression_failure_when_requested',
                     'strict_quality_failure_when_requested',
                 ],
                 'optional_request_flags' => [
                     'transaction_verify_public' => 'When true, fetch and audit the public permalink after save; failure triggers auto-rollback.',
+                    'transaction_visual_regression' => 'When true on existing-page writes, capture a public HTML/audit baseline before write and auto-rollback if key public signals regress after save.',
                     'transaction_strict_quality' => 'When true, weak/blocked static quality after save triggers auto-rollback.',
                 ],
                 'response_fields' => [
@@ -315,6 +318,19 @@ function wpae_get_capabilities_payload(): array {
                 ],
             ],
             'after_save_quality_summary' => true,
+            'visual_regression_gate' => [
+                'enabled' => true,
+                'request_flag' => 'transaction_visual_regression',
+                'scope' => 'Existing post updates and patches. New pages have no previous public baseline.',
+                'signals' => [ 'HTTP status', 'visible text length', 'CTA presence', 'overflow risks', 'empty block risks', 'public audit level' ],
+                'rollback' => 'A failed requested regression check is part of the atomic transaction and triggers rollback.',
+            ],
+            'editability_tests' => [
+                'enabled' => true,
+                'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/editability-audit',
+                'purpose' => 'Verify that Elementor-supported design properties are stored in native widget/container settings and are not primarily controlled by HTML widget CSS or script-injected styles.',
+                'checks' => [ 'native typography coverage', 'native color coverage', 'native spacing coverage', 'native flex/background settings', 'HTML widget CSS overrides', 'script-injected native CSS' ],
+            ],
             'design_system_contract_enforced_on_writes' => true,
             'design_system_marker_migration' => true,
             'mobile_first_design_required' => true,
@@ -606,6 +622,7 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/recipes' => true,
                 '/elementor/compose' => true,
                 '/elementor/visual-audit' => true,
+                '/elementor/editability-audit' => true,
                 '/elementor/typography-unlock' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/resolve-typography-overrides' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/revisions' => true,

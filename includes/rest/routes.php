@@ -131,6 +131,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/editability-audit', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_editability_audit',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/typography-unlock', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_typography_unlock',

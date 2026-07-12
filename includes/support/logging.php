@@ -204,6 +204,7 @@ function wpae_get_request_elementor_data_for_conformance( WP_REST_Request $reque
         '/ai-executor/v1/elementor/validate',
         '/ai-executor/v1/elementor/normalize',
         '/ai-executor/v1/elementor/visual-audit',
+        '/ai-executor/v1/elementor/editability-audit',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
         '/ai-executor/v1/elementor/patch',
@@ -542,6 +543,7 @@ function wpae_get_elementor_conformance_context( WP_REST_Request $request, array
         '/ai-executor/v1/elementor/normalize',
         '/ai-executor/v1/elementor/compose',
         '/ai-executor/v1/elementor/visual-audit',
+        '/ai-executor/v1/elementor/editability-audit',
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
         '/ai-executor/v1/elementor/patch',
@@ -878,4 +880,3 @@ function wpae_get_logs( WP_REST_Request $request ): WP_REST_Response {
         'redaction' => 'API keys, guide tokens, raw request bodies, and raw page payloads are not logged.',
     ], 200 );
 }
-

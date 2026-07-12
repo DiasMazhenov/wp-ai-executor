@@ -52,6 +52,8 @@
 - Добавлен `repeated_agent_error_audit` в `/audit` и `/elementor/visual-audit`: legacy sections/columns, `widget_type`, HTML widget layout/content, script-injected native CSS, heading typography `!important`, excessive local typography overrides, design-system marker drift и fixed px layout risks.
 - Добавлен transaction write mode для `/elementor/page` и `/elementor/update`: atomic write, post-save metadata verification, cache refresh verification, optional public verification, optional strict quality gate и auto-rollback через rollback snapshot при провале.
 - Добавлен `/elementor/patch` для точечных native Elementor правок по `element_id` и property path без пересборки всей страницы; patch проходит validation, design-system contract, preflight, atomic transaction, cache refresh и rollback.
+- Добавлен visual regression gate: `transaction_visual_regression=true` сохраняет public HTML/audit baseline перед правкой существующей страницы, сравнивает HTTP status, visible text, CTA, overflow, empty blocks и audit level после записи, и запускает auto-rollback при явной деградации.
+- Добавлен `/elementor/editability-audit`: проверяет native Elementor editability coverage для типографики, цветов, фонов, spacing/flex settings и ловит HTML/script CSS overrides для свойств, которые должны редактироваться через Elementor.
 
 ## Далее
 
@@ -76,8 +78,8 @@
 
 1. Модульная архитектура плагина. Готово в первом крупном разрезе: root стал bootstrap, домены вынесены в `includes/` без изменения REST API.
 2. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
-3. Visual regression gate.
-4. Elementor editability tests.
+3. Visual regression gate. Готово: доступен через `transaction_visual_regression=true` на existing-page writes.
+4. Elementor editability tests. Готово: `/elementor/editability-audit` и summary внутри `/audit`.
 5. CSS-to-native migrator.
 
 ### Миграция на модули

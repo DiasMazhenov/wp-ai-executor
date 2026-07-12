@@ -91,12 +91,133 @@ function wpae_build_elementor_transaction_status( string $operation, int $post_i
             'post_save_contract_failure',
             'cache_clear_failure',
             'public_verification_failure_when_requested',
+            'visual_regression_failure_when_requested',
             'strict_quality_failure_when_requested',
         ],
     ];
 }
 
-function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_elementor_data, array $preflight, WP_REST_Request $request ): array {
+function wpae_fetch_public_audit_snapshot_for_post( int $post_id, string $source ): array {
+    $url = get_permalink( $post_id );
+    $snapshot = [
+        'ok' => false,
+        'source' => $source,
+        'post_id' => $post_id,
+        'url' => is_string( $url ) ? $url : '',
+    ];
+
+    if ( ! is_string( $url ) || $url === '' || ! wpae_is_safe_visual_audit_url( $url ) ) {
+        $snapshot['error'] = 'Unsafe or empty permalink.';
+        return $snapshot;
+    }
+
+    $response = wp_remote_get( $url, [
+        'timeout' => 10,
+        'redirection' => 3,
+        'user-agent' => 'WP AI Executor Visual Regression/' . WPAE_VERSION,
+    ] );
+    if ( is_wp_error( $response ) ) {
+        $snapshot['error'] = $response->get_error_message();
+        return $snapshot;
+    }
+
+    $status_code = (int) wp_remote_retrieve_response_code( $response );
+    $html = (string) wp_remote_retrieve_body( $response );
+    $audit = wpae_build_public_html_visual_audit( $html, [
+        'source' => $source,
+        'url' => $url,
+        'post_id' => $post_id,
+        'status_code' => $status_code,
+    ] );
+
+    return [
+        'ok' => true,
+        'source' => $source,
+        'post_id' => $post_id,
+        'url' => $url,
+        'http_status' => $status_code,
+        'html_bytes' => strlen( $html ),
+        'audit' => [
+            'ok' => (bool) ( $audit['ok'] ?? false ),
+            'score' => (int) ( $audit['score'] ?? 0 ),
+            'level' => (string) ( $audit['level'] ?? '' ),
+            'stats' => (array) ( $audit['stats'] ?? [] ),
+            'recommendations' => (array) ( $audit['recommendations'] ?? [] ),
+        ],
+    ];
+}
+
+function wpae_compare_visual_regression_snapshots( array $before, array $after ): array {
+    $failures = [];
+    $warnings = [];
+    $before_stats = (array) ( $before['audit']['stats'] ?? [] );
+    $after_stats = (array) ( $after['audit']['stats'] ?? [] );
+    $before_status = (int) ( $before['http_status'] ?? 0 );
+    $after_status = (int) ( $after['http_status'] ?? 0 );
+
+    if ( $after_status < 200 || $after_status >= 400 ) {
+        $failures[] = 'Public page became unreachable after write.';
+    }
+
+    $before_text = max( 1, (int) ( $before_stats['visible_text_length'] ?? 0 ) );
+    $after_text = (int) ( $after_stats['visible_text_length'] ?? 0 );
+    if ( $after_text < (int) floor( $before_text * 0.65 ) ) {
+        $failures[] = 'Visible text length dropped by more than 35%.';
+    }
+
+    if ( ! empty( $before_stats['has_cta'] ) && empty( $after_stats['has_cta'] ) ) {
+        $failures[] = 'Public CTA was present before write and is missing after write.';
+    }
+
+    $before_overflow = (int) ( $before_stats['wide_fixed_width_risks'] ?? 0 );
+    $after_overflow = (int) ( $after_stats['wide_fixed_width_risks'] ?? 0 );
+    if ( $after_overflow > $before_overflow + 2 ) {
+        $failures[] = 'Horizontal overflow risk increased after write.';
+    }
+
+    $before_empty = (int) ( $before_stats['empty_block_risks'] ?? 0 );
+    $after_empty = (int) ( $after_stats['empty_block_risks'] ?? 0 );
+    if ( $after_empty > $before_empty ) {
+        $warnings[] = 'Empty block risk increased after write.';
+    }
+
+    $after_level = (string) ( $after['audit']['level'] ?? '' );
+    if ( in_array( $after_level, [ 'weak', 'blocked' ], true ) ) {
+        $failures[] = 'Public visual audit level after write is ' . $after_level . '.';
+    }
+
+    $score_delta = (int) ( $after['audit']['score'] ?? 0 ) - (int) ( $before['audit']['score'] ?? 0 );
+    if ( $score_delta < -20 ) {
+        $warnings[] = 'Public audit score dropped by more than 20 points.';
+    }
+
+    return [
+        'ok' => empty( $failures ),
+        'failures' => $failures,
+        'warnings' => $warnings,
+        'score_delta' => $score_delta,
+        'before_summary' => [
+            'http_status' => $before_status,
+            'score' => (int) ( $before['audit']['score'] ?? 0 ),
+            'level' => (string) ( $before['audit']['level'] ?? '' ),
+            'visible_text_length' => (int) ( $before_stats['visible_text_length'] ?? 0 ),
+            'has_cta' => (bool) ( $before_stats['has_cta'] ?? false ),
+            'wide_fixed_width_risks' => $before_overflow,
+            'empty_block_risks' => $before_empty,
+        ],
+        'after_summary' => [
+            'http_status' => $after_status,
+            'score' => (int) ( $after['audit']['score'] ?? 0 ),
+            'level' => $after_level,
+            'visible_text_length' => $after_text,
+            'has_cta' => (bool) ( $after_stats['has_cta'] ?? false ),
+            'wide_fixed_width_risks' => $after_overflow,
+            'empty_block_risks' => $after_empty,
+        ],
+    ];
+}
+
+function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_elementor_data, array $preflight, WP_REST_Request $request, ?array $visual_regression_baseline = null ): array {
     $checks = [];
     $raw_data = get_post_meta( $post_id, '_elementor_data', true );
     $decoded = is_string( $raw_data ) ? json_decode( $raw_data, true ) : null;
@@ -156,6 +277,7 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
                     'source' => 'transaction_verify_public',
                     'url' => $public_target,
                     'post_id' => $post_id,
+                    'status_code' => $code,
                 ] );
                 $public_ok = $code >= 200 && $code < 400 && ! empty( $public_audit['ok'] );
                 $public_details['http_status'] = $code;
@@ -178,6 +300,35 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
         ];
     }
 
+    $visual_regression_requested = (bool) $request->get_param( 'transaction_visual_regression' );
+    if ( $visual_regression_requested ) {
+        $regression_ok = false;
+        $regression_details = [
+            'requested' => true,
+            'baseline_available' => is_array( $visual_regression_baseline ) && ! empty( $visual_regression_baseline['ok'] ),
+        ];
+        if ( ! empty( $regression_details['baseline_available'] ) ) {
+            $after_snapshot = wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_after' );
+            $comparison = ! empty( $after_snapshot['ok'] )
+                ? wpae_compare_visual_regression_snapshots( $visual_regression_baseline, $after_snapshot )
+                : [ 'ok' => false, 'failures' => [ 'Failed to capture after-write public snapshot.' ], 'warnings' => [], 'after_snapshot' => $after_snapshot ];
+            $regression_ok = ! empty( $comparison['ok'] );
+            $regression_details['before'] = $visual_regression_baseline;
+            $regression_details['after'] = $after_snapshot;
+            $regression_details['comparison'] = $comparison;
+        } else {
+            $regression_details['message'] = 'No before-write public baseline was available. New pages and unpublished pages cannot run visual regression comparison.';
+            $regression_ok = true;
+        }
+
+        $checks['visual_regression'] = [
+            'ok' => $regression_ok,
+            'requested' => true,
+            'message' => $regression_ok ? 'Visual regression gate passed or was not applicable.' : 'Visual regression gate failed.',
+            'details' => $regression_details,
+        ];
+    }
+
     $failed = [];
     foreach ( $checks as $code => $check ) {
         if ( empty( $check['ok'] ) ) {
@@ -193,9 +344,9 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
     ];
 }
 
-function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?array $rollback_snapshot, array $elementor_data, array $preflight, WP_REST_Request $request ) {
+function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?array $rollback_snapshot, array $elementor_data, array $preflight, WP_REST_Request $request, ?array $visual_regression_baseline = null ) {
     $transaction = wpae_build_elementor_transaction_status( $operation, $post_id, $rollback_snapshot );
-    $verification = wpae_verify_saved_elementor_transaction( $post_id, $elementor_data, $preflight, $request );
+    $verification = wpae_verify_saved_elementor_transaction( $post_id, $elementor_data, $preflight, $request, $visual_regression_baseline );
     $transaction['checks'] = $verification['checks'];
     $transaction['failed_checks'] = $verification['failed_checks'];
     $transaction['ok'] = ! empty( $verification['ok'] );
@@ -262,4 +413,3 @@ function wpae_elementor_normalize( WP_REST_Request $request ): WP_REST_Response 
         'normalized_elementor_data' => $normalized_data,
     ], empty( $after_errors ) ? 200 : 422 );
 }
-

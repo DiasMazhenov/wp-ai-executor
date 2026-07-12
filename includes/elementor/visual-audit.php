@@ -406,9 +406,8 @@ function wpae_build_public_html_visual_audit( string $html, array $context = [] 
         'recommendations' => array_values( array_unique( $recommendations ) ),
         'contract' => [
             'scope' => 'Read-only public HTML audit for same-site pages.',
-            'use_after' => 'Use after /elementor/page or /elementor/update writes, alongside /elementor/visual-audit and /audit.',
+            'use_after' => 'Use after /elementor/page or /elementor/update writes, alongside /elementor/visual-audit, /elementor/editability-audit, and /audit.',
             'no_browser_claim' => 'This endpoint intentionally avoids server-side screenshots because typical WordPress hosting is not a reliable browser-rendering environment.',
         ],
     ];
 }
-

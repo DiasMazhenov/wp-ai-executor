@@ -83,6 +83,9 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], 200 );
     }
 
+    $visual_regression_baseline = (bool) $request->get_param( 'transaction_visual_regression' )
+        ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
+        : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
@@ -104,7 +107,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
-    $finalized = wpae_finalize_elementor_transaction( 'elementor_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request );
+    $finalized = wpae_finalize_elementor_transaction( 'elementor_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline );
     if ( is_wp_error( $finalized ) ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -226,6 +229,9 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ], 200 );
     }
 
+    $visual_regression_baseline = (bool) $request->get_param( 'transaction_visual_regression' )
+        ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
+        : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . $post_id, [ $post_id ] );
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
     if ( is_wp_error( $saved ) ) {
@@ -249,7 +255,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
-    $finalized = wpae_finalize_elementor_transaction( 'elementor_patch', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request );
+    $finalized = wpae_finalize_elementor_transaction( 'elementor_patch', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline );
     if ( is_wp_error( $finalized ) ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -376,6 +382,11 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
     $rollback_snapshot = null;
     $is_new_post = $post_id <= 0;
 
+    $visual_regression_baseline = null;
+    if ( $post_id > 0 && (bool) $request->get_param( 'transaction_visual_regression' ) ) {
+        $visual_regression_baseline = wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' );
+    }
+
     if ( $post_id > 0 ) {
         $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_page:update:' . $post_id, [ $post_id ] );
         $post_args['ID'] = $post_id;
@@ -417,7 +428,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
-    $finalized = wpae_finalize_elementor_transaction( $is_new_post ? 'elementor_page_create' : 'elementor_page_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request );
+    $finalized = wpae_finalize_elementor_transaction( $is_new_post ? 'elementor_page_create' : 'elementor_page_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline );
     if ( is_wp_error( $finalized ) ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -439,4 +450,3 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         'quality_summary' => $finalized['quality_summary'],
     ], 200 );
 }
-
