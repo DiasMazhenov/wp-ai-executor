@@ -54,6 +54,8 @@
 - Добавлен `/elementor/patch` для точечных native Elementor правок по `element_id` и property path без пересборки всей страницы; patch проходит validation, design-system contract, preflight, atomic transaction, cache refresh и rollback.
 - Добавлен visual regression gate: `transaction_visual_regression=true` сохраняет public HTML/audit baseline перед правкой существующей страницы, сравнивает HTTP status, visible text, CTA, overflow, empty blocks и audit level после записи, и запускает auto-rollback при явной деградации.
 - Добавлен `/elementor/editability-audit`: проверяет native Elementor editability coverage для типографики, цветов, фонов, spacing/flex settings и ловит HTML/script CSS overrides для свойств, которые должны редактироваться через Elementor.
+- Добавлен `/elementor/css-to-native`: переносит уверенно распознанные CSS declarations из HTML widget `<style>` в native Elementor settings по `data-id`/`elementor-element-*` selectors, с обязательным `dry_run`-workflow и пропуском protected enhancement zones.
+- Продолжено дробление Elementor-модулей: editability audit вынесен из `validation.php` в отдельный `includes/elementor/editability.php`, CSS migrator добавлен как отдельный `includes/elementor/css-native.php`.
 
 ## Далее
 
@@ -80,7 +82,7 @@
 2. Protected zones для WebGL/Three.js/GSAP/canvas. Готово: existing protected blocks нельзя изменить или удалить без явного override с причиной.
 3. Visual regression gate. Готово: доступен через `transaction_visual_regression=true` на existing-page writes.
 4. Elementor editability tests. Готово: `/elementor/editability-audit` и summary внутри `/audit`.
-5. CSS-to-native migrator.
+5. CSS-to-native migrator. Готово: `/elementor/css-to-native` с dry-run, protected-zone guard и editability audit.
 
 ### Миграция на модули
 

@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.39',
+        'guide_version' => 'v02.05.40',
         'capability_toggles' => $settings,
         'can_execute_php' => ! empty( $settings['run'] ),
         'can_write_files_via_run' => wpae_can_run_filesystem_operations(),
@@ -264,6 +264,7 @@ function wpae_get_capabilities_payload(): array {
                 'public_visual_audit' => 'POST /wp-json/ai-executor/v1/visual-audit',
                 'revisions' => 'GET /wp-json/ai-executor/v1/elementor/revisions',
                 'restore_revision' => 'POST /wp-json/ai-executor/v1/elementor/restore-revision',
+                'css_to_native' => 'POST /wp-json/ai-executor/v1/elementor/css-to-native',
                 'page' => 'POST /wp-json/ai-executor/v1/elementor/page',
                 'update' => 'POST /wp-json/ai-executor/v1/elementor/update',
                 'patch' => 'POST /wp-json/ai-executor/v1/elementor/patch',
@@ -310,7 +311,7 @@ function wpae_get_capabilities_payload(): array {
                 'enabled' => true,
                 'marker' => 'wpae-protected-zone CSS class or data-wpae-protected attribute.',
                 'automatic_detection' => 'HTML widgets containing WebGL, Three.js, GSAP, canvas, shader, or Babylon enhancement code.',
-                'guarded_endpoints' => [ '/elementor/page', '/elementor/update', '/elementor/patch' ],
+                'guarded_endpoints' => [ '/elementor/page', '/elementor/update', '/elementor/patch', '/elementor/css-to-native' ],
                 'default' => 'Block removal or modification of an existing protected zone.',
                 'explicit_override' => [
                     'allow_protected_zone_changes' => true,
@@ -330,6 +331,13 @@ function wpae_get_capabilities_payload(): array {
                 'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/editability-audit',
                 'purpose' => 'Verify that Elementor-supported design properties are stored in native widget/container settings and are not primarily controlled by HTML widget CSS or script-injected styles.',
                 'checks' => [ 'native typography coverage', 'native color coverage', 'native spacing coverage', 'native flex/background settings', 'HTML widget CSS overrides', 'script-injected native CSS' ],
+            ],
+            'css_to_native_migrator' => [
+                'enabled' => true,
+                'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/css-to-native',
+                'default_safety' => 'Use dry_run=true first. The migrator only moves confidently mapped declarations from HTML widget <style> rules that target Elementor element ids.',
+                'supported_properties' => [ 'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'text-transform', 'color', 'background-color', 'border-color', 'padding', 'margin', 'border-radius', 'min-height', 'gap', 'flex-direction', 'justify-content', 'align-items', 'flex-wrap', 'z-index' ],
+                'skips' => [ 'protected HTML widgets', 'selectors without Elementor element ids', 'unsupported values', 'script-injected style blocks' ],
             ],
             'design_system_contract_enforced_on_writes' => true,
             'design_system_marker_migration' => true,
@@ -625,6 +633,7 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/editability-audit' => true,
                 '/elementor/typography-unlock' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/resolve-typography-overrides' => ! empty( $settings['elementor_writes'] ),
+                '/elementor/css-to-native' => ! empty( $settings['elementor_writes'] ),
                 '/elementor/revisions' => true,
                 '/elementor/restore-revision' => ! empty( $settings['elementor_writes'] ),
                 '/visual-audit' => true,
