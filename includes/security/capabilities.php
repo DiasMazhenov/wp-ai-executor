@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.42',
+        'guide_version' => 'v02.05.43',
         'auth' => [
             'canonical_header' => 'X-AI-Key',
             'deprecated_aliases' => [
@@ -366,11 +366,22 @@ function wpae_get_capabilities_payload(): array {
                 'custom_html_policy' => [
                     'allowed' => true,
                     'rule' => 'Custom HTML widgets may be edited only when the requested change concerns their enhancement purpose. They are allowed for JavaScript, WebGL/canvas, Three.js, GSAP, embeds, schema/meta, and CSS that has no native Elementor equivalent.',
+                    'css_only_rule' => 'For CSS-only enhancement, use the target element settings.custom_css first. Do not create an HTML widget merely to hold CSS.',
                     'separation_rule' => 'Put WebGL, Three.js, GSAP, canvas, shader, and complex animation code in a dedicated HTML widget or protected enhancement zone, separate from page-wide design CSS.',
                     'preserve_rule' => 'Do not modify, delete, merge, or relocate an existing WebGL/Three.js/GSAP/canvas HTML widget unless the user explicitly asks to change that enhancement.',
                     'forbidden_as_bypass' => 'Custom HTML must not be used as a workaround for Elementor-editable typography, colors, backgrounds, spacing, borders, radius, flex layout, sizing, or responsive values.',
                 ],
                 'css_to_native_map_contract' => 'Properties in css_to_native_map must be set through native Elementor settings. They must not be the design source in Custom CSS, HTML widget CSS, external CSS files, or <script>-injected CSS.',
+                'element_custom_css' => [
+                    'supported' => true,
+                    'settings_key' => 'custom_css',
+                    'storage' => 'Store per-widget/per-container Custom CSS in the target element settings.custom_css so it remains editable in Elementor.',
+                    'selector_rule' => 'Use Elementor selector to scope rules to the selected element, e.g. selector { ... }, selector::before { ... }, selector:hover { ... }, or selector .child { ... }.',
+                    'native_first' => 'If Elementor exposes a visual control for the property, use that control as the source of truth. settings.custom_css is only for unsupported selectors, states, effects, animations, browser fixes, or responsive behavior.',
+                    'preferred_over' => [ 'HTML widget CSS', 'page-wide CSS for one element', 'external CSS files', 'JavaScript-injected style elements' ],
+                    'preserve_existing' => 'Unrelated settings.custom_css must be preserved byte-for-byte during targeted updates.',
+                    'forbidden' => 'Do not override an available Elementor control with conflicting settings.custom_css declarations or !important.',
+                ],
                 'css_to_native_map' => [
                     'typography' => [
                         'font-family' => 'typography_font_family',
