@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.41',
+        'guide_version' => 'v02.05.42',
         'auth' => [
             'canonical_header' => 'X-AI-Key',
             'deprecated_aliases' => [
@@ -362,6 +362,13 @@ function wpae_get_capabilities_payload(): array {
                     'Only remove local native overrides when the user explicitly asks that a property inherit from global Elementor styles/design tokens.',
                     'If a property from css_to_native_map appears in <script>-injected CSS, it is not editable in Elementor. Migrate it to native settings and remove the injected CSS declaration.',
                     'For existing pages, migrate only the requested properties; preserve unrelated working styles, classes, IDs, JS, WebGL, Three.js, GSAP, canvas, and animation code.',
+                ],
+                'custom_html_policy' => [
+                    'allowed' => true,
+                    'rule' => 'Custom HTML widgets may be edited only when the requested change concerns their enhancement purpose. They are allowed for JavaScript, WebGL/canvas, Three.js, GSAP, embeds, schema/meta, and CSS that has no native Elementor equivalent.',
+                    'separation_rule' => 'Put WebGL, Three.js, GSAP, canvas, shader, and complex animation code in a dedicated HTML widget or protected enhancement zone, separate from page-wide design CSS.',
+                    'preserve_rule' => 'Do not modify, delete, merge, or relocate an existing WebGL/Three.js/GSAP/canvas HTML widget unless the user explicitly asks to change that enhancement.',
+                    'forbidden_as_bypass' => 'Custom HTML must not be used as a workaround for Elementor-editable typography, colors, backgrounds, spacing, borders, radius, flex layout, sizing, or responsive values.',
                 ],
                 'css_to_native_map_contract' => 'Properties in css_to_native_map must be set through native Elementor settings. They must not be the design source in Custom CSS, HTML widget CSS, external CSS files, or <script>-injected CSS.',
                 'css_to_native_map' => [
