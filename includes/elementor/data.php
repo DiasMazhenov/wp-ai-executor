@@ -185,7 +185,7 @@ function wpae_apply_elementor_patch_to_element( array &$elements, string $elemen
         if ( (string) ( $element['id'] ?? '' ) === $element_id ) {
             $property_path = trim( (string) ( $patch['path'] ?? '' ) );
             $op = sanitize_key( (string) ( $patch['op'] ?? 'set' ) );
-            if ( ! in_array( $op, [ 'set', 'delete' ], true ) ) {
+            if ( ! in_array( $op, [ 'set', 'delete', 'replace_text' ], true ) ) {
                 $op = 'set';
             }
 
@@ -199,7 +199,47 @@ function wpae_apply_elementor_patch_to_element( array &$elements, string $elemen
             }
 
             $segments = explode( '.', $property_path );
-            if ( $op === 'delete' ) {
+            $replacement_count = null;
+            if ( $op === 'replace_text' ) {
+                if ( ! in_array( $property_path, [ 'settings.html', 'settings.custom_css' ], true ) ) {
+                    $report['errors'][] = [
+                        'element_id' => $element_id,
+                        'path' => $property_path,
+                        'message' => 'replace_text is allowed only for settings.html or settings.custom_css.',
+                    ];
+                    return true;
+                }
+
+                $search = (string) ( $patch['search'] ?? '' );
+                $replace = (string) ( $patch['replace'] ?? '' );
+                $expected_count = max( 1, min( 20, absint( $patch['expected_count'] ?? 1 ) ) );
+                $setting_key = $property_path === 'settings.html' ? 'html' : 'custom_css';
+                $current_value = (string) ( $element['settings'][ $setting_key ] ?? '' );
+
+                if ( $search === '' || strlen( $search ) > 20000 || strlen( $replace ) > 20000 ) {
+                    $report['errors'][] = [
+                        'element_id' => $element_id,
+                        'path' => $property_path,
+                        'message' => 'replace_text requires a non-empty search value and search/replace values no larger than 20 KB.',
+                    ];
+                    return true;
+                }
+
+                $replacement_count = substr_count( $current_value, $search );
+                if ( $replacement_count !== $expected_count ) {
+                    $report['errors'][] = [
+                        'element_id' => $element_id,
+                        'path' => $property_path,
+                        'message' => 'replace_text match count did not equal expected_count.',
+                        'expected_count' => $expected_count,
+                        'actual_count' => $replacement_count,
+                    ];
+                    return true;
+                }
+
+                $element['settings'][ $setting_key ] = str_replace( $search, $replace, $current_value );
+                $changed = $search !== $replace;
+            } elseif ( $op === 'delete' ) {
                 $changed = wpae_delete_array_path_value( $element, $segments );
             } else {
                 wpae_set_array_path_value( $element, $segments, $patch['value'] ?? null );
@@ -212,6 +252,7 @@ function wpae_apply_elementor_patch_to_element( array &$elements, string $elemen
                 'op' => $op,
                 'changed' => $changed,
                 'element_path' => $current_path,
+                'replacement_count' => $replacement_count,
             ];
             return true;
         }
@@ -261,4 +302,3 @@ function wpae_apply_elementor_patches( array $elementor_data, array $patches ): 
 function wpae_validate_elementor_data_array( array $elementor_data ): array {
     return wpae_validate_elementor_data_string( (string) wp_json_encode( $elementor_data ) );
 }
-

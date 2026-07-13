@@ -9,7 +9,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.43',
+        'version' => 'v02.05.44',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -274,6 +274,7 @@ function wpae_agent_guide(): array {
                 ],
                 'forbidden_as_source_of_truth' => 'Do not put typography, colors, backgrounds, spacing, borders, radius, sizing, flex layout, positioning, or responsive values in settings.custom_css when the selected element exposes a corresponding Elementor control. Custom CSS must not override those controls with !important.',
                 'preservation' => 'When changing an unrelated property, preserve existing settings.custom_css byte-for-byte. Patch only the requested element and declaration.',
+                'safe_html_migration' => 'When moving one CSS fragment out of a large protected HTML/WebGL widget, use /elementor/patch op=replace_text with path=settings.html and exact expected_count instead of resending the complete HTML value.',
                 'html_widget_fallback' => 'Do not create an HTML widget merely to hold CSS. Prefer the target element settings.custom_css. Keep HTML widgets for JavaScript, WebGL/canvas code, embeds, schema/meta, or enhancements that require markup/script.',
                 'documentation' => [
                     'https://developers.elementor.com/docs/editor-controls/',

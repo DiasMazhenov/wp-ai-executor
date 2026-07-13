@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.43',
+        'guide_version' => 'v02.05.44',
         'auth' => [
             'canonical_header' => 'X-AI-Key',
             'deprecated_aliases' => [
@@ -380,6 +380,7 @@ function wpae_get_capabilities_payload(): array {
                     'native_first' => 'If Elementor exposes a visual control for the property, use that control as the source of truth. settings.custom_css is only for unsupported selectors, states, effects, animations, browser fixes, or responsive behavior.',
                     'preferred_over' => [ 'HTML widget CSS', 'page-wide CSS for one element', 'external CSS files', 'JavaScript-injected style elements' ],
                     'preserve_existing' => 'Unrelated settings.custom_css must be preserved byte-for-byte during targeted updates.',
+                    'safe_html_migration' => 'Use /elementor/patch op=replace_text with an exact expected_count for surgical changes inside large protected HTML/WebGL widgets; do not resend their complete HTML value.',
                     'forbidden' => 'Do not override an available Elementor control with conflicting settings.custom_css declarations or !important.',
                 ],
                 'css_to_native_map' => [
