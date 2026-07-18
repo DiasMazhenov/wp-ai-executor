@@ -209,6 +209,7 @@ function wpae_settings_page() {
     $guide_url          = get_rest_url( null, 'ai-executor/v1/guide' );
     $capabilities_url   = get_rest_url( null, 'ai-executor/v1/capabilities' );
     $logs_url           = get_rest_url( null, 'ai-executor/v1/logs' );
+    $health_url         = get_rest_url( null, 'ai-executor/v1/health' );
     $regen              = isset( $_GET['regenerated'] );
     $capabilities_saved = isset( $_GET['capabilities_saved'] );
     $capability_preset_saved = isset( $_GET['capability_preset_saved'] );
@@ -222,6 +223,7 @@ function wpae_settings_page() {
     $skill_url_imported = isset( $_GET['skill_url_imported'] );
     $skill_url_error    = isset( $_GET['skill_url_error'] );
     $exports_pruned     = isset( $_GET['exports_pruned'] ) ? absint( $_GET['exports_pruned'] ) : null;
+    $health_checked     = sanitize_key( (string) ( $_GET['health_checked'] ?? '' ) );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $capability_presets = wpae_capability_presets();
@@ -694,7 +696,13 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status">Очистка exports завершена. Удалено записей: <?php echo esc_html( (string) $exports_pruned ); ?>.</div>
         <?php endif; ?>
 
+        <?php if ( $health_checked !== '' ) : ?>
+            <div class="wpae-alert" role="status">Диагностика WordPress завершена. Режим: <?php echo esc_html( $health_checked ); ?>.</div>
+        <?php endif; ?>
+
         <div class="wpae-grid">
+            <?php wpae_render_health_dashboard_card( $health_url ); ?>
+
             <div class="wpae-card">
                 <h2>REST endpoint</h2>
                 <p>Основной адрес для выполнения PHP через защищенный REST API.</p>
@@ -1091,6 +1099,9 @@ function wpae_settings_page() {
                                     <div class="wpae-skill-meta">
                                         <?php echo esc_html( (string) ( $entry['time'] ?? '' ) ); ?>
                                         · status <?php echo esc_html( (string) ( $entry['status'] ?? '' ) ); ?>
+                                        <?php if ( isset( $entry['duration_ms'] ) ) : ?>
+                                            · <?php echo esc_html( (string) $entry['duration_ms'] ); ?> мс
+                                        <?php endif; ?>
                                         · actor <?php echo esc_html( (string) ( $entry['actor'] ?? 'agent' ) ); ?>
                                     </div>
                                     <?php if ( ! empty( $entry['target_ids'] ) ) : ?>

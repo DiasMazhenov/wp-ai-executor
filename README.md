@@ -17,6 +17,24 @@ define( 'WP_AI_EXECUTOR_KEY', 'your-64-char-hex-key' );
 
 ## Endpoints
 
+### `GET /wp-json/ai-executor/v1/health`
+
+Authenticated, read-only WordPress health diagnostics. Send `X-AI-Key` and use:
+
+- `?mode=quick` for database latency, WordPress bootstrap time, PHP memory,
+  WP-Cron backlog, disk space, autoload options, debug configuration, and cached
+  update state, plus recent AI Executor REST latency;
+- `?mode=deep&refresh=1` to additionally test WordPress loopback and REST API
+  availability with five-second timeouts.
+
+The response includes `overall`, `summary`, machine-readable `checks`, concrete
+`recommendations`, and a bounded health history. Results are briefly cached and
+stored in `wp_options`; no server files are created. The endpoint never restarts
+services, clears caches, deletes logs, or changes WordPress settings. A fully
+blocked PHP-FPM pool still requires nginx/PHP-FPM/MySQL hosting logs because no
+WordPress plugin can answer while every PHP worker is unavailable. A short lock
+prevents parallel deep checks from adding extra PHP-FPM pressure.
+
 ### `POST /wp-json/ai-executor/v1/run`
 
 Execute PHP code in the WordPress environment.
@@ -515,6 +533,7 @@ raw page payloads, raw response payloads, or secrets.
       "method": "POST",
       "endpoint": "/elementor/page",
       "status": 200,
+      "duration_ms": 428,
       "target_ids": { "post_id": 123 },
       "rollback_snapshot_id": "abc123"
     }

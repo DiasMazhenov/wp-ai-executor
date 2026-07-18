@@ -47,6 +47,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/health', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_health_endpoint',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/audit', [
         'methods'             => 'POST',
         'callback'            => 'wpae_audit',

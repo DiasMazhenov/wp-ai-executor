@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.44',
+        'guide_version' => 'v02.05.45',
         'auth' => [
             'canonical_header' => 'X-AI-Key',
             'deprecated_aliases' => [
@@ -208,6 +208,7 @@ function wpae_get_capabilities_payload(): array {
         'can_list_rollback_snapshots' => true,
         'can_restore_elementor_revisions' => true,
         'can_view_operation_logs' => true,
+        'can_diagnose_wordpress' => true,
         'can_score_agent_conformance' => true,
         'can_create_design_system' => true,
         'can_provide_project_design_tokens' => true,
@@ -228,6 +229,29 @@ function wpae_get_capabilities_payload(): array {
             'session_storage' => 'wp_options_per_session_with_legacy_index',
             'token_storage' => 'wp_options_per_token_hash',
             'ack_body_formats' => [ 'application/json', 'raw_json_body_fallback', 'form_fields' ],
+        ],
+        'wordpress_health' => [
+            'endpoint' => 'GET /wp-json/ai-executor/v1/health',
+            'authentication' => 'X-AI-Key',
+            'modes' => [
+                'quick' => 'Local read-only checks with a 30-second cache.',
+                'deep' => 'Explicit same-site loopback and REST checks with five-second timeouts; cached for five minutes.',
+            ],
+            'deep_concurrency' => 'A 15-second lock prevents parallel deep checks from multiplying PHP-FPM load.',
+            'checks' => [
+                'WordPress bootstrap latency',
+                'database connectivity and latency',
+                'autoloaded options size',
+                'PHP memory and runtime',
+                'WP-Cron backlog',
+                'disk space',
+                'debug configuration and debug.log size',
+                'cached update availability',
+                'recent AI Executor REST latency',
+                'WordPress loopback and REST API in deep mode',
+            ],
+            'side_effects' => 'Read-only. It does not restart services, clear caches, delete logs, or change WordPress settings.',
+            'limitation' => 'No plugin endpoint can answer while all PHP-FPM workers are blocked; use server metrics and logs for that condition.',
         ],
         'project_design_tokens' => wpae_get_project_design_tokens(),
         'project_design_system' => wpae_build_project_design_system(),
@@ -569,6 +593,7 @@ function wpae_get_capabilities_payload(): array {
                 'method',
                 'endpoint',
                 'status',
+                'duration_ms',
                 'actor',
                 'ip_hash',
                 'guide_hash',

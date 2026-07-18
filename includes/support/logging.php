@@ -847,6 +847,8 @@ function wpae_record_operation_log( WP_REST_Request $request, $response ): void 
     $route = (string) $request->get_route();
     $logs = wpae_get_operation_logs_store();
     $guide_hash = (string) ( $request->get_header( 'X-WPAE-Guide-Hash' ) ?: $request->get_param( 'guide_hash' ) );
+    $request_started = isset( $_SERVER['REQUEST_TIME_FLOAT'] ) ? (float) $_SERVER['REQUEST_TIME_FLOAT'] : microtime( true );
+    $duration_ms = max( 0, (int) round( ( microtime( true ) - $request_started ) * 1000 ) );
 
     array_unshift( $logs, [
         'id' => bin2hex( random_bytes( 8 ) ),
@@ -854,6 +856,7 @@ function wpae_record_operation_log( WP_REST_Request $request, $response ): void 
         'method' => strtoupper( (string) $request->get_method() ),
         'endpoint' => preg_replace( '#^/ai-executor/v1#', '', $route ),
         'status' => $status,
+        'duration_ms' => $duration_ms,
         'actor' => sanitize_text_field( (string) ( $request->get_header( 'X-WPAE-Actor' ) ?: $request->get_header( 'X-AI-Agent' ) ?: 'agent' ) ),
         'ip_hash' => hash( 'sha256', (string) ( $_SERVER['REMOTE_ADDR'] ?? '' ) ),
         'guide_hash' => $guide_hash !== '' ? $guide_hash : null,

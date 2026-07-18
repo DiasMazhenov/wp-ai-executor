@@ -9,7 +9,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.44',
+        'version' => 'v02.05.45',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -22,6 +22,13 @@ function wpae_agent_guide(): array {
         'project_design_system' => wpae_build_project_design_system(),
         'jezweb_claude_skills' => wpae_get_jezweb_claude_skills_pack(),
         'capabilities' => wpae_get_capabilities_payload(),
+        'wordpress_health_policy' => [
+            'endpoint' => 'GET /wp-json/ai-executor/v1/health',
+            'quick_mode' => 'Use ?mode=quick for cached read-only PHP, database, cron, memory, disk, autoload, debug, and update checks.',
+            'deep_mode' => 'Use ?mode=deep&refresh=1 only when investigating availability or 504/timeout symptoms; it adds WordPress loopback and REST self-checks with five-second timeouts.',
+            'agent_rule' => 'Read summary, checks, recommendations, and history. Report every critical/warning check with its code, details, and next safe action. Do not claim that the plugin can diagnose a fully blocked PHP-FPM pool from inside WordPress.',
+            'safety' => 'The endpoint is authenticated and read-only. It never restarts services, clears caches, deletes logs, changes options, or writes server files.',
+        ],
         'repeated_agent_error_audit_policy' => [
             'returned_in' => [ 'POST /elementor/visual-audit', 'POST /audit' ],
             'rule' => 'Agents must read repeated_agent_error_audit and fix every fail check before claiming success; warn checks must be either fixed or explicitly explained.',
@@ -647,6 +654,7 @@ function wpae_agent_guide(): array {
                     'endpoint',
                     'method',
                     'status',
+                    'duration_ms',
                     'actor hint',
                     'guide hash',
                     'target IDs',
