@@ -142,8 +142,15 @@ function wpae_self_update_package( WP_REST_Request $request ): WP_REST_Response 
         if ( ! is_dir( $directory ) && ! wp_mkdir_p( $directory ) ) {
             return new WP_REST_Response( [ 'error' => 'Failed to create package directory.', 'path' => $relative_path, 'written' => $written ], 500 );
         }
+        $target_mode = is_file( $target ) ? @fileperms( $target ) : false;
+        $target_mode = $target_mode !== false ? ( $target_mode & 0777 ) : 0644;
         $temp = tempnam( $directory, '.wpae-package-' );
-        if ( $temp === false || file_put_contents( $temp, $package['files'][ $relative_path ], LOCK_EX ) === false || ! @rename( $temp, $target ) ) {
+        if (
+            $temp === false
+            || file_put_contents( $temp, $package['files'][ $relative_path ], LOCK_EX ) === false
+            || ! @chmod( $temp, $target_mode )
+            || ! @rename( $temp, $target )
+        ) {
             if ( is_string( $temp ) ) {
                 @unlink( $temp );
             }

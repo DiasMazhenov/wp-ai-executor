@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.50`
+- Plugin: `v02.08.51`
 - Guide: `v02.05.46`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -23,7 +23,9 @@
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
 The package updater explicitly loads the WordPress temp-file API when REST
-requests do not bootstrap `wp_tempnam()` automatically.
+requests do not bootstrap `wp_tempnam()` automatically. Atomic package writes
+preserve existing file permissions and assign `0644` to new module/asset files
+before rename, so nginx can serve editor JavaScript.
 
 ## Elementor block library
 
