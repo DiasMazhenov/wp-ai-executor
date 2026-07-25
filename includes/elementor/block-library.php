@@ -577,14 +577,34 @@ function wpae_block_library_write_permission( WP_REST_Request $request ) {
     return current_user_can( 'edit_posts' );
 }
 
+function wpae_block_library_asset_source( string $relative_path ): string {
+    $path = dirname( __DIR__, 2 ) . '/' . ltrim( $relative_path, '/' );
+    if ( ! is_readable( $path ) ) {
+        return '';
+    }
+    $source = file_get_contents( $path );
+    return is_string( $source ) ? $source : '';
+}
+
+function wpae_enqueue_elementor_block_library_editor_style(): void {
+    if ( ! current_user_can( 'edit_posts' ) ) {
+        return;
+    }
+    $style_source = wpae_block_library_asset_source( 'assets/css/elementor-block-library.css' );
+    if ( $style_source !== '' ) {
+        wp_add_inline_style( 'elementor-editor', $style_source );
+    }
+}
+add_action( 'elementor/editor/after_enqueue_styles', 'wpae_enqueue_elementor_block_library_editor_style' );
+
 function wpae_enqueue_elementor_block_library_editor(): void {
     if ( ! current_user_can( 'edit_posts' ) ) {
         return;
     }
 
-    $script_path = dirname( __DIR__, 2 ) . '/assets/js/elementor-block-library.js';
-    $script_source = is_readable( $script_path ) ? file_get_contents( $script_path ) : false;
-    if ( ! is_string( $script_source ) || $script_source === '' ) {
+    $menu_script_source = wpae_block_library_asset_source( 'assets/js/elementor-block-library.js' );
+    $ui_script_source = wpae_block_library_asset_source( 'assets/js/elementor-block-library-ui.js' );
+    if ( $menu_script_source === '' || $ui_script_source === '' ) {
         return;
     }
 
@@ -594,6 +614,7 @@ function wpae_enqueue_elementor_block_library_editor(): void {
         'strings' => [
             'copy' => 'Копировать как JSON',
             'save' => 'Сохранить в библиотеку WP AI Executor',
+            'openLibrary' => 'Открыть библиотеку блоков',
             'titlePrompt' => 'Название блока',
             'categoryPrompt' => 'Категория блока',
             'copied' => 'Elementor JSON скопирован.',
@@ -601,12 +622,44 @@ function wpae_enqueue_elementor_block_library_editor(): void {
             'failed' => 'Не удалось выполнить действие с блоком.',
             'selection' => 'Выбранные элементы',
             'noSelection' => 'Не удалось определить выбранный элемент Elementor.',
+            'library' => 'WP AI Executor',
+            'libraryTitle' => 'Библиотека блоков',
+            'close' => 'Закрыть',
+            'search' => 'Поиск по названию, категории или тегу',
+            'allCategories' => 'Все категории',
+            'insertMode' => 'Режим вставки',
+            'preserve' => 'Оригинал',
+            'compatibility' => 'Совместимость',
+            'adapt' => 'Адаптация',
+            'refresh' => 'Обновить',
+            'blocks' => 'Блоки',
+            'blockDetails' => 'Состав блока',
+            'selectBlock' => 'Выберите блок, чтобы посмотреть состав и совместимость.',
+            'category' => 'Категория',
+            'elements' => 'Элементы',
+            'containers' => 'Контейнеры',
+            'widgets' => 'Виджеты',
+            'elementorVersion' => 'Elementor',
+            'valid' => 'Готов к вставке',
+            'needsNormalization' => 'Нужна нормализация',
+            'foreignDesign' => 'Чужая дизайн-система',
+            'insert' => 'Вставить',
+            'inserting' => 'Вставка…',
+            'inserted' => 'Блок вставлен в Elementor.',
+            'insertTargetMissing' => 'Выберите контейнер или элемент, рядом с которым нужно вставить блок.',
+            'loading' => 'Загрузка библиотеки…',
+            'noBlocks' => 'Блоки не найдены.',
+            'units' => 'элем.',
+            'shortContainers' => 'конт.',
+            'shortWidgets' => 'видж.',
         ],
     ] );
     if ( is_string( $config ) ) {
         wp_add_inline_script(
             'elementor-editor',
-            'window.WPAEBlockLibrary = ' . $config . ';' . "\n" . $script_source,
+            'window.WPAEBlockLibrary = ' . $config . ';'
+                . "\n" . $ui_script_source
+                . "\n" . $menu_script_source,
             'before'
         );
     }

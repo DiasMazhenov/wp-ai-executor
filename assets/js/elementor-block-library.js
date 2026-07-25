@@ -164,6 +164,17 @@
                         }
                     },
                 },
+                {
+                    name: 'wpae-open-library',
+                    icon: 'eicon-library-open',
+                    title: config.strings.openLibrary,
+                    isEnabled: () => Boolean( window.WPAEBlockLibraryUI ),
+                    callback: () => {
+                        if ( window.WPAEBlockLibraryUI ) {
+                            window.WPAEBlockLibraryUI.open();
+                        }
+                    },
+                },
             ],
         } );
         return groups;

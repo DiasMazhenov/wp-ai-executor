@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.57`
+- Plugin: `v02.08.58`
 - Guide: `v02.05.46`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -34,7 +34,9 @@ nginx traversal.
 Implementation:
 
 - PHP: `includes/elementor/block-library.php`
-- Editor integration: `assets/js/elementor-block-library.js`
+- Context-menu integration: `assets/js/elementor-block-library.js`
+- Visual library UI: `assets/js/elementor-block-library-ui.js`
+- Visual library styles: `assets/css/elementor-block-library.css`
 - Storage: private `wpae_block` custom posts plus revision-enabled
   `_wpae_block_payload` post meta
 - Public files: none
@@ -75,6 +77,12 @@ In the Elementor editor, container/widget context menus expose:
 
 - `Копировать как JSON`
 - `Сохранить в библиотеку WP AI Executor`
+- `Открыть библиотеку блоков`
+
+The visual library provides client-side search, category filtering, structural
+details, compatibility status and `preserve|compatibility|adapt` insertion
+modes. Insertion uses Elementor's native `document/ui/paste` command and the
+currently selected Elementor container instead of writing page metadata.
 
 The browser integration uses the logged-in WordPress REST nonce and never
 exposes `X-AI-Key`. The packaged JS source is attached inline to Elementor's

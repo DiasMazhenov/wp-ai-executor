@@ -63,7 +63,7 @@
 
 Цель: копировать и переиспользовать любой выбранный Elementor Flexbox Container или widget, включая чужие блоки и шаблоны, а не только встроенные WPAE recipes.
 
-Статус: базовый этап реализован в `v02.08.57`; пункт 8 остаётся дальнейшим развитием.
+Статус: визуальная библиотека первого этапа реализована в `v02.08.58`.
 
 1. Поддержать два формата:
    - native Elementor JSON для точного копирования исходного элемента без обязательной WPAE-обёртки;
@@ -82,7 +82,12 @@
    - `GET|DELETE /elementor/blocks/{id}`;
    - `GET /elementor/blocks/{id}/instantiate?mode=preserve|compatibility|adapt`.
 7. Агент должен сначала искать подходящий блок в библиотеке, получать безопасный instance с новыми IDs, затем использовать существующие normalize/validate/dry-run/write endpoints.
-8. Следующие этапы: визуальная библиотека внутри Elementor, категории/теги/preview, перенос media dependencies между сайтами и полноценное token-level применение design system в режиме `adapt`.
+8. Визуальная библиотека внутри Elementor:
+   - реализованы поиск, фильтр категорий, структурный просмотр и режимы вставки;
+   - вставка выполняется через native `document/ui/paste`;
+   - следующие этапы: редактирование metadata, автоматические screenshots,
+     перенос media dependencies и полноценное token-level применение design
+     system в режиме `adapt`.
 
 ## Далее
 
