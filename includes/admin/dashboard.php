@@ -231,6 +231,8 @@ function wpae_settings_page() {
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
     $operation_logs     = array_slice( wpae_get_operation_logs_store(), 0, 8 );
     $exports_summary    = wpae_build_exports_summary( wpae_get_export_store() );
+    $block_library      = wpae_block_library_dashboard_summary();
+    $block_library_url  = get_rest_url( null, 'ai-executor/v1/elementor/blocks' );
     $skill_bundle_json  = wp_json_encode( wpae_build_skill_bundle(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
     $enabled_count      = count( array_filter( $capabilities ) );
     $total_count        = count( $capabilities );
@@ -727,6 +729,48 @@ function wpae_settings_page() {
                     <input type="hidden" name="wpae_regenerate" value="1" />
                     <button type="submit" class="button wpae-button wpae-danger-button">Сгенерировать новый ключ</button>
                 </form>
+            </div>
+
+            <div class="wpae-card wpae-card-wide">
+                <h2>Библиотека Elementor-блоков</h2>
+                <p>
+                    Постоянное хранилище любых native Elementor JSON-блоков и шаблонов, включая импортированные с других сайтов.
+                    В редакторе Elementor используйте контекстное меню контейнера: «Копировать как JSON» или «Сохранить в библиотеку WP AI Executor».
+                </p>
+                <div class="wpae-status-grid" style="padding:0;margin-top:12px">
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Сохранено блоков</p>
+                        <p class="wpae-stat-value"><?php echo esc_html( (string) ( $block_library['count'] ?? 0 ) ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Форматы</p>
+                        <p class="wpae-stat-value" style="font-size:16px">Native + WPAE</p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Режимы</p>
+                        <p class="wpae-stat-value" style="font-size:16px">3</p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Хранилище</p>
+                        <p class="wpae-stat-value" style="font-size:16px">Private CPT</p>
+                    </div>
+                </div>
+                <label for="wpae-block-library-url" style="display:block;margin-top:14px">REST API библиотеки</label>
+                <input class="wpae-input" id="wpae-block-library-url" type="text" value="<?php echo esc_attr( $block_library_url ); ?>" readonly onclick="this.select()" />
+                <?php if ( ! empty( $block_library['items'] ) ) : ?>
+                    <div style="margin-top:14px">
+                        <h3>Последние блоки</h3>
+                        <?php foreach ( $block_library['items'] as $library_item ) : ?>
+                            <p style="margin:6px 0">
+                                <strong>#<?php echo esc_html( (string) $library_item['id'] ); ?> <?php echo esc_html( $library_item['title'] ); ?></strong>
+                                <span class="wpae-token-pill"><?php echo esc_html( $library_item['category'] ); ?></span>
+                                <?php if ( empty( $library_item['compatibility']['raw_valid'] ) ) : ?>
+                                    <span class="wpae-token-pill">нужна совместимость</span>
+                                <?php endif; ?>
+                            </p>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="wpae-card wpae-card-wide">

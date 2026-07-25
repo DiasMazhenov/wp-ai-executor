@@ -419,6 +419,43 @@ X-WPAE-Guide-Hash: <hash>
 
 All write endpoints require these headers.
 
+### Elementor block library
+
+The plugin can copy and permanently store arbitrary Elementor containers,
+widgets, and template content, including blocks imported from other sites.
+This is separate from the built-in recipe library and from short-lived exports.
+
+Supported input formats:
+
+- a raw native Elementor element object;
+- an array of native Elementor elements;
+- an Elementor template object with a `content` array;
+- a `wpae-elementor-block-v1` wrapper.
+
+Editor users get **Copy as JSON** and **Save to WP AI Executor library** actions
+in the Elementor container/widget context menu. The editor uses the logged-in
+WordPress REST nonce; it never exposes `X-AI-Key` in browser code.
+
+Agent endpoints:
+
+```text
+GET    /wp-json/ai-executor/v1/elementor/blocks
+POST   /wp-json/ai-executor/v1/elementor/blocks
+GET    /wp-json/ai-executor/v1/elementor/blocks/{id}
+DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}
+GET    /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve
+```
+
+`preserve` only creates new Elementor IDs and keeps the original design.
+`compatibility` normalizes the block for the current Flexbox/write contract.
+`adapt` additionally applies current design-system markers and safe baseline
+settings. Foreign blocks may be stored with `design_system_id: null`; the
+compatibility report lists missing widgets, media references, legacy elements,
+normalization requirements, and protected enhancement zones. The wrapper keeps
+both the extracted `elementor_data` used for insertion and the exact
+`native_payload`, so foreign template-level fields such as `page_settings` are
+not discarded.
+
 ### `GET|POST /wp-json/ai-executor/v1/skills`
 
 Stores custom agent skills in the WordPress database. Skills are returned inside

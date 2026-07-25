@@ -59,6 +59,31 @@
 - Продолжено дробление Elementor-модулей: editability audit вынесен из `validation.php` в отдельный `includes/elementor/editability.php`, CSS migrator добавлен как отдельный `includes/elementor/css-native.php`.
 - Продолжено постепенное дробление `validation.php`: базовые Elementor validation rules вынесены в `includes/elementor/validation-rules.php`, design-system contract вынесен в `includes/elementor/design-contract.php`.
 
+## Библиотека произвольных Elementor-блоков
+
+Цель: копировать и переиспользовать любой выбранный Elementor Flexbox Container или widget, включая чужие блоки и шаблоны, а не только встроенные WPAE recipes.
+
+Статус: базовый этап реализован в `v02.08.49`; пункт 8 остаётся дальнейшим развитием.
+
+1. Поддержать два формата:
+   - native Elementor JSON для точного копирования исходного элемента без обязательной WPAE-обёртки;
+   - `wpae-elementor-block-v1` для постоянной библиотеки, метаданных, зависимостей, совместимости и использования агентами.
+2. При сохранении чужого блока не менять его исходный Elementor JSON и дизайн автоматически. `design_system_id` может быть пустым.
+3. При получении блока из библиотеки поддержать режимы:
+   - `preserve` — только новые Elementor IDs, исходный дизайн сохраняется;
+   - `compatibility` — новые IDs плюс normalize/validate для текущего Flexbox-контракта;
+   - `adapt` — compatibility плюс текущие design-system markers и безопасные baseline settings.
+4. Показывать compatibility report: legacy section/column, `widget_type`, неизвестные widgets, protected enhancement zones, design-system drift и необходимые normalize changes.
+5. Добавить в Elementor context menu:
+   - «Копировать как JSON»;
+   - «Сохранить в библиотеку WP AI Executor».
+6. Добавить постоянный REST CRUD:
+   - `GET|POST /elementor/blocks`;
+   - `GET|DELETE /elementor/blocks/{id}`;
+   - `GET /elementor/blocks/{id}/instantiate?mode=preserve|compatibility|adapt`.
+7. Агент должен сначала искать подходящий блок в библиотеке, получать безопасный instance с новыми IDs, затем использовать существующие normalize/validate/dry-run/write endpoints.
+8. Следующие этапы: визуальная библиотека внутри Elementor, категории/теги/preview, перенос media dependencies между сайтами и полноценное token-level применение design system в режиме `adapt`.
+
 ## Далее
 
 1. Наблюдать новые live-логи и добавлять точечные validators, если внешние агенты найдут новый повторяющийся анти-паттерн.
@@ -72,7 +97,7 @@
 5. Elementor editability tests: отдельная проверка, что свойства из `css_to_native_map` реально управляются через Elementor native settings, а не перебиваются CSS/HTML/script-injected styles.
 6. CSS-to-native migrator: endpoint, который находит native-supported CSS declarations, переносит их в settings виджетов/контейнеров и аккуратно удаляет только перенесенные CSS rules.
 7. Design system registry: хранить несколько named design systems, фиксировать active system per page и явно мигрировать страницу между системами через dry-run.
-8. Pattern library builder: сохранять удачные sections как reusable Flexbox Container patterns с slots, variants, required settings и quality score.
+8. Pattern library builder: сохранять любые native Elementor blocks и шаблоны в постоянную библиотеку; поддерживать raw native JSON и WPAE metadata wrapper, slots, variants, dependencies, compatibility и quality score.
 9. Preview -> approve -> publish flow: агент сначала создает draft/preview, отдает audit summary и только после approval публикует или заменяет live page.
 10. Agent contract handshake: write endpoints требуют явного подтверждения, что агент прочитал `/guide`, `/capabilities`, enabled skills, design system и текущие ограничения.
 11. Recovery assistant actions: при ошибке endpoint должен возвращать не только code/message, но и безопасный следующий endpoint/payload skeleton для исправления.

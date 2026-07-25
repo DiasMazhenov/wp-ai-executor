@@ -174,6 +174,7 @@ function wpae_route_requires_guide_token_for_conformance( string $route ): bool 
         '/ai-executor/v1/elementor/page',
         '/ai-executor/v1/elementor/update',
         '/ai-executor/v1/elementor/patch',
+        '/ai-executor/v1/elementor/blocks',
         '/ai-executor/v1/elementor/typography-unlock',
         '/ai-executor/v1/elementor/css-to-native',
         '/ai-executor/v1/elementor/restore-revision',
@@ -185,7 +186,9 @@ function wpae_route_requires_guide_token_for_conformance( string $route ): bool 
         '/ai-executor/v1/exports/prune',
         '/ai-executor/v1/self-update',
         '/ai-executor/v1/self-update-package',
-    ], true ) || preg_match( '#^/ai-executor/v1/skills/[a-z0-9_-]+$#', $route );
+    ], true )
+        || preg_match( '#^/ai-executor/v1/skills/[a-z0-9_-]+$#', $route )
+        || preg_match( '#^/ai-executor/v1/elementor/blocks/[0-9]+$#', $route );
 }
 
 function wpae_conformance_add_criterion( array &$criteria, string $key, string $status, int $points, int $max, string $message, array $evidence = [] ): void {

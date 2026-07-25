@@ -131,6 +131,36 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_block_library_list',
+        'permission_callback' => 'wpae_block_library_read_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_block_library_save',
+        'permission_callback' => 'wpae_block_library_write_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_block_library_get',
+        'permission_callback' => 'wpae_block_library_read_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)', [
+        'methods'             => 'DELETE',
+        'callback'            => 'wpae_block_library_delete',
+        'permission_callback' => 'wpae_block_library_write_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)/instantiate', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_block_library_instantiate',
+        'permission_callback' => 'wpae_block_library_read_permission',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/visual-audit', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_visual_audit',

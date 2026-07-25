@@ -183,7 +183,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.45',
+        'guide_version' => 'v02.05.46',
         'auth' => [
             'canonical_header' => 'X-AI-Key',
             'deprecated_aliases' => [
@@ -197,6 +197,7 @@ function wpae_get_capabilities_payload(): array {
         'can_self_update_plugin' => ! empty( $settings['self_update'] ),
         'can_self_update_plugin_package' => ! empty( $settings['self_update'] ) && class_exists( 'ZipArchive' ),
         'can_write_elementor' => ! empty( $settings['elementor_writes'] ),
+        'can_manage_elementor_block_library' => ! empty( $settings['elementor_writes'] ),
         'can_upload_media' => ! empty( $settings['media_upload'] ),
         'can_create_exports' => ! empty( $settings['exports'] ),
         'can_manage_skills' => ! empty( $settings['manage_skills'] ),
@@ -290,6 +291,9 @@ function wpae_get_capabilities_payload(): array {
                 'recipes' => 'GET /wp-json/ai-executor/v1/elementor/recipes',
                 'recipe' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
                 'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
+                'blocks' => 'GET|POST /wp-json/ai-executor/v1/elementor/blocks',
+                'block' => 'GET|DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}',
+                'instantiate_block' => 'GET /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve|compatibility|adapt',
                 'visual_audit' => 'POST /wp-json/ai-executor/v1/elementor/visual-audit',
                 'editability_audit' => 'POST /wp-json/ai-executor/v1/elementor/editability-audit',
                 'public_visual_audit' => 'POST /wp-json/ai-executor/v1/visual-audit',
@@ -304,6 +308,20 @@ function wpae_get_capabilities_payload(): array {
             'can_blueprint' => true,
             'can_use_recipes' => true,
             'can_compose_sections' => true,
+            'can_copy_native_json' => true,
+            'can_store_arbitrary_blocks' => ! empty( $settings['elementor_writes'] ),
+            'block_library' => [
+                'schema' => WPAE_BLOCK_LIBRARY_SCHEMA,
+                'schema_version' => WPAE_BLOCK_LIBRARY_SCHEMA_VERSION,
+                'storage' => 'Private WordPress custom posts with revision support; no public files.',
+                'accepted_formats' => [ 'native_elementor_json', WPAE_BLOCK_LIBRARY_SCHEMA ],
+                'instantiate_modes' => [
+                    'preserve' => 'Rekey Elementor IDs and preserve original design. Compatibility errors are reported but do not hide the block.',
+                    'compatibility' => 'Normalize legacy structures and widget keys, rekey IDs, then validate against current structured-write rules.',
+                    'adapt' => 'Compatibility mode plus current design-system markers and safe baseline settings.',
+                ],
+                'foreign_blocks' => 'Foreign blocks may be stored without a design_system_id. Missing widgets, media references, protected zones, and normalization requirements are reported.',
+            ],
             'must_use_flex_containers' => true,
             'forbidden_eltypes' => [ 'section', 'column' ],
             'required_widget_key' => 'widgetType',
@@ -680,6 +698,9 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/design-system' => true,
                 '/elementor/recipes' => true,
                 '/elementor/compose' => true,
+                '/elementor/blocks' => true,
+                '/elementor/blocks/{id}' => true,
+                '/elementor/blocks/{id}/instantiate' => true,
                 '/elementor/visual-audit' => true,
                 '/elementor/editability-audit' => true,
                 '/elementor/typography-unlock' => ! empty( $settings['elementor_writes'] ),
