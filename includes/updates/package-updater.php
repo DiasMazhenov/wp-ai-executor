@@ -99,6 +99,9 @@ function wpae_self_update_package( WP_REST_Request $request ): WP_REST_Response 
         ], 502 );
     }
 
+    if ( ! function_exists( 'wp_tempnam' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+    }
     $zip_path = wp_tempnam( 'wpae-package.zip' );
     if ( ! $zip_path || file_put_contents( $zip_path, (string) wp_remote_retrieve_body( $response ), LOCK_EX ) === false ) {
         return new WP_REST_Response( [ 'error' => 'Failed to stage package download.' ], 500 );
