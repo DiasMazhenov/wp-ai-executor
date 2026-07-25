@@ -78,6 +78,12 @@ function wpae_read_package_manifest( ZipArchive $archive ): array {
 }
 
 function wpae_prepare_package_directory( string $target_dir, string $relative_path ): bool {
+    $root_mode = @fileperms( $target_dir );
+    $root_mode = $root_mode !== false ? ( $root_mode & 0777 ) : 0755;
+    if ( ! @chmod( $target_dir, $root_mode | 0555 ) ) {
+        return false;
+    }
+
     $relative_directory = dirname( $relative_path );
     if ( $relative_directory === '.' ) {
         return true;
