@@ -136,12 +136,25 @@
         return groups;
     };
 
-    window.addEventListener( 'elementor/init', () => {
+    let contextMenuRegistered = false;
+
+    const registerContextMenu = () => {
+        if ( contextMenuRegistered || ! window.elementor || ! elementor.hooks ) {
+            return;
+        }
+
+        contextMenuRegistered = true;
         [ 'container', 'widget', 'section', 'column' ].forEach( ( elementType ) => {
             elementor.hooks.addFilter(
                 `elements/${ elementType }/contextMenuGroups`,
                 addActions
             );
         } );
-    } );
+    };
+
+    if ( window.elementor && elementor.hooks ) {
+        registerContextMenu();
+    } else {
+        window.addEventListener( 'elementor/init', registerContextMenu, { once: true } );
+    }
 }() );
