@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.53`
+- Plugin: `v02.08.54`
 - Guide: `v02.05.46`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -77,7 +77,9 @@ In the Elementor editor, container/widget context menus expose:
 - `Сохранить в библиотеку WP AI Executor`
 
 The browser integration uses the logged-in WordPress REST nonce and never
-exposes `X-AI-Key`.
+exposes `X-AI-Key`. The packaged JS source is attached inline to Elementor's
+existing `elementor-editor` handle because the current hosting policy returns
+403 for direct static files inside the WP AI Executor plugin directory.
 
 ## Agent workflow
 

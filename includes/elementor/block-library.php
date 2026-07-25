@@ -582,14 +582,12 @@ function wpae_enqueue_elementor_block_library_editor(): void {
         return;
     }
 
-    $plugin_file = dirname( __DIR__, 2 ) . '/wp-ai-executor.php';
-    wp_enqueue_script(
-        'wpae-elementor-block-library',
-        plugins_url( 'assets/js/elementor-block-library.js', $plugin_file ),
-        [ 'elementor-editor' ],
-        WPAE_VERSION,
-        true
-    );
+    $script_path = dirname( __DIR__, 2 ) . '/assets/js/elementor-block-library.js';
+    $script_source = is_readable( $script_path ) ? file_get_contents( $script_path ) : false;
+    if ( ! is_string( $script_source ) || $script_source === '' ) {
+        return;
+    }
+
     $config = wp_json_encode( [
         'endpoint' => get_rest_url( null, 'ai-executor/v1/elementor/blocks' ),
         'nonce' => wp_create_nonce( 'wp_rest' ),
@@ -605,9 +603,9 @@ function wpae_enqueue_elementor_block_library_editor(): void {
     ] );
     if ( is_string( $config ) ) {
         wp_add_inline_script(
-            'wpae-elementor-block-library',
-            'window.WPAEBlockLibrary = ' . $config . ';',
-            'before'
+            'elementor-editor',
+            'window.WPAEBlockLibrary = ' . $config . ';' . "\n" . $script_source,
+            'after'
         );
     }
 }
