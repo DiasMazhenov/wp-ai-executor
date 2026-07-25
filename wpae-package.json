@@ -32,8 +32,8 @@
     "includes/security/capabilities.php": "da3a45d5c0557301b2e566a5bb57a8fbf855bc8972cfc2ecbf475b43a1172ecb",
     "includes/skills/skills.php": "af111ef9b1b071c138aaf9c55cf11da2708e8137c7ec249ad79a3d236b8d6b3b",
     "includes/support/logging.php": "cda06cdcad4e43a598ff33ecc1cda93c3bc95f2e746205e1b2384e75646bd515",
-    "includes/updates/package-updater.php": "4fce78b24c9f0012c7b7dd71c5e8a0e2b80502b8d9e146e406e378a43b18d1ca",
+    "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "wp-ai-executor.php": "3dc8a51830e3003e1f506b6e8f2de702c18bcb9041c5712c1ae0b4b28511420a"
+    "wp-ai-executor.php": "36907b5df115a3eace54847ac16138a178a2cc849f84fad684c2bb736fd3019d"
   }
 }
