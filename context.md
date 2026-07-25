@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.49`
+- Plugin: `v02.08.50`
 - Guide: `v02.05.46`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -21,6 +21,9 @@
 - `admin/` - Russian dashboard;
 - `updates/` - single-file and manifest-based package updates;
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
+
+The package updater explicitly loads the WordPress temp-file API when REST
+requests do not bootstrap `wp_tempnam()` automatically.
 
 ## Elementor block library
 

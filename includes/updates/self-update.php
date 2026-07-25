@@ -43,7 +43,7 @@ function wpae_self_update( WP_REST_Request $request ) {
         ], 422 );
     }
 
-    $target = __FILE__;
+    $target = dirname( __DIR__, 2 ) . '/wp-ai-executor.php';
     $current_hash = hash_file( 'sha256', $target );
     $new_hash = hash( 'sha256', $body );
 
