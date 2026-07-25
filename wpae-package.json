@@ -4,6 +4,7 @@
   "entrypoint": "wp-ai-executor.php",
   "files": {
     "includes/updates/package-updater.php": "1b69d88e0d18459081908a59dd5d3d4ba816c9368389d2c4e10b92bcbafecfbe",
+    "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "wp-ai-executor.php": "261d99785b5642f4925c49478fd60ed414fdc73fe4cffcb61d458955e15fbe47"
   }
 }
