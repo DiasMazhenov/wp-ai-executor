@@ -77,6 +77,29 @@ function wpae_read_package_manifest( ZipArchive $archive ): array {
     ];
 }
 
+function wpae_prepare_package_directory( string $target_dir, string $relative_path ): bool {
+    $relative_directory = dirname( $relative_path );
+    if ( $relative_directory === '.' ) {
+        return true;
+    }
+
+    $directory = $target_dir;
+    foreach ( explode( '/', $relative_directory ) as $segment ) {
+        $directory .= '/' . $segment;
+        if ( ! is_dir( $directory ) && ! wp_mkdir_p( $directory ) ) {
+            return false;
+        }
+
+        $mode = @fileperms( $directory );
+        $mode = $mode !== false ? ( $mode & 0777 ) : 0755;
+        if ( ! @chmod( $directory, $mode | 0555 ) ) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function wpae_self_update_package( WP_REST_Request $request ): WP_REST_Response {
     $source_url = trim( (string) $request->get_param( 'package_url' ) );
     $dry_run = (bool) $request->get_param( 'dry_run' );
@@ -139,7 +162,7 @@ function wpae_self_update_package( WP_REST_Request $request ): WP_REST_Response 
     foreach ( $paths as $relative_path ) {
         $target = $target_dir . '/' . $relative_path;
         $directory = dirname( $target );
-        if ( ! is_dir( $directory ) && ! wp_mkdir_p( $directory ) ) {
+        if ( ! wpae_prepare_package_directory( $target_dir, $relative_path ) ) {
             return new WP_REST_Response( [ 'error' => 'Failed to create package directory.', 'path' => $relative_path, 'written' => $written ], 500 );
         }
         $target_mode = is_file( $target ) ? @fileperms( $target ) : false;
