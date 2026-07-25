@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.56`
+- Plugin: `v02.08.57`
 - Guide: `v02.05.46`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -83,6 +83,9 @@ existing `elementor-editor` handle because the current hosting policy returns
 inline source is printed before `elementor-editor`, catches `elementor/init`
 before element views calculate their context-menu groups, and exposes the
 non-sensitive `window.WPAEBlockLibraryDebug` status for DevTools diagnostics.
+It registers Elementor's universal `elements/context-menu/groups` filter for
+current and future element types, while retaining typed filters as a fallback.
+Callbacks resolve the active models through `elementor.selection.getElements()`.
 
 ## Agent workflow
 

@@ -60,7 +60,10 @@
     };
 
     const saveBlock = async ( element, model ) => {
-        const fallbackTitle = `${ element.elType || 'element' } ${ element.id || '' }`.trim();
+        const firstElement = Array.isArray( element ) ? element[ 0 ] || {} : element;
+        const fallbackTitle = Array.isArray( element )
+            ? `${ config.strings.selection } ${ element.length }`
+            : `${ firstElement.elType || 'element' } ${ firstElement.id || '' }`.trim();
         const title = window.prompt( config.strings.titlePrompt, fallbackTitle );
         if ( title === null ) {
             return;
@@ -100,10 +103,21 @@
         notify( config.strings.saved );
     };
 
-    const addActions = ( groups, view ) => {
-        if ( ! view || ! view.model ) {
-            return groups;
+    const getSelectedModels = () => {
+        if (
+            ! window.elementor ||
+            ! elementor.selection ||
+            typeof elementor.selection.getElements !== 'function'
+        ) {
+            return [];
         }
+
+        return elementor.selection.getElements()
+            .map( ( container ) => container && container.model )
+            .filter( Boolean );
+    };
+
+    const appendActions = ( groups, resolveModels ) => {
         if ( groups.some( ( group ) => group.name === 'wpae-block-library' ) ) {
             return groups;
         }
@@ -118,7 +132,13 @@
                     isEnabled: () => true,
                     callback: async () => {
                         try {
-                            await copyText( JSON.stringify( serializeModel( view.model ), null, 2 ) );
+                            const models = resolveModels();
+                            const elements = models.map( serializeModel );
+                            const payload = elements.length === 1 ? elements[ 0 ] : elements;
+                            if ( ! elements.length ) {
+                                throw new Error( config.strings.noSelection );
+                            }
+                            await copyText( JSON.stringify( payload, null, 2 ) );
                             notify( config.strings.copied );
                         } catch ( error ) {
                             notify( error.message || config.strings.failed, 'error' );
@@ -132,7 +152,13 @@
                     isEnabled: () => true,
                     callback: async () => {
                         try {
-                            await saveBlock( serializeModel( view.model ), view.model );
+                            const models = resolveModels();
+                            const elements = models.map( serializeModel );
+                            const payload = elements.length === 1 ? elements[ 0 ] : elements;
+                            if ( ! elements.length ) {
+                                throw new Error( config.strings.noSelection );
+                            }
+                            await saveBlock( payload, models[ 0 ] );
                         } catch ( error ) {
                             notify( error.message || config.strings.failed, 'error' );
                         }
@@ -142,6 +168,13 @@
         } );
         return groups;
     };
+
+    const addSelectedActions = ( groups ) => appendActions( groups, getSelectedModels );
+
+    const addViewActions = ( groups, view ) => appendActions(
+        groups,
+        () => view && view.model ? [ view.model ] : getSelectedModels()
+    );
 
     let contextMenuRegistered = false;
 
@@ -154,12 +187,23 @@
         debug.registered = true;
         debug.registeredAt = new Date().toISOString();
         debug.status = 'registered';
+        elementor.hooks.addFilter(
+            'elements/context-menu/groups',
+            addSelectedActions
+        );
         [ 'container', 'widget', 'section', 'column' ].forEach( ( elementType ) => {
             elementor.hooks.addFilter(
                 `elements/${ elementType }/contextMenuGroups`,
-                addActions
+                addViewActions
             );
         } );
+        debug.hooks = [
+            'elements/context-menu/groups',
+            'elements/container/contextMenuGroups',
+            'elements/widget/contextMenuGroups',
+            'elements/section/contextMenuGroups',
+            'elements/column/contextMenuGroups',
+        ];
         window.console.info( '[WPAE] Elementor block library context menu registered.' );
     };
 

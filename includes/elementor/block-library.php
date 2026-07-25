@@ -599,6 +599,8 @@ function wpae_enqueue_elementor_block_library_editor(): void {
             'copied' => 'Elementor JSON скопирован.',
             'saved' => 'Блок сохранён в библиотеку WP AI Executor.',
             'failed' => 'Не удалось выполнить действие с блоком.',
+            'selection' => 'Выбранные элементы',
+            'noSelection' => 'Не удалось определить выбранный элемент Elementor.',
         ],
     ] );
     if ( is_string( $config ) ) {

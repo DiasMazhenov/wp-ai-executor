@@ -3,10 +3,10 @@
   "plugin": "wp-ai-executor",
   "entrypoint": "wp-ai-executor.php",
   "files": {
-    "assets/js/elementor-block-library.js": "a0101e2e5e9380a35f7d40b4ada40b9e7195431e07992b86852d9006e4afd0e2",
+    "assets/js/elementor-block-library.js": "18bee9b221baa06d2f02c43d70cb4310a3506baaf7b1057f668194137dc66a2d",
     "includes/admin/dashboard.php": "85807e7bca25680d3f976036ef7eae031b240f5df809022fee2eb95c792ba98b",
     "includes/design/system.php": "b70fdb22c5dee74fe3b41bb5eae44a0d15eb920d974fa024c2a84dfc21f1fa86",
-    "includes/elementor/block-library.php": "8b5773dd00ba99df367c3bfc082ad298952e840c8d503109e78fed39954e03ec",
+    "includes/elementor/block-library.php": "14331a8bb99171261f2dcb19297302e5cb52e9aaa74267eb597d6780de0b5648",
     "includes/elementor/blueprint.php": "6ab4c03d7f6eeaf93b576bbdd7590bbc4bfd2f3c95611c9c04ef11bdef735a2f",
     "includes/elementor/compose.php": "8e94c0aefd20a7cd9254b4a8b4396bff05702b791e4b08b0b6acf87d5393b7c1",
     "includes/elementor/css-native.php": "1f7599114f12d71b47ad20547865a01fa8cf1877ad71c40433b5b1ec0e43bc89",
@@ -34,6 +34,6 @@
     "includes/support/logging.php": "cda06cdcad4e43a598ff33ecc1cda93c3bc95f2e746205e1b2384e75646bd515",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "wp-ai-executor.php": "cd3887a7c07b5ea6d2a6c4c9566eb8840f94a5c20020857e7372a89f7bbbfb51"
+    "wp-ai-executor.php": "afe579b782a087a90e2f0036dbf3ab2771dcaf4aa188dabe8c0bac6099666589"
   }
 }
