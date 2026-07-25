@@ -1,8 +1,15 @@
 ( function () {
     'use strict';
 
+    const debug = window.WPAEBlockLibraryDebug = {
+        loaded: true,
+        loadedAt: new Date().toISOString(),
+        registered: false,
+        status: 'loading',
+    };
     const config = window.WPAEBlockLibrary;
     if ( ! config || ! config.endpoint ) {
+        debug.status = 'missing_config';
         return;
     }
 
@@ -144,17 +151,22 @@
         }
 
         contextMenuRegistered = true;
+        debug.registered = true;
+        debug.registeredAt = new Date().toISOString();
+        debug.status = 'registered';
         [ 'container', 'widget', 'section', 'column' ].forEach( ( elementType ) => {
             elementor.hooks.addFilter(
                 `elements/${ elementType }/contextMenuGroups`,
                 addActions
             );
         } );
+        window.console.info( '[WPAE] Elementor block library context menu registered.' );
     };
 
     if ( window.elementor && elementor.hooks ) {
         registerContextMenu();
     } else {
+        debug.status = 'waiting_for_elementor_init';
         window.addEventListener( 'elementor/init', registerContextMenu, { once: true } );
     }
 }() );

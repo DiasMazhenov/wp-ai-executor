@@ -605,7 +605,7 @@ function wpae_enqueue_elementor_block_library_editor(): void {
         wp_add_inline_script(
             'elementor-editor',
             'window.WPAEBlockLibrary = ' . $config . ';' . "\n" . $script_source,
-            'after'
+            'before'
         );
     }
 }
