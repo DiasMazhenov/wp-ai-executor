@@ -348,26 +348,42 @@ function wpae_build_health_report( string $mode = 'quick' ): array {
     $operation_logs = function_exists( 'wpae_get_operation_logs_store' )
         ? array_values( array_filter( array_slice( wpae_get_operation_logs_store(), 0, 30 ), 'is_array' ) )
         : [];
+    $maintenance_endpoints = [ '/self-update', '/self-update-package' ];
+    $interactive_logs = array_values( array_filter(
+        $operation_logs,
+        static fn( array $entry ): bool => ! in_array( (string) ( $entry['endpoint'] ?? '' ), $maintenance_endpoints, true )
+    ) );
+    $maintenance_logs = array_values( array_filter(
+        $operation_logs,
+        static fn( array $entry ): bool => in_array( (string) ( $entry['endpoint'] ?? '' ), $maintenance_endpoints, true )
+    ) );
     $logged_durations = array_values( array_filter( array_map(
         static fn( array $entry ): int => isset( $entry['duration_ms'] ) ? max( 0, (int) $entry['duration_ms'] ) : 0,
-        $operation_logs
+        $interactive_logs
     ) ) );
-    if ( ! empty( $logged_durations ) ) {
+    $maintenance_durations = array_values( array_filter( array_map(
+        static fn( array $entry ): int => isset( $entry['duration_ms'] ) ? max( 0, (int) $entry['duration_ms'] ) : 0,
+        $maintenance_logs
+    ) ) );
+    if ( ! empty( $operation_logs ) ) {
         $slow_requests = count( array_filter( $logged_durations, static fn( int $duration ): bool => $duration >= 2000 ) );
         $very_slow_requests = count( array_filter( $logged_durations, static fn( int $duration ): bool => $duration >= 5000 ) );
-        $max_duration = max( $logged_durations );
+        $max_duration = ! empty( $logged_durations ) ? max( $logged_durations ) : 0;
+        $maintenance_max_duration = ! empty( $maintenance_durations ) ? max( $maintenance_durations ) : 0;
         $latency_status = $very_slow_requests >= 2 ? 'critical' : ( $slow_requests > 0 ? 'warning' : 'good' );
         wpae_health_add_check(
             $checks,
             'executor_rest_latency',
             $latency_status,
             'История REST-запросов',
-            $latency_status === 'good' ? 'Недавние операции AI Executor выполнялись без заметных задержек.' : 'В журнале AI Executor обнаружены медленные REST-запросы.',
+            $latency_status === 'good' ? 'Недавние интерактивные операции AI Executor выполнялись без заметных задержек.' : 'В журнале AI Executor обнаружены медленные интерактивные REST-запросы.',
             [
                 'sample_size' => count( $logged_durations ),
                 'slow_over_2s' => $slow_requests,
                 'very_slow_over_5s' => $very_slow_requests,
                 'max_duration_ms' => $max_duration,
+                'excluded_maintenance_requests' => count( $maintenance_durations ),
+                'maintenance_max_duration_ms' => $maintenance_max_duration,
             ],
             $latency_status === 'good' ? '' : 'Остановите параллельных агентов и проверьте PHP-FPM max_children, slow log и MySQL.'
         );
@@ -390,7 +406,7 @@ function wpae_build_health_report( string $mode = 'quick' ): array {
     $overall = $summary['critical'] > 0 ? 'critical' : ( $summary['warning'] > 0 ? 'warning' : 'healthy' );
     return [
         'ok' => $summary['critical'] === 0,
-        'health_version' => 'v01.00.00',
+        'health_version' => 'v01.00.01',
         'plugin_version' => WPAE_VERSION,
         'mode' => $mode,
         'overall' => $overall,
