@@ -516,7 +516,7 @@ function wpae_render_health_dashboard_card( string $health_url ): void {
         .wpae-health-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
         @media (max-width:782px) { .wpae-health-list { grid-template-columns:1fr; } }
     </style>
-    <div class="wpae-card wpae-card-wide">
+    <div class="wpae-card wpae-card-wide" data-wpae-tab="monitoring">
         <div class="wpae-health-head">
             <div>
                 <h2>Диагностика WordPress</h2>

@@ -58,13 +58,15 @@
 - Добавлен `/elementor/css-to-native`: переносит уверенно распознанные CSS declarations из HTML widget `<style>` в native Elementor settings по `data-id`/`elementor-element-*` selectors, с обязательным `dry_run`-workflow и пропуском protected enhancement zones.
 - Продолжено дробление Elementor-модулей: editability audit вынесен из `validation.php` в отдельный `includes/elementor/editability.php`, CSS migrator добавлен как отдельный `includes/elementor/css-native.php`.
 - Продолжено постепенное дробление `validation.php`: базовые Elementor validation rules вынесены в `includes/elementor/validation-rules.php`, design-system contract вынесен в `includes/elementor/design-contract.php`.
+- Dashboard разделен на доступные горизонтальные табы: «Подключение», «Elementor», «Агенты», «Мониторинг» и «Примеры». Активная вкладка сохраняется, поддерживаются клавиатурная навигация и fallback без JavaScript.
 
 ## Библиотека произвольных Elementor-блоков
 
 Цель: копировать и переиспользовать любой выбранный Elementor Flexbox Container или widget, включая чужие блоки и шаблоны, а не только встроенные WPAE recipes.
 
 Статус: визуальная библиотека первого этапа реализована в `v02.08.58`;
-в `v02.08.59` добавлена ссылка на настройки в WordPress Admin Bar.
+в `v02.08.59` добавлена ссылка на настройки в WordPress Admin Bar;
+в `v02.08.60` основная панель настроек разделена по функциональным вкладкам.
 
 1. Поддержать два формата:
    - native Elementor JSON для точного копирования исходного элемента без обязательной WPAE-обёртки;

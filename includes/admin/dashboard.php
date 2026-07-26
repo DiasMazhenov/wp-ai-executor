@@ -355,6 +355,71 @@ function wpae_settings_page() {
             gap: 16px;
             margin-top: 16px;
         }
+        .wpae-tabs {
+            margin-top: 16px;
+            overflow: hidden;
+            border: 1px solid var(--wpae-border);
+            border-radius: 8px;
+            background: var(--wpae-panel);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+        .wpae-tabs__list {
+            display: flex;
+            width: 100%;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        .wpae-tab {
+            position: relative;
+            flex: 0 0 auto;
+            min-height: 46px;
+            padding: 0 17px;
+            border: 0;
+            border-right: 1px solid var(--wpae-border);
+            background: transparent;
+            color: var(--wpae-muted);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 650;
+            line-height: 1;
+        }
+        .wpae-tab:last-child {
+            border-right: 0;
+        }
+        .wpae-tab:hover {
+            background: var(--wpae-panel-soft);
+            color: var(--wpae-text);
+        }
+        .wpae-tab[aria-selected="true"] {
+            background: #fff;
+            color: var(--wpae-text);
+        }
+        .wpae-tab[aria-selected="true"]::after {
+            position: absolute;
+            right: 12px;
+            bottom: 0;
+            left: 12px;
+            height: 3px;
+            background: var(--wpae-accent);
+            content: "";
+        }
+        .wpae-tab:focus-visible {
+            z-index: 1;
+            outline: 2px solid var(--wpae-accent);
+            outline-offset: -3px;
+        }
+        .wpae-tab-panels:not(.is-ready) {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .wpae-tab-panel[hidden] {
+            display: none;
+        }
+        .wpae-tab-panel.wpae-grid {
+            margin-top: 16px;
+        }
         .wpae-card {
             padding: 18px;
         }
@@ -610,6 +675,7 @@ function wpae_settings_page() {
         @media (max-width: 960px) {
             .wpae-hero,
             .wpae-grid,
+            .wpae-tab-panels:not(.is-ready),
             .wpae-cap-list {
                 grid-template-columns: 1fr;
             }
@@ -717,10 +783,20 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status">Диагностика WordPress завершена. Режим: <?php echo esc_html( $health_checked ); ?>.</div>
         <?php endif; ?>
 
-        <div class="wpae-grid">
+        <nav class="wpae-tabs" aria-label="Разделы настроек WP AI Executor">
+            <div class="wpae-tabs__list" role="tablist" aria-orientation="horizontal">
+                <button class="wpae-tab" id="wpae-tab-connection" type="button" role="tab" aria-selected="true" aria-controls="wpae-panel-connection" tabindex="0" data-wpae-tab-target="connection">Подключение</button>
+                <button class="wpae-tab" id="wpae-tab-elementor" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-elementor" tabindex="-1" data-wpae-tab-target="elementor">Elementor</button>
+                <button class="wpae-tab" id="wpae-tab-agents" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-agents" tabindex="-1" data-wpae-tab-target="agents">Агенты</button>
+                <button class="wpae-tab" id="wpae-tab-monitoring" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-monitoring" tabindex="-1" data-wpae-tab-target="monitoring">Мониторинг</button>
+                <button class="wpae-tab" id="wpae-tab-examples" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-examples" tabindex="-1" data-wpae-tab-target="examples">Примеры</button>
+            </div>
+        </nav>
+
+        <div class="wpae-tab-panels" id="wpae-dashboard-sections">
             <?php wpae_render_health_dashboard_card( $health_url ); ?>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="connection">
                 <h2>REST endpoint</h2>
                 <p>Основной адрес для выполнения PHP через защищенный REST API.</p>
                 <label for="wpae-rest-url">REST URL</label>
@@ -730,7 +806,7 @@ function wpae_settings_page() {
                 </div>
             </div>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="connection">
                 <h2>Секретный ключ</h2>
                 <p>Передавайте этот ключ в заголовке <code>X-AI-Key</code>. Старый <code>X-WPAE-API-Key</code> принимается только как deprecated alias и возвращает предупреждение. Не публикуйте ключ в frontend-коде.</p>
                 <label for="wpae-key">X-AI-Key</label>
@@ -746,7 +822,7 @@ function wpae_settings_page() {
                 </form>
             </div>
 
-            <div class="wpae-card wpae-card-wide">
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="elementor">
                 <h2>Библиотека Elementor-блоков</h2>
                 <p>
                     Постоянное хранилище любых native Elementor JSON-блоков и шаблонов, включая импортированные с других сайтов.
@@ -788,7 +864,7 @@ function wpae_settings_page() {
                 <?php endif; ?>
             </div>
 
-            <div class="wpae-card wpae-card-wide">
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="monitoring">
                 <h2>Короткоживущие exports</h2>
                 <p>
                     JSON-экспорты хранятся в <code>wp_options</code>, не создают публичных файлов и автоматически ограничены по TTL и количеству.
@@ -818,7 +894,7 @@ function wpae_settings_page() {
                 </form>
             </div>
 
-            <div class="wpae-card wpae-card-wide">
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="agents">
                 <h2>Разрешения агента</h2>
                 <p>
                     Ключ остается один, но владелец сайта управляет тем, что агенту разрешено делать.
@@ -868,7 +944,7 @@ function wpae_settings_page() {
                 </form>
             </div>
 
-            <div class="wpae-card wpae-card-wide">
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="elementor">
                 <h2>Дизайн-токены проекта</h2>
                 <p>
                     Эти настройки попадают в <code>/guide</code>, <code>/capabilities</code>, <code>/elementor/design-system</code> и <code>/elementor/blueprint</code>.
@@ -958,7 +1034,7 @@ function wpae_settings_page() {
                 </form>
             </div>
 
-            <div class="wpae-card wpae-card-wide">
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="agents">
                 <h2>Пользовательские skills</h2>
                 <p>
                     Загружайте собственные инструкции в формате <code>SKILL.md</code>. Они хранятся в базе WordPress,
@@ -1118,7 +1194,7 @@ function wpae_settings_page() {
                 </div>
             </div>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="connection">
                 <h2>Guide и разрешения</h2>
                 <p>Агент должен читать эти endpoints перед записью и следовать возвращенным правилам.</p>
                 <label for="wpae-guide-url">URL guide</label>
@@ -1133,7 +1209,7 @@ function wpae_settings_page() {
                 </div>
             </div>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="monitoring">
                 <h2>Журнал операций</h2>
                 <p>Последние действия агентов без ключей, токенов и raw payload.</p>
                 <label for="wpae-logs-url">URL журнала</label>
@@ -1176,7 +1252,7 @@ function wpae_settings_page() {
                 </div>
             </div>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="examples">
                 <h2>Пример curl</h2>
                 <p>Минимальный запрос к `/run`. Для write endpoints также нужен guide token.</p>
                 <pre class="wpae-code"><?php echo esc_html(
@@ -1187,7 +1263,7 @@ function wpae_settings_page() {
 ); ?></pre>
             </div>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="examples">
                 <h2>JavaScript</h2>
                 <p>Для локальной разработки или agent runtime с fetch.</p>
                 <pre class="wpae-code"><?php echo esc_html(
@@ -1208,7 +1284,7 @@ await aiPHP(`return get_bloginfo("name") . " | PHP " . PHP_VERSION;`);'
 ); ?></pre>
             </div>
 
-            <div class="wpae-card">
+            <div class="wpae-card" data-wpae-tab="examples">
                 <h2>Python</h2>
                 <p>Пример для любого агента, который умеет делать HTTP-запросы.</p>
                 <pre class="wpae-code"><?php echo esc_html(
@@ -1226,7 +1302,7 @@ print(result["return_value"])'
 ); ?></pre>
             </div>
 
-            <div class="wpae-card wpae-card-wide">
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="examples">
                 <h2>Рекомендуемая инструкция для агента</h2>
                 <p>Эту инструкцию можно дать Codex, Claude Desktop или другому агенту перед работой с сайтом.</p>
                 <h3>Получить guide</h3>
@@ -1238,7 +1314,7 @@ print(result["return_value"])'
                 <pre class="wpae-code wpae-code-light"><?php echo esc_html( wpae_agent_prompt() ); ?></pre>
             </div>
 
-            <div class="wpae-card wpae-card-wide wpae-security">
+            <div class="wpae-card wpae-card-wide wpae-security" data-wpae-tab="examples">
                 <strong>Безопасность</strong>
                 <ul>
                     <li>Плагин может выполнять PHP, поэтому держите ключ в секрете.</li>
@@ -1250,6 +1326,87 @@ print(result["return_value"])'
     </div>
     <script>
     (function () {
+        var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-wpae-tab-target]'));
+        var panelHost = document.getElementById('wpae-dashboard-sections');
+        var tabKeys = tabs.map(function (tab) {
+            return tab.getAttribute('data-wpae-tab-target');
+        });
+        var panels = {};
+
+        if (panelHost && tabs.length) {
+            tabKeys.forEach(function (key) {
+                var panel = document.createElement('section');
+                panel.className = 'wpae-tab-panel wpae-grid';
+                panel.id = 'wpae-panel-' + key;
+                panel.setAttribute('role', 'tabpanel');
+                panel.setAttribute('aria-labelledby', 'wpae-tab-' + key);
+                panels[key] = panel;
+                panelHost.appendChild(panel);
+            });
+
+            Array.prototype.slice.call(panelHost.querySelectorAll(':scope > [data-wpae-tab]')).forEach(function (card) {
+                var key = card.getAttribute('data-wpae-tab');
+                if (panels[key]) {
+                    panels[key].appendChild(card);
+                }
+            });
+
+            panelHost.classList.add('is-ready');
+
+            var activateTab = function (key, moveFocus) {
+                if (!panels[key]) return;
+
+                tabs.forEach(function (tab) {
+                    var selected = tab.getAttribute('data-wpae-tab-target') === key;
+                    tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+                    tab.setAttribute('tabindex', selected ? '0' : '-1');
+                    if (selected && moveFocus) tab.focus();
+                });
+
+                tabKeys.forEach(function (panelKey) {
+                    panels[panelKey].hidden = panelKey !== key;
+                });
+
+                try {
+                    window.localStorage.setItem('wpae-dashboard-tab', key);
+                } catch (error) {
+                    // Storage is optional; tab navigation still works without it.
+                }
+
+                if (window.location.hash !== '#wpae-panel-' + key) {
+                    window.history.replaceState(null, '', '#wpae-panel-' + key);
+                }
+            };
+
+            var hashKey = window.location.hash.indexOf('#wpae-panel-') === 0
+                ? window.location.hash.replace('#wpae-panel-', '')
+                : '';
+            var savedKey = '';
+            try {
+                savedKey = window.localStorage.getItem('wpae-dashboard-tab') || '';
+            } catch (error) {
+                savedKey = '';
+            }
+
+            activateTab(tabKeys.indexOf(hashKey) !== -1 ? hashKey : (tabKeys.indexOf(savedKey) !== -1 ? savedKey : tabKeys[0]), false);
+
+            tabs.forEach(function (tab, index) {
+                tab.addEventListener('click', function () {
+                    activateTab(tab.getAttribute('data-wpae-tab-target'), false);
+                });
+                tab.addEventListener('keydown', function (event) {
+                    var nextIndex = index;
+                    if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+                    if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+                    if (event.key === 'Home') nextIndex = 0;
+                    if (event.key === 'End') nextIndex = tabs.length - 1;
+                    if (nextIndex === index && ['ArrowRight', 'ArrowLeft', 'Home', 'End'].indexOf(event.key) === -1) return;
+                    event.preventDefault();
+                    activateTab(tabs[nextIndex].getAttribute('data-wpae-tab-target'), true);
+                });
+            });
+        }
+
         document.querySelectorAll('[data-wpae-color-target]').forEach(function (picker) {
             var input = document.getElementById(picker.getAttribute('data-wpae-color-target'));
             var pill = picker.closest('.wpae-color-field') ? picker.closest('.wpae-color-field').querySelector('.wpae-token-pill') : null;

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.59`
+- Plugin: `v02.08.60`
 - Guide: `v02.05.46`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -25,6 +25,12 @@
 Administrators have a direct `AI Executor` link in the WordPress Admin Bar.
 It opens the existing `Settings -> AI Executor` screen and is hidden from
 users without `manage_options`.
+
+The dashboard uses an accessible horizontal tab interface with five focused
+sections: connection, Elementor, agents, monitoring and examples. The active
+section is preserved in the URL hash and local browser storage. Arrow keys,
+Home and End switch tabs, while the non-JavaScript fallback keeps every card
+visible in the original document order.
 
 The package updater explicitly loads the WordPress temp-file API when REST
 requests do not bootstrap `wp_tempnam()` automatically. Atomic package writes
