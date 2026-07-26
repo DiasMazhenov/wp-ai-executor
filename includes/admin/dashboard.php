@@ -12,6 +12,21 @@ add_action( 'admin_menu', function () {
     );
 } );
 
+add_action( 'admin_bar_menu', function ( WP_Admin_Bar $admin_bar ): void {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    $admin_bar->add_node( [
+        'id' => 'wpae-settings',
+        'title' => 'AI Executor',
+        'href' => admin_url( 'options-general.php?page=wp-ai-executor' ),
+        'meta' => [
+            'title' => 'Настройки WP AI Executor',
+        ],
+    ] );
+}, 80 );
+
 add_action( 'admin_init', function () {
     register_setting( 'wpae_settings', 'wp_ai_executor_key', [
         'sanitize_callback' => 'sanitize_text_field',
