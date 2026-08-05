@@ -457,7 +457,17 @@ GET    /wp-json/ai-executor/v1/elementor/blocks
 POST   /wp-json/ai-executor/v1/elementor/blocks
 GET    /wp-json/ai-executor/v1/elementor/blocks/{id}
 DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}
+POST   /wp-json/ai-executor/v1/elementor/blocks/{id}
+POST   /wp-json/ai-executor/v1/elementor/blocks/{id}/duplicate
+POST   /wp-json/ai-executor/v1/elementor/blocks/{id}/publish
 GET    /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve
+
+New records carry a versioned `wpae-elementor-block-manifest-v1` sidecar with
+workflow status, source skill, design-system reference, provenance/license,
+parent revision, quality score and media dependencies. Existing records are
+read as `published` for backward compatibility; draft blocks cannot be
+instantiated. Approval runs the deterministic Design Review Gate, and
+`published` is only reachable from `approved`.
 ```
 
 `preserve` only creates new Elementor IDs and keeps the original design.

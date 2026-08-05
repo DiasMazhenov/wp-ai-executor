@@ -293,7 +293,9 @@ function wpae_get_capabilities_payload(): array {
                 'recipe' => 'GET /wp-json/ai-executor/v1/elementor/recipes/{id}',
                 'compose' => 'POST /wp-json/ai-executor/v1/elementor/compose',
                 'blocks' => 'GET|POST /wp-json/ai-executor/v1/elementor/blocks',
-                'block' => 'GET|DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}',
+                'block' => 'GET|POST|DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}',
+                'duplicate_block' => 'POST /wp-json/ai-executor/v1/elementor/blocks/{id}/duplicate',
+                'publish_block' => 'POST /wp-json/ai-executor/v1/elementor/blocks/{id}/publish',
                 'instantiate_block' => 'GET /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve|compatibility|adapt',
                 'visual_audit' => 'POST /wp-json/ai-executor/v1/elementor/visual-audit',
                 'editability_audit' => 'POST /wp-json/ai-executor/v1/elementor/editability-audit',
@@ -315,6 +317,8 @@ function wpae_get_capabilities_payload(): array {
             'block_library' => [
                 'schema' => WPAE_BLOCK_LIBRARY_SCHEMA,
                 'schema_version' => WPAE_BLOCK_LIBRARY_SCHEMA_VERSION,
+                'manifest_schema' => WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA,
+                'workflow_statuses' => [ 'draft', 'approved', 'published' ],
                 'storage' => 'Private WordPress custom posts with revision support; no public files.',
                 'accepted_formats' => [ 'native_elementor_json', WPAE_BLOCK_LIBRARY_SCHEMA ],
                 'instantiate_modes' => [
@@ -714,6 +718,8 @@ function wpae_get_capabilities_payload(): array {
                 '/elementor/compose' => true,
                 '/elementor/blocks' => true,
                 '/elementor/blocks/{id}' => true,
+                '/elementor/blocks/{id}/duplicate' => true,
+                '/elementor/blocks/{id}/publish' => true,
                 '/elementor/blocks/{id}/instantiate' => true,
                 '/elementor/visual-audit' => true,
                 '/elementor/editability-audit' => true,

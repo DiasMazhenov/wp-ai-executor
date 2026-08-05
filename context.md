@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.67`
-- Guide: `v02.05.51`
+- Plugin: `v02.08.68`
+- Guide: `v02.05.52`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -113,6 +113,14 @@ REST endpoints:
 - `GET|POST /wp-json/ai-executor/v1/elementor/blocks`
 - `GET|DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}`
 - `GET /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate`
+- `POST /elementor/blocks/{id}` updates bounded metadata or replaces native JSON and returns the block to `draft`.
+- `POST /elementor/blocks/{id}/duplicate` creates a draft revision with `parent_revision`.
+- `POST /elementor/blocks/{id}/publish` moves `draft -> approved -> published`; approval runs Design Review Gate.
+
+The `wpae-elementor-block-manifest-v1` sidecar records status, source skill,
+design-system version, provenance/license, parent revision, quality score and
+media dependencies. Manifest metadata is limited to 32 KB. Old records without
+the sidecar remain readable as published blocks.
 
 Instantiation modes:
 

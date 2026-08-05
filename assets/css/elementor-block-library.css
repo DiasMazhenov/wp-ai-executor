@@ -311,11 +311,32 @@ body.wpae-library-open {
 }
 
 .wpae-library__compatibility,
-.wpae-library__tags {
+.wpae-library__tags,
+.wpae-library__workflow {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
     margin-bottom: 1.25rem;
+}
+
+.wpae-library__workflow {
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.wpae-library__secondary {
+    min-height: 2.25rem;
+    padding: 0 0.7rem;
+    color: var(--wpae-ink);
+    background: var(--wpae-paper);
+    border: 1px solid var(--wpae-line);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.wpae-library__secondary:hover,
+.wpae-library__secondary:focus-visible {
+    border-color: var(--wpae-accent);
 }
 
 .wpae-library__status,

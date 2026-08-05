@@ -156,8 +156,26 @@ add_action( 'rest_api_init', function () {
     ] );
 
     register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_block_library_update',
+        'permission_callback' => 'wpae_block_library_write_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)', [
         'methods'             => 'DELETE',
         'callback'            => 'wpae_block_library_delete',
+        'permission_callback' => 'wpae_block_library_write_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)/publish', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_block_library_set_status',
+        'permission_callback' => 'wpae_block_library_write_permission',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)/duplicate', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_block_library_duplicate',
         'permission_callback' => 'wpae_block_library_write_permission',
     ] );
 

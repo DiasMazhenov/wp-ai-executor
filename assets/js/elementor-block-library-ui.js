@@ -81,6 +81,32 @@
         ( item ) => Number( item.id ) === Number( state.selectedId )
     ) || null;
 
+    const mutate = async ( url, body ) => {
+        const response = await window.fetch( url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': config.nonce,
+            },
+            body: JSON.stringify( body || {} ),
+        } );
+        const text = await response.text();
+        let payload = {};
+        try {
+            payload = text ? JSON.parse( text ) : {};
+        } catch ( error ) {
+            throw new Error( text || config.strings.failed );
+        }
+        if ( ! response.ok || ! payload.ok ) {
+            const review = payload.review && payload.review.must_fix && payload.review.must_fix.length
+                ? ` ${ payload.review.must_fix.join( ' ' ) }`
+                : '';
+            throw new Error( ( payload.error || payload.message || config.strings.failed ) + review );
+        }
+        return payload;
+    };
+
     const renderCategories = () => {
         const select = root.querySelector( '[data-wpae-category]' );
         const current = state.category;
@@ -123,6 +149,22 @@
         } );
         panel.appendChild( facts );
 
+        const status = item.status || 'published';
+        const workflow = createElement( 'div', 'wpae-library__workflow' );
+        workflow.appendChild( createElement( 'span', 'wpae-library__eyebrow', config.strings.status ) );
+        workflow.appendChild( createElement( 'span', `wpae-library__status wpae-library__status--${ status === 'published' ? 'ok' : 'warn' }`, config.strings[ status ] || status ) );
+        if ( status === 'draft' || status === 'approved' ) {
+            const action = createElement( 'button', 'wpae-library__secondary', status === 'draft' ? config.strings.approve : config.strings.publish );
+            action.type = 'button';
+            action.dataset.wpaeStatus = status === 'draft' ? 'approved' : 'published';
+            workflow.appendChild( action );
+        }
+        const duplicate = createElement( 'button', 'wpae-library__secondary', config.strings.duplicate );
+        duplicate.type = 'button';
+        duplicate.dataset.wpaeDuplicate = String( item.id );
+        workflow.appendChild( duplicate );
+        panel.appendChild( workflow );
+
         const compatibility = createElement( 'div', 'wpae-library__compatibility' );
         compatibility.appendChild( createElement(
             'span',
@@ -148,10 +190,12 @@
             panel.appendChild( tags );
         }
 
-        const insert = createElement( 'button', 'wpae-library__insert', config.strings.insert );
-        insert.type = 'button';
-        insert.dataset.wpaeInsert = String( item.id );
-        panel.appendChild( insert );
+        if ( status !== 'draft' ) {
+            const insert = createElement( 'button', 'wpae-library__insert', config.strings.insert );
+            insert.type = 'button';
+            insert.dataset.wpaeInsert = String( item.id );
+            panel.appendChild( insert );
+        }
     };
 
     const renderItems = () => {
@@ -258,6 +302,28 @@
         }
     };
 
+    const changeStatus = async ( blockId, status ) => {
+        try {
+            await mutate( `${ config.endpoint }/${ blockId }/publish`, { status } );
+            notify( config.strings.statusChanged );
+            await load();
+            state.selectedId = Number( blockId );
+            renderDetails();
+        } catch ( error ) {
+            notify( error.message || config.strings.failed, 'error' );
+        }
+    };
+
+    const duplicateBlock = async ( blockId ) => {
+        try {
+            await mutate( `${ config.endpoint }/${ blockId }/duplicate`, {} );
+            notify( config.strings.duplicated );
+            await load();
+        } catch ( error ) {
+            notify( error.message || config.strings.failed, 'error' );
+        }
+    };
+
     const close = () => {
         if ( root ) {
             root.hidden = true;
@@ -337,6 +403,16 @@
             const insert = event.target.closest( '[data-wpae-insert]' );
             if ( insert ) {
                 insertBlock( Number( insert.dataset.wpaeInsert ) );
+                return;
+            }
+            const status = event.target.closest( '[data-wpae-status]' );
+            if ( status ) {
+                changeStatus( Number( state.selectedId ), status.dataset.wpaeStatus );
+                return;
+            }
+            const duplicate = event.target.closest( '[data-wpae-duplicate]' );
+            if ( duplicate ) {
+                duplicateBlock( Number( duplicate.dataset.wpaeDuplicate ) );
                 return;
             }
             const mode = event.target.closest( '[data-wpae-mode]' );

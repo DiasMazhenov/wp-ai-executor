@@ -91,6 +91,7 @@ function wpae_agent_guide(): array {
             '3. For page work, call /elementor/blueprint after /elementor/design-system before composing or writing Elementor data.',
             '3a. Design mobile first: define mobile stacking, type scale, spacing, CTA visibility, tap targets, and responsive Elementor settings before expanding tablet and desktop layouts.',
             '4. Prefer /elementor/design-system, /elementor/blueprint, /elementor/recipes, /elementor/compose, /elementor/normalize, /elementor/validate, /elementor/visual-audit, /elementor/editability-audit, /elementor/typography-unlock, /elementor/resolve-typography-overrides, /elementor/css-to-native, /elementor/patch, /elementor/page, and /elementor/update over raw PHP through /run.',
+            '4d. Search the Elementor block library before composing a repeated pattern; use preserve for foreign source fidelity and compatibility/adapt only when explicitly needed.',
             '4a. Never use /run to bypass /elementor/update, design-system marker classes, dry_run, or Elementor preflight; direct _elementor_data changes through /run are validated by the same contract and rolled back on failure.',
             '4b. If an existing page has old or different wpae-system-* classes, migrate it to the current main design system with /elementor/normalize, then run /elementor/update dry_run; preserve non-WPAE custom classes.',
             '4c. Never ask for WP Admin login/password, admin cookies, nonces, or browser sessions. Do not use Playwright/WP Admin/Elementor editor for writes; browser automation is allowed only to inspect public pages after API writes.',
@@ -111,6 +112,7 @@ function wpae_agent_guide(): array {
             '17. Use /logs for recent operation metadata when debugging, but never expect raw payloads or secrets there.',
             '18. Read preflight and agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
             '19. If any endpoint or verification step fails, report concrete error details: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix.',
+            '20. Library blocks use draft -> approved -> published. Run the Design Review Gate before approval; never instantiate a draft or publish with ship_best.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -640,10 +642,15 @@ function wpae_agent_guide(): array {
             'block_library_policy' => [
                 'schema' => WPAE_BLOCK_LIBRARY_SCHEMA,
                 'schema_version' => WPAE_BLOCK_LIBRARY_SCHEMA_VERSION,
+                'manifest_schema' => WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA,
+                'workflow_statuses' => [ 'draft', 'approved', 'published' ],
                 'endpoints' => [
                     'list' => 'GET /wp-json/ai-executor/v1/elementor/blocks',
                     'save_or_import' => 'POST /wp-json/ai-executor/v1/elementor/blocks',
                     'get' => 'GET /wp-json/ai-executor/v1/elementor/blocks/{id}',
+                    'update' => 'POST /wp-json/ai-executor/v1/elementor/blocks/{id}',
+                    'duplicate' => 'POST /wp-json/ai-executor/v1/elementor/blocks/{id}/duplicate',
+                    'publish' => 'POST /wp-json/ai-executor/v1/elementor/blocks/{id}/publish',
                     'delete' => 'DELETE /wp-json/ai-executor/v1/elementor/blocks/{id}',
                     'instantiate' => 'GET /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve|compatibility|adapt',
                 ],
@@ -654,6 +661,7 @@ function wpae_agent_guide(): array {
                     WPAE_BLOCK_LIBRARY_SCHEMA . ' wrapper.',
                 ],
                 'storage' => 'Permanent private WordPress custom posts with revision support. No public files are created.',
+                'manifest_rule' => 'New blocks start as draft. Approval runs /elementor/design-review; published is reachable only from approved. Draft blocks cannot be instantiated.',
                 'foreign_block_rule' => 'Any foreign Elementor block or template may be stored without forcing the current design system. Preserve its original native_payload and elementor_data, including template-level fields such as page_settings, and report missing widgets, media references, legacy layout, protected zones, and design-system differences.',
                 'instantiate_modes' => [
                     'preserve' => 'Use when exact original design matters. Only rekey Elementor IDs. structured_write_ready may be false until compatibility issues are fixed.',
