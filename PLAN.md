@@ -96,7 +96,68 @@
 
 ## Далее
 
-1. Наблюдать новые live-логи и добавлять точечные validators, если внешние агенты найдут новый повторяющийся анти-паттерн.
+### Roadmap на основе Open Design
+
+Цель: перенять переносимые контракты Open Design, сохранив WordPress-native
+архитектуру, Elementor editability и запрет произвольных серверных файлов.
+
+1. **Design System Package v2 — первый приоритет.**
+   - Разделить текущую систему на machine-readable manifest, agent-facing `DESIGN.md` content и semantic tokens.
+   - Хранить пакет в `wp_options`, без создания файлов на сервере.
+   - Добавить ID, версию, provenance, source URL/hash, license и active system per page.
+   - Компилировать semantic roles в native Elementor settings mapping; `rem/em/%/vh` остаются политикой WPAE.
+   - Сохранить совместимость с текущим `/elementor/design-system` и существующими токенами.
+   - Готово, когда manifest/tokens проходят schema validation, а смена системы доступна через `dry_run` и rollback.
+
+2. **Детерминированный Token Map для `adapt` — второй приоритет.**
+   - Извлекать из чужого блока цвета, typography, spacing, radii и другие native-supported значения.
+   - Сопоставлять их с semantic roles активной дизайн-системы по использованию, а не только по близости значений.
+   - Возвращать `mapped`, `unmatched`, `collisions`, evidence и предполагаемые native Elementor property paths.
+   - Не добавлять новые токены и не менять protected HTML/WebGL zones без явного подтверждения.
+   - Применять mapping только через `dry_run -> validate -> approve/write`; `preserve` и `compatibility` не менять.
+   - Готово, когда `adapt` выполняет реальный token-level remap и неоднозначные значения остаются в review list.
+
+3. **Skill Manifest v1.**
+   - Оставить `SKILL.md` каноническим переносимым содержимым.
+   - Добавить необязательный sidecar в database record: version, capabilities, inputs, pipeline, source, license и compatibility.
+   - Проверять минимальные capabilities и разрешать только существующие безопасные WPAE endpoints.
+   - Не разрешать skill запускать shell, MCP server, WP-CLI, browser-admin writes или создавать серверные файлы.
+   - Готово, когда старые skills работают без manifest, а новые получают schema validation и machine-readable workflow.
+
+4. **Design Review Gate поверх существующего conformance scoring.**
+   - Переиспользовать `/audit`, visual regression, editability audit и conformance scoring вместо пяти отдельных LLM-панелистов.
+   - Оценивать composition/brief, design-system consistency, accessibility/mobile, copy и Elementor editability.
+   - Ввести состояния `draft -> review -> revise -> approved`, максимум три итерации с явной причиной остановки.
+   - Не публиковать результат ниже blocking threshold; fallback `ship_best` не использовать для live Elementor page.
+   - Готово, когда write response содержит review verdict, must-fix list и безопасный следующий шаг.
+
+5. **Версионированный manifest Elementor-блока и publish flow.**
+   - Расширить `wpae-elementor-block-v1`: status, source skill, design system, provenance/license, parent revision, quality score и media dependencies.
+   - Ограничить metadata size, валидировать JSON и запрещать абсолютные/traversal paths.
+   - Добавить редактирование metadata, duplicate/revision и `draft -> approved -> published` в визуальной библиотеке.
+   - Добавить previews/screenshots только после стабильного manifest и approval workflow.
+   - Готово, когда агент может выбрать только совместимый approved block и получить полный provenance report.
+
+6. **User feedback -> rule proposals — после первых пяти этапов.**
+   - Собирать повторяющиеся пользовательские исправления из review/annotations в предложения правил.
+   - Использовать сначала детерминированную дедупликацию; LLM-обобщение оставить опциональным.
+   - Никогда не менять guide/design system автоматически: каждое правило требует явного `accept/reject` владельца.
+   - Готово, когда принятое правило получает source evidence, version и enforce mapping либо остаётся advisory.
+
+### Что намеренно не переносим
+
+- Electron/Next.js daemon, SQLite и отдельный desktop runtime.
+- Запуск локальных CLI, MCP servers и shell-команд из WordPress.
+- Произвольные React/iframe plugin surfaces и полный marketplace.
+- Файловую artifact-систему: skills, manifests и design systems остаются в WordPress database.
+- Пять дорогостоящих LLM-рецензентов; сначала используем уже существующие validators.
+- Чужие брендовые assets/design systems без отдельной проверки license и provenance.
+
+После каждого этапа: обновить guide/capabilities/dashboard, добавить один минимальный regression check, выполнить package dry-run, live rollout и проверить реальный ответ endpoint.
+
+### Постоянная эксплуатация
+
+1. Наблюдать новые live-логи и добавлять точечные validators только для подтверждённых повторяющихся анти-паттернов.
 
 ## Killer Features
 
