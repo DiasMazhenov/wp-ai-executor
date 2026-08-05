@@ -38,6 +38,12 @@ browser-admin, `/run`, or self-update access.
 It remains available when `manage_skills` is disabled; mutation endpoints do
 not bypass that owner-controlled capability.
 
+Live verification on `v02.08.66` covered legacy-null, valid manifest,
+forbidden `/run`, and missing write-capability cases. The endpoint is exposed
+at `file_write_policy.allowed_endpoints["/skills/validate"]`; the skill store
+count remained unchanged. Live skill mutation tests were intentionally not
+forced because the site owner has `manage_skills=false`.
+
 The dashboard uses an accessible horizontal tab interface with five focused
 sections: connection, Elementor, agents, monitoring and examples. The active
 section is preserved in the URL hash and local browser storage. Arrow keys,
