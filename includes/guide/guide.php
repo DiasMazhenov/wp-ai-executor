@@ -9,7 +9,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.47',
+        'version' => WPAE_GUIDE_VERSION,
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
