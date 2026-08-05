@@ -150,3 +150,22 @@ function wpae_normalize_skill_manifest( $raw_manifest, array $source_fallback = 
         ],
     ];
 }
+
+function wpae_validate_skill_manifest_request( WP_REST_Request $request ): WP_REST_Response {
+    $manifest = wpae_normalize_skill_manifest( $request->get_param( 'manifest' ) );
+    if ( is_wp_error( $manifest ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $manifest->get_error_message(),
+            'code' => $manifest->get_error_code(),
+            'details' => $manifest->get_error_data(),
+        ], 422 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'writes' => false,
+        'legacy_compatible' => $manifest === null,
+        'manifest' => $manifest,
+    ], 200 );
+}

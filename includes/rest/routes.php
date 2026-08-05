@@ -221,6 +221,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/skills/validate', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_validate_skill_manifest_request',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/skills', [
         'methods'             => 'POST',
         'callback'            => 'wpae_save_skill',

@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.65`
-- Guide: `v02.05.49`
+- Plugin: `v02.08.66`
+- Guide: `v02.05.50`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -33,6 +33,10 @@ Legacy records without a manifest remain valid. Pipeline steps are checked
 against a closed safe-endpoint allowlist and their declared capabilities; the
 manifest never executes code or grants filesystem, shell, MCP, WP-CLI,
 browser-admin, `/run`, or self-update access.
+
+`POST /skills/validate` validates and normalizes a manifest without writing.
+It remains available when `manage_skills` is disabled; mutation endpoints do
+not bypass that owner-controlled capability.
 
 The dashboard uses an accessible horizontal tab interface with five focused
 sections: connection, Elementor, agents, monitoring and examples. The active

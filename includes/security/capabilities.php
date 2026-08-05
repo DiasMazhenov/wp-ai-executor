@@ -561,6 +561,7 @@ function wpae_get_capabilities_payload(): array {
             'storage' => 'wp_options',
             'safe_endpoints' => [
                 'list' => 'GET /wp-json/ai-executor/v1/skills',
+                'validate_manifest' => 'POST /wp-json/ai-executor/v1/skills/validate',
                 'save_one' => 'POST /wp-json/ai-executor/v1/skills',
                 'delete_one' => 'DELETE /wp-json/ai-executor/v1/skills/{id}',
                 'export_bundle' => 'GET /wp-json/ai-executor/v1/skills/export',
@@ -725,6 +726,7 @@ function wpae_get_capabilities_payload(): array {
                 '/logs' => true,
                 '/rollback' => true,
                 '/skills' => ! empty( $settings['manage_skills'] ),
+                '/skills/validate' => true,
                 '/skills/export' => true,
                 '/skills/import' => ! empty( $settings['manage_skills'] ),
                 '/skills/import-url' => ! empty( $settings['manage_skills'] ),

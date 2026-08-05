@@ -508,6 +508,10 @@ capabilities and workflow against a closed WPAE endpoint allowlist. A manifest
 cannot authorize `/run`, self-update, shell, MCP, WP-CLI, browser-admin writes,
 or server files, and its content is never executed as code.
 
+Use `POST /wp-json/ai-executor/v1/skills/validate` to normalize or reject a
+manifest without writing it. This read-only endpoint works even when the site
+owner has disabled `manage_skills`; all skill mutations remain blocked.
+
 Supported `enforce` rule types:
 
 - `forbid_elementor_eltype`

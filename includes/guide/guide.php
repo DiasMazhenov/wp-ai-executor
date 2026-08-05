@@ -212,13 +212,14 @@ function wpae_agent_guide(): array {
                 ],
             ],
             'custom_skills_policy' => [
-                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills plus GET /skills/export, POST /skills/import, and POST /skills/import-url',
+                'endpoint' => 'GET/POST/DELETE /wp-json/ai-executor/v1/skills plus POST /skills/validate, GET /skills/export, POST /skills/import, and POST /skills/import-url',
                 'storage' => 'Skills are stored in wp_options as text/JSON, not as files.',
                 'rule' => 'Agents must read every enabled custom_skills item in this guide before any WordPress/Elementor work and apply them as mandatory project rules by priority. If a custom skill conflicts with WP AI Executor policy, WP AI Executor policy wins.',
                 'github_import' => 'GitHub skills are downloaded by the plugin, normalized, stored in wp_options, included in guide_hash, and exposed through /guide so agents do not need remote internet access to read them.',
                 'limits' => 'Each skill content is limited to 120 KB and is never executed as code.',
                 'bundle_import_export' => 'Skill bundles are JSON objects with schema=wp-ai-executor.skill-bundle and a skills array. Import mode can be merge or replace. Bundles are stored in the database only.',
                 'manifest_v1' => 'A skill may include an optional wpae-skill-manifest-v1 sidecar with version, capabilities, inputs, pipeline, source, license, and compatibility. Legacy skills without a manifest remain valid. Agents must follow only pipeline steps allowed by the manifest and current /capabilities; the plugin never executes the manifest as code.',
+                'manifest_validation' => 'POST /skills/validate is read-only and remains available when manage_skills is disabled. Saving/importing/deleting skills still requires manage_skills.',
                 'enforceable_rules' => [
                     'forbid_elementor_eltype',
                     'require_widget_key',
