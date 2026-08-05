@@ -297,6 +297,7 @@ function wpae_get_capabilities_payload(): array {
                 'instantiate_block' => 'GET /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve|compatibility|adapt',
                 'visual_audit' => 'POST /wp-json/ai-executor/v1/elementor/visual-audit',
                 'editability_audit' => 'POST /wp-json/ai-executor/v1/elementor/editability-audit',
+                'design_review' => 'POST /wp-json/ai-executor/v1/elementor/design-review',
                 'public_visual_audit' => 'POST /wp-json/ai-executor/v1/visual-audit',
                 'revisions' => 'GET /wp-json/ai-executor/v1/elementor/revisions',
                 'restore_revision' => 'POST /wp-json/ai-executor/v1/elementor/restore-revision',
@@ -329,6 +330,7 @@ function wpae_get_capabilities_payload(): array {
             'forbidden_widget_keys' => [ 'widget_type' ],
             'runtime_validation' => true,
             'static_visual_audit' => true,
+            'design_review_gate' => true,
             'preflight_before_writes' => true,
             'transaction_write_mode' => [
                 'mode' => 'atomic',
@@ -341,11 +343,13 @@ function wpae_get_capabilities_payload(): array {
                     'public_verification_failure_when_requested',
                     'visual_regression_failure_when_requested',
                     'strict_quality_failure_when_requested',
+                    'design_review_failure_when_requested',
                 ],
                 'optional_request_flags' => [
                     'transaction_verify_public' => 'When true, fetch and audit the public permalink after save; failure triggers auto-rollback.',
                     'transaction_visual_regression' => 'When true on existing-page writes, capture a public HTML/audit baseline before write and auto-rollback if key public signals regress after save.',
                     'transaction_strict_quality' => 'When true, weak/blocked static quality after save triggers auto-rollback.',
+                    'transaction_design_review' => 'When true, only an approved deterministic design review may complete the write.',
                 ],
                 'response_fields' => [
                     'transaction',

@@ -179,6 +179,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/design-review', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_design_review',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/typography-unlock', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_typography_unlock',

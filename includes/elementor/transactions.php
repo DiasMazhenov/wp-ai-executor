@@ -95,6 +95,7 @@ function wpae_build_elementor_transaction_status( string $operation, int $post_i
             'public_verification_failure_when_requested',
             'visual_regression_failure_when_requested',
             'strict_quality_failure_when_requested',
+            'design_review_failure_when_requested',
         ],
     ];
 }
@@ -257,6 +258,22 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
             'level' => $quality_level,
             'score' => (int) ( $quality_summary['visual_audit']['score'] ?? 0 ),
         ],
+    ];
+
+    $design_review = wpae_build_elementor_design_review( $expected_elementor_data, [
+        'source' => 'transaction_after_save',
+        'post_id' => $post_id,
+        'iteration' => $request->get_param( 'design_review_iteration' ),
+    ] );
+    $quality_summary['design_review'] = $design_review;
+    $review_required = (bool) $request->get_param( 'transaction_design_review' );
+    $checks['design_review'] = [
+        'ok' => ! $review_required || ( $design_review['state'] ?? '' ) === 'approved',
+        'required' => $review_required,
+        'message' => ( $design_review['state'] ?? '' ) === 'approved'
+            ? 'Design review approved the Elementor data.'
+            : ( $review_required ? 'Required design review did not approve the Elementor data.' : 'Design review returned advisory fixes.' ),
+        'details' => $design_review,
     ];
 
     $public_verification = (bool) $request->get_param( 'transaction_verify_public' );

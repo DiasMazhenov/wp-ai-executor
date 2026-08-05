@@ -159,7 +159,7 @@ function wpae_agent_guide(): array {
                 'Replace upstream standalone HTML output with editable Elementor native containers/widgets.',
                 'Replace WP-CLI/browser-only structural edits with WP AI Executor safe endpoints whenever possible.',
                 'Use /elementor/design-system before landing page or block work.',
-                'Use /elementor/visual-audit as the design-review gate.',
+                'Use /elementor/design-review as the deterministic review gate and /elementor/visual-audit as its visual evidence.',
                 'Use project design tokens as the color-palette output target.',
                 'Do not create external files even if an upstream skill would normally write artifacts.',
             ],
@@ -466,6 +466,14 @@ function wpae_agent_guide(): array {
                 'concrete fixes the agent should apply before claiming completion.',
             ],
             'rule' => 'If quality_summary.visual_audit.level is weak/blocked or fixes are present, the agent must continue correcting the page before reporting completion.',
+        ],
+        'design_review_gate' => [
+            'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/design-review',
+            'dimensions' => [ 'composition_brief', 'design_system_consistency', 'accessibility_mobile', 'copy', 'elementor_editability' ],
+            'states' => [ 'review', 'revise', 'approved' ],
+            'max_iterations' => 3,
+            'write_flag' => 'transaction_design_review=true',
+            'rule' => 'Read must_fix and revise until approved. Never publish with ship_best; stop after three iterations and report unresolved items.',
         ],
         'transaction_write_policy' => [
             'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update', 'POST /elementor/patch' ],

@@ -193,6 +193,14 @@ Example:
 Operation logs also include the redacted `agent_conformance_score` and
 `agent_conformance_level` summary fields.
 
+### Elementor Design Review Gate
+
+`POST /wp-json/ai-executor/v1/elementor/design-review` combines the existing
+visual, design-system, mobile, content, and editability checks into one
+deterministic verdict: `review`, `revise`, or `approved`. Pass
+`transaction_design_review=true` to a structured write to require approval and
+auto-rollback when the review gate does not approve the saved data.
+
 ### Repeated external-agent error audit
 
 `/audit` and `/elementor/visual-audit` also return

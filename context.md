@@ -137,6 +137,12 @@ In the Elementor editor, container/widget context menus expose:
 - `Сохранить в библиотеку WP AI Executor`
 - `Открыть библиотеку блоков`
 
+## Design Review Gate
+
+- `POST /elementor/design-review` возвращает deterministic review по composition/brief, design-system consistency, accessibility/mobile, copy и Elementor editability.
+- Состояния: `review`, `revise`, `approved`; максимум три итерации.
+- `transaction_design_review=true` делает approval обязательным и включает auto-rollback при провале.
+
 The visual library provides client-side search, category filtering, structural
 details, compatibility status and `preserve|compatibility|adapt` insertion
 modes. Insertion uses Elementor's native `document/ui/paste` command and the
