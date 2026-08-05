@@ -102,6 +102,7 @@
 архитектуру, Elementor editability и запрет произвольных серверных файлов.
 
 1. **Design System Package v2 — первый приоритет.**
+   - Статус: реализовано в `v02.08.62`; после live-проверки перейти к Token Map.
    - Разделить текущую систему на machine-readable manifest, agent-facing `DESIGN.md` content и semantic tokens.
    - Хранить пакет в `wp_options`, без создания файлов на сервере.
    - Добавить ID, версию, provenance, source URL/hash, license и active system per page.

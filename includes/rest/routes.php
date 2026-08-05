@@ -113,6 +113,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/design-system/update', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_elementor_update_design_system',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/recipes', [
         'methods'             => 'GET',
         'callback'            => 'wpae_elementor_recipes',

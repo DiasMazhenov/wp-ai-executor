@@ -91,6 +91,62 @@ function wpae_get_project_design_tokens(): array {
     return wpae_sanitize_design_tokens( is_array( $stored ) ? $stored : [] );
 }
 
+function wpae_get_design_system_manifest(): array {
+    $stored = get_option( 'wp_ai_executor_design_system_manifest', [] );
+    $stored = is_array( $stored ) ? $stored : [];
+
+    return [
+        'format' => 'wpae-design-system-v2',
+        'version' => wpae_sanitize_design_token_text( $stored['version'] ?? 'v02.00.00', 24 ),
+        'name' => wpae_sanitize_design_token_text( $stored['name'] ?? get_bloginfo( 'name' ) . ' Design System', 120 ),
+        'provenance' => wpae_sanitize_design_token_text( $stored['provenance'] ?? 'site-owner', 80 ),
+        'source_url' => esc_url_raw( (string) ( $stored['source_url'] ?? home_url( '/' ) ) ),
+        'license' => wpae_sanitize_design_token_text( $stored['license'] ?? 'site-owner-provided', 80 ),
+        'storage' => 'wp_options',
+    ];
+}
+
+function wpae_sanitize_design_system_manifest( array $input ): array {
+    $current = wpae_get_design_system_manifest();
+
+    return [
+        'format' => 'wpae-design-system-v2',
+        'version' => wpae_sanitize_design_token_text( $input['version'] ?? $current['version'], 24 ),
+        'name' => wpae_sanitize_design_token_text( $input['name'] ?? $current['name'], 120 ),
+        'provenance' => wpae_sanitize_design_token_text( $input['provenance'] ?? $current['provenance'], 80 ),
+        'source_url' => esc_url_raw( (string) ( $input['source_url'] ?? $current['source_url'] ) ),
+        'license' => wpae_sanitize_design_token_text( $input['license'] ?? $current['license'], 80 ),
+        'storage' => 'wp_options',
+    ];
+}
+
+function wpae_validate_design_system_package( array $manifest, array $tokens ): array {
+    $errors = [];
+    foreach ( [ 'version', 'name', 'provenance', 'source_url', 'license' ] as $field ) {
+        if ( trim( (string) ( $manifest[ $field ] ?? '' ) ) === '' ) {
+            $errors[] = 'manifest.' . $field . ' is required.';
+        }
+    }
+
+    if ( ! empty( $manifest['source_url'] ) && ! wp_http_validate_url( (string) $manifest['source_url'] ) ) {
+        $errors[] = 'manifest.source_url must be a valid HTTP(S) URL.';
+    }
+
+    foreach ( (array) ( $tokens['palette'] ?? [] ) as $role => $color ) {
+        if ( ! preg_match( '/^#[0-9a-f]{6}([0-9a-f]{2})?$/i', (string) $color ) ) {
+            $errors[] = 'tokens.palette.' . sanitize_key( (string) $role ) . ' must be a 6 or 8 digit hex color.';
+        }
+    }
+
+    return [ 'ok' => empty( $errors ), 'errors' => $errors ];
+}
+
+function wpae_update_design_system_manifest( array $manifest ): void {
+    $manifest = wpae_sanitize_design_system_manifest( $manifest );
+    unset( $manifest['storage'] );
+    update_option( 'wp_ai_executor_design_system_manifest', $manifest, false );
+}
+
 function wpae_update_project_design_tokens( array $input ): void {
     update_option( 'wp_ai_executor_design_tokens', wpae_sanitize_design_tokens( $input ), false );
 }
@@ -103,19 +159,80 @@ function wpae_get_design_system_id( array $tokens = [] ): string {
     return 'ds-' . substr( md5( wp_json_encode( $tokens ) ), 0, 8 );
 }
 
+function wpae_get_design_system_source_hash( array $tokens = [] ): string {
+    if ( empty( $tokens ) ) {
+        $tokens = wpae_get_project_design_tokens();
+    }
+
+    return hash( 'sha256', (string) wp_json_encode( $tokens ) );
+}
+
+function wpae_build_design_system_document( array $manifest, array $tokens ): string {
+    return implode( "\n", [
+        '# ' . $manifest['name'],
+        '',
+        '- ID: `' . $manifest['id'] . '`',
+        '- Version: `' . $manifest['version'] . '`',
+        '- License: `' . $manifest['license'] . '`',
+        '',
+        'Use the semantic token roles below through native Elementor controls.',
+        'Build mobile first with Flexbox Containers. Preserve protected HTML/WebGL zones.',
+        'Prefer rem/em for type and spacing, vh/svh for viewport height, and percentages for layout width.',
+        '',
+        '## Semantic tokens',
+        '',
+        '```json',
+        (string) wp_json_encode( $tokens, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ),
+        '```',
+    ] );
+}
+
+function wpae_get_page_design_system_state( int $post_id, string $system_id, string $source_hash ): array {
+    if ( $post_id <= 0 || get_post( $post_id ) === null ) {
+        return [ 'post_id' => null, 'active' => null, 'stored_system_id' => null, 'matches_current' => null ];
+    }
+
+    $stored_id = sanitize_key( (string) get_post_meta( $post_id, '_wpae_design_system_id', true ) );
+    $stored_hash = sanitize_text_field( (string) get_post_meta( $post_id, '_wpae_design_system_hash', true ) );
+
+    return [
+        'post_id' => $post_id,
+        'active' => $stored_id !== '',
+        'stored_system_id' => $stored_id ?: null,
+        'matches_current' => $stored_id !== '' && hash_equals( $system_id, $stored_id ) && hash_equals( $source_hash, $stored_hash ),
+    ];
+}
+
 function wpae_get_design_system_required_classes( array $tokens = [] ): array {
     return [ 'wpae-ds', 'wpae-system-' . wpae_get_design_system_id( $tokens ) ];
 }
 
 function wpae_build_project_design_system( array $input = [] ): array {
     $tokens = wpae_get_project_design_tokens();
+    return wpae_build_project_design_system_from_values( wpae_get_design_system_manifest(), $tokens, $input );
+}
+
+function wpae_build_project_design_system_from_values( array $manifest, array $tokens, array $input = [] ): array {
     $system_id = wpae_get_design_system_id( $tokens );
+    $source_hash = wpae_get_design_system_source_hash( $tokens );
+    $manifest = wpae_sanitize_design_system_manifest( $manifest );
+    $manifest['id'] = $system_id;
+    $manifest['source_hash'] = $source_hash;
+    $manifest['active_page'] = wpae_get_page_design_system_state( absint( $input['post_id'] ?? 0 ), $system_id, $source_hash );
 
     return [
-        'design_system_version' => 'v01.00.00',
+        'design_system_version' => 'v02.00.00',
         'system_id' => $system_id,
         'source' => 'wp_ai_executor_design_tokens',
         'tokens' => $tokens,
+        'package' => [
+            'manifest' => $manifest,
+            'agent_document' => [
+                'format' => 'DESIGN.md',
+                'content' => wpae_build_design_system_document( $manifest, $tokens ),
+            ],
+            'semantic_tokens' => $tokens,
+        ],
         'required_root_classes' => wpae_get_design_system_required_classes( $tokens ),
         'mandatory_workflow' => [
             '1. Before creating a page or adding a page block, call /elementor/design-system.',
@@ -219,4 +336,3 @@ function wpae_get_jezweb_claude_skills_pack(): array {
         ],
     ];
 }
-

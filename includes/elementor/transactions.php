@@ -69,6 +69,8 @@ function wpae_save_elementor_page_data( int $post_id, array $elementor_data, str
     update_post_meta( $post_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
     update_post_meta( $post_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
     update_post_meta( $post_id, '_wp_page_template', $template ?: 'elementor_canvas' );
+    update_post_meta( $post_id, '_wpae_design_system_id', wpae_get_design_system_id() );
+    update_post_meta( $post_id, '_wpae_design_system_hash', wpae_get_design_system_source_hash() );
     $cache = wpae_clear_elementor_cache( $post_id );
     if ( empty( $cache['ok'] ) ) {
         return new WP_Error( 'wpae_elementor_cache_clear_failed', 'Elementor cache clearing failed after metadata write.', [ 'cache' => $cache ] );

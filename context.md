@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.61`
-- Guide: `v02.05.46`
+- Plugin: `v02.08.62`
+- Guide: `v02.05.47`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -42,6 +42,20 @@ preserve existing file permissions and assign `0644` to new module/asset files
 before rename. The plugin root and package-managed subdirectories preserve
 owner write bits while receiving the missing read/execute bits required for
 nginx traversal.
+
+## Design System Package v2
+
+`POST /elementor/design-system` remains backward compatible and now returns a
+`package` containing a machine-readable `wpae-design-system-v2` manifest,
+agent-facing `DESIGN.md` content and semantic tokens. The manifest includes a
+stable system ID, version, provenance, source URL, SHA-256 source hash, license
+and optional active-page state when `post_id` is supplied.
+
+Structured Elementor writes persist `_wpae_design_system_id` and
+`_wpae_design_system_hash` through the shared save path. These fields are
+already included in rollback snapshots, so restored revisions retain their
+design-system association. Package data remains in WordPress options/meta and
+does not create server files.
 
 ## Elementor block library
 

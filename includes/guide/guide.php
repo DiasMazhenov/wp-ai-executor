@@ -9,7 +9,7 @@ function wpae_get_guide(): WP_REST_Response {
 function wpae_agent_guide(): array {
     return [
         'name' => 'WP AI Executor Agent Guide',
-        'version' => 'v02.05.46',
+        'version' => 'v02.05.47',
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
         'embedded_skill_packs' => [
@@ -231,7 +231,10 @@ function wpae_agent_guide(): array {
             ],
         'design_system_policy' => [
             'endpoint' => 'POST /wp-json/ai-executor/v1/elementor/design-system',
+            'update_endpoint' => 'POST /wp-json/ai-executor/v1/elementor/design-system/update',
             'required' => true,
+                'package_v2' => 'Read package.manifest, package.agent_document, and package.semantic_tokens. Use post_id on the read endpoint to verify whether the page matches the current design system.',
+                'update_rule' => 'Only change the project design system when explicitly requested. Call the update endpoint with dry_run=true first; a real write returns rollback_snapshot_id and requires the elementor_writes capability plus a valid guide token.',
                 'rule' => 'Before creating a page or adding any new page block, create/read the design system and reuse it as the single visual source of truth.',
                 'write_enforcement' => 'POST /elementor/page and POST /elementor/update reject Elementor data whose top-level containers miss required_root_classes or do not use project palette tokens.',
                 'required_marker' => 'Every top-level page/block container must include required_root_classes in settings._css_classes.',

@@ -72,8 +72,19 @@ add_action( 'admin_init', function () {
         $input = isset( $_POST['wpae_design_tokens'] ) && is_array( $_POST['wpae_design_tokens'] )
             ? wp_unslash( $_POST['wpae_design_tokens'] )
             : [];
+        $manifest = isset( $_POST['wpae_design_manifest'] ) && is_array( $_POST['wpae_design_manifest'] )
+            ? wp_unslash( $_POST['wpae_design_manifest'] )
+            : [];
 
-        wpae_update_project_design_tokens( $input );
+        $tokens = wpae_sanitize_design_tokens( $input );
+        $manifest = wpae_sanitize_design_system_manifest( $manifest );
+        if ( ! wpae_validate_design_system_package( $manifest, $tokens )['ok'] ) {
+            wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&design_system_error=1' ) );
+            exit;
+        }
+
+        wpae_update_project_design_tokens( $tokens );
+        wpae_update_design_system_manifest( $manifest );
         wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&design_tokens_saved=1' ) );
         exit;
     }
@@ -230,6 +241,7 @@ function wpae_settings_page() {
     $capability_preset_saved = isset( $_GET['capability_preset_saved'] );
     $capability_preset_error = isset( $_GET['capability_preset_error'] );
     $design_tokens_saved = isset( $_GET['design_tokens_saved'] );
+    $design_system_error = isset( $_GET['design_system_error'] );
     $skill_saved        = isset( $_GET['skill_saved'] );
     $skill_deleted      = isset( $_GET['skill_deleted'] );
     $skill_error        = isset( $_GET['skill_error'] );
@@ -243,6 +255,7 @@ function wpae_settings_page() {
     $capability_labels  = wpae_capability_labels();
     $capability_presets = wpae_capability_presets();
     $design_tokens      = wpae_get_project_design_tokens();
+    $design_manifest    = wpae_get_design_system_manifest();
     $skills             = wpae_sort_skills( wpae_get_skill_store() );
     $operation_logs     = array_slice( wpae_get_operation_logs_store(), 0, 8 );
     $exports_summary    = wpae_build_exports_summary( wpae_get_export_store() );
@@ -744,7 +757,11 @@ function wpae_settings_page() {
         <?php endif; ?>
 
         <?php if ( $design_tokens_saved ) : ?>
-            <div class="wpae-alert" role="status">Дизайн-токены проекта сохранены.</div>
+            <div class="wpae-alert" role="status">Дизайн-система проекта сохранена.</div>
+        <?php endif; ?>
+
+        <?php if ( $design_system_error ) : ?>
+            <div class="wpae-alert" role="alert" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Проверьте паспорт и HEX-цвета дизайн-системы.</div>
         <?php endif; ?>
 
         <?php if ( $skill_saved ) : ?>
@@ -955,6 +972,27 @@ function wpae_settings_page() {
                     <?php wp_nonce_field( 'wpae_save_design_tokens' ); ?>
                     <input type="hidden" name="wpae_save_design_tokens" value="1" />
 
+                    <h3>Паспорт дизайн-системы</h3>
+                    <div class="wpae-form-grid">
+                        <?php foreach ( [
+                            'name' => 'Название',
+                            'version' => 'Версия',
+                            'provenance' => 'Происхождение',
+                            'source_url' => 'URL источника',
+                            'license' => 'Лицензия',
+                        ] as $field => $label ) : ?>
+                            <div class="wpae-form-field">
+                                <label for="wpae-design-manifest-<?php echo esc_attr( $field ); ?>"><?php echo esc_html( $label ); ?></label>
+                                <input class="wpae-input"
+                                    id="wpae-design-manifest-<?php echo esc_attr( $field ); ?>"
+                                    name="wpae_design_manifest[<?php echo esc_attr( $field ); ?>]"
+                                    type="<?php echo $field === 'source_url' ? 'url' : 'text'; ?>"
+                                    required
+                                    value="<?php echo esc_attr( (string) ( $design_manifest[ $field ] ?? '' ) ); ?>" />
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
                     <h3>Палитра</h3>
                     <p class="wpae-section-note">
                         Выберите цвета через picker или введите HEX вручную. Эти значения становятся обязательной дизайн-системой для Elementor-страниц и блоков.
@@ -1029,7 +1067,7 @@ function wpae_settings_page() {
                     </div>
 
                     <p style="margin-top:14px">
-                        <button type="submit" class="button button-primary wpae-button">Сохранить дизайн-токены</button>
+                        <button type="submit" class="button button-primary wpae-button">Сохранить дизайн-систему</button>
                     </p>
                 </form>
             </div>

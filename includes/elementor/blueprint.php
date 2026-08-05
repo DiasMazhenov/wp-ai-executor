@@ -71,16 +71,19 @@ function wpae_blueprint_palette_for_style( string $style ): array {
 }
 
 function wpae_elementor_design_system( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
     $subject = wpae_blueprint_text_param( $request, 'subject', 'страница сайта', 140 );
     $style = wpae_blueprint_text_param( $request, 'style', 'project default', 120 );
     $language = wpae_blueprint_text_param( $request, 'language', 'ru', 24 );
     $design_system = wpae_build_project_design_system( [
+        'post_id' => $post_id,
         'subject' => $subject,
         'style' => $style,
         'language' => $language,
     ] );
 
     $design_system['input'] = [
+        'post_id' => $post_id ?: null,
         'subject' => $subject,
         'style' => $style,
         'language' => $language,
@@ -97,6 +100,45 @@ function wpae_elementor_design_system( WP_REST_Request $request ): WP_REST_Respo
         'ok' => true,
         'writes' => false,
         'design_system' => $design_system,
+    ], 200 );
+}
+
+function wpae_elementor_update_design_system( WP_REST_Request $request ): WP_REST_Response {
+    $tokens_input = $request->get_param( 'tokens' );
+    $tokens = is_array( $tokens_input ) ? wpae_sanitize_design_tokens( $tokens_input ) : wpae_get_project_design_tokens();
+    $manifest = wpae_sanitize_design_system_manifest( is_array( $request->get_param( 'manifest' ) ) ? $request->get_param( 'manifest' ) : [] );
+    $validation = wpae_validate_design_system_package( $manifest, $tokens );
+
+    if ( ! $validation['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Design system package failed schema validation.',
+            'details' => $validation,
+        ], 422 );
+    }
+
+    $proposed = wpae_build_project_design_system_from_values( $manifest, $tokens );
+    if ( (bool) $request->get_param( 'dry_run' ) ) {
+        return new WP_REST_Response( [
+            'ok' => true,
+            'dry_run' => true,
+            'would_write' => [ 'wp_ai_executor_design_tokens', 'wp_ai_executor_design_system_manifest' ],
+            'design_system' => $proposed,
+        ], 200 );
+    }
+
+    $rollback = wpae_create_rollback_snapshot( 'elementor_design_system_update', [], [
+        'wp_ai_executor_design_tokens',
+        'wp_ai_executor_design_system_manifest',
+    ] );
+    wpae_update_project_design_tokens( $tokens );
+    wpae_update_design_system_manifest( $manifest );
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'rollback_snapshot_id' => $rollback['id'] ?? null,
+        'design_system' => wpae_build_project_design_system(),
+        'next_step' => 'Normalize affected Elementor pages to the new required_root_classes before writing them.',
     ], 200 );
 }
 
@@ -253,4 +295,3 @@ function wpae_elementor_blueprint( WP_REST_Request $request ): WP_REST_Response 
         ],
     ], 200 );
 }
-

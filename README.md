@@ -298,6 +298,12 @@ The dashboard stores project design tokens in `wp_options`. They are returned
 from `/guide`, `/capabilities`, and `/elementor/blueprint`, so agents can follow
 the site's visual system before writing Elementor data.
 
+`POST /elementor/design-system` also returns a backward-compatible Design
+System Package v2 with a machine-readable manifest, generated `DESIGN.md`
+content and semantic tokens. Pass `post_id` to inspect the active system for a
+page. Use `POST /elementor/design-system/update` with `dry_run=true` before a
+real update; successful writes return a rollback snapshot ID.
+
 Stored token groups:
 
 - palette
