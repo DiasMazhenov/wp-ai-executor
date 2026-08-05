@@ -57,6 +57,11 @@ already included in rollback snapshots, so restored revisions retain their
 design-system association. Package data remains in WordPress options/meta and
 does not create server files.
 
+Live verification on `v02.08.63` confirmed Package v2 output, guide-session
+compatibility, `422` schema rejection and a successful non-writing update
+`dry_run`. Existing pages without WPAE design-system meta report `active=false`
+until their next structured Elementor write; they are not modified implicitly.
+
 ## Elementor block library
 
 Implementation:
