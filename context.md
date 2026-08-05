@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.64`
-- Guide: `v02.05.48`
+- Plugin: `v02.08.65`
+- Guide: `v02.05.49`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -25,6 +25,14 @@
 Administrators have a direct `AI Executor` link in the WordPress Admin Bar.
 It opens the existing `Settings -> AI Executor` screen and is hidden from
 users without `manage_options`.
+
+Custom skills may carry an optional database-only
+`wpae-skill-manifest-v1` sidecar. It describes version, capabilities, inputs,
+pipeline, source, license and compatibility while `SKILL.md` remains canonical.
+Legacy records without a manifest remain valid. Pipeline steps are checked
+against a closed safe-endpoint allowlist and their declared capabilities; the
+manifest never executes code or grants filesystem, shell, MCP, WP-CLI,
+browser-admin, `/run`, or self-update access.
 
 The dashboard uses an accessible horizontal tab interface with five focused
 sections: connection, Elementor, agents, monitoring and examples. The active

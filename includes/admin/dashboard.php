@@ -97,6 +97,7 @@ add_action( 'admin_init', function () {
             ? trim( (string) wp_unslash( $_POST['wpae_skill_enforce'] ) )
             : '';
         $enforce = [];
+        $manifest = [];
 
         if ( $raw_enforce !== '' ) {
             $decoded = json_decode( $raw_enforce, true );
@@ -108,12 +109,24 @@ add_action( 'admin_init', function () {
             }
         }
 
+        $raw_manifest = isset( $_POST['wpae_skill_manifest'] )
+            ? trim( (string) wp_unslash( $_POST['wpae_skill_manifest'] ) )
+            : '';
+        if ( $raw_manifest !== '' ) {
+            $manifest = json_decode( $raw_manifest, true );
+            if ( ! is_array( $manifest ) ) {
+                wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&skill_error=1' ) );
+                exit;
+            }
+        }
+
         $skill = wpae_upsert_skill( [
             'id' => isset( $_POST['wpae_skill_id'] ) ? wp_unslash( $_POST['wpae_skill_id'] ) : '',
             'name' => isset( $_POST['wpae_skill_name'] ) ? wp_unslash( $_POST['wpae_skill_name'] ) : '',
             'description' => isset( $_POST['wpae_skill_description'] ) ? wp_unslash( $_POST['wpae_skill_description'] ) : '',
             'content' => isset( $_POST['wpae_skill_content'] ) ? wp_unslash( $_POST['wpae_skill_content'] ) : '',
             'enforce' => $enforce,
+            'manifest' => $manifest,
             'enabled' => ! empty( $_POST['wpae_skill_enabled'] ),
             'priority' => isset( $_POST['wpae_skill_priority'] ) ? wp_unslash( $_POST['wpae_skill_priority'] ) : 0,
         ] );
@@ -1120,6 +1133,12 @@ function wpae_settings_page() {
                         <textarea class="wpae-textarea" id="wpae-skill-enforce" name="wpae_skill_enforce" style="min-height:92px" placeholder='[{"type":"forbid_elementor_eltype","value":"section"},{"type":"require_widget_key","value":"widgetType"}]'></textarea>
                     </div>
 
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-skill-manifest">Skill Manifest JSON (необязательно)</label>
+                        <textarea class="wpae-textarea" id="wpae-skill-manifest" name="wpae_skill_manifest" style="min-height:150px" placeholder='{"format":"wpae-skill-manifest-v1","version":"1.0.0","capabilities":["elementor_read"],"inputs":["subject"],"pipeline":[{"method":"POST","endpoint":"/elementor/blueprint"}],"license":"MIT"}'></textarea>
+                        <span class="wpae-section-note">Pipeline принимает только разрешённые WPAE endpoints. Shell, /run, self-update, MCP, WP-CLI и browser-admin запрещены.</span>
+                    </div>
+
                     <p style="margin-top:14px">
                         <button type="submit" class="button button-primary wpae-button">Сохранить skill</button>
                     </p>
@@ -1208,6 +1227,11 @@ function wpae_settings_page() {
                                         · приоритет: <?php echo esc_html( (string) ( $skill['priority'] ?? 0 ) ); ?>
                                         · <?php echo ! empty( $skill['enabled'] ) ? 'включен' : 'выключен'; ?>
                                         · enforce: <?php echo esc_html( (string) count( is_array( $skill['enforce'] ?? null ) ? $skill['enforce'] : [] ) ); ?>
+                                        <?php if ( is_array( $skill['manifest'] ?? null ) ) : ?>
+                                            · manifest: <?php echo esc_html( (string) ( $skill['manifest']['version'] ?? '1.0.0' ) ); ?>
+                                            · capabilities: <?php echo esc_html( (string) count( (array) ( $skill['manifest']['capabilities'] ?? [] ) ) ); ?>
+                                            · pipeline: <?php echo esc_html( (string) count( (array) ( $skill['manifest']['pipeline'] ?? [] ) ) ); ?>
+                                        <?php endif; ?>
                                     </div>
                                     <?php if ( ! empty( $skill['description'] ) ) : ?>
                                         <div class="wpae-skill-meta"><?php echo esc_html( (string) $skill['description'] ); ?></div>

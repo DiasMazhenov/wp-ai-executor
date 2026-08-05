@@ -58,6 +58,13 @@ function wpae_normalize_skill_data( array $data, array $existing_skills = [] ) {
     $id = wpae_normalize_skill_id( (string) ( $data['id'] ?? $name ) );
     $now = gmdate( 'c' );
     $enforce = $data['enforce'] ?? [];
+    $manifest = wpae_normalize_skill_manifest(
+        $data['manifest'] ?? ( $existing_skills[ $id ]['manifest'] ?? null ),
+        $data
+    );
+    if ( is_wp_error( $manifest ) ) {
+        return $manifest;
+    }
 
     return [
         'id' => $id,
@@ -65,6 +72,7 @@ function wpae_normalize_skill_data( array $data, array $existing_skills = [] ) {
         'description' => sanitize_textarea_field( (string) ( $data['description'] ?? '' ) ),
         'content' => wp_check_invalid_utf8( $content ),
         'enforce' => wpae_sanitize_skill_enforce_rules( is_array( $enforce ) ? $enforce : [] ),
+        'manifest' => $manifest,
         'enabled' => array_key_exists( 'enabled', $data ) ? (bool) $data['enabled'] : true,
         'priority' => max( -100, min( 100, (int) ( $data['priority'] ?? 0 ) ) ),
         'created_at' => $existing_skills[ $id ]['created_at'] ?? $now,
@@ -289,6 +297,7 @@ function wpae_build_skill_from_markdown( string $content, string $source_url, ar
         'enabled' => array_key_exists( 'enabled', $request_data ) ? (bool) $request_data['enabled'] : true,
         'priority' => (int) ( $request_data['priority'] ?? 10 ),
         'enforce' => is_array( $request_data['enforce'] ?? null ) ? $request_data['enforce'] : [],
+        'manifest' => $request_data['manifest'] ?? null,
         'source_url' => $source_url,
         'source_type' => 'github_url',
         'source_sha256' => hash( 'sha256', $content ),
@@ -339,6 +348,7 @@ function wpae_import_skill_from_url( WP_REST_Request $request ) {
         'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
         'priority' => $request->get_param( 'priority' ),
         'enforce' => $request->get_param( 'enforce' ),
+        'manifest' => $request->get_param( 'manifest' ),
     ];
 
     $trimmed = ltrim( $content );
@@ -399,6 +409,7 @@ function wpae_save_skill( WP_REST_Request $request ) {
         'description' => $request->get_param( 'description' ),
         'content' => $request->get_param( 'content' ),
         'enforce' => $request->get_param( 'enforce' ),
+        'manifest' => $request->get_param( 'manifest' ),
         'enabled' => $request->has_param( 'enabled' ) ? (bool) $request->get_param( 'enabled' ) : true,
         'priority' => $request->get_param( 'priority' ),
         'source_type' => 'manual',
@@ -406,7 +417,11 @@ function wpae_save_skill( WP_REST_Request $request ) {
 
     if ( is_wp_error( $skill ) ) {
         $status = $skill->get_error_code() === 'wpae_skill_too_large' ? 413 : 400;
-        return new WP_REST_Response( [ 'error' => $skill->get_error_message() ], $status );
+        return new WP_REST_Response( [
+            'error' => $skill->get_error_message(),
+            'code' => $skill->get_error_code(),
+            'details' => $skill->get_error_data(),
+        ], $status );
     }
 
     return new WP_REST_Response( [
@@ -511,4 +526,3 @@ function wpae_get_enforceable_skill_rules(): array {
 
     return $rules;
 }
-

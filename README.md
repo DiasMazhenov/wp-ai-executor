@@ -486,10 +486,27 @@ by pasting `SKILL.md` content into the dashboard.
     { "type": "require_container_setting", "value": "background_color" },
     { "type": "forbid_html_pattern", "value": "<section" }
   ],
+  "manifest": {
+    "format": "wpae-skill-manifest-v1",
+    "version": "1.0.0",
+    "capabilities": ["elementor_read", "visual_audit"],
+    "inputs": ["subject", "audience"],
+    "pipeline": [
+      {"method": "POST", "endpoint": "/elementor/blueprint"},
+      {"method": "POST", "endpoint": "/elementor/visual-audit"}
+    ],
+    "license": "MIT",
+    "compatibility": {"requires_flexbox": true}
+  },
   "enabled": true,
   "priority": 10
 }
 ```
+
+`manifest` is optional; legacy skills remain valid. The plugin validates its
+capabilities and workflow against a closed WPAE endpoint allowlist. A manifest
+cannot authorize `/run`, self-update, shell, MCP, WP-CLI, browser-admin writes,
+or server files, and its content is never executed as code.
 
 Supported `enforce` rule types:
 

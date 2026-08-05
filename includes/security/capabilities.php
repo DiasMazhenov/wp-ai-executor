@@ -578,6 +578,13 @@ function wpae_get_capabilities_payload(): array {
                 ],
             ],
             'bundle_schema' => 'wp-ai-executor.skill-bundle',
+            'optional_manifest' => [
+                'format' => 'wpae-skill-manifest-v1',
+                'capabilities' => wpae_skill_manifest_capabilities(),
+                'pipeline_endpoints' => wpae_skill_manifest_pipeline_endpoints(),
+                'legacy_compatible' => true,
+                'execution' => 'Manifest describes an agent workflow; the plugin never executes skill content as code.',
+            ],
             'max_skills_per_bundle' => 100,
             'max_content_bytes_per_skill' => 120000,
             'enforce_rule_types' => [

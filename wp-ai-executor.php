@@ -2,15 +2,15 @@
 /**
  * Plugin Name: WP AI Executor
  * Description: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
- * Version:     v02.08.64
+ * Version:     v02.08.65
  * Author:      DIAS
  * License:     MIT
  */
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.08.64';
-const WPAE_GUIDE_VERSION = 'v02.05.48';
+const WPAE_VERSION = 'v02.08.65';
+const WPAE_GUIDE_VERSION = 'v02.05.49';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;
 const WPAE_OPERATION_LOG_MAX_ENTRIES = 100;
@@ -20,6 +20,7 @@ const WPAE_EXPORT_MAX_ENTRIES = 20;
 require_once __DIR__ . '/includes/updates/package-updater.php';
 require_once __DIR__ . '/includes/updates/self-update.php';
 require_once __DIR__ . '/includes/security/capabilities.php';
+require_once __DIR__ . '/includes/skills/manifest.php';
 require_once __DIR__ . '/includes/skills/skills.php';
 require_once __DIR__ . '/includes/design/system.php';
 require_once __DIR__ . '/includes/support/logging.php';

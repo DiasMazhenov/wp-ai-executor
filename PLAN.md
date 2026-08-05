@@ -119,6 +119,7 @@
    - Готово, когда `adapt` выполняет реальный token-level remap и неоднозначные значения остаются в review list.
 
 3. **Skill Manifest v1.**
+   - Статус: реализован в `v02.08.65`, ожидает package/live-проверку.
    - Оставить `SKILL.md` каноническим переносимым содержимым.
    - Добавить необязательный sidecar в database record: version, capabilities, inputs, pipeline, source, license и compatibility.
    - Проверять минимальные capabilities и разрешать только существующие безопасные WPAE endpoints.
