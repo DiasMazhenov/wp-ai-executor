@@ -110,7 +110,7 @@
    - Готово, когда manifest/tokens проходят schema validation, а смена системы доступна через `dry_run` и rollback.
 
 2. **Детерминированный Token Map для `adapt` — второй приоритет.**
-   - Статус: реализован в `v02.08.64`, ожидает package/live-проверку.
+   - Статус: реализован и проверен на live в `v02.08.64`; следующий этап — Skill Manifest v1.
    - Извлекать из чужого блока цвета, typography, spacing, radii и другие native-supported значения.
    - Сопоставлять их с semantic roles активной дизайн-системы по использованию, а не только по близости значений.
    - Возвращать `mapped`, `unmatched`, `collisions`, evidence и предполагаемые native Elementor property paths.

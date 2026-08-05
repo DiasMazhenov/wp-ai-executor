@@ -104,6 +104,12 @@ Instantiation modes:
   spacing and radius mapping through native Elementor settings. The response
   includes mapped/unmatched/collision evidence and protected-zone skips.
 
+Live fixture verification on `v02.08.64` confirmed that `preserve` and
+`compatibility` retain source styles, while `adapt` maps native values and
+responsive units without changing protected HTML. Separate fixtures confirmed
+collision and unmatched review lists. Both private test blocks were deleted;
+the live block library returned to its original empty state.
+
 `preserve` reports a warning when protected HTML/JS/WebGL zones exist because
 their code may refer to old Elementor `data-id` values after safe ID rekeying.
 
