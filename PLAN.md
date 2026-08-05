@@ -135,7 +135,7 @@
    - Готово, когда write response содержит review verdict, must-fix list и безопасный следующий шаг.
 
 5. **Версионированный manifest Elementor-блока и publish flow.**
-   - Статус: реализован в `v02.08.68`; ожидает package/live verification, следующий этап — user feedback -> rule proposals.
+   - Статус: реализован и проверен на live в `v02.08.68`; следующий этап — user feedback -> rule proposals.
    - Расширить `wpae-elementor-block-v1`: status, source skill, design system, provenance/license, parent revision, quality score и media dependencies.
    - Ограничить metadata size, валидировать JSON и запрещать абсолютные/traversal paths.
    - Добавить редактирование metadata, duplicate/revision и `draft -> approved -> published` в визуальной библиотеке.

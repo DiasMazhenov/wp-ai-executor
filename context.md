@@ -122,6 +122,11 @@ design-system version, provenance/license, parent revision, quality score and
 media dependencies. Manifest metadata is limited to 32 KB. Old records without
 the sidecar remain readable as published blocks.
 
+Live verification on `v02.08.68` created and deleted a private smoke fixture:
+draft creation, manifest/source-skill extraction, metadata update, duplicate
+revision with parent ID, and expected `422 wpae_block_review_required` approval
+failure all passed. No Elementor page was changed.
+
 Instantiation modes:
 
 - `preserve` - rekey IDs only and keep the original design;
