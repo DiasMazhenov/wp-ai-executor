@@ -77,7 +77,7 @@
 3. При получении блока из библиотеки поддержать режимы:
    - `preserve` — только новые Elementor IDs, исходный дизайн сохраняется;
    - `compatibility` — новые IDs плюс normalize/validate для текущего Flexbox-контракта;
-   - `adapt` — compatibility плюс текущие design-system markers и безопасные baseline settings.
+   - `adapt` — compatibility плюс детерминированное применение semantic tokens через native Elementor settings.
 4. Показывать compatibility report: legacy section/column, `widget_type`, неизвестные widgets, protected enhancement zones, design-system drift и необходимые normalize changes.
 5. Добавить в Elementor context menu:
    - «Копировать как JSON»;
@@ -90,9 +90,8 @@
 8. Визуальная библиотека внутри Elementor:
    - реализованы поиск, фильтр категорий, структурный просмотр и режимы вставки;
    - вставка выполняется через native `document/ui/paste`;
-   - следующие этапы: редактирование metadata, автоматические screenshots,
-     перенос media dependencies и полноценное token-level применение design
-     system в режиме `adapt`.
+   - следующие этапы: редактирование metadata, автоматические screenshots и
+     перенос media dependencies.
 
 ## Далее
 
@@ -111,6 +110,7 @@
    - Готово, когда manifest/tokens проходят schema validation, а смена системы доступна через `dry_run` и rollback.
 
 2. **Детерминированный Token Map для `adapt` — второй приоритет.**
+   - Статус: реализован в `v02.08.64`, ожидает package/live-проверку.
    - Извлекать из чужого блока цвета, typography, spacing, radii и другие native-supported значения.
    - Сопоставлять их с semantic roles активной дизайн-системы по использованию, а не только по близости значений.
    - Возвращать `mapped`, `unmatched`, `collisions`, evidence и предполагаемые native Elementor property paths.

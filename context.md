@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.63`
-- Guide: `v02.05.47`
+- Plugin: `v02.08.64`
+- Guide: `v02.05.48`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -100,8 +100,9 @@ Instantiation modes:
 
 - `preserve` - rekey IDs only and keep the original design;
 - `compatibility` - normalize, rekey and validate for the Flexbox contract;
-- `adapt` - compatibility plus the current design-system markers and safe
-  baseline settings; full token remapping is not implemented yet.
+- `adapt` - compatibility plus deterministic semantic color, typography,
+  spacing and radius mapping through native Elementor settings. The response
+  includes mapped/unmatched/collision evidence and protected-zone skips.
 
 `preserve` reports a warning when protected HTML/JS/WebGL zones exist because
 their code may refer to old Elementor `data-id` values after safe ID rekeying.
@@ -145,5 +146,5 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 - update/duplicate endpoints and richer category/tag management;
 - previews and screenshots;
 - media dependency transfer between sites;
-- token-level design-system adaptation;
+- richer native token controls in the dashboard;
 - runtime REST/editor tests on a WordPress + Elementor installation.

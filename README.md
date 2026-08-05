@@ -454,8 +454,11 @@ GET    /wp-json/ai-executor/v1/elementor/blocks/{id}/instantiate?mode=preserve
 
 `preserve` only creates new Elementor IDs and keeps the original design.
 `compatibility` normalizes the block for the current Flexbox/write contract.
-`adapt` additionally applies current design-system markers and safe baseline
-settings. Foreign blocks may be stored with `design_system_id: null`; the
+`adapt` additionally applies current design-system markers and deterministic
+semantic color, typography, spacing, and radius tokens through native Elementor
+settings. Its `token_map` report exposes mapped values, unmatched settings,
+collisions, evidence, native paths, and protected enhancement skips. Foreign
+blocks may be stored with `design_system_id: null`; the
 compatibility report lists missing widgets, media references, legacy elements,
 normalization requirements, and protected enhancement zones. The wrapper keeps
 both the extracted `elementor_data` used for insertion and the exact

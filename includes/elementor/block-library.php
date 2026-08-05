@@ -522,6 +522,12 @@ function wpae_block_library_instantiate( WP_REST_Request $request ): WP_REST_Res
         $normalization = $normalized['report'];
     }
     $elementor_data = wpae_rekey_elementor_ids_recursive( $elementor_data, $instance_id );
+    $token_map = null;
+    if ( $mode === 'adapt' ) {
+        $adapted = wpae_apply_design_token_map( $elementor_data );
+        $elementor_data = $adapted['data'];
+        $token_map = $adapted['report'];
+    }
     $errors = wpae_validate_elementor_data_array( $elementor_data );
     $protected_zones = array_values( wpae_collect_elementor_protected_zones( $elementor_data ) );
     $warnings = [];
@@ -542,7 +548,8 @@ function wpae_block_library_instantiate( WP_REST_Request $request ): WP_REST_Res
         'instance_id' => $instance_id,
         'preserves_original_design' => $mode === 'preserve',
         'structured_write_ready' => $structured_write_ready,
-        'adaptation_scope' => $mode === 'adapt' ? 'Current design-system markers and safe normalized baseline settings.' : null,
+        'adaptation_scope' => $mode === 'adapt' ? 'Deterministic semantic token mapping through native Elementor settings.' : null,
+        'token_map' => $token_map,
         'normalization' => $normalization,
         'errors' => array_values( $errors ),
         'warnings' => $warnings,

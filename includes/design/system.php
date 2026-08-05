@@ -33,6 +33,24 @@ function wpae_project_design_token_defaults(): array {
             'cards' => '0.5rem or less unless the site design system says otherwise',
             'buttons' => 'match site style; avoid oversized pill defaults unless intentional',
         ],
+        'native_tokens' => [
+            'typography' => [
+                'display' => [ 'font_family' => 'inherit', 'desktop' => '3.5rem', 'tablet' => '2.75rem', 'mobile' => '2.25rem', 'weight' => '700', 'line_height' => '1.05' ],
+                'subheading' => [ 'font_family' => 'inherit', 'desktop' => '2rem', 'tablet' => '1.75rem', 'mobile' => '1.5rem', 'weight' => '700', 'line_height' => '1.2' ],
+                'body' => [ 'font_family' => 'inherit', 'desktop' => '1rem', 'tablet' => '1rem', 'mobile' => '1rem', 'weight' => '400', 'line_height' => '1.6' ],
+                'utility' => [ 'font_family' => 'inherit', 'desktop' => '0.75rem', 'tablet' => '0.75rem', 'mobile' => '0.75rem', 'weight' => '600', 'line_height' => '1.2' ],
+            ],
+            'spacing' => [
+                'section_desktop' => '4.5rem',
+                'section_mobile' => '2rem',
+                'component' => '1.5rem',
+                'gap' => '1.5rem',
+            ],
+            'radii' => [
+                'card' => '0.5rem',
+                'button' => '0.35rem',
+            ],
+        ],
         'button_style' => 'Native Elementor button widget with clear label, high contrast, and no oversized pill default unless intentional.',
         'tone_of_voice' => 'Concrete, confident, and useful; avoid filler marketing language.',
         'design_prohibitions' => [
@@ -52,6 +70,7 @@ function wpae_sanitize_design_token_text( $value, int $max_length = 240 ): strin
 function wpae_sanitize_design_tokens( array $input ): array {
     $defaults = wpae_project_design_token_defaults();
     $tokens = $defaults;
+    $native_input = is_array( $input['native_tokens'] ?? null ) ? $input['native_tokens'] : [];
 
     foreach ( [ 'palette', 'typography_roles', 'spacing_scale', 'radii' ] as $group ) {
         $incoming = is_array( $input[ $group ] ?? null ) ? $input[ $group ] : [];
@@ -63,6 +82,26 @@ function wpae_sanitize_design_tokens( array $input ): array {
 
     $tokens['button_style'] = wpae_sanitize_design_token_text( $input['button_style'] ?? $defaults['button_style'], 240 );
     $tokens['tone_of_voice'] = wpae_sanitize_design_token_text( $input['tone_of_voice'] ?? $defaults['tone_of_voice'], 240 );
+
+    foreach ( $defaults['native_tokens'] as $group => $roles ) {
+        $native_group = is_array( $native_input[ $group ] ?? null ) ? $native_input[ $group ] : [];
+        foreach ( $roles as $role => $role_defaults ) {
+            if ( is_array( $role_defaults ) ) {
+                $native_role = is_array( $native_group[ $role ] ?? null ) ? $native_group[ $role ] : [];
+                foreach ( $role_defaults as $key => $default ) {
+                    $tokens['native_tokens'][ $group ][ $role ][ $key ] = wpae_sanitize_design_token_text(
+                        $native_role[ $key ] ?? $default,
+                        80
+                    );
+                }
+            } else {
+                $tokens['native_tokens'][ $group ][ $role ] = wpae_sanitize_design_token_text(
+                    $native_group[ $role ] ?? $role_defaults,
+                    80
+                );
+            }
+        }
+    }
 
     $prohibitions = $input['design_prohibitions'] ?? $defaults['design_prohibitions'];
     if ( is_string( $prohibitions ) ) {
@@ -138,6 +177,25 @@ function wpae_validate_design_system_package( array $manifest, array $tokens ): 
         }
     }
 
+    foreach ( (array) ( $tokens['native_tokens']['typography'] ?? [] ) as $role => $type ) {
+        foreach ( [ 'desktop', 'tablet', 'mobile', 'line_height' ] as $field ) {
+            if ( ! preg_match( '/^\d+(?:\.\d+)?(?:rem|em|%|vh|svh|vw)?$/', (string) ( $type[ $field ] ?? '' ) ) ) {
+                $errors[] = 'tokens.native_tokens.typography.' . sanitize_key( (string) $role ) . '.' . $field . ' has an invalid responsive value.';
+            }
+        }
+        if ( ! preg_match( '/^(?:normal|bold|[1-9]00)$/', (string) ( $type['weight'] ?? '' ) ) ) {
+            $errors[] = 'tokens.native_tokens.typography.' . sanitize_key( (string) $role ) . '.weight is invalid.';
+        }
+    }
+
+    foreach ( [ 'spacing', 'radii' ] as $group ) {
+        foreach ( (array) ( $tokens['native_tokens'][ $group ] ?? [] ) as $role => $value ) {
+            if ( ! preg_match( '/^\d+(?:\.\d+)?(?:rem|em|%|vh|svh|vw)$/', (string) $value ) ) {
+                $errors[] = 'tokens.native_tokens.' . $group . '.' . sanitize_key( (string) $role ) . ' must include a supported unit.';
+            }
+        }
+    }
+
     return [ 'ok' => empty( $errors ), 'errors' => $errors ];
 }
 
@@ -156,6 +214,8 @@ function wpae_get_design_system_id( array $tokens = [] ): string {
         $tokens = wpae_get_project_design_tokens();
     }
 
+    // Keep existing marker IDs stable while v2-native token detail evolves.
+    unset( $tokens['native_tokens'] );
     return 'ds-' . substr( md5( wp_json_encode( $tokens ) ), 0, 8 );
 }
 

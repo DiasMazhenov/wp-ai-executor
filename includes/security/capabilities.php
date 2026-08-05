@@ -319,7 +319,7 @@ function wpae_get_capabilities_payload(): array {
                 'instantiate_modes' => [
                     'preserve' => 'Rekey Elementor IDs and preserve original design. Compatibility errors are reported but do not hide the block.',
                     'compatibility' => 'Normalize legacy structures and widget keys, rekey IDs, then validate against current structured-write rules.',
-                    'adapt' => 'Compatibility mode plus current design-system markers and safe baseline settings.',
+                    'adapt' => 'Compatibility mode plus deterministic semantic color, typography, spacing, and radius mapping through native Elementor settings.',
                 ],
                 'foreign_blocks' => 'Foreign blocks may be stored without a design_system_id. Missing widgets, media references, protected zones, and normalization requirements are reported.',
             ],
