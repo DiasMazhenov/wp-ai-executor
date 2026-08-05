@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.66`
-- Guide: `v02.05.50`
+- Plugin: `v02.08.67`
+- Guide: `v02.05.51`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -142,6 +142,7 @@ In the Elementor editor, container/widget context menus expose:
 - `POST /elementor/design-review` возвращает deterministic review по composition/brief, design-system consistency, accessibility/mobile, copy и Elementor editability.
 - Состояния: `review`, `revise`, `approved`; максимум три итерации.
 - `transaction_design_review=true` делает approval обязательным и включает auto-rollback при провале.
+- Live verification: страница `4172` вернула `approved`, visual level `acceptable`, HTTP `200`.
 
 The visual library provides client-side search, category filtering, structural
 details, compatibility status and `preserve|compatibility|adapt` insertion

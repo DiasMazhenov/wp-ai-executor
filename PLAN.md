@@ -127,7 +127,7 @@
    - Готово, когда старые skills работают без manifest, а новые получают schema validation и machine-readable workflow.
 
 4. **Design Review Gate поверх существующего conformance scoring.**
-   - Статус: реализован в `v02.08.67`; ожидает package/live verification, следующий этап — версионированный manifest Elementor-блока.
+   - Статус: реализован и проверен на live в `v02.08.67`; следующий этап — версионированный manifest Elementor-блока.
    - Переиспользовать `/audit`, visual regression, editability audit и conformance scoring вместо пяти отдельных LLM-панелистов.
    - Оценивать composition/brief, design-system consistency, accessibility/mobile, copy и Elementor editability.
    - Ввести состояния `draft -> review -> revise -> approved`, максимум три итерации с явной причиной остановки.
