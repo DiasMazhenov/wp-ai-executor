@@ -85,6 +85,7 @@ assert.match(llm, /wpae_get_enabled_skills_for_guide/);
 assert.match(read('includes/elementor/normalize.php'), /mapped_native_widget_content/);
 assert.match(read('includes/elementor/page-update.php'), /_wpae_allow_initial_data/);
 assert.match(read('includes/elementor/page-update.php'), /! empty\( \$existing_data \).*transaction_visual_regression/);
+assert.match(read('includes/elementor/page-update.php'), /get_post_status\( \$post_id \) === 'publish'/);
 assert.match(routes, /'\/llm\/chat'/);
 assert.match(routes, /'callback'\s*=>\s*'wpae_llm_chat'/);
 assert.match(routes, /'\/llm\/vision-review'/);

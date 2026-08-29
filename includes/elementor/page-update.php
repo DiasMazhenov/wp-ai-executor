@@ -87,7 +87,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], 200 );
     }
 
-    $visual_regression_baseline = ! empty( $existing_data ) && (bool) $request->get_param( 'transaction_visual_regression' )
+    $visual_regression_baseline = ! empty( $existing_data ) && get_post_status( $post_id ) === 'publish' && (bool) $request->get_param( 'transaction_visual_regression' )
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
@@ -233,7 +233,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ], 200 );
     }
 
-    $visual_regression_baseline = (bool) $request->get_param( 'transaction_visual_regression' )
+    $visual_regression_baseline = get_post_status( $post_id ) === 'publish' && (bool) $request->get_param( 'transaction_visual_regression' )
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . $post_id, [ $post_id ] );
@@ -387,7 +387,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
     $is_new_post = $post_id <= 0;
 
     $visual_regression_baseline = null;
-    if ( $post_id > 0 && (bool) $request->get_param( 'transaction_visual_regression' ) ) {
+    if ( $post_id > 0 && get_post_status( $post_id ) === 'publish' && (bool) $request->get_param( 'transaction_visual_regression' ) ) {
         $visual_regression_baseline = wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' );
     }
 

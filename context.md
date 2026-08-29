@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.98`
+- Plugin: `v02.08.99`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -136,6 +136,8 @@ nginx traversal.
 The visual regression gate is comparative: it blocks a good/acceptable public
 baseline regressing to weak/blocked or losing key public signals, but it does
 not reject every update merely because the page was already weak/blocked.
+It runs only for published posts; draft/editor pages do not have a reliable
+public permalink baseline and therefore skip this comparison.
 Action requests allow up to 8000 completion tokens and explicitly constrain
 the provider to compact JSON with at most two containers and eight widgets,
 without duplicated Elementor defaults or optional settings.
@@ -181,7 +183,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.08.98` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.08.99` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -191,7 +193,7 @@ messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
 Vision default model, the populated-native-widget action rule, and action JSON
-diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, and `v02.08.98` makes regression comparative and raises the compact action-JSON budget, pending commit/push.
+diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, and `v02.08.99` skips unreliable public baselines for draft posts, pending commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
