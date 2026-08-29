@@ -1006,7 +1006,7 @@ function wpae_settings_page() {
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-vision-api-key">API-ключ провайдера</label>
-                        <input class="wpae-input" id="wpae-vision-api-key" name="wpae_vision[api_key]" type="password" value="" autocomplete="new-password" placeholder="Оставьте пустым, чтобы сохранить текущий ключ" />
+                        <input class="wpae-input" id="wpae-vision-api-key" name="wpae_vision[api_key]" type="password" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( ! empty( $vision_settings['has_api_key'] ) ? '••••••••••••' : 'Введите API-ключ провайдера' ); ?>" />
                         <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Изображения и сырые ответы провайдера не сохраняются. Для полного отключения ключа отметьте очистку ниже.</span>
                     </div>
                     <label class="wpae-toggle" style="margin-top:12px">

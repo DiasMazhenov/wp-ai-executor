@@ -83,6 +83,7 @@ assert.match(editor, /admin_enqueue_scripts/);
 assert.match(editor, /wpae-elementor-llm-chat/);
 assert.match(dashboard, /data-base-url/);
 assert.match(dashboard, /••••••••••••/);
+assert.match(dashboard, /wpae-vision-api-key[\s\S]*has_api_key/);
 assert.doesNotMatch(editor, /wpae_get_key\(|api_key_encrypted|['"]api_key['"]/);
 assert.doesNotMatch(js, /X-AI-Key|X-WPAE-API-Key|api_key/i);
 assert.match(js, /capturePreviewScreenshot/);
