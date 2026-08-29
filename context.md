@@ -107,10 +107,10 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Local release state: `v02.08.70` security hardening is locally committed and
-awaits push. The last live deployment remains `v02.08.69`; live rollout and
-provider smoke-test remain pending until the site owner configures a provider
-and enables `ai_vision`.
+Release state: `v02.08.70` security hardening is published on GitHub `main`.
+The last live deployment remains `v02.08.69`; live rollout and provider
+smoke-test remain pending until the site owner configures a provider and
+enables `ai_vision`.
 
 ## Design System Package v2
 
