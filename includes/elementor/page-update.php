@@ -18,11 +18,15 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
 
     $existing_data = wpae_get_elementor_data_for_post( $post_id );
     if ( is_wp_error( $existing_data ) ) {
-        return new WP_REST_Response( [
-            'ok' => false,
-            'error' => $existing_data->get_error_message(),
-            'details' => $existing_data->get_error_data(),
-        ], 422 );
+        if ( $existing_data->get_error_code() === 'wpae_missing_saved_elementor_data' && (bool) $request->get_param( '_wpae_allow_initial_data' ) ) {
+            $existing_data = [];
+        } else {
+            return new WP_REST_Response( [
+                'ok' => false,
+                'error' => $existing_data->get_error_message(),
+                'details' => $existing_data->get_error_data(),
+            ], 422 );
+        }
     }
 
     $protected_zone_guard = wpae_validate_elementor_protected_zones( $existing_data, $elementor_data, $request );

@@ -91,10 +91,17 @@
         messages.scrollTop = messages.scrollHeight;
     }
     function chatLog() {
-        return Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).map(function (item) {
-            var role = item.classList.contains('wpae-llm-message--user') ? 'Пользователь' : 'Ассистент';
-            return role + ': ' + item.textContent;
-        }).join('\n\n');
+        return JSON.stringify({
+            format: 'wpae-llm-chat-log-v1',
+            post_id: Number(config.postId) || 0,
+            captured_at: new Date().toISOString(),
+            messages: Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).map(function (item) {
+                return {
+                    role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant',
+                    content: item.textContent
+                };
+            })
+        }, null, 2);
     }
     function copyChatLog() {
         var text = chatLog();

@@ -248,6 +248,7 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
     $request->set_param( 'post_id', $post_id );
     $request->set_param( 'elementor_data', $next );
     $request->set_param( 'template', 'elementor_canvas' );
+    $request->set_param( '_wpae_allow_initial_data', true );
     $request->set_param( 'transaction_visual_regression', true );
     $result = wpae_elementor_update( $request );
     $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
