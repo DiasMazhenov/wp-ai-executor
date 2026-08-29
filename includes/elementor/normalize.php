@@ -126,6 +126,58 @@ function wpae_normalize_native_widget_content( array &$settings, string $widget_
     }
 }
 
+function wpae_elementor_normalize_flex_settings( array &$settings, array &$report, string $element_path ): void {
+    $aliases = [
+        'justify_content' => 'flex_justify_content',
+        'align_items' => 'flex_align_items',
+        'justify_content_tablet' => 'flex_justify_content_tablet',
+        'justify_content_mobile' => 'flex_justify_content_mobile',
+        'align_items_tablet' => 'flex_align_items_tablet',
+        'align_items_mobile' => 'flex_align_items_mobile',
+    ];
+
+    foreach ( $aliases as $legacy_key => $modern_key ) {
+        if ( ! array_key_exists( $modern_key, $settings ) && array_key_exists( $legacy_key, $settings ) && is_scalar( $settings[ $legacy_key ] ) ) {
+            $settings[ $modern_key ] = sanitize_key( (string) $settings[ $legacy_key ] );
+            wpae_elementor_normalize_add_change(
+                $report,
+                'migrated_flex_setting',
+                $element_path,
+                'Migrated a legacy container alignment setting to the current Elementor Flexbox control.',
+                [ 'from' => $legacy_key, 'to' => $modern_key ]
+            );
+        }
+    }
+
+    foreach ( [ 'gap' => 'flex_gap', 'gap_mobile' => 'flex_gap_mobile' ] as $legacy_key => $modern_key ) {
+        if ( array_key_exists( $modern_key, $settings ) || ! is_array( $settings[ $legacy_key ] ?? null ) ) {
+            continue;
+        }
+
+        $unit = sanitize_key( (string) ( $settings[ $legacy_key ]['unit'] ?? '' ) );
+        $size = $settings[ $legacy_key ]['size'] ?? null;
+        if ( $unit === '' || ! is_scalar( $size ) || ! is_numeric( $size ) ) {
+            continue;
+        }
+
+        $size = (string) $size;
+        $settings[ $modern_key ] = [
+            'column' => $size,
+            'row' => $size,
+            'isLinked' => true,
+            'unit' => $unit,
+            'size' => $size,
+        ];
+        wpae_elementor_normalize_add_change(
+            $report,
+            'migrated_flex_setting',
+            $element_path,
+            'Migrated a legacy container gap setting to the current Elementor Flexbox control.',
+            [ 'from' => $legacy_key, 'to' => $modern_key ]
+        );
+    }
+}
+
 function wpae_elementor_normalize_elements( array $elements, array &$report, string $path = 'root' ): array {
     $normalized = [];
 
@@ -188,6 +240,8 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
         } else {
             $element['elType'] = 'container';
 
+            wpae_elementor_normalize_flex_settings( $element['settings'], $report, $element_path );
+
             if ( ! isset( $element['elements'] ) || ! is_array( $element['elements'] ) ) {
                 $element['elements'] = [];
                 wpae_elementor_normalize_add_change( $report, 'filled_elements', $element_path, 'Filled missing container elements array.' );
@@ -219,6 +273,7 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
             }
 
             foreach ( [
+                'container_type' => 'flex',
                 'content_width' => 'boxed',
                 'flex_direction' => 'column',
                 'background_background' => 'classic',

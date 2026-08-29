@@ -19,18 +19,18 @@
     "includes/elementor/design-review.php": "3c3aaa47f0124c4581c334a927fde59b656690ad2cad5952adbda5a3e6f53942",
     "includes/elementor/editor-chat.php": "6d1d5166c94b70a18f397dc66e17f8e329573404f76531e421b6b0240258ad24",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
-    "includes/elementor/normalize.php": "abbc84ca614bd1299f688479952b260a88be767e27a2ebdfe076fc7572a18c80",
+    "includes/elementor/normalize.php": "80869c7daf958921bd9ba942275b35d869a5f13285c963850137bc2c9f8ff8b0",
     "includes/elementor/page-update.php": "dc718c83ee856cf9c89c3ce6d1cb63f3c9828dc8db00f0cd5539390b35a48953",
     "includes/elementor/recipes.php": "f22e08c4c3b320a99ad946c34be631212a767b68955338cea8082aa2fcfc4549",
     "includes/elementor/transactions.php": "bd697ebf00c89f1c858682a455f780b82916e636ef612d5a1753f9b75a763cb3",
-    "includes/elementor/token-map.php": "506249769c51bb794bf40ba1262f48992c8ee06d1d050487af70797151999b12",
+    "includes/elementor/token-map.php": "7f46569212503fcf35eb1cb11d08f17c8b968ab824d5944fafda3d8d2caa957d",
     "includes/elementor/typography.php": "b2b550aba6da7bbbcccf0284d42f882f80144b849247c320fdefb366a9e4f7d8",
     "includes/elementor/validation-rules.php": "fa79c61c1f0872c435eb48dd4e901d9084ed84bbfd2f427a5fa7b67d44fbeab5",
     "includes/elementor/validation.php": "f805dcefde2ca7f0d5873411b518a4095ef1237b8734d9567c58f0ff48f2ec5f",
     "includes/elementor/visual-audit.php": "db0bb0df396671d058d82ad652989e19ee9974f8c4b74422107b440e7ae20854",
     "includes/execution/run.php": "ddba4fb5de66f62488305625cdd96bc040f1af55e569468005da4210cc2300d1",
     "includes/exports/exports.php": "b471d8020b0cd7240895817ecaf92aa1138cb6a0a7da58b6fb0a3afe1e894dca",
-    "includes/guide/guide.php": "1327a1f350e74e578de6675c579da2c0982b4947d94ec9cd6071fe90761311bd",
+    "includes/guide/guide.php": "d3f33117fb133a8f97ed84ba13d591e75cc3398bc63ca47fda509d9f675a1c51",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
     "includes/llm/llm.php": "b4666f8204b29fd4d7ad047efd5d3ac424c93a6b18d03ab553e335f971054249",
@@ -44,6 +44,6 @@
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "997a7e30a3a1e0bcb909ac42a9eb5c5f628ef8803923dbb0f3cea489effdec6d",
-  "wp-ai-executor.php": "8d7773006eb8a07abfb7a581c1a9a17592a2483eea3559e1f1599b283bb2ebbe"
+  "wp-ai-executor.php": "1238e1bf92edb4bc4e08d56a7ed6db7014950019737d33a96217d061c8b27ab0"
   }
 }

@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.27`
-- Guide: `v02.05.71`
+- Plugin: `v02.09.28`
+- Guide: `v02.05.72`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -227,7 +227,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.27` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.28` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -372,6 +372,10 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
    `/vision/analyze` or `/vision/report`, then call `/vision/page-review`.
 9. For risky writes, pass `transaction_vision_review=true` with the report ID
    and inspect `transaction.checks.vision_review` and rollback details.
+
+## Normalizer update
+
+`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast.
 
 ## Next block-library steps
 

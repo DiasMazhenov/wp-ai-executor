@@ -118,6 +118,7 @@
 - В `v02.09.25` исправлен native sizing карточек: режим `_flex_size=custom` и нулевые grow/shrink теперь действительно включают заданную процентную ширину Elementor, включая mobile override.
 - В `v02.09.26` исправлена совместимость bento-сетки с актуальными Elementor controls: карточки используют `content_width=full`, а flex alignment и gaps записываются через `flex_*` ключи.
 - В `v02.09.27` bento-нормализатор больше не превращает заголовок, описание или CTA в карточки; fallback-композиции benefits, pricing, process и portfolio используют отдельные повторяемые card containers внутри grid.
+- В `v02.09.28` улучшен общий Elementor-нормализатор: legacy alignment/gap aliases мигрируются в актуальные Flexbox controls и responsive variants, контейнеры получают `container_type=flex`, а native-кнопки всегда получают явные цвета активной дизайн-системы, чтобы тема не подменяла контраст.
 
 ## Библиотека произвольных Elementor-блоков
 

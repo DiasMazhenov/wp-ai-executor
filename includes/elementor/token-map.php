@@ -141,6 +141,19 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
             wpae_token_map_apply_typography( $settings, $element_id, $type_role, $tokens, $report );
         }
 
+        if ( $widget_type === 'button' ) {
+            $palette = (array) ( $tokens['palette'] ?? [] );
+            foreach ( [
+                'button_background_color' => 'accent',
+                'button_text_color' => 'surface',
+            ] as $key => $role ) {
+                $target = (string) ( $palette[ $role ] ?? '' );
+                if ( $target !== '' ) {
+                    wpae_token_map_set( $settings, $key, $target, $element_id, 'palette.' . $role, $report );
+                }
+            }
+        }
+
         foreach ( array_keys( $settings ) as $key ) {
             $role = wpae_token_map_color_role( (string) $key, $el_type, $widget_type, $depth );
             if ( $role === null ) {
@@ -176,7 +189,15 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
             }
             $gap = wpae_token_map_control( (string) ( $spacing['gap'] ?? '' ) );
             if ( $gap !== null ) {
-                wpae_token_map_set( $settings, 'gap', $gap, $element_id, 'spacing.gap', $report );
+                $gap_value = [
+                    'column' => (string) ( $gap['size'] ?? '' ),
+                    'row' => (string) ( $gap['size'] ?? '' ),
+                    'isLinked' => true,
+                    'unit' => (string) ( $gap['unit'] ?? 'rem' ),
+                    'size' => (string) ( $gap['size'] ?? '' ),
+                ];
+                $gap_key = ( array_key_exists( 'flex_gap', $settings ) || array_key_exists( 'flex_direction', $settings ) || array_key_exists( 'flex_wrap', $settings ) ) ? 'flex_gap' : 'gap';
+                wpae_token_map_set( $settings, $gap_key, $gap_key === 'flex_gap' ? $gap_value : $gap, $element_id, 'spacing.gap', $report );
             }
             $radius = wpae_token_map_dimension( (string) ( $tokens['native_tokens']['radii']['card'] ?? '' ) );
             if ( isset( $settings['border_radius'] ) && $radius !== null ) {
