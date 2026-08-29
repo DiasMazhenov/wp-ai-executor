@@ -79,6 +79,7 @@
 - В `v02.08.86` action-gate отклоняет технически валидные, но пустые команды без native Elementor widgets, чтобы чат не сообщал об успешном создании пустого блока.
 - В `v02.08.87` LLM-чат пробрасывает `failed_checks`, сообщения проверок и причину transaction rollback, чтобы ошибка Elementor не сводилась к общему HTTP 422.
 - В `v02.08.88` floating Elementor-чат после записи анализирует обновленный preview через AI Vision и откатывает snapshot при критических находках или ошибке screenshot/provider review.
+- В `v02.08.89` ошибки AI Vision в Elementor-чате раскрывают безопасные детали provider/HTTP-ответа и причину rollback вместо общего сообщения.
 
 ## Библиотека произвольных Elementor-блоков
 

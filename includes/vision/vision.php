@@ -755,13 +755,22 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
     $analysis = wpae_vision_analyze( $request );
     $analysis_data = $analysis->get_data();
     if ( empty( $analysis_data['ok'] ) || empty( $analysis_data['report'] ) ) {
+        $analysis_details = is_array( $analysis_data['details'] ?? null ) ? $analysis_data['details'] : [];
         $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
         return new WP_REST_Response( [
             'ok' => false,
             'rolled_back' => ! empty( $rollback['ok'] ),
             'error' => 'AI Vision не смог проверить сохраненный preview.',
             'code' => 'wpae_vision_review_failed',
-            'details' => [ 'analysis' => $analysis_data, 'rollback' => $rollback ],
+            'details' => [
+                'analysis' => $analysis_data,
+                'analysis_code' => sanitize_key( (string) ( $analysis_data['code'] ?? '' ) ),
+                'analysis_error' => sanitize_text_field( (string) ( $analysis_data['error'] ?? '' ) ),
+                'provider' => sanitize_key( (string) ( $analysis_details['provider'] ?? '' ) ),
+                'provider_http_status' => absint( $analysis_details['http_status'] ?? $analysis_details['provider_status'] ?? 0 ),
+                'provider_message' => sanitize_text_field( (string) ( $analysis_details['provider_message'] ?? $analysis_details['message'] ?? '' ) ),
+                'rollback' => $rollback,
+            ],
         ], 502 );
     }
 

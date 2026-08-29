@@ -255,7 +255,13 @@
                 if (!response.ok) {
                     var detail = body.error || body.message || ('HTTP ' + response.status);
                     if (body.code) detail += ' [' + body.code + ']';
-                    if (body.details && body.details.rollback) detail += ' (rollback: ' + (body.details.rollback.ok ? 'выполнен' : 'не выполнен') + ')';
+                    var visionDetails = body.details || {};
+                    if (visionDetails.analysis_error) detail += ': ' + visionDetails.analysis_error;
+                    if (visionDetails.analysis_code) detail += ' [' + visionDetails.analysis_code + ']';
+                    if (visionDetails.provider) detail += ' (provider: ' + visionDetails.provider + ')';
+                    if (visionDetails.provider_http_status) detail += ' (HTTP provider: ' + visionDetails.provider_http_status + ')';
+                    if (visionDetails.provider_message) detail += ': ' + visionDetails.provider_message;
+                    if (visionDetails.rollback) detail += ' (rollback: ' + (visionDetails.rollback.ok ? 'выполнен' : 'не выполнен') + ')';
                     throw new Error(detail);
                 }
                 return body;

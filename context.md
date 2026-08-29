@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.88`
+- Plugin: `v02.08.89`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -84,6 +84,9 @@ refreshed Elementor preview after a successful write and sends it to the
 editor-only `/llm/vision-review` endpoint. Critical findings, provider errors,
 or screenshot failures restore the write snapshot when possible; the chat does
 not claim success after such a rollback.
+Vision review failures expose sanitized provider, HTTP status, provider
+message, analysis code, and rollback status in the chat log; credentials and
+raw image/provider payloads remain excluded.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -154,14 +157,14 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.88` including the LLM proxy, Elementor editor chat,
+Release state: `v02.08.89` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
 guided editor context, editor preview synchronization, separate progress
 messages, the non-empty native-widget action gate, and transaction failure
-diagnostics, plus post-write AI Vision review and rollback, is published on
-GitHub `main` in commit `00fe9f8`.
+diagnostics, post-write AI Vision review and rollback, and Vision failure
+diagnostics is prepared locally and awaits commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

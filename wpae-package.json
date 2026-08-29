@@ -7,7 +7,7 @@
     "assets/css/elementor-llm-chat.css": "d318a33452948d4dc40fff80d719aaf6350f7c49c779b1ef8306e244c1850e6b",
     "assets/js/elementor-block-library-ui.js": "d08efe3aaa6ef875b283dfc26f6a39fb7d3899cd76dafbfabeca31ea77c7290d",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "a6a15f301489426ded8f8109ce133487f11b37156007d7d2bfdac215a2a22bf9",
+    "assets/js/elementor-llm-chat.js": "3480a27421eadd2ea98e8d8762f02c20436f445342633e57d23ac66c8577ecca",
     "includes/admin/dashboard.php": "9cd730cffd605e22bb9ecff63fb7e01cfcf02f3631eb0a56e16e6fc2b5e5d13e",
     "includes/design/system.php": "a9bd3eba468e2d5f1507ef5a07defd9f730f80897517744c6547f2c718fbccde",
     "includes/elementor/block-library.php": "ab52756e475900d587fabe54ee0c25c12735bfe7c523381c9b05dbd79ea5e151",
@@ -43,7 +43,7 @@
     "includes/support/logging.php": "5d8360abf0981be17fe47af6797309a8a3f7804c59c60998633f6b225afcd186",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "includes/vision/vision.php": "690406e25a0353fb7bff5e5dde7434f96c19a955f5219f52aafd200f983230fc",
-    "wp-ai-executor.php": "a4c988e92e921f6ce0a2e8755e381d955c366e0b36009d853f5bdf5e42f7c5d5"
+    "includes/vision/vision.php": "88a17e1c5d13ffd3fb6d844f60c5500a65aece4745a40f3833e58357552d5d26",
+    "wp-ai-executor.php": "8136e0956eccfae038a268d1871e43208689abea8341716c5756630ef8eae840"
   }
 }
