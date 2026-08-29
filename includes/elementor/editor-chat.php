@@ -40,6 +40,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
         ],
         'nonce' => wp_create_nonce( 'wp_rest' ),
         'postId' => $post_id,
+        'postStatus' => (string) get_post_status( $post_id ),
         'ready' => wpae_capability_enabled( 'llm_chat' ) && ! empty( $settings['has_api_key'] ) && $settings['base_url'] !== '',
         'strings' => [
             'placeholder' => 'Спросите, что угодно…',

@@ -424,7 +424,7 @@
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
             var visionPromise = Promise.resolve(null);
             if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
-                if (config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
+                if (config.vision && config.vision.ready && config.postStatus === 'publish' && body.write.rollback_snapshot_id) {
                     visionPromise = runVisionReview(body.write.rollback_snapshot_id);
                 } else {
                     visionPromise = waitForPreviewRefresh(refreshElementorPreview()).then(function () {
