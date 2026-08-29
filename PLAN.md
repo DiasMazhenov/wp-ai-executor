@@ -88,6 +88,7 @@
 - В `v02.08.95` обновление открытого Elementor preview после REST-записи использует официальный `document/save.footerSaver.refreshWpPreview()` с fallback на `elementor.reloadPreview()`.
 - В `v02.08.96` floating chat принудительно обновляет текущий Elementor preview-iframe с cache-busting и ждёт загрузки native widgets; editor Vision gate откатывает результат при `major` findings или score ниже 75, чтобы не подтверждать кривой/пустой canvas.
 - В `v02.08.97` initial insert в пустую Elementor-запись не сравнивается с пустой публичной baseline-страницей; visual regression остаётся включённым для уже существующего контента.
+- В `v02.08.98` visual regression сравнивает ухудшение относительно исходного уровня и не блокирует изменения на странице, которая уже была weak/blocked; action-JSON получил больший лимит и ограничения компактности, чтобы не обрываться на сложных блоках.
 
 ## Библиотека произвольных Elementor-блоков
 

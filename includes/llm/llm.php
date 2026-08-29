@@ -449,6 +449,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $system_prompt .= "\nЭто guided-режим WP AI Executor. Перед выполнением обязательно применяй agent_rules, все custom_skills и capabilities из следующего контекста. Правила WP AI Executor имеют приоритет при конфликте:\n" . wp_json_encode( $guided_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     }
     if ( $action_request ) {
+        $system_prompt .= ' Ограничения компактности action-JSON: максимум 2 контейнера и 8 виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
         $system_prompt .= ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Hero должен иметь сбалансированную композицию без пустых или чрезмерно широких колонок: на desktop используй понятную текстовую и supporting-зону, на mobile собери их в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Не удаляй и не заменяй существующие элементы.';
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     }
@@ -496,7 +497,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             'model' => $runtime['model'],
             'messages' => $messages,
             'temperature' => 0.2,
-            'max_completion_tokens' => $action_request ? 5000 : 1200,
+            'max_completion_tokens' => $action_request ? 8000 : 1200,
         ] ),
     ] );
     if ( is_wp_error( $response ) ) {

@@ -185,9 +185,10 @@ function wpae_compare_visual_regression_snapshots( array $before, array $after )
         $warnings[] = 'Empty block risk increased after write.';
     }
 
+    $before_level = (string) ( $before['audit']['level'] ?? '' );
     $after_level = (string) ( $after['audit']['level'] ?? '' );
-    if ( in_array( $after_level, [ 'weak', 'blocked' ], true ) ) {
-        $failures[] = 'Public visual audit level after write is ' . $after_level . '.';
+    if ( in_array( $before_level, [ 'strong', 'acceptable' ], true ) && in_array( $after_level, [ 'weak', 'blocked' ], true ) ) {
+        $failures[] = 'Public visual audit level regressed from ' . $before_level . ' to ' . $after_level . '.';
     }
 
     $score_delta = (int) ( $after['audit']['score'] ?? 0 ) - (int) ( $before['audit']['score'] ?? 0 );
@@ -203,7 +204,7 @@ function wpae_compare_visual_regression_snapshots( array $before, array $after )
         'before_summary' => [
             'http_status' => $before_status,
             'score' => (int) ( $before['audit']['score'] ?? 0 ),
-            'level' => (string) ( $before['audit']['level'] ?? '' ),
+            'level' => $before_level,
             'visible_text_length' => (int) ( $before_stats['visible_text_length'] ?? 0 ),
             'has_cta' => (bool) ( $before_stats['has_cta'] ?? false ),
             'wide_fixed_width_risks' => $before_overflow,
