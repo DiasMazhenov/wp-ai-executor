@@ -109,6 +109,7 @@
 - В `v02.09.16` major Vision findings переведены в предупреждения: rollback редакторского чата выполняется только для critical findings.
 - В `v02.09.17` repair-pass запрещает служебные placeholder-тексты и требует содержательный контент под запрос пользователя.
 - В `v02.09.18` Vision screenshot временно исключает editor-only overlays и dropzones, чтобы они не создавали ложные critical findings.
+- В `v02.09.19` editor-chat Vision переведен в advisory-режим: субъективные critical/major findings не откатывают realtime-вставку; строгий rollback остается у transaction Vision gate.
 
 ## Библиотека произвольных Elementor-блоков
 
