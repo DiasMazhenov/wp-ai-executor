@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.25`
-- Guide: `v02.05.69`
+- Plugin: `v02.09.26`
+- Guide: `v02.05.70`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -227,7 +227,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.25` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.26` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,

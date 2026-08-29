@@ -298,7 +298,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     $widget = static function ( string $id, string $type, array $settings = [] ): array {
         return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
     };
-    $gap = [ 'unit' => 'rem', 'size' => 1.5, 'sizes' => [] ];
+    $gap = [ 'column' => '1.5', 'row' => '1.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.5' ];
     $padding = [ 'unit' => 'rem', 'top' => '2.5', 'right' => '1.5', 'bottom' => '2.5', 'left' => '1.5', 'isLinked' => false ];
     $elements = [
         $widget( 'llm-heading', 'heading', [ 'title' => 'Новый блок', 'header_size' => 'h2' ] ),
@@ -335,7 +335,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                 'id' => $id,
                 'elType' => 'container',
                 'settings' => [
-                    'content_width' => 'boxed',
+                    'content_width' => 'full',
                     'flex_direction' => 'column',
                     'background_background' => 'classic',
                     'background_color' => '#f7f7f5',
@@ -343,7 +343,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                     'border_color' => '#e5e7eb',
                     'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
                     'border_radius' => [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ],
-                    'gap' => [ 'unit' => 'rem', 'size' => 0.75, 'sizes' => [] ],
+                    'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
                     'padding' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ],
                     'padding_mobile' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ],
                     'width' => [ 'unit' => '%', 'size' => 31 ],
@@ -367,7 +367,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         };
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Что говорят клиенты', 'header_size' => 'h2' ] ),
-            [ 'id' => 'llm-testimonial-grid', 'elType' => 'container', 'settings' => [ 'content_width' => 'full', 'flex_direction' => 'row', 'flex_wrap' => 'wrap', 'justify_content' => 'space-between', 'align_items' => 'stretch', 'gap' => [ 'unit' => 'rem', 'size' => 1.25, 'sizes' => [] ], 'gap_mobile' => [ 'unit' => 'rem', 'size' => 1, 'sizes' => [] ], 'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ] ], 'elements' => [
+            [ 'id' => 'llm-testimonial-grid', 'elType' => 'container', 'settings' => [ 'content_width' => 'full', 'flex_direction' => 'row', 'flex_wrap' => 'wrap', 'flex_justify_content' => 'space-between', 'flex_align_items' => 'stretch', 'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ], 'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ], 'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ] ], 'elements' => [
                 $card( 'llm-card-1', '«Стало сразу понятно, что мы продаем и куда вести клиента.»', 'Анна, студия брендинга' ),
                 $card( 'llm-card-2', '«Получили аккуратную страницу, которую можем менять сами.»', 'Руслан, сервисный бизнес' ),
                 $card( 'llm-card-3', '«Новая структура заметно упростила путь клиента к заявке.»', 'Марат, консалтинговая компания' ),
@@ -448,7 +448,7 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
                     'id' => 'wpae-bento-' . (string) $child_index,
                     'elType' => 'container',
                     'settings' => [
-                        'content_width' => 'boxed',
+                        'content_width' => 'full',
                         'flex_direction' => 'column',
                         'background_background' => 'classic',
                         'background_color' => '#f7f7f5',
@@ -488,9 +488,10 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         if ( count( $child_containers ) >= 2 ) {
             $settings['flex_direction'] = 'row';
             $settings['flex_wrap'] = 'wrap';
-            $settings['align_items'] = 'stretch';
-            $settings['gap'] = [ 'unit' => 'rem', 'size' => 1.25, 'sizes' => [] ];
-            $settings['gap_mobile'] = [ 'unit' => 'rem', 'size' => 1, 'sizes' => [] ];
+            $settings['flex_justify_content'] = 'space-between';
+            $settings['flex_align_items'] = 'stretch';
+            $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+            $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
             $changed++;
 
             $count = count( $child_containers );

@@ -172,16 +172,16 @@ function wpae_css_native_build_patches( string $element_id, string $property, st
         if ( $control === null ) {
             return [];
         }
-        $add( 'settings.gap', $control );
+        $add( 'settings.flex_gap', [ 'column' => (string) ( $control['size'] ?? '' ), 'row' => (string) ( $control['size'] ?? '' ), 'isLinked' => true, 'unit' => (string) ( $control['unit'] ?? 'px' ), 'size' => (string) ( $control['size'] ?? '' ) ] );
     } elseif ( $property === 'flex-direction' ) {
         if ( ! in_array( strtolower( $value ), [ 'row', 'column', 'row-reverse', 'column-reverse' ], true ) ) {
             return [];
         }
         $add( 'settings.flex_direction', strtolower( $value ) );
     } elseif ( $property === 'justify-content' ) {
-        $add( 'settings.justify_content', sanitize_key( $value ) );
+        $add( 'settings.flex_justify_content', sanitize_key( $value ) );
     } elseif ( $property === 'align-items' ) {
-        $add( 'settings.align_items', sanitize_key( $value ) );
+        $add( 'settings.flex_align_items', sanitize_key( $value ) );
     } elseif ( $property === 'flex-wrap' ) {
         if ( ! in_array( strtolower( $value ), [ 'nowrap', 'wrap', 'wrap-reverse' ], true ) ) {
             return [];

@@ -31,7 +31,7 @@ function wpae_collect_elementor_editability_stats( array $elements, array &$stat
             if ( wpae_elementor_has_any_setting( $settings, [ '/^(padding|margin|gap|border_radius|min_height|width|content_width)/' ] ) ) {
                 $stats['native_spacing_size_elements']++;
             }
-            if ( wpae_elementor_has_any_setting( $settings, [ '/^(flex_direction|justify_content|align_items|flex_wrap|gap)/' ] ) ) {
+            if ( wpae_elementor_has_any_setting( $settings, [ '/^(flex_direction|justify_content|align_items|flex_justify_content|flex_align_items|flex_wrap|gap|flex_gap)/' ] ) ) {
                 $stats['native_flex_elements']++;
             }
             if ( wpae_elementor_has_any_setting( $settings, [ '/(^|_)z_index$|^_position$|^sticky$|^sticky_/' ] ) ) {
