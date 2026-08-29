@@ -250,6 +250,27 @@
             }, officialRefresh ? 250 : 0);
         });
     }
+    function syncEditorElements(editorSync) {
+        if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return false;
+        if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return false;
+        var container = window.elementor.getPreviewContainer();
+        if (!container) return false;
+        var elements = editorSync.elements.slice();
+        var position = editorSync.position === 'start' ? 'start' : 'end';
+        if (position === 'start') elements.reverse();
+        try {
+            elements.forEach(function (model, index) {
+                window.$e.run('document/elements/create', {
+                    container: container,
+                    model: model,
+                    options: { at: position === 'start' ? 0 : null, clone: false }
+                });
+            });
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
     var visionCapturePromise = null;
     function loadVisionCapture() {
         if (typeof window.html2canvas === 'function') return Promise.resolve(window.html2canvas);
@@ -431,8 +452,14 @@
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
             var visionPromise = Promise.resolve(null);
             if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
+                var editorSynced = syncEditorElements(body.write.editor_sync);
+                if (editorSynced) addMessage('assistant', 'Новые элементы добавлены в открытый Elementor без перезагрузки редактора.');
                 if (config.vision && config.vision.ready && config.postStatus === 'publish' && body.write.rollback_snapshot_id) {
                     visionPromise = runVisionReview(body.write.rollback_snapshot_id, beforeWidgetCount + Number(body.write.inserted_count || 0));
+                } else if (editorSynced) {
+                    visionPromise = Promise.resolve(true).then(function () {
+                        addMessage('assistant', 'Текущий canvas Elementor синхронизирован с сохранёнными данными.');
+                    });
                 } else {
                     visionPromise = waitForPreviewRefresh(refreshElementorPreview(), beforeWidgetCount + Number(body.write.inserted_count || 0)).then(function () {
                         addMessage('assistant', 'Предпросмотр Elementor обновлён из сохранённых данных.');

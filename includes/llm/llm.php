@@ -412,6 +412,10 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
         'action' => 'insert_elements',
         'post_id' => $post_id,
         'inserted_count' => count( $elements ),
+        'editor_sync' => [
+            'position' => $position,
+            'elements' => $elements,
+        ],
         'quality_summary' => $data['quality_summary'] ?? null,
         'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
         'steps' => $steps,

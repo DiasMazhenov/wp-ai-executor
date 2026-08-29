@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.02`
+- Plugin: `v02.09.03`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -101,9 +101,12 @@ blank hero.
 Action responses allow up to 8000 completion tokens and request compact JSON;
 failed decoding exposes only safe response length, JSON error, truncation hint,
 provider message/code, and finish reason in chat diagnostics.
-After a successful chat write, the open Elementor preview is refreshed through
-the official `document/save` footer saver API when available, with the legacy
-`elementor.reloadPreview()` fallback.
+After a successful chat write, the chat first synchronizes the saved normalized
+elements into the open Elementor editor model through the official
+`$e.run('document/elements/create')` command, so the current canvas and Structure
+tree update without a browser reload. If the editor command API is unavailable,
+it falls back to the official `document/save` footer saver API, the legacy
+`elementor.reloadPreview()` path, and cache-busted iframe verification.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -190,7 +193,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.02` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.03` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -200,7 +203,7 @@ messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
 Vision default model, the populated-native-widget action rule, and action JSON
-diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, and `v02.09.02` refreshes the preview URL version key, pending commit/push.
+diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, and `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, pending commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
