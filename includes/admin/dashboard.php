@@ -56,6 +56,19 @@ add_action( 'admin_init', function () {
     }
 
     if (
+        isset( $_POST['wpae_save_vision_settings'] ) &&
+        current_user_can( 'manage_options' ) &&
+        check_admin_referer( 'wpae_save_vision_settings' )
+    ) {
+        $input = isset( $_POST['wpae_vision'] ) && is_array( $_POST['wpae_vision'] )
+            ? wp_unslash( $_POST['wpae_vision'] )
+            : [];
+        $result = wpae_update_vision_settings( $input );
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . ( is_wp_error( $result ) ? 'vision_error' : 'vision_saved' ) . '=1' ) );
+        exit;
+    }
+
+    if (
         isset( $_POST['wpae_apply_capability_preset'] ) &&
         check_admin_referer( 'wpae_apply_capability_preset' )
     ) {
@@ -264,6 +277,8 @@ function wpae_settings_page() {
     $skill_url_error    = isset( $_GET['skill_url_error'] );
     $exports_pruned     = isset( $_GET['exports_pruned'] ) ? absint( $_GET['exports_pruned'] ) : null;
     $health_checked     = sanitize_key( (string) ( $_GET['health_checked'] ?? '' ) );
+    $vision_saved       = isset( $_GET['vision_saved'] );
+    $vision_error       = isset( $_GET['vision_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $capability_presets = wpae_capability_presets();
@@ -278,6 +293,10 @@ function wpae_settings_page() {
     $enabled_count      = count( array_filter( $capabilities ) );
     $total_count        = count( $capabilities );
     $filesystem_locked  = ! wpae_can_run_filesystem_operations();
+    $vision_settings    = wpae_get_vision_settings();
+    $vision_status      = wpae_get_vision_status();
+    $vision_reports     = wpae_get_vision_reports( 5 );
+    $vision_providers    = wpae_vision_provider_options();
     ?>
     <style>
         .wpae-dashboard {
@@ -813,11 +832,20 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status">Диагностика WordPress завершена. Режим: <?php echo esc_html( $health_checked ); ?>.</div>
         <?php endif; ?>
 
+        <?php if ( $vision_saved ) : ?>
+            <div class="wpae-alert" role="status">Настройки AI Vision сохранены.</div>
+        <?php endif; ?>
+
+        <?php if ( $vision_error ) : ?>
+            <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось сохранить настройки AI Vision. Проверьте провайдера, модель и наличие OpenSSL.</div>
+        <?php endif; ?>
+
         <nav class="wpae-tabs" aria-label="Разделы настроек WP AI Executor">
             <div class="wpae-tabs__list" role="tablist" aria-orientation="horizontal">
                 <button class="wpae-tab" id="wpae-tab-connection" type="button" role="tab" aria-selected="true" aria-controls="wpae-panel-connection" tabindex="0" data-wpae-tab-target="connection">Подключение</button>
                 <button class="wpae-tab" id="wpae-tab-elementor" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-elementor" tabindex="-1" data-wpae-tab-target="elementor">Elementor</button>
                 <button class="wpae-tab" id="wpae-tab-agents" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-agents" tabindex="-1" data-wpae-tab-target="agents">Агенты</button>
+                <button class="wpae-tab" id="wpae-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-vision" tabindex="-1" data-wpae-tab-target="vision">AI Vision</button>
                 <button class="wpae-tab" id="wpae-tab-monitoring" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-monitoring" tabindex="-1" data-wpae-tab-target="monitoring">Мониторинг</button>
                 <button class="wpae-tab" id="wpae-tab-examples" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-examples" tabindex="-1" data-wpae-tab-target="examples">Примеры</button>
             </div>
@@ -850,6 +878,70 @@ function wpae_settings_page() {
                     <input type="hidden" name="wpae_regenerate" value="1" />
                     <button type="submit" class="button wpae-button wpae-danger-button">Сгенерировать новый ключ</button>
                 </form>
+            </div>
+
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="vision">
+                <h2>AI Vision</h2>
+                <p>Дополнительная проверка desktop/mobile скриншотов. Vision не заменяет deterministic audits, Elementor editability и проверку публичной страницы.</p>
+                <div class="wpae-status-grid" style="padding:0;margin-top:12px">
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Доступ агента</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo ! empty( $vision_status['enabled'] ) ? 'Включен' : 'Выключен'; ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Провайдер</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) $vision_settings['provider_label'] ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Ключ</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) $vision_settings['api_key_hint'] ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Отчеты</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) $vision_status['report_count'] ); ?></p>
+                    </div>
+                </div>
+
+                <form method="post" style="margin-top:16px">
+                    <?php wp_nonce_field( 'wpae_save_vision_settings' ); ?>
+                    <input type="hidden" name="wpae_save_vision_settings" value="1" />
+                    <div class="wpae-form-grid">
+                        <div class="wpae-form-field">
+                            <label for="wpae-vision-provider">Провайдер</label>
+                            <select class="wpae-input" id="wpae-vision-provider" name="wpae_vision[provider]">
+                                <?php foreach ( $vision_providers as $provider_id => $provider ) : ?>
+                                    <option value="<?php echo esc_attr( $provider_id ); ?>" <?php selected( $vision_settings['provider'], $provider_id ); ?>><?php echo esc_html( $provider['label'] ); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="wpae-form-field">
+                            <label for="wpae-vision-model">Модель</label>
+                            <input class="wpae-input" id="wpae-vision-model" name="wpae_vision[model]" type="text" value="<?php echo esc_attr( (string) $vision_settings['model'] ); ?>" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-vision-api-key">API-ключ провайдера</label>
+                        <input class="wpae-input" id="wpae-vision-api-key" name="wpae_vision[api_key]" type="password" value="" autocomplete="new-password" placeholder="Оставьте пустым, чтобы сохранить текущий ключ" />
+                        <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Изображения и сырые ответы провайдера не сохраняются. Для полного отключения ключа отметьте очистку ниже.</span>
+                    </div>
+                    <label class="wpae-toggle" style="margin-top:12px">
+                        <input name="wpae_vision[clear_api_key]" type="checkbox" value="1" />
+                        <span><strong>Удалить сохраненный API-ключ</strong><span>После этого /vision/analyze будет возвращать понятную ошибку конфигурации.</span></span>
+                    </label>
+                    <p style="margin-top:14px"><button type="submit" class="button button-primary wpae-button">Сохранить AI Vision</button></p>
+                </form>
+
+                <?php if ( ! empty( $vision_reports ) ) : ?>
+                    <h3>Последние отчеты</h3>
+                    <?php foreach ( $vision_reports as $vision_report ) : ?>
+                        <p style="margin:6px 0">
+                            <strong><?php echo esc_html( (string) ( $vision_report['vision_score'] ?? 0 ) ); ?>/100</strong>
+                            <span class="wpae-token-pill"><?php echo esc_html( (string) ( $vision_report['viewport'] ?? 'viewport не указан' ) ); ?></span>
+                            <span><?php echo esc_html( (string) ( $vision_report['created_at'] ?? '' ) ); ?></span>
+                            <?php if ( ! empty( $vision_report['report_id'] ) ) : ?><code><?php echo esc_html( (string) $vision_report['report_id'] ); ?></code><?php endif; ?>
+                        </p>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
 
             <div class="wpae-card wpae-card-wide" data-wpae-tab="elementor">

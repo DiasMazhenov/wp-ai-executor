@@ -60,6 +60,8 @@
 - Продолжено постепенное дробление `validation.php`: базовые Elementor validation rules вынесены в `includes/elementor/validation-rules.php`, design-system contract вынесен в `includes/elementor/design-contract.php`.
 - Dashboard разделен на доступные горизонтальные табы: «Подключение», «Elementor», «Агенты», «Мониторинг» и «Примеры». Активная вкладка сохраняется, поддерживаются клавиатурная навигация и fallback без JavaScript.
 - Исправлен false positive диагностики REST latency: ожидаемо долгие `/self-update` и `/self-update-package` исключены из порогов интерактивных запросов, но сохраняются в отчёте как maintenance metadata.
+- Добавлен опциональный AI Vision review: провайдеры Gemini/OpenAI/Claude, зашифрованный ключ в `wp_options`, `/vision/analyze`, `/vision/report`, `/vision/page-review`, нормализованные отчёты и атомарный rollback при критических findings.
+- Custom skill manifests получили capability `ai_vision` и закрытый allowlist Vision endpoints; включенная capability владельца и guide token остаются обязательными.
 
 ## Библиотека произвольных Elementor-блоков
 
@@ -148,6 +150,13 @@
    - Никогда не менять guide/design system автоматически: каждое правило требует явного `accept/reject` владельца.
    - Готово, когда принятое правило получает source evidence, version и enforce mapping либо остаётся advisory.
 
+7. **AI Vision visual QA.**
+   - Статус: runtime реализован в `v02.08.69`; live rollout и provider smoke-test выполняются после публикации пакета.
+   - Использовать Vision как дополнительную проверку desktop/mobile screenshots, не заменяя deterministic audits, browser verification и Elementor editability checks.
+   - Хранить только нормализованные отчёты в `wp_options`; изображения и raw provider responses не сохранять и не логировать.
+   - Поддерживать явный `transaction_vision_review=true`: критические findings блокируют транзакцию и запускают существующий atomic rollback.
+   - Готово, когда capability toggle, provider configuration, все три endpoints, report schema, transaction gate и live negative/positive smoke checks подтверждены.
+
 ### Что намеренно не переносим
 
 - Electron/Next.js daemon, SQLite и отдельный desktop runtime.
@@ -177,6 +186,7 @@
 10. Agent contract handshake: write endpoints требуют явного подтверждения, что агент прочитал `/guide`, `/capabilities`, enabled skills, design system и текущие ограничения.
 11. Recovery assistant actions: при ошибке endpoint должен возвращать не только code/message, но и безопасный следующий endpoint/payload skeleton для исправления.
 12. Расширенный Agent Conformance Scoring: учитывать не только нарушения, но и качество процесса: blueprint used, recipe/compose used, native settings coverage, mobile-first coverage, visual verification evidence и number of retries.
+13. AI Vision visual QA: анализировать desktop/mobile screenshots через настроенный provider, возвращать структурированные findings и использовать критические findings как дополнительный rollback gate.
 
 ## Приоритет внедрения
 
@@ -185,6 +195,7 @@
 3. Visual regression gate. Готово: доступен через `transaction_visual_regression=true` на existing-page writes.
 4. Elementor editability tests. Готово: `/elementor/editability-audit` и summary внутри `/audit`.
 5. CSS-to-native migrator. Готово: `/elementor/css-to-native` с dry-run, protected-zone guard и editability audit.
+6. AI Vision visual QA. Реализован локально в `v02.08.69`; после package rollout проверить provider request и transaction gate на live.
 
 ### Миграция на модули
 

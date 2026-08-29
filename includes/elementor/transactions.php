@@ -96,6 +96,7 @@ function wpae_build_elementor_transaction_status( string $operation, int $post_i
             'visual_regression_failure_when_requested',
             'strict_quality_failure_when_requested',
             'design_review_failure_when_requested',
+            'vision_review_failure_when_requested',
         ],
     ];
 }
@@ -260,10 +261,20 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
         ],
     ];
 
+    $vision_review_requested = (bool) $request->get_param( 'transaction_vision_review' );
+    $vision_report = $vision_review_requested && wpae_capability_enabled( 'ai_vision' )
+        ? wpae_vision_report_for_transaction( $request )
+        : ( $vision_review_requested ? new WP_Error( 'wpae_vision_disabled', 'AI Vision is disabled by the site owner.' ) : null );
+    $vision_report_error = is_wp_error( $vision_report ) ? $vision_report : null;
+    if ( $vision_report_error !== null ) {
+        $vision_report = null;
+    }
+
     $design_review = wpae_build_elementor_design_review( $expected_elementor_data, [
         'source' => 'transaction_after_save',
         'post_id' => $post_id,
         'iteration' => $request->get_param( 'design_review_iteration' ),
+        'vision_report' => $vision_report,
     ] );
     $quality_summary['design_review'] = $design_review;
     $review_required = (bool) $request->get_param( 'transaction_design_review' );
@@ -275,6 +286,36 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
             : ( $review_required ? 'Required design review did not approve the Elementor data.' : 'Design review returned advisory fixes.' ),
         'details' => $design_review,
     ];
+
+    if ( $vision_review_requested ) {
+        $vision_gate = $vision_report === null ? [
+            'ok' => false,
+            'blocking' => true,
+            'critical_count' => 0,
+            'major_count' => 0,
+            'must_fix' => [ 'Provide a valid vision_report_id or inline vision_report before enabling transaction_vision_review.' ],
+            'message' => 'A Vision report is required for the requested transaction gate.',
+        ] : wpae_evaluate_vision_report( $vision_report );
+        $checks['vision_review'] = [
+            'ok' => ! empty( $vision_gate['ok'] ),
+            'required' => true,
+            'message' => $vision_gate['message'],
+            'details' => array_merge( $vision_gate, [
+                'report_id' => $vision_report['report_id'] ?? null,
+                'error' => $vision_report_error ? $vision_report_error->get_error_message() : null,
+                'error_details' => $vision_report_error ? $vision_report_error->get_error_data() : null,
+            ] ),
+        ];
+        $quality_summary['vision_review'] = [
+            'requested' => true,
+            'report_id' => $vision_report['report_id'] ?? null,
+            'vision_score' => $vision_report['vision_score'] ?? null,
+            'confidence' => $vision_report['confidence'] ?? null,
+            'critical_count' => $vision_gate['critical_count'] ?? 0,
+            'major_count' => $vision_gate['major_count'] ?? 0,
+            'must_fix' => (array) ( $vision_gate['must_fix'] ?? [] ),
+        ];
+    }
 
     $public_verification = (bool) $request->get_param( 'transaction_verify_public' );
     if ( $public_verification ) {

@@ -21,6 +21,7 @@ function wpae_agent_guide(): array {
         'project_design_tokens' => wpae_get_project_design_tokens(),
         'project_design_system' => wpae_build_project_design_system(),
         'jezweb_claude_skills' => wpae_get_jezweb_claude_skills_pack(),
+        'ai_vision' => wpae_get_vision_guide(),
         'capabilities' => wpae_get_capabilities_payload(),
         'wordpress_health_policy' => [
             'endpoint' => 'GET /wp-json/ai-executor/v1/health',
@@ -113,6 +114,8 @@ function wpae_agent_guide(): array {
             '18. Read preflight and agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
             '19. If any endpoint or verification step fails, report concrete error details: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix.',
             '20. Library blocks use draft -> approved -> published. Run the Design Review Gate before approval; never instantiate a draft or publish with ship_best.',
+            '21. When AI Vision is enabled, review desktop and mobile screenshots with /vision/analyze or submit an external report to /vision/report, then combine it with /vision/page-review; treat Vision as additional evidence, not a replacement for deterministic audits or public browser verification.',
+            '22. For risky Elementor writes, pass transaction_vision_review=true with vision_report_id; critical Vision findings must be fixed before the transaction can complete and trigger automatic rollback.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -153,6 +156,7 @@ function wpae_agent_guide(): array {
             'native_style_first_rule' => 'When changing any element style, write it to native Elementor settings/style controls first. CSS is only an exception for complex behavior, animations, hover/focus refinements, browser fixes, or specificity conflicts after native settings exist.',
             'elementor_editor_editability_rule' => 'All design properties that Elementor can edit must remain editable through native Elementor controls/settings. Native settings are the editable source of truth, not something to delete; only remove local overrides when the user explicitly asks for global inheritance/design-token control.',
             'global_typography_editability_rule' => 'For typography that the user should control globally in Elementor, do not hardcode typography_* overrides on every widget. Use global typography roles, inherited/container typography, or leave widget typography unset; local typography_* settings are allowed only for deliberate exceptions such as a hero display wordmark.',
+            'ai_vision_rule' => 'When AI Vision is enabled, use it as a second visual review layer for desktop/mobile screenshots. Do not treat a Vision pass as proof of DOM validity, Elementor editability, computed CSS, keyboard behavior, or animation correctness.',
         ],
         'jezweb_claude_skills' => [
             'source' => 'https://github.com/jezweb/claude-skills',
@@ -477,6 +481,7 @@ function wpae_agent_guide(): array {
             'write_flag' => 'transaction_design_review=true',
             'rule' => 'Read must_fix and revise until approved. Never publish with ship_best; stop after three iterations and report unresolved items.',
         ],
+        'ai_vision_policy' => wpae_get_vision_guide(),
         'transaction_write_policy' => [
             'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update', 'POST /elementor/patch' ],
             'mode' => 'atomic',
@@ -490,11 +495,13 @@ function wpae_agent_guide(): array {
                 'public verification fails when transaction_verify_public=true.',
                 'visual regression comparison fails when transaction_visual_regression=true.',
                 'static quality is weak/blocked when transaction_strict_quality=true.',
+                'critical AI Vision findings exist when transaction_vision_review=true.',
             ],
             'optional_request_flags' => [
                 'transaction_verify_public=true fetches the public permalink after save and runs /visual-audit style checks; failure triggers rollback.',
                 'transaction_visual_regression=true captures a public HTML/audit baseline before existing-page writes and compares status, visible text, CTA, overflow, empty blocks, and audit level after save; failure triggers rollback.',
                 'transaction_strict_quality=true treats weak/blocked static visual audit as a transaction failure.',
+                'transaction_vision_review=true requires vision_report_id or inline vision_report; critical findings fail the atomic transaction and trigger rollback.',
             ],
             'failure_rule' => 'If transaction.ok=false, read transaction.failed_checks and transaction.auto_rollback. Do not retry through /run, WP Admin, browser writes, or direct metadata edits. Fix the payload and repeat dry_run first.',
         ],
@@ -962,6 +969,7 @@ function wpae_agent_prompt(): string {
 You are operating a remote WordPress site through WP AI Executor.
 Skill manifest note: SKILL.md remains canonical. If a custom skill includes wpae-skill-manifest-v1, read its capabilities, inputs, pipeline, source, license, and compatibility before acting. Follow only pipeline endpoints declared by the manifest and currently enabled by /capabilities; never interpret manifest metadata as permission to use /run, self-update, shell, MCP, WP-CLI, browser-admin writes, or server files.
 Current runtime notes: rollback restores only plugin-managed Elementor/WPAE meta plus the post record and does not remove unrelated third-party post meta; /elementor/page attempts to delete a newly created page if Elementor metadata saving fails and reports cleanup.created_post_deleted; /media/upload rejects files whose binary signature does not match mime_type; /exports/create stores short-lived JSON in wp_options and returns an authenticated /exports/{id} endpoint, never a public uploads file; use GET /exports for metadata and POST /exports/prune to remove expired export records.
+AI Vision note: when the ai_vision capability is enabled, render desktop and mobile screenshots in the agent environment, call /vision/analyze or submit a structured result to /vision/report, then call /vision/page-review. Vision returns vision_score, findings, confidence, and must_fix; it is additional evidence and never replaces deterministic audits, native Elementor checks, or public browser verification. Use transaction_vision_review=true with vision_report_id for atomic rollback on critical findings.
 CSS-to-native migration note: when editable Elementor-supported styles are trapped in HTML widget <style> blocks, call /elementor/css-to-native with dry_run=true first, review report.migrated_declarations and editability_audit, then save only if it preserves protected zones and removes only mapped declarations. Typography editability note: if the user should control typography globally or through Elementor design roles, do not hardcode typography_* settings on every widget; repeated local typography overrides block global edits. Use /elementor/typography-unlock with dry_run=true to remove excessive local typography overrides while preserving intentional exceptions. If an HTML widget CSS selector with !important is blocking a native heading control, do not delete or rewrite the HTML widget: call /elementor/resolve-typography-overrides with dry_run=true and explicit native_typography_patches, then verify the returned report before saving.
 Custom HTML note: Custom HTML is allowed and editable for JavaScript, WebGL/canvas, Three.js, GSAP, embeds, schema/meta, and CSS that has no native Elementor equivalent. Keep WebGL/Three.js/GSAP/canvas/shader/animation code in a separate dedicated HTML widget or protected enhancement zone whenever possible, and do not modify, delete, merge, or relocate that widget unless the user explicitly asks to change the enhancement. Never use Custom HTML as a workaround for Elementor-editable typography, colors, backgrounds, spacing, borders, radius, flex layout, sizing, or responsive values.
 Element Custom CSS note: every widget/container can keep scoped CSS in its own Elementor Custom CSS control as settings.custom_css. For CSS-only exceptions, prefer that field over HTML widget CSS, page-wide CSS, external files, or JavaScript-injected style tags. Use Elementor selector to scope the current element: selector { ... }, selector::before { ... }, selector:hover { ... }, or selector .child { ... }. Standard typography, color, background, spacing, border, size, layout, positioning, and responsive values still belong in their visual Elementor controls whenever those controls exist. Preserve unrelated settings.custom_css byte-for-byte.

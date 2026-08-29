@@ -65,6 +65,24 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_auth',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/vision/analyze', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_vision_analyze',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'ai_vision' ),
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/vision/report', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_vision_report',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'ai_vision' ),
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/vision/page-review', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_vision_page_review',
+        'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'ai_vision' ),
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/rollback', [
         'methods'             => 'POST',
         'callback'            => 'wpae_rollback',

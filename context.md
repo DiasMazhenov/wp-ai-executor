@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.68`
-- Guide: `v02.05.52`
+- Plugin: `v02.08.69`
+- Guide: `v02.05.53`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -17,6 +17,8 @@
 - `guide/` - mandatory agent contract and guide-token flow;
 - `elementor/` - validation, normalization, recipes, compose, transactions,
   editability, CSS-to-native migration, page writes, and block library;
+- `vision/` - optional provider-backed screenshot review, normalized reports,
+  and transaction Vision gate;
 - `rest/` - route registration;
 - `admin/` - Russian dashboard;
 - `updates/` - single-file and manifest-based package updates;
@@ -33,6 +35,9 @@ Legacy records without a manifest remain valid. Pipeline steps are checked
 against a closed safe-endpoint allowlist and their declared capabilities; the
 manifest never executes code or grants filesystem, shell, MCP, WP-CLI,
 browser-admin, `/run`, or self-update access.
+Skills that need screenshot review may declare the `ai_vision` capability and
+the `/vision/analyze`, `/vision/report`, or `/vision/page-review` pipeline
+endpoints; the site owner capability toggle and guide-token checks still apply.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -60,6 +65,47 @@ preserve existing file permissions and assign `0644` to new module/asset files
 before rename. The plugin root and package-managed subdirectories preserve
 owner write bits while receiving the missing read/execute bits required for
 nginx traversal.
+
+## AI Vision
+
+Runtime module: `includes/vision/vision.php`. AI Vision is an optional
+owner-controlled capability and is disabled by default in every preset because
+`/vision/analyze` sends an agent-provided screenshot to the selected external
+provider. Supported providers are Google Gemini, OpenAI, and Anthropic Claude.
+The provider, model, and API key are configured in the dashboard's `AI Vision`
+tab. The key is encrypted with AES-256-GCM before it is stored in the
+`wp_ai_executor_vision_settings` option; it is never returned by
+`/capabilities`, `/guide`, dashboard HTML, or operation logs. Provider payloads
+use each provider's native multimodal request format; Gemini receives a
+compatibility schema without OpenAI-only strictness fields, and provider
+responses over the bounded 512 KB limit fail closed.
+
+Endpoints:
+
+- `POST /vision/analyze` accepts an existing WordPress image `media_id` or
+  bounded inline `image_base64`, calls the configured provider, and stores only
+  the normalized report.
+- `POST /vision/report` accepts a structured report from an external Vision
+  client when the image was analyzed outside WordPress.
+- `POST /vision/page-review` combines a stored/external report with the
+  deterministic Elementor Design Review Gate for a post or supplied data.
+
+The normalized report contains `vision_score`, `findings`, `confidence`,
+`must_fix`, `summary`, and `strengths`. Findings use `critical`, `major`,
+`minor`, or `info` severity. Critical findings block only when the caller
+explicitly passes `transaction_vision_review=true`; then the existing atomic
+Elementor transaction restores its rollback snapshot. Major findings remain
+advisory unless another deterministic gate blocks the write.
+
+The module does not accept arbitrary image URLs, does not create image files,
+does not persist base64 or raw provider responses, and does not put image data
+in operation logs. AI Vision is additional visual evidence only: deterministic
+validation, native Elementor editability, public browser screenshots, and
+animation/WebGL checks remain mandatory.
+
+Local release state: code and package manifest are prepared for `v02.08.69`;
+live rollout/provider smoke-test is pending until the immutable Git commit is
+published.
 
 ## Design System Package v2
 
@@ -183,6 +229,10 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 6. Merge returned `elementor_data`, then run normalize/validate and write
    endpoint `dry_run=true`.
 7. Write only after validation succeeds and verify the public page.
+8. When `ai_vision` is enabled, capture desktop and mobile screenshots, call
+   `/vision/analyze` or `/vision/report`, then call `/vision/page-review`.
+9. For risky writes, pass `transaction_vision_review=true` with the report ID
+   and inspect `transaction.checks.vision_review` and rollback details.
 
 ## Next block-library steps
 
@@ -191,4 +241,5 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 - previews and screenshots;
 - media dependency transfer between sites;
 - richer native token controls in the dashboard;
+- live AI Vision provider and transaction-gate smoke tests;
 - runtime REST/editor tests on a WordPress + Elementor installation.

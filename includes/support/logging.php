@@ -184,6 +184,9 @@ function wpae_route_requires_guide_token_for_conformance( string $route ): bool 
         '/ai-executor/v1/media/upload',
         '/ai-executor/v1/exports/create',
         '/ai-executor/v1/exports/prune',
+        '/ai-executor/v1/vision/analyze',
+        '/ai-executor/v1/vision/report',
+        '/ai-executor/v1/vision/page-review',
         '/ai-executor/v1/self-update',
         '/ai-executor/v1/self-update-package',
     ], true )

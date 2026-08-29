@@ -3,7 +3,7 @@
 defined( 'ABSPATH' ) || exit;
 
 function wpae_skill_manifest_capabilities(): array {
-    return [ 'elementor_read', 'elementor_write', 'design_system', 'block_library', 'media_upload', 'visual_audit', 'rollback' ];
+    return [ 'elementor_read', 'elementor_write', 'design_system', 'block_library', 'media_upload', 'visual_audit', 'rollback', 'ai_vision' ];
 }
 
 function wpae_skill_manifest_pipeline_endpoints(): array {
@@ -30,6 +30,9 @@ function wpae_skill_manifest_pipeline_endpoints(): array {
         '/elementor/update' => [ 'POST' ],
         '/elementor/patch' => [ 'POST' ],
         '/visual-audit' => [ 'POST' ],
+        '/vision/analyze' => [ 'POST' ],
+        '/vision/report' => [ 'POST' ],
+        '/vision/page-review' => [ 'POST' ],
         '/media/upload' => [ 'POST' ],
         '/rollback' => [ 'POST' ],
     ];
@@ -50,6 +53,9 @@ function wpae_skill_manifest_endpoint_capabilities( string $endpoint, string $me
     }
     if ( $endpoint === '/rollback' ) {
         return [ 'rollback' ];
+    }
+    if ( strpos( $endpoint, '/vision/' ) === 0 ) {
+        return [ 'ai_vision' ];
     }
     if ( in_array( $endpoint, [ '/elementor/page', '/elementor/update', '/elementor/patch' ], true ) ) {
         return [ 'elementor_write' ];

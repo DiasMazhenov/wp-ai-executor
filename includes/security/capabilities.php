@@ -22,6 +22,7 @@ function wpae_capability_defaults(): array {
         'exports' => true,
         'manage_skills' => true,
         'filesystem_writes' => false,
+        'ai_vision' => false,
     ];
 }
 
@@ -73,6 +74,10 @@ function wpae_capability_labels(): array {
             'label' => 'Разрешить запись файлов через /run',
             'description' => 'Опасно. Разрешает файловые операции через /run. Держите выключенным без явной необходимости.',
         ],
+        'ai_vision' => [
+            'label' => 'Разрешить AI Vision',
+            'description' => 'Позволяет агенту отправлять скриншоты на настроенный Vision-провайдер и сохранять только нормализованные отчеты.',
+        ],
     ];
 }
 
@@ -111,6 +116,7 @@ function wpae_capability_presets(): array {
                 'exports' => false,
                 'manage_skills' => false,
                 'filesystem_writes' => false,
+                'ai_vision' => false,
             ],
         ],
         'elementor_safe' => [
@@ -124,6 +130,7 @@ function wpae_capability_presets(): array {
                 'exports' => true,
                 'manage_skills' => false,
                 'filesystem_writes' => false,
+                'ai_vision' => false,
             ],
         ],
         'maintenance' => [
@@ -137,6 +144,7 @@ function wpae_capability_presets(): array {
                 'exports' => true,
                 'manage_skills' => true,
                 'filesystem_writes' => false,
+                'ai_vision' => false,
             ],
         ],
         'full_trusted' => [
@@ -150,6 +158,7 @@ function wpae_capability_presets(): array {
                 'exports' => true,
                 'manage_skills' => true,
                 'filesystem_writes' => true,
+                'ai_vision' => false,
             ],
         ],
     ];
@@ -183,7 +192,7 @@ function wpae_get_capabilities_payload(): array {
 
     return [
         'plugin_version' => WPAE_VERSION,
-        'guide_version' => 'v02.05.46',
+        'guide_version' => WPAE_GUIDE_VERSION,
         'auth' => [
             'canonical_header' => 'X-AI-Key',
             'deprecated_aliases' => [
@@ -210,6 +219,7 @@ function wpae_get_capabilities_payload(): array {
         'can_restore_elementor_revisions' => true,
         'can_view_operation_logs' => true,
         'can_diagnose_wordpress' => true,
+        'can_use_ai_vision' => ! empty( $settings['ai_vision'] ),
         'can_score_agent_conformance' => true,
         'can_create_design_system' => true,
         'can_provide_project_design_tokens' => true,
@@ -281,6 +291,7 @@ function wpae_get_capabilities_payload(): array {
                 'animation behavior',
             ],
         ],
+        'ai_vision' => wpae_get_vision_guide(),
         'elementor' => [
             'enabled_for_writes' => ! empty( $settings['elementor_writes'] ),
             'safe_endpoints' => [
@@ -348,12 +359,14 @@ function wpae_get_capabilities_payload(): array {
                     'visual_regression_failure_when_requested',
                     'strict_quality_failure_when_requested',
                     'design_review_failure_when_requested',
+                    'vision_review_failure_when_requested',
                 ],
                 'optional_request_flags' => [
                     'transaction_verify_public' => 'When true, fetch and audit the public permalink after save; failure triggers auto-rollback.',
                     'transaction_visual_regression' => 'When true on existing-page writes, capture a public HTML/audit baseline before write and auto-rollback if key public signals regress after save.',
                     'transaction_strict_quality' => 'When true, weak/blocked static quality after save triggers auto-rollback.',
                     'transaction_design_review' => 'When true, only an approved deterministic design review may complete the write.',
+                    'transaction_vision_review' => 'When true with vision_report_id, critical AI Vision findings fail the atomic transaction and trigger rollback.',
                 ],
                 'response_fields' => [
                     'transaction',

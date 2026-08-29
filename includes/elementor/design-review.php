@@ -7,6 +7,7 @@ function wpae_build_elementor_design_review( array $elementor_data, array $conte
     $visual = wpae_build_elementor_visual_audit( $elementor_data, $context );
     $editability = wpae_build_elementor_editability_audit( $elementor_data, $context );
     $visual_checks = array_column( (array) ( $visual['checks'] ?? [] ), null, 'code' );
+    $vision_report = is_array( $context['vision_report'] ?? null ) ? $context['vision_report'] : null;
 
     $dimensions = [
         'composition_brief' => [ 'typography_hierarchy', 'native_cta', 'native_content_complete' ],
@@ -47,6 +48,19 @@ function wpae_build_elementor_design_review( array $elementor_data, array $conte
         }
     }
 
+    $vision_gate = null;
+    if ( $vision_report !== null ) {
+        $vision_gate = wpae_evaluate_vision_report( $vision_report );
+        $vision_status = ! empty( $vision_gate['blocking'] ) ? 'fail' : ( ! empty( $vision_gate['major_count'] ) ? 'warn' : 'pass' );
+        $reviews['vision_visual_review'] = [
+            'status' => $vision_status,
+            'must_fix' => (array) ( $vision_gate['must_fix'] ?? [] ),
+        ];
+        if ( $vision_status === 'fail' ) {
+            $must_fix = array_merge( $must_fix, (array) ( $vision_gate['must_fix'] ?? [] ) );
+        }
+    }
+
     $blocking = ( $visual['level'] ?? '' ) === 'blocked' || ( $editability['level'] ?? '' ) === 'blocked' || ! empty( $must_fix );
     $acceptable = in_array( (string) ( $visual['level'] ?? '' ), [ 'strong', 'acceptable' ], true )
         && in_array( (string) ( $editability['level'] ?? '' ), [ 'strong', 'acceptable' ], true );
@@ -64,6 +78,13 @@ function wpae_build_elementor_design_review( array $elementor_data, array $conte
         'evidence' => [
             'visual_audit' => [ 'score' => $visual['score'] ?? 0, 'level' => $visual['level'] ?? 'blocked' ],
             'editability_audit' => [ 'score' => $editability['score'] ?? 0, 'level' => $editability['level'] ?? 'blocked' ],
+            'vision' => $vision_report === null ? null : [
+                'report_id' => $vision_report['report_id'] ?? null,
+                'vision_score' => $vision_report['vision_score'] ?? 0,
+                'confidence' => $vision_report['confidence'] ?? 0,
+                'critical_count' => $vision_gate['critical_count'] ?? 0,
+                'major_count' => $vision_gate['major_count'] ?? 0,
+            ],
         ],
         'next_safe_step' => $verdict === 'approved'
             ? 'The page may proceed to write or publication verification.'
