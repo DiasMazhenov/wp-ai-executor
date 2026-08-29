@@ -73,6 +73,7 @@
 - В `v02.08.80` копируемый лог переведен в JSON-формат, а action-вставка может штатно инициализировать новую Elementor-страницу без сохраненного `_elementor_data`.
 - В `v02.08.81` action-элементы перед сохранением проходят normalize и native token map активной дизайн-системы; ошибки возвращают структурированный `blocking_errors`.
 - В `v02.08.82` normalize переносит совместимые поля `text/content/title` в нативные `title/editor/text`, чтобы модель не создавала пустые Heading, Text Editor или Button widgets.
+- В `v02.08.83` LLM-чат возвращает безопасную трассировку рабочих шагов: разбор ответа модели, проверка action, native normalize, design-system map, Elementor update и итог; шаги отображаются в чате и копируемом JSON-логе.
 
 ## Библиотека произвольных Elementor-блоков
 

@@ -204,7 +204,17 @@ function wpae_llm_is_action_request( string $message ): bool {
     return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message );
 }
 
-function wpae_llm_decode_action( string $reply ): array {
+function wpae_llm_is_list( array $value ): bool {
+    $index = 0;
+    foreach ( array_keys( $value ) as $key ) {
+        if ( $key !== $index++ ) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     $candidate = trim( preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $reply ) );
     $decoded = json_decode( $candidate, true );
     if ( ! is_array( $decoded ) ) {
@@ -214,40 +224,107 @@ function wpae_llm_decode_action( string $reply ): array {
             $decoded = json_decode( substr( $candidate, $start, $end - $start + 1 ), true );
         }
     }
-    return is_array( $decoded ) ? $decoded : [];
+    if ( ! is_array( $decoded ) ) {
+        return [
+            '_wpae_diagnostics' => [
+                'response_type' => 'text',
+                'json_decoded' => false,
+                'reply_preview' => sanitize_text_field( substr( wp_strip_all_tags( $reply ), 0, 600 ) ),
+            ],
+        ];
+    }
+    foreach ( [ 'result', 'data', 'command' ] as $wrapper ) {
+        if ( isset( $decoded[ $wrapper ] ) && is_array( $decoded[ $wrapper ] ) ) {
+            $decoded = $decoded[ $wrapper ];
+            break;
+        }
+    }
+    if ( wpae_llm_is_list( $decoded ) ) {
+        $decoded = [ 'action' => 'insert_elements', 'elements' => $decoded ];
+    }
+    $decoded['_wpae_diagnostics'] = [
+        'response_type' => 'json_object',
+        'json_decoded' => true,
+        'response_keys' => array_values( array_map( 'sanitize_key', array_keys( $decoded ) ) ),
+    ];
+    if ( ( $decoded['action'] ?? $decoded['type'] ?? '' ) === 'insert_elements' ) {
+        $decoded['action'] = 'insert_elements';
+    }
+    if ( $post_id > 0 && empty( $decoded['post_id'] ) ) {
+        $decoded['post_id'] = $post_id;
+    }
+    return $decoded;
 }
 
 function wpae_llm_execute_action( array $action, int $post_id ): array {
+    $received_action = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
+    $received_post_id = absint( $action['post_id'] ?? 0 );
+    $received_elements = $action['elements'] ?? [];
+    $steps = [];
     if ( ( $action['action'] ?? '' ) !== 'insert_elements' || $post_id <= 0 || absint( $action['post_id'] ?? 0 ) !== $post_id ) {
-        return [ 'ok' => false, 'error' => 'Модель вернула неподдерживаемую Elementor-команду.' ];
+        $steps[] = [
+            'id' => 'command_validation',
+            'status' => 'failed',
+            'message' => 'Команда модели не прошла проверку типа или страницы.',
+            'details' => [
+                'received_action' => $received_action,
+                'received_post_id' => $received_post_id,
+                'expected_action' => 'insert_elements',
+                'expected_post_id' => $post_id,
+                'element_count' => is_array( $received_elements ) ? count( $received_elements ) : 0,
+            ],
+        ];
+        return [
+            'ok' => false,
+            'error' => 'Модель вернула неподдерживаемую Elementor-команду.',
+            'received_action' => $received_action,
+            'received_post_id' => $received_post_id,
+            'expected_action' => 'insert_elements',
+            'expected_post_id' => $post_id,
+            'model_response' => $action['_wpae_diagnostics'] ?? [],
+            'steps' => $steps,
+        ];
     }
     if ( ! wpae_capability_enabled( 'elementor_writes' ) ) {
-        return [ 'ok' => false, 'error' => 'Разрешение elementor_writes выключено владельцем сайта.', 'capability' => 'elementor_writes' ];
+        $steps[] = [ 'id' => 'permissions', 'status' => 'failed', 'message' => 'Запись заблокирована настройками возможностей сайта.', 'details' => [ 'capability' => 'elementor_writes' ] ];
+        return [ 'ok' => false, 'error' => 'Разрешение elementor_writes выключено владельцем сайта.', 'capability' => 'elementor_writes', 'steps' => $steps ];
     }
     if ( function_exists( 'current_user_can' ) && is_user_logged_in() && ! current_user_can( 'edit_post', $post_id ) ) {
-        return [ 'ok' => false, 'error' => 'Нет разрешения на изменение этой страницы.', 'post_id' => $post_id ];
+        $steps[] = [ 'id' => 'permissions', 'status' => 'failed', 'message' => 'Текущий пользователь не может изменить эту страницу.', 'details' => [ 'post_id' => $post_id ] ];
+        return [ 'ok' => false, 'error' => 'Нет разрешения на изменение этой страницы.', 'post_id' => $post_id, 'steps' => $steps ];
     }
+    $steps[] = [ 'id' => 'command_validation', 'status' => 'ok', 'message' => 'Команда insert_elements и целевая страница подтверждены.', 'details' => [ 'action' => $received_action, 'post_id' => $post_id ] ];
 
     $elements = $action['elements'] ?? [];
     if ( ! is_array( $elements ) || empty( $elements ) || count( $elements ) > 12 ) {
-        return [ 'ok' => false, 'error' => 'Elementor-команда должна содержать от 1 до 12 новых элементов.' ];
+        $steps[] = [ 'id' => 'element_count', 'status' => 'failed', 'message' => 'Количество новых Elementor-элементов должно быть от 1 до 12.', 'details' => [ 'element_count' => is_array( $elements ) ? count( $elements ) : 0 ] ];
+        return [ 'ok' => false, 'error' => 'Elementor-команда должна содержать от 1 до 12 новых элементов.', 'steps' => $steps ];
     }
-    if ( function_exists( 'wpae_elementor_normalize_data' ) ) {
+    $steps[] = [ 'id' => 'element_count', 'status' => 'ok', 'message' => 'Количество новых элементов прошло проверку.', 'details' => [ 'element_count' => count( $elements ) ] ];
+    $native_normalized = function_exists( 'wpae_elementor_normalize_data' );
+    if ( $native_normalized ) {
         $elements = wpae_elementor_normalize_data( $elements )['data'];
     }
-    if ( function_exists( 'wpae_apply_design_token_map' ) ) {
+    $steps[] = [ 'id' => 'native_normalize', 'status' => $native_normalized ? 'ok' : 'skipped', 'message' => $native_normalized ? 'Структура виджетов нормализована под native Elementor и Flexbox.' : 'Нормализация Elementor недоступна и пропущена.', 'details' => [ 'element_count' => count( $elements ) ] ];
+    $design_mapped = function_exists( 'wpae_apply_design_token_map' );
+    if ( $design_mapped ) {
         $elements = wpae_apply_design_token_map( $elements )['data'];
     }
+    $steps[] = [ 'id' => 'design_system', 'status' => $design_mapped ? 'ok' : 'skipped', 'message' => $design_mapped ? 'Применены совместимые native-токены активной дизайн-системы.' : 'Маппинг дизайн-системы недоступен и пропущен.', 'details' => [ 'element_count' => count( $elements ) ] ];
     $existing = wpae_get_elementor_data_for_post( $post_id );
+    $initial_page = false;
     if ( is_wp_error( $existing ) ) {
         $existing = [];
+        $initial_page = true;
     }
     if ( ! empty( $existing ) && function_exists( 'wpae_elementor_normalize_data' ) ) {
         $existing = wpae_elementor_normalize_data( $existing )['data'];
     }
+    $steps[] = [ 'id' => 'page_context', 'status' => 'ok', 'message' => $initial_page ? 'Страница пустая: разрешена безопасная инициализация Elementor.' : 'Текущая структура страницы прочитана.', 'details' => [ 'existing_element_count' => count( $existing ) ] ];
     if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
         $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );
     }
+    $steps[] = [ 'id' => 'element_ids', 'status' => 'ok', 'message' => 'Для новых элементов созданы уникальные Elementor ID.', 'details' => [ 'element_count' => count( $elements ) ] ];
     $position = sanitize_key( (string) ( $action['position'] ?? 'end' ) );
     $next = $position === 'start' ? array_merge( $elements, $existing ) : array_merge( $existing, $elements );
     $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
@@ -274,8 +351,11 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
             'status' => $status,
             'blocking_errors' => array_values( array_unique( $blocking_errors ) ),
             'details' => is_array( $data ) ? $data : [],
+            'steps' => array_merge( $steps, [ [ 'id' => 'elementor_update', 'status' => 'failed', 'message' => 'Elementor update остановлен проверкой.', 'details' => [ 'http_status' => $status, 'blocking_errors' => array_values( array_unique( $blocking_errors ) ) ] ] ] ),
         ];
     }
+    $steps[] = [ 'id' => 'elementor_update', 'status' => 'ok', 'message' => 'Изменения сохранены через Elementor update.', 'details' => [ 'http_status' => $status ] ];
+    $steps[] = [ 'id' => 'complete', 'status' => 'ok', 'message' => 'Задача выполнена, Elementor подтвердил запись.' ];
     return [
         'ok' => true,
         'action' => 'insert_elements',
@@ -283,6 +363,7 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
         'inserted_count' => count( $elements ),
         'quality_summary' => $data['quality_summary'] ?? null,
         'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
+        'steps' => $steps,
     ];
 }
 
@@ -381,14 +462,37 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     }
     if ( $action_request ) {
         $post_id = is_array( $context ?? null ) ? absint( $context['post_id'] ?? 0 ) : 0;
-        $action = wpae_llm_decode_action( $reply );
+        $action = wpae_llm_decode_action( $reply, $post_id );
+        $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
+        $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
+        $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
+        $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
+        $action_steps = [
+            [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
+            [
+                'id' => 'command_decode',
+                'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed',
+                'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как Elementor JSON-команда.' : 'Ответ не разобран как Elementor JSON-команда.',
+                'details' => $action_diagnostics,
+            ],
+        ];
         $execution = wpae_llm_execute_action( $action, $post_id );
+        $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );
         }
-        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'action' => $execution['action'], 'write' => $execution, 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
+        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'action' => $execution['action'], 'write' => $execution, 'steps' => $execution['steps'], 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
     }
-    return new WP_REST_Response( [ 'ok' => true, 'message' => substr( $reply, 0, 12000 ), 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
+    return new WP_REST_Response( [
+        'ok' => true,
+        'message' => substr( $reply, 0, 12000 ),
+        'steps' => [
+            [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
+            [ 'id' => 'answer_ready', 'status' => 'ok', 'message' => 'Ответ подготовлен для чата.' ],
+        ],
+        'provider' => $runtime['provider'],
+        'model' => $runtime['model'],
+    ], 200 );
 }
 
 function wpae_llm_chat_permission( WP_REST_Request $request ) {
@@ -420,6 +524,7 @@ function wpae_get_llm_guide(): array {
             'context' => 'Optional bounded editor context with post_id and selected element ids/types.',
         ],
         'safety' => 'Normal chat is advisory. Explicit action requests may insert only new Elementor elements when elementor_writes is enabled; the plugin validates generated data and routes it through update, preflight, protected-zone, visual-regression, and rollback checks. Delete and replace actions are not supported. If the provider returns tutorial text instead of the required action JSON, the write is rejected.',
+        'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, native normalization, design-system mapping, page context, Elementor update and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
         'provider_rate_limit' => [ 'calls' => WPAE_LLM_CALL_LIMIT, 'window_seconds' => WPAE_LLM_CALL_WINDOW, 'scope' => 'site-wide' ],
         'privacy' => 'Provider keys are encrypted in wp_options. Prompts, histories, and raw provider responses are not stored or logged.',
     ];
