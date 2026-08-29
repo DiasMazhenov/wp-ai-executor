@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.31`
-- Guide: `v02.05.75`
+- Plugin: `v02.09.32`
+- Guide: `v02.05.76`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -27,7 +27,7 @@
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
-code graph contains 581 nodes and 1378 edges, with `graphify-out/GRAPH_TREE.html`
+code graph contains 583 nodes and 1384 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
 
 Action generation classifies natural-language block requests into hero,
@@ -261,7 +261,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.31` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.32` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -409,7 +409,7 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 
 ## Normalizer update
 
-`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context. `v02.09.30` adds deterministic content-fidelity validation, content-aware fallback repair, and passes the user brief plus a bounded preview text excerpt to the Vision review.
+`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context. `v02.09.30` adds deterministic content-fidelity validation, content-aware fallback repair, and passes the user brief plus a bounded preview text excerpt to the Vision review. `v02.09.32` also extracts unquoted natural-language label/description pairs and maps them into fallback cards before the fidelity gate.
 
 ## Next block-library steps
 

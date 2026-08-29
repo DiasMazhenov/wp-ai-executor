@@ -392,6 +392,10 @@ function wpae_llm_extract_requested_content( string $message ): array {
             $matches = array_merge( $matches, $found[1] );
         }
     }
+    foreach ( wpae_llm_extract_labeled_content( $message ) as $pair ) {
+        $matches[] = $pair['label'];
+        $matches[] = $pair['content'];
+    }
     $content = [];
     foreach ( $matches as $value ) {
         $value = trim( preg_replace( '/\s+/u', ' ', sanitize_text_field( (string) $value ) ) );
@@ -401,6 +405,22 @@ function wpae_llm_extract_requested_content( string $message ): array {
         }
     }
     return array_values( $content );
+}
+
+function wpae_llm_extract_labeled_content( string $message ): array {
+    $pairs = [];
+    $segments = preg_split( '/(?:\r?\n|(?<=[.!?])\s+)/u', $message ) ?: [];
+    foreach ( $segments as $segment ) {
+        if ( ! preg_match( '/^\s*([^—–-]{2,80}?)\s*[—–-]\s*(.{3,240})\s*$/u', trim( (string) $segment ), $match ) ) {
+            continue;
+        }
+        $label = trim( sanitize_text_field( (string) $match[1] ) );
+        $content = trim( sanitize_text_field( (string) $match[2] ) );
+        if ( $label !== '' && $content !== '' ) {
+            $pairs[] = [ 'label' => $label, 'content' => $content ];
+        }
+    }
+    return $pairs;
 }
 
 function wpae_llm_collect_action_content( array $elements ): string {
@@ -478,6 +498,77 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         }
     }
     unset( $element );
+}
+
+function wpae_llm_apply_fallback_archetype_content( array &$elements, string $message, string $archetype, int &$changed ): void {
+    if ( ! in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ], true ) ) {
+        return;
+    }
+    $pairs = wpae_llm_extract_labeled_content( $message );
+    if ( count( $pairs ) < 2 ) {
+        return;
+    }
+    $heading = '';
+    if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+        $heading = trim( sanitize_text_field( (string) $match[1] ) );
+    }
+    $cta = '';
+    foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
+        if ( preg_match( '/получить|расч[её]т|обсудить|задать|узнать|смотреть/iu', $value ) ) {
+            $cta = $value;
+            break;
+        }
+    }
+    foreach ( $elements as &$root ) {
+        if ( ! is_array( $root ) || ! is_array( $root['elements'] ?? null ) ) {
+            continue;
+        }
+        foreach ( $root['elements'] as &$child ) {
+            if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'container' || ! is_array( $child['elements'] ?? null ) ) {
+                continue;
+            }
+            $cards = array_values( array_filter( $child['elements'], static fn( $item ) => is_array( $item ) && ( $item['elType'] ?? '' ) === 'container' ) );
+            if ( count( $cards ) < 2 ) {
+                continue;
+            }
+            foreach ( $child['elements'] as &$card ) {
+                if ( ! is_array( $card ) || ( $card['elType'] ?? '' ) !== 'container' || ! isset( $pairs[0] ) ) {
+                    continue;
+                }
+                $pair = array_shift( $pairs );
+                $title_set = false;
+                $copy_set = false;
+                foreach ( $card['elements'] ?? [] as &$widget ) {
+                    if ( ! is_array( $widget ) ) {
+                        continue;
+                    }
+                    $widget_type = (string) ( $widget['widgetType'] ?? '' );
+                    $widget['settings'] = is_array( $widget['settings'] ?? null ) ? $widget['settings'] : [];
+                    if ( $widget_type === 'heading' && ! $title_set ) {
+                        $widget['settings']['title'] = $pair['label'];
+                        $title_set = true;
+                        $changed++;
+                    } elseif ( in_array( $widget_type, [ 'text-editor', 'testimonial' ], true ) && ! $copy_set ) {
+                        $widget['settings'][ $widget_type === 'testimonial' ? 'testimonial_content' : 'editor' ] = $pair['content'];
+                        $copy_set = true;
+                        $changed++;
+                    } elseif ( $widget_type === 'button' && $cta !== '' ) {
+                        $widget['settings']['text'] = $cta;
+                        $changed++;
+                    }
+                }
+                unset( $widget );
+            }
+            unset( $card );
+        }
+        unset( $child );
+        if ( $heading !== '' && isset( $root['elements'][0]['widgetType'] ) && $root['elements'][0]['widgetType'] === 'heading' ) {
+            $root['elements'][0]['settings'] = is_array( $root['elements'][0]['settings'] ?? null ) ? $root['elements'][0]['settings'] : [];
+            $root['elements'][0]['settings']['title'] = $heading;
+            $changed++;
+        }
+    }
+    unset( $root );
 }
 
 function wpae_llm_bento_card( string $id, array $elements ): array {
@@ -1229,6 +1320,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             if ( ! empty( $missing_content ) ) {
                 wpae_llm_apply_fallback_content( $action['elements'], $missing_content, $action_archetype, $fallback_content_changed );
             }
+            wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
         }
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
