@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.75`
+- Plugin: `v02.08.76`
 - Guide: `v02.05.57`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -130,8 +130,8 @@ screenshots, and animation/WebGL checks remain mandatory.
 
 Release state: `v02.08.70` security hardening is published on GitHub `main`
 and deployed to `mazhenov.kz` through WP Pusher. The LLM proxy, Elementor editor
-chat, and action execution updates through `v02.08.75` are implemented locally
-and await commit/push;
+chat, action execution, and Enter-to-send update through `v02.08.76` are implemented
+locally and await commit/push;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
 smoke-test remains pending until the site owner configures a provider and

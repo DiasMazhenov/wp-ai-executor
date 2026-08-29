@@ -131,6 +131,12 @@
     open.addEventListener('click', function () { setOpen(true); });
     pill.addEventListener('click', function (event) { if (event.target !== open) setOpen(true); });
     close.addEventListener('click', function () { setOpen(false); });
+    input.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            form.requestSubmit();
+        }
+    });
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         var message = input.value.trim();

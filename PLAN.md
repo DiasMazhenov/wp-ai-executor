@@ -67,6 +67,7 @@
 - В `v02.08.73` добавлен явный fallback обнаружения Elementor по `post.php?post=ID&action=elementor`, чтобы floating chat подключался даже при пропуске Elementor editor hook.
 - В `v02.08.74` добавлен execution mode для явных action-запросов из Elementor chat: только вставка новых элементов через штатный update/preflight/visual-regression/rollback pipeline; tutorial-ответы для таких запросов отклоняются.
 - В `v02.08.75` execution mode стал рабочим: плагин сам объединяет `insert_elements` с текущей страницей, нормализует существующую структуру и отклоняет неподдерживаемые/не-JSON ответы.
+- В `v02.08.76` добавлена отправка LLM-запроса по `Enter`; `Shift+Enter` сохраняет перенос строки, кнопка остается доступной на мобильных устройствах.
 
 ## Библиотека произвольных Elementor-блоков
 
