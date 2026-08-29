@@ -361,6 +361,11 @@
                     if (visionDetails.provider) detail += ' (provider: ' + visionDetails.provider + ')';
                     if (visionDetails.provider_http_status) detail += ' (HTTP provider: ' + visionDetails.provider_http_status + ')';
                     if (visionDetails.provider_message) detail += ': ' + visionDetails.provider_message;
+                    if (body.report) {
+                        if (body.report.vision_score !== undefined) detail += ' (score: ' + body.report.vision_score + ')';
+                        if (body.report.summary) detail += ': ' + body.report.summary;
+                        if (Array.isArray(body.report.findings) && body.report.findings.length) detail += ' ' + body.report.findings.slice(0, 3).map(function (finding) { return (finding.severity || 'info') + ': ' + (finding.message || 'наблюдение'); }).join('; ');
+                    }
                     if (visionDetails.rollback) detail += ' (rollback: ' + (visionDetails.rollback.ok ? 'выполнен' : 'не выполнен') + ')';
                     throw new Error(detail);
                 }
