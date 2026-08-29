@@ -293,6 +293,46 @@ function wpae_llm_block_archetype_hint( string $message ): string {
     return ' Сначала определи тип блока по смыслу запроса и выбери подходящие native widgets из доступных Elementor. Не своди каждый блок к одному и тому же hero/benefits-шаблону; содержание и композиция должны соответствовать задаче пользователя.';
 }
 
+function wpae_llm_bento_card( string $id, array $elements ): array {
+    return [
+        'id' => $id,
+        'elType' => 'container',
+        'settings' => [
+            'content_width' => 'full',
+            'flex_direction' => 'column',
+            'background_background' => 'classic',
+            'background_color' => '#ffffff',
+            'border_border' => 'solid',
+            'border_color' => '#e5e7eb',
+            'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+            'border_radius' => [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ],
+            'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+            'padding' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ],
+            'padding_mobile' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ],
+        ],
+        'elements' => $elements,
+    ];
+}
+
+function wpae_llm_bento_grid( string $id, array $elements ): array {
+    return [
+        'id' => $id,
+        'elType' => 'container',
+        'settings' => [
+            'content_width' => 'full',
+            'flex_direction' => 'row',
+            'flex_wrap' => 'wrap',
+            'flex_justify_content' => 'space-between',
+            'flex_align_items' => 'stretch',
+            'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
+            'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+            'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+            'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+        ],
+        'elements' => $elements,
+    ];
+}
+
 function wpae_llm_build_fallback_action( string $message, int $post_id ): array {
     $archetype = wpae_llm_detect_block_archetype( $message );
     $widget = static function ( string $id, string $type, array $settings = [] ): array {
@@ -300,6 +340,12 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     };
     $gap = [ 'column' => '1.5', 'row' => '1.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.5' ];
     $padding = [ 'unit' => 'rem', 'top' => '2.5', 'right' => '1.5', 'bottom' => '2.5', 'left' => '1.5', 'isLinked' => false ];
+    $card = static function ( string $id, array $children ) use ( $widget ): array {
+        return wpae_llm_bento_card( $id, $children );
+    };
+    $grid = static function ( string $id, array $cards ): array {
+        return wpae_llm_bento_grid( $id, $cards );
+    };
     $elements = [
         $widget( 'llm-heading', 'heading', [ 'title' => 'Новый блок', 'header_size' => 'h2' ] ),
         $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Содержательный блок под вашу задачу.' ] ),
@@ -308,7 +354,12 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     if ( $archetype === 'benefits' ) {
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Преимущества для вашего проекта', 'header_size' => 'h2' ] ),
-            $widget( 'llm-list', 'icon-list', [ 'icon_list' => [ [ 'text' => 'Понятная структура и быстрый старт' ], [ 'text' => 'Редактируемые native Elementor-элементы' ], [ 'text' => 'Адаптация под мобильные устройства' ] ] ] ),
+            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Три опоры, которые делают страницу понятной, убедительной и готовой к заявке.' ] ),
+            $grid( 'llm-benefits-grid', [
+                $card( 'llm-benefit-1', [ $widget( 'llm-benefit-1-title', 'heading', [ 'title' => 'Понятная структура', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-1-copy', 'text-editor', [ 'editor' => 'Посетитель быстро понимает предложение и следующий шаг.' ] ) ] ),
+                $card( 'llm-benefit-2', [ $widget( 'llm-benefit-2-title', 'heading', [ 'title' => 'Native Elementor', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-2-copy', 'text-editor', [ 'editor' => 'Контент и стили остаются редактируемыми в визуальном редакторе.' ] ) ] ),
+                $card( 'llm-benefit-3', [ $widget( 'llm-benefit-3-title', 'heading', [ 'title' => 'Готово к росту', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-3-copy', 'text-editor', [ 'editor' => 'Компоненты и адаптивная сетка не рассыпаются на мобильных устройствах.' ] ) ] ),
+            ] ),
             $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'faq' ) {
@@ -320,14 +371,24 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     } elseif ( $archetype === 'process' ) {
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Как проходит работа', 'header_size' => 'h2' ] ),
-            $widget( 'llm-list', 'icon-list', [ 'icon_list' => [ [ 'text' => '01 / Бриф и цель страницы' ], [ 'text' => '02 / Структура и контент' ], [ 'text' => '03 / Сборка и проверка' ] ] ] ),
+            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Понятный маршрут от первой задачи до готовой страницы.' ] ),
+            $grid( 'llm-process-grid', [
+                $card( 'llm-process-1', [ $widget( 'llm-process-1-title', 'heading', [ 'title' => '01 / Бриф', 'header_size' => 'h4' ] ), $widget( 'llm-process-1-copy', 'text-editor', [ 'editor' => 'Фиксируем цель, аудиторию и главное действие страницы.' ] ) ] ),
+                $card( 'llm-process-2', [ $widget( 'llm-process-2-title', 'heading', [ 'title' => '02 / Структура', 'header_size' => 'h4' ] ), $widget( 'llm-process-2-copy', 'text-editor', [ 'editor' => 'Собираем смысловой маршрут и расставляем доказательства.' ] ) ] ),
+                $card( 'llm-process-3', [ $widget( 'llm-process-3-title', 'heading', [ 'title' => '03 / Сборка', 'header_size' => 'h4' ] ), $widget( 'llm-process-3-copy', 'text-editor', [ 'editor' => 'Создаем блоки из native Elementor-элементов и задаем адаптив.' ] ) ] ),
+                $card( 'llm-process-4', [ $widget( 'llm-process-4-title', 'heading', [ 'title' => '04 / Проверка', 'header_size' => 'h4' ] ), $widget( 'llm-process-4-copy', 'text-editor', [ 'editor' => 'Проверяем визуальный результат, редактируемость и CTA.' ] ) ] ),
+            ] ),
             $widget( 'llm-button', 'button', [ 'text' => 'Начать проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'pricing' ) {
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Выберите формат работы', 'header_size' => 'h2' ] ),
-            $widget( 'llm-copy', 'text-editor', [ 'editor' => '<strong>Лендинг</strong> — быстрый запуск ясного оффера.<br><strong>Система страниц</strong> — масштабируемая структура для роста.' ] ),
-            $widget( 'llm-button', 'button', [ 'text' => 'Получить расчет', 'link' => [ 'url' => '#contact' ] ] ),
+            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Соберите нужный объем работ и начните с понятного следующего шага.' ] ),
+            $grid( 'llm-pricing-grid', [
+                $card( 'llm-pricing-1', [ $widget( 'llm-pricing-1-title', 'heading', [ 'title' => 'Лендинг', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-1-copy', 'text-editor', [ 'editor' => '<strong>Быстрый запуск</strong><br>Один экран или страница услуги с ясным оффером, структурой и CTA.' ] ), $widget( 'llm-pricing-1-button', 'button', [ 'text' => 'Обсудить формат', 'link' => [ 'url' => '#contact' ] ] ) ] ),
+                $card( 'llm-pricing-2', [ $widget( 'llm-pricing-2-title', 'heading', [ 'title' => 'Система страниц', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-2-copy', 'text-editor', [ 'editor' => '<strong>Масштабируемая структура</strong><br>Несколько связанных страниц, единая дизайн-система и путь клиента.' ] ), $widget( 'llm-pricing-2-button', 'button', [ 'text' => 'Получить расчет', 'link' => [ 'url' => '#contact' ] ] ) ] ),
+                $card( 'llm-pricing-3', [ $widget( 'llm-pricing-3-title', 'heading', [ 'title' => 'Поддержка', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-3-copy', 'text-editor', [ 'editor' => '<strong>Развитие проекта</strong><br>Точечные улучшения, новые блоки и контроль качества после запуска.' ] ), $widget( 'llm-pricing-3-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ) ] ),
+            ] ),
         ];
     } elseif ( $archetype === 'testimonials' ) {
         $card = static function ( string $id, string $quote, string $author ) use ( $widget ): array {
@@ -378,6 +439,11 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Избранные проекты', 'header_size' => 'h2' ] ),
             $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Показываем задачу, решение и результат каждого проекта без лишнего шума.' ] ),
+            $grid( 'llm-portfolio-grid', [
+                $card( 'llm-portfolio-1', [ $widget( 'llm-portfolio-1-title', 'heading', [ 'title' => 'Сервисный бизнес', 'header_size' => 'h4' ] ), $widget( 'llm-portfolio-1-copy', 'text-editor', [ 'editor' => 'Страница услуги с понятным оффером и маршрутом к заявке.' ] ) ] ),
+                $card( 'llm-portfolio-2', [ $widget( 'llm-portfolio-2-title', 'heading', [ 'title' => 'Запуск продукта', 'header_size' => 'h4' ] ), $widget( 'llm-portfolio-2-copy', 'text-editor', [ 'editor' => 'Собрали структуру, которая объясняет ценность продукта с первого экрана.' ] ) ] ),
+                $card( 'llm-portfolio-3', [ $widget( 'llm-portfolio-3-title', 'heading', [ 'title' => 'Редизайн', 'header_size' => 'h4' ] ), $widget( 'llm-portfolio-3-copy', 'text-editor', [ 'editor' => 'Убрали лишнее, усилили доказательства и сделали систему редактируемой.' ] ) ] ),
+            ] ),
             $widget( 'llm-button', 'button', [ 'text' => 'Смотреть кейсы', 'link' => [ 'url' => '#cases' ] ] ),
         ];
     }
@@ -385,7 +451,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         'action' => 'insert_elements',
         'post_id' => $post_id,
         'position' => 'end',
-        'elements' => [ [ 'id' => 'llm-fallback', 'elType' => 'container', 'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'background_background' => 'classic', 'background_color' => '#ffffff', 'gap' => $gap, 'padding' => $padding, 'padding_mobile' => $padding ], 'elements' => $elements ] ],
+        'elements' => [ [ 'id' => 'llm-fallback', 'elType' => 'container', 'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'background_background' => 'classic', 'background_color' => '#f7f7f5', 'flex_gap' => $gap, 'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ], 'padding' => $padding, 'padding_mobile' => [ 'unit' => 'rem', 'top' => '2', 'right' => '1', 'bottom' => '2', 'left' => '1', 'isLinked' => true ] ], 'elements' => $elements ] ],
     ];
 }
 
@@ -436,46 +502,36 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         }
 
         if ( count( $children ) >= 3 && empty( $child_containers ) ) {
-            $wrapped = [];
-            $item_count = count( $children );
-            $width = $item_count >= 4 ? 23 : ( $item_count === 3 ? 31 : 48 );
-            foreach ( $children as $child_index => $child ) {
-                if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
-                    $wrapped[] = $child;
-                    continue;
-                }
-                $wrapped[] = [
-                    'id' => 'wpae-bento-' . (string) $child_index,
-                    'elType' => 'container',
-                    'settings' => [
-                        'content_width' => 'full',
-                        'flex_direction' => 'column',
-                        'background_background' => 'classic',
-                        'background_color' => '#f7f7f5',
-                        'border_border' => 'solid',
-                        'border_color' => '#e5e7eb',
-                        'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
-                        'border_radius' => [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ],
-                        'padding' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ],
-                        'padding_mobile' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ],
-                        'width' => [ 'unit' => '%', 'size' => $width, 'sizes' => [] ],
-                        'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
-                        '_element_width' => 'initial',
-                        '_element_custom_width' => [ 'unit' => '%', 'size' => $width, 'sizes' => [] ],
-                        '_element_width_mobile' => 'initial',
-                        '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
-                        '_flex_size' => 'custom',
-                        '_flex_grow' => 0,
-                        '_flex_shrink' => 0,
-                        '_flex_size_mobile' => 'custom',
-                        '_flex_grow_mobile' => 0,
-                        '_flex_shrink_mobile' => 0,
-                    ],
-                    'elements' => [ $child ],
-                ];
-                $changed++;
+            $leading = [];
+            $trailing = [];
+            $repeatable_children = $children;
+            if ( is_array( $repeatable_children[0] ?? null ) && ( $repeatable_children[0]['elType'] ?? '' ) === 'widget' && ( $repeatable_children[0]['widgetType'] ?? '' ) === 'heading' ) {
+                $leading[] = array_shift( $repeatable_children );
             }
-            $children = $wrapped;
+            if ( is_array( end( $repeatable_children ) ) && ( end( $repeatable_children )['elType'] ?? '' ) === 'widget' && ( end( $repeatable_children )['widgetType'] ?? '' ) === 'button' ) {
+                $trailing[] = array_pop( $repeatable_children );
+            }
+            if ( count( $repeatable_children ) >= 2 && ( ! empty( $leading ) || ! empty( $trailing ) ) ) {
+                $cards = [];
+                foreach ( $repeatable_children as $child_index => $child ) {
+                    $cards[] = wpae_llm_bento_card( 'wpae-bento-' . (string) $child_index, [ $child ] );
+                    $changed++;
+                }
+                $children = array_merge( $leading, [ wpae_llm_bento_grid( 'wpae-bento-grid-' . (string) $index, $cards ) ], $trailing );
+                $element['elements'] = $children;
+            } elseif ( empty( $leading ) && empty( $trailing ) ) {
+                $wrapped = [];
+                foreach ( $children as $child_index => $child ) {
+                    if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
+                        $wrapped[] = $child;
+                        continue;
+                    }
+                    $wrapped[] = wpae_llm_bento_card( 'wpae-bento-' . (string) $child_index, [ $child ] );
+                    $changed++;
+                }
+                $children = $wrapped;
+                $element['elements'] = $children;
+            }
             $child_containers = [];
             foreach ( $children as $child_index => $child ) {
                 if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
@@ -485,7 +541,28 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
             $element['elements'] = $children;
         }
 
-        if ( count( $child_containers ) >= 2 ) {
+        $has_semantic_shell = ( is_array( $children[0] ?? null ) && ( $children[0]['elType'] ?? '' ) === 'widget' && ( $children[0]['widgetType'] ?? '' ) === 'heading' )
+            || ( is_array( end( $children ) ) && ( end( $children )['elType'] ?? '' ) === 'widget' && ( end( $children )['widgetType'] ?? '' ) === 'button' );
+        if ( count( $child_containers ) >= 2 && $has_semantic_shell ) {
+            $first_card = (int) $child_containers[0];
+            $last_card = (int) end( $child_containers );
+            $leading = array_slice( $children, 0, $first_card );
+            foreach ( array_slice( $children, $first_card + 1, max( 0, $last_card - $first_card - 1 ) ) as $between_index => $between ) {
+                if ( ! in_array( $first_card + 1 + $between_index, $child_containers, true ) ) {
+                    $leading[] = $between;
+                }
+            }
+            $cards = [];
+            foreach ( $child_containers as $child_index ) {
+                $cards[] = wpae_llm_bento_card( 'wpae-bento-' . (string) $child_index, [ $children[ $child_index ] ] );
+            }
+            $trailing = array_slice( $children, $last_card + 1 );
+            $children = array_merge( $leading, [ wpae_llm_bento_grid( 'wpae-bento-grid-' . (string) $index, $cards ) ], $trailing );
+            $element['elements'] = $children;
+            $child_containers = [ count( $leading ) ];
+            $changed++;
+        }
+        if ( count( $child_containers ) >= 2 && ! $has_semantic_shell ) {
             $settings['flex_direction'] = 'row';
             $settings['flex_wrap'] = 'wrap';
             $settings['flex_justify_content'] = 'space-between';
