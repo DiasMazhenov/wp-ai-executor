@@ -43,7 +43,7 @@
     "includes/support/logging.php": "5d8360abf0981be17fe47af6797309a8a3f7804c59c60998633f6b225afcd186",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "includes/vision/vision.php": "496ab9e152a8332025098d1ca574bc5b239068197407be9259eaa0436ca31a92",
-    "wp-ai-executor.php": "28ce233cc1d0a0409e5340340baaa60a55e8959bdb7be4b34e1fe9f6df9b2bec"
+    "includes/vision/vision.php": "bbc26a75661ef2b8b382f4504f0c4c000e080a44612dc9df0121367a9fb257e2",
+    "wp-ai-executor.php": "ef530bfb39744295997fcbb6fb62e9a71933112a33b09052d0f1af78f6b97855"
   }
 }

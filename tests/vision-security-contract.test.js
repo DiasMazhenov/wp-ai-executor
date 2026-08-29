@@ -21,6 +21,8 @@ assert.match(vision, /wpae_vision_critical_findings/);
 assert.match(vision, /provider_http_status/);
 assert.match(vision, /provider_message/);
 assert.match(vision, /\$quality_failed = ! empty\( \$gate\['major_count'\] \)/);
+assert.match(vision, /if \( ! empty\( \$gate\['blocking'\] \) \)/);
+assert.match(vision, /'quality_warning' => \$quality_failed/);
 assert.match(vision, /score_below_floor/);
 assert.match(transactions, /wpae_vision_unverified_report/);
 
