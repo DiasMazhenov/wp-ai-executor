@@ -85,6 +85,7 @@
 - В `v02.08.92` Elementor-чат показывает в шапке выбранную модель и текущую версию плагина без передачи API-ключа в браузер.
 - В `v02.08.93` модель AI Vision по умолчанию изменена на `gemini-3.5-flash-lite`, а action-промпт LLM явно запрещает контейнеры без заполненных native widgets.
 - В `v02.08.94` action-ответы LLM получили увеличенный лимит и компактный JSON-промпт; при обрыве или невалидном JSON чат показывает безопасные diagnostics ответа и `finish_reason`.
+- В `v02.08.95` обновление открытого Elementor preview после REST-записи использует официальный `document/save.footerSaver.refreshWpPreview()` с fallback на `elementor.reloadPreview()`.
 
 ## Библиотека произвольных Elementor-блоков
 

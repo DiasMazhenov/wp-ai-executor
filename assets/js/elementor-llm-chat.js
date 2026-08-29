@@ -192,6 +192,16 @@
         });
     }
     function refreshElementorPreview() {
+        if (window.$e && window.$e.components && typeof window.$e.components.get === 'function') {
+            try {
+                var saveComponent = window.$e.components.get('document/save');
+                var footerSaver = saveComponent && saveComponent.footerSaver;
+                if (footerSaver && typeof footerSaver.refreshWpPreview === 'function') {
+                    footerSaver.refreshWpPreview();
+                    return true;
+                }
+            } catch (error) {}
+        }
         if (window.elementor && typeof window.elementor.reloadPreview === 'function') {
             window.elementor.reloadPreview();
             return true;

@@ -99,6 +99,8 @@ assert.match(dashboard, /wpae-vision-api-key[\s\S]*has_api_key/);
 assert.doesNotMatch(editor, /wpae_get_key\(|api_key_encrypted|['"]api_key['"]/);
 assert.doesNotMatch(js, /X-AI-Key|X-WPAE-API-Key|api_key/i);
 assert.match(js, /capturePreviewScreenshot/);
+assert.match(js, /refreshWpPreview/);
+assert.match(js, /document\/save/);
 assert.match(js, /requestVisionReview/);
 assert.match(js, /vision_capture_error/);
 assert.match(js, /rollback_snapshot_id/);
