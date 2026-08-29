@@ -103,9 +103,9 @@ in operation logs. AI Vision is additional visual evidence only: deterministic
 validation, native Elementor editability, public browser screenshots, and
 animation/WebGL checks remain mandatory.
 
-Local release state: code and package manifest are prepared for `v02.08.69`;
-live rollout/provider smoke-test is pending until the immutable Git commit is
-published.
+Local release state: code and package manifest are published in immutable
+commit `42dc0d4` for `v02.08.69`; live rollout/provider smoke-test remains
+pending until the site owner configures a provider and enables `ai_vision`.
 
 ## Design System Package v2
 
