@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.22`
-- Guide: `v02.05.67`
+- Plugin: `v02.09.23`
+- Guide: `v02.05.68`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -35,6 +35,9 @@ If both provider output and repair are unusable, a typed deterministic fallback
 is generated, marked in the execution trace, and sent through the same gates.
 Testimonial fallback output uses a wrapping Flexbox card grid with one editable
 native card container per quote and a single-column mobile layout.
+Generated testimonial author headings are guarded to native h5/h6 typography;
+quote copy remains in text-editor/testimonial widgets so names cannot inherit a
+display-scale role and overflow their cards.
 
 Administrators have a direct `AI Executor` link in the WordPress Admin Bar.
 It opens the existing `Settings -> AI Executor` screen and is hidden from
@@ -220,7 +223,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.22` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.23` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,

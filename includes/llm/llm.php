@@ -281,7 +281,7 @@ function wpae_llm_block_archetype_hint( string $message ): string {
         'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
         'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
         'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
-        'testimonials' => [ 'отзывы/testimonials', 'heading и три внутренние card-containers с text-editor или testimonial widget' ],
+        'testimonials' => [ 'отзывы/testimonials', 'heading h2 и три внутренние card-containers: quote через text-editor/testimonial, имя автора через heading h5/h6' ],
         'faq' => [ 'FAQ', 'heading и accordion с заполненными вопросами и ответами' ],
         'process' => [ 'процесс/этапы', 'heading, icon-list или text-editor и divider' ],
         'cta' => [ 'CTA/контакт', 'heading, text-editor и button' ],
@@ -377,6 +377,32 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         'position' => 'end',
         'elements' => [ [ 'id' => 'llm-fallback', 'elType' => 'container', 'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'background_background' => 'classic', 'background_color' => '#ffffff', 'gap' => $gap, 'padding' => $padding, 'padding_mobile' => $padding ], 'elements' => $elements ] ],
     ];
+}
+
+function wpae_llm_normalize_generated_typography( array $elements, string $archetype, int $depth = 0, int &$changed = 0 ): array {
+    foreach ( $elements as $index => $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $widget_type = (string) ( $element['widgetType'] ?? '' );
+        if ( $archetype === 'testimonials' && $widget_type === 'heading' && $depth >= 2 ) {
+            $header_size = strtolower( (string) ( $settings['header_size'] ?? '' ) );
+            if ( ! in_array( $header_size, [ 'h5', 'h6' ], true ) ) {
+                $settings['header_size'] = 'h5';
+                $changed++;
+            }
+        }
+
+        $element['settings'] = $settings;
+        if ( is_array( $element['elements'] ?? null ) ) {
+            $element['elements'] = wpae_llm_normalize_generated_typography( $element['elements'], $archetype, $depth + 1, $changed );
+        }
+        $elements[ $index ] = $element;
+    }
+
+    return $elements;
 }
 
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
@@ -601,6 +627,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     if ( $action_request ) {
         $system_prompt .= ' Ограничения компактности action-JSON: ровно 1 корневой контейнер и 3–5 вложенных виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
+        $system_prompt .= ' Для отзывов: корневой заголовок должен быть h2; цитату размещай в text-editor/testimonial; имя и должность автора размещай в heading h5 или h6, никогда не используй h1/h2 для автора и не задавай гигантские размеры шрифта.';
         $system_prompt .= ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Не удаляй и не заменяй существующие элементы.';
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         $system_prompt .= ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
@@ -711,6 +738,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
                 [ 'role' => 'user', 'content' => $message ],
             ];
+            $repair_messages[0]['content'] .= ' Для отзывов корневой heading должен быть h2, цитата — text-editor/testimonial, имя автора — heading h5/h6, никогда не h1/h2.';
             for ( $repair_attempt = 1; $repair_attempt <= 2 && ! $action_repair; $repair_attempt++ ) {
                 $repair_body = $request_body;
                 $repair_body['messages'] = $repair_messages;
@@ -760,6 +788,11 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             ];
             $action_fallback = true;
         }
+        $typography_changed = 0;
+        $action_archetype = wpae_llm_detect_block_archetype( $message );
+        if ( is_array( $action['elements'] ?? null ) ) {
+            $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
+        }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
@@ -776,6 +809,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенная JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
         } elseif ( isset( $repair_error ) && $repair_error !== '' ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'failed', 'message' => 'Repair-проход не вернул пригодную Elementor-команду.', 'details' => [ 'attempts' => 2, 'error' => $repair_error ] ];
+        }
+        if ( $typography_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'typography_guard', 'status' => 'ok', 'message' => 'Семантическая типографика повторяющегося блока нормализована через native Elementor settings.', 'details' => [ 'archetype' => $action_archetype, 'author_headings_to_h5' => $typography_changed ] ];
         }
         $execution = wpae_llm_execute_action( $action, $post_id );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
