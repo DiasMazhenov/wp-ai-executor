@@ -146,8 +146,9 @@ with a valid key and guide token.
 ### LLM-агент и чат Elementor
 
 Во вкладке **Settings -> AI Executor -> LLM-агенты** можно подключить один
-активный OpenAI-compatible provider: OpenAI, DeepSeek, OpenRouter или другой
-HTTPS-шлюз через custom base URL. API-ключ шифруется и остается на сервере.
+активный OpenAI-compatible provider: OpenAI, DeepSeek, OpenRouter (по умолчанию
+`openrouter/free`) или другой HTTPS-шлюз через custom base URL. API-ключ
+шифруется и остается на сервере.
 
 `POST /wp-json/ai-executor/v1/llm/chat` — безопасный proxy для текстового чата.
 Он принимает `message`, необязательные последние `history` и ограниченный

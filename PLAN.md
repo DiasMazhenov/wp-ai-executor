@@ -63,6 +63,7 @@
 - Добавлен опциональный AI Vision review: провайдеры Gemini/OpenAI/Claude, зашифрованный ключ в `wp_options`, `/vision/analyze`, `/vision/report`, `/vision/page-review`, нормализованные отчёты и атомарный rollback при критических findings.
 - Custom skill manifests получили capability `ai_vision` и закрытый allowlist Vision endpoints; включенная capability владельца и guide token остаются обязательными.
 - Добавлен LLM proxy и floating Elementor chat: OpenAI, DeepSeek, OpenRouter и custom OpenAI-compatible HTTPS providers, зашифрованные ключи в `wp_options`, capability `llm_chat`, rate limit и bounded editor context без автоматического исполнения ответа модели.
+- Для LLM-настроек исправлена UX-логика: OpenRouter по умолчанию использует `openrouter/free`, built-in provider всегда получает свой HTTPS base URL, а сохраненный API-ключ отображается безопасным placeholder из bullet-символов без передачи значения в форму.
 
 ## Библиотека произвольных Elementor-блоков
 

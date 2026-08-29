@@ -576,7 +576,10 @@ function wpae_settings_page() {
             margin-bottom: 5px;
             font-weight: 700;
         }
+        .wpae-form-field { min-width: 0; }
+        .wpae-form-field .wpae-input { font-family: inherit; font-size: 14px; }
         .wpae-section-note {
+            display: block;
             margin: 8px 0 0;
             padding: 10px 12px;
             border: 1px solid #dbeafe;
@@ -937,7 +940,7 @@ function wpae_settings_page() {
                     <div class="wpae-form-grid">
                         <div class="wpae-form-field">
                             <label for="wpae-llm-provider">Провайдер</label>
-                            <select class="wpae-input" id="wpae-llm-provider" name="wpae_llm[provider]"><?php foreach ( $llm_providers as $provider_id => $provider ) : ?><option value="<?php echo esc_attr( $provider_id ); ?>" <?php selected( $llm_settings['provider'], $provider_id ); ?>><?php echo esc_html( $provider['label'] ); ?></option><?php endforeach; ?></select>
+                            <select class="wpae-input" id="wpae-llm-provider" name="wpae_llm[provider]"><?php foreach ( $llm_providers as $provider_id => $provider ) : ?><option value="<?php echo esc_attr( $provider_id ); ?>" data-base-url="<?php echo esc_attr( (string) $provider['base_url'] ); ?>" data-model="<?php echo esc_attr( (string) $provider['model'] ); ?>" <?php selected( $llm_settings['provider'], $provider_id ); ?>><?php echo esc_html( $provider['label'] ); ?></option><?php endforeach; ?></select>
                         </div>
                         <div class="wpae-form-field">
                             <label for="wpae-llm-model">Модель</label>
@@ -951,7 +954,7 @@ function wpae_settings_page() {
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-api-key">API-ключ провайдера</label>
-                        <input class="wpae-input" id="wpae-llm-api-key" name="wpae_llm[api_key]" type="password" value="" autocomplete="new-password" placeholder="Оставьте пустым, чтобы сохранить текущий ключ" />
+                        <input class="wpae-input" id="wpae-llm-api-key" name="wpae_llm[api_key]" type="password" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( ! empty( $llm_settings['has_api_key'] ) ? '••••••••••••' : 'Введите API-ключ провайдера' ); ?>" />
                         <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Промпты и ответы в плагине не сохраняются.</span>
                     </div>
                     <label class="wpae-toggle" style="margin-top:12px">
@@ -1658,6 +1661,22 @@ print(result["return_value"])'
                 if (pill) pill.textContent = input.value;
             });
         });
+
+        var llmProvider = document.getElementById('wpae-llm-provider');
+        var llmBaseUrl = document.getElementById('wpae-llm-base-url');
+        var llmModel = document.getElementById('wpae-llm-model');
+        if (llmProvider && llmBaseUrl && llmModel) {
+            var syncLlmProvider = function (resetModel) {
+                var option = llmProvider.options[llmProvider.selectedIndex];
+                var custom = llmProvider.value === 'custom';
+                llmBaseUrl.value = option.getAttribute('data-base-url') || '';
+                llmBaseUrl.readOnly = !custom;
+                llmBaseUrl.setAttribute('aria-readonly', custom ? 'false' : 'true');
+                if (resetModel) llmModel.value = option.getAttribute('data-model') || '';
+            };
+            syncLlmProvider(false);
+            llmProvider.addEventListener('change', function () { syncLlmProvider(true); });
+        }
     })();
     </script>
     <?php

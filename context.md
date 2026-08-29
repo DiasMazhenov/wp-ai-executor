@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.71`
+- Plugin: `v02.08.72`
 - Guide: `v02.05.55`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -47,6 +47,11 @@ OpenAI-compatible providers. Provider keys are encrypted in `wp_options`; the
 Elementor editor receives only a WordPress REST nonce and proxy URL. The chat
 does not execute model output or mutate pages, and it sends only bounded message
 history plus sanitized selected-element metadata.
+
+LLM settings use provider-owned built-in HTTPS base URLs. OpenRouter defaults to
+`openrouter/free`; custom base URLs are available only for the custom provider.
+An existing provider key is shown in the dashboard as a bullet placeholder while
+the submitted value remains empty, so saving the form cannot replace it.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -119,7 +124,8 @@ screenshots, and animation/WebGL checks remain mandatory.
 
 Release state: `v02.08.70` security hardening is published on GitHub `main`
 and deployed to `mazhenov.kz` through WP Pusher. The `v02.08.71` LLM proxy and
-Elementor editor chat are committed as `e56fba3` and published to GitHub `main`;
+Elementor editor chat are committed as `e56fba3` and published to GitHub `main`.
+The `v02.08.72` dashboard UX fixes are implemented locally and await commit/push;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
 smoke-test remains pending until the site owner configures a provider and

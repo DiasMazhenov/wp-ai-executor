@@ -25,7 +25,7 @@ function wpae_llm_provider_options(): array {
         'openrouter' => [
             'label' => 'OpenRouter',
             'base_url' => 'https://openrouter.ai/api/v1',
-            'model' => 'openai/gpt-4o-mini',
+            'model' => 'openrouter/free',
         ],
         'custom' => [
             'label' => 'Другой OpenAI-compatible провайдер',
@@ -48,7 +48,9 @@ function wpae_llm_get_settings(): array {
         $provider = 'openai';
     }
 
-    $base_url = esc_url_raw( (string) ( $stored['base_url'] ?? $providers[ $provider ]['base_url'] ) );
+    $base_url = $provider === 'custom'
+        ? esc_url_raw( (string) ( $stored['base_url'] ?? '' ) )
+        : $providers[ $provider ]['base_url'];
     $model = sanitize_text_field( (string) ( $stored['model'] ?? $providers[ $provider ]['model'] ) );
     if ( $base_url === '' && $provider !== 'custom' ) {
         $base_url = $providers[ $provider ]['base_url'];
@@ -99,10 +101,9 @@ function wpae_update_llm_settings( array $input ) {
         return new WP_Error( 'wpae_llm_invalid_provider', 'Неизвестный LLM-провайдер.' );
     }
 
-    $base_url = trim( (string) ( $input['base_url'] ?? $providers[ $provider ]['base_url'] ) );
-    if ( $base_url === '' && $provider !== 'custom' ) {
-        $base_url = $providers[ $provider ]['base_url'];
-    }
+    $base_url = $provider === 'custom'
+        ? trim( (string) ( $input['base_url'] ?? '' ) )
+        : $providers[ $provider ]['base_url'];
     $base_url = untrailingslashit( esc_url_raw( $base_url ) );
     $valid_url = wpae_llm_validate_base_url( $base_url );
     if ( is_wp_error( $valid_url ) ) {
