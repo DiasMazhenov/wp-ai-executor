@@ -30,10 +30,10 @@
     "includes/elementor/visual-audit.php": "db0bb0df396671d058d82ad652989e19ee9974f8c4b74422107b440e7ae20854",
     "includes/execution/run.php": "ddba4fb5de66f62488305625cdd96bc040f1af55e569468005da4210cc2300d1",
     "includes/exports/exports.php": "b471d8020b0cd7240895817ecaf92aa1138cb6a0a7da58b6fb0a3afe1e894dca",
-    "includes/guide/guide.php": "5ff1fdaaf9bfd8403354d3f88bee17aed40087c14188f0c58f74889a7e76750b",
+    "includes/guide/guide.php": "2c3765bd87339ba6c09823daa722f53f18761bf12b936f0e3365cef0acd8a73f",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/llm.php": "9b02ee7e89a9536d204fd513903972f6b907f31e824bb6a4457e97ebae975aab",
+    "includes/llm/llm.php": "c9936683f30610feb1daea85862813c3610aef6079a57737d51850bb6275b654",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "178a9987cc55cc77d20db8748e1297ea070ac7c5326ed166cc56fc67e92ed0e8",
     "includes/rollback/rollback.php": "f9e45cb8fb78b76123db20a838d204e4393eb7023c93599bdb218ba993c1e80e",
@@ -43,7 +43,7 @@
     "includes/support/logging.php": "5d8360abf0981be17fe47af6797309a8a3f7804c59c60998633f6b225afcd186",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "includes/vision/vision.php": "bbc26a75661ef2b8b382f4504f0c4c000e080a44612dc9df0121367a9fb257e2",
-    "wp-ai-executor.php": "631638b8ed3461f98abbe19b4e0b991cd44487544165b8e6d75849b56b52ee48"
+    "includes/vision/vision.php": "997a7e30a3a1e0bcb909ac42a9eb5c5f628ef8803923dbb0f3cea489effdec6d",
+    "wp-ai-executor.php": "094a8e677103252bb6ac566a7abe48756592438dfc696a3d5d8e1b7a559e8fcf"
   }
 }

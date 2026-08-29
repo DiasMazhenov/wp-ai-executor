@@ -779,19 +779,6 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
     $vision_score = absint( $report['vision_score'] ?? 0 );
     $quality_floor = 75;
     $quality_failed = ! empty( $gate['major_count'] );
-    if ( ! empty( $gate['blocking'] ) ) {
-        $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
-        return new WP_REST_Response( [
-            'ok' => false,
-            'rolled_back' => ! empty( $rollback['ok'] ),
-            'error' => 'AI Vision обнаружил критические визуальные дефекты.',
-            'code' => 'wpae_vision_critical_findings',
-            'report' => $report,
-            'gate' => array_merge( $gate, [ 'quality_floor' => $quality_floor, 'score_below_floor' => $vision_score < $quality_floor, 'quality_failed' => false ] ),
-            'rollback' => $rollback,
-        ], 422 );
-    }
-
     return new WP_REST_Response( [
         'ok' => true,
         'rolled_back' => false,
@@ -800,6 +787,7 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
             'quality_floor' => $quality_floor,
             'score_below_floor' => $vision_score < $quality_floor,
             'quality_failed' => false,
+            'blocking_advisory' => ! empty( $gate['blocking'] ),
             'quality_warning' => $quality_failed,
         ] ),
     ], 200 );
@@ -842,6 +830,6 @@ function wpae_get_vision_guide(): array {
         ],
         'privacy' => 'Images are not stored by the plugin. Provider keys are encrypted in wp_options. Only normalized reports are retained in wp_options; raw provider responses and image base64 are not logged or stored.',
         'limitations' => 'AI Vision is additional visual evidence, not proof of DOM, computed CSS, keyboard behavior, or animation correctness. External reports remain advisory; only same-post reports created by /vision/analyze may satisfy transaction_vision_review. Deterministic audits and public browser verification remain required.',
-        'editor_chat_workflow' => 'The floating Elementor chat reviews the refreshed preview after a successful write. Critical findings trigger rollback of the write snapshot; screenshot or provider failures also roll back when possible.',
+        'editor_chat_workflow' => 'The floating Elementor chat reviews the refreshed preview after a successful write in advisory mode. Screenshot findings do not roll back the editor write; strict critical rollback is reserved for transaction_vision_review.',
     ];
 }
