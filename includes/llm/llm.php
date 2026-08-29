@@ -214,6 +214,22 @@ function wpae_llm_is_list( array $value ): bool {
     return true;
 }
 
+function wpae_llm_count_widgets( array $elements ): int {
+    $count = 0;
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        if ( (string) ( $element['elType'] ?? '' ) === 'widget' ) {
+            $count++;
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            $count += wpae_llm_count_widgets( $element['elements'] );
+        }
+    }
+    return $count;
+}
+
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     $candidate = trim( preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $reply ) );
     $decoded = json_decode( $candidate, true );
@@ -301,6 +317,12 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
         return [ 'ok' => false, 'error' => 'Elementor-команда должна содержать от 1 до 12 новых элементов.', 'steps' => $steps ];
     }
     $steps[] = [ 'id' => 'element_count', 'status' => 'ok', 'message' => 'Количество новых элементов прошло проверку.', 'details' => [ 'element_count' => count( $elements ) ] ];
+    $widget_count = wpae_llm_count_widgets( $elements );
+    if ( $widget_count < 1 ) {
+        $steps[] = [ 'id' => 'native_widgets', 'status' => 'failed', 'message' => 'Команда не содержит native Elementor widgets, поэтому результат был бы пустым.', 'details' => [ 'widget_count' => 0 ] ];
+        return [ 'ok' => false, 'error' => 'Elementor-команда должна содержать хотя бы один native widget, иначе страница останется пустой.', 'steps' => $steps ];
+    }
+    $steps[] = [ 'id' => 'native_widgets', 'status' => 'ok', 'message' => 'В команде найден хотя бы один native Elementor widget.', 'details' => [ 'widget_count' => $widget_count ] ];
     $native_normalized = function_exists( 'wpae_elementor_normalize_data' );
     if ( $native_normalized ) {
         $elements = wpae_elementor_normalize_data( $elements )['data'];
@@ -538,6 +560,8 @@ function wpae_get_llm_guide(): array {
         ],
         'safety' => 'Normal chat is advisory. Explicit action requests may insert only new Elementor elements when elementor_writes is enabled; the plugin validates generated data and routes it through update, preflight, protected-zone, visual-regression, and rollback checks. Delete and replace actions are not supported. If the provider returns tutorial text instead of the required action JSON, the write is rejected.',
         'guided_editor_mode' => 'The floating Elementor editor chat injects the current guide, enabled custom skills, capabilities, and project design system into action requests. It uses the same internal Elementor validation/update pipeline without exposing the site API key to browser JavaScript.',
+        'editor_preview_sync' => 'After a successful action write, the floating chat reloads the current Elementor preview so the open editor reflects the saved server state. If the preview API is unavailable, the chat reports that refresh could not be confirmed.',
+        'action_content_gate' => 'An explicit action is rejected when its generated element tree contains no native Elementor widget, even if an empty container is structurally valid JSON.',
         'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, native normalization, design-system mapping, page context, Elementor update and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
         'provider_rate_limit' => [ 'calls' => WPAE_LLM_CALL_LIMIT, 'window_seconds' => WPAE_LLM_CALL_WINDOW, 'scope' => 'site-wide' ],
         'privacy' => 'Provider keys are encrypted in wp_options. Prompts, histories, and raw provider responses are not stored or logged.',

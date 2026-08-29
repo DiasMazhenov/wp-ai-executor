@@ -90,13 +90,14 @@
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
     }
-    function formatSteps(steps) {
+    function formatStep(step, index) {
         var labels = {
             received_action: 'полученная команда',
             received_post_id: 'полученный post_id',
             decoded_action: 'распознанная команда',
             decoded_post_id: 'распознанный post_id',
             decoded_element_count: 'распознано элементов',
+            widget_count: 'native widgets',
             expected_action: 'ожидаемая команда',
             expected_post_id: 'ожидаемый post_id',
             element_count: 'элементов',
@@ -110,19 +111,20 @@
             custom_skills_count: 'подключено skills',
             elementor_writes: 'запись Elementor'
         };
-        return steps.map(function (step, index) {
-            var line = 'Шаг ' + (index + 1) + ': ' + String(step.message || step.id || 'Операция выполнена');
-            if (step.status === 'failed') line += ' [ошибка]';
-            if (step.status === 'skipped') line += ' [пропущено]';
-            var details = step.details || {};
-            var parts = [];
-            ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview'].forEach(function (key) {
-                if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
-                    parts.push((labels[key] || key) + ': ' + (Array.isArray(details[key]) ? details[key].join(', ') : String(details[key])));
-                }
-            });
-            return parts.length ? line + ' (' + parts.join('; ') + ')' : line;
-        }).join('\n');
+        var line = 'Шаг ' + (index + 1) + ': ' + String(step.message || step.id || 'Операция выполнена');
+        if (step.status === 'failed') line += ' [ошибка]';
+        if (step.status === 'skipped') line += ' [пропущено]';
+        var details = step.details || {};
+        var parts = [];
+        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'guide_version', 'custom_skills_count', 'elementor_writes'].forEach(function (key) {
+            if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
+                parts.push((labels[key] || key) + ': ' + (Array.isArray(details[key]) ? details[key].join(', ') : String(details[key])));
+            }
+        });
+        return parts.length ? line + ' (' + parts.join('; ') + ')' : line;
+    }
+    function addStepMessages(steps) {
+        steps.forEach(function (step, index) { addMessage('assistant', formatStep(step, index)); });
     }
     function chatLog() {
         return JSON.stringify({
@@ -169,12 +171,36 @@
             };
         });
     }
+    function refreshElementorPreview() {
+        if (window.elementor && typeof window.elementor.reloadPreview === 'function') {
+            window.elementor.reloadPreview();
+            return true;
+        }
+        var iframe = document.querySelector('#elementor-preview-iframe');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.location.reload();
+            return true;
+        }
+        return false;
+    }
     function request(message) {
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {
             return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: item.textContent };
         });
         status.textContent = strings.sending;
         send.disabled = true;
+        var progressMessages = [
+            'Запрос принят. Проверяю текущий контекст Elementor.',
+            'Отправляю задачу настроенному LLM-провайдеру.',
+            'Ожидаю структурированный Elementor JSON и результат проверки.'
+        ];
+        var progressIndex = 0;
+        addMessage('assistant', 'Выполняется: ' + progressMessages[progressIndex++]);
+        var progressTimer = window.setInterval(function () {
+            if (progressIndex < progressMessages.length) {
+                addMessage('assistant', 'Выполняется: ' + progressMessages[progressIndex++]);
+            }
+        }, 900);
         return fetch(config.endpoint, {
             method: 'POST',
             credentials: 'same-origin',
@@ -192,7 +218,11 @@
                     if (Array.isArray(diagnostics.blocking_errors) && diagnostics.blocking_errors.length) detail += ': ' + diagnostics.blocking_errors.join('; ');
                     if (diagnostics.received_action || diagnostics.received_post_id) detail += ' (получено: action=' + (diagnostics.received_action || 'не указано') + ', post_id=' + (diagnostics.received_post_id || 'не указан') + ')';
                     if (diagnostics.model_response && diagnostics.model_response.response_keys) detail += ' (ключи ответа: ' + diagnostics.model_response.response_keys.join(', ') + ')';
-                    if (Array.isArray(diagnostics.steps) && diagnostics.steps.length) detail += '\n' + formatSteps(diagnostics.steps);
+                    if (Array.isArray(diagnostics.steps) && diagnostics.steps.length) {
+                        var stepError = new Error(detail);
+                        stepError.steps = diagnostics.steps;
+                        throw stepError;
+                    }
                     if (errorData.provider_message) detail += ': ' + errorData.provider_message;
                     if (diagnostics.finish_reason) detail += ' (finish_reason: ' + diagnostics.finish_reason + ')';
                     if (diagnostics.status && !diagnostics.error) detail += ' (HTTP ' + diagnostics.status + ')';
@@ -201,10 +231,16 @@
                 return body;
             });
         }).then(function (body) {
-            if (Array.isArray(body.steps) && body.steps.length) addMessage('assistant', formatSteps(body.steps));
+            window.clearInterval(progressTimer);
+            if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
+            if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
+                addMessage('assistant', refreshElementorPreview() ? 'Предпросмотр Elementor обновляется из сохранённых данных.' : 'Данные сохранены. Не удалось автоматически обновить preview Elementor.');
+            }
             addMessage('assistant', body.message || strings.error);
             status.textContent = strings.done;
         }).catch(function (error) {
+            window.clearInterval(progressTimer);
+            if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
             addMessage('assistant', strings.error + ': ' + error.message);
             status.textContent = strings.error;
         }).finally(function () {
