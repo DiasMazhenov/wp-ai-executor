@@ -242,6 +242,12 @@ function wpae_llm_count_widgets( array $elements ): int {
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     $candidate = trim( preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $reply ) );
     $decoded = json_decode( $candidate, true );
+    if ( is_string( $decoded ) ) {
+        $nested = json_decode( trim( $decoded ), true );
+        if ( is_array( $nested ) ) {
+            $decoded = $nested;
+        }
+    }
     if ( ! is_array( $decoded ) ) {
         $start = strpos( $candidate, '{' );
         $end = strrpos( $candidate, '}' );

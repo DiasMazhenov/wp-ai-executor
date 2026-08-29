@@ -36,6 +36,8 @@ assert.match(llm, /Ограничения компактности action-JSON/)
 assert.match(llm, /likely_truncated/);
 assert.match(js, /finish_reason/);
 assert.match(llm, /wpae_llm_is_action_request/);
+assert.match(llm, /is_string\( \$decoded \)/);
+assert.match(llm, /\$nested = json_decode/);
 assert.match(llm, /wpae_llm_execute_action/);
 assert.match(llm, /transaction_visual_regression/);
 assert.match(llm, /transaction_visual_regression', ! \$initial_page/);
