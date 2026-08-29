@@ -256,23 +256,99 @@ function wpae_llm_count_widgets( array $elements ): int {
     return $count;
 }
 
-function wpae_llm_block_archetype_hint( string $message ): string {
-    $archetypes = [
-        [ '/\b(hero|хиро|первый экран|обложк)/iu', 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
-        [ '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu', 'преимущества/features', 'heading, icon-list и text-editor или button' ],
-        [ '/\b(тариф|цен|пакет|pricing|стоимост)/iu', 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
-        [ '/\b(отзыв|testimonial|клиентск|рекомендац)/iu', 'отзывы/testimonials', 'heading, testimonial или text-editor с цитатами и button' ],
-        [ '/\b(faq|вопрос|ответ|аккордеон)/iu', 'FAQ', 'heading и accordion с заполненными вопросами и ответами' ],
-        [ '/\b(процесс|этап|шаг|process|steps?)/iu', 'процесс/этапы', 'heading, icon-list или text-editor и divider' ],
-        [ '/\b(cta|заявк|связ|контакт|призыв)/iu', 'CTA/контакт', 'heading, text-editor и button' ],
-        [ '/\b(портфолио|кейс|работ|portfolio|project)/iu', 'портфолио/кейсы', 'heading, image и text-editor или button' ],
+function wpae_llm_detect_block_archetype( string $message ): string {
+    $patterns = [
+        'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
+        'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
+        'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
+        'testimonials' => '/\b(отзыв|testimonial|клиентск|рекомендац)/iu',
+        'faq' => '/\b(faq|вопрос|ответ|аккордеон)/iu',
+        'process' => '/\b(процесс|этап|шаг|process|steps?)/iu',
+        'cta' => '/\b(cta|заявк|связ|контакт|призыв)/iu',
+        'portfolio' => '/\b(портфолио|кейс|работ|portfolio|project)/iu',
     ];
-    foreach ( $archetypes as $definition ) {
-        if ( preg_match( $definition[0], $message ) ) {
-            return ' Сначала классифицируй запрос как блок «' . $definition[1] . '» и собери соответствующую композицию. Предпочтительные native widgets: ' . $definition[2] . '. Не повторяй hero/benefits-шаблон, если запрос относится к другому типу.';
+    foreach ( $patterns as $archetype => $pattern ) {
+        if ( preg_match( $pattern, $message ) ) {
+            return $archetype;
         }
     }
+    return 'custom';
+}
+
+function wpae_llm_block_archetype_hint( string $message ): string {
+    $archetype = wpae_llm_detect_block_archetype( $message );
+    $labels = [
+        'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
+        'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
+        'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
+        'testimonials' => [ 'отзывы/testimonials', 'heading, testimonial или text-editor с цитатами и button' ],
+        'faq' => [ 'FAQ', 'heading и accordion с заполненными вопросами и ответами' ],
+        'process' => [ 'процесс/этапы', 'heading, icon-list или text-editor и divider' ],
+        'cta' => [ 'CTA/контакт', 'heading, text-editor и button' ],
+        'portfolio' => [ 'портфолио/кейсы', 'heading, image и text-editor или button' ],
+    ];
+    if ( isset( $labels[ $archetype ] ) ) {
+        return ' Сначала классифицируй запрос как блок «' . $labels[ $archetype ][0] . '» и собери соответствующую композицию. Предпочтительные native widgets: ' . $labels[ $archetype ][1] . '. Не повторяй hero/benefits-шаблон, если запрос относится к другому типу.';
+    }
     return ' Сначала определи тип блока по смыслу запроса и выбери подходящие native widgets из доступных Elementor. Не своди каждый блок к одному и тому же hero/benefits-шаблону; содержание и композиция должны соответствовать задаче пользователя.';
+}
+
+function wpae_llm_build_fallback_action( string $message, int $post_id ): array {
+    $archetype = wpae_llm_detect_block_archetype( $message );
+    $widget = static function ( string $id, string $type, array $settings = [] ): array {
+        return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
+    };
+    $gap = [ 'unit' => 'rem', 'size' => 1.5, 'sizes' => [] ];
+    $padding = [ 'unit' => 'rem', 'top' => '2.5', 'right' => '1.5', 'bottom' => '2.5', 'left' => '1.5', 'isLinked' => false ];
+    $elements = [
+        $widget( 'llm-heading', 'heading', [ 'title' => 'Новый блок', 'header_size' => 'h2' ] ),
+        $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Содержательный блок под вашу задачу.' ] ),
+        $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
+    ];
+    if ( $archetype === 'benefits' ) {
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Преимущества для вашего проекта', 'header_size' => 'h2' ] ),
+            $widget( 'llm-list', 'icon-list', [ 'icon_list' => [ [ 'text' => 'Понятная структура и быстрый старт' ], [ 'text' => 'Редактируемые native Elementor-элементы' ], [ 'text' => 'Адаптация под мобильные устройства' ] ] ] ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
+        ];
+    } elseif ( $archetype === 'faq' ) {
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Частые вопросы', 'header_size' => 'h2' ] ),
+            $widget( 'llm-accordion', 'accordion', [ 'tabs' => [ [ 'tab_title' => 'Можно ли изменить блок позже?', 'tab_content' => 'Да, все основные настройки остаются доступными в Elementor.' ], [ 'tab_title' => 'Будет ли версия для мобильных?', 'tab_content' => 'Да, композиция и spacing задаются с учетом mobile-first.' ] ] ] ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ),
+        ];
+    } elseif ( $archetype === 'process' ) {
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Как проходит работа', 'header_size' => 'h2' ] ),
+            $widget( 'llm-list', 'icon-list', [ 'icon_list' => [ [ 'text' => '01 / Бриф и цель страницы' ], [ 'text' => '02 / Структура и контент' ], [ 'text' => '03 / Сборка и проверка' ] ] ] ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Начать проект', 'link' => [ 'url' => '#contact' ] ] ),
+        ];
+    } elseif ( $archetype === 'pricing' ) {
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Выберите формат работы', 'header_size' => 'h2' ] ),
+            $widget( 'llm-copy', 'text-editor', [ 'editor' => '<strong>Лендинг</strong> — быстрый запуск ясного оффера.<br><strong>Система страниц</strong> — масштабируемая структура для роста.' ] ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Получить расчет', 'link' => [ 'url' => '#contact' ] ] ),
+        ];
+    } elseif ( $archetype === 'testimonials' ) {
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Что говорят клиенты', 'header_size' => 'h2' ] ),
+            $widget( 'llm-quote-1', 'text-editor', [ 'editor' => '«Стало сразу понятно, что мы продаем и куда вести клиента.» — Анна, студия брендинга' ] ),
+            $widget( 'llm-quote-2', 'text-editor', [ 'editor' => '«Получили аккуратную страницу, которую можем менять сами.» — Руслан, сервисный бизнес' ] ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
+        ];
+    } elseif ( $archetype === 'portfolio' ) {
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Избранные проекты', 'header_size' => 'h2' ] ),
+            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Показываем задачу, решение и результат каждого проекта без лишнего шума.' ] ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Смотреть кейсы', 'link' => [ 'url' => '#cases' ] ] ),
+        ];
+    }
+    return [
+        'action' => 'insert_elements',
+        'post_id' => $post_id,
+        'position' => 'end',
+        'elements' => [ [ 'id' => 'llm-fallback', 'elType' => 'container', 'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'background_background' => 'classic', 'background_color' => '#ffffff', 'gap' => $gap, 'padding' => $padding, 'padding_mobile' => $padding ], 'elements' => $elements ] ],
+    ];
 }
 
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
@@ -597,6 +673,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
         $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
         $action_repair = false;
+        $action_fallback = false;
         $decoded_action = (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' );
         $decoded_elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
@@ -644,6 +721,17 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 $action_repair = true;
             }
         }
+        if ( ! $action_repair ) {
+            $action = wpae_llm_build_fallback_action( $message, $post_id );
+            $action_diagnostics = [
+                'response_type' => 'deterministic_fallback',
+                'json_decoded' => true,
+                'response_keys' => [ 'action', 'post_id', 'position', 'elements' ],
+                'fallback_archetype' => wpae_llm_detect_block_archetype( $message ),
+                'fallback_reason' => 'Provider and bounded repair response did not contain a usable native widget tree.',
+            ];
+            $action_fallback = true;
+        }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
@@ -654,7 +742,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 'details' => $action_diagnostics,
             ],
         ];
-        if ( $action_repair ) {
+        if ( $action_fallback ) {
+            $action_steps[] = [ 'id' => 'action_fallback', 'status' => 'ok', 'message' => 'Провайдер не вернул пригодное дерево; создан тематический native Elementor fallback.', 'details' => $action_diagnostics ];
+        } elseif ( $action_repair ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенная JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
         } elseif ( isset( $repair_error ) && $repair_error !== '' ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'failed', 'message' => 'Repair-проход не вернул пригодную Elementor-команду.', 'details' => [ 'attempts' => 2, 'error' => $repair_error ] ];

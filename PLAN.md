@@ -111,6 +111,7 @@
 - В `v02.09.18` Vision screenshot временно исключает editor-only overlays и dropzones, чтобы они не создавали ложные critical findings.
 - В `v02.09.19` editor-chat Vision переведен в advisory-режим: субъективные critical/major findings не откатывают realtime-вставку; строгий rollback остается у transaction Vision gate.
 - В `v02.09.20` action-промпт классифицирует обычные запросы по типу блока и выбирает соответствующие native Elementor widgets, чтобы skills не сводились к одному hero/benefits-шаблону; repair-pass сохраняет эту специализацию.
+- В `v02.09.21` добавлен тематический deterministic fallback после невалидного ответа провайдера и bounded repair-pass; fallback явно попадает в trace и проходит тот же Elementor/design-system pipeline.
 
 ## Библиотека произвольных Elementor-блоков
 
