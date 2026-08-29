@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.93`
+- Plugin: `v02.08.94`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -98,6 +98,9 @@ The default Gemini AI Vision model is `gemini-3.5-flash-lite`. LLM action
 prompts explicitly require populated native widgets inside containers; the
 empty-container gate remains blocking so a failed model response cannot save a
 blank hero.
+Action responses allow up to 5000 completion tokens and request compact JSON;
+failed decoding exposes only safe response length, JSON error, truncation hint,
+provider message/code, and finish reason in chat diagnostics.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -168,7 +171,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.93` including the LLM proxy, Elementor editor chat,
+Release state: `v02.08.94` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -176,8 +179,8 @@ guided editor context, editor preview synchronization, separate progress
 messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
-Vision default model, and the populated-native-widget action rule are published
-on GitHub `main` in commit `3025064`.
+Vision default model, the populated-native-widget action rule, and action JSON
+diagnostics are prepared locally and await commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

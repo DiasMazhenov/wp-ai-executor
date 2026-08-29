@@ -113,6 +113,12 @@
             json_decoded: 'JSON разобран',
             response_keys: 'ключи ответа',
             reply_preview: 'фрагмент ответа',
+            reply_length: 'длина ответа',
+            json_error: 'ошибка JSON',
+            likely_truncated: 'возможен обрыв ответа',
+            finish_reason: 'причина завершения',
+            provider_error_code: 'код провайдера',
+            provider_message: 'сообщение провайдера',
             guide_version: 'версия guide',
             custom_skills_count: 'подключено skills',
             elementor_writes: 'запись Elementor',
@@ -124,7 +130,7 @@
         if (step.status === 'skipped') line += ' [пропущено]';
         var details = step.details || {};
         var parts = [];
-        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details'].forEach(function (key) {
+        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details'].forEach(function (key) {
             if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
                 var value = details[key];
                 if (Array.isArray(value)) {
