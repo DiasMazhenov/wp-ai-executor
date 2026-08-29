@@ -35,6 +35,8 @@ assert.match(llm, /max_completion_tokens' => \$action_request \? 8000 : 1200/);
 assert.match(llm, /response_format.*json_object/);
 assert.match(llm, /require_parameters.*true/);
 assert.match(llm, /Не возвращай URL, HTTP-запросы/);
+assert.match(llm, /structured_route_rejected/);
+assert.match(llm, /unset\( \$request_body\['response_format'\], \$request_body\['provider'\] \)/);
 assert.match(llm, /Ограничения компактности action-JSON/);
 assert.match(llm, /likely_truncated/);
 assert.match(js, /finish_reason/);

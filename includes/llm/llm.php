@@ -511,13 +511,25 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $request_body['provider'] = [ 'require_parameters' => true ];
         }
     }
-    $response = wp_safe_remote_post( $url, [
+    $remote_args = [
         'timeout' => 45,
         'redirection' => 2,
         'limit_response_size' => WPAE_LLM_MAX_RESPONSE_BYTES,
         'headers' => $headers,
         'body' => wp_json_encode( $request_body ),
-    ] );
+    ];
+    $response = wp_safe_remote_post( $url, $remote_args );
+    if ( ! is_wp_error( $response ) && $action_request && $runtime['provider'] === 'openrouter' ) {
+        $initial_status = wp_remote_retrieve_response_code( $response );
+        $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
+        $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
+        $structured_route_rejected = $initial_status >= 400 && $initial_status < 500 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false );
+        if ( $structured_route_rejected ) {
+            unset( $request_body['response_format'], $request_body['provider'] );
+            $remote_args['body'] = wp_json_encode( $request_body );
+            $response = wp_safe_remote_post( $url, $remote_args );
+        }
+    }
     if ( is_wp_error( $response ) ) {
         return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => $response->get_error_message(), 'provider' => $runtime['provider'] ] );
     }
