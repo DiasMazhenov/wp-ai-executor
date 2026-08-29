@@ -51,6 +51,8 @@ assert.match(llm, /Короткое описание результата для
 assert.match(llm, /Обсудить проект/);
 assert.match(llm, /\$repair_attempt = 1/);
 assert.match(llm, /Repair-проход не вернул пригодную Elementor-команду/);
+assert.match(llm, /служебные заглушки/);
+assert.match(llm, /Заголовок блока/);
 assert.match(llm, /action_repair/);
 assert.match(llm, /Ограничения компактности action-JSON/);
 assert.match(llm, /likely_truncated/);
