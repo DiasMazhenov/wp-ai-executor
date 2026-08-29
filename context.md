@@ -130,8 +130,8 @@ screenshots, and animation/WebGL checks remain mandatory.
 
 Release state: `v02.08.80` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
-JSON chat logs, and initial empty-page action support is implemented locally
-and awaits commit/push.
+JSON chat logs, and initial empty-page action support is published on GitHub
+`main`.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
