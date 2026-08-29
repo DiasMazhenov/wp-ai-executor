@@ -27,8 +27,14 @@ function wpae_enqueue_elementor_llm_chat(): void {
 
     $post_id = absint( $_GET['post'] ?? $_GET['post_id'] ?? 0 );
     $settings = wpae_llm_get_settings();
+    $vision_status = wpae_get_vision_status();
     $config = wp_json_encode( [
         'endpoint' => get_rest_url( null, 'ai-executor/v1/llm/chat' ),
+        'vision' => [
+            'ready' => ! empty( $vision_status['enabled'] ) && ! empty( $vision_status['configured'] ),
+            'reviewEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/vision-review' ),
+            'captureScript' => 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+        ],
         'nonce' => wp_create_nonce( 'wp_rest' ),
         'postId' => $post_id,
         'ready' => wpae_capability_enabled( 'llm_chat' ) && ! empty( $settings['has_api_key'] ) && $settings['base_url'] !== '',

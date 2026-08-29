@@ -15,6 +15,9 @@ assert.match(vision, /function wpae_vision_consume_provider_slot/);
 assert.match(vision, /function wpae_validate_vision_provider_report/);
 assert.match(vision, /wpae_vision_provider_invalid_report/);
 assert.match(vision, /function wpae_validate_vision_report_scope/);
+assert.match(vision, /function wpae_vision_editor_review/);
+assert.match(vision, /wpae_vision_capture_failed/);
+assert.match(vision, /wpae_vision_critical_findings/);
 assert.match(transactions, /wpae_vision_unverified_report/);
 
 console.log('vision security contract: OK');

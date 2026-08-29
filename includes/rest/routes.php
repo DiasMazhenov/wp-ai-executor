@@ -83,6 +83,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_llm_chat_permission',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/llm/vision-review', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_vision_editor_review',
+        'permission_callback' => 'wpae_llm_chat_permission',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/rollback', [
         'methods'             => 'POST',
         'callback'            => 'wpae_rollback',

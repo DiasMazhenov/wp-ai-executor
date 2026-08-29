@@ -7,7 +7,7 @@
     "assets/css/elementor-llm-chat.css": "d318a33452948d4dc40fff80d719aaf6350f7c49c779b1ef8306e244c1850e6b",
     "assets/js/elementor-block-library-ui.js": "d08efe3aaa6ef875b283dfc26f6a39fb7d3899cd76dafbfabeca31ea77c7290d",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "79f5b1a54fdfb3d48ba36925eb8c293dd452bec66a2f4d6bda75b04f383fcd4f",
+    "assets/js/elementor-llm-chat.js": "a6a15f301489426ded8f8109ce133487f11b37156007d7d2bfdac215a2a22bf9",
     "includes/admin/dashboard.php": "9cd730cffd605e22bb9ecff63fb7e01cfcf02f3631eb0a56e16e6fc2b5e5d13e",
     "includes/design/system.php": "a9bd3eba468e2d5f1507ef5a07defd9f730f80897517744c6547f2c718fbccde",
     "includes/elementor/block-library.php": "ab52756e475900d587fabe54ee0c25c12735bfe7c523381c9b05dbd79ea5e151",
@@ -17,7 +17,7 @@
     "includes/elementor/data.php": "d306f94a7a13bdcc017b41f549d818c2058ec351802715c609a73526efbc81c1",
     "includes/elementor/design-contract.php": "6fd0d37d715b4312cf948589da0708ea65073e11d314a68793c947785ef9d293",
     "includes/elementor/design-review.php": "3c3aaa47f0124c4581c334a927fde59b656690ad2cad5952adbda5a3e6f53942",
-    "includes/elementor/editor-chat.php": "c84b391a61c3fcfdddc88ca96671ea7d70688e90418d5cd64b363dcacbffc915",
+    "includes/elementor/editor-chat.php": "3a94999fc33a6175697a002287868a426fade5775cfc5e7f30e0dd13a651ad27",
     "includes/elementor/editability.php": "3afd50555ffce4aed25f7a6f75e236a5dcb077af9a557e3007c364da9333183c",
     "includes/elementor/normalize.php": "abbc84ca614bd1299f688479952b260a88be767e27a2ebdfe076fc7572a18c80",
     "includes/elementor/page-update.php": "7e5b64a3e27fd50937266c68f4e67dff5cf6b82ba6f4e6610e72af8376b68601",
@@ -30,12 +30,12 @@
     "includes/elementor/visual-audit.php": "db0bb0df396671d058d82ad652989e19ee9974f8c4b74422107b440e7ae20854",
     "includes/execution/run.php": "ddba4fb5de66f62488305625cdd96bc040f1af55e569468005da4210cc2300d1",
     "includes/exports/exports.php": "b471d8020b0cd7240895817ecaf92aa1138cb6a0a7da58b6fb0a3afe1e894dca",
-    "includes/guide/guide.php": "3483bc8943c3a6268abaf6834baf12374a49242c5d66c0335a603e36616020d7",
+    "includes/guide/guide.php": "5ff1fdaaf9bfd8403354d3f88bee17aed40087c14188f0c58f74889a7e76750b",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/llm.php": "494254892260598efe6eff96ba61ee9c4744f4523a180b785e74b6ef3934f500",
+    "includes/llm/llm.php": "29b876d7101f009acf4ee598b9cd38349dbef0ce9f6f8afb1eee26f5b5f6f536",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
-    "includes/rest/routes.php": "b57915986f81e399476e66eba364a9faaee264d4088ed9e28d289d22d74403f5",
+    "includes/rest/routes.php": "178a9987cc55cc77d20db8748e1297ea070ac7c5326ed166cc56fc67e92ed0e8",
     "includes/rollback/rollback.php": "f9e45cb8fb78b76123db20a838d204e4393eb7023c93599bdb218ba993c1e80e",
     "includes/security/capabilities.php": "54dddd57603f48e79e5e98d49b12ad707937c5fa507c0ef3f423f2ae0a601513",
     "includes/skills/manifest.php": "2cadc860b0ded26cf3b0d1229e578c262f8e183cfda3f45dd426677ce6d6dcd2",
@@ -43,7 +43,7 @@
     "includes/support/logging.php": "5d8360abf0981be17fe47af6797309a8a3f7804c59c60998633f6b225afcd186",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "includes/vision/vision.php": "e59f0a480c3715be50eed1c99fbb1bf87326fad68cf28aa832cd1f00874be634",
-    "wp-ai-executor.php": "338ec27cfc388baaaae69117d3d6d05f8e9fd6698e42c1428a9b2675a172b748"
+    "includes/vision/vision.php": "690406e25a0353fb7bff5e5dde7434f96c19a955f5219f52aafd200f983230fc",
+    "wp-ai-executor.php": "a4c988e92e921f6ce0a2e8755e381d955c366e0b36009d853f5bdf5e42f7c5d5"
   }
 }

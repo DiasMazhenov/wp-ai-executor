@@ -721,6 +721,73 @@ function wpae_vision_report_for_transaction( WP_REST_Request $request ) {
     return wpae_vision_report_from_request( $request, false );
 }
 
+function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    $snapshot_id = sanitize_text_field( (string) $request->get_param( 'rollback_snapshot_id' ) );
+
+    if ( $post_id <= 0 || ! current_user_can( 'edit_post', $post_id ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'Нет разрешения на проверку этой страницы.',
+            'code' => 'wpae_vision_editor_post_forbidden',
+        ], 403 );
+    }
+    if ( ! wpae_capability_enabled( 'ai_vision' ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'AI Vision отключен владельцем сайта.',
+            'code' => 'wpae_vision_disabled',
+        ], 403 );
+    }
+
+    $capture_error = wpae_vision_trim_text( $request->get_param( 'vision_capture_error' ), 500 );
+    if ( $capture_error !== '' ) {
+        $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
+        return new WP_REST_Response( [
+            'ok' => false,
+            'rolled_back' => ! empty( $rollback['ok'] ),
+            'error' => 'Не удалось снять screenshot сохраненного preview для AI Vision.',
+            'code' => 'wpae_vision_capture_failed',
+            'details' => [ 'capture_error' => $capture_error, 'rollback' => $rollback ],
+        ], 422 );
+    }
+
+    $analysis = wpae_vision_analyze( $request );
+    $analysis_data = $analysis->get_data();
+    if ( empty( $analysis_data['ok'] ) || empty( $analysis_data['report'] ) ) {
+        $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
+        return new WP_REST_Response( [
+            'ok' => false,
+            'rolled_back' => ! empty( $rollback['ok'] ),
+            'error' => 'AI Vision не смог проверить сохраненный preview.',
+            'code' => 'wpae_vision_review_failed',
+            'details' => [ 'analysis' => $analysis_data, 'rollback' => $rollback ],
+        ], 502 );
+    }
+
+    $report = (array) $analysis_data['report'];
+    $gate = wpae_evaluate_vision_report( $report );
+    if ( ! empty( $gate['blocking'] ) ) {
+        $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
+        return new WP_REST_Response( [
+            'ok' => false,
+            'rolled_back' => ! empty( $rollback['ok'] ),
+            'error' => 'AI Vision обнаружил критические визуальные дефекты.',
+            'code' => 'wpae_vision_critical_findings',
+            'report' => $report,
+            'gate' => $gate,
+            'rollback' => $rollback,
+        ], 422 );
+    }
+
+    return new WP_REST_Response( [
+        'ok' => true,
+        'rolled_back' => false,
+        'report' => $report,
+        'gate' => $gate,
+    ], 200 );
+}
+
 function wpae_get_vision_status(): array {
     $settings = wpae_get_vision_settings();
     return [
@@ -742,6 +809,7 @@ function wpae_get_vision_guide(): array {
             'analyze' => 'POST /wp-json/ai-executor/v1/vision/analyze',
             'report' => 'POST /wp-json/ai-executor/v1/vision/report',
             'page_review' => 'POST /wp-json/ai-executor/v1/vision/page-review',
+            'editor_review' => 'POST /wp-json/ai-executor/v1/llm/vision-review',
         ],
         'workflow' => [
             '1. Render the public page or candidate screenshot in the agent environment at desktop and mobile widths.',
@@ -757,5 +825,6 @@ function wpae_get_vision_guide(): array {
         ],
         'privacy' => 'Images are not stored by the plugin. Provider keys are encrypted in wp_options. Only normalized reports are retained in wp_options; raw provider responses and image base64 are not logged or stored.',
         'limitations' => 'AI Vision is additional visual evidence, not proof of DOM, computed CSS, keyboard behavior, or animation correctness. External reports remain advisory; only same-post reports created by /vision/analyze may satisfy transaction_vision_review. Deterministic audits and public browser verification remain required.',
+        'editor_chat_workflow' => 'The floating Elementor chat reviews the refreshed preview after a successful write. Critical findings trigger rollback of the write snapshot; screenshot or provider failures also roll back when possible.',
     ];
 }

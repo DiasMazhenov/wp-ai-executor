@@ -191,6 +191,102 @@
         }
         return false;
     }
+    var visionCapturePromise = null;
+    function loadVisionCapture() {
+        if (typeof window.html2canvas === 'function') return Promise.resolve(window.html2canvas);
+        if (!config.vision || !config.vision.captureScript) return Promise.reject(new Error('В редакторе недоступен модуль screenshot для AI Vision.'));
+        if (visionCapturePromise) return visionCapturePromise;
+        visionCapturePromise = new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.src = config.vision.captureScript;
+            script.async = true;
+            script.onload = function () {
+                typeof window.html2canvas === 'function' ? resolve(window.html2canvas) : reject(new Error('Модуль screenshot загрузился без html2canvas.'));
+            };
+            script.onerror = function () { reject(new Error('Не удалось загрузить модуль screenshot для AI Vision.')); };
+            document.head.appendChild(script);
+        });
+        return visionCapturePromise;
+    }
+    function capturePreviewScreenshot() {
+        var iframe = document.querySelector('#elementor-preview-iframe');
+        if (!iframe || !iframe.contentDocument) return Promise.reject(new Error('Текущий Elementor preview недоступен для screenshot.'));
+        var doc = iframe.contentDocument;
+        var width = doc.documentElement.clientWidth || iframe.clientWidth || 1280;
+        var height = iframe.clientHeight || doc.documentElement.clientHeight || 900;
+        height = Math.max(320, Math.min(height, 4000));
+        return loadVisionCapture().then(function (capture) {
+            return capture(doc.documentElement, {
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                logging: false,
+                scale: 1,
+                width: width,
+                height: height,
+                windowWidth: width,
+                windowHeight: height,
+                x: 0,
+                y: doc.defaultView ? doc.defaultView.scrollY : 0
+            }).then(function (canvas) {
+                var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
+                if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
+                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height };
+            });
+        });
+    }
+    function waitForPreviewRefresh() {
+        return new Promise(function (resolve) { window.setTimeout(resolve, 1800); });
+    }
+    function requestVisionReview(snapshotId, captureError) {
+        return postVisionReview({
+            post_id: Number(config.postId) || 0,
+            rollback_snapshot_id: snapshotId,
+            vision_capture_error: captureError
+        });
+    }
+    function postVisionReview(payload) {
+        return fetch(config.vision.reviewEndpoint, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+            body: JSON.stringify(payload)
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (body) {
+                if (!response.ok) {
+                    var detail = body.error || body.message || ('HTTP ' + response.status);
+                    if (body.code) detail += ' [' + body.code + ']';
+                    if (body.details && body.details.rollback) detail += ' (rollback: ' + (body.details.rollback.ok ? 'выполнен' : 'не выполнен') + ')';
+                    throw new Error(detail);
+                }
+                return body;
+            });
+        });
+    }
+    function runVisionReview(snapshotId) {
+        addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
+        refreshElementorPreview();
+        return waitForPreviewRefresh().then(function () {
+            return capturePreviewScreenshot().then(function (capture) {
+                return postVisionReview({
+                    post_id: Number(config.postId) || 0,
+                    rollback_snapshot_id: snapshotId,
+                    image_base64: capture.image_base64,
+                    mime_type: capture.mime_type,
+                    viewport: capture.viewport
+                });
+            }, function (error) {
+                return requestVisionReview(snapshotId, error.message);
+            });
+        });
+    }
+    function describeVisionReview(review) {
+        var report = review.report || {};
+        var summary = report.summary ? ' ' + report.summary : '';
+        var findings = Array.isArray(report.findings) ? report.findings.slice(0, 3).map(function (finding) {
+            return (finding.severity || 'info') + ': ' + (finding.message || 'наблюдение');
+        }).join('; ') : '';
+        return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + summary + (findings ? ' ' + findings : '');
+    }
     function request(message) {
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {
             return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: item.textContent };
@@ -245,11 +341,25 @@
         }).then(function (body) {
             window.clearInterval(progressTimer);
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
+            var visionPromise = Promise.resolve(null);
             if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
-                addMessage('assistant', refreshElementorPreview() ? 'Предпросмотр Elementor обновляется из сохранённых данных.' : 'Данные сохранены. Не удалось автоматически обновить preview Elementor.');
+                if (config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
+                    visionPromise = runVisionReview(body.write.rollback_snapshot_id);
+                } else {
+                    addMessage('assistant', refreshElementorPreview() ? 'Предпросмотр Elementor обновляется из сохранённых данных.' : 'Данные сохранены. Не удалось автоматически обновить preview Elementor.');
+                }
             }
-            addMessage('assistant', body.message || strings.error);
-            status.textContent = strings.done;
+            return visionPromise.then(function (review) {
+                if (review && review.rolled_back) {
+                    addMessage('assistant', 'AI Vision обнаружил критические дефекты. Изменения откатены.');
+                    refreshElementorPreview();
+                    status.textContent = strings.error;
+                    return;
+                }
+                if (review && review.report) addMessage('assistant', describeVisionReview(review));
+                addMessage('assistant', body.message || strings.error);
+                status.textContent = strings.done;
+            });
         }).catch(function (error) {
             window.clearInterval(progressTimer);
             if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
