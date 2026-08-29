@@ -195,6 +195,10 @@
         var iframe = document.querySelector('#elementor-preview-iframe');
         return iframe && iframe.contentWindow ? iframe : null;
     }
+    function getPreviewWidgetCount() {
+        var iframe = getPreviewIframe();
+        return iframe && iframe.contentDocument ? iframe.contentDocument.querySelectorAll('.elementor-widget').length : 0;
+    }
     function reloadPreviewIframe() {
         var iframe = getPreviewIframe();
         if (!iframe) return Promise.resolve(false);
@@ -288,15 +292,16 @@
             });
         });
     }
-    function waitForPreviewRefresh(refreshPromise) {
+    function waitForPreviewRefresh(refreshPromise, minimumWidgetCount) {
         return Promise.resolve(refreshPromise).then(function (refreshed) {
             if (!refreshed) throw new Error('Не удалось обновить текущий preview Elementor.');
+            minimumWidgetCount = Number(minimumWidgetCount) || 1;
             return new Promise(function (resolve, reject) {
                 var started = Date.now();
                 var check = function () {
                     var iframe = getPreviewIframe();
                     var doc = iframe && iframe.contentDocument;
-                    if (doc && doc.querySelector('.elementor-widget')) {
+                    if (doc && doc.querySelectorAll('.elementor-widget').length >= minimumWidgetCount) {
                         resolve(true);
                         return;
                     }
@@ -341,9 +346,9 @@
             });
         });
     }
-    function runVisionReview(snapshotId) {
+    function runVisionReview(snapshotId, minimumWidgetCount) {
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
-        return waitForPreviewRefresh(refreshElementorPreview()).then(function () {
+        return waitForPreviewRefresh(refreshElementorPreview(), minimumWidgetCount).then(function () {
             return capturePreviewScreenshot().then(function (capture) {
                 return postVisionReview({
                     post_id: Number(config.postId) || 0,
@@ -366,6 +371,7 @@
         return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + summary + (findings ? ' ' + findings : '');
     }
     function request(message) {
+        var beforeWidgetCount = getPreviewWidgetCount();
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {
             return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: item.textContent };
         });
@@ -425,9 +431,9 @@
             var visionPromise = Promise.resolve(null);
             if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
                 if (config.vision && config.vision.ready && config.postStatus === 'publish' && body.write.rollback_snapshot_id) {
-                    visionPromise = runVisionReview(body.write.rollback_snapshot_id);
+                    visionPromise = runVisionReview(body.write.rollback_snapshot_id, beforeWidgetCount + Number(body.write.inserted_count || 0));
                 } else {
-                    visionPromise = waitForPreviewRefresh(refreshElementorPreview()).then(function () {
+                    visionPromise = waitForPreviewRefresh(refreshElementorPreview(), beforeWidgetCount + Number(body.write.inserted_count || 0)).then(function () {
                         addMessage('assistant', 'Предпросмотр Elementor обновлён из сохранённых данных.');
                     }).catch(function (error) {
                         addMessage('assistant', 'Данные сохранены, но preview Elementor не обновился: ' + error.message);
