@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.91`
+- Plugin: `v02.08.92`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -92,6 +92,8 @@ provider failures, and the chat exposes their sanitized provider message/code
 instead of reporting only an empty response.
 The AI Vision provider key field uses the same bullet mask as the main LLM key;
 empty input keeps the encrypted key, while the explicit clear checkbox removes it.
+The Elementor chat header displays the configured provider model and plugin
+version as non-secret metadata; provider keys remain server-side.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -162,14 +164,14 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.91` including the LLM proxy, Elementor editor chat,
+Release state: `v02.08.92` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
 guided editor context, editor preview synchronization, separate progress
 messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
-diagnostics and the masked AI Vision key field are published on GitHub `main` in commit `bd608c9`.
+diagnostics, the masked AI Vision key field, and chat model/version metadata are prepared locally and await commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

@@ -36,8 +36,14 @@
     title.textContent = strings.title;
     var subtitle = document.createElement('small');
     subtitle.textContent = strings.subtitle;
+    var meta = document.createElement('small');
+    meta.className = 'wpae-llm-meta';
+    meta.textContent = (strings.meta || 'Модель: {model} · Версия: {version}')
+        .replace('{model}', config.model || 'не указана')
+        .replace('{version}', config.pluginVersion || 'неизвестна');
     heading.appendChild(title);
     heading.appendChild(subtitle);
+    heading.appendChild(meta);
     var close = document.createElement('button');
     close.className = 'wpae-llm-close';
     close.type = 'button';

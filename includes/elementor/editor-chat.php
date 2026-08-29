@@ -30,6 +30,9 @@ function wpae_enqueue_elementor_llm_chat(): void {
     $vision_status = wpae_get_vision_status();
     $config = wp_json_encode( [
         'endpoint' => get_rest_url( null, 'ai-executor/v1/llm/chat' ),
+        'pluginVersion' => defined( 'WPAE_VERSION' ) ? WPAE_VERSION : '',
+        'providerLabel' => (string) ( $settings['provider_label'] ?? '' ),
+        'model' => (string) ( $settings['model'] ?? '' ),
         'vision' => [
             'ready' => ! empty( $vision_status['enabled'] ) && ! empty( $vision_status['configured'] ),
             'reviewEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/vision-review' ),
@@ -43,6 +46,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
             'open' => 'Открыть чат LLM',
             'title' => 'LLM-помощник Elementor',
             'subtitle' => 'Ответы проходят через настроенный proxy',
+            'meta' => 'Модель: {model} · Версия: {version}',
             'send' => 'Отправить',
             'copyLog' => 'Копировать JSON',
             'copied' => 'JSON-лог скопирован',
