@@ -45,6 +45,7 @@ assert.match(editor, /'copyLog' => 'Копировать JSON'/);
 assert.match(llm, /_wpae_allow_initial_data/);
 assert.match(llm, /wpae_apply_design_token_map/);
 assert.match(llm, /blocking_errors/);
+assert.match(read('includes/elementor/normalize.php'), /mapped_native_widget_content/);
 assert.match(read('includes/elementor/page-update.php'), /_wpae_allow_initial_data/);
 assert.match(routes, /'\/llm\/chat'/);
 assert.match(routes, /'callback'\s*=>\s*'wpae_llm_chat'/);

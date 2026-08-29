@@ -99,6 +99,33 @@ function wpae_elementor_infer_widget_type( array $element, array $settings ): st
     return 'text-editor';
 }
 
+function wpae_normalize_native_widget_content( array &$settings, string $widget_type, array &$report, string $element_path ): void {
+    $aliases = [
+        'heading' => [ 'title' => [ 'text', 'content' ] ],
+        'text-editor' => [ 'editor' => [ 'text', 'content' ] ],
+        'button' => [ 'text' => [ 'title', 'content' ] ],
+    ];
+    foreach ( (array) ( $aliases[ $widget_type ] ?? [] ) as $target => $sources ) {
+        if ( trim( (string) ( $settings[ $target ] ?? '' ) ) !== '' ) {
+            continue;
+        }
+        foreach ( $sources as $source ) {
+            if ( ! is_scalar( $settings[ $source ] ?? null ) || trim( (string) $settings[ $source ] ) === '' ) {
+                continue;
+            }
+            $settings[ $target ] = (string) $settings[ $source ];
+            wpae_elementor_normalize_add_change(
+                $report,
+                'mapped_native_widget_content',
+                $element_path,
+                'Mapped a compatible content alias to the native Elementor widget setting.',
+                [ 'widgetType' => $widget_type, 'from' => $source, 'to' => $target ]
+            );
+            break;
+        }
+    }
+}
+
 function wpae_elementor_normalize_elements( array $elements, array &$report, string $path = 'root' ): array {
     $normalized = [];
 
@@ -157,6 +184,7 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 $element['elements'] = [];
                 wpae_elementor_normalize_add_change( $report, 'filled_elements', $element_path, 'Filled missing widget elements array.' );
             }
+            wpae_normalize_native_widget_content( $element['settings'], sanitize_key( (string) $element['widgetType'] ), $report, $element_path );
         } else {
             $element['elType'] = 'container';
 
@@ -246,4 +274,3 @@ function wpae_elementor_normalize_data( array $elementor_data ): array {
         'report' => $report,
     ];
 }
-
