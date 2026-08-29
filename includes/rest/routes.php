@@ -11,12 +11,6 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'run' ),
     ] );
 
-    register_rest_route( 'ai-executor/v1', '/key', [
-        'methods'             => 'GET',
-        'callback'            => fn() => new WP_REST_Response( [ 'key' => wpae_get_key() ], 200 ),
-        'permission_callback' => fn() => in_array( $_SERVER['REMOTE_ADDR'] ?? '', [ '127.0.0.1', '::1', 'localhost' ], true ),
-    ] );
-
     register_rest_route( 'ai-executor/v1', '/guide', [
         'methods'             => 'GET',
         'callback'            => 'wpae_get_guide',

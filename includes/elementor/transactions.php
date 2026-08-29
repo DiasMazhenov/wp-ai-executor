@@ -269,6 +269,16 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
     if ( $vision_report_error !== null ) {
         $vision_report = null;
     }
+    if ( is_array( $vision_report ) ) {
+        $vision_scope = wpae_validate_vision_report_scope( $vision_report, $post_id );
+        if ( is_wp_error( $vision_scope ) ) {
+            $vision_report_error = $vision_scope;
+            $vision_report = null;
+        } elseif ( ( $vision_report['source'] ?? '' ) !== 'provider' ) {
+            $vision_report_error = new WP_Error( 'wpae_vision_unverified_report', 'Atomic Vision review requires a provider report created by /vision/analyze.' );
+            $vision_report = null;
+        }
+    }
 
     $design_review = wpae_build_elementor_design_review( $expected_elementor_data, [
         'source' => 'transaction_after_save',

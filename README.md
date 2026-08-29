@@ -60,14 +60,6 @@ Content-Type: application/json
 }
 ```
 
-### `GET /wp-json/ai-executor/v1/key`
-
-Returns the current secret key. **Accessible from localhost only.**
-
-```bash
-curl https://yoursite.com/wp-json/ai-executor/v1/key
-```
-
 ### `GET /wp-json/ai-executor/v1/guide`
 
 Returns authenticated guidance for AI agents before they automate WordPress or Elementor.
@@ -610,6 +602,13 @@ Returns recent authenticated operation metadata from `wp_options`.
 Logs are capped and do not include API keys, guide tokens, raw request bodies,
 raw page payloads, raw response payloads, or secrets.
 
+### AI Vision safety
+
+`/vision/analyze` accepts at most 12 provider calls per site-wide 10-minute
+window. A report for a different `post_id` cannot review or gate another page.
+`transaction_vision_review=true` accepts only a same-post report created by
+`/vision/analyze`; externally submitted `/vision/report` data stays advisory.
+
 ```json
 {
   "logs": [
@@ -748,7 +747,7 @@ After writing, the agent should verify:
 - All requests require the `X-AI-Key` header
 - Key is a 64-char cryptographically random hex string
 - Key comparison uses `hash_equals()` to prevent timing attacks
-- The `/key` endpoint is restricted to `127.0.0.1` / `::1` only
+- Secret keys are shown only to WordPress administrators in **Settings → AI Executor**; the REST API never returns them
 - The `/guide` endpoint is authenticated because it describes privileged automation workflows
 - Site-owner capability toggles in **Settings → AI Executor** can enable `/run`, self-update, Elementor writes, media upload, exports, skills management, and filesystem writes
 - `/run` is disabled by default and blocks common filesystem write/delete functions and shell/process execution when explicitly enabled

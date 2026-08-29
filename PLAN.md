@@ -151,7 +151,7 @@
    - Готово, когда принятое правило получает source evidence, version и enforce mapping либо остаётся advisory.
 
 7. **AI Vision visual QA.**
-   - Статус: runtime реализован и опубликован в immutable commit `42dc0d4` (`v02.08.69`); live rollout и provider smoke-test ожидают настройки владельца сайта.
+   - Статус: runtime реализован; security hardening `v02.08.70` готовится к публикации. Live rollout и provider smoke-test ожидают настройки владельца сайта.
    - Использовать Vision как дополнительную проверку desktop/mobile screenshots, не заменяя deterministic audits, browser verification и Elementor editability checks.
    - Хранить только нормализованные отчёты в `wp_options`; изображения и raw provider responses не сохранять и не логировать.
    - Поддерживать явный `transaction_vision_review=true`: критические findings блокируют транзакцию и запускают существующий atomic rollback.
@@ -195,7 +195,7 @@
 3. Visual regression gate. Готово: доступен через `transaction_visual_regression=true` на existing-page writes.
 4. Elementor editability tests. Готово: `/elementor/editability-audit` и summary внутри `/audit`.
 5. CSS-to-native migrator. Готово: `/elementor/css-to-native` с dry-run, protected-zone guard и editability audit.
-6. AI Vision visual QA. Реализован и опубликован в `v02.08.69`; после настройки провайдера и capability проверить provider request и transaction gate на live.
+6. AI Vision visual QA. Реализован; `v02.08.70` добавляет лимит provider-вызовов, строгую проверку provider-отчёта и same-post/server-issued contract для atomic gate. После настройки провайдера и capability проверить provider request и transaction gate на live.
 
 ### Миграция на модули
 

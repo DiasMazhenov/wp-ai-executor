@@ -115,7 +115,7 @@ function wpae_agent_guide(): array {
             '19. If any endpoint or verification step fails, report concrete error details: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix.',
             '20. Library blocks use draft -> approved -> published. Run the Design Review Gate before approval; never instantiate a draft or publish with ship_best.',
             '21. When AI Vision is enabled, review desktop and mobile screenshots with /vision/analyze or submit an external report to /vision/report, then combine it with /vision/page-review; treat Vision as additional evidence, not a replacement for deterministic audits or public browser verification.',
-            '22. For risky Elementor writes, pass transaction_vision_review=true with vision_report_id; critical Vision findings must be fixed before the transaction can complete and trigger automatic rollback.',
+            '22. For risky Elementor writes, pass transaction_vision_review=true only with a same-post provider report created by /vision/analyze; external /vision/report data is advisory and cannot satisfy the atomic rollback gate. Critical Vision findings must be fixed before the transaction can complete.',
         ],
         'frontend_design' => [
             'principles' => [

@@ -7,6 +7,9 @@ const WPAE_VISION_REPORTS_OPTION = 'wp_ai_executor_vision_reports';
 const WPAE_VISION_MAX_IMAGE_BYTES = 4194304;
 const WPAE_VISION_MAX_RESPONSE_BYTES = 524288;
 const WPAE_VISION_MAX_REPORTS = 30;
+const WPAE_VISION_RATE_LIMIT_OPTION = 'wp_ai_executor_vision_rate_window';
+const WPAE_VISION_PROVIDER_CALL_LIMIT = 12;
+const WPAE_VISION_PROVIDER_CALL_WINDOW = 600;
 
 function wpae_vision_provider_options(): array {
     return [
@@ -221,6 +224,65 @@ function wpae_validate_vision_report_payload( $report ): array {
     return $errors;
 }
 
+function wpae_validate_vision_provider_report( $report ): array {
+    $errors = wpae_validate_vision_report_payload( $report );
+    if ( ! is_array( $report ) ) {
+        return $errors;
+    }
+
+    foreach ( [ 'confidence', 'summary', 'must_fix', 'strengths' ] as $field ) {
+        if ( ! array_key_exists( $field, $report ) ) {
+            $errors[] = $field . ' is required in a provider report.';
+        }
+    }
+    if ( isset( $report['summary'] ) && ! is_string( $report['summary'] ) ) {
+        $errors[] = 'summary must be a string.';
+    }
+    foreach ( [ 'must_fix', 'strengths' ] as $field ) {
+        if ( isset( $report[ $field ] ) && ! is_array( $report[ $field ] ) ) {
+            $errors[] = $field . ' must be an array.';
+        }
+    }
+    foreach ( (array) ( $report['findings'] ?? [] ) as $index => $finding ) {
+        if ( ! is_array( $finding ) ) {
+            $errors[] = 'findings[' . $index . '] must be an object.';
+            continue;
+        }
+        foreach ( [ 'severity', 'category', 'message', 'fix', 'viewport' ] as $field ) {
+            if ( ! isset( $finding[ $field ] ) || ! is_string( $finding[ $field ] ) ) {
+                $errors[] = 'findings[' . $index . '].' . $field . ' must be a string.';
+            }
+        }
+        if ( isset( $finding['severity'] ) && ! in_array( $finding['severity'], [ 'critical', 'major', 'minor', 'info' ], true ) ) {
+            $errors[] = 'findings[' . $index . '].severity is invalid.';
+        }
+    }
+
+    return array_values( array_unique( $errors ) );
+}
+
+function wpae_vision_consume_provider_slot() {
+    $now = time();
+    $window_start = $now - WPAE_VISION_PROVIDER_CALL_WINDOW;
+    $timestamps = get_option( WPAE_VISION_RATE_LIMIT_OPTION, [] );
+    $timestamps = is_array( $timestamps ) ? $timestamps : [];
+    $timestamps = array_values( array_filter( $timestamps, static fn( $timestamp ) => is_numeric( $timestamp ) && (int) $timestamp >= $window_start ) );
+
+    if ( count( $timestamps ) >= WPAE_VISION_PROVIDER_CALL_LIMIT ) {
+        $oldest = (int) min( $timestamps );
+        return new WP_Error( 'wpae_vision_rate_limited', 'AI Vision provider call limit reached. Retry after the current review window.', [
+            'status' => 429,
+            'limit' => WPAE_VISION_PROVIDER_CALL_LIMIT,
+            'window_seconds' => WPAE_VISION_PROVIDER_CALL_WINDOW,
+            'retry_after_seconds' => max( 1, $oldest + WPAE_VISION_PROVIDER_CALL_WINDOW - $now ),
+        ] );
+    }
+
+    $timestamps[] = $now;
+    update_option( WPAE_VISION_RATE_LIMIT_OPTION, $timestamps, false );
+    return true;
+}
+
 function wpae_save_vision_report( array $report ): array {
     $report['report_id'] = 'vr_' . str_replace( '-', '', wp_generate_uuid4() );
     $report['created_at'] = gmdate( 'c' );
@@ -249,6 +311,19 @@ function wpae_get_vision_reports( int $limit = 5 ): array {
 }
 
 function wpae_evaluate_vision_report( array $report ): array {
+    $validation_errors = wpae_validate_vision_report_payload( $report );
+    if ( ! empty( $validation_errors ) ) {
+        return [
+            'ok' => false,
+            'blocking' => true,
+            'critical_count' => 0,
+            'major_count' => 0,
+            'must_fix' => [ 'AI Vision report is malformed and cannot satisfy a transaction gate.' ],
+            'message' => 'AI Vision report is invalid.',
+            'validation_errors' => $validation_errors,
+        ];
+    }
+
     $critical = [];
     $major = [];
     foreach ( (array) ( $report['findings'] ?? [] ) as $finding ) {
@@ -293,6 +368,17 @@ function wpae_vision_report_from_request( WP_REST_Request $request, bool $save_i
         'viewport' => $request->get_param( 'viewport' ),
     ] );
     return $save_inline ? wpae_save_vision_report( $report ) : $report;
+}
+
+function wpae_validate_vision_report_scope( array $report, int $post_id ) {
+    $report_post_id = absint( $report['post_id'] ?? 0 );
+    if ( $post_id > 0 && $report_post_id > 0 && $report_post_id !== $post_id ) {
+        return new WP_Error( 'wpae_vision_report_post_mismatch', 'AI Vision report belongs to a different WordPress post.', [
+            'report_post_id' => $report_post_id,
+            'requested_post_id' => $post_id,
+        ] );
+    }
+    return true;
 }
 
 function wpae_vision_prepare_image( WP_REST_Request $request ) {
@@ -539,6 +625,10 @@ function wpae_vision_analyze( WP_REST_Request $request ): WP_REST_Response {
     if ( is_wp_error( $settings ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => $settings->get_error_message(), 'code' => $settings->get_error_code() ], 503 );
     }
+    $rate_limit = wpae_vision_consume_provider_slot();
+    if ( is_wp_error( $rate_limit ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $rate_limit->get_error_message(), 'code' => $rate_limit->get_error_code(), 'details' => $rate_limit->get_error_data() ], 429 );
+    }
     $provider_result = wpae_vision_provider_request( $settings['provider'], $settings['model'], $settings['api_key'], $image, wpae_vision_prompt( $request ) );
     if ( is_wp_error( $provider_result ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => $provider_result->get_error_message(), 'code' => $provider_result->get_error_code(), 'details' => $provider_result->get_error_data() ], 502 );
@@ -546,6 +636,10 @@ function wpae_vision_analyze( WP_REST_Request $request ): WP_REST_Response {
     $raw_report = wpae_vision_decode_report_text( wpae_vision_provider_text( $provider_result['provider'], $provider_result['response'] ) );
     if ( is_wp_error( $raw_report ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => $raw_report->get_error_message(), 'code' => $raw_report->get_error_code() ], 502 );
+    }
+    $report_errors = wpae_validate_vision_provider_report( $raw_report );
+    if ( ! empty( $report_errors ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'AI Vision provider returned a malformed report.', 'code' => 'wpae_vision_provider_invalid_report', 'details' => [ 'errors' => $report_errors ] ], 502 );
     }
     $report = wpae_save_vision_report( wpae_vision_normalize_report( $raw_report, [
         'source' => 'provider',
@@ -603,6 +697,11 @@ function wpae_vision_page_review( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
+    $report_scope = wpae_validate_vision_report_scope( $report, $post_id );
+    if ( is_wp_error( $report_scope ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => $report_scope->get_error_message(), 'code' => $report_scope->get_error_code(), 'details' => $report_scope->get_error_data() ], 422 );
+    }
+
     $review = wpae_build_elementor_design_review( $elementor_data, [
         'source' => $post_id > 0 ? 'post_meta_with_vision' : 'request_with_vision',
         'post_id' => $post_id ?: null,
@@ -649,13 +748,14 @@ function wpae_get_vision_guide(): array {
             '2. Use /vision/analyze with image_base64 or an existing WordPress media_id, or send an external result to /vision/report.',
             '3. Use /vision/page-review to combine the report with the deterministic Elementor Design Review Gate.',
             '4. Fix findings through native Elementor settings first; keep WebGL/Three.js/GSAP/canvas zones protected.',
-            '5. For risky writes, pass transaction_vision_review=true and vision_report_id; critical findings trigger atomic rollback.',
+            '5. For risky writes, pass transaction_vision_review=true with a same-post provider report from /vision/analyze; critical findings trigger atomic rollback.',
         ],
+        'provider_rate_limit' => [ 'calls' => WPAE_VISION_PROVIDER_CALL_LIMIT, 'window_seconds' => WPAE_VISION_PROVIDER_CALL_WINDOW, 'scope' => 'site-wide' ],
         'report_contract' => [
             'fields' => [ 'vision_score' => '0..100', 'findings' => 'array', 'confidence' => '0..1', 'must_fix' => 'array' ],
             'severity' => [ 'critical' => 'Blocks transaction and triggers rollback when requested.', 'major' => 'Important correction; advisory unless the deterministic review also blocks.', 'minor' => 'Polish item.', 'info' => 'Observation or strength.' ],
         ],
         'privacy' => 'Images are not stored by the plugin. Provider keys are encrypted in wp_options. Only normalized reports are retained in wp_options; raw provider responses and image base64 are not logged or stored.',
-        'limitations' => 'AI Vision is additional visual evidence, not proof of DOM, computed CSS, keyboard behavior, or animation correctness. Deterministic audits and public browser verification remain required.',
+        'limitations' => 'AI Vision is additional visual evidence, not proof of DOM, computed CSS, keyboard behavior, or animation correctness. External reports remain advisory; only same-post reports created by /vision/analyze may satisfy transaction_vision_review. Deterministic audits and public browser verification remain required.',
     ];
 }

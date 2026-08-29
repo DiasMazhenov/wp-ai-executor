@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.69`
-- Guide: `v02.05.53`
+- Plugin: `v02.08.70`
+- Guide: `v02.05.54`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -92,20 +92,25 @@ Endpoints:
 
 The normalized report contains `vision_score`, `findings`, `confidence`,
 `must_fix`, `summary`, and `strengths`. Findings use `critical`, `major`,
-`minor`, or `info` severity. Critical findings block only when the caller
-explicitly passes `transaction_vision_review=true`; then the existing atomic
-Elementor transaction restores its rollback snapshot. Major findings remain
-advisory unless another deterministic gate blocks the write.
+`minor`, or `info` severity. Provider responses must pass the full structured
+report contract before storage. Reports are bound to their declared post when
+one is supplied. Critical findings block only when the caller explicitly passes
+`transaction_vision_review=true` with a same-post report issued by
+`/vision/analyze`; external `/vision/report` results remain advisory. Then the
+existing atomic Elementor transaction restores its rollback snapshot. Major
+findings remain advisory unless another deterministic gate blocks the write.
 
 The module does not accept arbitrary image URLs, does not create image files,
 does not persist base64 or raw provider responses, and does not put image data
-in operation logs. AI Vision is additional visual evidence only: deterministic
-validation, native Elementor editability, public browser screenshots, and
-animation/WebGL checks remain mandatory.
+in operation logs. It permits at most 12 provider calls per site-wide 10-minute
+window to limit accidental spend. AI Vision is additional visual evidence only:
+deterministic validation, native Elementor editability, public browser
+screenshots, and animation/WebGL checks remain mandatory.
 
-Local release state: code and package manifest are published in immutable
-commit `42dc0d4` for `v02.08.69`; live rollout/provider smoke-test remains
-pending until the site owner configures a provider and enables `ai_vision`.
+Local release state: `v02.08.70` security hardening is locally committed and
+awaits push. The last live deployment remains `v02.08.69`; live rollout and
+provider smoke-test remain pending until the site owner configures a provider
+and enables `ai_vision`.
 
 ## Design System Package v2
 

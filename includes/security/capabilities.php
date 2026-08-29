@@ -366,7 +366,7 @@ function wpae_get_capabilities_payload(): array {
                     'transaction_visual_regression' => 'When true on existing-page writes, capture a public HTML/audit baseline before write and auto-rollback if key public signals regress after save.',
                     'transaction_strict_quality' => 'When true, weak/blocked static quality after save triggers auto-rollback.',
                     'transaction_design_review' => 'When true, only an approved deterministic design review may complete the write.',
-                    'transaction_vision_review' => 'When true with vision_report_id, critical AI Vision findings fail the atomic transaction and trigger rollback.',
+                    'transaction_vision_review' => 'When true with a same-post provider vision_report_id from /vision/analyze, critical AI Vision findings fail the atomic transaction and trigger rollback. External reports remain advisory.',
                 ],
                 'response_fields' => [
                     'transaction',

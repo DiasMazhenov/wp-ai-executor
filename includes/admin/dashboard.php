@@ -32,6 +32,11 @@ add_action( 'admin_init', function () {
         'sanitize_callback' => 'sanitize_text_field',
     ] );
 
+    // Every mutation below is owner-only, including legacy dashboard forms.
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
     // Обработка регенерации ключа.
     if (
         isset( $_POST['wpae_regenerate'] ) &&
@@ -57,7 +62,6 @@ add_action( 'admin_init', function () {
 
     if (
         isset( $_POST['wpae_save_vision_settings'] ) &&
-        current_user_can( 'manage_options' ) &&
         check_admin_referer( 'wpae_save_vision_settings' )
     ) {
         $input = isset( $_POST['wpae_vision'] ) && is_array( $_POST['wpae_vision'] )
