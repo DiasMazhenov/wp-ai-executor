@@ -81,7 +81,7 @@ function wpae_capability_labels(): array {
         ],
         'llm_chat' => [
             'label' => 'Разрешить LLM-чат',
-            'description' => 'Позволяет авторизованному Elementor-редактору и агенту отправлять запросы настроенному LLM-провайдеру через защищенный proxy.',
+            'description' => 'Позволяет авторизованному Elementor-редактору и агенту отправлять запросы через proxy; команды вставки требуют включенного elementor_writes.',
         ],
     ];
 }

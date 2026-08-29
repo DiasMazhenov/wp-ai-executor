@@ -179,6 +179,74 @@ function wpae_llm_extract_response_text( $body ): string {
     return trim( implode( "\n", $parts ) );
 }
 
+function wpae_llm_is_action_request( string $message ): bool {
+    if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
+        return false;
+    }
+    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message );
+}
+
+function wpae_llm_decode_action( string $reply ): array {
+    $candidate = trim( preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $reply ) );
+    $decoded = json_decode( $candidate, true );
+    if ( ! is_array( $decoded ) ) {
+        $start = strpos( $candidate, '{' );
+        $end = strrpos( $candidate, '}' );
+        if ( $start !== false && $end !== false && $end > $start ) {
+            $decoded = json_decode( substr( $candidate, $start, $end - $start + 1 ), true );
+        }
+    }
+    return is_array( $decoded ) ? $decoded : [];
+}
+
+function wpae_llm_execute_action( array $action, int $post_id ): array {
+    if ( ( $action['action'] ?? '' ) !== 'insert_elements' || $post_id <= 0 || absint( $action['post_id'] ?? 0 ) !== $post_id ) {
+        return [ 'ok' => false, 'error' => 'Модель вернула неподдерживаемую Elementor-команду.' ];
+    }
+    if ( ! wpae_capability_enabled( 'elementor_writes' ) ) {
+        return [ 'ok' => false, 'error' => 'Разрешение elementor_writes выключено владельцем сайта.', 'capability' => 'elementor_writes' ];
+    }
+    if ( function_exists( 'current_user_can' ) && is_user_logged_in() && ! current_user_can( 'edit_post', $post_id ) ) {
+        return [ 'ok' => false, 'error' => 'Нет разрешения на изменение этой страницы.', 'post_id' => $post_id ];
+    }
+
+    $elements = $action['elements'] ?? [];
+    if ( ! is_array( $elements ) || empty( $elements ) || count( $elements ) > 12 ) {
+        return [ 'ok' => false, 'error' => 'Elementor-команда должна содержать от 1 до 12 новых элементов.' ];
+    }
+    $existing = wpae_get_elementor_data_for_post( $post_id );
+    if ( is_wp_error( $existing ) ) {
+        $existing = [];
+    }
+    if ( ! empty( $existing ) && function_exists( 'wpae_elementor_normalize_data' ) ) {
+        $existing = wpae_elementor_normalize_data( $existing )['data'];
+    }
+    if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
+        $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );
+    }
+    $position = sanitize_key( (string) ( $action['position'] ?? 'end' ) );
+    $next = $position === 'start' ? array_merge( $elements, $existing ) : array_merge( $existing, $elements );
+    $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
+    $request->set_param( 'post_id', $post_id );
+    $request->set_param( 'elementor_data', $next );
+    $request->set_param( 'template', 'elementor_canvas' );
+    $request->set_param( 'transaction_visual_regression', true );
+    $result = wpae_elementor_update( $request );
+    $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
+    $status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
+    if ( $status < 200 || $status >= 300 || ! is_array( $data ) || empty( $data['ok'] ) ) {
+        return [ 'ok' => false, 'error' => 'Elementor update отклонен существующей проверкой.', 'status' => $status, 'details' => is_array( $data ) ? $data : [] ];
+    }
+    return [
+        'ok' => true,
+        'action' => 'insert_elements',
+        'post_id' => $post_id,
+        'inserted_count' => count( $elements ),
+        'quality_summary' => $data['quality_summary'] ?? null,
+        'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
+    ];
+}
+
 function wpae_llm_chat( WP_REST_Request $request ) {
     if ( ! wpae_llm_rate_limit_check() ) {
         return new WP_Error( 'wpae_llm_rate_limited', 'Лимит LLM-запросов исчерпан. Повторите позже.', [ 'status' => 429, 'window_seconds' => WPAE_LLM_CALL_WINDOW ] );
@@ -196,9 +264,15 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         return new WP_Error( 'wpae_llm_message_too_long', 'Сообщение слишком длинное.', [ 'status' => 400, 'max_length' => WPAE_LLM_MAX_MESSAGE_LENGTH ] );
     }
 
+    $action_request = wpae_llm_is_action_request( $message );
+    $system_prompt = 'Ты помогаешь работать с WordPress и Elementor. Не заявляй, что изменения выполнены, если не получил подтверждение API. Соблюдай native Elementor settings, Flexbox Containers, mobile-first и сохраняй существующие WebGL/GSAP/Three.js enhancement-зоны.';
+    if ( $action_request ) {
+        $system_prompt .= ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Не удаляй и не заменяй существующие элементы.';
+        $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+    }
     $messages = [ [
         'role' => 'system',
-        'content' => 'Ты помогаешь работать с WordPress и Elementor. Не заявляй, что изменения выполнены, если не получил подтверждение API. Соблюдай native Elementor settings, Flexbox Containers, mobile-first и сохраняй существующие WebGL/GSAP/Three.js enhancement-зоны.',
+        'content' => $system_prompt,
     ] ];
     foreach ( wpae_llm_clean_history( $request->get_param( 'history' ) ) as $item ) {
         $messages[] = $item;
@@ -262,6 +336,15 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     if ( $reply === '' ) {
         return new WP_Error( 'wpae_llm_empty_response', 'LLM-провайдер вернул пустой ответ.', [ 'status' => 502, 'provider' => $runtime['provider'] ] );
     }
+    if ( $action_request ) {
+        $post_id = is_array( $context ?? null ) ? absint( $context['post_id'] ?? 0 ) : 0;
+        $action = wpae_llm_decode_action( $reply );
+        $execution = wpae_llm_execute_action( $action, $post_id );
+        if ( empty( $execution['ok'] ) ) {
+            return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );
+        }
+        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'action' => $execution['action'], 'write' => $execution, 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
+    }
     return new WP_REST_Response( [ 'ok' => true, 'message' => substr( $reply, 0, 12000 ), 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
 }
 
@@ -293,7 +376,7 @@ function wpae_get_llm_guide(): array {
             'history' => 'Optional last 12 user/assistant messages; not stored by the plugin.',
             'context' => 'Optional bounded editor context with post_id and selected element ids/types.',
         ],
-        'safety' => 'The chat proxy does not execute model output or mutate Elementor. Page writes still require the existing structured Elementor endpoints, guide token, preflight, and rollback contract.',
+        'safety' => 'Normal chat is advisory. Explicit action requests may insert only new Elementor elements when elementor_writes is enabled; the plugin validates generated data and routes it through update, preflight, protected-zone, visual-regression, and rollback checks. Delete and replace actions are not supported. If the provider returns tutorial text instead of the required action JSON, the write is rejected.',
         'provider_rate_limit' => [ 'calls' => WPAE_LLM_CALL_LIMIT, 'window_seconds' => WPAE_LLM_CALL_WINDOW, 'scope' => 'site-wide' ],
         'privacy' => 'Provider keys are encrypted in wp_options. Prompts, histories, and raw provider responses are not stored or logged.',
     ];

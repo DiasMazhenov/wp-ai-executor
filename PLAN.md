@@ -62,9 +62,11 @@
 - Исправлен false positive диагностики REST latency: ожидаемо долгие `/self-update` и `/self-update-package` исключены из порогов интерактивных запросов, но сохраняются в отчёте как maintenance metadata.
 - Добавлен опциональный AI Vision review: провайдеры Gemini/OpenAI/Claude, зашифрованный ключ в `wp_options`, `/vision/analyze`, `/vision/report`, `/vision/page-review`, нормализованные отчёты и атомарный rollback при критических findings.
 - Custom skill manifests получили capability `ai_vision` и закрытый allowlist Vision endpoints; включенная capability владельца и guide token остаются обязательными.
-- Добавлен LLM proxy и floating Elementor chat: OpenAI, DeepSeek, OpenRouter и custom OpenAI-compatible HTTPS providers, зашифрованные ключи в `wp_options`, capability `llm_chat`, rate limit и bounded editor context без автоматического исполнения ответа модели.
+- Добавлен LLM proxy и floating Elementor chat: OpenAI, DeepSeek, OpenRouter и custom OpenAI-compatible HTTPS providers, зашифрованные ключи в `wp_options`, capability `llm_chat`, rate limit и bounded editor context.
 - Для LLM-настроек исправлена UX-логика: OpenRouter по умолчанию использует `openrouter/free`, built-in provider всегда получает свой HTTPS base URL, а сохраненный API-ключ отображается безопасным placeholder из bullet-символов без передачи значения в форму.
 - В `v02.08.73` добавлен явный fallback обнаружения Elementor по `post.php?post=ID&action=elementor`, чтобы floating chat подключался даже при пропуске Elementor editor hook.
+- В `v02.08.74` добавлен execution mode для явных action-запросов из Elementor chat: только вставка новых элементов через штатный update/preflight/visual-regression/rollback pipeline; tutorial-ответы для таких запросов отклоняются.
+- В `v02.08.75` execution mode стал рабочим: плагин сам объединяет `insert_elements` с текущей страницей, нормализует существующую структуру и отклоняет неподдерживаемые/не-JSON ответы.
 
 ## Библиотека произвольных Elementor-блоков
 

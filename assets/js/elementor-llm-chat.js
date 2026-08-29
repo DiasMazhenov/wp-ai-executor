@@ -111,6 +111,8 @@
             return response.json().catch(function () { return {}; }).then(function (body) {
                 if (!response.ok) {
                     var detail = body.message || body.code || ('HTTP ' + response.status);
+                    if (body.details && body.details.error) detail += ': ' + body.details.error;
+                    if (body.details && body.details.status && !body.details.error) detail += ' (HTTP ' + body.details.status + ')';
                     throw new Error(detail);
                 }
                 return body;

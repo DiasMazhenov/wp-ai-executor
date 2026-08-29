@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.73`
-- Guide: `v02.05.55`
+- Plugin: `v02.08.75`
+- Guide: `v02.05.57`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -44,9 +44,12 @@ endpoints; the site owner capability toggle and guide-token checks still apply.
 The optional `llm_chat` capability powers `POST /llm/chat` and is disabled by
 default. The dashboard supports OpenAI, DeepSeek, OpenRouter, and custom HTTPS
 OpenAI-compatible providers. Provider keys are encrypted in `wp_options`; the
-Elementor editor receives only a WordPress REST nonce and proxy URL. The chat
-does not execute model output or mutate pages, and it sends only bounded message
-history plus sanitized selected-element metadata.
+Elementor editor receives only a WordPress REST nonce and proxy URL. Ordinary
+chat remains advisory. Explicit action requests may insert only new Elementor
+elements when `llm_chat` and `elementor_writes` are enabled; generated data
+passes update, preflight, protected-zone, visual-regression and rollback checks.
+Delete and replace actions are forbidden. Only bounded history and sanitized
+selected-element metadata are sent to the model.
 
 LLM settings use provider-owned built-in HTTPS base URLs. OpenRouter defaults to
 `openrouter/free`; custom base URLs are available only for the custom provider.
@@ -126,10 +129,9 @@ deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
 Release state: `v02.08.70` security hardening is published on GitHub `main`
-and deployed to `mazhenov.kz` through WP Pusher. The `v02.08.71` LLM proxy and
-Elementor editor chat are committed as `e56fba3` and published to GitHub `main`.
-The `v02.08.73` Elementor editor detection fix is implemented locally and awaits
-commit/push;
+and deployed to `mazhenov.kz` through WP Pusher. The LLM proxy, Elementor editor
+chat, and action execution updates through `v02.08.75` are implemented locally
+and await commit/push;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
 smoke-test remains pending until the site owner configures a provider and
