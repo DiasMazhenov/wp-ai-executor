@@ -299,10 +299,12 @@ function wpae_llm_action_diff( array $before, array $inserted, array $after ): a
     ];
 }
 
-function wpae_llm_execute_patch_action( array $action, int $post_id ): array {
+function wpae_llm_execute_patch_action( array $action, int $post_id, array $selected_ids = [] ): array {
     $operation_id = wpae_llm_new_operation_id();
     $patches = is_array( $action['patches'] ?? null ) ? array_slice( $action['patches'], 0, 12 ) : [];
-    if ( (string) ( $action['action'] ?? '' ) !== 'patch_elements' || absint( $action['post_id'] ?? 0 ) !== $post_id || empty( $patches ) ) {
+    $selected_ids = array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) );
+    $patch_ids = array_values( array_filter( array_map( static fn( $patch ) => is_array( $patch ) ? sanitize_key( (string) ( $patch['element_id'] ?? $patch['id'] ?? '' ) ) : '', $patches ) ) );
+    if ( (string) ( $action['action'] ?? '' ) !== 'patch_elements' || absint( $action['post_id'] ?? 0 ) !== $post_id || empty( $patches ) || empty( $selected_ids ) || count( $patch_ids ) !== count( $patches ) || ! empty( array_diff( $patch_ids, $selected_ids ) ) ) {
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch-команда не соответствует текущему Elementor элементу или странице.' ];
     }
     $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/patch' );
@@ -1040,7 +1042,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
         $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
         if ( $targeted_edit ) {
-            $patch_execution = wpae_llm_execute_patch_action( $action, $post_id );
+            $selected_element_ids = array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) );
+            $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids );
             $patch_execution['steps'] = array_merge(
                 [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и контекст выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ],
                 [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],

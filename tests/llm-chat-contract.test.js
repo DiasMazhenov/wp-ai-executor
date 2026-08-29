@@ -139,6 +139,8 @@ assert.match(llm, /function wpae_llm_validate_action_shape/);
 assert.match(llm, /function wpae_llm_action_diff/);
 assert.match(llm, /function wpae_llm_is_targeted_edit_request/);
 assert.match(llm, /function wpae_llm_execute_patch_action/);
+assert.match(llm, /array_diff\( \$patch_ids, \$selected_ids \)/);
+assert.match(llm, /selected_element_ids/);
 assert.match(llm, /dry_run', true/);
 assert.match(llm, /patch_elements/);
 assert.match(llm, /operation_id/);

@@ -203,6 +203,8 @@ the expected widget count before reporting success; only an unconfirmed sync
 falls back to a saved-preview refresh. Vision capture waits for document fonts
 and pending images so it reviews a stable render rather than an intermediate
 layout.
+Targeted native patches are server-scoped to the selected Elementor element
+ids; prompt instructions alone are not trusted as an authorization boundary.
 Action requests allow up to 8000 completion tokens and explicitly constrain
 the provider to compact JSON with at most two containers and eight widgets,
 without duplicated Elementor defaults or optional settings.
