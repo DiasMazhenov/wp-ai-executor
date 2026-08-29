@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.86`
-- Guide: `v02.05.61`
+- Plugin: `v02.08.87`
+- Guide: `v02.05.62`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -75,6 +75,10 @@ contains no native Elementor widget, preventing a false success that leaves only
 an empty container. After a successful write, the chat reloads the current
 Elementor preview; progress statuses appear while the synchronous request is
 running, followed by confirmed server steps as separate assistant messages.
+When the Elementor transaction fails after a write and rollback, the chat now
+exposes `update_error`, `failed_checks`, and readable `failure_details` in the
+assistant message and copied JSON log instead of reducing the failure to HTTP
+422. This identifies the exact post-save check that rejected the operation.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -145,13 +149,13 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.86` including the LLM proxy, Elementor editor chat,
+Release state: `v02.08.87` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
 guided editor context, editor preview synchronization, separate progress
-messages, and the non-empty native-widget action gate is published on GitHub
-`main` in commit `fa0013f`.
+messages, the non-empty native-widget action gate, and transaction failure
+diagnostics is prepared locally and awaits commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

@@ -109,16 +109,24 @@
             reply_preview: 'фрагмент ответа',
             guide_version: 'версия guide',
             custom_skills_count: 'подключено skills',
-            elementor_writes: 'запись Elementor'
+            elementor_writes: 'запись Elementor',
+            failed_checks: 'непройденные проверки',
+            failure_details: 'детали проверок'
         };
         var line = 'Шаг ' + (index + 1) + ': ' + String(step.message || step.id || 'Операция выполнена');
         if (step.status === 'failed') line += ' [ошибка]';
         if (step.status === 'skipped') line += ' [пропущено]';
         var details = step.details || {};
         var parts = [];
-        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'guide_version', 'custom_skills_count', 'elementor_writes'].forEach(function (key) {
+        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details'].forEach(function (key) {
             if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
-                parts.push((labels[key] || key) + ': ' + (Array.isArray(details[key]) ? details[key].join(', ') : String(details[key])));
+                var value = details[key];
+                if (Array.isArray(value)) {
+                    value = value.map(function (item) {
+                        return item && typeof item === 'object' ? ((item.code || 'check') + ': ' + (item.message || 'проверка не пройдена')) : String(item);
+                    }).join(', ');
+                }
+                parts.push((labels[key] || key) + ': ' + String(value));
             }
         });
         return parts.length ? line + ' (' + parts.join('; ') + ')' : line;
@@ -215,9 +223,13 @@
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
                     if (diagnostics.error && (!body.details || !body.details.error)) detail += ': ' + diagnostics.error;
                     if (diagnostics.details && diagnostics.details.error) detail += ': ' + diagnostics.details.error;
+                    if (diagnostics.update_error) detail += ': ' + diagnostics.update_error;
                     if (Array.isArray(diagnostics.blocking_errors) && diagnostics.blocking_errors.length) detail += ': ' + diagnostics.blocking_errors.join('; ');
                     if (diagnostics.received_action || diagnostics.received_post_id) detail += ' (получено: action=' + (diagnostics.received_action || 'не указано') + ', post_id=' + (diagnostics.received_post_id || 'не указан') + ')';
                     if (diagnostics.model_response && diagnostics.model_response.response_keys) detail += ' (ключи ответа: ' + diagnostics.model_response.response_keys.join(', ') + ')';
+                    var failedChecks = diagnostics.failed_checks || (diagnostics.details && diagnostics.details.failed_checks) || (diagnostics.details && diagnostics.details.transaction && diagnostics.details.transaction.failed_checks) || [];
+                    if (Array.isArray(failedChecks) && failedChecks.length) detail += ' (непройденные проверки: ' + failedChecks.join(', ') + ')';
+                    if (Array.isArray(diagnostics.failure_details) && diagnostics.failure_details.length) detail += ' ' + diagnostics.failure_details.map(function (item) { return (item.code || 'check') + ': ' + (item.message || 'проверка не пройдена'); }).join('; ');
                     if (Array.isArray(diagnostics.steps) && diagnostics.steps.length) {
                         var stepError = new Error(detail);
                         stepError.steps = diagnostics.steps;

@@ -360,6 +360,8 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
     $status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
     if ( $status < 200 || $status >= 300 || ! is_array( $data ) || empty( $data['ok'] ) ) {
         $blocking_errors = [];
+        $failed_checks = [];
+        $failure_details = [];
         foreach ( [ $data['details']['errors'] ?? [], $data['details']['design_system']['errors'] ?? [], $data['preflight']['blocking_errors'] ?? [] ] as $errors ) {
             foreach ( (array) $errors as $error ) {
                 if ( is_scalar( $error ) && trim( (string) $error ) !== '' ) {
@@ -367,13 +369,28 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
                 }
             }
         }
+        foreach ( [ $data['details']['transaction']['checks'] ?? [], $data['transaction']['checks'] ?? [], $data['details']['checks'] ?? [] ] as $checks ) {
+            foreach ( (array) $checks as $code => $check ) {
+                if ( is_array( $check ) && empty( $check['ok'] ) ) {
+                    $failed_checks[] = sanitize_key( (string) $code );
+                    $failure_details[] = [
+                        'code' => sanitize_key( (string) $code ),
+                        'message' => sanitize_text_field( (string) ( $check['message'] ?? 'Проверка не пройдена.' ) ),
+                    ];
+                }
+            }
+        }
+        $failed_checks = array_values( array_unique( $failed_checks ) );
         return [
             'ok' => false,
             'error' => 'Elementor update отклонен существующей проверкой.',
+            'update_error' => sanitize_text_field( (string) ( $data['error'] ?? '' ) ),
             'status' => $status,
             'blocking_errors' => array_values( array_unique( $blocking_errors ) ),
+            'failed_checks' => $failed_checks,
+            'failure_details' => $failure_details,
             'details' => is_array( $data ) ? $data : [],
-            'steps' => array_merge( $steps, [ [ 'id' => 'elementor_update', 'status' => 'failed', 'message' => 'Elementor update остановлен проверкой.', 'details' => [ 'http_status' => $status, 'blocking_errors' => array_values( array_unique( $blocking_errors ) ) ] ] ] ),
+            'steps' => array_merge( $steps, [ [ 'id' => 'elementor_update', 'status' => 'failed', 'message' => 'Elementor update остановлен проверкой; изменения откатились, если rollback был доступен.', 'details' => [ 'http_status' => $status, 'blocking_errors' => array_values( array_unique( $blocking_errors ) ), 'failed_checks' => $failed_checks, 'failure_details' => $failure_details ] ] ] ),
         ];
     }
     $steps[] = [ 'id' => 'elementor_update', 'status' => 'ok', 'message' => 'Изменения сохранены через Elementor update.', 'details' => [ 'http_status' => $status ] ];
