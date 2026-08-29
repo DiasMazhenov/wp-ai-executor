@@ -42,7 +42,13 @@ assert.match(llm, /unset\( \$request_body\['response_format'\], \$request_body\[
 assert.match(llm, /function wpae_llm_provider_request/);
 assert.match(llm, /Исправь Elementor action JSON/);
 assert.match(llm, /Используй именно post_id/);
-assert.match(llm, /пустые title\/editor\/text/);
+assert.match(llm, /settings\.title/);
+assert.match(llm, /settings\.editor/);
+assert.match(llm, /settings\.text/);
+assert.match(llm, /settings\.link\.url/);
+assert.match(llm, /Заголовок блока/);
+assert.match(llm, /Короткое описание результата для клиента/);
+assert.match(llm, /Обсудить проект/);
 assert.match(llm, /action_repair/);
 assert.match(llm, /Ограничения компактности action-JSON/);
 assert.match(llm, /likely_truncated/);
