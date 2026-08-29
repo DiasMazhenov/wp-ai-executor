@@ -123,14 +123,17 @@
             custom_skills_count: 'подключено skills',
             elementor_writes: 'запись Elementor',
             failed_checks: 'непройденные проверки',
-            failure_details: 'детали проверок'
+            failure_details: 'детали проверок',
+            operation_id: 'operation ID',
+            inserted_ids: 'добавленные ID',
+            diff: 'diff'
         };
         var line = 'Шаг ' + (index + 1) + ': ' + String(step.message || step.id || 'Операция выполнена');
         if (step.status === 'failed') line += ' [ошибка]';
         if (step.status === 'skipped') line += ' [пропущено]';
         var details = step.details || {};
         var parts = [];
-        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details'].forEach(function (key) {
+        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details', 'operation_id', 'inserted_ids', 'diff'].forEach(function (key) {
             if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
                 var value = details[key];
                 if (Array.isArray(value)) {
@@ -199,6 +202,26 @@
         var iframe = getPreviewIframe();
         return iframe && iframe.contentDocument ? iframe.contentDocument.querySelectorAll('.elementor-widget').length : 0;
     }
+    function getPreviewRenderContext() {
+        var iframe = getPreviewIframe();
+        var doc = iframe && iframe.contentDocument;
+        if (!doc) return {};
+        var body = doc.body;
+        var ids = Array.prototype.slice.call(doc.querySelectorAll('[data-id]')).filter(function (element) {
+            var style = doc.defaultView.getComputedStyle(element);
+            return style.display !== 'none' && style.visibility !== 'hidden';
+        }).slice(0, 40).map(function (element) { return element.getAttribute('data-id'); });
+        return {
+            source: 'elementor_editor_preview',
+            editor_chrome_excluded: true,
+            widget_count: doc.querySelectorAll('.elementor-widget').length,
+            text_length: body ? (body.innerText || '').trim().length : 0,
+            viewport_width: doc.documentElement.clientWidth || iframe.clientWidth || 0,
+            viewport_height: iframe.clientHeight || doc.documentElement.clientHeight || 0,
+            horizontal_overflow: !!(body && body.scrollWidth > doc.documentElement.clientWidth + 2),
+            visible_element_ids: ids
+        };
+    }
     function reloadPreviewIframe() {
         var iframe = getPreviewIframe();
         if (!iframe) return Promise.resolve(false);
@@ -251,24 +274,23 @@
         });
     }
     function syncEditorElements(editorSync) {
-        if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return false;
-        if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return false;
+        if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
+        if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
         var container = window.elementor.getPreviewContainer();
-        if (!container) return false;
+        if (!container) return Promise.resolve(false);
         var elements = editorSync.elements.slice();
         var position = editorSync.position === 'start' ? 'start' : 'end';
         if (position === 'start') elements.reverse();
         try {
-            elements.forEach(function (model, index) {
-                window.$e.run('document/elements/create', {
+            return Promise.all(elements.map(function (model) {
+                return Promise.resolve(window.$e.run('document/elements/create', {
                     container: container,
                     model: model,
                     options: { at: position === 'start' ? 0 : null, clone: false }
-                });
-            });
-            return true;
+                }));
+            })).then(function () { return true; }, function () { return false; });
         } catch (error) {
-            return false;
+            return Promise.resolve(false);
         }
     }
     var visionCapturePromise = null;
@@ -295,9 +317,17 @@
         var width = doc.documentElement.clientWidth || iframe.clientWidth || 1280;
         var height = iframe.clientHeight || doc.documentElement.clientHeight || 900;
         height = Math.max(320, Math.min(height, 4000));
-        return loadVisionCapture().then(function (capture) {
+        var stable = Promise.resolve();
+        if (doc.fonts && doc.fonts.ready) stable = stable.then(function () { return doc.fonts.ready; });
+        stable = stable.then(function () {
+            var pending = Array.prototype.slice.call(doc.images || []).filter(function (image) { return !image.complete; }).map(function (image) {
+                return new Promise(function (resolve) { image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true }); });
+            });
+            return Promise.all(pending);
+        });
+        return stable.then(function () { return loadVisionCapture(); }).then(function (capture) {
             var hidden = [];
-            var editorOnly = '.elementor-add-section,.elementor-add-new-section,.elementor-empty-view,.elementor-widget-empty,.elementor-editor-element-settings,.elementor-editor-section-settings,.elementor-editor-container-settings,.elementor-editor-column-settings,.elementor-editor-widget-settings';
+            var editorOnly = '.elementor-add-section,.elementor-add-new-section,.elementor-empty-view,.elementor-widget-empty,.elementor-editor-element-settings,.elementor-editor-section-settings,.elementor-editor-container-settings,.elementor-editor-column-settings,.elementor-editor-widget-settings,.elementor-editor-element-overlay,.elementor-editor-elementor-panel,.elementor-controls,.elementor-control-dynamic-switcher';
             doc.querySelectorAll(editorOnly).forEach(function (element) {
                 hidden.push({ element: element, display: element.style.display });
                 element.style.display = 'none';
@@ -305,7 +335,7 @@
             var restore = function () {
                 hidden.forEach(function (item) { item.element.style.display = item.display; });
             };
-            return capture(doc.documentElement, {
+            return capture(doc.body || doc.documentElement, {
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 logging: false,
@@ -320,7 +350,7 @@
                 restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
-                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height };
+                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height, render_context: getPreviewRenderContext() };
             }, function (error) {
                 restore();
                 throw error;
@@ -354,7 +384,8 @@
         return postVisionReview({
             post_id: Number(config.postId) || 0,
             rollback_snapshot_id: snapshotId,
-            vision_capture_error: captureError
+            vision_capture_error: captureError,
+            render_context: getPreviewRenderContext()
         });
     }
     function postVisionReview(payload) {
@@ -386,29 +417,69 @@
             });
         });
     }
-    function runVisionReview(snapshotId, minimumWidgetCount) {
+    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced) {
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
-        return waitForPreviewRefresh(refreshElementorPreview(), minimumWidgetCount).then(function () {
+        return waitForPreviewRefresh(alreadySynced ? Promise.resolve(true) : refreshElementorPreview(), minimumWidgetCount).then(function () {
             return capturePreviewScreenshot().then(function (capture) {
                 return postVisionReview({
                     post_id: Number(config.postId) || 0,
                     rollback_snapshot_id: snapshotId,
                     image_base64: capture.image_base64,
                     mime_type: capture.mime_type,
-                    viewport: capture.viewport
+                    viewport: capture.viewport,
+                    render_context: capture.render_context
                 });
             }, function (error) {
                 return requestVisionReview(snapshotId, error.message);
             });
         });
     }
+    function addActionControls(write) {
+        if (!write || !write.rollback_snapshot_id || !config.undoEndpoint) return;
+        var row = document.createElement('div');
+        row.className = 'wpae-llm-action-row';
+        var label = document.createElement('span');
+        label.textContent = 'Изменения применены';
+        var undo = document.createElement('button');
+        undo.type = 'button';
+        undo.className = 'wpae-llm-undo';
+        undo.textContent = 'Отменить';
+        undo.addEventListener('click', function () {
+            undo.disabled = true;
+            undo.textContent = 'Отмена…';
+            fetch(config.undoEndpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+                body: JSON.stringify({ post_id: Number(config.postId) || 0, rollback_snapshot_id: write.rollback_snapshot_id })
+            }).then(function (response) {
+                return response.json().catch(function () { return {}; }).then(function (body) {
+                    if (!response.ok || !body.ok) throw new Error(body.error || ('HTTP ' + response.status));
+                    addMessage('assistant', 'Последнее изменение отменено.');
+                    row.remove();
+                    return refreshElementorPreview();
+                });
+            }).catch(function (error) {
+                undo.disabled = false;
+                undo.textContent = 'Отменить';
+                addMessage('assistant', 'Не удалось отменить изменение: ' + error.message);
+            });
+        });
+        row.appendChild(label);
+        row.appendChild(undo);
+        messages.appendChild(row);
+        messages.scrollTop = messages.scrollHeight;
+    }
     function describeVisionReview(review) {
         var report = review.report || {};
+        var gate = review.gate || {};
         var summary = report.summary ? ' ' + report.summary : '';
         var findings = Array.isArray(report.findings) ? report.findings.slice(0, 3).map(function (finding) {
             return (finding.severity || 'info') + ': ' + (finding.message || 'наблюдение');
         }).join('; ') : '';
-        return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + summary + (findings ? ' ' + findings : '');
+        var confidence = report.confidence === undefined ? '' : ' confidence ' + Math.round(Number(report.confidence) * 100) + '%.';
+        var warning = gate.quality_warning || gate.score_below_floor ? ' Требуется дополнительная визуальная проверка.' : '';
+        return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + confidence + warning + summary + (findings ? ' ' + findings : '');
     }
     function request(message) {
         var beforeWidgetCount = getPreviewWidgetCount();
@@ -472,21 +543,34 @@
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
             var visionPromise = Promise.resolve(null);
             if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
-                var editorSynced = syncEditorElements(body.write.editor_sync);
-                if (editorSynced) addMessage('assistant', 'Новые элементы добавлены в открытый Elementor без перезагрузки редактора.');
-                if (config.vision && config.vision.ready && config.postStatus === 'publish' && body.write.rollback_snapshot_id) {
-                    visionPromise = runVisionReview(body.write.rollback_snapshot_id, beforeWidgetCount + Number(body.write.inserted_count || 0));
-                } else if (editorSynced) {
-                    visionPromise = Promise.resolve(true).then(function () {
-                        addMessage('assistant', 'Текущий canvas Elementor синхронизирован с сохранёнными данными.');
-                    });
-                } else {
-                    visionPromise = waitForPreviewRefresh(refreshElementorPreview(), beforeWidgetCount + Number(body.write.inserted_count || 0)).then(function () {
+                var expectedWidgetCount = beforeWidgetCount + Number(body.write.inserted_widget_count || body.write.inserted_count || 0);
+                var editorSyncedState = false;
+                visionPromise = Promise.resolve(syncEditorElements(body.write.editor_sync)).then(function (editorSynced) {
+                    editorSyncedState = editorSynced;
+                    if (editorSynced) {
+                        return waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount).then(function () {
+                            addMessage('assistant', 'Новые элементы добавлены в открытый Elementor без перезагрузки редактора.');
+                            return true;
+                        }).catch(function () {
+                            return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () {
+                                addMessage('assistant', 'Canvas не подтвердил realtime-вставку, preview обновлён из сохранённых данных.');
+                                return false;
+                            });
+                        });
+                    }
+                    return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () {
                         addMessage('assistant', 'Предпросмотр Elementor обновлён из сохранённых данных.');
+                        return false;
                     }).catch(function (error) {
                         addMessage('assistant', 'Данные сохранены, но preview Elementor не обновился: ' + error.message);
+                        return false;
                     });
-                }
+                }).then(function () {
+                    if (config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState);
+                    }
+                    return true;
+                });
             }
             return visionPromise.then(function (review) {
                 if (review && review.rolled_back) {
@@ -496,6 +580,7 @@
                     return;
                 }
                 if (review && review.report) addMessage('assistant', describeVisionReview(review));
+                addActionControls(body.write);
                 addMessage('assistant', body.message || strings.error);
                 status.textContent = strings.done;
             });

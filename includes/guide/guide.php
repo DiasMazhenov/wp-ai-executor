@@ -12,6 +12,16 @@ function wpae_agent_guide(): array {
         'version' => WPAE_GUIDE_VERSION,
         'plugin_version' => WPAE_VERSION,
         'purpose' => 'Use this guide before automating WordPress and Elementor through WP AI Executor.',
+        'chat_quality_contract' => [
+            'action_contract' => 'Chat action writes accept only one populated root Flexbox container with native Elementor descendants and the exact current post_id. Tutorial text, REST instructions, flat widget lists, or empty containers are rejected.',
+            'realtime' => 'After a confirmed write, synchronize the normalized elements into the currently open Elementor editor model. A saved HTTP 200 is not sufficient: verify the canvas/widget count and report sync status.',
+            'preview_and_undo' => 'Every successful chat write returns an operation_id, compact diff, rollback snapshot and an undo path. The UI must expose the latest change and allow one-click undo while the snapshot is valid.',
+            'vision' => 'Editor-chat Vision is advisory. Analyze the rendered page body with editor chrome/dropzones excluded and use render-context evidence. Screenshot/provider failure must not roll back a successful editor write; strict rollback belongs only to an explicitly requested transaction Vision gate.',
+            'composition' => 'Choose a semantic block archetype and a varied composition. Repeatable content uses native card containers, bento layout, a maximum of four desktop items per row, and a single-column mobile fallback.',
+            'skills' => 'Apply every enabled compatible skill in the guided context and expose the skill count and guide version in the execution trace.',
+            'editing' => 'Use patch semantics for targeted property changes when a selected element is available; do not rebuild unrelated page sections.',
+            'client_output' => 'Chat messages stay concise and user-facing. Detailed action JSON, operation_id, diff, provider diagnostics and failed checks remain available through the copied JSON log.',
+        ],
         'embedded_skill_packs' => [
             'frontend_design' => 'Distilled frontend-design rules for distinctive visual direction, typography, layout, motion, and copy.',
             'wordpress_elementor_dev' => 'Distilled WordPress/Elementor development rules for native Elementor data, REST execution, security, and verification.',

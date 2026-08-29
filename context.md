@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.28`
-- Guide: `v02.05.72`
+- Plugin: `v02.09.29`
+- Guide: `v02.05.73`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -25,6 +25,10 @@
 - `admin/` - Russian dashboard;
 - `updates/` - single-file and manifest-based package updates;
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
+
+Graphify navigation was refreshed on 2026-08-30 after this change: the local
+code graph contains 571 nodes and 1353 edges, with `graphify-out/GRAPH_TREE.html`
+regenerated as an untracked analysis artifact.
 
 Action generation classifies natural-language block requests into hero,
 benefits, pricing, testimonials, FAQ, process, CTA, or portfolio archetypes.
@@ -175,13 +179,30 @@ baseline regressing to weak/blocked or losing key public signals, but it does
 not reject every update merely because the page was already weak/blocked.
 It runs only for published posts; draft/editor pages do not have a reliable
 public permalink baseline and therefore skip this comparison.
-The floating editor chat also skips its AI Vision rollback review for draft
-posts; published pages retain the configured Vision quality gate.
+The floating editor chat uses advisory AI Vision review for both draft and
+published editor pages; strict rollback remains limited to explicit transaction
+Vision gates.
 After an insert, preview verification compares the widget count with the
 pre-request count plus the inserted count, so stale canvas content cannot be
 reported as refreshed.
 The preview iframe cache-buster also updates its `ver` query parameter, which
 forces the Elementor preview URL to request the newly saved HTML.
+The current chat contract now assigns an operation_id to every action write,
+returns a compact top-level diff and exposes a one-click editor-only undo
+endpoint scoped to the current post. Action decoding rejects anything except
+one populated root Flexbox container, so a successful provider response cannot
+be reported as a flat or empty insertion.
+Editor-chat Vision is advisory and no longer rolls back a successful write when
+the editor screenshot or provider review fails. The capture hides editor-only
+chrome/dropzones, sends bounded render-context evidence, and the Vision prompt
+is instructed to ignore editor placeholders and distinguish uncertainty from a
+broken public page. The chat exposes action controls for the latest rollback
+snapshot and can undo it without a guide-token round trip.
+Realtime editor sync now waits for the official `$e.run` promises and confirms
+the expected widget count before reporting success; only an unconfirmed sync
+falls back to a saved-preview refresh. Vision capture waits for document fonts
+and pending images so it reviews a stable render rather than an intermediate
+layout.
 Action requests allow up to 8000 completion tokens and explicitly constrain
 the provider to compact JSON with at most two containers and eight widgets,
 without duplicated Elementor defaults or optional settings.
@@ -227,7 +248,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.28` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.29` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -375,7 +396,7 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 
 ## Normalizer update
 
-`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast.
+`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context.
 
 ## Next block-library steps
 

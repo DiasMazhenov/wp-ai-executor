@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.09.29
+
+- Укрепить LLM-chat contract: operation ID, строгий один root container, diff и editor-only undo.
+- Сделать редакторский Vision advisory: анализировать очищенный preview body с bounded render-context, не откатывать запись из-за screenshot/provider failure.
+- Добавить в guide единые требования realtime-sync, preview/undo, archetype composition, skills evidence и targeted editing.
+
 ## Готово
 
 - Добавлены инструкции для агентов по WordPress, Elementor, frontend-дизайну, native Flexbox Containers и запрету файловых записей.

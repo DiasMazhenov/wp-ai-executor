@@ -146,6 +146,30 @@ function wpae_vision_trim_text( $value, int $limit = 600 ): string {
     return substr( $text, 0, $limit );
 }
 
+function wpae_vision_render_context( $value ): array {
+    if ( ! is_array( $value ) ) {
+        return [];
+    }
+    $context = [
+        'source' => wpae_vision_trim_text( $value['source'] ?? '', 80 ),
+        'editor_chrome_excluded' => ! empty( $value['editor_chrome_excluded'] ),
+        'widget_count' => max( 0, min( 500, absint( $value['widget_count'] ?? 0 ) ) ),
+        'text_length' => max( 0, min( 100000, absint( $value['text_length'] ?? 0 ) ) ),
+        'viewport_width' => max( 0, min( 10000, absint( $value['viewport_width'] ?? 0 ) ) ),
+        'viewport_height' => max( 0, min( 10000, absint( $value['viewport_height'] ?? 0 ) ) ),
+        'horizontal_overflow' => ! empty( $value['horizontal_overflow'] ),
+    ];
+    $ids = [];
+    foreach ( array_slice( (array) ( $value['visible_element_ids'] ?? [] ), 0, 40 ) as $id ) {
+        $id = sanitize_key( (string) $id );
+        if ( $id !== '' ) {
+            $ids[] = $id;
+        }
+    }
+    $context['visible_element_ids'] = array_values( array_unique( $ids ) );
+    return array_filter( $context, static fn( $item ) => $item !== '' && $item !== 0 );
+}
+
 function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
     $raw = is_array( $raw ) ? $raw : [];
     $score = $raw['vision_score'] ?? $raw['score'] ?? 0;
@@ -192,6 +216,7 @@ function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
         'model' => wpae_vision_trim_text( $meta['model'] ?? '', 120 ) ?: null,
         'post_id' => absint( $meta['post_id'] ?? $raw['post_id'] ?? 0 ) ?: null,
         'viewport' => wpae_vision_trim_text( $meta['viewport'] ?? $raw['viewport'] ?? '', 40 ) ?: null,
+        'render_context' => wpae_vision_render_context( $meta['render_context'] ?? $raw['render_context'] ?? [] ),
         'vision_score' => max( 0, min( 100, is_numeric( $score ) ? (int) round( (float) $score ) : 0 ) ),
         'confidence' => max( 0, min( 1, is_numeric( $confidence ) ? (float) $confidence : 0 ) ),
         'summary' => wpae_vision_trim_text( $raw['summary'] ?? $raw['overall'] ?? '', 1000 ),
@@ -366,6 +391,7 @@ function wpae_vision_report_from_request( WP_REST_Request $request, bool $save_i
         'source' => 'agent',
         'post_id' => $request->get_param( 'post_id' ),
         'viewport' => $request->get_param( 'viewport' ),
+        'render_context' => $request->get_param( 'render_context' ),
     ] );
     return $save_inline ? wpae_save_vision_report( $report ) : $report;
 }
@@ -495,11 +521,14 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
     $brief = wpae_vision_trim_text( $request->get_param( 'brief' ), 1200 );
     $context = $request->get_param( 'context' );
     $context_text = is_array( $context ) ? wpae_vision_trim_text( wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ), 2500 ) : '';
+    $render_context = wpae_vision_render_context( $request->get_param( 'render_context' ) );
+    $render_context_text = ! empty( $render_context ) ? wpae_vision_trim_text( wp_json_encode( $render_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ), 1800 ) : '';
 
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
-        . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot.\n"
+        . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )
+        . ( $render_context_text !== '' ? "Objective render context: {$render_context_text}\n" : '' )
         . "Return ONLY one JSON object matching the requested schema. Use critical only for a defect that makes the page unusable or materially broken; major for an important visible defect; minor for polish; info for a strength or observation. Every finding needs a concrete fix. Do not include markdown fences.";
 }
 
@@ -647,6 +676,7 @@ function wpae_vision_analyze( WP_REST_Request $request ): WP_REST_Response {
         'model' => $settings['model'],
         'post_id' => $request->get_param( 'post_id' ),
         'viewport' => $request->get_param( 'viewport' ),
+        'render_context' => $request->get_param( 'render_context' ),
     ] ) );
     return new WP_REST_Response( [ 'ok' => true, 'report' => $report, 'storage' => 'wp_options_only', 'image_stored' => false ], 200 );
 }
@@ -742,13 +772,12 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
 
     $capture_error = wpae_vision_trim_text( $request->get_param( 'vision_capture_error' ), 500 );
     if ( $capture_error !== '' ) {
-        $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
         return new WP_REST_Response( [
             'ok' => false,
-            'rolled_back' => ! empty( $rollback['ok'] ),
+            'rolled_back' => false,
             'error' => 'Не удалось снять screenshot сохраненного preview для AI Vision.',
             'code' => 'wpae_vision_capture_failed',
-            'details' => [ 'capture_error' => $capture_error, 'rollback' => $rollback ],
+            'details' => [ 'capture_error' => $capture_error, 'rollback' => [ 'ok' => false, 'status' => 'not_requested', 'reason' => 'editor_review_is_advisory' ], 'advisory' => true ],
         ], 422 );
     }
 
@@ -756,10 +785,9 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
     $analysis_data = $analysis->get_data();
     if ( empty( $analysis_data['ok'] ) || empty( $analysis_data['report'] ) ) {
         $analysis_details = is_array( $analysis_data['details'] ?? null ) ? $analysis_data['details'] : [];
-        $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
         return new WP_REST_Response( [
             'ok' => false,
-            'rolled_back' => ! empty( $rollback['ok'] ),
+            'rolled_back' => false,
             'error' => 'AI Vision не смог проверить сохраненный preview.',
             'code' => 'wpae_vision_review_failed',
             'details' => [
@@ -769,7 +797,8 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
                 'provider' => sanitize_key( (string) ( $analysis_details['provider'] ?? '' ) ),
                 'provider_http_status' => absint( $analysis_details['http_status'] ?? $analysis_details['provider_status'] ?? 0 ),
                 'provider_message' => sanitize_text_field( (string) ( $analysis_details['provider_message'] ?? $analysis_details['message'] ?? '' ) ),
-                'rollback' => $rollback,
+                'rollback' => [ 'ok' => false, 'status' => 'not_requested', 'reason' => 'editor_review_is_advisory' ],
+                'advisory' => true,
             ],
         ], 502 );
     }
@@ -789,6 +818,7 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
             'quality_failed' => false,
             'blocking_advisory' => ! empty( $gate['blocking'] ),
             'quality_warning' => $quality_failed,
+            'advisory' => true,
         ] ),
     ], 200 );
 }
