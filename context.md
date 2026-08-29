@@ -128,10 +128,9 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.70` security hardening is published on GitHub `main`
-and deployed to `mazhenov.kz` through WP Pusher. The LLM proxy, Elementor editor
-chat, action execution, and Enter-to-send update through `v02.08.76` are implemented
-locally and await commit/push;
+Release state: `v02.08.76` including the LLM proxy, Elementor editor chat,
+action execution, and Enter-to-send behavior is published on GitHub `main`.
+The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
 smoke-test remains pending until the site owner configures a provider and
