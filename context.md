@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.29`
-- Guide: `v02.05.73`
+- Plugin: `v02.09.30`
+- Guide: `v02.05.74`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -27,7 +27,7 @@
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
-code graph contains 571 nodes and 1353 edges, with `graphify-out/GRAPH_TREE.html`
+code graph contains 576 nodes and 1364 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
 
 Action generation classifies natural-language block requests into hero,
@@ -37,6 +37,12 @@ when available, while retaining the one-root-Flexbox, populated-content,
 design-system, and editability gates.
 If both provider output and repair are unusable, a typed deterministic fallback
 is generated, marked in the execution trace, and sent through the same gates.
+Explicit quoted content in the user request is checked against the generated
+native widget tree before any write. The fallback grafts those phrases into
+matching heading/text widgets when possible and rejects the action with a
+missing-content list when fidelity cannot be proven. Editor Vision also receives
+the original brief and a bounded visible-text excerpt, so content fidelity is a
+separate review concern from visual composition.
 Testimonial fallback output uses a wrapping Flexbox card grid with one editable
 native card container per quote and a single-column mobile layout.
 Generated testimonial author headings are guarded to native h5/h6 typography;
@@ -250,7 +256,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.29` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.30` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -398,7 +404,7 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 
 ## Normalizer update
 
-`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context.
+`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context. `v02.09.30` adds deterministic content-fidelity validation, content-aware fallback repair, and passes the user brief plus a bounded preview text excerpt to the Vision review.
 
 ## Next block-library steps
 

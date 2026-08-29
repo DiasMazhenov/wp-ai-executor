@@ -20,6 +20,8 @@ assert.match(vision, /function wpae_vision_render_context/);
 assert.match(vision, /editor_review_is_advisory/);
 assert.match(vision, /Ignore Elementor editor chrome/);
 assert.match(vision, /render_context/);
+assert.match(vision, /text_excerpt/);
+assert.match(vision, /content_fidelity/);
 assert.match(vision, /'render_context' => \$request->get_param\( 'render_context' \)/);
 assert.match(vision, /'rolled_back' => false/);
 assert.match(vision, /wpae_vision_capture_failed/);

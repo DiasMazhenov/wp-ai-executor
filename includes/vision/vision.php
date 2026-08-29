@@ -155,6 +155,7 @@ function wpae_vision_render_context( $value ): array {
         'editor_chrome_excluded' => ! empty( $value['editor_chrome_excluded'] ),
         'widget_count' => max( 0, min( 500, absint( $value['widget_count'] ?? 0 ) ) ),
         'text_length' => max( 0, min( 100000, absint( $value['text_length'] ?? 0 ) ) ),
+        'text_excerpt' => wpae_vision_trim_text( $value['text_excerpt'] ?? '', 4000 ),
         'viewport_width' => max( 0, min( 10000, absint( $value['viewport_width'] ?? 0 ) ) ),
         'viewport_height' => max( 0, min( 10000, absint( $value['viewport_height'] ?? 0 ) ) ),
         'horizontal_overflow' => ! empty( $value['horizontal_overflow'] ),
@@ -526,6 +527,7 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
 
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
         . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
+        . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. If requested content is missing, substituted, or materially different, add a major finding with category content_fidelity and a concrete fix. If the content cannot be verified, say so as a minor finding instead of claiming it matches.\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )
         . ( $render_context_text !== '' ? "Objective render context: {$render_context_text}\n" : '' )

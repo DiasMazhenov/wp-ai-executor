@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.09.30
+
+- Добавлен content-fidelity gate для LLM action: явно заданные в пользовательском запросе фразы, цены, CTA и названия обязаны присутствовать в native Elementor content до записи.
+- Deterministic fallback переносит распознанный пользовательский контент в подходящие heading/text-editor widgets, а при невозможности возвращает подробную ошибку вместо ложного успеха.
+- AI Vision editor review получает brief и bounded `text_excerpt` из preview и обязан отдельно проверять соответствие видимого контента запросу (`content_fidelity`), а не только композицию.
+
 ## v02.09.29
 
 - Укрепить LLM-chat contract: operation ID, строгий один root container, diff и editor-only undo.

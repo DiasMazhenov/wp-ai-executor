@@ -216,6 +216,7 @@
             editor_chrome_excluded: true,
             widget_count: doc.querySelectorAll('.elementor-widget').length,
             text_length: body ? (body.innerText || '').trim().length : 0,
+            text_excerpt: body ? (body.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 4000) : '',
             viewport_width: doc.documentElement.clientWidth || iframe.clientWidth || 0,
             viewport_height: iframe.clientHeight || doc.documentElement.clientHeight || 0,
             horizontal_overflow: !!(body && body.scrollWidth > doc.documentElement.clientWidth + 2),
@@ -380,11 +381,12 @@
             });
         });
     }
-    function requestVisionReview(snapshotId, captureError) {
+    function requestVisionReview(snapshotId, captureError, brief) {
         return postVisionReview({
             post_id: Number(config.postId) || 0,
             rollback_snapshot_id: snapshotId,
             vision_capture_error: captureError,
+            brief: brief || '',
             render_context: getPreviewRenderContext()
         });
     }
@@ -417,7 +419,7 @@
             });
         });
     }
-    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced) {
+    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief) {
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
         return waitForPreviewRefresh(alreadySynced ? Promise.resolve(true) : refreshElementorPreview(), minimumWidgetCount).then(function () {
             return capturePreviewScreenshot().then(function (capture) {
@@ -427,10 +429,11 @@
                     image_base64: capture.image_base64,
                     mime_type: capture.mime_type,
                     viewport: capture.viewport,
+                    brief: brief || '',
                     render_context: capture.render_context
                 });
             }, function (error) {
-                return requestVisionReview(snapshotId, error.message);
+                return requestVisionReview(snapshotId, error.message, brief);
             });
         });
     }
@@ -567,7 +570,7 @@
                     });
                 }).then(function () {
                     if (config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
-                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState);
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, message);
                     }
                     return true;
                 });

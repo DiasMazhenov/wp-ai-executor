@@ -379,6 +379,107 @@ function wpae_llm_block_archetype_hint( string $message ): string {
     return ' Сначала определи тип блока по смыслу запроса и выбери подходящие native widgets из доступных Elementor. Не своди каждый блок к одному и тому же hero/benefits-шаблону; содержание и композиция должны соответствовать задаче пользователя.';
 }
 
+function wpae_llm_normalize_content_text( $value ): string {
+    $value = wp_strip_all_tags( html_entity_decode( (string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+    $value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value ) : strtolower( $value );
+    return trim( preg_replace( '/\s+/u', ' ', $value ) );
+}
+
+function wpae_llm_extract_requested_content( string $message ): array {
+    $matches = [];
+    foreach ( [ '/«([^»]{2,240})»/u', '/"([^"\\n]{2,240})"/u' ] as $pattern ) {
+        if ( preg_match_all( $pattern, $message, $found ) ) {
+            $matches = array_merge( $matches, $found[1] );
+        }
+    }
+    $content = [];
+    foreach ( $matches as $value ) {
+        $value = trim( preg_replace( '/\s+/u', ' ', sanitize_text_field( (string) $value ) ) );
+        $length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+        if ( $value !== '' && $length >= 3 ) {
+            $content[ wpae_llm_normalize_content_text( $value ) ] = $value;
+        }
+    }
+    return array_values( $content );
+}
+
+function wpae_llm_collect_action_content( array $elements ): string {
+    $content = [];
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        foreach ( [ 'title', 'editor', 'text', 'tab_title', 'tab_content' ] as $key ) {
+            if ( is_scalar( $settings[ $key ] ?? null ) ) {
+                $content[] = (string) $settings[ $key ];
+            }
+            if ( is_scalar( $element[ $key ] ?? null ) ) {
+                $content[] = (string) $element[ $key ];
+            }
+        }
+        foreach ( [ 'tabs', 'elements' ] as $child_key ) {
+            if ( is_array( $element[ $child_key ] ?? null ) ) {
+                $content[] = wpae_llm_collect_action_content( $element[ $child_key ] );
+            }
+        }
+    }
+    return implode( ' ', $content );
+}
+
+function wpae_llm_content_fidelity( string $message, array $elements ): array {
+    $requested = wpae_llm_extract_requested_content( $message );
+    $haystack = wpae_llm_normalize_content_text( wpae_llm_collect_action_content( $elements ) );
+    $missing = [];
+    foreach ( $requested as $value ) {
+        if ( strpos( $haystack, wpae_llm_normalize_content_text( $value ) ) === false ) {
+            $missing[] = $value;
+        }
+    }
+    return [
+        'requested_count' => count( $requested ),
+        'matched_count' => count( $requested ) - count( $missing ),
+        'missing' => array_slice( $missing, 0, 12 ),
+        'ok' => empty( $missing ),
+    ];
+}
+
+function wpae_llm_apply_fallback_content( array &$elements, array &$missing, string $archetype, int &$changed ): void {
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $widget_type = (string) ( $element['widgetType'] ?? '' );
+        if ( ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
+            $value_index = 0;
+            if ( $archetype === 'pricing' ) {
+                $is_numeric = static fn( $value ): bool => (bool) preg_match( '/\d|₸|\$|€|₽/u', (string) $value );
+                $wanted_numeric = $widget_type === 'text-editor';
+                foreach ( $missing as $index => $value ) {
+                    if ( $is_numeric( $value ) === $wanted_numeric ) {
+                        $value_index = $index;
+                        break;
+                    }
+                }
+            } elseif ( $archetype === 'testimonials' && $widget_type === 'heading' ) {
+                $value_index = count( $missing ) - 1;
+            }
+            $key = $widget_type === 'heading' ? 'title' : 'editor';
+            $settings[ $key ] = $missing[ $value_index ];
+            array_splice( $missing, $value_index, 1 );
+            $changed++;
+        }
+        $element['settings'] = $settings;
+        foreach ( [ 'elements' ] as $child_key ) {
+            if ( is_array( $element[ $child_key ] ?? null ) ) {
+                wpae_llm_apply_fallback_content( $element[ $child_key ], $missing, $archetype, $changed );
+            }
+        }
+    }
+    unset( $element );
+}
+
 function wpae_llm_bento_card( string $id, array $elements ): array {
     return [
         'id' => $id,
@@ -1060,7 +1161,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $decoded_elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
         $decoded_shape = wpae_llm_validate_action_shape( $action, $post_id );
-        if ( empty( $decoded_shape['ok'] ) || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 ) {
+        $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
+        if ( empty( $decoded_shape['ok'] ) || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 || empty( $decoded_content_fidelity['ok'] ) ) {
             $repair_error = '';
             $repair_messages = [
                 [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
@@ -1091,7 +1193,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 $candidate_post_id = absint( $candidate['post_id'] ?? 0 );
                 $candidate_widget_count = wpae_llm_count_widgets( $candidate_elements );
                 $candidate_shape = wpae_llm_validate_action_shape( $candidate, $post_id );
-                if ( empty( $candidate_shape['ok'] ) || $candidate_action !== 'insert_elements' || $candidate_post_id !== $post_id || count( $candidate_elements ) > 12 || $candidate_widget_count < 1 ) {
+                $candidate_content_fidelity = wpae_llm_content_fidelity( $message, $candidate_elements );
+                if ( empty( $candidate_shape['ok'] ) || $candidate_action !== 'insert_elements' || $candidate_post_id !== $post_id || count( $candidate_elements ) > 12 || $candidate_widget_count < 1 || empty( $candidate_content_fidelity['ok'] ) ) {
                     $repair_error = 'Repair-проход вернул неподдерживаемую или пустую Elementor-команду.';
                     continue;
                 }
@@ -1119,6 +1222,14 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $typography_changed = 0;
         $bento_changed = 0;
         $action_archetype = wpae_llm_detect_block_archetype( $message );
+        $fallback_content_changed = 0;
+        if ( $action_fallback ) {
+            $fallback_fidelity = wpae_llm_content_fidelity( $message, (array) $action['elements'] );
+            $missing_content = (array) ( $fallback_fidelity['missing'] ?? [] );
+            if ( ! empty( $missing_content ) ) {
+                wpae_llm_apply_fallback_content( $action['elements'], $missing_content, $action_archetype, $fallback_content_changed );
+            }
+        }
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
@@ -1133,8 +1244,18 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 'details' => $action_diagnostics,
             ],
         ];
+        $content_fidelity = wpae_llm_content_fidelity( $message, (array) ( $action['elements'] ?? [] ) );
+        $action_steps[] = [
+            'id' => 'content_fidelity',
+            'status' => ! empty( $content_fidelity['ok'] ) ? 'ok' : 'failed',
+            'message' => ! empty( $content_fidelity['ok'] ) ? 'Явно заданный контент пользователя сохранен в native Elementor widgets.' : 'Команда не содержит весь явно заданный контент пользователя.',
+            'details' => $content_fidelity,
+        ];
+        if ( empty( $content_fidelity['ok'] ) ) {
+            return new WP_Error( 'wpae_llm_content_mismatch', 'LLM-команда отклонена: сгенерированный контент не соответствует запросу.', [ 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'action' => $action_diagnostics ] ] );
+        }
         if ( $action_fallback ) {
-            $action_steps[] = [ 'id' => 'action_fallback', 'status' => 'ok', 'message' => 'Провайдер не вернул пригодное дерево; создан тематический native Elementor fallback.', 'details' => $action_diagnostics ];
+            $action_steps[] = [ 'id' => 'action_fallback', 'status' => 'ok', 'message' => 'Провайдер не вернул пригодное дерево; создан тематический native Elementor fallback с контентом запроса.', 'details' => array_merge( $action_diagnostics, [ 'content_changed' => $fallback_content_changed ] ) ];
         } elseif ( $action_repair ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенная JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
         } elseif ( isset( $repair_error ) && $repair_error !== '' ) {
@@ -1216,7 +1337,8 @@ function wpae_get_llm_guide(): array {
         'action_content_gate' => 'An explicit insert action is rejected unless it contains exactly one populated root container with at least one native Elementor widget. A targeted patch is rejected unless it has a current post_id, bounded patches, existing selected element ids, and native editable paths.',
         'preview_and_undo' => 'Every successful write returns operation_id, compact diff, rollback_snapshot_id, and rollback expiry. The editor chat exposes one-click undo through POST /wp-json/ai-executor/v1/llm/undo, scoped to the current post and authenticated editor.',
         'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, preview, native normalization, design-system mapping, page context, Elementor update, sync, Vision review, and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
-        'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review. The editor-chat review is advisory and never rolls back a successful write from subjective screenshot findings; strict rollback remains available through transaction_vision_review. Screenshot or provider failures are reported without undoing the editor write.',
+        'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief and a bounded visible-text excerpt. Vision must check content_fidelity as well as visual quality. The editor-chat review is advisory and never rolls back a successful write from subjective screenshot findings; strict rollback remains available through transaction_vision_review. Screenshot or provider failures are reported without undoing the editor write.',
+        'content_fidelity' => 'Explicit content from the user request must survive into native Elementor widgets. The server extracts explicit quoted phrases, checks the action tree before write, repairs deterministic fallback content when possible, and rejects the write with a missing-content list when fidelity cannot be proven.',
         'provider_rate_limit' => [ 'calls' => WPAE_LLM_CALL_LIMIT, 'window_seconds' => WPAE_LLM_CALL_WINDOW, 'scope' => 'site-wide' ],
         'privacy' => 'Provider keys are encrypted in wp_options. Prompts, histories, and raw provider responses are not stored or logged.',
     ];
