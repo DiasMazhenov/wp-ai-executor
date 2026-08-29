@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.09`
+- Plugin: `v02.09.10`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -115,7 +115,8 @@ populated native widgets, preventing `openrouter/free` from returning a large
 flat list that the action gate must reject.
 When the provider still returns an invalid action shape (too many top-level
 elements, no native widgets, or no insert_elements action), the proxy performs
-one bounded repair pass and reruns the same decoder and Elementor gates.
+one bounded repair pass with a minimal JSON-only context and reruns the same
+decoder and Elementor gates.
 After a successful chat write, the chat first synchronizes the saved normalized
 elements into the open Elementor editor model through the official
 `$e.run('document/elements/create')` command, so the current canvas and Structure
@@ -218,7 +219,7 @@ messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
 Vision default model, the populated-native-widget action rule, and action JSON
-diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, `v02.09.05` requests provider JSON mode and compatible OpenRouter routing for action commands, `v02.09.06` retries `openrouter/free` without optional structured-output parameters when that route rejects them, `v02.09.07` exposes sanitized provider transport details in editor chat errors, `v02.09.08` constrains action prompts to one compact populated hero container, and `v02.09.09` adds one bounded repair pass for invalid action shapes.
+diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, `v02.09.05` requests provider JSON mode and compatible OpenRouter routing for action commands, `v02.09.06` retries `openrouter/free` without optional structured-output parameters when that route rejects them, `v02.09.07` exposes sanitized provider transport details in editor chat errors, `v02.09.08` constrains action prompts to one compact populated hero container, `v02.09.09` adds one bounded repair pass for invalid action shapes, and `v02.09.10` gives that repair pass a minimal JSON-only context.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

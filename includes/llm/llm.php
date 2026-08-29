@@ -581,9 +581,10 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $decoded_elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
         if ( $decoded_action !== 'insert_elements' || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 ) {
-            $repair_messages = $messages;
-            $repair_messages[] = [ 'role' => 'assistant', 'content' => $reply ];
-            $repair_messages[] = [ 'role' => 'user', 'content' => 'Предыдущий JSON нарушает контракт: верни исправленный JSON без пояснений. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants (heading, text-editor, button), точным camelCase widgetType, без пустых контейнеров, плоских виджетов, дополнительных верхнеуровневых элементов и REST-текста. Сохрани post_id и position.' ];
+            $repair_messages = [
+                [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants: heading, text-editor и button. Каждый widget обязан иметь точный camelCase widgetType, непустые native settings и elements: []. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":number,"position":"end","elements":[container]}.' ],
+                [ 'role' => 'user', 'content' => $message ],
+            ];
             $repair_body = $request_body;
             $repair_body['messages'] = $repair_messages;
             $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'] );
@@ -616,7 +617,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             ],
         ];
         if ( $action_repair ) {
-            $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенный JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
+            $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенная JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
         }
         $execution = wpae_llm_execute_action( $action, $post_id );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
