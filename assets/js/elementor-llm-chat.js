@@ -162,6 +162,49 @@
             })
         }, null, 2);
     }
+    var providerRetryKey = 'wpae_llm_provider_retry:' + String(config.postId || '0');
+    var providerRetryTtl = 120000;
+    function readProviderRetry() {
+        try {
+            var raw = window.sessionStorage.getItem(providerRetryKey);
+            if (!raw) return null;
+            var state = JSON.parse(raw);
+            if (!state || !state.message || Date.now() - Number(state.createdAt || 0) > providerRetryTtl) {
+                window.sessionStorage.removeItem(providerRetryKey);
+                return null;
+            }
+            return state;
+        } catch (error) {
+            return null;
+        }
+    }
+    function clearProviderRetry() {
+        try { window.sessionStorage.removeItem(providerRetryKey); } catch (error) {}
+    }
+    function isProviderUnavailable(error) {
+        return !!error && (error.wpaeCode === 'wpae_llm_provider_request_failed' || String(error.message || '').indexOf('LLM-провайдер недоступен') !== -1);
+    }
+    function scheduleProviderRetry(message) {
+        if (readProviderRetry()) return false;
+        try {
+            window.sessionStorage.setItem(providerRetryKey, JSON.stringify({ message: String(message).slice(0, 4000), createdAt: Date.now() }));
+        } catch (error) {
+            return false;
+        }
+        addMessage('assistant', 'LLM-провайдер недоступен. Перезагружаю страницу и повторю запрос один раз.');
+        status.textContent = 'Перезагрузка страницы…';
+        window.setTimeout(function () { window.location.reload(); }, 250);
+        return true;
+    }
+    function retryProviderRequestAfterReload() {
+        var pending = readProviderRetry();
+        if (!pending) return;
+        clearProviderRetry();
+        if (!config.ready) return;
+        addMessage('user', pending.message);
+        addMessage('assistant', 'Повторяю запрос после перезагрузки страницы.');
+        window.setTimeout(function () { request(pending.message, true); }, 0);
+    }
     function copyChatLog() {
         var text = chatLog();
         var copied = function () {
@@ -484,7 +527,7 @@
         var warning = gate.quality_warning || gate.score_below_floor ? ' Требуется дополнительная визуальная проверка.' : '';
         return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + confidence + warning + summary + (findings ? ' ' + findings : '');
     }
-    function request(message) {
+    function request(message, retried) {
         var beforeWidgetCount = getPreviewWidgetCount();
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {
             return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: item.textContent };
@@ -513,6 +556,7 @@
                 if (!response.ok) {
                     var detail = body.message || body.code || ('HTTP ' + response.status);
                     var errorData = body.data || {};
+                    var errorCode = body.code || errorData.code || '';
                     var diagnostics = body.details || errorData.details || {};
                     if (typeof errorData.details === 'string' && errorData.details !== detail) detail += ': ' + errorData.details;
                     if (typeof diagnostics === 'string' && diagnostics !== detail && diagnostics !== errorData.details) detail += ': ' + diagnostics;
@@ -528,6 +572,8 @@
                     if (Array.isArray(diagnostics.failure_details) && diagnostics.failure_details.length) detail += ' ' + diagnostics.failure_details.map(function (item) { return (item.code || 'check') + ': ' + (item.message || 'проверка не пройдена'); }).join('; ');
                     if (Array.isArray(diagnostics.steps) && diagnostics.steps.length) {
                         var stepError = new Error(detail);
+                        stepError.wpaeCode = errorCode;
+                        stepError.httpStatus = response.status;
                         stepError.steps = diagnostics.steps;
                         throw stepError;
                     }
@@ -537,7 +583,10 @@
                     if (diagnostics.provider_error_code && diagnostics.provider_error_code !== errorData.provider_error_code) detail += ' [код провайдера: ' + diagnostics.provider_error_code + ']';
                     if (diagnostics.finish_reason) detail += ' (finish_reason: ' + diagnostics.finish_reason + ')';
                     if (diagnostics.status && !diagnostics.error) detail += ' (HTTP ' + diagnostics.status + ')';
-                    throw new Error(detail);
+                    var requestError = new Error(detail);
+                    requestError.wpaeCode = errorCode;
+                    requestError.httpStatus = response.status;
+                    throw requestError;
                 }
                 return body;
             });
@@ -590,6 +639,8 @@
         }).catch(function (error) {
             window.clearInterval(progressTimer);
             if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
+            if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message)) return;
+            clearProviderRetry();
             addMessage('assistant', strings.error + ': ' + error.message);
             status.textContent = strings.error;
         }).finally(function () {
@@ -623,4 +674,5 @@
         input.value = '';
         request(message);
     });
+    retryProviderRequestAfterReload();
 }());

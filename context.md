@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.30`
-- Guide: `v02.05.74`
+- Plugin: `v02.09.31`
+- Guide: `v02.05.75`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -27,7 +27,7 @@
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
-code graph contains 576 nodes and 1364 edges, with `graphify-out/GRAPH_TREE.html`
+code graph contains 581 nodes and 1378 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
 
 Action generation classifies natural-language block requests into hero,
@@ -117,6 +117,11 @@ raw image/provider payloads remain excluded.
 LLM provider responses with HTTP 200 but `finish_reason=error` are treated as
 provider failures, and the chat exposes their sanitized provider message/code
 instead of reporting only an empty response.
+When the LLM transport is unavailable (`wpae_llm_provider_request_failed`), the
+editor chat stores only the bounded current request in `sessionStorage`, reloads
+the current Elementor page, and retries it once. A second transport failure and
+all model, JSON, validation, write, or Vision errors are reported without
+another reload loop.
 The AI Vision provider key field uses the same bullet mask as the main LLM key;
 empty input keeps the encrypted key, while the explicit clear checkbox removes it.
 The Elementor chat header displays the configured provider model and plugin
@@ -256,7 +261,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.30` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.31` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
