@@ -160,7 +160,8 @@ JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
 guided editor context, editor preview synchronization, separate progress
 messages, the non-empty native-widget action gate, and transaction failure
-diagnostics is prepared locally and awaits commit/push.
+diagnostics, plus post-write AI Vision review and rollback, is published on
+GitHub `main` in commit `00fe9f8`.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
