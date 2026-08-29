@@ -163,20 +163,38 @@ function wpae_llm_clean_history( $history ): array {
 }
 
 function wpae_llm_extract_response_text( $body ): string {
-    $content = $body['choices'][0]['message']['content'] ?? '';
+    $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
+    $message = is_array( $choice['message'] ?? null ) ? $choice['message'] : [];
+    $content = $message['content'] ?? ( $choice['text'] ?? ( $body['output_text'] ?? '' ) );
     if ( is_string( $content ) ) {
         return trim( $content );
     }
     if ( ! is_array( $content ) ) {
-        return '';
+        return is_string( $message['refusal'] ?? null ) ? trim( $message['refusal'] ) : '';
     }
     $parts = [];
     foreach ( $content as $part ) {
-        if ( is_array( $part ) && ( $part['type'] ?? '' ) === 'text' && is_string( $part['text'] ?? null ) ) {
+        if ( is_string( $part ) ) {
+            $parts[] = $part;
+        } elseif ( is_array( $part ) && is_string( $part['text'] ?? null ) ) {
             $parts[] = $part['text'];
         }
     }
     return trim( implode( "\n", $parts ) );
+}
+
+function wpae_llm_response_diagnostics( $body ): array {
+    $choices = is_array( $body['choices'] ?? null ) ? $body['choices'] : [];
+    $choice = is_array( $choices[0] ?? null ) ? $choices[0] : [];
+    $message = is_array( $choice['message'] ?? null ) ? $choice['message'] : [];
+    $content = $message['content'] ?? ( $choice['text'] ?? ( $body['output_text'] ?? null ) );
+    return [
+        'choices_count' => count( $choices ),
+        'finish_reason' => sanitize_text_field( (string) ( $choice['finish_reason'] ?? '' ) ),
+        'content_type' => is_array( $content ) ? 'array' : gettype( $content ),
+        'has_reasoning' => ! empty( $message['reasoning'] ?? $choice['reasoning'] ?? false ),
+        'has_refusal' => is_string( $message['refusal'] ?? null ) && trim( $message['refusal'] ) !== '',
+    ];
 }
 
 function wpae_llm_is_action_request( string $message ): bool {
@@ -314,7 +332,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             'model' => $runtime['model'],
             'messages' => $messages,
             'temperature' => 0.2,
-            'max_completion_tokens' => 1200,
+            'max_completion_tokens' => $action_request ? 3000 : 1200,
         ] ),
     ] );
     if ( is_wp_error( $response ) ) {
@@ -334,7 +352,11 @@ function wpae_llm_chat( WP_REST_Request $request ) {
 
     $reply = wpae_llm_extract_response_text( is_array( $body ) ? $body : [] );
     if ( $reply === '' ) {
-        return new WP_Error( 'wpae_llm_empty_response', 'LLM-провайдер вернул пустой ответ.', [ 'status' => 502, 'provider' => $runtime['provider'] ] );
+        return new WP_Error( 'wpae_llm_empty_response', 'LLM-провайдер вернул пустой ответ. Проверьте модель и лимит токенов.', [
+            'status' => 502,
+            'provider' => $runtime['provider'],
+            'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
+        ] );
     }
     if ( $action_request ) {
         $post_id = is_array( $context ?? null ) ? absint( $context['post_id'] ?? 0 ) : 0;

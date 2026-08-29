@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.76`
+- Plugin: `v02.08.77`
 - Guide: `v02.05.57`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -128,8 +128,9 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.76` including the LLM proxy, Elementor editor chat,
-action execution, and Enter-to-send behavior is published on GitHub `main`.
+Release state: `v02.08.77` including the LLM proxy, Elementor editor chat,
+action execution, Enter-to-send behavior, and provider-response diagnostics is
+implemented locally and awaits commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

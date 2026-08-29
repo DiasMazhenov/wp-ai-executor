@@ -111,7 +111,11 @@
             return response.json().catch(function () { return {}; }).then(function (body) {
                 if (!response.ok) {
                     var detail = body.message || body.code || ('HTTP ' + response.status);
+                    var errorData = body.data || {};
+                    var diagnostics = body.details || errorData.details || {};
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
+                    if (errorData.provider_message) detail += ': ' + errorData.provider_message;
+                    if (diagnostics.finish_reason) detail += ' (finish_reason: ' + diagnostics.finish_reason + ')';
                     if (body.details && body.details.status && !body.details.error) detail += ' (HTTP ' + body.details.status + ')';
                     throw new Error(detail);
                 }
