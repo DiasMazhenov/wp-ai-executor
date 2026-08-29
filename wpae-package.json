@@ -44,6 +44,6 @@
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "e59f0a480c3715be50eed1c99fbb1bf87326fad68cf28aa832cd1f00874be634",
-    "wp-ai-executor.php": "a86bf792546c83aea674562ddc7df20a337acd22f51a79ad0ca15c48aebc36b9"
+    "wp-ai-executor.php": "c22923313f6b84982dcb02b9ea7fcbfaa560aba1f70730b3b124a343db25b64b"
   }
 }
