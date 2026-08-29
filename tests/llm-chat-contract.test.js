@@ -41,6 +41,7 @@ assert.match(llm, /structured_route_rejected/);
 assert.match(llm, /unset\( \$request_body\['response_format'\], \$request_body\['provider'\] \)/);
 assert.match(llm, /function wpae_llm_provider_request/);
 assert.match(llm, /Исправь Elementor action JSON/);
+assert.match(llm, /Используй именно post_id/);
 assert.match(llm, /action_repair/);
 assert.match(llm, /Ограничения компактности action-JSON/);
 assert.match(llm, /likely_truncated/);

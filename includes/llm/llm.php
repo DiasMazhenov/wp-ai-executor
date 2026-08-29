@@ -582,7 +582,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
         if ( $decoded_action !== 'insert_elements' || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 ) {
             $repair_messages = [
-                [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants: heading, text-editor и button. Каждый widget обязан иметь точный camelCase widgetType, непустые native settings и elements: []. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":number,"position":"end","elements":[container]}.' ],
+                [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants: heading, text-editor и button. Каждый widget обязан иметь точный camelCase widgetType, непустые native settings и elements: []. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}. Используй именно post_id ' . (string) $post_id . '.' ],
                 [ 'role' => 'user', 'content' => $message ],
             ];
             $repair_body = $request_body;
