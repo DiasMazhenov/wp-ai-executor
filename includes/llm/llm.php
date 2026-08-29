@@ -206,6 +206,23 @@ function wpae_llm_response_diagnostics( $body ): array {
     ];
 }
 
+function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider ) {
+    $remote_args['body'] = wp_json_encode( $request_body );
+    $response = wp_safe_remote_post( $url, $remote_args );
+    if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
+        $initial_status = wp_remote_retrieve_response_code( $response );
+        $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
+        $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
+        $structured_route_rejected = $initial_status >= 400 && $initial_status < 500 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false );
+        if ( $structured_route_rejected ) {
+            unset( $request_body['response_format'], $request_body['provider'] );
+            $remote_args['body'] = wp_json_encode( $request_body );
+            $response = wp_safe_remote_post( $url, $remote_args );
+        }
+    }
+    return $response;
+}
+
 function wpae_llm_is_action_request( string $message ): bool {
     if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
         return false;
@@ -518,18 +535,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         'headers' => $headers,
         'body' => wp_json_encode( $request_body ),
     ];
-    $response = wp_safe_remote_post( $url, $remote_args );
-    if ( ! is_wp_error( $response ) && $action_request && $runtime['provider'] === 'openrouter' ) {
-        $initial_status = wp_remote_retrieve_response_code( $response );
-        $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
-        $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
-        $structured_route_rejected = $initial_status >= 400 && $initial_status < 500 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false );
-        if ( $structured_route_rejected ) {
-            unset( $request_body['response_format'], $request_body['provider'] );
-            $remote_args['body'] = wp_json_encode( $request_body );
-            $response = wp_safe_remote_post( $url, $remote_args );
-        }
-    }
+    $response = wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'] );
     if ( is_wp_error( $response ) ) {
         return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'] ] );
     }
@@ -570,6 +576,35 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
         $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
         $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
+        $action_repair = false;
+        $decoded_action = (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' );
+        $decoded_elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
+        $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
+        if ( $decoded_action !== 'insert_elements' || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 ) {
+            $repair_messages = $messages;
+            $repair_messages[] = [ 'role' => 'assistant', 'content' => $reply ];
+            $repair_messages[] = [ 'role' => 'user', 'content' => 'Предыдущий JSON нарушает контракт: верни исправленный JSON без пояснений. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants (heading, text-editor, button), точным camelCase widgetType, без пустых контейнеров, плоских виджетов, дополнительных верхнеуровневых элементов и REST-текста. Сохрани post_id и position.' ];
+            $repair_body = $request_body;
+            $repair_body['messages'] = $repair_messages;
+            $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'] );
+            if ( ! is_wp_error( $repair_response ) ) {
+                $repair_status = wp_remote_retrieve_response_code( $repair_response );
+                $repair_payload = json_decode( wp_remote_retrieve_body( $repair_response ), true );
+                if ( $repair_status >= 200 && $repair_status < 300 ) {
+                    $repair_reply = wpae_llm_extract_response_text( is_array( $repair_payload ) ? $repair_payload : [] );
+                    if ( $repair_reply !== '' ) {
+                        $reply = $repair_reply;
+                        $body = $repair_payload;
+                        $action = wpae_llm_decode_action( $reply, $post_id );
+                        $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
+                        $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
+                        $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
+                        $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
+                        $action_repair = true;
+                    }
+                }
+            }
+        }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
@@ -580,6 +615,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 'details' => $action_diagnostics,
             ],
         ];
+        if ( $action_repair ) {
+            $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенный JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
+        }
         $execution = wpae_llm_execute_action( $action, $post_id );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         if ( empty( $execution['ok'] ) ) {
