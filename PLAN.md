@@ -110,6 +110,7 @@
 - В `v02.09.17` repair-pass запрещает служебные placeholder-тексты и требует содержательный контент под запрос пользователя.
 - В `v02.09.18` Vision screenshot временно исключает editor-only overlays и dropzones, чтобы они не создавали ложные critical findings.
 - В `v02.09.19` editor-chat Vision переведен в advisory-режим: субъективные critical/major findings не откатывают realtime-вставку; строгий rollback остается у transaction Vision gate.
+- В `v02.09.20` action-промпт классифицирует обычные запросы по типу блока и выбирает соответствующие native Elementor widgets, чтобы skills не сводились к одному hero/benefits-шаблону; repair-pass сохраняет эту специализацию.
 
 ## Библиотека произвольных Elementor-блоков
 
