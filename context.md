@@ -138,7 +138,7 @@ Release state: `v02.08.83` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, and safe operational
-step traces is prepared locally and awaits commit/push.
+step traces is published on GitHub `main` in commit `9454208`.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
