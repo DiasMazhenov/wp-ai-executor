@@ -17,7 +17,7 @@
     "includes/elementor/data.php": "d306f94a7a13bdcc017b41f549d818c2058ec351802715c609a73526efbc81c1",
     "includes/elementor/design-contract.php": "6fd0d37d715b4312cf948589da0708ea65073e11d314a68793c947785ef9d293",
     "includes/elementor/design-review.php": "3c3aaa47f0124c4581c334a927fde59b656690ad2cad5952adbda5a3e6f53942",
-    "includes/elementor/editor-chat.php": "919dee1e7d8311facc6d782a08830398d6396828c727ff86d2d24a8d22ab03f1",
+    "includes/elementor/editor-chat.php": "e107707df76d85b7d6f331ba61a4ffb091aa8eee26acdcf60e3ea5009f4f5b36",
     "includes/elementor/editability.php": "3afd50555ffce4aed25f7a6f75e236a5dcb077af9a557e3007c364da9333183c",
     "includes/elementor/normalize.php": "664370e3e81d637095e1e1a0d93212f5ac2271c51bb57bcab792c6ca622431f6",
     "includes/elementor/page-update.php": "303352fc6e952807566ed1c40b88bd3935b3f2c36e5d0edeab615ef3d93dfeac",
@@ -44,6 +44,6 @@
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "e59f0a480c3715be50eed1c99fbb1bf87326fad68cf28aa832cd1f00874be634",
-    "wp-ai-executor.php": "bf8002ad279c8122bd4290344d0541b328671c445df9a1138f275b2cc253dc9c"
+    "wp-ai-executor.php": "93c244e4d9d2164a27ea22dee66a03f4bbc19b225ffbf2de65600698aea8ddd6"
   }
 }

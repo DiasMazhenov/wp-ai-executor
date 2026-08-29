@@ -2,10 +2,22 @@
 
 defined( 'ABSPATH' ) || exit;
 
+function wpae_is_elementor_editor_screen(): bool {
+    return is_admin()
+        && sanitize_key( (string) ( $_GET['action'] ?? '' ) ) === 'elementor'
+        && absint( $_GET['post'] ?? $_GET['post_id'] ?? 0 ) > 0;
+}
+
 function wpae_enqueue_elementor_llm_chat(): void {
+    static $enqueued = false;
+    if ( $enqueued ) {
+        return;
+    }
     if ( ! current_user_can( 'edit_posts' ) || ! function_exists( 'wpae_block_library_asset_source' ) ) {
         return;
     }
+
+    $enqueued = true;
 
     $script = wpae_block_library_asset_source( 'assets/js/elementor-llm-chat.js' );
     $style = wpae_block_library_asset_source( 'assets/css/elementor-llm-chat.css' );
@@ -40,7 +52,22 @@ function wpae_enqueue_elementor_llm_chat(): void {
         return;
     }
 
-    wp_add_inline_style( 'elementor-editor', $style );
-    wp_add_inline_script( 'elementor-editor', 'window.WPAELLMChat = ' . $config . ';' . "\n" . $script, 'before' );
+    $style_handle = wp_style_is( 'elementor-editor', 'registered' ) ? 'elementor-editor' : 'wpae-elementor-llm-chat';
+    $script_handle = wp_script_is( 'elementor-editor', 'registered' ) ? 'elementor-editor' : 'wpae-elementor-llm-chat';
+    if ( $style_handle === 'wpae-elementor-llm-chat' ) {
+        wp_register_style( $style_handle, false, [], WPAE_VERSION );
+        wp_enqueue_style( $style_handle );
+    }
+    if ( $script_handle === 'wpae-elementor-llm-chat' ) {
+        wp_register_script( $script_handle, false, [], WPAE_VERSION, true );
+        wp_enqueue_script( $script_handle );
+    }
+    wp_add_inline_style( $style_handle, $style );
+    wp_add_inline_script( $script_handle, 'window.WPAELLMChat = ' . $config . ';' . "\n" . $script, 'before' );
 }
+add_action( 'admin_enqueue_scripts', function (): void {
+    if ( wpae_is_elementor_editor_screen() ) {
+        wpae_enqueue_elementor_llm_chat();
+    }
+}, 100 );
 add_action( 'elementor/editor/after_enqueue_scripts', 'wpae_enqueue_elementor_llm_chat', 30 );

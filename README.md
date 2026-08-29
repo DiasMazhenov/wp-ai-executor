@@ -156,6 +156,7 @@ with a valid key and guide token.
 страницу; для правок используются существующие guide-token и структурированные
 Elementor endpoints. В редакторе Elementor при включенном разрешении появляется
 плавающий чат с текущим статусом операции.
+Он подключается на экране Elementor вида `/wp-admin/post.php?post=ID&action=elementor`.
 
 ### Agent conformance scoring
 
