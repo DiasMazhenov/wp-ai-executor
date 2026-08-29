@@ -105,7 +105,10 @@
             response_type: 'тип ответа',
             json_decoded: 'JSON разобран',
             response_keys: 'ключи ответа',
-            reply_preview: 'фрагмент ответа'
+            reply_preview: 'фрагмент ответа',
+            guide_version: 'версия guide',
+            custom_skills_count: 'подключено skills',
+            elementor_writes: 'запись Elementor'
         };
         return steps.map(function (step, index) {
             var line = 'Шаг ' + (index + 1) + ': ' + String(step.message || step.id || 'Операция выполнена');

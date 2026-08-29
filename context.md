@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.83`
-- Guide: `v02.05.58`
+- Plugin: `v02.08.84`
+- Guide: `v02.05.59`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -64,6 +64,12 @@ count, native normalization, design-system mapping, page context, ID rekeying,
 Elementor update and final status. The chat renders this trace and includes it in
 the copied JSON log; it never exposes hidden reasoning, credentials, prompts,
 raw page payloads or raw provider responses.
+Action requests from the floating Elementor chat also receive the current guide,
+enabled custom skills, capabilities, and project design system in the server-side
+LLM context. The browser still receives only its WordPress REST nonce; the site
+API key is never exposed. The action is executed through the same internal
+Elementor update, preflight, transaction, visual-regression, and rollback path
+used by structured REST writes.
 
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
@@ -134,11 +140,11 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.83` including the LLM proxy, Elementor editor chat,
+Release state: `v02.08.84` including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
-normalization, native widget content alias mapping, and safe operational
-step traces is published on GitHub `main` in commit `9454208`.
+normalization, native widget content alias mapping, safe operational step traces,
+and guided editor context is prepared locally and awaits commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
