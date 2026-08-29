@@ -296,6 +296,15 @@
         var height = iframe.clientHeight || doc.documentElement.clientHeight || 900;
         height = Math.max(320, Math.min(height, 4000));
         return loadVisionCapture().then(function (capture) {
+            var hidden = [];
+            var editorOnly = '.elementor-add-section,.elementor-add-new-section,.elementor-empty-view,.elementor-widget-empty,.elementor-editor-element-settings,.elementor-editor-section-settings,.elementor-editor-container-settings,.elementor-editor-column-settings,.elementor-editor-widget-settings';
+            doc.querySelectorAll(editorOnly).forEach(function (element) {
+                hidden.push({ element: element, display: element.style.display });
+                element.style.display = 'none';
+            });
+            var restore = function () {
+                hidden.forEach(function (item) { item.element.style.display = item.display; });
+            };
             return capture(doc.documentElement, {
                 backgroundColor: '#ffffff',
                 useCORS: true,
@@ -308,9 +317,13 @@
                 x: 0,
                 y: doc.defaultView ? doc.defaultView.scrollY : 0
             }).then(function (canvas) {
+                restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
                 return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height };
+            }, function (error) {
+                restore();
+                throw error;
             });
         });
     }

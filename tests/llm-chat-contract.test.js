@@ -47,6 +47,7 @@ assert.match(llm, /settings\.editor/);
 assert.match(llm, /settings\.text/);
 assert.match(llm, /settings\.link\.url/);
 assert.match(llm, /Заголовок блока/);
+assert.match(fs.readFileSync(path.join(root, 'assets/js/elementor-llm-chat.js'), 'utf8'), /elementor-add-section/);
 assert.match(llm, /Короткое описание результата для клиента/);
 assert.match(llm, /Обсудить проект/);
 assert.match(llm, /\$repair_attempt = 1/);
