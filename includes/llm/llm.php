@@ -352,8 +352,12 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                     '_element_custom_width' => [ 'unit' => '%', 'size' => 31, 'sizes' => [] ],
                     '_element_width_mobile' => 'initial',
                     '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
-                    '_flex_size' => 'none',
-                    '_flex_size_mobile' => 'none',
+                    '_flex_size' => 'custom',
+                    '_flex_grow' => 0,
+                    '_flex_shrink' => 0,
+                    '_flex_size_mobile' => 'custom',
+                    '_flex_grow_mobile' => 0,
+                    '_flex_shrink_mobile' => 0,
                 ],
                 'elements' => [
                     $widget( $id . '-quote', 'text-editor', [ 'editor' => $quote ] ),
@@ -460,8 +464,12 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
                         '_element_custom_width' => [ 'unit' => '%', 'size' => $width, 'sizes' => [] ],
                         '_element_width_mobile' => 'initial',
                         '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
-                        '_flex_size' => 'none',
-                        '_flex_size_mobile' => 'none',
+                        '_flex_size' => 'custom',
+                        '_flex_grow' => 0,
+                        '_flex_shrink' => 0,
+                        '_flex_size_mobile' => 'custom',
+                        '_flex_grow_mobile' => 0,
+                        '_flex_shrink_mobile' => 0,
                     ],
                     'elements' => [ $child ],
                 ];
@@ -495,8 +503,12 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
                 $child_settings['_element_custom_width'] = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
                 $child_settings['_element_width_mobile'] = 'initial';
                 $child_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-                $child_settings['_flex_size'] = 'none';
-                $child_settings['_flex_size_mobile'] = 'none';
+                $child_settings['_flex_size'] = 'custom';
+                $child_settings['_flex_grow'] = 0;
+                $child_settings['_flex_shrink'] = 0;
+                $child_settings['_flex_size_mobile'] = 'custom';
+                $child_settings['_flex_grow_mobile'] = 0;
+                $child_settings['_flex_shrink_mobile'] = 0;
                 $children[ $child_index ]['settings'] = $child_settings;
             }
             $element['elements'] = $children;

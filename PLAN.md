@@ -115,6 +115,7 @@
 - В `v02.09.22` fallback отзывов переведен на отдельные native Flexbox card containers с editable background, border, radius, padding и responsive width; правило карточек закреплено в guide для повторяющегося контента.
 - В `v02.09.23` добавлена semantic typography guard для отзывов: авторы внутри карточек получают native h5/h6 вместо display-scale h1/h2, а правило закреплено в guide и repair prompt.
 - В `v02.09.24` повторяющиеся блоки по умолчанию приводятся к native bento-сетке: виджеты оборачиваются в редактируемые Flexbox-карточки, включается перенос, максимум четыре элемента в ряд и 100% ширина на mobile. Технические требования bento не добавляются в пользовательский prompt.
+- В `v02.09.25` исправлен native sizing карточек: режим `_flex_size=custom` и нулевые grow/shrink теперь действительно включают заданную процентную ширину Elementor, включая mobile override.
 
 ## Библиотека произвольных Elementor-блоков
 
