@@ -20,6 +20,8 @@ assert.match(vision, /gemini-3\.5-flash-lite/);
 assert.match(vision, /gemini-2\.5-flash-lite/);
 assert.match(vision, /\$model === '' \|\| \( \$provider === 'gemini'/);
 assert.match(llm, /Каждый container обязан содержать заполненные native widgets/);
+assert.match(llm, /ровно 1 корневой контейнер и 3–5 вложенных виджетов/);
+assert.match(llm, /массив elements обязан содержать ровно один объект elType=container/);
 assert.match(llm, /\$provider === 'custom'/);
 assert.match(llm, /wpae_vision_encrypt_api_key/);
 assert.match(llm, /wp_safe_remote_post/);
