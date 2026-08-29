@@ -206,6 +206,7 @@
         if (!source) return Promise.resolve(false);
         try {
             var url = new URL(source, window.location.href);
+            url.searchParams.set('ver', String(Date.now()));
             url.searchParams.set('wpae_editor_refresh', String(Date.now()));
             source = url.toString();
         } catch (error) {

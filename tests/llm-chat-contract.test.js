@@ -58,6 +58,7 @@ assert.match(js, /addStepMessages/);
 assert.match(js, /reloadPreview/);
 assert.match(js, /getPreviewWidgetCount/);
 assert.match(js, /minimumWidgetCount/);
+assert.match(js, /searchParams\.set\('ver'/);
 assert.match(js, /progressMessages/);
 assert.match(js, /failedChecks/);
 assert.match(js, /received_action/);
