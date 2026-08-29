@@ -87,7 +87,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], 200 );
     }
 
-    $visual_regression_baseline = (bool) $request->get_param( 'transaction_visual_regression' )
+    $visual_regression_baseline = ! empty( $existing_data ) && (bool) $request->get_param( 'transaction_visual_regression' )
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
