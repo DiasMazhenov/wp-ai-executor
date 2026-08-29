@@ -183,6 +183,13 @@ function wpae_llm_extract_response_text( $body ): string {
     return trim( implode( "\n", $parts ) );
 }
 
+function wpae_llm_provider_error_message( $body ): string {
+    $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
+    $message = is_array( $choice['error'] ?? null ) ? ( $choice['error']['message'] ?? '' ) : '';
+    $message = $message ?: ( $body['error']['message'] ?? $body['message'] ?? '' );
+    return is_scalar( $message ) ? sanitize_text_field( (string) $message ) : '';
+}
+
 function wpae_llm_response_diagnostics( $body ): array {
     $choices = is_array( $body['choices'] ?? null ) ? $body['choices'] : [];
     $choice = is_array( $choices[0] ?? null ) ? $choices[0] : [];
@@ -194,6 +201,8 @@ function wpae_llm_response_diagnostics( $body ): array {
         'content_type' => is_array( $content ) ? 'array' : gettype( $content ),
         'has_reasoning' => ! empty( $message['reasoning'] ?? $choice['reasoning'] ?? false ),
         'has_refusal' => is_string( $message['refusal'] ?? null ) && trim( $message['refusal'] ) !== '',
+        'provider_error_code' => sanitize_text_field( (string) ( $body['error']['code'] ?? $choice['error']['code'] ?? '' ) ),
+        'provider_message' => wpae_llm_provider_error_message( $body ),
     ];
 }
 
@@ -495,19 +504,29 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     $raw = wp_remote_retrieve_body( $response );
     $body = json_decode( $raw, true );
     if ( $status < 200 || $status >= 300 ) {
-        $provider_error = is_array( $body ) ? ( $body['error']['message'] ?? $body['message'] ?? 'Провайдер вернул ошибку.' ) : 'Провайдер вернул некорректный ответ.';
-        if ( ! is_scalar( $provider_error ) ) {
-            $provider_error = 'Провайдер вернул ошибку.';
-        }
+        $provider_error = wpae_llm_provider_error_message( is_array( $body ) ? $body : [] ) ?: ( is_array( $body ) ? 'Провайдер вернул ошибку.' : 'Провайдер вернул некорректный ответ.' );
         return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [ 'status' => 502, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'provider' => $runtime['provider'] ] );
     }
 
     $reply = wpae_llm_extract_response_text( is_array( $body ) ? $body : [] );
     if ( $reply === '' ) {
+        $diagnostics = wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] );
+        $provider_message = $diagnostics['provider_message'] ?: ( $diagnostics['finish_reason'] === 'error' ? 'Провайдер завершил генерацию с ошибкой без дополнительного сообщения.' : '' );
+        if ( $provider_message !== '' || $diagnostics['finish_reason'] === 'error' ) {
+            return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [
+                'status' => 502,
+                'provider_status' => $status,
+                'provider_message' => $provider_message,
+                'provider_error_code' => $diagnostics['provider_error_code'],
+                'finish_reason' => $diagnostics['finish_reason'],
+                'provider' => $runtime['provider'],
+                'details' => $diagnostics,
+            ] );
+        }
         return new WP_Error( 'wpae_llm_empty_response', 'LLM-провайдер вернул пустой ответ. Проверьте модель и лимит токенов.', [
             'status' => 502,
             'provider' => $runtime['provider'],
-            'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
+            'details' => $diagnostics,
         ] );
     }
     if ( $action_request ) {
