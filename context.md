@@ -119,8 +119,8 @@ screenshots, and animation/WebGL checks remain mandatory.
 
 Release state: `v02.08.70` security hardening is published on GitHub `main`
 and deployed to `mazhenov.kz` through WP Pusher. The `v02.08.71` LLM proxy and
-Elementor editor chat are implemented locally and await commit/push; no live
-deployment has been requested in this task. Public verification confirmed
+Elementor editor chat are committed as `e56fba3` and published to GitHub `main`;
+no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
 smoke-test remains pending until the site owner configures a provider and
 enables `ai_vision`.
