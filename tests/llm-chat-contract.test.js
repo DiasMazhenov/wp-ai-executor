@@ -49,6 +49,8 @@ assert.match(llm, /settings\.link\.url/);
 assert.match(llm, /Заголовок блока/);
 assert.match(llm, /Короткое описание результата для клиента/);
 assert.match(llm, /Обсудить проект/);
+assert.match(llm, /\$repair_attempt = 1/);
+assert.match(llm, /Repair-проход не вернул пригодную Elementor-команду/);
 assert.match(llm, /action_repair/);
 assert.match(llm, /Ограничения компактности action-JSON/);
 assert.match(llm, /likely_truncated/);

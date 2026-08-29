@@ -581,29 +581,47 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $decoded_elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
         if ( $decoded_action !== 'insert_elements' || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 ) {
+            $repair_error = '';
             $repair_messages = [
                 [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. Обязательно верни минимум эти три объекта внутри container.elements: {"elType":"widget","widgetType":"heading","settings":{"title":"Заголовок блока","header_size":"h2"},"elements":[]}, {"elType":"widget","widgetType":"text-editor","settings":{"editor":"Короткое описание результата для клиента."},"elements":[]}, {"elType":"widget","widgetType":"button","settings":{"text":"Обсудить проект","link":{"url":"#contact"}},"elements":[]}. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
                 [ 'role' => 'user', 'content' => $message ],
             ];
-            $repair_body = $request_body;
-            $repair_body['messages'] = $repair_messages;
-            $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'] );
-            if ( ! is_wp_error( $repair_response ) ) {
+            for ( $repair_attempt = 1; $repair_attempt <= 2 && ! $action_repair; $repair_attempt++ ) {
+                $repair_body = $request_body;
+                $repair_body['messages'] = $repair_messages;
+                $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'] );
+                if ( is_wp_error( $repair_response ) ) {
+                    $repair_error = sanitize_text_field( $repair_response->get_error_message() );
+                    continue;
+                }
                 $repair_status = wp_remote_retrieve_response_code( $repair_response );
                 $repair_payload = json_decode( wp_remote_retrieve_body( $repair_response ), true );
-                if ( $repair_status >= 200 && $repair_status < 300 ) {
-                    $repair_reply = wpae_llm_extract_response_text( is_array( $repair_payload ) ? $repair_payload : [] );
-                    if ( $repair_reply !== '' ) {
-                        $reply = $repair_reply;
-                        $body = $repair_payload;
-                        $action = wpae_llm_decode_action( $reply, $post_id );
-                        $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
-                        $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
-                        $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
-                        $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
-                        $action_repair = true;
-                    }
+                if ( $repair_status < 200 || $repair_status >= 300 ) {
+                    $repair_error = 'Repair HTTP ' . $repair_status . '.';
+                    continue;
                 }
+                $repair_reply = wpae_llm_extract_response_text( is_array( $repair_payload ) ? $repair_payload : [] );
+                if ( $repair_reply === '' ) {
+                    $repair_error = 'Repair-проход вернул пустой ответ.';
+                    continue;
+                }
+                $candidate = wpae_llm_decode_action( $repair_reply, $post_id );
+                $candidate_elements = is_array( $candidate['elements'] ?? null ) ? $candidate['elements'] : [];
+                $candidate_action = (string) ( $candidate['action'] ?? $candidate['type'] ?? $candidate['command'] ?? '' );
+                $candidate_post_id = absint( $candidate['post_id'] ?? 0 );
+                $candidate_widget_count = wpae_llm_count_widgets( $candidate_elements );
+                if ( $candidate_action !== 'insert_elements' || $candidate_post_id !== $post_id || count( $candidate_elements ) > 12 || $candidate_widget_count < 1 ) {
+                    $repair_error = 'Repair-проход вернул неподдерживаемую или пустую Elementor-команду.';
+                    continue;
+                }
+                $reply = $repair_reply;
+                $body = $repair_payload;
+                $action = $candidate;
+                $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
+                $action_diagnostics['decoded_action'] = sanitize_key( $candidate_action );
+                $action_diagnostics['decoded_post_id'] = $candidate_post_id;
+                $action_diagnostics['decoded_element_count'] = count( $candidate_elements );
+                $action_repair = true;
             }
         }
         $action_steps = [
@@ -618,6 +636,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         ];
         if ( $action_repair ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенная JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
+        } elseif ( isset( $repair_error ) && $repair_error !== '' ) {
+            $action_steps[] = [ 'id' => 'action_repair', 'status' => 'failed', 'message' => 'Repair-проход не вернул пригодную Elementor-команду.', 'details' => [ 'attempts' => 2, 'error' => $repair_error ] ];
         }
         $execution = wpae_llm_execute_action( $action, $post_id );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
