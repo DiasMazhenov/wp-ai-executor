@@ -57,6 +57,7 @@ assert.match(js, /errorData\.details/);
 assert.match(js, /navigator\.clipboard\.writeText/);
 assert.match(js, /strings\.copyLog/);
 assert.match(js, /diagnostics\.error/);
+assert.match(js, /typeof errorData\.details === 'string'/);
 assert.match(js, /diagnostics\.update_error/);
 assert.match(js, /diagnostics\.blocking_errors/);
 assert.match(js, /formatStep/);

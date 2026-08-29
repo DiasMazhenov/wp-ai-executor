@@ -422,6 +422,8 @@
                     var detail = body.message || body.code || ('HTTP ' + response.status);
                     var errorData = body.data || {};
                     var diagnostics = body.details || errorData.details || {};
+                    if (typeof errorData.details === 'string' && errorData.details !== detail) detail += ': ' + errorData.details;
+                    if (typeof diagnostics === 'string' && diagnostics !== detail && diagnostics !== errorData.details) detail += ': ' + diagnostics;
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
                     if (diagnostics.error && (!body.details || !body.details.error)) detail += ': ' + diagnostics.error;
                     if (diagnostics.details && diagnostics.details.error) detail += ': ' + diagnostics.details.error;

@@ -531,7 +531,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
     }
     if ( is_wp_error( $response ) ) {
-        return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => $response->get_error_message(), 'provider' => $runtime['provider'] ] );
+        return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'] ] );
     }
 
     $status = wp_remote_retrieve_response_code( $response );
