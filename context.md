@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.04`
+- Plugin: `v02.09.05`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -101,6 +101,11 @@ blank hero.
 Action responses allow up to 8000 completion tokens and request compact JSON;
 failed decoding exposes only safe response length, JSON error, truncation hint,
 provider message/code, and finish reason in chat diagnostics.
+Action requests now explicitly request JSON mode from OpenAI-compatible
+providers; OpenRouter requests additionally require a route that supports the
+requested parameters. The action prompt repeats a final JSON-only instruction
+after the guided context so provider route text or endpoint instructions cannot
+be mistaken for an Elementor command.
 After a successful chat write, the chat first synchronizes the saved normalized
 elements into the open Elementor editor model through the official
 `$e.run('document/elements/create')` command, so the current canvas and Structure
@@ -203,7 +208,7 @@ messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
 Vision default model, the populated-native-widget action rule, and action JSON
-diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, and `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, pending commit/push.
+diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, and `v02.09.05` requests provider JSON mode and compatible OpenRouter routing for action commands.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

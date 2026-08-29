@@ -462,6 +462,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $system_prompt .= ' Ограничения компактности action-JSON: максимум 2 контейнера и 8 виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
         $system_prompt .= ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Hero должен иметь сбалансированную композицию без пустых или чрезмерно широких колонок: на desktop используй понятную текстовую и supporting-зону, на mobile собери их в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Не удаляй и не заменяй существующие элементы.';
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+        $system_prompt .= ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
     }
     $messages = [ [
         'role' => 'system',
@@ -498,17 +499,24 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $headers['HTTP-Referer'] = home_url( '/' );
         $headers['X-Title'] = get_bloginfo( 'name' );
     }
+    $request_body = [
+        'model' => $runtime['model'],
+        'messages' => $messages,
+        'temperature' => 0.2,
+        'max_completion_tokens' => $action_request ? 8000 : 1200,
+    ];
+    if ( $action_request ) {
+        $request_body['response_format'] = [ 'type' => 'json_object' ];
+        if ( $runtime['provider'] === 'openrouter' ) {
+            $request_body['provider'] = [ 'require_parameters' => true ];
+        }
+    }
     $response = wp_safe_remote_post( $url, [
         'timeout' => 45,
         'redirection' => 2,
         'limit_response_size' => WPAE_LLM_MAX_RESPONSE_BYTES,
         'headers' => $headers,
-        'body' => wp_json_encode( [
-            'model' => $runtime['model'],
-            'messages' => $messages,
-            'temperature' => 0.2,
-            'max_completion_tokens' => $action_request ? 8000 : 1200,
-        ] ),
+        'body' => wp_json_encode( $request_body ),
     ] );
     if ( is_wp_error( $response ) ) {
         return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => $response->get_error_message(), 'provider' => $runtime['provider'] ] );
