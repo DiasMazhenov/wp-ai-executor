@@ -73,6 +73,18 @@ add_action( 'admin_init', function () {
     }
 
     if (
+        isset( $_POST['wpae_save_llm_settings'] ) &&
+        check_admin_referer( 'wpae_save_llm_settings' )
+    ) {
+        $input = isset( $_POST['wpae_llm'] ) && is_array( $_POST['wpae_llm'] )
+            ? wp_unslash( $_POST['wpae_llm'] )
+            : [];
+        $result = wpae_update_llm_settings( $input );
+        wp_redirect( admin_url( 'options-general.php?page=wp-ai-executor&' . ( is_wp_error( $result ) ? 'llm_error' : 'llm_saved' ) . '=1' ) );
+        exit;
+    }
+
+    if (
         isset( $_POST['wpae_apply_capability_preset'] ) &&
         check_admin_referer( 'wpae_apply_capability_preset' )
     ) {
@@ -283,6 +295,8 @@ function wpae_settings_page() {
     $health_checked     = sanitize_key( (string) ( $_GET['health_checked'] ?? '' ) );
     $vision_saved       = isset( $_GET['vision_saved'] );
     $vision_error       = isset( $_GET['vision_error'] );
+    $llm_saved           = isset( $_GET['llm_saved'] );
+    $llm_error           = isset( $_GET['llm_error'] );
     $capabilities       = wpae_get_capability_settings();
     $capability_labels  = wpae_capability_labels();
     $capability_presets = wpae_capability_presets();
@@ -301,6 +315,8 @@ function wpae_settings_page() {
     $vision_status      = wpae_get_vision_status();
     $vision_reports     = wpae_get_vision_reports( 5 );
     $vision_providers    = wpae_vision_provider_options();
+    $llm_settings        = wpae_llm_get_settings();
+    $llm_providers        = wpae_llm_provider_options();
     ?>
     <style>
         .wpae-dashboard {
@@ -844,11 +860,20 @@ function wpae_settings_page() {
             <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось сохранить настройки AI Vision. Проверьте провайдера, модель и наличие OpenSSL.</div>
         <?php endif; ?>
 
+        <?php if ( $llm_saved ) : ?>
+            <div class="wpae-alert" role="status">Настройки LLM-провайдера сохранены.</div>
+        <?php endif; ?>
+
+        <?php if ( $llm_error ) : ?>
+            <div class="wpae-alert" role="status" style="border-color:#fecaca;background:#fef2f2;color:#991b1b">Не удалось сохранить LLM-провайдера. Проверьте HTTPS base URL, модель и наличие OpenSSL.</div>
+        <?php endif; ?>
+
         <nav class="wpae-tabs" aria-label="Разделы настроек WP AI Executor">
             <div class="wpae-tabs__list" role="tablist" aria-orientation="horizontal">
                 <button class="wpae-tab" id="wpae-tab-connection" type="button" role="tab" aria-selected="true" aria-controls="wpae-panel-connection" tabindex="0" data-wpae-tab-target="connection">Подключение</button>
                 <button class="wpae-tab" id="wpae-tab-elementor" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-elementor" tabindex="-1" data-wpae-tab-target="elementor">Elementor</button>
                 <button class="wpae-tab" id="wpae-tab-agents" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-agents" tabindex="-1" data-wpae-tab-target="agents">Агенты</button>
+                <button class="wpae-tab" id="wpae-tab-llm" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-llm" tabindex="-1" data-wpae-tab-target="llm">LLM-агенты</button>
                 <button class="wpae-tab" id="wpae-tab-vision" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-vision" tabindex="-1" data-wpae-tab-target="vision">AI Vision</button>
                 <button class="wpae-tab" id="wpae-tab-monitoring" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-monitoring" tabindex="-1" data-wpae-tab-target="monitoring">Мониторинг</button>
                 <button class="wpae-tab" id="wpae-tab-examples" type="button" role="tab" aria-selected="false" aria-controls="wpae-panel-examples" tabindex="-1" data-wpae-tab-target="examples">Примеры</button>
@@ -881,6 +906,59 @@ function wpae_settings_page() {
                     <?php wp_nonce_field( 'wpae_regenerate_key' ); ?>
                     <input type="hidden" name="wpae_regenerate" value="1" />
                     <button type="submit" class="button wpae-button wpae-danger-button">Сгенерировать новый ключ</button>
+                </form>
+            </div>
+
+            <div class="wpae-card wpae-card-wide" data-wpae-tab="llm">
+                <h2>Подключение LLM-агента</h2>
+                <p>Единый OpenAI-compatible proxy поддерживает OpenAI, DeepSeek, OpenRouter и другие сервисы с совместимым Chat Completions API. Ключ не передается в Elementor или браузер.</p>
+                <div class="wpae-status-grid" style="padding:0;margin-top:12px">
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Провайдер</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) $llm_settings['provider_label'] ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Модель</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) $llm_settings['model'] ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Ключ</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) $llm_settings['api_key_hint'] ); ?></p>
+                    </div>
+                    <div class="wpae-stat">
+                        <p class="wpae-stat-label">Лимит</p>
+                        <p class="wpae-stat-value" style="font-size:16px"><?php echo esc_html( (string) WPAE_LLM_CALL_LIMIT ); ?> / <?php echo esc_html( (string) ( WPAE_LLM_CALL_WINDOW / 60 ) ); ?> мин</p>
+                    </div>
+                </div>
+
+                <form method="post" style="margin-top:16px">
+                    <?php wp_nonce_field( 'wpae_save_llm_settings' ); ?>
+                    <input type="hidden" name="wpae_save_llm_settings" value="1" />
+                    <div class="wpae-form-grid">
+                        <div class="wpae-form-field">
+                            <label for="wpae-llm-provider">Провайдер</label>
+                            <select class="wpae-input" id="wpae-llm-provider" name="wpae_llm[provider]"><?php foreach ( $llm_providers as $provider_id => $provider ) : ?><option value="<?php echo esc_attr( $provider_id ); ?>" <?php selected( $llm_settings['provider'], $provider_id ); ?>><?php echo esc_html( $provider['label'] ); ?></option><?php endforeach; ?></select>
+                        </div>
+                        <div class="wpae-form-field">
+                            <label for="wpae-llm-model">Модель</label>
+                            <input class="wpae-input" id="wpae-llm-model" name="wpae_llm[model]" type="text" value="<?php echo esc_attr( (string) $llm_settings['model'] ); ?>" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-llm-base-url">HTTPS base URL</label>
+                        <input class="wpae-input" id="wpae-llm-base-url" name="wpae_llm[base_url]" type="url" value="<?php echo esc_attr( (string) $llm_settings['base_url'] ); ?>" placeholder="https://api.example.com/v1" autocomplete="url" />
+                        <span class="wpae-section-note">Для собственного шлюза укажите URL до версии API, например <code>https://provider.example/v1</code>. Endpoint <code>/chat/completions</code> добавляется автоматически.</span>
+                    </div>
+                    <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-llm-api-key">API-ключ провайдера</label>
+                        <input class="wpae-input" id="wpae-llm-api-key" name="wpae_llm[api_key]" type="password" value="" autocomplete="new-password" placeholder="Оставьте пустым, чтобы сохранить текущий ключ" />
+                        <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Промпты и ответы в плагине не сохраняются.</span>
+                    </div>
+                    <label class="wpae-toggle" style="margin-top:12px">
+                        <input name="wpae_llm[clear_api_key]" type="checkbox" value="1" />
+                        <span><strong>Удалить сохраненный API-ключ</strong><span>После этого чат вернет понятную ошибку конфигурации.</span></span>
+                    </label>
+                    <p style="margin-top:14px"><button type="submit" class="button button-primary wpae-button">Сохранить LLM</button></p>
                 </form>
             </div>
 

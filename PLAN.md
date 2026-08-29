@@ -62,6 +62,7 @@
 - Исправлен false positive диагностики REST latency: ожидаемо долгие `/self-update` и `/self-update-package` исключены из порогов интерактивных запросов, но сохраняются в отчёте как maintenance metadata.
 - Добавлен опциональный AI Vision review: провайдеры Gemini/OpenAI/Claude, зашифрованный ключ в `wp_options`, `/vision/analyze`, `/vision/report`, `/vision/page-review`, нормализованные отчёты и атомарный rollback при критических findings.
 - Custom skill manifests получили capability `ai_vision` и закрытый allowlist Vision endpoints; включенная capability владельца и guide token остаются обязательными.
+- Добавлен LLM proxy и floating Elementor chat: OpenAI, DeepSeek, OpenRouter и custom OpenAI-compatible HTTPS providers, зашифрованные ключи в `wp_options`, capability `llm_chat`, rate limit и bounded editor context без автоматического исполнения ответа модели.
 
 ## Библиотека произвольных Elementor-блоков
 

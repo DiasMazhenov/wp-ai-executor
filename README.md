@@ -143,6 +143,19 @@ Important fields include:
 If a capability is disabled, the matching write endpoint returns `403` even
 with a valid key and guide token.
 
+### LLM-агент и чат Elementor
+
+Во вкладке **Settings -> AI Executor -> LLM-агенты** можно подключить один
+активный OpenAI-compatible provider: OpenAI, DeepSeek, OpenRouter или другой
+HTTPS-шлюз через custom base URL. API-ключ шифруется и остается на сервере.
+
+`POST /wp-json/ai-executor/v1/llm/chat` — безопасный proxy для текстового чата.
+Он принимает `message`, необязательные последние `history` и ограниченный
+`context` редактора. Ответ модели не исполняется автоматически и не меняет
+страницу; для правок используются существующие guide-token и структурированные
+Elementor endpoints. В редакторе Elementor при включенном разрешении появляется
+плавающий чат с текущим статусом операции.
+
 ### Agent conformance scoring
 
 Mutating and verification endpoints return an `agent_conformance` object. It is

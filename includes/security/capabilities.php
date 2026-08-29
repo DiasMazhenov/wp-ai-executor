@@ -23,6 +23,7 @@ function wpae_capability_defaults(): array {
         'manage_skills' => true,
         'filesystem_writes' => false,
         'ai_vision' => false,
+        'llm_chat' => false,
     ];
 }
 
@@ -78,6 +79,10 @@ function wpae_capability_labels(): array {
             'label' => 'Разрешить AI Vision',
             'description' => 'Позволяет агенту отправлять скриншоты на настроенный Vision-провайдер и сохранять только нормализованные отчеты.',
         ],
+        'llm_chat' => [
+            'label' => 'Разрешить LLM-чат',
+            'description' => 'Позволяет авторизованному Elementor-редактору и агенту отправлять запросы настроенному LLM-провайдеру через защищенный proxy.',
+        ],
     ];
 }
 
@@ -117,6 +122,7 @@ function wpae_capability_presets(): array {
                 'manage_skills' => false,
                 'filesystem_writes' => false,
                 'ai_vision' => false,
+                'llm_chat' => false,
             ],
         ],
         'elementor_safe' => [
@@ -131,6 +137,7 @@ function wpae_capability_presets(): array {
                 'manage_skills' => false,
                 'filesystem_writes' => false,
                 'ai_vision' => false,
+                'llm_chat' => false,
             ],
         ],
         'maintenance' => [
@@ -145,6 +152,7 @@ function wpae_capability_presets(): array {
                 'manage_skills' => true,
                 'filesystem_writes' => false,
                 'ai_vision' => false,
+                'llm_chat' => false,
             ],
         ],
         'full_trusted' => [
@@ -159,6 +167,7 @@ function wpae_capability_presets(): array {
                 'manage_skills' => true,
                 'filesystem_writes' => true,
                 'ai_vision' => false,
+                'llm_chat' => false,
             ],
         ],
     ];
@@ -220,6 +229,8 @@ function wpae_get_capabilities_payload(): array {
         'can_view_operation_logs' => true,
         'can_diagnose_wordpress' => true,
         'can_use_ai_vision' => ! empty( $settings['ai_vision'] ),
+        'can_use_llm_chat' => ! empty( $settings['llm_chat'] ),
+        'llm_chat' => function_exists( 'wpae_get_llm_guide' ) ? wpae_get_llm_guide() : [ 'enabled' => false ],
         'can_score_agent_conformance' => true,
         'can_create_design_system' => true,
         'can_provide_project_design_tokens' => true,

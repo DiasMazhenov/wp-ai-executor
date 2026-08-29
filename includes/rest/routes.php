@@ -77,6 +77,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'ai_vision' ),
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/llm/chat', [
+        'methods'             => 'POST',
+        'callback'            => 'wpae_llm_chat',
+        'permission_callback' => 'wpae_llm_chat_permission',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/rollback', [
         'methods'             => 'POST',
         'callback'            => 'wpae_rollback',

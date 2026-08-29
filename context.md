@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.08.70`
-- Guide: `v02.05.54`
+- Plugin: `v02.08.71`
+- Guide: `v02.05.55`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -19,6 +19,8 @@
   editability, CSS-to-native migration, page writes, and block library;
 - `vision/` - optional provider-backed screenshot review, normalized reports,
   and transaction Vision gate;
+- `llm/` - encrypted OpenAI-compatible provider settings, rate-limited chat
+  proxy, and bounded editor context;
 - `rest/` - route registration;
 - `admin/` - Russian dashboard;
 - `updates/` - single-file and manifest-based package updates;
@@ -39,6 +41,13 @@ Skills that need screenshot review may declare the `ai_vision` capability and
 the `/vision/analyze`, `/vision/report`, or `/vision/page-review` pipeline
 endpoints; the site owner capability toggle and guide-token checks still apply.
 
+The optional `llm_chat` capability powers `POST /llm/chat` and is disabled by
+default. The dashboard supports OpenAI, DeepSeek, OpenRouter, and custom HTTPS
+OpenAI-compatible providers. Provider keys are encrypted in `wp_options`; the
+Elementor editor receives only a WordPress REST nonce and proxy URL. The chat
+does not execute model output or mutate pages, and it sends only bounded message
+history plus sanitized selected-element metadata.
+
 `POST /skills/validate` validates and normalizes a manifest without writing.
 It remains available when `manage_skills` is disabled; mutation endpoints do
 not bypass that owner-controlled capability.
@@ -49,8 +58,9 @@ at `file_write_policy.allowed_endpoints["/skills/validate"]`; the skill store
 count remained unchanged. Live skill mutation tests were intentionally not
 forced because the site owner has `manage_skills=false`.
 
-The dashboard uses an accessible horizontal tab interface with five focused
-sections: connection, Elementor, agents, monitoring and examples. The active
+The dashboard uses an accessible horizontal tab interface with seven focused
+sections: connection, Elementor, agents, LLM agents, Vision, monitoring and
+examples. The active
 section is preserved in the URL hash and local browser storage. Arrow keys,
 Home and End switch tabs, while the non-JavaScript fallback keeps every card
 visible in the original document order.
@@ -108,7 +118,9 @@ deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
 Release state: `v02.08.70` security hardening is published on GitHub `main`
-and deployed to `mazhenov.kz` through WP Pusher. Public verification confirmed
+and deployed to `mazhenov.kz` through WP Pusher. The `v02.08.71` LLM proxy and
+Elementor editor chat are implemented locally and await commit/push; no live
+deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
 smoke-test remains pending until the site owner configures a provider and
 enables `ai_vision`.

@@ -1,0 +1,28 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.resolve(__dirname, '..');
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+const llm = read('includes/llm/llm.php');
+const editor = read('includes/elementor/editor-chat.php');
+const js = read('assets/js/elementor-llm-chat.js');
+const routes = read('includes/rest/routes.php');
+const bootstrap = read('wp-ai-executor.php');
+
+assert.match(llm, /'openai'/);
+assert.match(llm, /'deepseek'/);
+assert.match(llm, /'openrouter'/);
+assert.match(llm, /wpae_vision_encrypt_api_key/);
+assert.match(llm, /wp_safe_remote_post/);
+assert.match(llm, /WPAE_LLM_CALL_LIMIT/);
+assert.match(llm, /wpae_capability_enabled\( 'llm_chat' \)/);
+assert.match(llm, /wpae_llm_validate_base_url/);
+assert.match(routes, /'\/llm\/chat'/);
+assert.match(routes, /'callback'\s*=>\s*'wpae_llm_chat'/);
+assert.match(editor, /wp_create_nonce\( 'wp_rest' \)/);
+assert.doesNotMatch(editor, /wpae_get_key\(|api_key_encrypted|['"]api_key['"]/);
+assert.doesNotMatch(js, /X-AI-Key|X-WPAE-API-Key|api_key/i);
+assert.match(bootstrap, /includes\/llm\/llm\.php/);
+assert.match(bootstrap, /includes\/elementor\/editor-chat\.php/);
+console.log('llm chat contract: OK');
