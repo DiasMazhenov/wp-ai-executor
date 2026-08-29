@@ -38,6 +38,8 @@ function wpae_enqueue_elementor_llm_chat(): void {
             'title' => 'LLM-помощник Elementor',
             'subtitle' => 'Ответы проходят через настроенный proxy',
             'send' => 'Отправить',
+            'copyLog' => 'Копировать лог',
+            'copied' => 'Лог скопирован',
             'close' => 'Свернуть чат',
             'empty' => 'Введите запрос.',
             'starting' => 'Подготовка запроса…',

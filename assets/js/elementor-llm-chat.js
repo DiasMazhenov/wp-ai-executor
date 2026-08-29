@@ -43,7 +43,13 @@
     close.type = 'button';
     close.textContent = '×';
     close.setAttribute('aria-label', strings.close);
+    var copy = document.createElement('button');
+    copy.className = 'wpae-llm-copy';
+    copy.type = 'button';
+    copy.textContent = strings.copyLog;
+    copy.setAttribute('aria-label', strings.copyLog);
     head.appendChild(heading);
+    head.appendChild(copy);
     head.appendChild(close);
 
     var messages = document.createElement('div');
@@ -84,6 +90,32 @@
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
     }
+    function chatLog() {
+        return Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).map(function (item) {
+            var role = item.classList.contains('wpae-llm-message--user') ? 'Пользователь' : 'Ассистент';
+            return role + ': ' + item.textContent;
+        }).join('\n\n');
+    }
+    function copyChatLog() {
+        var text = chatLog();
+        var copied = function () {
+            copy.textContent = strings.copied;
+            window.setTimeout(function () { copy.textContent = strings.copyLog; }, 1600);
+        };
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(text).then(copied).catch(function () {});
+            return;
+        }
+        var fallback = document.createElement('textarea');
+        fallback.value = text;
+        fallback.setAttribute('readonly', '');
+        fallback.style.position = 'fixed';
+        fallback.style.opacity = '0';
+        document.body.appendChild(fallback);
+        fallback.select();
+        try { document.execCommand('copy'); copied(); } catch (error) {}
+        document.body.removeChild(fallback);
+    }
     function selectedElements() {
         var selection = window.elementor && window.elementor.selection;
         var models = selection && typeof selection.getElements === 'function' ? selection.getElements() : [];
@@ -114,9 +146,11 @@
                     var errorData = body.data || {};
                     var diagnostics = body.details || errorData.details || {};
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
+                    if (diagnostics.error && (!body.details || !body.details.error)) detail += ': ' + diagnostics.error;
+                    if (diagnostics.details && diagnostics.details.error) detail += ': ' + diagnostics.details.error;
                     if (errorData.provider_message) detail += ': ' + errorData.provider_message;
                     if (diagnostics.finish_reason) detail += ' (finish_reason: ' + diagnostics.finish_reason + ')';
-                    if (body.details && body.details.status && !body.details.error) detail += ' (HTTP ' + body.details.status + ')';
+                    if (diagnostics.status && !diagnostics.error) detail += ' (HTTP ' + diagnostics.status + ')';
                     throw new Error(detail);
                 }
                 return body;
@@ -135,6 +169,7 @@
     open.addEventListener('click', function () { setOpen(true); });
     pill.addEventListener('click', function (event) { if (event.target !== open) setOpen(true); });
     close.addEventListener('click', function () { setOpen(false); });
+    copy.addEventListener('click', copyChatLog);
     input.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
             event.preventDefault();
