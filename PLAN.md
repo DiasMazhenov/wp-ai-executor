@@ -114,6 +114,7 @@
 - В `v02.09.21` добавлен тематический deterministic fallback после невалидного ответа провайдера и bounded repair-pass; fallback явно попадает в trace и проходит тот же Elementor/design-system pipeline.
 - В `v02.09.22` fallback отзывов переведен на отдельные native Flexbox card containers с editable background, border, radius, padding и responsive width; правило карточек закреплено в guide для повторяющегося контента.
 - В `v02.09.23` добавлена semantic typography guard для отзывов: авторы внутри карточек получают native h5/h6 вместо display-scale h1/h2, а правило закреплено в guide и repair prompt.
+- В `v02.09.24` повторяющиеся блоки по умолчанию приводятся к native bento-сетке: виджеты оборачиваются в редактируемые Flexbox-карточки, включается перенос, максимум четыре элемента в ряд и 100% ширина на mobile. Технические требования bento не добавляются в пользовательский prompt.
 
 ## Библиотека произвольных Elementor-блоков
 
