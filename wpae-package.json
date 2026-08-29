@@ -33,7 +33,7 @@
     "includes/guide/guide.php": "5ff1fdaaf9bfd8403354d3f88bee17aed40087c14188f0c58f74889a7e76750b",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/llm.php": "ab3d6b309ebb99ec03a2a1b08ae53b2944fc722f962034ae2b90ee2731d44374",
+    "includes/llm/llm.php": "55579226f2bf4d553d466b314389781dec1b8111c4d8f236ef9e5ddb01d5353f",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "178a9987cc55cc77d20db8748e1297ea070ac7c5326ed166cc56fc67e92ed0e8",
     "includes/rollback/rollback.php": "f9e45cb8fb78b76123db20a838d204e4393eb7023c93599bdb218ba993c1e80e",
@@ -43,7 +43,7 @@
     "includes/support/logging.php": "5d8360abf0981be17fe47af6797309a8a3f7804c59c60998633f6b225afcd186",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "includes/vision/vision.php": "88a17e1c5d13ffd3fb6d844f60c5500a65aece4745a40f3833e58357552d5d26",
-    "wp-ai-executor.php": "a9e27f3303f7f8e00f5a1f2e3da5f8c5af35ec6c9e6ce24fb0040eb5f126e300"
+    "includes/vision/vision.php": "4a2f67a1c96ee800ed8a0388d9892c2f0326ce65c7d61b5e7a85b33f39e0410a",
+    "wp-ai-executor.php": "b988780dcf6b69b3d3bc2b0df4f8ba2edb54d390eac1012a71f3881acb659445"
   }
 }

@@ -15,7 +15,7 @@ function wpae_vision_provider_options(): array {
     return [
         'gemini' => [
             'label' => 'Google Gemini',
-            'model' => 'gemini-2.5-flash-lite',
+            'model' => 'gemini-3.5-flash-lite',
         ],
         'openai' => [
             'label' => 'OpenAI',
@@ -79,7 +79,7 @@ function wpae_get_vision_settings(): array {
     }
 
     $model = sanitize_text_field( (string) ( $stored['model'] ?? '' ) );
-    if ( $model === '' ) {
+    if ( $model === '' || ( $provider === 'gemini' && $model === 'gemini-2.5-flash-lite' ) ) {
         $model = $providers[ $provider ]['model'];
     }
 
