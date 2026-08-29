@@ -171,7 +171,7 @@ normalization, native widget content alias mapping, safe operational step traces
 guided editor context, editor preview synchronization, separate progress
 messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
-diagnostics, the masked AI Vision key field, and chat model/version metadata are prepared locally and await commit/push.
+diagnostics, the masked AI Vision key field, and chat model/version metadata are published on GitHub `main` in commit `b4ca5c5`.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider
