@@ -102,6 +102,7 @@
 - В `v02.09.09` добавлен один bounded repair-pass для команд без native widgets, с лишними элементами или неверным action; итог всё равно проходит общий Elementor pipeline.
 - В `v02.09.10` repair-pass переведен на минимальный JSON-only контекст, чтобы не повторять длинный guided prompt при исправлении ответа `openrouter/free`.
 - В `v02.09.11` repair-pass получает точный `post_id` текущего Elementor редактора и не может случайно адресовать другую страницу.
+- В `v02.09.12` repair-pass требует непустые native `title`, `editor`, `text` и URL кнопки, чтобы валидная оболочка не превращалась в пустой Elementor canvas.
 
 ## Библиотека произвольных Elementor-блоков
 
