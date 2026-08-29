@@ -70,6 +70,8 @@ assert.match(llm, /native_normalize/);
 assert.match(llm, /elementor_update/);
 assert.match(llm, /wpae_llm_count_widgets/);
 assert.match(llm, /native_widgets/);
+assert.match(llm, /сбалансированную композицию/);
+assert.match(llm, /чрезмерно широких колонок/);
 assert.match(llm, /failed_checks/);
 assert.match(llm, /failure_details/);
 assert.match(llm, /decoded_action/);

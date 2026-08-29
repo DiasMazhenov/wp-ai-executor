@@ -191,27 +191,59 @@
             };
         });
     }
+    function getPreviewIframe() {
+        var iframe = document.querySelector('#elementor-preview-iframe');
+        return iframe && iframe.contentWindow ? iframe : null;
+    }
+    function reloadPreviewIframe() {
+        var iframe = getPreviewIframe();
+        if (!iframe) return Promise.resolve(false);
+        var source = iframe.getAttribute('src') || iframe.src;
+        if (!source) return Promise.resolve(false);
+        try {
+            var url = new URL(source, window.location.href);
+            url.searchParams.set('wpae_editor_refresh', String(Date.now()));
+            source = url.toString();
+        } catch (error) {
+            source += (source.indexOf('?') === -1 ? '?' : '&') + 'wpae_editor_refresh=' + Date.now();
+        }
+        return new Promise(function (resolve) {
+            var settled = false;
+            var finish = function (result) {
+                if (settled) return;
+                settled = true;
+                iframe.removeEventListener('load', onLoad);
+                resolve(result);
+            };
+            var onLoad = function () { finish(true); };
+            iframe.addEventListener('load', onLoad);
+            window.setTimeout(function () { finish(false); }, 10000);
+            iframe.src = source;
+        });
+    }
     function refreshElementorPreview() {
+        var officialRefresh = false;
         if (window.$e && window.$e.components && typeof window.$e.components.get === 'function') {
             try {
                 var saveComponent = window.$e.components.get('document/save');
                 var footerSaver = saveComponent && saveComponent.footerSaver;
                 if (footerSaver && typeof footerSaver.refreshWpPreview === 'function') {
                     footerSaver.refreshWpPreview();
-                    return true;
+                    officialRefresh = true;
                 }
             } catch (error) {}
         }
         if (window.elementor && typeof window.elementor.reloadPreview === 'function') {
-            window.elementor.reloadPreview();
-            return true;
+            try {
+                window.elementor.reloadPreview();
+                officialRefresh = true;
+            } catch (error) {}
         }
-        var iframe = document.querySelector('#elementor-preview-iframe');
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.location.reload();
-            return true;
-        }
-        return false;
+        return new Promise(function (resolve) {
+            window.setTimeout(function () {
+                reloadPreviewIframe().then(function (reloaded) { resolve(officialRefresh || reloaded); });
+            }, officialRefresh ? 250 : 0);
+        });
     }
     var visionCapturePromise = null;
     function loadVisionCapture() {
@@ -256,8 +288,27 @@
             });
         });
     }
-    function waitForPreviewRefresh() {
-        return new Promise(function (resolve) { window.setTimeout(resolve, 1800); });
+    function waitForPreviewRefresh(refreshPromise) {
+        return Promise.resolve(refreshPromise).then(function (refreshed) {
+            if (!refreshed) throw new Error('Не удалось обновить текущий preview Elementor.');
+            return new Promise(function (resolve, reject) {
+                var started = Date.now();
+                var check = function () {
+                    var iframe = getPreviewIframe();
+                    var doc = iframe && iframe.contentDocument;
+                    if (doc && doc.querySelector('.elementor-widget')) {
+                        resolve(true);
+                        return;
+                    }
+                    if (Date.now() - started >= 8000) {
+                        reject(new Error('После обновления preview в canvas не найдено ни одного Elementor widget.'));
+                        return;
+                    }
+                    window.setTimeout(check, 250);
+                };
+                check();
+            });
+        });
     }
     function requestVisionReview(snapshotId, captureError) {
         return postVisionReview({
@@ -292,8 +343,7 @@
     }
     function runVisionReview(snapshotId) {
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
-        refreshElementorPreview();
-        return waitForPreviewRefresh().then(function () {
+        return waitForPreviewRefresh(refreshElementorPreview()).then(function () {
             return capturePreviewScreenshot().then(function (capture) {
                 return postVisionReview({
                     post_id: Number(config.postId) || 0,
@@ -377,7 +427,11 @@
                 if (config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
                     visionPromise = runVisionReview(body.write.rollback_snapshot_id);
                 } else {
-                    addMessage('assistant', refreshElementorPreview() ? 'Предпросмотр Elementor обновляется из сохранённых данных.' : 'Данные сохранены. Не удалось автоматически обновить preview Elementor.');
+                    visionPromise = waitForPreviewRefresh(refreshElementorPreview()).then(function () {
+                        addMessage('assistant', 'Предпросмотр Elementor обновлён из сохранённых данных.');
+                    }).catch(function (error) {
+                        addMessage('assistant', 'Данные сохранены, но preview Elementor не обновился: ' + error.message);
+                    });
                 }
             }
             return visionPromise.then(function (review) {

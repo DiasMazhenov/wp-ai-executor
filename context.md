@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.08.95`
+- Plugin: `v02.08.96`
 - Guide: `v02.05.63`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -174,16 +174,17 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: `v02.08.95` including the LLM proxy, Elementor editor chat,
+Release state: local `v02.08.96` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
-guided editor context, editor preview synchronization, separate progress
+guided editor context, editor preview synchronization with cache-busted iframe
+reload and native-widget load confirmation, separate progress
 messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
 Vision default model, the populated-native-widget action rule, and action JSON
-diagnostics and live Elementor preview refresh are published on GitHub `main` in commit `5a0f9ee`.
+diagnostics and live Elementor preview refresh are published on GitHub `main` in commit `5a0f9ee`; `v02.08.96` adds the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate locally, pending commit/push.
 The last live deployment known here is `v02.08.70` through WP Pusher;
 no live deployment has been requested in this task. Public verification confirmed
 that the removed `/wp-json/ai-executor/v1/key` endpoint returns `404`. Provider

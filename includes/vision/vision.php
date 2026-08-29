@@ -776,15 +776,18 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
 
     $report = (array) $analysis_data['report'];
     $gate = wpae_evaluate_vision_report( $report );
-    if ( ! empty( $gate['blocking'] ) ) {
+    $vision_score = absint( $report['vision_score'] ?? 0 );
+    $quality_floor = 75;
+    $quality_failed = ! empty( $gate['major_count'] ) || $vision_score < $quality_floor;
+    if ( ! empty( $gate['blocking'] ) || $quality_failed ) {
         $rollback = $snapshot_id !== '' ? wpae_restore_rollback_snapshot_by_id( $snapshot_id, true ) : [ 'ok' => false, 'error' => 'Rollback snapshot is missing.' ];
         return new WP_REST_Response( [
             'ok' => false,
             'rolled_back' => ! empty( $rollback['ok'] ),
-            'error' => 'AI Vision обнаружил критические визуальные дефекты.',
-            'code' => 'wpae_vision_critical_findings',
+            'error' => $quality_failed ? 'AI Vision обнаружил визуальные дефекты, требующие исправления.' : 'AI Vision обнаружил критические визуальные дефекты.',
+            'code' => $quality_failed ? 'wpae_vision_quality_failed' : 'wpae_vision_critical_findings',
             'report' => $report,
-            'gate' => $gate,
+            'gate' => array_merge( $gate, [ 'quality_floor' => $quality_floor, 'quality_failed' => $quality_failed ] ),
             'rollback' => $rollback,
         ], 422 );
     }
