@@ -281,7 +281,7 @@ function wpae_llm_block_archetype_hint( string $message ): string {
         'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
         'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
         'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
-        'testimonials' => [ 'отзывы/testimonials', 'heading, testimonial или text-editor с цитатами и button' ],
+        'testimonials' => [ 'отзывы/testimonials', 'heading и три внутренние card-containers с text-editor или testimonial widget' ],
         'faq' => [ 'FAQ', 'heading и accordion с заполненными вопросами и ответами' ],
         'process' => [ 'процесс/этапы', 'heading, icon-list или text-editor и divider' ],
         'cta' => [ 'CTA/контакт', 'heading, text-editor и button' ],
@@ -330,10 +330,38 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             $widget( 'llm-button', 'button', [ 'text' => 'Получить расчет', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'testimonials' ) {
+        $card = static function ( string $id, string $quote, string $author ) use ( $widget ): array {
+            return [
+                'id' => $id,
+                'elType' => 'container',
+                'settings' => [
+                    'content_width' => 'boxed',
+                    'flex_direction' => 'column',
+                    'background_background' => 'classic',
+                    'background_color' => '#f7f7f5',
+                    'border_border' => 'solid',
+                    'border_color' => '#e5e7eb',
+                    'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+                    'border_radius' => [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ],
+                    'gap' => [ 'unit' => 'rem', 'size' => 0.75, 'sizes' => [] ],
+                    'padding' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ],
+                    'padding_mobile' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ],
+                    'width' => [ 'unit' => '%', 'size' => 31 ],
+                    'width_mobile' => [ 'unit' => '%', 'size' => 100 ],
+                ],
+                'elements' => [
+                    $widget( $id . '-quote', 'text-editor', [ 'editor' => $quote ] ),
+                    $widget( $id . '-author', 'heading', [ 'title' => $author, 'header_size' => 'h5' ] ),
+                ],
+            ];
+        };
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Что говорят клиенты', 'header_size' => 'h2' ] ),
-            $widget( 'llm-quote-1', 'text-editor', [ 'editor' => '«Стало сразу понятно, что мы продаем и куда вести клиента.» — Анна, студия брендинга' ] ),
-            $widget( 'llm-quote-2', 'text-editor', [ 'editor' => '«Получили аккуратную страницу, которую можем менять сами.» — Руслан, сервисный бизнес' ] ),
+            [ 'id' => 'llm-testimonial-grid', 'elType' => 'container', 'settings' => [ 'content_width' => 'full', 'flex_direction' => 'row', 'flex_wrap' => 'wrap', 'justify_content' => 'space-between', 'align_items' => 'stretch', 'gap' => [ 'unit' => 'rem', 'size' => 1.25, 'sizes' => [] ], 'gap_mobile' => [ 'unit' => 'rem', 'size' => 1, 'sizes' => [] ], 'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ] ], 'elements' => [
+                $card( 'llm-card-1', '«Стало сразу понятно, что мы продаем и куда вести клиента.»', 'Анна, студия брендинга' ),
+                $card( 'llm-card-2', '«Получили аккуратную страницу, которую можем менять сами.»', 'Руслан, сервисный бизнес' ),
+                $card( 'llm-card-3', '«Новая структура заметно упростила путь клиента к заявке.»', 'Марат, консалтинговая компания' ),
+            ] ],
             $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'portfolio' ) {
