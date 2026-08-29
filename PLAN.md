@@ -151,7 +151,7 @@
    - Готово, когда принятое правило получает source evidence, version и enforce mapping либо остаётся advisory.
 
 7. **AI Vision visual QA.**
-   - Статус: runtime реализован; security hardening `v02.08.70` готовится к публикации. Live rollout и provider smoke-test ожидают настройки владельца сайта.
+   - Статус: `v02.08.70` опубликован и выкачен на `mazhenov.kz`; публичная проверка удаления `/key` вернула `404`. Provider smoke-test ожидает настройки владельца сайта.
    - Использовать Vision как дополнительную проверку desktop/mobile screenshots, не заменяя deterministic audits, browser verification и Elementor editability checks.
    - Хранить только нормализованные отчёты в `wp_options`; изображения и raw provider responses не сохранять и не логировать.
    - Поддерживать явный `transaction_vision_review=true`: критические findings блокируют транзакцию и запускают существующий atomic rollback.
