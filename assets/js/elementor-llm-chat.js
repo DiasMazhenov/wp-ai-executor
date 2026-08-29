@@ -155,6 +155,7 @@
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
                     if (diagnostics.error && (!body.details || !body.details.error)) detail += ': ' + diagnostics.error;
                     if (diagnostics.details && diagnostics.details.error) detail += ': ' + diagnostics.details.error;
+                    if (Array.isArray(diagnostics.blocking_errors) && diagnostics.blocking_errors.length) detail += ': ' + diagnostics.blocking_errors.join('; ');
                     if (errorData.provider_message) detail += ': ' + errorData.provider_message;
                     if (diagnostics.finish_reason) detail += ' (finish_reason: ' + diagnostics.finish_reason + ')';
                     if (diagnostics.status && !diagnostics.error) detail += ' (HTTP ' + diagnostics.status + ')';

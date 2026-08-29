@@ -232,6 +232,12 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
     if ( ! is_array( $elements ) || empty( $elements ) || count( $elements ) > 12 ) {
         return [ 'ok' => false, 'error' => 'Elementor-команда должна содержать от 1 до 12 новых элементов.' ];
     }
+    if ( function_exists( 'wpae_elementor_normalize_data' ) ) {
+        $elements = wpae_elementor_normalize_data( $elements )['data'];
+    }
+    if ( function_exists( 'wpae_apply_design_token_map' ) ) {
+        $elements = wpae_apply_design_token_map( $elements )['data'];
+    }
     $existing = wpae_get_elementor_data_for_post( $post_id );
     if ( is_wp_error( $existing ) ) {
         $existing = [];
@@ -254,7 +260,21 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
     $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
     $status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
     if ( $status < 200 || $status >= 300 || ! is_array( $data ) || empty( $data['ok'] ) ) {
-        return [ 'ok' => false, 'error' => 'Elementor update отклонен существующей проверкой.', 'status' => $status, 'details' => is_array( $data ) ? $data : [] ];
+        $blocking_errors = [];
+        foreach ( [ $data['details']['errors'] ?? [], $data['details']['design_system']['errors'] ?? [], $data['preflight']['blocking_errors'] ?? [] ] as $errors ) {
+            foreach ( (array) $errors as $error ) {
+                if ( is_scalar( $error ) && trim( (string) $error ) !== '' ) {
+                    $blocking_errors[] = sanitize_text_field( (string) $error );
+                }
+            }
+        }
+        return [
+            'ok' => false,
+            'error' => 'Elementor update отклонен существующей проверкой.',
+            'status' => $status,
+            'blocking_errors' => array_values( array_unique( $blocking_errors ) ),
+            'details' => is_array( $data ) ? $data : [],
+        ];
     }
     return [
         'ok' => true,
