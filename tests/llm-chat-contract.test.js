@@ -62,6 +62,8 @@ assert.match(llm, /Ограничения компактности action-JSON/)
 assert.match(llm, /likely_truncated/);
 assert.match(js, /finish_reason/);
 assert.match(llm, /wpae_llm_is_action_request/);
+assert.match(llm, /function wpae_llm_is_content_composition_request/);
+assert.match(llm, /\$pairs >= 2/);
 assert.match(llm, /исправь|поставь/);
 assert.match(llm, /\$vision_repair = is_array\( \$editor_context_input \)/);
 assert.match(llm, /\$vision_repair \|\| wpae_llm_is_targeted_edit_request/);

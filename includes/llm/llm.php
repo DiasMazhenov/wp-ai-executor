@@ -223,11 +223,29 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
     return $response;
 }
 
+function wpae_llm_is_content_composition_request( string $message ): bool {
+    $message = trim( $message );
+    if ( strlen( $message ) < 40 || preg_match( '/[?؟]\s*$/u', $message ) ) {
+        return false;
+    }
+
+    $segments = preg_split( '/(?:\r?\n+|[.!?]\s+)/u', $message, -1, PREG_SPLIT_NO_EMPTY );
+    $pairs = 0;
+    foreach ( $segments as $segment ) {
+        $segment = trim( $segment, " \t\n\r\0\x0B\"«»" );
+        if ( preg_match( '/^.{2,80}\s*(?:—|–|-|:)\s*\S.{4,180}$/u', $segment ) ) {
+            $pairs++;
+        }
+    }
+
+    return $pairs >= 2;
+}
+
 function wpae_llm_is_action_request( string $message ): bool {
     if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
         return false;
     }
-    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|исправь|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message );
+    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|исправь|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
 }
 
 function wpae_llm_is_targeted_edit_request( string $message ): bool {
