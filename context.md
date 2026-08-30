@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.85`
-- Guide: `v02.05.85`
+- Plugin: `v02.09.86`
+- Guide: `v02.05.86`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -402,7 +402,10 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.58` gives provider generations a per-run composition seed and makes deterministic fallback blocks choose an unused visual variant from a ten-variant palette, preserving the content and applying the variation after design-token mapping.
 - `v02.09.59` applies that unused visual-variant guard to provider-generated blocks as well as fallback blocks, keeps each repeated-card grid on one coherent card surface, and hides the stale Elementor preview loader after the iframe has populated so realtime insertion and Vision capture see the rendered block.
 
-The latest local release `v02.09.85` is prepared for publication on GitHub `main`. On
+`v02.09.86` keeps the generated CTA row at the full width of its transparent
+content shell while keeping the button group compact and left-aligned. This
+prevents a detached `fit-content` action from looking like an orphaned card in
+Vision review. The latest local release `v02.09.86` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the

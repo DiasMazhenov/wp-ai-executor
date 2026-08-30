@@ -942,7 +942,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             'background_background' => 'classic',
             'background_color' => 'transparent',
             'border_border' => 'none',
-            'custom_css' => 'selector { width: fit-content; max-width: 100%; align-self: flex-start; }',
+            'custom_css' => 'selector { width: 100%; max-width: 100%; align-self: stretch; }',
         ],
         'elements' => [
             [
