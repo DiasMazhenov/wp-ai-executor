@@ -704,6 +704,30 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
         }
     }
     unset( $root );
+    wpae_llm_apply_fallback_cta( $elements, $cta, $changed );
+}
+
+function wpae_llm_apply_fallback_cta( array &$elements, string $cta, int &$changed ): void {
+    if ( $cta === '' ) {
+        return;
+    }
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        if ( ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'button' ) {
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            if ( (string) ( $settings['text'] ?? '' ) !== $cta ) {
+                $settings['text'] = $cta;
+                $element['settings'] = $settings;
+                $changed++;
+            }
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            wpae_llm_apply_fallback_cta( $element['elements'], $cta, $changed );
+        }
+    }
+    unset( $element );
 }
 
 function wpae_llm_apply_fallback_faq_content( array &$elements, string $message, int &$changed ): void {
