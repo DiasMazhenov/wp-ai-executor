@@ -472,7 +472,7 @@ function wpae_llm_collect_action_content( array $elements ): string {
             continue;
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
-        foreach ( [ 'title', 'editor', 'text', 'tab_title', 'tab_content' ] as $key ) {
+        foreach ( [ 'title', 'title_text', 'description_text', 'editor', 'text', 'tab_title', 'tab_content' ] as $key ) {
             if ( is_scalar( $settings[ $key ] ?? null ) ) {
                 $content[] = (string) $settings[ $key ];
             }
@@ -518,7 +518,7 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         $widget_type = (string) ( $element['widgetType'] ?? '' );
         $repeatable_archetypes = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
         $is_repeatable_shell = in_array( $archetype, $repeatable_archetypes, true ) && $depth === 1;
-        if ( ! $is_repeatable_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor', 'button' ], true ) ) {
+        if ( ! $is_repeatable_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'icon-box', 'text-editor', 'button' ], true ) ) {
             $value_index = 0;
             if ( $archetype === 'pricing' ) {
                 $is_numeric = static fn( $value ): bool => (bool) preg_match( '/\d|₸|\$|€|₽/u', (string) $value );
@@ -532,7 +532,7 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
             } elseif ( $archetype === 'testimonials' && $widget_type === 'heading' ) {
                 $value_index = count( $missing ) - 1;
             }
-            $key = $widget_type === 'heading' ? 'title' : ( $widget_type === 'button' ? 'text' : 'editor' );
+            $key = $widget_type === 'heading' ? 'title' : ( $widget_type === 'icon-box' ? 'title_text' : ( $widget_type === 'button' ? 'text' : 'editor' ) );
             $settings[ $key ] = $missing[ $value_index ];
             array_splice( $missing, $value_index, 1 );
             $changed++;
@@ -639,6 +639,17 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
                         $widget['settings']['title'] = $pair['label'];
                         $title_set = true;
                         $changed++;
+                    } elseif ( $widget_type === 'icon-box' ) {
+                        if ( ! $title_set ) {
+                            $widget['settings']['title_text'] = $pair['label'];
+                            $title_set = true;
+                            $changed++;
+                        }
+                        if ( ! $copy_set ) {
+                            $widget['settings']['description_text'] = $pair['content'];
+                            $copy_set = true;
+                            $changed++;
+                        }
                     } elseif ( in_array( $widget_type, [ 'text-editor', 'testimonial' ], true ) && ! $copy_set ) {
                         $widget['settings'][ $widget_type === 'testimonial' ? 'testimonial_content' : 'editor' ] = $pair['content'];
                         $copy_set = true;
@@ -727,6 +738,166 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
         ],
         'elements' => $elements,
     ];
+}
+
+function wpae_llm_generation_visual_grammar_hint(): string {
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного native heading-бейджа с тонкой обводкой и закругленным радиусом. Каждая повторяющаяся карточка с заголовком обязана использовать native icon-box с иконкой слева от заголовка. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+}
+
+function wpae_llm_badge_label( string $archetype ): string {
+    $labels = [
+        'hero' => 'ПЕРВЫЙ ЭКРАН',
+        'benefits' => 'ПРЕИМУЩЕСТВА',
+        'pricing' => 'ФОРМАТЫ',
+        'testimonials' => 'ОТЗЫВЫ',
+        'faq' => 'ВОПРОСЫ',
+        'process' => 'ПРОЦЕСС',
+        'cta' => 'СЛЕДУЮЩИЙ ШАГ',
+        'portfolio' => 'КЕЙСЫ',
+    ];
+
+    return $labels[ $archetype ] ?? 'НОВЫЙ БЛОК';
+}
+
+function wpae_llm_badge_widget( string $id, string $archetype ): array {
+    return [
+        'id' => $id,
+        'elType' => 'widget',
+        'widgetType' => 'heading',
+        'settings' => [
+            'title' => wpae_llm_badge_label( $archetype ),
+            'header_size' => 'h6',
+            '_css_classes' => 'wpae-generated-badge',
+            'title_color' => '#111827',
+            'background_background' => 'classic',
+            'background_color' => '#ffffff',
+            'border_border' => 'solid',
+            'border_color' => '#c75b3b',
+            'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+            'border_radius' => [ 'unit' => 'rem', 'size' => 1.5, 'isLinked' => true ],
+            'padding' => [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => true ],
+            'typography_font_size' => [ 'unit' => 'rem', 'size' => 0.75 ],
+            'typography_font_weight' => '700',
+            'typography_text_transform' => 'uppercase',
+            'align_self' => 'flex-start',
+            '_element_width' => 'initial',
+            '_flex_grow' => 0,
+            '_flex_shrink' => 0,
+        ],
+        'elements' => [],
+    ];
+}
+
+function wpae_llm_card_heading_widget( string $id, array $source ): array {
+    $source_settings = is_array( $source['settings'] ?? null ) ? $source['settings'] : [];
+    $title = trim( (string) ( $source_settings['title'] ?? '' ) );
+    if ( $title === '' ) {
+        return $source;
+    }
+
+    $title_size = strtolower( (string) ( $source_settings['header_size'] ?? 'h4' ) );
+    if ( ! in_array( $title_size, [ 'h2', 'h3', 'h4', 'h5', 'h6' ], true ) ) {
+        $title_size = 'h4';
+    }
+    return [
+        'id' => $id,
+        'elType' => 'widget',
+        'widgetType' => 'icon-box',
+        'settings' => [
+            'selected_icon' => [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ],
+            'title_text' => $title,
+            'description_text' => '',
+            'position' => 'left',
+            'view' => 'default',
+            'title_size' => $title_size,
+            'title_color' => (string) ( $source_settings['title_color'] ?? '#111827' ),
+            'icon_color' => '#c75b3b',
+            'icon_size' => [ 'unit' => 'rem', 'size' => 1.25 ],
+            'icon_space' => [ 'unit' => 'rem', 'size' => 0.6 ],
+            'content_vertical_alignment' => 'middle',
+            '_css_classes' => 'wpae-card-heading',
+        ],
+        'elements' => [],
+    ];
+}
+
+function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_depth = -1, int &$changed = 0 ): array {
+    $has_marked_card_heading = false;
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) || (string) ( $element['widgetType'] ?? '' ) !== 'icon-box' ) {
+            continue;
+        }
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        if ( is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) ) {
+            $has_marked_card_heading = true;
+            break;
+        }
+    }
+
+    foreach ( $elements as $index => $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        $element_type = (string) ( $element['elType'] ?? '' );
+        $widget_type = (string) ( $element['widgetType'] ?? '' );
+        if ( $element_type === 'widget' && $parent_depth >= 1 && $widget_type === 'heading' && ! $has_marked_card_heading ) {
+            $elements[ $index ] = wpae_llm_card_heading_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element );
+            $changed++;
+            continue;
+        }
+        if ( $element_type === 'widget' && $parent_depth >= 1 && $widget_type === 'icon-box' ) {
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            if ( trim( (string) ( $settings['title_text'] ?? '' ) ) !== '' ) {
+                $before = wp_json_encode( $settings );
+                $selected_icon = is_array( $settings['selected_icon'] ?? null ) ? $settings['selected_icon'] : [];
+                $settings['selected_icon'] = trim( (string) ( $selected_icon['value'] ?? '' ) ) !== '' ? $selected_icon : [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ];
+                $settings['position'] = 'left';
+                $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-card-heading' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-card-heading' );
+                $element['settings'] = $settings;
+                if ( $before !== wp_json_encode( $settings ) ) {
+                    $changed++;
+                }
+            }
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            $element_depth = $element_type === 'container' ? $parent_depth + 1 : $parent_depth;
+            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed );
+        }
+        $elements[ $index ] = $element;
+    }
+
+    return $elements;
+}
+
+function wpae_llm_apply_generation_visual_grammar( array $elements, string $archetype, int &$changed = 0 ): array {
+    foreach ( $elements as $index => $root ) {
+        if ( ! is_array( $root ) || (string) ( $root['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+        $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+        $has_badge = false;
+        foreach ( $root['elements'] as $child ) {
+            if ( ! is_array( $child ) || (string) ( $child['widgetType'] ?? '' ) !== 'heading' ) {
+                continue;
+            }
+            $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                $has_badge = true;
+                break;
+            }
+        }
+        if ( ! $has_badge ) {
+            array_unshift( $root['elements'], wpae_llm_badge_widget( 'wpae-generated-badge', $archetype ) );
+            $changed++;
+        }
+        $root['elements'] = wpae_llm_normalize_card_heading_icons( $root['elements'], 0, $changed );
+        $elements[ $index ] = $root;
+    }
+
+    return $elements;
 }
 
 function wpae_llm_build_fallback_action( string $message, int $post_id ): array {
@@ -1263,7 +1434,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             }
         }
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
-        $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Не удаляй и не заменяй существующие элементы.';
+        $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder.' . wpae_llm_generation_visual_grammar_hint() . ' Не удаляй и не заменяй существующие элементы.';
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         $system_prompt .= $targeted_edit ? ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только JSON-объект patch_elements. Не возвращай URL, endpoint, пояснения или markdown.' : ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
     }
@@ -1389,7 +1560,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         if ( empty( $decoded_shape['ok'] ) || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 || empty( $decoded_content_fidelity['ok'] ) ) {
             $repair_error = '';
             $repair_messages = [
-                [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
+                [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . wpae_llm_generation_visual_grammar_hint() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
                 [ 'role' => 'user', 'content' => $message ],
             ];
             for ( $repair_attempt = 1; $repair_attempt <= 2 && ! $action_repair; $repair_attempt++ ) {
@@ -1462,6 +1633,10 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
         }
+        $visual_grammar_changed = 0;
+        if ( is_array( $action['elements'] ?? null ) ) {
+            $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
+        }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
@@ -1494,6 +1669,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         if ( $bento_changed > 0 ) {
             $action_steps[] = [ 'id' => 'bento_layout', 'status' => 'ok', 'message' => 'Повторяющиеся native-контейнеры приведены к bento-сетке с переносом и responsive-размерами.', 'details' => [ 'archetype' => $action_archetype, 'max_items_per_row' => 4, 'containers_updated' => $bento_changed ] ];
+        }
+        if ( $visual_grammar_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge и иконки у карточечных заголовков.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'icon-box', 'icon_position' => 'left' ] ];
         }
         $execution = wpae_llm_execute_action( $action, $post_id );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
@@ -1563,6 +1741,7 @@ function wpae_get_llm_guide(): array {
         'guided_editor_mode' => 'The floating Elementor editor chat injects the current guide, enabled custom skills, capabilities, and project design system into action requests. It uses the same internal Elementor validation/update pipeline without exposing the site API key to browser JavaScript.',
         'editor_preview_sync' => 'After a successful action write, the floating chat first synchronizes new models through the open Elementor editor API and then refreshes the preview when needed. The response reports the sync mode and changed ids; it does not claim realtime success without a canvas check.',
         'action_content_gate' => 'An explicit insert action is rejected unless it contains exactly one populated root container with at least one native Elementor widget. A targeted patch is rejected unless it has a current post_id, bounded patches, existing selected element ids, and native editable paths.',
+        'visual_grammar' => 'Every generated root block receives one compact outlined rounded native badge, and every repeatable card heading is normalized to a native icon-box with the icon on the left. This is enforced after provider decoding and before Elementor preflight.',
         'preview_and_undo' => 'Every successful write returns operation_id, compact diff, rollback_snapshot_id, and rollback expiry. The editor chat exposes one-click undo through POST /wp-json/ai-executor/v1/llm/undo, scoped to the current post and authenticated editor.',
         'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, preview, native normalization, design-system mapping, page context, Elementor update, sync, Vision review, and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
         'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief and a bounded visible-text excerpt. Vision must check content_fidelity as well as visual quality. The editor-chat review is advisory and never rolls back a successful write from subjective screenshot findings; strict rollback remains available through transaction_vision_review. Screenshot or provider failures are reported without undoing the editor write.',

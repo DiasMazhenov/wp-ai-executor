@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.47`
+- Plugin: `v02.09.48`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -92,6 +92,12 @@ Repeatable archetypes use a backend bento normalizer rather than a prompt rule:
 direct native widgets are wrapped into editable Flexbox card containers when
 needed, child containers receive responsive custom widths and flex wrapping, and
 the layout caps each row at four items with a single-column mobile fallback.
+Every generated root block receives one compact outlined rounded native badge.
+Headings inside repeatable card containers are normalized to native `icon-box`
+widgets with an icon positioned to the left, including provider, repair, and
+deterministic fallback output. The normalizer preserves existing card content,
+handles malformed settings defensively, and applies this grammar before
+Elementor preflight.
 
 Administrators have a direct `AI Executor` link in the WordPress Admin Bar.
 It opens the existing `Settings -> AI Executor` screen and is hidden from
@@ -301,7 +307,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.47` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.48` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -311,12 +317,13 @@ messages, the non-empty native-widget action gate, and transaction failure
 diagnostics, post-write AI Vision review and rollback, and Vision failure
 diagnostics, the masked AI Vision key field, chat model/version metadata, the new
 Vision default model, the populated-native-widget action rule, and action JSON
- diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.09.25` fixes the native Elementor card sizing mode with custom flex sizing and explicit grow/shrink values. `v02.09.24` adds backend bento normalization for repeatable blocks, native Flexbox card wrapping, a four-items-per-row cap, and single-column mobile sizing without adding the layout requirement to the user prompt. Earlier releases: `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, `v02.09.05` requests provider JSON mode and compatible OpenRouter routing for action commands, `v02.09.06` retries `openrouter/free` without optional structured-output parameters when that route rejects them, `v02.09.07` exposes sanitized provider transport details in editor chat errors, `v02.09.08` constrains action prompts to one compact populated hero container, `v02.09.09` adds one bounded repair pass for invalid action shapes, `v02.09.10` gives that repair pass a minimal JSON-only context, `v02.09.11` passes the exact current post_id into repair prompts, `v02.09.12` requires non-empty heading, text-editor, and button content in the repair-pass contract, `v02.09.13` keeps low Vision score as a warning while reserving rollback for major or critical findings and exposes report details in chat errors, `v02.09.14` gives the bounded action repair-pass a concrete populated native-widget JSON exemplar, `v02.09.15` retries an invalid repair response once and reports the failure details instead of silently stopping, `v02.09.16` keeps major Vision findings advisory so only critical findings roll back a successful editor-chat write, `v02.09.17` forbids placeholder content in repair responses and asks for request-specific copy, `v02.09.18` excludes Elementor editor-only overlays and dropzones from the Vision screenshot to prevent false critical findings, and `v02.09.19` makes editor-chat Vision reports advisory while retaining strict rollback only for transaction Vision gates.
+ diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.09.48` adds the enforced outlined badge and card-heading icon grammar after provider decoding, fallback/repair normalization, and before Elementor preflight. `v02.09.25` fixes the native Elementor card sizing mode with custom flex sizing and explicit grow/shrink values. `v02.09.24` adds backend bento normalization for repeatable blocks, native Flexbox card wrapping, a four-items-per-row cap, and single-column mobile sizing without adding the layout requirement to the user prompt. Earlier releases: `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, `v02.09.05` requests provider JSON mode and compatible OpenRouter routing for action commands, `v02.09.06` retries `openrouter/free` without optional structured-output parameters when that route rejects them, `v02.09.07` exposes sanitized provider transport details in editor chat errors, `v02.09.08` constrains action prompts to one compact populated hero container, `v02.09.09` adds one bounded repair pass for invalid action shapes, `v02.09.10` gives that repair pass a minimal JSON-only context, `v02.09.11` passes the exact current post_id into repair prompts, `v02.09.12` requires non-empty heading, text-editor, and button content in the repair-pass contract, `v02.09.13` keeps low Vision score as a warning while reserving rollback for major or critical findings and exposes report details in chat errors, `v02.09.14` gives the bounded action repair-pass a concrete populated native-widget JSON exemplar, `v02.09.15` retries an invalid repair response once and reports the failure details instead of silently stopping, `v02.09.16` keeps major Vision findings advisory so only critical findings roll back a successful editor-chat write, `v02.09.17` forbids placeholder content in repair responses and asks for request-specific copy, `v02.09.18` excludes Elementor editor-only overlays and dropzones from the Vision screenshot to prevent false critical findings, and `v02.09.19` makes editor-chat Vision reports advisory while retaining strict rollback only for transaction Vision gates.
 - `v02.09.27` keeps section headings, intro copy, and CTA outside repeatable bento card grids; deterministic benefits, pricing, process, and portfolio fallbacks now create populated native card containers.
 - `v02.09.46` centralizes content-only pair parsing, supports `вопрос? — ответ`, writes fallback card widgets through real arrays, fills FAQ tabs, and expands repeatable fallback cards up to four items. The local fallback matrix covers benefits, testimonials, pricing, process, FAQ, portfolio, hero, and four-card content without fidelity mismatches.
 - `v02.09.47` focuses the editor preview on the newly inserted root `data-id` before screenshot capture, sends those target IDs through the server Vision normalizer, and refuses to review a stale viewport when the new block cannot be found after one bounded preview refresh.
+- `v02.09.48` enforces one outlined rounded badge per generated root block and native `icon-box` headings with left-side icons inside repeatable cards, independent of provider prompt compliance.
 
-The latest local release `v02.09.47` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.48` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the
