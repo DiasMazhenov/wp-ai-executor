@@ -204,7 +204,10 @@
         if (!error) return false;
         if (error.wpaeCode === 'wpae_llm_provider_request_failed' || String(error.message || '').indexOf('LLM-провайдер недоступен') !== -1) return true;
         var providerStatus = Number(error.providerStatus || 0);
-        return providerStatus === 408 || providerStatus === 425 || providerStatus === 429 || providerStatus >= 500;
+        var httpStatus = Number(error.httpStatus || 0);
+        if (httpStatus === 408 || httpStatus === 425 || httpStatus === 429 || httpStatus >= 500) return true;
+        if (providerStatus === 408 || providerStatus === 425 || providerStatus === 429 || providerStatus >= 500) return true;
+        return error.wpaeCode === 'wpae_llm_provider_error' && String(error.message || '').indexOf('finish_reason: error') !== -1;
     }
     function scheduleProviderRetry(message) {
         if (readProviderRetry()) return false;

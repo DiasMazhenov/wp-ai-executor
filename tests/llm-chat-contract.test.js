@@ -33,6 +33,8 @@ assert.match(llm, /wpae_llm_response_diagnostics/);
 assert.match(llm, /wpae_llm_provider_error_message/);
 assert.match(llm, /provider_error_code/);
 assert.match(js, /provider_message/);
+assert.match(js, /error\.httpStatus/);
+assert.match(js, /finish_reason: error/);
 assert.match(llm, /output_text/);
 assert.match(llm, /max_completion_tokens' => \$action_request \? 8000 : 1200/);
 assert.match(llm, /response_format.*json_object/);

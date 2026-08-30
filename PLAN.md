@@ -1,5 +1,10 @@
 # План WP AI Executor
 
+## v02.09.75
+
+- Provider errors returned as REST 502 or `finish_reason: error` now enter the same single reload-and-retry path, so a transient failure does not stop a natural browser test before generation.
+- Re-run the portfolio prompt in the fresh Elementor tab and verify realtime insertion, equal cards, connected CTA, screenshot, and Vision.
+
 ## v02.09.74
 
 - После визуальной грамматики CTA помещается в отдельную прозрачную нижнюю строку с разделителем, а все уже созданные bento-сетки проходят финальную идемпотентную нормализацию. Это убирает оторванные кнопки и композиции с одной oversized-карточкой.

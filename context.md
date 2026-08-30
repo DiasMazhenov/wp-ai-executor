@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.74`
+- Plugin: `v02.09.75`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -333,7 +333,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.74` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.75` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -362,6 +362,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.72` normalizes every provider-supplied `wpae-bento-grid` after decoding: the grid stays transparent and its direct cards receive balanced widths by count, with a 100% mobile width, even when the provider returned an oversized lead card.
 - `v02.09.73` centralizes that bento normalization for grids created after provider-card wrapping, keeping every row at two, three, or four balanced cards instead of preserving a 48/23/23 lead-card distortion. Vision now filters only verified missing-content false positives when the requested phrase exists in the target `text_excerpt`; layout findings remain active.
 - `v02.09.74` adds a final recursive normalization pass after visual grammar and wraps a block-level CTA in a transparent, separated action row so generated bento cards stay balanced and the CTA is visually connected to the composition.
+- `v02.09.75` treats REST 502 responses and provider `finish_reason: error` responses as transient provider-unavailable states, enabling the existing single force-reload retry path.
 - `v02.09.51` captures only the new Elementor root for editor Vision and reports a missing or zero-size target instead of sending the old full-page viewport for review.
 - `v02.09.52` protects generated badge padding/radius from design-token remapping, enforces explicit pill geometry, resets the label margin, and replaces model-supplied badge variants with the canonical generated badge.
 - `v02.09.53` adds explicit selected-Elementor JSON export to the floating chat, including native settings and recursive child elements without adding the full payload to LLM requests.
@@ -372,7 +373,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.58` gives provider generations a per-run composition seed and makes deterministic fallback blocks choose an unused visual variant from a ten-variant palette, preserving the content and applying the variation after design-token mapping.
 - `v02.09.59` applies that unused visual-variant guard to provider-generated blocks as well as fallback blocks, keeps each repeated-card grid on one coherent card surface, and hides the stale Elementor preview loader after the iframe has populated so realtime insertion and Vision capture see the rendered block.
 
-The latest local release `v02.09.74` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.75` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the
