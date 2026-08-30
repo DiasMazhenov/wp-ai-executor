@@ -475,8 +475,9 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $widget_type = (string) ( $element['widgetType'] ?? '' );
-        $is_pricing_shell = $archetype === 'pricing' && $depth === 1;
-        if ( ! $is_pricing_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
+        $repeatable_archetypes = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
+        $is_repeatable_shell = in_array( $archetype, $repeatable_archetypes, true ) && $depth === 1;
+        if ( ! $is_repeatable_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
             $value_index = 0;
             if ( $archetype === 'pricing' ) {
                 $is_numeric = static fn( $value ): bool => (bool) preg_match( '/\d|₸|\$|€|₽/u', (string) $value );

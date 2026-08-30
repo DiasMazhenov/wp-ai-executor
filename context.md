@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.37`
+- Plugin: `v02.09.38`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -57,6 +57,8 @@ after a forced reload; auth, malformed-request, JSON, validation, write, and
 Vision errors remain non-retryable.
 After the forced reload, the chat opens itself and renders the retry message
 and final result so the one-retry path is visible to the editor.
+Repeatable fallback archetypes keep explicit label/description pairs inside
+their card grids instead of consuming them in the root heading/description.
 Testimonial fallback output uses a wrapping Flexbox card grid with one editable
 native card container per quote and a single-column mobile layout.
 Generated testimonial author headings are guarded to native h5/h6 typography;
