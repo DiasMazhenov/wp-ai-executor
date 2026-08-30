@@ -133,6 +133,9 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
         $is_generated_badge = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true );
         $is_bento_grid = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+        $is_generated_content_shell = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );
+        $preserve_transparent_background = $is_generated_badge || $is_bento_grid || $is_generated_content_shell
+            || ( $el_type === 'container' && $depth === 0 && (string) ( $settings['background_color'] ?? '' ) === 'transparent' );
 
         if ( $widget_type === 'html' ) {
             $report['protected_skips'][] = [ 'element_id' => $element_id, 'reason' => 'HTML enhancement zone is protected.' ];
@@ -158,7 +161,7 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
         }
 
         foreach ( array_keys( $settings ) as $key ) {
-            if ( $is_bento_grid && in_array( (string) $key, [ 'background_color', 'background_color_b' ], true ) ) {
+            if ( $preserve_transparent_background && in_array( (string) $key, [ 'background_color', 'background_color_b' ], true ) ) {
                 continue;
             }
             $role = wpae_token_map_color_role( (string) $key, $el_type, $widget_type, $depth );
@@ -183,7 +186,7 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
 
         if ( $el_type === 'container' ) {
             $spacing = (array) ( $tokens['native_tokens']['spacing'] ?? [] );
-            if ( ! $is_generated_badge && ! $is_bento_grid ) {
+            if ( ! $is_generated_badge && ! $is_bento_grid && ! $is_generated_content_shell ) {
                 $padding = wpae_token_map_dimension( (string) ( $spacing[ $depth === 0 ? 'section_desktop' : 'component' ] ?? '' ) );
                 if ( $padding !== null ) {
                     wpae_token_map_set( $settings, 'padding', $padding, $element_id, $depth === 0 ? 'spacing.section' : 'spacing.component', $report );
@@ -207,7 +210,7 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
                 $gap_key = ( array_key_exists( 'flex_gap', $settings ) || array_key_exists( 'flex_direction', $settings ) || array_key_exists( 'flex_wrap', $settings ) ) ? 'flex_gap' : 'gap';
                 wpae_token_map_set( $settings, $gap_key, $gap_key === 'flex_gap' ? $gap_value : $gap, $element_id, 'spacing.gap', $report );
             }
-            if ( ! $is_generated_badge && ! $is_bento_grid ) {
+            if ( ! $is_generated_badge && ! $is_bento_grid && ! $is_generated_content_shell ) {
                 $radius = wpae_token_map_dimension( (string) ( $tokens['native_tokens']['radii']['card'] ?? '' ) );
                 if ( isset( $settings['border_radius'] ) && $radius !== null ) {
                     wpae_token_map_set( $settings, 'border_radius', $radius, $element_id, 'radii.card', $report );

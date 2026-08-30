@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.09.68
+
+- Три карточки больше не переводятся в двухколоночную раскладку с одинокой карточкой во второй строке: для них всегда выбирается ровный ряд из трех колонок.
+- Token-map больше не перекрашивает transparent generated content-shell и transparent root в surface/paper; фон остается только там, где он задан карточке.
+- Проверить в открытом Elementor process и portfolio prompts, включая CTA и прозрачную оболочку.
+
 ## v02.09.67
 
 - Content-only prompts with labeled cards and a standalone CTA now preserve that CTA in fidelity checks and fallback content mapping.

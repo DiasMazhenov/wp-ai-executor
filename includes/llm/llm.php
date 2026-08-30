@@ -876,6 +876,10 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
         return [ 100 ];
     }
 
+    if ( $count === 3 ) {
+        return array_fill( 0, $count, 31 );
+    }
+
     // Keep every row balanced. The two-column mode gives a different bento
     // rhythm without creating oversized lead cards or orphaned narrow cards.
     if ( in_array( $layout, [ 1, 3, 5 ], true ) ) {
