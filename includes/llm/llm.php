@@ -868,32 +868,14 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
         return [ 100 ];
     }
 
-    $widths = [];
-    if ( $layout === 1 ) {
-        $widths = array_fill( 0, $count, 48 );
-    } elseif ( $layout === 2 ) {
-        $widths = [ 48 ];
-        for ( $index = 1; $index < $count; $index++ ) {
-            $widths[] = 23;
-        }
-    } elseif ( $layout === 3 ) {
-        $widths = $count >= 4 ? [ 31, 31, 31, 100 ] : array_fill( 0, $count, 23 );
-    } elseif ( $layout === 4 ) {
-        $widths = [ 100 ];
-        for ( $index = 1; $index < $count; $index++ ) {
-            $widths[] = 31;
-        }
-    } elseif ( $layout === 5 ) {
-        $widths = [ 23 ];
-        for ( $index = 1; $index < $count; $index++ ) {
-            $widths[] = $index === 1 ? 48 : 23;
-        }
-    } else {
-        $width = $count >= 4 ? 23 : ( $count === 3 ? 31 : 48 );
-        $widths = array_fill( 0, $count, $width );
+    // Keep every row balanced. The two-column mode gives a different bento
+    // rhythm without creating oversized lead cards or orphaned narrow cards.
+    if ( in_array( $layout, [ 1, 3, 5 ], true ) ) {
+        return array_fill( 0, $count, 48 );
     }
 
-    return array_slice( $widths, 0, $count );
+    $width = $count >= 4 ? 23 : ( $count === 3 ? 31 : 48 );
+    return array_fill( 0, $count, $width );
 }
 
 function wpae_llm_visual_signature( array $root ): string {
@@ -1106,8 +1088,8 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
             if ( $is_grid ) {
                 $settings['flex_direction'] = 'row';
                 $settings['flex_wrap'] = 'wrap';
-                $settings['flex_justify_content'] = in_array( $layout, [ 1, 4 ], true ) ? 'flex-start' : 'space-between';
-                $settings['flex_align_items'] = in_array( $layout, [ 0, 4 ], true ) ? 'stretch' : 'flex-start';
+                $settings['flex_justify_content'] = in_array( $layout, [ 1, 3, 5 ], true ) ? 'flex-start' : 'space-between';
+                $settings['flex_align_items'] = 'stretch';
                 $grid_cards = [];
                 foreach ( $element['elements'] as $grid_index => $grid_child ) {
                     if ( is_array( $grid_child ) && ( $grid_child['elType'] ?? '' ) === 'container' ) {
