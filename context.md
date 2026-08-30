@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.51`
+- Plugin: `v02.09.52`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -93,9 +93,11 @@ direct native widgets are wrapped into editable Flexbox card containers when
 needed, child containers receive responsive custom widths and flex wrapping, and
 the layout caps each row at four items with a single-column mobile fallback.
 Every generated root block receives one compact outlined rounded native badge
-container with a native heading label inside. Its background is transparent,
-its width is content-sized, and its dark border/radius/padding form the pill
-shape. Headings inside repeatable card containers are normalized to native
+container with a native heading label inside. Its width is content-sized, its
+horizontal padding is larger than its vertical padding, and its dark
+border/four-sided radius form the pill shape. The badge geometry is protected
+from the generic design-token spacing/radius map; its background may use the
+active surface token or remain transparent. Headings inside repeatable card containers are normalized to native
 `icon-box` widgets with an icon positioned to the left, including provider,
 repair, and deterministic fallback output. The container holding repeatable
 cards is forced transparent while individual cards retain their own surfaces.
@@ -311,7 +313,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.51` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.52` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -329,8 +331,9 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.49` renders that badge as a compact native pill container with a heading label and keeps the container around repeatable cards transparent.
 - `v02.09.50` prevents testimonial quotes from being misclassified as card headings: quote-like heading/icon-box widgets are demoted to text, while short author/heading content receives the native icon-box treatment.
 - `v02.09.51` captures only the new Elementor root for editor Vision and reports a missing or zero-size target instead of sending the old full-page viewport for review.
+- `v02.09.52` protects generated badge padding/radius from design-token remapping, enforces explicit pill geometry, resets the label margin, and replaces model-supplied badge variants with the canonical generated badge.
 
-The latest local release `v02.09.51` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.52` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the

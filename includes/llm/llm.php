@@ -778,8 +778,8 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
             'border_border' => 'solid',
             'border_color' => '#1f2937',
             'border_width' => [ 'unit' => 'px', 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2', 'isLinked' => true ],
-            'border_radius' => [ 'unit' => 'px', 'size' => 999, 'isLinked' => true ],
-            'padding' => [ 'unit' => 'rem', 'top' => '0.7', 'right' => '1.75', 'bottom' => '0.7', 'left' => '1.75', 'isLinked' => true ],
+            'border_radius' => [ 'unit' => 'px', 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'size' => 999, 'isLinked' => true ],
+            'padding' => [ 'unit' => 'rem', 'top' => '0.5', 'right' => '1.75', 'bottom' => '0.5', 'left' => '1.75', 'isLinked' => false ],
             'align_self' => 'flex-start',
             '_element_width' => 'initial',
             '_flex_grow' => 0,
@@ -804,6 +804,7 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
                     '_element_width' => 'initial',
                     '_flex_grow' => 0,
                     '_flex_shrink' => 0,
+                    'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
                 ],
                 'elements' => [],
             ],
@@ -986,10 +987,8 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
             $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
             if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
-                if ( (string) ( $child['elType'] ?? '' ) === 'widget' && (string) ( $child['widgetType'] ?? '' ) === 'heading' ) {
-                    $root['elements'][ $child_index ] = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
-                    $changed++;
-                }
+                $root['elements'][ $child_index ] = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
+                $changed++;
                 $has_badge = true;
                 break;
             }

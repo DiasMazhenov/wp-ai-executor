@@ -23,7 +23,7 @@
     "includes/elementor/page-update.php": "dc718c83ee856cf9c89c3ce6d1cb63f3c9828dc8db00f0cd5539390b35a48953",
     "includes/elementor/recipes.php": "f22e08c4c3b320a99ad946c34be631212a767b68955338cea8082aa2fcfc4549",
     "includes/elementor/transactions.php": "bd697ebf00c89f1c858682a455f780b82916e636ef612d5a1753f9b75a763cb3",
-    "includes/elementor/token-map.php": "7f46569212503fcf35eb1cb11d08f17c8b968ab824d5944fafda3d8d2caa957d",
+    "includes/elementor/token-map.php": "0451cbb072b8df5bfdd71685c5a99af7e16081027614c4d4c43fd7c9f26c36ff",
     "includes/elementor/typography.php": "b2b550aba6da7bbbcccf0284d42f882f80144b849247c320fdefb366a9e4f7d8",
     "includes/elementor/validation-rules.php": "fa79c61c1f0872c435eb48dd4e901d9084ed84bbfd2f427a5fa7b67d44fbeab5",
     "includes/elementor/validation.php": "f805dcefde2ca7f0d5873411b518a4095ef1237b8734d9567c58f0ff48f2ec5f",
@@ -33,7 +33,7 @@
     "includes/guide/guide.php": "7dfbd3c0e35d447dca41697c7049632ee835716525e0642638d53d5129c7ffc1",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/llm.php": "d1568e178a6a5b1ff9647b49b1a5b9688823f1caea731847465022d50d9f678b",
+    "includes/llm/llm.php": "10c312d62015871f35f4148c16e9e12cf70554d9c21bc60a20d5ca4aae752d1e",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "c4e6b7cd2961b978305596e7144e059c60fa22f5961f350f1a47001254d65a98",
     "includes/rollback/rollback.php": "f9e45cb8fb78b76123db20a838d204e4393eb7023c93599bdb218ba993c1e80e",
@@ -44,6 +44,6 @@
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "d853e9b40598f241fd0d5e274513be891a183e115b2039aa480d9a0a4878ba77",
-    "wp-ai-executor.php": "d7ee14df3e1b71fe3e101af7aeef9311267e738863b88015e7c74bd7968c1b1f"
+    "wp-ai-executor.php": "acff6b527b56945bd56efabdf5cee5c4d2b6292e8f72a9a5cbd2b6c50ada4081"
   }
 }
