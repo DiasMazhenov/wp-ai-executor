@@ -733,6 +733,9 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
             'flex_align_items' => 'stretch',
             'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
             'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+            '_css_classes' => 'wpae-bento-grid',
+            'background_background' => 'classic',
+            'background_color' => 'transparent',
             'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
             'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
         ],
@@ -741,7 +744,7 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
 }
 
 function wpae_llm_generation_visual_grammar_hint(): string {
-    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного native heading-бейджа с тонкой обводкой и закругленным радиусом. Каждая повторяющаяся карточка с заголовком обязана использовать native icon-box с иконкой слева от заголовка. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с заголовком обязана использовать native icon-box с иконкой слева от заголовка. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
 function wpae_llm_badge_label( string $archetype ): string {
@@ -762,29 +765,49 @@ function wpae_llm_badge_label( string $archetype ): string {
 function wpae_llm_badge_widget( string $id, string $archetype ): array {
     return [
         'id' => $id,
-        'elType' => 'widget',
-        'widgetType' => 'heading',
+        'elType' => 'container',
         'settings' => [
-            'title' => wpae_llm_badge_label( $archetype ),
-            'header_size' => 'h6',
             '_css_classes' => 'wpae-generated-badge',
-            'title_color' => '#111827',
+            'content_width' => 'full',
+            'flex_direction' => 'row',
+            'flex_wrap' => 'nowrap',
+            'flex_justify_content' => 'center',
+            'flex_align_items' => 'center',
             'background_background' => 'classic',
-            'background_color' => '#ffffff',
+            'background_color' => 'transparent',
             'border_border' => 'solid',
-            'border_color' => '#c75b3b',
-            'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
-            'border_radius' => [ 'unit' => 'rem', 'size' => 1.5, 'isLinked' => true ],
-            'padding' => [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => true ],
-            'typography_font_size' => [ 'unit' => 'rem', 'size' => 0.75 ],
-            'typography_font_weight' => '700',
-            'typography_text_transform' => 'uppercase',
+            'border_color' => '#1f2937',
+            'border_width' => [ 'unit' => 'px', 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2', 'isLinked' => true ],
+            'border_radius' => [ 'unit' => 'px', 'size' => 999, 'isLinked' => true ],
+            'padding' => [ 'unit' => 'rem', 'top' => '0.7', 'right' => '1.75', 'bottom' => '0.7', 'left' => '1.75', 'isLinked' => true ],
             'align_self' => 'flex-start',
             '_element_width' => 'initial',
             '_flex_grow' => 0,
             '_flex_shrink' => 0,
+            'custom_css' => 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }',
         ],
-        'elements' => [],
+        'elements' => [
+            [
+                'id' => $id . '-label',
+                'elType' => 'widget',
+                'widgetType' => 'heading',
+                'settings' => [
+                    'title' => wpae_llm_badge_label( $archetype ),
+                    'header_size' => 'h6',
+                    '_css_classes' => 'wpae-generated-badge-label',
+                    'title_color' => '#111827',
+                    'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.125 ],
+                    'typography_font_weight' => '600',
+                    'typography_line_height' => [ 'unit' => 'em', 'size' => 1.1 ],
+                    'typography_text_transform' => 'uppercase',
+                    'align_self' => 'center',
+                    '_element_width' => 'initial',
+                    '_flex_grow' => 0,
+                    '_flex_shrink' => 0,
+                ],
+                'elements' => [],
+            ],
+        ],
     ];
 }
 
@@ -841,6 +864,12 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
         $element_type = (string) ( $element['elType'] ?? '' );
         $widget_type = (string) ( $element['widgetType'] ?? '' );
+        $element_settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $element_classes = preg_split( '/\s+/', trim( (string) ( $element_settings['_css_classes'] ?? '' ) ) );
+        if ( $element_type === 'container' && is_array( $element_classes ) && in_array( 'wpae-generated-badge', $element_classes, true ) ) {
+            $elements[ $index ] = $element;
+            continue;
+        }
         if ( $element_type === 'widget' && $parent_depth >= 1 && $widget_type === 'heading' && ! $has_marked_card_heading ) {
             $elements[ $index ] = wpae_llm_card_heading_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element );
             $changed++;
@@ -878,13 +907,17 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
         $has_badge = false;
-        foreach ( $root['elements'] as $child ) {
-            if ( ! is_array( $child ) || (string) ( $child['widgetType'] ?? '' ) !== 'heading' ) {
+        foreach ( $root['elements'] as $child_index => $child ) {
+            if ( ! is_array( $child ) ) {
                 continue;
             }
             $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
             if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                if ( (string) ( $child['elType'] ?? '' ) === 'widget' && (string) ( $child['widgetType'] ?? '' ) === 'heading' ) {
+                    $root['elements'][ $child_index ] = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
+                    $changed++;
+                }
                 $has_badge = true;
                 break;
             }
@@ -1157,6 +1190,16 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
                 $children[ $child_index ]['settings'] = $child_settings;
             }
             $element['elements'] = $children;
+        }
+
+        if ( count( $child_containers ) >= 2 ) {
+            $before_grid_settings = wp_json_encode( [ $settings['background_background'] ?? null, $settings['background_color'] ?? null, $settings['_css_classes'] ?? null ] );
+            $settings['background_background'] = 'classic';
+            $settings['background_color'] = 'transparent';
+            $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
+            if ( $before_grid_settings !== wp_json_encode( [ $settings['background_background'] ?? null, $settings['background_color'] ?? null, $settings['_css_classes'] ?? null ] ) ) {
+                $changed++;
+            }
         }
 
         if ( is_array( $element['elements'] ?? null ) ) {
