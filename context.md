@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.39`
+- Plugin: `v02.09.40`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -27,12 +27,15 @@
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
-code graph contains 583 nodes and 1384 edges, with `graphify-out/GRAPH_TREE.html`
+code graph contains 586 nodes and 1386 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
 
-The editor-chat Vision review is advisory: quality findings are shown after a
-successful write but do not rollback the new Elementor content. Atomic rollback
-remains limited to explicit `transaction_vision_review` transactions.
+The editor-chat Vision review is advisory: quality findings do not rollback a
+successful write. They start one bounded repair pass that sends the findings,
+recommended fixes, and a sanitized visible-text/element-ID map back to the LLM;
+the repair may only return `patch_elements` for existing native settings and
+cannot add, delete, replace, or recurse into another Vision review. Atomic
+rollback remains limited to explicit `transaction_vision_review` transactions.
 
 Action generation classifies natural-language block requests into hero,
 benefits, pricing, testimonials, FAQ, process, CTA, or portfolio archetypes.
@@ -47,9 +50,10 @@ matching heading/text widgets when possible and rejects the action with a
 missing-content list when fidelity cannot be proven. Editor Vision also receives
 the original brief and a bounded visible-text excerpt, so content fidelity is a
 separate review concern from visual composition.
-Vision reports with major/critical findings, a score below 75, or malformed
-payloads are blocking; the editor chat reports the findings and attempts the
-available rollback instead of claiming success.
+Vision reports with major/critical findings or a score below 75 trigger the
+bounded editor-chat repair workflow; malformed/provider failures remain visible
+errors. The chat only reports repair success after the patch endpoint confirms
+the write.
 The targeted Elementor patch branch keeps balanced nested arrays in its
 progress-step merge; PHP syntax is checked before release to prevent a bootstrap
 fatal error from taking down WordPress.

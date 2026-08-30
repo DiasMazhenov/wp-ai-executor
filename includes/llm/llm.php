@@ -227,7 +227,7 @@ function wpae_llm_is_action_request( string $message ): bool {
     if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
         return false;
     }
-    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message );
+    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|исправь|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message );
 }
 
 function wpae_llm_is_targeted_edit_request( string $message ): bool {
@@ -1125,7 +1125,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     $action_request = wpae_llm_is_action_request( $message );
     $editor_context_input = $request->get_param( 'context' );
     $selected_element_count = is_array( $editor_context_input ) && is_array( $editor_context_input['selected_elements'] ?? null ) ? count( $editor_context_input['selected_elements'] ) : 0;
-    $targeted_edit = $action_request && $selected_element_count > 0 && wpae_llm_is_targeted_edit_request( $message );
+    $vision_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_repair'] );
+    $targeted_edit = $action_request && $selected_element_count > 0 && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $system_prompt = 'Ты помогаешь работать с WordPress и Elementor. Не заявляй, что изменения выполнены, если не получил подтверждение API. Соблюдай native Elementor settings, Flexbox Containers, mobile-first и сохраняй существующие WebGL/GSAP/Three.js enhancement-зоны.';
     $guided_context = [];
     if ( $action_request ) {
@@ -1142,6 +1143,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $system_prompt .= $targeted_edit
             ? ' Это точечное изменение выбранного Elementor элемента. Верни только JSON по схеме: {"action":"patch_elements","post_id":number,"patches":[{"element_id":"selected-id","path":"settings.native_property","op":"set","value":...}]}. Меняй только явно запрошенные native properties, не трогай HTML/CSS/WebGL и не пересобирай страницу. Используй только выбранные element_id из контекста.'
             : ' Ограничения компактности action-JSON: ровно 1 корневой контейнер и 3–5 вложенных виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
+        if ( $vision_repair ) {
+            $system_prompt .= ' Это автоматический repair-проход по замечаниям AI Vision. Исправь только существующие выбранные элементы по findings; не добавляй, не удаляй и не заменяй блоки, не меняй HTML/CSS/WebGL. Используй только native settings properties, необходимые для устранения замечаний, и верни patch_elements.';
+        }
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
         $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Не удаляй и не заменяй существующие элементы.';
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -1168,6 +1172,10 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 'elType' => sanitize_key( substr( (string) ( $element['elType'] ?? '' ), 0, 32 ) ),
                 'widgetType' => sanitize_key( substr( (string) ( $element['widgetType'] ?? '' ), 0, 64 ) ),
             ];
+            $visible_text = sanitize_text_field( substr( (string) ( $element['visible_text'] ?? '' ), 0, 240 ) );
+            if ( $visible_text !== '' ) {
+                $selected_elements[ count( $selected_elements ) - 1 ]['visible_text'] = $visible_text;
+            }
         }
         $context = [
             'post_id' => absint( $context['post_id'] ?? 0 ),
