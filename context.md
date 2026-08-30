@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.81`
-- Guide: `v02.05.81`
+- Plugin: `v02.09.82`
+- Guide: `v02.05.82`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -381,6 +381,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.79` recognizes the natural edit verb `поменяй` as an action request, allowing selected-element prompts such as `Поменяй этот заголовок...` to reach the patch pipeline instead of the ordinary chat response path.
 - `v02.09.80` scopes Vision review to the selected patch subtree, routes failed targeted reviews back through bounded `patch_elements` repair instead of full-page regeneration, returns selected scope IDs for focused screenshots, and exposes patch diagnostics in the chat log.
 - `v02.09.81` classifies neutral three-sentence content briefs as generation requests when they contain enough copy, preventing them from falling back to an ordinary explanatory chat response.
+- `v02.09.82` normalizes provider-generated process-card headings to one consistent sequential numbering scheme before visual grammar and Vision review, preserving the step wording.
 - `v02.09.51` captures only the new Elementor root for editor Vision and reports a missing or zero-size target instead of sending the old full-page viewport for review.
 - `v02.09.52` protects generated badge padding/radius from design-token remapping, enforces explicit pill geometry, resets the label margin, and replaces model-supplied badge variants with the canonical generated badge.
 - `v02.09.53` adds explicit selected-Elementor JSON export to the floating chat, including native settings and recursive child elements without adding the full payload to LLM requests.
@@ -391,7 +392,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.58` gives provider generations a per-run composition seed and makes deterministic fallback blocks choose an unused visual variant from a ten-variant palette, preserving the content and applying the variation after design-token mapping.
 - `v02.09.59` applies that unused visual-variant guard to provider-generated blocks as well as fallback blocks, keeps each repeated-card grid on one coherent card surface, and hides the stale Elementor preview loader after the iframe has populated so realtime insertion and Vision capture see the rendered block.
 
-The latest local release `v02.09.81` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.82` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the

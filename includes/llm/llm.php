@@ -2038,6 +2038,61 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
     return $elements;
 }
 
+function wpae_llm_normalize_process_step_labels( array $elements, string $archetype, int &$changed ): array {
+    if ( $archetype !== 'process' ) {
+        return $elements;
+    }
+
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        if ( is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
+            $step = 0;
+            foreach ( (array) ( $element['elements'] ?? [] ) as &$card ) {
+                if ( ! is_array( $card ) || ( $card['elType'] ?? '' ) !== 'container' ) {
+                    continue;
+                }
+                $heading_index = null;
+                foreach ( (array) ( $card['elements'] ?? [] ) as $widget_index => $widget ) {
+                    if ( is_array( $widget ) && ( $widget['elType'] ?? '' ) === 'widget' && in_array( (string) ( $widget['widgetType'] ?? '' ), [ 'heading', 'icon-box' ], true ) ) {
+                        $heading_index = $widget_index;
+                        break;
+                    }
+                }
+                if ( $heading_index === null ) {
+                    continue;
+                }
+                $widget = $card['elements'][ $heading_index ];
+                $widget_settings = is_array( $widget['settings'] ?? null ) ? $widget['settings'] : [];
+                $text_key = ( $widget['widgetType'] ?? '' ) === 'icon-box' ? 'title_text' : 'title';
+                $text = trim( (string) ( $widget_settings[ $text_key ] ?? '' ) );
+                if ( $text === '' ) {
+                    continue;
+                }
+                $step++;
+                $text = preg_replace( '/^\s*\d{1,2}\s*\/\s*/u', '', $text );
+                $normalized = sprintf( '%02d / %s', $step, trim( (string) $text ) );
+                if ( $normalized !== (string) ( $widget_settings[ $text_key ] ?? '' ) ) {
+                    $widget_settings[ $text_key ] = $normalized;
+                    $widget['settings'] = $widget_settings;
+                    $card['elements'][ $heading_index ] = $widget;
+                    $changed++;
+                }
+            }
+            unset( $card );
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            $element['elements'] = wpae_llm_normalize_process_step_labels( $element['elements'], $archetype, $changed );
+        }
+    }
+    unset( $element );
+
+    return $elements;
+}
+
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     $candidate = trim( preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $reply ) );
     $decoded = json_decode( $candidate, true );
@@ -2506,6 +2561,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         $typography_changed = 0;
         $bento_changed = 0;
+        $process_labels_changed = 0;
         $action_archetype = wpae_llm_detect_block_archetype( $message );
         $fallback_content_changed = 0;
         if ( $action_fallback ) {
@@ -2522,6 +2578,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
+            $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
@@ -2562,6 +2619,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         if ( $bento_changed > 0 ) {
             $action_steps[] = [ 'id' => 'bento_layout', 'status' => 'ok', 'message' => 'Повторяющиеся native-контейнеры приведены к bento-сетке с переносом и responsive-размерами.', 'details' => [ 'archetype' => $action_archetype, 'max_items_per_row' => 4, 'containers_updated' => $bento_changed ] ];
+        }
+        if ( $process_labels_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'process_labels', 'status' => 'ok', 'message' => 'Нумерация карточек процесса выровнена по порядку без изменения текста шагов.', 'details' => [ 'labels_updated' => $process_labels_changed ] ];
         }
         if ( $visual_grammar_changed > 0 ) {
             $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge и иконки у карточечных заголовков.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'icon-box', 'icon_position' => 'left' ] ];
