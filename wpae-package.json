@@ -4,10 +4,10 @@
   "entrypoint": "wp-ai-executor.php",
   "files": {
     "assets/css/elementor-block-library.css": "6fa31c018bc35c2d15500be6eb268286259555ab9dcbca182c4038c15f502f61",
-    "assets/css/elementor-llm-chat.css": "bee335d8c1d4263001bb96c3b07f5bce53214cbbd7579425bd3378300f114fb0",
+    "assets/css/elementor-llm-chat.css": "83e23fbcc94c41ed6283ce90bb8575e439819b1ffb82399deeb918c5cc203be3",
     "assets/js/elementor-block-library-ui.js": "d08efe3aaa6ef875b283dfc26f6a39fb7d3899cd76dafbfabeca31ea77c7290d",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "8ac48ad7ab65c3bbd9c4d5d6c2e3bf702e306d3628d259463a6037a4b3e6a7f6",
+    "assets/js/elementor-llm-chat.js": "506fd0e581c2574828234d0867790d5c6af30b72c194cfcc5af6a54857fb332c",
     "includes/admin/dashboard.php": "b2c1a8d0d5971175726a60eb69f64ccddb5f036db5536c1225d3ab1e874a6fe7",
     "includes/design/system.php": "a9bd3eba468e2d5f1507ef5a07defd9f730f80897517744c6547f2c718fbccde",
     "includes/elementor/block-library.php": "ab52756e475900d587fabe54ee0c25c12735bfe7c523381c9b05dbd79ea5e151",
@@ -33,7 +33,7 @@
     "includes/guide/guide.php": "7dfbd3c0e35d447dca41697c7049632ee835716525e0642638d53d5129c7ffc1",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/llm.php": "db572064970057eabf82b886a74834e481745db231fe4e7645379c6e9206af24",
+    "includes/llm/llm.php": "40a8005f2311f179e1b6a624ac5710c21a3a9dda85dee56a8d7da6f7780d5fc6",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "c4e6b7cd2961b978305596e7144e059c60fa22f5961f350f1a47001254d65a98",
     "includes/rollback/rollback.php": "f9e45cb8fb78b76123db20a838d204e4393eb7023c93599bdb218ba993c1e80e",
@@ -44,6 +44,6 @@
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "bf2fd45b9db5d8259d6737abf98fa07aa0cab9580556bfd4b834a1bd902e8deb",
-    "wp-ai-executor.php": "21c77144b3d32c3821b296bb3b5cefb0d25ccdbe7436ca00e911765ca2776f32"
+    "wp-ai-executor.php": "f675ecf1504e020359c6abc8e3cb822c39c3ea3af37e6fa0323ada0c76edcf41"
   }
 }

@@ -261,7 +261,95 @@ function wpae_llm_is_action_request( string $message ): bool {
 }
 
 function wpae_llm_is_targeted_edit_request( string $message ): bool {
-    return (bool) preg_match( '/\b(измени|поменяй|поставь|сделай|увеличь|уменьши|замени|настрой).*(шрифт|типограф|размер|кегл|цвет|отступ|padding|margin|радиус|высот|ширин|выравнив|интервал)/iu', $message );
+    if ( ! preg_match( '/\b(измени|поменяй|поставь|сделай|увеличь|уменьши|замени|настрой|улучши|обнови|оформи|перестрой)\b/iu', $message ) ) {
+        return false;
+    }
+
+    $property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
+    $selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран|выделен|текущ|внутри|содержим|дочерн)/iu', $message );
+    $insert_signal = (bool) preg_match( '/\b(добавь|создай|собери|вставь|новый|новую|новое)\b/iu', $message );
+    if ( $insert_signal ) {
+        return false;
+    }
+    return $selection_signal || $property_signal;
+}
+
+function wpae_llm_sanitize_editor_context_value( $value, int $depth = 0 ) {
+    if ( $depth >= 8 ) {
+        return '[truncated]';
+    }
+    if ( is_array( $value ) ) {
+        $result = [];
+        $count = 0;
+        foreach ( $value as $key => $item ) {
+            if ( ++$count > 80 ) {
+                break;
+            }
+            $normalized_key = is_int( $key ) ? $key : sanitize_key( (string) $key );
+            if ( ! is_int( $key ) && $normalized_key === '' ) {
+                continue;
+            }
+            if ( ! is_int( $key ) && in_array( strtolower( $normalized_key ), [ 'html', 'custom_css', 'code', 'script', 'api_key', 'token', 'nonce', 'password' ], true ) ) {
+                continue;
+            }
+            $result[ $normalized_key ] = wpae_llm_sanitize_editor_context_value( $item, $depth + 1 );
+        }
+        return $result;
+    }
+    if ( is_string( $value ) ) {
+        return sanitize_textarea_field( substr( $value, 0, 1600 ) );
+    }
+    if ( is_bool( $value ) || is_int( $value ) || is_float( $value ) || $value === null ) {
+        return $value;
+    }
+    return sanitize_text_field( substr( (string) $value, 0, 1600 ) );
+}
+
+function wpae_llm_sanitize_selected_element_snapshot( array $element, int $depth = 0 ): array {
+    $snapshot = [
+        'id' => sanitize_key( substr( (string) ( $element['id'] ?? '' ), 0, 64 ) ),
+        'elType' => sanitize_key( substr( (string) ( $element['elType'] ?? '' ), 0, 32 ) ),
+        'widgetType' => sanitize_key( substr( (string) ( $element['widgetType'] ?? '' ), 0, 64 ) ),
+        'settings' => wpae_llm_sanitize_editor_context_value( is_array( $element['settings'] ?? null ) ? $element['settings'] : [], $depth + 1 ),
+        'elements' => [],
+    ];
+    if ( isset( $element['visible_text'] ) ) {
+        $visible_text = sanitize_textarea_field( substr( (string) $element['visible_text'], 0, 240 ) );
+        if ( $visible_text !== '' ) {
+            $snapshot['visible_text'] = $visible_text;
+        }
+    }
+    if ( $depth >= 8 || ! is_array( $element['elements'] ?? null ) ) {
+        return $snapshot;
+    }
+    foreach ( array_slice( $element['elements'], 0, 40 ) as $child ) {
+        if ( is_array( $child ) ) {
+            $snapshot['elements'][] = wpae_llm_sanitize_selected_element_snapshot( $child, $depth + 1 );
+        }
+    }
+    return $snapshot;
+}
+
+function wpae_llm_collect_selected_scope_ids( array $elements, array $selected_ids ): array {
+    $roots = array_fill_keys( array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) ), true );
+    $allowed = [];
+    $walk = static function ( array $nodes, bool $inside_scope = false ) use ( &$walk, &$allowed, $roots ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $id = sanitize_key( (string) ( $node['id'] ?? '' ) );
+            $in_scope = $inside_scope || ( $id !== '' && isset( $roots[ $id ] ) );
+            if ( $in_scope && $id !== '' ) {
+                $allowed[ $id ] = true;
+            }
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $walk( $node['elements'], $in_scope );
+            }
+        }
+    };
+    $walk( $elements );
+    return array_keys( $allowed );
 }
 
 function wpae_llm_is_list( array $value ): bool {
@@ -334,7 +422,13 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
     $patches = is_array( $action['patches'] ?? null ) ? array_slice( $action['patches'], 0, 12 ) : [];
     $selected_ids = array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) );
     $patch_ids = array_values( array_filter( array_map( static fn( $patch ) => is_array( $patch ) ? sanitize_key( (string) ( $patch['element_id'] ?? $patch['id'] ?? '' ) ) : '', $patches ) ) );
-    if ( (string) ( $action['action'] ?? '' ) !== 'patch_elements' || absint( $action['post_id'] ?? 0 ) !== $post_id || empty( $patches ) || empty( $selected_ids ) || count( $patch_ids ) !== count( $patches ) || ! empty( array_diff( $patch_ids, $selected_ids ) ) ) {
+    $existing = wpae_get_elementor_data_for_post( $post_id );
+    if ( is_wp_error( $existing ) ) {
+        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Не удалось прочитать текущую структуру Elementor для точечной правки.', 'status' => 422, 'details' => [ 'error' => $existing->get_error_message() ] ];
+    }
+    $scope_ids = wpae_llm_collect_selected_scope_ids( $existing, $selected_ids );
+    $out_of_scope_ids = array_values( array_diff( $patch_ids, $scope_ids ) );
+    if ( (string) ( $action['action'] ?? '' ) !== 'patch_elements' || absint( $action['post_id'] ?? 0 ) !== $post_id || empty( $patches ) || empty( $selected_ids ) || empty( $scope_ids ) || count( $patch_ids ) !== count( $patches ) || ! empty( $out_of_scope_ids ) ) {
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch-команда не соответствует текущему Elementor элементу или странице.' ];
     }
     $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/patch' );
@@ -344,7 +438,7 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
     $preview = wpae_elementor_patch( $request );
     $preview_data = $preview instanceof WP_REST_Response ? $preview->get_data() : [];
     $preview_status = $preview instanceof WP_REST_Response ? $preview->get_status() : 500;
-    $steps = [ [ 'id' => 'preview', 'status' => $preview_status >= 200 && $preview_status < 300 && ! empty( $preview_data['ok'] ) ? 'ok' : 'failed', 'message' => 'Patch preview и preflight проверены до записи.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $preview_status, 'patch_count' => count( $patches ) ] ] ];
+    $steps = [ [ 'id' => 'preview', 'status' => $preview_status >= 200 && $preview_status < 300 && ! empty( $preview_data['ok'] ) ? 'ok' : 'failed', 'message' => 'Patch preview и preflight проверены до записи.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $preview_status, 'patch_count' => count( $patches ), 'selected_scope_count' => count( $scope_ids ) ] ] ];
     if ( $preview_status < 200 || $preview_status >= 300 || empty( $preview_data['ok'] ) ) {
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview отклонён до записи.', 'status' => $preview_status, 'details' => $preview_data, 'steps' => $steps ];
     }
@@ -353,11 +447,12 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
     $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
     $status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
     if ( $status < 200 || $status >= 300 || empty( $data['ok'] ) ) {
-        $steps[] = [ 'id' => 'elementor_patch', 'status' => 'failed', 'message' => 'Patch не сохранён и был остановлен проверками.', 'details' => [ 'http_status' => $status, 'error' => $data['error'] ?? '' ] ];
+        $steps[] = [ 'id' => 'elementor_patch', 'status' => 'failed', 'message' => 'Patch не сохранён и был остановлен проверками.', 'details' => [ 'http_status' => $status, 'error' => $data['error'] ?? '', 'selected_scope_count' => count( $scope_ids ) ] ];
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Elementor patch отклонён проверкой.', 'status' => $status, 'details' => $data, 'steps' => $steps ];
     }
     $changes = (array) ( $data['patch_report']['changes'] ?? [] );
-    $steps[] = [ 'id' => 'elementor_patch', 'status' => 'ok', 'message' => 'Точечные native-свойства изменены через Elementor patch.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'changes' => $changes ] ];
+    $changed_ids = array_values( array_unique( array_map( static fn( $item ) => sanitize_key( (string) ( $item['element_id'] ?? '' ) ), $changes ) ) );
+    $steps[] = [ 'id' => 'elementor_patch', 'status' => 'ok', 'message' => 'Точечные native-свойства изменены через Elementor patch.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'changes' => $changes, 'changed_ids' => $changed_ids, 'selected_scope_count' => count( $scope_ids ) ] ];
     return [
         'ok' => true,
         'operation_id' => $operation_id,
@@ -367,7 +462,13 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
         'patch_report' => $data['patch_report'] ?? [],
         'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
         'rollback_expires_at' => $data['rollback_expires_at'] ?? null,
-        'editor_sync' => [ 'mode' => 'refresh', 'changed_ids' => array_values( array_unique( array_map( static fn( $item ) => sanitize_key( (string) ( $item['element_id'] ?? '' ) ), $changes ) ) ) ],
+        'editor_sync' => [
+            'mode' => 'patch',
+            'patches' => array_values( $patches ),
+            'changed_ids' => $changed_ids,
+            'target_element_ids' => $changed_ids,
+            'selected_scope_count' => count( $scope_ids ),
+        ],
         'steps' => $steps,
     ];
 }
@@ -2208,7 +2309,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     }
     if ( $action_request ) {
         $system_prompt .= $targeted_edit
-            ? ' Это точечное изменение выбранного Elementor элемента. Верни только JSON по схеме: {"action":"patch_elements","post_id":number,"patches":[{"element_id":"selected-id","path":"settings.native_property","op":"set","value":...}]}. Меняй только явно запрошенные native properties, не трогай HTML/CSS/WebGL и не пересобирай страницу. Используй только выбранные element_id из контекста.'
+            ? ' Это точечное изменение выбранного Elementor элемента или контейнера вместе со всем его дочерним деревом. Контекст редактора содержит полный снимок выбранного объекта, его settings и содержимое descendants. Верни только JSON по схеме: {"action":"patch_elements","post_id":number,"patches":[{"element_id":"selected-id-or-descendant-id","path":"settings.native_property","op":"set","value":...}]}. Меняй только явно запрошенные native properties, не трогай HTML/CSS/WebGL и не пересобирай страницу. Для контейнера можешь менять native settings любого элемента внутри его дерева, но не выходи за пределы выбранного дерева и не выдумывай element_id. Для текста используй текущий settings.title, settings.editor или settings.text; для стиля сохраняй совместимую форму текущего native setting.'
             : ' Ограничения компактности action-JSON: ровно 1 корневой контейнер и 3–5 вложенных виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
         if ( $vision_repair ) {
             $system_prompt .= $vision_regenerate
@@ -2243,18 +2344,11 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             if ( ! is_array( $element ) ) {
                 continue;
             }
-            $selected_elements[] = [
-                'id' => sanitize_key( substr( (string) ( $element['id'] ?? '' ), 0, 64 ) ),
-                'elType' => sanitize_key( substr( (string) ( $element['elType'] ?? '' ), 0, 32 ) ),
-                'widgetType' => sanitize_key( substr( (string) ( $element['widgetType'] ?? '' ), 0, 64 ) ),
-            ];
-            $visible_text = sanitize_text_field( substr( (string) ( $element['visible_text'] ?? '' ), 0, 240 ) );
-            if ( $visible_text !== '' ) {
-                $selected_elements[ count( $selected_elements ) - 1 ]['visible_text'] = $visible_text;
-            }
+            $selected_elements[] = wpae_llm_sanitize_selected_element_snapshot( $element );
         }
         $context = [
             'post_id' => absint( $context['post_id'] ?? 0 ),
+            'selection_scope' => 'selected_element_and_descendants',
             'selected_elements' => $selected_elements,
         ];
         $messages[0]['content'] .= "\nКонтекст редактора: " . wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -2326,11 +2420,12 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
         $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
         $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
+        $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
         if ( $targeted_edit ) {
             $selected_element_ids = array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) );
             $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids );
             $patch_execution['steps'] = array_merge(
-                [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и контекст выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ] ],
+                [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и полное дерево выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ] ],
                 [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],
                 (array) ( $patch_execution['steps'] ?? [] )
             );
@@ -2531,11 +2626,11 @@ function wpae_get_llm_guide(): array {
         'request' => [
             'message' => 'Required string, maximum 4000 characters.',
             'history' => 'Optional last 12 user/assistant messages; not stored by the plugin.',
-            'context' => 'Optional bounded editor context with post_id and selected element ids/types. When a selected element and a property-edit request are present, the chat returns patch_elements instead of rebuilding the page.',
+            'context' => 'Optional bounded editor context with post_id and a selected Elementor subtree including native settings and descendants. When a selected element and an edit request are present, the chat returns a server-scoped patch_elements action instead of rebuilding the page.',
         ],
         'safety' => 'Normal chat is advisory. Explicit action requests may insert only one populated root Flexbox container or apply a bounded native patch to selected elements when elementor_writes is enabled. The plugin runs a dry-run preview before writing and routes the write through update, preflight, protected-zone, visual-regression, and rollback checks. Delete and replace actions are not supported. If the provider returns tutorial text instead of the required action JSON, the write is rejected.',
         'guided_editor_mode' => 'The floating Elementor editor chat injects the current guide, enabled custom skills, capabilities, and project design system into action requests. It uses the same internal Elementor validation/update pipeline without exposing the site API key to browser JavaScript.',
-        'editor_preview_sync' => 'After a successful action write, the floating chat first synchronizes new models through the open Elementor editor API and then refreshes the preview when needed. The response reports the sync mode and changed ids; it does not claim realtime success without a canvas check.',
+        'editor_preview_sync' => 'After a successful insert, the floating chat synchronizes new models through the open Elementor editor API. After a selected patch, it applies native settings to the selected model tree and refreshes the preview only when the canvas cannot confirm the change. The response reports the sync mode and changed ids; it does not claim realtime success without a canvas check.',
         'action_content_gate' => 'An explicit insert action is rejected unless it contains exactly one populated root container with at least one native Elementor widget. A targeted patch is rejected unless it has a current post_id, bounded patches, existing selected element ids, and native editable paths.',
         'visual_grammar' => 'Every generated root block receives one compact outlined rounded native badge, and every repeatable card heading is normalized to a native icon-box with the icon on the left. This is enforced after provider decoding and before Elementor preflight.',
         'preview_and_undo' => 'Every successful write returns operation_id, compact diff, rollback_snapshot_id, and rollback expiry. The editor chat exposes one-click undo through POST /wp-json/ai-executor/v1/llm/undo, scoped to the current post and authenticated editor.',

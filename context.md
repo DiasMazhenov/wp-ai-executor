@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.77`
-- Guide: `v02.05.77`
+- Plugin: `v02.09.78`
+- Guide: `v02.05.78`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -28,7 +28,8 @@
 
 The floating Elementor chat can explicitly export selected native Elementor
 models as `wpae-elementor-selection-v1` JSON with recursive child elements;
-the full export stays local to the browser and is not added to LLM context.
+the copy-only export stays local to the browser, while a bounded sanitized copy
+of the selected subtree is sent with a selected-edit chat request.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
@@ -81,7 +82,11 @@ visible errors. The chat only reports regeneration success after Elementor
 confirms the new write.
 The targeted Elementor patch branch keeps balanced nested arrays in its
 progress-step merge; PHP syntax is checked before release to prevent a bootstrap
-fatal error from taking down WordPress.
+fatal error from taking down WordPress. A selected widget or container sends its
+native settings plus the full bounded descendant tree to the provider. The
+server derives an authorization scope from the current saved Elementor tree,
+allows patches only for that scope, previews them before writing, and returns
+changed descendant IDs for editor synchronization.
 Pricing fallback content parsing strips request prefixes from labels, keeps
 the root heading/description separate from explicit tariff cards, and maps
 `Кнопка: ...` text into native card buttons.
@@ -136,8 +141,9 @@ Elementor editor receives only a WordPress REST nonce and proxy URL. Ordinary
 chat remains advisory. Explicit action requests may insert only new Elementor
 elements when `llm_chat` and `elementor_writes` are enabled; generated data
 passes update, preflight, protected-zone, visual-regression and rollback checks.
-Delete and replace actions are forbidden. Only bounded history and sanitized
-selected-element metadata are sent to the model.
+Delete and replace actions are forbidden. Only bounded history and a sanitized
+selected-element subtree are sent to the model; secrets and executable fields
+are removed before the snapshot is serialized.
 
 LLM settings use provider-owned built-in HTTPS base URLs. OpenRouter defaults to
 `openrouter/free`; custom base URLs are available only for the custom provider.
@@ -281,13 +287,16 @@ chrome/dropzones, sends bounded render-context evidence, and the Vision prompt
 is instructed to ignore editor placeholders and distinguish uncertainty from a
 broken public page. The chat exposes action controls for the latest rollback
 snapshot and can undo it without a guide-token round trip.
-Realtime editor sync now waits for the official `$e.run` promises and confirms
-the expected widget count before reporting success; only an unconfirmed sync
-falls back to a saved-preview refresh. Vision capture waits for document fonts
-and pending images so it reviews a stable render rather than an intermediate
-layout.
+Realtime editor sync now waits for the official `$e.run` promises for inserts
+and applies native settings patches recursively to the selected editor model
+tree for selected edits; only an unconfirmed sync falls back to a saved-preview
+refresh. Vision capture waits for document fonts and pending images so it
+reviews a stable render rather than an intermediate layout.
 Targeted native patches are server-scoped to the selected Elementor element
-ids; prompt instructions alone are not trusted as an authorization boundary.
+ids and all descendants; prompt instructions alone are not trusted as an
+authorization boundary. Generic insert wording keeps the normal insertion
+route, while a selected edit prompt returns `patch_elements` and reports the
+patch count, changed IDs, and selected scope count in the chat trace.
 Action requests allow up to 8000 completion tokens and explicitly constrain
 the provider to compact JSON with at most two containers and eight widgets,
 without duplicated Elementor defaults or optional settings.
@@ -365,6 +374,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.75` treats REST 502 responses and provider `finish_reason: error` responses as transient provider-unavailable states, enabling the existing single force-reload retry path.
 - `v02.09.76` applies the final bento pass after fallback, native normalization, and token mapping; shared card sizing clears conflicting fixed dimensions, forces equal responsive widths/stretching, and moves a stale root bento marker onto the actual card shell.
 - `v02.09.77` keeps generated CTA rows transparent after token mapping and adds a compact native CTA label beside the button, preventing a lone button from rendering as an empty white card.
+- `v02.09.78` adds selected-element/container prompt editing with bounded recursive context, server-side descendant scope authorization, native patch preview/write, and realtime settings synchronization in the open Elementor canvas. Insert wording has priority over broad block words so generation prompts do not get misrouted to the patch branch.
 - `v02.09.51` captures only the new Elementor root for editor Vision and reports a missing or zero-size target instead of sending the old full-page viewport for review.
 - `v02.09.52` protects generated badge padding/radius from design-token remapping, enforces explicit pill geometry, resets the label margin, and replaces model-supplied badge variants with the canonical generated badge.
 - `v02.09.53` adds explicit selected-Elementor JSON export to the floating chat, including native settings and recursive child elements without adding the full payload to LLM requests.
@@ -375,7 +385,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.58` gives provider generations a per-run composition seed and makes deterministic fallback blocks choose an unused visual variant from a ten-variant palette, preserving the content and applying the variation after design-token mapping.
 - `v02.09.59` applies that unused visual-variant guard to provider-generated blocks as well as fallback blocks, keeps each repeated-card grid on one coherent card surface, and hides the stale Elementor preview loader after the iframe has populated so realtime insertion and Vision capture see the rendered block.
 
-The latest local release `v02.09.77` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.78` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the

@@ -44,6 +44,11 @@
     heading.appendChild(title);
     heading.appendChild(subtitle);
     heading.appendChild(meta);
+    var selectionHint = document.createElement('small');
+    selectionHint.className = 'wpae-llm-selection-hint';
+    selectionHint.setAttribute('aria-live', 'polite');
+    selectionHint.textContent = 'Выделение: нет';
+    heading.appendChild(selectionHint);
     var close = document.createElement('button');
     close.className = 'wpae-llm-close';
     close.type = 'button';
@@ -94,6 +99,7 @@
 
     function setOpen(value) {
         root.classList.toggle('wpae-llm-chat-root--open', value);
+        refreshSelectionHint();
         if (value) input.focus();
     }
     function addIcon(button, iconClass, label) {
@@ -122,6 +128,10 @@
             decoded_action: 'распознанная команда',
             decoded_post_id: 'распознанный post_id',
             decoded_element_count: 'распознано элементов',
+            decoded_patch_count: 'распознано patch-операций',
+            patch_count: 'patch-операций',
+            selected_scope_count: 'элементов в выбранной области',
+            changed_ids: 'измененные element_id',
             widget_count: 'native widgets',
             expected_action: 'ожидаемая команда',
             expected_post_id: 'ожидаемый post_id',
@@ -152,7 +162,7 @@
         if (step.status === 'skipped') line += ' [пропущено]';
         var details = step.details || {};
         var parts = [];
-        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details', 'operation_id', 'inserted_ids', 'diff'].forEach(function (key) {
+        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'decoded_patch_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details', 'operation_id', 'inserted_ids', 'diff'].forEach(function (key) {
             if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
                 var value = details[key];
                 if (Array.isArray(value)) {
@@ -305,14 +315,12 @@
         });
     }
     function selectedElements() {
-        return selectedModels().map(function (model) {
-            var attributes = model && model.attributes ? model.attributes : {};
-            return {
-                id: String(attributes.id || ''),
-                elType: String(attributes.elType || ''),
-                widgetType: String(attributes.widgetType || '')
-            };
-        });
+        return selectedModels().map(serializeSelectedModel);
+    }
+    function refreshSelectionHint() {
+        if (!selectionHint) return;
+        var models = selectedModels();
+        selectionHint.textContent = models.length ? 'Выбрано: ' + models.length + (models.length === 1 ? ' объект' : ' объекта') : 'Выделение: нет';
     }
     function buildVisionRepairMessage(review, originalBrief) {
         var report = review && review.report ? review.report : {};
@@ -332,9 +340,13 @@
         return iframe && iframe.contentDocument ? iframe.contentDocument.querySelectorAll('.elementor-widget').length : 0;
     }
     function getEditorSyncIds(editorSync) {
-        return editorSync && Array.isArray(editorSync.elements) ? editorSync.elements.map(function (element) {
+        if (!editorSync) return [];
+        var ids = Array.isArray(editorSync.elements) ? editorSync.elements.map(function (element) {
             return element && element.id ? String(element.id) : '';
         }).filter(Boolean) : [];
+        if (!ids.length && Array.isArray(editorSync.target_element_ids)) ids = editorSync.target_element_ids.map(String).filter(Boolean);
+        if (!ids.length && Array.isArray(editorSync.changed_ids)) ids = editorSync.changed_ids.map(String).filter(Boolean);
+        return ids;
     }
     function findPreviewTarget(doc, targetElementIds) {
         if (!doc || !Array.isArray(targetElementIds) || !targetElementIds.length) return null;
@@ -463,6 +475,84 @@
         } catch (error) {
             return Promise.resolve(false);
         }
+    }
+    function getEditorModelChildren(model) {
+        var children = model && typeof model.get === 'function' ? model.get('elements') : null;
+        if (children && Array.isArray(children.models)) return children.models;
+        return Array.isArray(children) ? children : [];
+    }
+    function collectEditorModelTree(model, result) {
+        if (!model) return;
+        result.push(model);
+        getEditorModelChildren(model).forEach(function (child) { collectEditorModelTree(child, result); });
+    }
+    function cloneEditorValue(value) {
+        if (value === undefined || value === null) return value;
+        if (typeof value !== 'object') return value;
+        try { return JSON.parse(JSON.stringify(value)); } catch (error) { return value; }
+    }
+    function setEditorNestedValue(target, parts, value, operation) {
+        if (!parts.length) return target;
+        var cursor = target;
+        for (var index = 0; index < parts.length - 1; index += 1) {
+            var key = /^\d+$/.test(parts[index]) ? Number(parts[index]) : parts[index];
+            if (!cursor[key] || typeof cursor[key] !== 'object') cursor[key] = {};
+            cursor = cursor[key];
+        }
+        var last = /^\d+$/.test(parts[parts.length - 1]) ? Number(parts[parts.length - 1]) : parts[parts.length - 1];
+        if (operation === 'delete') {
+            if (Array.isArray(cursor)) cursor.splice(last, 1);
+            else delete cursor[last];
+        } else {
+            cursor[last] = value;
+        }
+        return target;
+    }
+    function applyEditorPatch(model, patch) {
+        var path = String(patch && patch.path || '');
+        if (path.indexOf('settings.') !== 0) return false;
+        var settings = model && typeof model.get === 'function' ? model.get('settings') : null;
+        if (!settings) return false;
+        var settingsModel = settings && typeof settings.set === 'function' ? settings : null;
+        var settingsData = settingsModel && typeof settingsModel.toJSON === 'function' ? settingsModel.toJSON() : cloneEditorValue(settings);
+        if (!settingsData || typeof settingsData !== 'object') settingsData = {};
+        var parts = path.split('.').slice(1);
+        if (!parts.length) return false;
+        var operation = String(patch.op || 'set');
+        var value = patch.value;
+        if (operation === 'replace_text') {
+            var current = settingsData;
+            parts.forEach(function (part) { if (current !== undefined && current !== null) current = current[part]; });
+            if (typeof current !== 'string' || !String(patch.search || '')) return false;
+            value = current.split(String(patch.search)).join(String(patch.replace || ''));
+            operation = 'set';
+        }
+        setEditorNestedValue(settingsData, parts, value, operation);
+        if (settingsModel) {
+            var topKey = parts[0];
+            settingsModel.set(topKey, settingsData[topKey]);
+            return true;
+        }
+        if (typeof model.set === 'function') {
+            model.set('settings', settingsData);
+            return true;
+        }
+        return false;
+    }
+    function syncEditorPatches(editorSync) {
+        if (!editorSync || !Array.isArray(editorSync.patches) || !editorSync.patches.length) return Promise.resolve(false);
+        var models = [];
+        selectedModels().forEach(function (model) { collectEditorModelTree(model, models); });
+        var applied = 0;
+        editorSync.patches.forEach(function (patch) {
+            var id = String(patch && (patch.element_id || patch.id) || '');
+            var model = models.find(function (candidate) {
+                var modelId = candidate && typeof candidate.get === 'function' ? candidate.get('id') : candidate && candidate.id;
+                return String(modelId || '') === id;
+            });
+            if (model && applyEditorPatch(model, patch)) applied += 1;
+        });
+        return applied === editorSync.patches.length ? waitForPreviewPaint().then(function () { return true; }) : Promise.resolve(false);
     }
     var visionCapturePromise = null;
     function loadVisionCapture() {
@@ -796,21 +886,30 @@
                 var expectedWidgetCount = beforeWidgetCount + Number(body.write.inserted_widget_count || body.write.inserted_count || 0);
                 var editorSyncedState = false;
                 var editorSyncData = body.write.editor_sync;
-                visionPromise = Promise.resolve(syncEditorElements(body.write.editor_sync)).then(function (editorSynced) {
+                var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
+                    ? syncEditorPatches(body.write.editor_sync)
+                    : syncEditorElements(body.write.editor_sync);
+                visionPromise = Promise.resolve(editorSyncPromise).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
                     if (editorSynced) {
-                        return waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
-                            addMessage('assistant', 'Новые элементы добавлены в открытый Elementor без перезагрузки редактора.');
+                        var syncMessage = editorSyncData && editorSyncData.mode === 'patch'
+                            ? 'Выбранный элемент обновлен в открытом Elementor без перезагрузки редактора.'
+                            : 'Новые элементы добавлены в открытом Elementor без перезагрузки редактора.';
+                        var paintPromise = editorSyncData && editorSyncData.mode === 'patch'
+                            ? waitForPreviewPaint()
+                            : waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount);
+                        return paintPromise.then(function () { return focusEditorSync(editorSyncData); }).then(function () {
+                            addMessage('assistant', syncMessage);
                             return true;
                         }).catch(function () {
                             return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
-                                addMessage('assistant', 'Canvas не подтвердил realtime-вставку, preview обновлён из сохранённых данных.');
+                                addMessage('assistant', editorSyncData && editorSyncData.mode === 'patch' ? 'Canvas не подтвердил realtime-правку, preview обновлен из сохраненных данных.' : 'Canvas не подтвердил realtime-вставку, preview обновлен из сохраненных данных.');
                                 return false;
                             });
                         });
                     }
                     return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
-                        addMessage('assistant', 'Предпросмотр Elementor обновлён из сохранённых данных.');
+                        addMessage('assistant', editorSyncData && editorSyncData.mode === 'patch' ? 'Предпросмотр измененного элемента обновлен из сохраненных данных.' : 'Предпросмотр Elementor обновлен из сохраненных данных.');
                         return false;
                     }).catch(function (error) {
                         addMessage('assistant', 'Данные сохранены, но preview Elementor не обновился: ' + error.message);
@@ -887,6 +986,7 @@
             status.textContent = strings.disabled;
             return;
         }
+        refreshSelectionHint();
         addMessage('user', message);
         input.value = '';
         request(message);
