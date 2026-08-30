@@ -1,5 +1,10 @@
 # План WP AI Executor
 
+## v02.09.76
+
+- Финальный bento-нормализатор теперь выполняется после fallback, native-нормализации и token-map: он удаляет конфликтующие фиксированные размеры, выравнивает карточки и не дает старому root-маркеру принять badge/content-shell за карточки.
+- После исправления проверить в открытом Elementor естественный контентный prompt: равные карточки в одной строке, прозрачная сетка, отдельный CTA и приемлемый Vision score.
+
 ## v02.09.75
 
 - Provider errors returned as REST 502 or `finish_reason: error` now enter the same single reload-and-retry path, so a transient failure does not stop a natural browser test before generation.

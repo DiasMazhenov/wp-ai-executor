@@ -925,6 +925,9 @@ function wpae_llm_select_fallback_variant( array $elements, int $seed, array $ca
 
 function wpae_llm_set_variant_container_width( array &$settings, float $width ): void {
     $width = max( 0, min( 100, $width ) );
+    foreach ( [ 'height', 'height_tablet', 'height_mobile', 'min_height', 'min_height_tablet', 'min_height_mobile', 'flex_basis', 'flex_basis_tablet', 'flex_basis_mobile' ] as $conflicting_key ) {
+        unset( $settings[ $conflicting_key ] );
+    }
     $settings['width'] = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
     $settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
     $settings['_element_width'] = 'initial';
@@ -934,9 +937,15 @@ function wpae_llm_set_variant_container_width( array &$settings, float $width ):
     $settings['_flex_size'] = 'custom';
     $settings['_flex_grow'] = 0;
     $settings['_flex_shrink'] = 0;
+    $settings['flex_grow'] = 0;
+    $settings['flex_shrink'] = 0;
+    $settings['align_self'] = 'stretch';
     $settings['_flex_size_mobile'] = 'custom';
     $settings['_flex_grow_mobile'] = 0;
     $settings['_flex_shrink_mobile'] = 0;
+    $settings['flex_grow_mobile'] = 0;
+    $settings['flex_shrink_mobile'] = 0;
+    $settings['align_self_mobile'] = 'stretch';
 }
 
 function wpae_llm_variant_card_widths( int $variant, int $count ): array {
@@ -1500,6 +1509,8 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
         $original_settings = $root['settings'];
+        $root_classes = preg_split( '/\s+/', trim( (string) ( $root['settings']['_css_classes'] ?? '' ) ) );
+        $root_was_bento_grid = is_array( $root_classes ) && in_array( 'wpae-bento-grid', $root_classes, true );
         $badge = null;
         $content_shell = null;
         $content_elements = [];
@@ -1540,11 +1551,23 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         }
         if ( ! $content_shell ) {
             $original_gap = $original_settings['flex_gap'] ?? $original_settings['gap'] ?? [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+            $shell_card_count = 0;
+            if ( $root_was_bento_grid ) {
+                foreach ( $content_elements as $content_element ) {
+                    if ( is_array( $content_element ) && ( $content_element['elType'] ?? '' ) === 'container' ) {
+                        $shell_card_count++;
+                    }
+                }
+            }
+            $shell_classes = 'wpae-generated-content-shell';
+            if ( $shell_card_count >= 2 ) {
+                $shell_classes .= ' wpae-bento-grid';
+            }
             $content_shell = [
                 'id' => (string) ( $root['id'] ?? 'wpae-generated' ) . '-content-shell',
                 'elType' => 'container',
                 'settings' => [
-                    '_css_classes' => 'wpae-generated-content-shell',
+                    '_css_classes' => $shell_classes,
                     'content_width' => 'full',
                     'flex_direction' => (string) ( $original_settings['flex_direction'] ?? 'column' ),
                     'flex_direction_mobile' => (string) ( $original_settings['flex_direction_mobile'] ?? 'column' ),
@@ -1579,10 +1602,25 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
             $content_shell_settings = is_array( $content_shell['settings'] ?? null ) ? $content_shell['settings'] : [];
             $content_shell_settings['background_background'] = 'classic';
             $content_shell_settings['background_color'] = 'transparent';
+            if ( $root_was_bento_grid ) {
+                $shell_card_count = 0;
+                foreach ( (array) ( $content_shell['elements'] ?? [] ) as $content_element ) {
+                    if ( is_array( $content_element ) && ( $content_element['elType'] ?? '' ) === 'container' ) {
+                        $shell_card_count++;
+                    }
+                }
+                if ( $shell_card_count >= 2 ) {
+                    $content_shell_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $content_shell_settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $content_shell_settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
+                }
+            }
             $content_shell['settings'] = $content_shell_settings;
             if ( $content_elements ) {
                 $content_shell['elements'] = array_merge( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $content_elements );
             }
+        }
+        if ( $root_was_bento_grid ) {
+            $root_classes = array_values( array_filter( (array) $root_classes, static fn( $class ) => $class !== 'wpae-bento-grid' ) );
+            $root['settings']['_css_classes'] = trim( implode( ' ', $root_classes ) );
         }
         $content_shell['elements'] = wpae_llm_wrap_generation_cta( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $changed );
         $root['settings']['flex_direction'] = 'column';
@@ -1843,21 +1881,13 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
             $changed++;
 
             $count = count( $child_containers );
-            $width = $count >= 4 ? 23 : ( $count === 3 ? 31 : 48 );
-            foreach ( $child_containers as $child_index ) {
+            foreach ( wpae_llm_variant_card_widths( 0, $count ) as $width_index => $width ) {
+                $child_index = $child_containers[ $width_index ] ?? null;
+                if ( $child_index === null ) {
+                    continue;
+                }
                 $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
-                $child_settings['width'] = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
-                $child_settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-                $child_settings['_element_width'] = 'initial';
-                $child_settings['_element_custom_width'] = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
-                $child_settings['_element_width_mobile'] = 'initial';
-                $child_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-                $child_settings['_flex_size'] = 'custom';
-                $child_settings['_flex_grow'] = 0;
-                $child_settings['_flex_shrink'] = 0;
-                $child_settings['_flex_size_mobile'] = 'custom';
-                $child_settings['_flex_grow_mobile'] = 0;
-                $child_settings['_flex_shrink_mobile'] = 0;
+                wpae_llm_set_variant_container_width( $child_settings, (float) $width );
                 $children[ $child_index ]['settings'] = $child_settings;
             }
             $element['elements'] = $children;
@@ -1875,6 +1905,7 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
 
         if ( $is_grid ) {
             wpae_llm_normalize_bento_grid( $element, $changed );
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : $settings;
         }
 
         if ( is_array( $element['elements'] ?? null ) ) {
@@ -2026,6 +2057,13 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $elements = wpae_llm_apply_fallback_variant( $elements, $variation_archetype, $fallback_variant );
         $fallback_variant_applied = true;
         $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
+    }
+    if ( function_exists( 'wpae_llm_normalize_bento_grids_recursive' ) ) {
+        $final_bento_changed = 0;
+        wpae_llm_normalize_bento_grids_recursive( $elements, $final_bento_changed );
+        if ( $final_bento_changed > 0 ) {
+            $steps[] = [ 'id' => 'bento_layout_final', 'status' => 'ok', 'message' => 'Финальная проверка выровняла bento-карточки после всех Elementor-нормализаторов.', 'details' => [ 'containers_updated' => $final_bento_changed, 'max_items_per_row' => 4 ] ];
+        }
     }
     if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
         $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );
