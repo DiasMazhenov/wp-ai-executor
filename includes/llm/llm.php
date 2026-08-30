@@ -451,9 +451,17 @@ function wpae_llm_extract_requested_content( string $message ): array {
             $matches = array_merge( $matches, $found[1] );
         }
     }
-    foreach ( wpae_llm_extract_labeled_content( $message ) as $pair ) {
+    $labeled_pairs = wpae_llm_extract_labeled_content( $message );
+    foreach ( $labeled_pairs as $pair ) {
         $matches[] = $pair['label'];
         $matches[] = $pair['content'];
+    }
+    if ( ! empty( $labeled_pairs ) ) {
+        foreach ( wpae_llm_content_units( $message ) as $unit ) {
+            if ( preg_match( '/\\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\\s+заявк|смотреть)\\b/iu', $unit ) ) {
+                $matches[] = $unit;
+            }
+        }
     }
     if ( empty( $matches ) ) {
         $matches = wpae_llm_content_units( $message );

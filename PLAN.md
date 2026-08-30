@@ -1,5 +1,10 @@
 # План WP AI Executor
 
+## v02.09.67
+
+- Content-only prompts with labeled cards and a standalone CTA now preserve that CTA in fidelity checks and fallback content mapping.
+- Проверить в открытом Elementor, что трехкарточная и двухколоночная бенто-композиции сохраняют весь контент и проходят Vision без переполнения.
+
 ## v02.09.66
 
 - Нормализатор очищает фон уже существующей content-shell, если провайдер вернул собственную белую оболочку вокруг bento-сетки.

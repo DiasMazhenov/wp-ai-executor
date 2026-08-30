@@ -72,6 +72,8 @@ assert.match(llm, /has_content_signal/);
 assert.match(llm, /коллекц\\w\*/);
 assert.match(llm, /оформить/);
 assert.match(llm, /if \( empty\( \$matches \) \)/);
+assert.match(llm, /foreach \( wpae_llm_content_units\( \$message \) as \$unit \)/);
+assert.match(llm, /обсудить\|получить\|узнать/);
 assert.match(llm, /\$card_elements = is_array\( \$card\['elements'\] \?\? null \)/);
 assert.match(llm, /foreach \( \$card_elements as &\$widget \)/);
 assert.match(llm, /function wpae_llm_apply_fallback_faq_content/);
