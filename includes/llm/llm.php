@@ -1653,7 +1653,7 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
             $changed++;
         }
         $root['elements'] = $content_shell ? [ $badge, $content_shell ] : array_merge( [ $badge ], $content_elements );
-        $root['elements'] = wpae_llm_normalize_card_heading_icons( $root['elements'], 0, $changed );
+        $root['elements'] = wpae_llm_normalize_card_heading_icons( $root['elements'], 0, $changed, $archetype );
         $badge = $root['elements'][0] ?? $badge;
         $content_shell = null;
         $content_elements = [];
@@ -2038,6 +2038,36 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
     return $elements;
 }
 
+function wpae_llm_normalize_process_card_heading( array &$elements, int $step, int &$changed ): bool {
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        if ( ( $element['elType'] ?? '' ) === 'widget' && in_array( (string) ( $element['widgetType'] ?? '' ), [ 'heading', 'icon-box' ], true ) ) {
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $text_key = ( $element['widgetType'] ?? '' ) === 'icon-box' ? 'title_text' : 'title';
+            $text = trim( (string) ( $settings[ $text_key ] ?? '' ) );
+            if ( $text === '' ) {
+                continue;
+            }
+            $text = preg_replace( '/^\s*\d{1,2}\s*\/\s*/u', '', $text );
+            $normalized = sprintf( '%02d / %s', $step, trim( (string) $text ) );
+            if ( $normalized !== (string) ( $settings[ $text_key ] ?? '' ) ) {
+                $settings[ $text_key ] = $normalized;
+                $element['settings'] = $settings;
+                $changed++;
+            }
+            return true;
+        }
+        if ( is_array( $element['elements'] ?? null ) && wpae_llm_normalize_process_card_heading( $element['elements'], $step, $changed ) ) {
+            return true;
+        }
+    }
+    unset( $element );
+
+    return false;
+}
+
 function wpae_llm_normalize_process_step_labels( array $elements, string $archetype, int &$changed ): array {
     if ( $archetype !== 'process' ) {
         return $elements;
@@ -2055,31 +2085,9 @@ function wpae_llm_normalize_process_step_labels( array $elements, string $archet
                 if ( ! is_array( $card ) || ( $card['elType'] ?? '' ) !== 'container' ) {
                     continue;
                 }
-                $heading_index = null;
-                foreach ( (array) ( $card['elements'] ?? [] ) as $widget_index => $widget ) {
-                    if ( is_array( $widget ) && ( $widget['elType'] ?? '' ) === 'widget' && in_array( (string) ( $widget['widgetType'] ?? '' ), [ 'heading', 'icon-box' ], true ) ) {
-                        $heading_index = $widget_index;
-                        break;
-                    }
-                }
-                if ( $heading_index === null ) {
-                    continue;
-                }
-                $widget = $card['elements'][ $heading_index ];
-                $widget_settings = is_array( $widget['settings'] ?? null ) ? $widget['settings'] : [];
-                $text_key = ( $widget['widgetType'] ?? '' ) === 'icon-box' ? 'title_text' : 'title';
-                $text = trim( (string) ( $widget_settings[ $text_key ] ?? '' ) );
-                if ( $text === '' ) {
-                    continue;
-                }
                 $step++;
-                $text = preg_replace( '/^\s*\d{1,2}\s*\/\s*/u', '', $text );
-                $normalized = sprintf( '%02d / %s', $step, trim( (string) $text ) );
-                if ( $normalized !== (string) ( $widget_settings[ $text_key ] ?? '' ) ) {
-                    $widget_settings[ $text_key ] = $normalized;
-                    $widget['settings'] = $widget_settings;
-                    $card['elements'][ $heading_index ] = $widget;
-                    $changed++;
+                if ( ! wpae_llm_normalize_process_card_heading( $card['elements'], $step, $changed ) ) {
+                    $step--;
                 }
             }
             unset( $card );
