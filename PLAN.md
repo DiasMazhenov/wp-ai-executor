@@ -1,5 +1,9 @@
 # План WP AI Executor
 
+## v02.09.39
+
+- Исправлен конфликт editor-chat Vision: advisory-проверка больше не откатывает успешную Elementor-запись из-за замечаний к существующему контенту страницы; предупреждение и кнопка отмены остаются в чате.
+
 ## v02.09.38
 
 - Fallback-контент повторяемых блоков больше не расходуется на корневой heading/description: явные пары пользователя сохраняются внутри карточек benefits, pricing, testimonials, process и portfolio до content-fidelity gate.

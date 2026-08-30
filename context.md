@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.38`
+- Plugin: `v02.09.39`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -29,6 +29,10 @@
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 583 nodes and 1384 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
+
+The editor-chat Vision review is advisory: quality findings are shown after a
+successful write but do not rollback the new Elementor content. Atomic rollback
+remains limited to explicit `transaction_vision_review` transactions.
 
 Action generation classifies natural-language block requests into hero,
 benefits, pricing, testimonials, FAQ, process, CTA, or portfolio archetypes.

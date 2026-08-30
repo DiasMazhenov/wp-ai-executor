@@ -646,11 +646,11 @@
             }
             return visionPromise.then(function (review) {
                 if (review && review.gate && review.gate.quality_failed) {
-                    return rollbackVisionFailure(body.write && body.write.rollback_snapshot_id).then(function (rolledBack) {
-                        addMessage('assistant', describeVisionReview(review) + ' Результат отклонён AI Vision.' + (rolledBack ? ' Изменения откатены.' : ' Автоматический откат не выполнен.'));
-                        if (rolledBack) refreshElementorPreview();
-                        status.textContent = strings.error;
-                    });
+                    addMessage('assistant', describeVisionReview(review) + ' Vision оставил предупреждение; изменения сохранены.');
+                    addActionControls(body.write);
+                    addMessage('assistant', body.message || strings.done);
+                    status.textContent = strings.done;
+                    return;
                 }
                 if (review && review.rolled_back) {
                     addMessage('assistant', 'AI Vision обнаружил критические дефекты. Изменения откатены.');

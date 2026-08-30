@@ -197,6 +197,8 @@ assert.match(js, /window\.location\.reload\(\)/);
 assert.match(js, /retryProviderRequestAfterReload/);
 assert.match(js, /request\(pending\.message, true\)/);
 assert.match(js, /clearProviderRetry\(\);\n        if \(!config\.ready\) return;\n        setOpen\(true\)/);
+assert.match(js, /Vision оставил предупреждение; изменения сохранены/);
+assert.match(js, /addActionControls\(body\.write\);\n                    addMessage\('assistant', body\.message \|\| strings\.done\);/);
 assert.match(js, /providerStatus/);
 assert.match(js, /providerStatus === 408/);
 assert.match(js, /providerStatus >= 500/);
