@@ -249,8 +249,9 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
     $has_cta = (bool) preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть)\b/iu', $message );
     $has_content_signal = (bool) preg_match( '/[«»"]|₸|\$|€|₽|\b(дизайн|сайт|страниц|проект|бизнес|клиент|услуг|продукт|команд|запуск|результат|коллекц\w*|доставк\w*|специалист\w*|заказ\w*|выбор\w*|помощ\w*|стоим\w*|тариф\w*|отзыв\w*|этап\w*|шаг\w*)\b/iu', $message );
 
-    // Content-only briefs often have a headline, body copy, and CTA without labels.
-    return count( $sentences ) >= 3 && ( $has_cta || $has_content_signal );
+    // Content-only briefs can be neutral copy without domain keywords or labels.
+    $has_brief_shape = count( $sentences ) >= 3 && strlen( implode( ' ', $sentences ) ) >= 80;
+    return count( $sentences ) >= 3 && ( $has_cta || $has_content_signal || $has_brief_shape );
 }
 
 function wpae_llm_is_action_request( string $message ): bool {

@@ -72,6 +72,8 @@ assert.match(llm, /function wpae_llm_extract_labeled_content/);
 assert.match(llm, /count\( wpae_llm_extract_labeled_content\( \$message \) \)/);
 assert.match(llm, /has_cta/);
 assert.match(llm, /has_content_signal/);
+assert.match(llm, /has_brief_shape/);
+assert.match(llm, /strlen\( implode\( ' ', \$sentences \) \) >= 80/);
 assert.match(llm, /коллекц\\w\*/);
 assert.match(llm, /оформить/);
 assert.match(llm, /if \( empty\( \$matches \) \)/);
