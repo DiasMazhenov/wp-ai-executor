@@ -182,7 +182,10 @@
         try { window.sessionStorage.removeItem(providerRetryKey); } catch (error) {}
     }
     function isProviderUnavailable(error) {
-        return !!error && (error.wpaeCode === 'wpae_llm_provider_request_failed' || String(error.message || '').indexOf('LLM-провайдер недоступен') !== -1);
+        if (!error) return false;
+        if (error.wpaeCode === 'wpae_llm_provider_request_failed' || String(error.message || '').indexOf('LLM-провайдер недоступен') !== -1) return true;
+        var providerStatus = Number(error.providerStatus || 0);
+        return providerStatus === 408 || providerStatus === 425 || providerStatus === 429 || providerStatus >= 500;
     }
     function scheduleProviderRetry(message) {
         if (readProviderRetry()) return false;
@@ -600,6 +603,7 @@
                     var requestError = new Error(detail);
                     requestError.wpaeCode = errorCode;
                     requestError.httpStatus = response.status;
+                    requestError.providerStatus = Number(errorData.provider_status || diagnostics.provider_status || errorData.status || diagnostics.status || 0);
                     throw requestError;
                 }
                 return body;

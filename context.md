@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.35`
+- Plugin: `v02.09.36`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -52,6 +52,9 @@ fatal error from taking down WordPress.
 Pricing fallback content parsing strips request prefixes from labels, keeps
 the root heading/description separate from explicit tariff cards, and maps
 `Кнопка: ...` text into native card buttons.
+Editor chat retries transient provider HTTP failures (408/425/429/5xx) once
+after a forced reload; auth, malformed-request, JSON, validation, write, and
+Vision errors remain non-retryable.
 Testimonial fallback output uses a wrapping Flexbox card grid with one editable
 native card container per quote and a single-column mobile layout.
 Generated testimonial author headings are guarded to native h5/h6 typography;
