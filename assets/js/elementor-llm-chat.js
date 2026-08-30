@@ -204,6 +204,8 @@
         if (!pending) return;
         clearProviderRetry();
         if (!config.ready) return;
+        setOpen(true);
+        status.textContent = strings.sending;
         addMessage('user', pending.message);
         addMessage('assistant', 'Повторяю запрос после перезагрузки страницы.');
         window.setTimeout(function () { request(pending.message, true); }, 0);

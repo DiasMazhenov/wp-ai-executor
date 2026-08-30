@@ -196,6 +196,7 @@ assert.match(js, /window\.sessionStorage/);
 assert.match(js, /window\.location\.reload\(\)/);
 assert.match(js, /retryProviderRequestAfterReload/);
 assert.match(js, /request\(pending\.message, true\)/);
+assert.match(js, /clearProviderRetry\(\);\n        if \(!config\.ready\) return;\n        setOpen\(true\)/);
 assert.match(js, /providerStatus/);
 assert.match(js, /providerStatus === 408/);
 assert.match(js, /providerStatus >= 500/);
