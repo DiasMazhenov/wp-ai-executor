@@ -162,7 +162,7 @@
         if (step.status === 'skipped') line += ' [пропущено]';
         var details = step.details || {};
         var parts = [];
-        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'decoded_patch_count', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details', 'operation_id', 'inserted_ids', 'diff'].forEach(function (key) {
+        ['received_action', 'received_post_id', 'decoded_action', 'decoded_post_id', 'decoded_element_count', 'decoded_patch_count', 'patch_count', 'selected_scope_count', 'changed_ids', 'expected_action', 'expected_post_id', 'element_count', 'widget_count', 'existing_element_count', 'http_status', 'response_type', 'json_decoded', 'response_keys', 'reply_preview', 'reply_length', 'json_error', 'likely_truncated', 'finish_reason', 'provider_error_code', 'provider_message', 'guide_version', 'custom_skills_count', 'elementor_writes', 'failed_checks', 'failure_details', 'operation_id', 'inserted_ids', 'diff'].forEach(function (key) {
             if (details[key] !== undefined && details[key] !== null && details[key] !== '') {
                 var value = details[key];
                 if (Array.isArray(value)) {
@@ -322,14 +322,17 @@
         var models = selectedModels();
         selectionHint.textContent = models.length ? 'Выбрано: ' + models.length + (models.length === 1 ? ' объект' : ' объекта') : 'Выделение: нет';
     }
-    function buildVisionRepairMessage(review, originalBrief) {
+    function buildVisionRepairMessage(review, originalBrief, targetedPatch) {
         var report = review && review.report ? review.report : {};
         var findings = Array.isArray(report.findings) ? report.findings.slice(0, 6).map(function (finding) {
             var message = finding.message || 'исправление визуальной проблемы';
             var fix = finding.fix ? ' Исправление: ' + finding.fix : '';
             return (finding.severity || 'info') + ': ' + message + fix;
         }).join('; ') : '';
-        return 'Перегенерируй текущий дизайн по исходному запросу пользователя с учетом замечаний AI Vision. Создай полноценный красивый блок заново, не урезай композицию и не оставляй placeholder-тексты. Исходный запрос пользователя: «' + String(originalBrief || '').slice(0, 4000) + '». ' + (findings || 'Устрани нарушения композиции, типографики, отступов и переполнения.');
+        var instruction = targetedPatch
+            ? 'Исправь выбранный Elementor-элемент или его дочернее содержимое по исходному запросу пользователя с учетом замечаний AI Vision. Сохрани место элемента и все корректные настройки, не пересобирай страницу и не добавляй новый блок.'
+            : 'Перегенерируй текущий дизайн по исходному запросу пользователя с учетом замечаний AI Vision. Создай полноценный красивый блок заново, не урезай композицию и не оставляй placeholder-тексты.';
+        return instruction + ' Исходный запрос пользователя: «' + String(originalBrief || '').slice(0, 4000) + '». ' + (findings || 'Устрани нарушения композиции, типографики, отступов и переполнения.');
     }
     function getPreviewIframe() {
         var iframe = document.querySelector('#elementor-preview-iframe');
@@ -347,6 +350,12 @@
         if (!ids.length && Array.isArray(editorSync.target_element_ids)) ids = editorSync.target_element_ids.map(String).filter(Boolean);
         if (!ids.length && Array.isArray(editorSync.changed_ids)) ids = editorSync.changed_ids.map(String).filter(Boolean);
         return ids;
+    }
+    function getVisionSyncIds(editorSync) {
+        if (editorSync && editorSync.mode === 'patch' && Array.isArray(editorSync.selected_scope_ids) && editorSync.selected_scope_ids.length) {
+            return editorSync.selected_scope_ids.map(function (id) { return String(id || ''); }).filter(Boolean).slice(0, 8);
+        }
+        return getEditorSyncIds(editorSync);
     }
     function findPreviewTarget(doc, targetElementIds) {
         if (!doc || !Array.isArray(targetElementIds) || !targetElementIds.length) return null;
@@ -378,7 +387,7 @@
             findTarget();
         });
     }
-    function getPreviewRenderContext(targetElementIds) {
+    function getPreviewRenderContext(targetElementIds, reviewScope) {
         var iframe = getPreviewIframe();
         var doc = iframe && iframe.contentDocument;
         if (!doc) return {};
@@ -394,6 +403,7 @@
         return {
             source: 'elementor_editor_preview',
             editor_chrome_excluded: true,
+            review_scope: reviewScope || 'generated_block',
             target_found: !!target,
             widget_count: scope ? scope.querySelectorAll('.elementor-widget').length : 0,
             text_length: scope ? (scope.innerText || '').trim().length : 0,
@@ -571,7 +581,7 @@
         });
         return visionCapturePromise;
     }
-    function capturePreviewScreenshot(targetElementIds) {
+    function capturePreviewScreenshot(targetElementIds, reviewScope) {
         var iframe = document.querySelector('#elementor-preview-iframe');
         if (!iframe || !iframe.contentDocument) return Promise.reject(new Error('Текущий Elementor preview недоступен для screenshot.'));
         var doc = iframe.contentDocument;
@@ -629,7 +639,7 @@
                 restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
-                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: captureWidth + 'x' + captureHeight, render_context: getPreviewRenderContext(targetElementIds) };
+                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: captureWidth + 'x' + captureHeight, render_context: getPreviewRenderContext(targetElementIds, reviewScope) };
             }, function (error) {
                 restore();
                 throw error;
@@ -678,13 +688,17 @@
             settle();
         });
     }
+    function visionReviewScope(editorSync) {
+        return editorSync && editorSync.mode === 'patch' ? 'selected_patch' : 'generated_block';
+    }
     function requestVisionReview(snapshotId, captureError, brief, editorSync) {
+        var reviewScope = visionReviewScope(editorSync);
         return postVisionReview({
             post_id: Number(config.postId) || 0,
             rollback_snapshot_id: snapshotId,
             vision_capture_error: captureError,
             brief: brief || '',
-            render_context: getPreviewRenderContext(getEditorSyncIds(editorSync))
+            render_context: getPreviewRenderContext(getVisionSyncIds(editorSync), reviewScope)
         });
     }
     function postVisionReview(payload) {
@@ -718,6 +732,8 @@
         });
     }
     function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync) {
+        var reviewScope = visionReviewScope(editorSync);
+        var visionSyncIds = getVisionSyncIds(editorSync);
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
         return waitForPreviewRefresh(alreadySynced ? Promise.resolve(true) : refreshElementorPreview(), minimumWidgetCount).then(function () {
             return focusEditorSync(editorSync).then(function (focused) {
@@ -729,7 +745,7 @@
                         return true;
                     });
                 });
-            }).then(function () { return waitForPreviewPaint(); }).then(function () { return capturePreviewScreenshot(getEditorSyncIds(editorSync)); }).then(function (capture) {
+            }).then(function () { return waitForPreviewPaint(); }).then(function () { return capturePreviewScreenshot(visionSyncIds, reviewScope); }).then(function (capture) {
                 return postVisionReview({
                     post_id: Number(config.postId) || 0,
                     rollback_snapshot_id: snapshotId,
@@ -833,6 +849,7 @@
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
         if (options.visionFindings) requestContext.vision_findings = String(options.visionFindings).slice(0, 3600);
+        var editorSyncDataForReview = null;
         return fetch(config.endpoint, {
             method: 'POST',
             credentials: 'same-origin',
@@ -882,10 +899,11 @@
             window.clearInterval(progressTimer);
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
             var visionPromise = Promise.resolve(null);
-            if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
+                if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
                 var expectedWidgetCount = beforeWidgetCount + Number(body.write.inserted_widget_count || body.write.inserted_count || 0);
                 var editorSyncedState = false;
                 var editorSyncData = body.write.editor_sync;
+                editorSyncDataForReview = editorSyncData;
                 var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
                     ? syncEditorPatches(body.write.editor_sync)
                     : syncEditorElements(body.write.editor_sync);
@@ -924,19 +942,20 @@
             }
             return visionPromise.then(function (review) {
                 if (review && review.gate && review.gate.quality_failed) {
-                    addMessage('assistant', describeVisionReview(review) + ' Передаю замечания Vision агенту для полной регенерации дизайна.');
+                    var targetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
+                    addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю замечания Vision для повторной правки выбранного дерева.' : ' Передаю замечания Vision агенту для полной регенерации дизайна.'));
                     if (repairDepth >= 2) {
                         return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
                             if (rolledBack) refreshElementorPreview();
-                            addMessage('assistant', 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
+                            addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; исходный выбранный элемент сохранен.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
                             status.textContent = strings.error;
                         });
                     }
-                    addMessage('assistant', 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
+                    addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
                     return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
                         if (!rolledBack) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией.');
                         return refreshElementorPreview().then(function () {
-                            return request(originalBrief, false, { visionRepair: true, visionRegenerate: true, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief) });
+                            return request(originalBrief, false, { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), selectedElements: requestContext.selected_elements });
                         });
                     });
                 }

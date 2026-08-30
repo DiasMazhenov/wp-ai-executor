@@ -467,6 +467,7 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
             'patches' => array_values( $patches ),
             'changed_ids' => $changed_ids,
             'target_element_ids' => $changed_ids,
+            'selected_scope_ids' => array_values( array_unique( $scope_ids ) ),
             'selected_scope_count' => count( $scope_ids ),
         ],
         'steps' => $steps,

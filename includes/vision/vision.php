@@ -153,6 +153,7 @@ function wpae_vision_render_context( $value ): array {
     $context = [
         'source' => wpae_vision_trim_text( $value['source'] ?? '', 80 ),
         'editor_chrome_excluded' => ! empty( $value['editor_chrome_excluded'] ),
+        'review_scope' => sanitize_key( (string) ( $value['review_scope'] ?? 'generated_block' ) ),
         'widget_count' => max( 0, min( 500, absint( $value['widget_count'] ?? 0 ) ) ),
         'text_length' => max( 0, min( 100000, absint( $value['text_length'] ?? 0 ) ) ),
         'text_excerpt' => wpae_vision_trim_text( $value['text_excerpt'] ?? '', 4000 ),
@@ -600,11 +601,14 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
     $context_text = is_array( $context ) ? wpae_vision_trim_text( wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ), 2500 ) : '';
     $render_context = wpae_vision_render_context( $request->get_param( 'render_context' ) );
     $render_context_text = ! empty( $render_context ) ? wpae_vision_trim_text( wp_json_encode( $render_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ), 1800 ) : '';
+    $scope_instruction = ( $render_context['review_scope'] ?? '' ) === 'selected_patch'
+        ? "This is a targeted edit review. Judge only the captured selected Elementor subtree and the requested change. A single heading or widget is intentionally not a complete page: do not report surrounding empty space, missing cards, or lack of a full section as defects. Report only missing requested content, unreadable text, overflow, broken styling, or defects inside the selected subtree."
+        : "Do not approve sparse or unfinished composition: large unused regions, detached text columns, accidental template fragments, missing card/group structure, weak hierarchy, or a CTA without a coherent supporting layout are major visual defects. For these cases use a score below 75 and provide a concrete fix.";
 
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
         . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
         . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. The objective text_excerpt is authoritative evidence for text presence inside the captured target: if a requested phrase is present there, do not report it as missing merely because the screenshot crop is small or ambiguous. A CTA phrase present in text_excerpt proves the CTA text exists; assess its placement or styling separately, but do not call its label missing or the button empty. Only report missing content when it is absent from both the screenshot and objective text_excerpt; such a finding must use category content_fidelity. If the content cannot be verified, say so as a minor finding instead of claiming it matches.\n"
-        . "Do not approve sparse or unfinished composition: large unused regions, detached text columns, accidental template fragments, missing card/group structure, weak hierarchy, or a CTA without a coherent supporting layout are major visual defects. For these cases use a score below 75 and provide a concrete fix.\n"
+        . $scope_instruction . "\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )
         . ( $render_context_text !== '' ? "Objective render context: {$render_context_text}\n" : '' )
