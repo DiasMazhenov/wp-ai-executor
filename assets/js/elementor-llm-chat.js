@@ -54,9 +54,19 @@
     copy.type = 'button';
     copy.textContent = strings.copyLog;
     copy.setAttribute('aria-label', strings.copyLog);
+    var copySelection = document.createElement('button');
+    copySelection.className = 'wpae-llm-copy-selection';
+    copySelection.type = 'button';
+    copySelection.textContent = strings.copySelection;
+    copySelection.setAttribute('aria-label', strings.copySelection);
+    copySelection.setAttribute('title', strings.copySelection);
+    var headActions = document.createElement('div');
+    headActions.className = 'wpae-llm-head-actions';
+    headActions.appendChild(copy);
+    headActions.appendChild(copySelection);
+    headActions.appendChild(close);
     head.appendChild(heading);
-    head.appendChild(copy);
-    head.appendChild(close);
+    head.appendChild(headActions);
 
     var messages = document.createElement('div');
     messages.className = 'wpae-llm-messages';
@@ -216,30 +226,74 @@
         addMessage('assistant', 'Повторяю запрос после перезагрузки страницы.');
         window.setTimeout(function () { request(pending.message, true); }, 0);
     }
+    function copyText(text) {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            return navigator.clipboard.writeText(text);
+        }
+        return new Promise(function (resolve, reject) {
+            var fallback = document.createElement('textarea');
+            fallback.value = text;
+            fallback.setAttribute('readonly', '');
+            fallback.style.position = 'fixed';
+            fallback.style.opacity = '0';
+            document.body.appendChild(fallback);
+            fallback.select();
+            var copied = false;
+            try { copied = document.execCommand('copy'); } catch (error) {}
+            document.body.removeChild(fallback);
+            if (copied) resolve();
+            else reject(new Error(strings.copyError || 'Не удалось скопировать текст.'));
+        });
+    }
     function copyChatLog() {
-        var text = chatLog();
-        var copied = function () {
+        copyText(chatLog()).then(function () {
             copy.textContent = strings.copied;
             window.setTimeout(function () { copy.textContent = strings.copyLog; }, 1600);
-        };
-        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            navigator.clipboard.writeText(text).then(copied).catch(function () {});
-            return;
-        }
-        var fallback = document.createElement('textarea');
-        fallback.value = text;
-        fallback.setAttribute('readonly', '');
-        fallback.style.position = 'fixed';
-        fallback.style.opacity = '0';
-        document.body.appendChild(fallback);
-        fallback.select();
-        try { document.execCommand('copy'); copied(); } catch (error) {}
-        document.body.removeChild(fallback);
+        }).catch(function () {});
     }
-    function selectedElements() {
+    function selectedModels() {
         var selection = window.elementor && window.elementor.selection;
         var models = selection && typeof selection.getElements === 'function' ? selection.getElements() : [];
-        return Array.prototype.slice.call(models || [], 0, 8).map(function (model) {
+        return Array.prototype.slice.call(models || [], 0, 8).map(function (container) {
+            return container && container.model ? container.model : container;
+        }).filter(function (model) {
+            return Boolean(model && (typeof model.toJSON === 'function' || model.attributes));
+        });
+    }
+    function serializeSelectedModel(model) {
+        var raw = model && typeof model.toJSON === 'function' ? model.toJSON() : (model && model.attributes ? model.attributes : {});
+        var data = {};
+        Object.keys(raw || {}).forEach(function (key) {
+            if (key !== 'elements') data[key] = raw[key];
+        });
+        var children = model && typeof model.get === 'function' ? model.get('elements') : null;
+        if (children && Array.isArray(children.models)) data.elements = children.models.map(serializeSelectedModel);
+        else if (raw && Array.isArray(raw.elements)) data.elements = raw.elements;
+        else data.elements = [];
+        return data;
+    }
+    function copySelectedJson() {
+        var models = selectedModels();
+        if (!models.length) {
+            addMessage('assistant', strings.selectionEmpty);
+            return;
+        }
+        var payload = {
+            format: 'wpae-elementor-selection-v1',
+            post_id: Number(config.postId) || 0,
+            captured_at: new Date().toISOString(),
+            elements: models.map(serializeSelectedModel)
+        };
+        copyText(JSON.stringify(payload, null, 2)).then(function () {
+            copySelection.textContent = strings.selectionCopied;
+            addMessage('assistant', strings.selectionCopied);
+            window.setTimeout(function () { copySelection.textContent = strings.copySelection; }, 1600);
+        }).catch(function () {
+            addMessage('assistant', strings.selectionCopyError || strings.copyError);
+        });
+    }
+    function selectedElements() {
+        return selectedModels().map(function (model) {
             var attributes = model && model.attributes ? model.attributes : {};
             return {
                 id: String(attributes.id || ''),
@@ -783,6 +837,7 @@
     pill.addEventListener('click', function (event) { if (event.target !== open) setOpen(true); });
     close.addEventListener('click', function () { setOpen(false); });
     copy.addEventListener('click', copyChatLog);
+    copySelection.addEventListener('click', copySelectedJson);
     input.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
             event.preventDefault();
