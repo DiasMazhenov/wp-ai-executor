@@ -376,6 +376,25 @@ function wpae_llm_detect_block_archetype( string $message ): string {
             return $archetype;
         }
     }
+    if ( wpae_llm_is_content_composition_request( $message ) ) {
+        $normalized = wpae_llm_normalize_content_text( $message );
+        if ( preg_match( '/\?|؟/u', $message ) ) {
+            return 'faq';
+        }
+        if ( preg_match( '/₸|\$|€|₽|\b(цена|стоимост|тариф|пакет|от\s+\d+)/iu', $message ) ) {
+            return 'pricing';
+        }
+        if ( preg_match( '/\b(анна|мария|дмитрий|руслан|марат|отзыв|рекомендац|понравилось|получили)\b/iu', $normalized ) || preg_match( '/[«"]/u', $message ) ) {
+            return 'testimonials';
+        }
+        if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем)\b/iu', $normalized ) ) {
+            return 'process';
+        }
+        if ( preg_match( '/\b(кейс|проект|рост|увелич|сократ|результат|клиент)\b/iu', $normalized ) ) {
+            return 'portfolio';
+        }
+        return 'benefits';
+    }
     return 'custom';
 }
 
