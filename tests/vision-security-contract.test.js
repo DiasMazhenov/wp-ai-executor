@@ -23,6 +23,7 @@ assert.match(vision, /render_context/);
 assert.match(vision, /text_excerpt/);
 assert.match(vision, /target_element_ids/);
 assert.match(vision, /content_fidelity/);
+assert.match(vision, /objective text_excerpt is authoritative evidence/);
 assert.match(vision, /'render_context' => \$request->get_param\( 'render_context' \)/);
 assert.match(vision, /'rolled_back' => false/);
 assert.match(vision, /wpae_vision_capture_failed/);

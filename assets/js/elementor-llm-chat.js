@@ -573,6 +573,18 @@
             });
         });
     }
+    function waitForPreviewPaint() {
+        return new Promise(function (resolve) {
+            var settle = function () { window.setTimeout(resolve, 450); };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(function () {
+                    window.requestAnimationFrame(settle);
+                });
+                return;
+            }
+            settle();
+        });
+    }
     function requestVisionReview(snapshotId, captureError, brief, editorSync) {
         return postVisionReview({
             post_id: Number(config.postId) || 0,
@@ -624,7 +636,7 @@
                         return true;
                     });
                 });
-            }).then(function () { return capturePreviewScreenshot(getEditorSyncIds(editorSync)); }).then(function (capture) {
+            }).then(function () { return waitForPreviewPaint(); }).then(function () { return capturePreviewScreenshot(getEditorSyncIds(editorSync)); }).then(function (capture) {
                 return postVisionReview({
                     post_id: Number(config.postId) || 0,
                     rollback_snapshot_id: snapshotId,

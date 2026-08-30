@@ -288,6 +288,8 @@ assert.match(js, /config\.undoEndpoint/);
 assert.match(js, /getPreviewRenderContext/);
 assert.match(js, /editor_chrome_excluded/);
 assert.match(js, /render_context/);
+assert.match(js, /function waitForPreviewPaint/);
+assert.match(js, /waitForPreviewPaint\(\)/);
 assert.match(js, /document\/elements\/create/);
 assert.match(llm, /'editor_sync' =>/);
 assert.match(js, /requestVisionReview/);
