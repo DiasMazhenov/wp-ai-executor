@@ -825,15 +825,16 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             '_css_classes' => 'wpae-generated-cta-row',
             'content_width' => 'full',
             'flex_direction' => 'row',
-            'flex_direction_mobile' => 'row',
+            'flex_direction_mobile' => 'column',
             'flex_wrap' => 'nowrap',
             'flex_wrap_mobile' => 'nowrap',
-            'flex_justify_content' => 'flex-start',
+            'flex_justify_content' => 'space-between',
+            'flex_justify_content_mobile' => 'flex-start',
             'flex_align_items' => 'center',
-            'flex_align_items_mobile' => 'center',
+            'flex_align_items_mobile' => 'stretch',
             'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
             'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
-            'padding' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
+            'padding' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
             'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
             'background_background' => 'classic',
             'background_color' => 'transparent',
@@ -841,8 +842,24 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             'border_color' => '#e5e7eb',
             'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
         ],
-        'elements' => [ $last ],
+        'elements' => [
+            [
+                'id' => (string) ( $last['id'] ?? 'wpae-generated-cta' ) . '-label',
+                'elType' => 'widget',
+                'widgetType' => 'text-editor',
+                'settings' => [
+                    'editor' => 'Готовы обсудить задачу?',
+                    '_css_classes' => 'wpae-generated-cta-label',
+                    'text_color' => '#6b7280',
+                    'align_self' => 'center',
+                    'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                ],
+                'elements' => [],
+            ],
+            $last,
+        ],
     ];
+    wpae_llm_set_variant_container_width( $elements[ $last_index ]['settings'], 100 );
     $changed++;
     return $elements;
 }

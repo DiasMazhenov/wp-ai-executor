@@ -134,7 +134,8 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
         $is_generated_badge = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true );
         $is_bento_grid = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
         $is_generated_content_shell = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );
-        $preserve_transparent_background = $is_generated_badge || $is_bento_grid || $is_generated_content_shell
+        $is_generated_cta_row = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-cta-row', $classes, true );
+        $preserve_transparent_background = $is_generated_badge || $is_bento_grid || $is_generated_content_shell || $is_generated_cta_row
             || ( $el_type === 'container' && $depth === 0 && (string) ( $settings['background_color'] ?? '' ) === 'transparent' );
 
         if ( $widget_type === 'html' ) {

@@ -162,6 +162,7 @@ assert.match(llm, /function wpae_llm_apply_bento_layout/);
 assert.match(llm, /function wpae_llm_normalize_bento_grids_recursive/);
 assert.match(llm, /function wpae_llm_wrap_generation_cta/);
 assert.match(llm, /wpae-generated-cta-row/);
+assert.match(llm, /Готовы обсудить задачу/);
 assert.match(llm, /function wpae_llm_content_fidelity/);
 assert.match(llm, /function wpae_llm_extract_requested_content/);
 assert.match(llm, /function wpae_llm_apply_fallback_content/);
@@ -185,6 +186,7 @@ assert.match(llm, /padding' => \[ 'unit' => 'rem', 'top' => '0\.5', 'right' => '
 assert.match(llm, /margin' => \[ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0'/);
 assert.match(tokenMap, /is_generated_badge/);
 assert.match(tokenMap, /is_bento_grid/);
+assert.match(tokenMap, /is_generated_cta_row/);
 assert.match(tokenMap, /! \$is_generated_badge && ! \$is_bento_grid/);
 assert.match(llm, /function wpae_llm_card_heading_widget/);
 assert.match(llm, /function wpae_llm_card_widget_text/);
