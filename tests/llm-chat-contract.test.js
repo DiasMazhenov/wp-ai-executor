@@ -165,6 +165,8 @@ assert.match(llm, /function wpae_llm_apply_fallback_archetype_content/);
 assert.match(llm, /wpae_llm_apply_fallback_archetype_content\( \$action\['elements'\]/);
 assert.match(llm, /function wpae_llm_apply_fallback_cta/);
 assert.match(llm, /wpae_llm_apply_fallback_cta\( \$elements, \$cta, \$changed \)/);
+assert.match(llm, /count\( \$labeled_pairs \) >= 3/);
+assert.match(llm, /return 'portfolio';/);
 assert.match(llm, /wpae_llm_content_mismatch/);
 assert.match(llm, /function wpae_llm_bento_card/);
 assert.match(llm, /function wpae_llm_generation_visual_grammar_hint/);

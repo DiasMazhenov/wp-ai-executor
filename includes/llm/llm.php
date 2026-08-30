@@ -375,6 +375,11 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
 function wpae_llm_detect_block_archetype( string $message ): string {
     if ( wpae_llm_is_content_composition_request( $message ) ) {
         $normalized = wpae_llm_normalize_content_text( $message );
+        $labeled_pairs = wpae_llm_extract_labeled_content( $message );
+        $labeled_text = wpae_llm_normalize_content_text( implode( ' ', array_map( static fn( $pair ): string => (string) ( $pair['label'] ?? '' ), $labeled_pairs ) ) );
+        if ( count( $labeled_pairs ) >= 3 && preg_match( '/(?:кейс\w*|портфолио|проект\w*|бренд\w*|сайт\w*|сервис\w*|редизайн\w*|продукт\w*|магазин\w*)/iu', $labeled_text ) ) {
+            return 'portfolio';
+        }
         if ( preg_match( '/\b(первый экран|hero|хиро|обложк)\b/iu', $message ) ) {
             return 'hero';
         }
