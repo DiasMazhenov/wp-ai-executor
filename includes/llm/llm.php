@@ -818,15 +818,22 @@ function wpae_llm_select_fallback_variant( array $elements, int $seed, array $ca
     $collect( $elements );
     $used = array_values( array_unique( $used ) );
     $used_signatures = wpae_llm_collect_visual_signatures( $elements );
+    $used_layouts = wpae_llm_collect_visual_layouts( $elements );
     $variant_count = wpae_llm_visual_variant_count();
     $start = abs( $seed ) % $variant_count;
+    $prefer_new_layout = count( $used_layouts ) < 6;
     for ( $offset = 0; $offset < $variant_count; $offset++ ) {
         $candidate = ( $start + $offset ) % $variant_count;
         if ( in_array( $candidate, $used, true ) ) {
             continue;
         }
         if ( ! empty( $candidate_elements ) ) {
-            $candidate_signatures = wpae_llm_collect_visual_signatures( wpae_llm_apply_fallback_variant( $candidate_elements, $archetype, $candidate ) );
+            $candidate_data = wpae_llm_apply_fallback_variant( $candidate_elements, $archetype, $candidate );
+            $candidate_layouts = wpae_llm_collect_visual_layouts( $candidate_data );
+            if ( $prefer_new_layout && array_intersect( $candidate_layouts, $used_layouts ) ) {
+                continue;
+            }
+            $candidate_signatures = wpae_llm_collect_visual_signatures( $candidate_data );
             if ( array_intersect( $candidate_signatures, $used_signatures ) ) {
                 continue;
             }
@@ -934,6 +941,83 @@ function wpae_llm_visual_signature( array $root ): string {
     };
     $walk( [ $root ] );
     return hash( 'sha256', (string) wp_json_encode( $containers ) );
+}
+
+function wpae_llm_infer_visual_layout( array $root ): ?int {
+    $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+    if ( isset( $root_settings['_wpae_visual_layout'] ) && is_numeric( $root_settings['_wpae_visual_layout'] ) ) {
+        return absint( $root_settings['_wpae_visual_layout'] ) % 6;
+    }
+
+    $containers = [];
+    $walk = static function ( array $nodes ) use ( &$walk, &$containers ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) || ( $node['elType'] ?? '' ) !== 'container' ) {
+                continue;
+            }
+            $children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
+            $child_containers = array_values( array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) );
+            if ( count( $child_containers ) >= 2 ) {
+                $widths = [];
+                foreach ( $child_containers as $child ) {
+                    $settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+                    $width = $settings['width']['size'] ?? $settings['_element_custom_width']['size'] ?? null;
+                    $widths[] = is_numeric( $width ) ? (int) round( (float) $width ) : 0;
+                }
+                $containers[] = $widths;
+                return;
+            }
+            if ( $children ) {
+                $walk( $children );
+            }
+        }
+    };
+    $walk( [ $root ] );
+    $widths = $containers[0] ?? [];
+    if ( count( $widths ) >= 2 ) {
+        $first = (int) ( $widths[0] ?? 0 );
+        $rest = array_slice( $widths, 1 );
+        $rest_unique = array_values( array_unique( $rest ) );
+        if ( $first >= 95 && count( $rest_unique ) === 1 ) {
+            return 4;
+        }
+        $last_width = (int) ( $widths[ count( $widths ) - 1 ] ?? 0 );
+        $leading_widths = array_slice( $widths, 0, -1 );
+        if ( count( $widths ) >= 4 && $last_width >= 95 && count( array_filter( $leading_widths, static fn( $width ): bool => $width >= 29 && $width <= 35 ) ) === count( $leading_widths ) ) {
+            return 3;
+        }
+        if ( $first >= 45 && $first <= 55 && count( array_filter( $rest, static fn( $width ): bool => $width >= 20 && $width <= 28 ) ) === count( $rest ) ) {
+            return 2;
+        }
+        if ( $first >= 20 && $first <= 28 && (int) ( $widths[1] ?? 0 ) >= 45 && (int) ( $widths[1] ?? 0 ) <= 55 ) {
+            return 5;
+        }
+        if ( count( array_unique( $widths ) ) === 1 && $first >= 45 && $first <= 55 ) {
+            return 1;
+        }
+        if ( count( array_unique( $widths ) ) === 1 && $first >= 20 && $first <= 28 ) {
+            return 3;
+        }
+        if ( count( array_unique( $widths ) ) === 1 && $first >= 29 && $first <= 35 ) {
+            return 0;
+        }
+    }
+
+    return (string) ( $root_settings['flex_direction'] ?? '' ) === 'row' ? 1 : 0;
+}
+
+function wpae_llm_collect_visual_layouts( array $elements ): array {
+    $layouts = [];
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $layout = wpae_llm_infer_visual_layout( $element );
+        if ( $layout !== null ) {
+            $layouts[] = $layout;
+        }
+    }
+    return array_values( array_unique( $layouts ) );
 }
 
 function wpae_llm_collect_visual_signatures( array $elements ): array {
