@@ -1657,6 +1657,8 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
 
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+        $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
         $child_containers = [];
         foreach ( $children as $child_index => $child ) {
             if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
@@ -1762,6 +1764,38 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
             $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
             if ( $before_grid_settings !== wp_json_encode( [ $settings['background_background'] ?? null, $settings['background_color'] ?? null, $settings['_css_classes'] ?? null ] ) ) {
                 $changed++;
+            }
+        }
+
+        if ( $is_grid ) {
+            $grid_cards = [];
+            foreach ( (array) ( $element['elements'] ?? [] ) as $grid_index => $grid_child ) {
+                if ( is_array( $grid_child ) && ( $grid_child['elType'] ?? '' ) === 'container' ) {
+                    $grid_cards[] = $grid_index;
+                }
+            }
+            if ( count( $grid_cards ) >= 2 ) {
+                $settings['flex_direction'] = 'row';
+                $settings['flex_wrap'] = 'wrap';
+                $settings['flex_justify_content'] = 'space-between';
+                $settings['flex_align_items'] = 'stretch';
+                $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+                $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                $settings['background_background'] = 'classic';
+                $settings['background_color'] = 'transparent';
+                foreach ( wpae_llm_variant_card_widths( 0, count( $grid_cards ) ) as $width_index => $width ) {
+                    $grid_index = $grid_cards[ $width_index ] ?? null;
+                    if ( $grid_index === null ) {
+                        continue;
+                    }
+                    $card_settings = is_array( $element['elements'][ $grid_index ]['settings'] ?? null ) ? $element['elements'][ $grid_index ]['settings'] : [];
+                    $before_card = wp_json_encode( $card_settings );
+                    wpae_llm_set_variant_container_width( $card_settings, (float) $width );
+                    $element['elements'][ $grid_index ]['settings'] = $card_settings;
+                    if ( $before_card !== wp_json_encode( $card_settings ) ) {
+                        $changed++;
+                    }
+                }
             }
         }
 

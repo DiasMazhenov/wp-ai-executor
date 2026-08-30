@@ -227,6 +227,8 @@ assert.match(llm, /in_array\( \$layout, \[ 1, 3, 5 \], true \)/);
 assert.match(llm, /\$settings\['flex_align_items'\] = 'stretch';/);
 assert.match(llm, /orphaned narrow cards/);
 assert.match(llm, /if \( \$count === 3 \) \{/);
+assert.match(llm, /\$is_grid = is_array\( \$classes \) && in_array\( 'wpae-bento-grid'/);
+assert.match(llm, /wpae_llm_variant_card_widths\( 0, count\( \$grid_cards \) \)/);
 assert.match(tokenMap, /is_generated_content_shell/);
 assert.match(tokenMap, /preserve_transparent_background/);
 assert.match(llm, /failed_checks/);
