@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.61`
+- Plugin: `v02.09.62`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
