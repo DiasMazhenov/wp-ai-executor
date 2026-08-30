@@ -179,6 +179,53 @@ function wpae_vision_render_context( $value ): array {
     return array_filter( $context, static fn( $item ) => $item !== '' && $item !== 0 );
 }
 
+function wpae_vision_compare_text( $value ): string {
+    $text = wp_strip_all_tags( html_entity_decode( (string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+    $text = preg_replace( '/\s+/u', ' ', $text );
+    $text = trim( (string) $text );
+    return function_exists( 'mb_strtolower' ) ? mb_strtolower( $text ) : strtolower( $text );
+}
+
+function wpae_vision_requested_phrases( string $brief ): array {
+    $phrases = [];
+    if ( preg_match_all( '/[«"]([^»"\r\n]{2,120})[»"]/u', $brief, $matches ) ) {
+        $phrases = array_merge( $phrases, $matches[1] );
+    }
+    foreach ( preg_split( '/[.!?;\r\n]+/u', $brief ) as $part ) {
+        $part = trim( $part );
+        if ( $part !== '' && preg_match( '/\b(?:обсудить|получить|узнать|заказать|начать|смотреть|связаться|оставить\s+заявк|discuss|get|learn|book|start|view|contact|request|order)\b/iu', $part ) ) {
+            $phrases[] = $part;
+        }
+    }
+    $phrases = array_map( 'wpae_vision_compare_text', $phrases );
+    return array_values( array_unique( array_filter( $phrases ) ) );
+}
+
+function wpae_vision_is_verified_missing_content_finding( string $message, array $render_context, string $brief ): bool {
+    if ( ! preg_match( '/(?:missing|absent|not\s+(?:present|rendered|visible)|lacks?|without|unlabelled|unlabeled|отсутств|не\s+(?:вид|отображ)|без\s+(?:текста|подписи))/iu', $message ) ) {
+        return false;
+    }
+    if ( ! preg_match( '/(?:cta|call[-\s]to[-\s]action|button|label|text|content|кнопк|подпис|текст|контент|призыв)/iu', $message ) ) {
+        return false;
+    }
+
+    $excerpt = wpae_vision_compare_text( $render_context['text_excerpt'] ?? '' );
+    if ( $excerpt === '' ) {
+        return false;
+    }
+    $phrases = wpae_vision_requested_phrases( $brief );
+    if ( preg_match_all( '/[\'"]([^\'"\r\n]{2,120})[\'"]/u', $message, $mentioned ) ) {
+        $phrases = array_merge( $phrases, array_map( 'wpae_vision_compare_text', $mentioned[1] ) );
+    }
+    foreach ( array_unique( array_filter( $phrases ) ) as $phrase ) {
+        $found = function_exists( 'mb_strpos' ) ? mb_strpos( $excerpt, $phrase ) !== false : strpos( $excerpt, $phrase ) !== false;
+        if ( $found ) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
     $raw = is_array( $raw ) ? $raw : [];
     $score = $raw['vision_score'] ?? $raw['score'] ?? 0;
@@ -205,6 +252,12 @@ function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
         ];
     }
 
+    $render_context = wpae_vision_render_context( $meta['render_context'] ?? $raw['render_context'] ?? [] );
+    $brief = wpae_vision_trim_text( $meta['brief'] ?? '', 1200 );
+    $findings = array_values( array_filter( $findings, static function ( array $finding ) use ( $render_context, $brief ): bool {
+        return ! wpae_vision_is_verified_missing_content_finding( $finding['message'], $render_context, $brief );
+    } ) );
+
     $must_fix = [];
     foreach ( (array) ( $raw['must_fix'] ?? [] ) as $fix ) {
         $fix = wpae_vision_trim_text( $fix );
@@ -225,7 +278,7 @@ function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
         'model' => wpae_vision_trim_text( $meta['model'] ?? '', 120 ) ?: null,
         'post_id' => absint( $meta['post_id'] ?? $raw['post_id'] ?? 0 ) ?: null,
         'viewport' => wpae_vision_trim_text( $meta['viewport'] ?? $raw['viewport'] ?? '', 40 ) ?: null,
-        'render_context' => wpae_vision_render_context( $meta['render_context'] ?? $raw['render_context'] ?? [] ),
+        'render_context' => $render_context,
         'vision_score' => max( 0, min( 100, is_numeric( $score ) ? (int) round( (float) $score ) : 0 ) ),
         'confidence' => max( 0, min( 1, is_numeric( $confidence ) ? (float) $confidence : 0 ) ),
         'summary' => wpae_vision_trim_text( $raw['summary'] ?? $raw['overall'] ?? '', 1000 ),
@@ -414,6 +467,7 @@ function wpae_vision_report_from_request( WP_REST_Request $request, bool $save_i
         'source' => 'agent',
         'post_id' => $request->get_param( 'post_id' ),
         'viewport' => $request->get_param( 'viewport' ),
+        'brief' => $request->get_param( 'brief' ),
         'render_context' => $request->get_param( 'render_context' ),
     ] );
     return $save_inline ? wpae_save_vision_report( $report ) : $report;
@@ -549,7 +603,7 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
 
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
         . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
-        . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. The objective text_excerpt is authoritative evidence for text presence inside the captured target: if a requested phrase is present there, do not report it as missing merely because the screenshot crop is small or ambiguous. Only report missing content when it is absent from both the screenshot and objective text_excerpt; such a finding must use category content_fidelity. If the content cannot be verified, say so as a minor finding instead of claiming it matches.\n"
+        . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. The objective text_excerpt is authoritative evidence for text presence inside the captured target: if a requested phrase is present there, do not report it as missing merely because the screenshot crop is small or ambiguous. A CTA phrase present in text_excerpt proves the CTA text exists; assess its placement or styling separately, but do not call its label missing or the button empty. Only report missing content when it is absent from both the screenshot and objective text_excerpt; such a finding must use category content_fidelity. If the content cannot be verified, say so as a minor finding instead of claiming it matches.\n"
         . "Do not approve sparse or unfinished composition: large unused regions, detached text columns, accidental template fragments, missing card/group structure, weak hierarchy, or a CTA without a coherent supporting layout are major visual defects. For these cases use a score below 75 and provide a concrete fix.\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )
@@ -701,6 +755,7 @@ function wpae_vision_analyze( WP_REST_Request $request ): WP_REST_Response {
         'model' => $settings['model'],
         'post_id' => $request->get_param( 'post_id' ),
         'viewport' => $request->get_param( 'viewport' ),
+        'brief' => $request->get_param( 'brief' ),
         'render_context' => $request->get_param( 'render_context' ),
     ] ) );
     return new WP_REST_Response( [ 'ok' => true, 'report' => $report, 'storage' => 'wp_options_only', 'image_stored' => false ], 200 );

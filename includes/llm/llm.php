@@ -919,6 +919,49 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
     return array_fill( 0, $count, $width );
 }
 
+function wpae_llm_normalize_bento_grid( array &$element, int &$changed ): void {
+    if ( ( $element['elType'] ?? '' ) !== 'container' ) {
+        return;
+    }
+
+    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+    $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+    $grid_cards = [];
+    foreach ( $children as $index => $child ) {
+        if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+            $grid_cards[] = $index;
+        }
+    }
+    if ( count( $grid_cards ) < 2 ) {
+        return;
+    }
+
+    $before = wp_json_encode( [ $settings, $children ] );
+    $settings['flex_direction'] = 'row';
+    $settings['flex_wrap'] = 'wrap';
+    $settings['flex_justify_content'] = 'space-between';
+    $settings['flex_align_items'] = 'stretch';
+    $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+    $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+    $settings['background_background'] = 'classic';
+    $settings['background_color'] = 'transparent';
+    $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
+    foreach ( wpae_llm_variant_card_widths( 0, count( $grid_cards ) ) as $width_index => $width ) {
+        $grid_index = $grid_cards[ $width_index ] ?? null;
+        if ( $grid_index === null ) {
+            continue;
+        }
+        $card_settings = is_array( $children[ $grid_index ]['settings'] ?? null ) ? $children[ $grid_index ]['settings'] : [];
+        wpae_llm_set_variant_container_width( $card_settings, (float) $width );
+        $children[ $grid_index ]['settings'] = $card_settings;
+    }
+    $element['settings'] = $settings;
+    $element['elements'] = $children;
+    if ( $before !== wp_json_encode( [ $settings, $children ] ) ) {
+        $changed++;
+    }
+}
+
 function wpae_llm_visual_signature( array $root ): string {
     $containers = [];
     $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$containers ): void {
@@ -1768,35 +1811,7 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         }
 
         if ( $is_grid ) {
-            $grid_cards = [];
-            foreach ( (array) ( $element['elements'] ?? [] ) as $grid_index => $grid_child ) {
-                if ( is_array( $grid_child ) && ( $grid_child['elType'] ?? '' ) === 'container' ) {
-                    $grid_cards[] = $grid_index;
-                }
-            }
-            if ( count( $grid_cards ) >= 2 ) {
-                $settings['flex_direction'] = 'row';
-                $settings['flex_wrap'] = 'wrap';
-                $settings['flex_justify_content'] = 'space-between';
-                $settings['flex_align_items'] = 'stretch';
-                $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
-                $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
-                $settings['background_background'] = 'classic';
-                $settings['background_color'] = 'transparent';
-                foreach ( wpae_llm_variant_card_widths( 0, count( $grid_cards ) ) as $width_index => $width ) {
-                    $grid_index = $grid_cards[ $width_index ] ?? null;
-                    if ( $grid_index === null ) {
-                        continue;
-                    }
-                    $card_settings = is_array( $element['elements'][ $grid_index ]['settings'] ?? null ) ? $element['elements'][ $grid_index ]['settings'] : [];
-                    $before_card = wp_json_encode( $card_settings );
-                    wpae_llm_set_variant_container_width( $card_settings, (float) $width );
-                    $element['elements'][ $grid_index ]['settings'] = $card_settings;
-                    if ( $before_card !== wp_json_encode( $card_settings ) ) {
-                        $changed++;
-                    }
-                }
-            }
+            wpae_llm_normalize_bento_grid( $element, $changed );
         }
 
         if ( is_array( $element['elements'] ?? null ) ) {
