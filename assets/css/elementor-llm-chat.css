@@ -95,9 +95,11 @@
 .wpae-llm-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid rgba(255,255,255,.1); }
 .wpae-llm-input {
     min-width: 0;
+    height: 42px;
     min-height: 42px;
+    max-height: 42px;
     flex: 1;
-    resize: vertical;
+    resize: none;
     padding: 10px 11px;
     border: 1px solid #475569;
     border-radius: 8px;
