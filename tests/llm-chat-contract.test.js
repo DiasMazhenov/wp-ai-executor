@@ -185,6 +185,8 @@ assert.match(llm, /widgetType.*icon-box/);
 assert.match(llm, /wpae-card-heading/);
 assert.match(llm, /wpae-bento-grid/);
 assert.match(llm, /function wpae_llm_apply_generation_visual_grammar/);
+assert.match(llm, /wpae-generated-content-shell/);
+assert.match(llm, /\$has_content_shell/);
 assert.match(llm, /function wpae_llm_fallback_variant/);
 assert.match(llm, /function wpae_llm_visual_variant_count/);
 assert.match(llm, /function wpae_llm_select_fallback_variant/);

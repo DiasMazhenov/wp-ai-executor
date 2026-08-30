@@ -1,5 +1,10 @@
 # План WP AI Executor
 
+## v02.09.63
+
+- Outlined badge is always the first child of a vertical root composition, above the generated heading and content.
+- Original horizontal composition is preserved inside a transparent full-width content shell; fallback visual variants cannot move the badge beside it.
+
 ## v02.09.62
 
 - Контентные briefs без технических слов корректно распознаются как генерация: добавлены естественные сигналы коллекции, доставки, заказа, стоимости, этапов и CTA.

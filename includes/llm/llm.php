@@ -1041,6 +1041,20 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+            $has_content_shell = false;
+            if ( $depth === 0 ) {
+                foreach ( $element['elements'] ?? [] as $top_level_child ) {
+                    if ( ! is_array( $top_level_child ) ) {
+                        continue;
+                    }
+                    $top_level_settings = is_array( $top_level_child['settings'] ?? null ) ? $top_level_child['settings'] : [];
+                    $top_level_classes = preg_split( '/\s+/', trim( (string) ( $top_level_settings['_css_classes'] ?? '' ) ) );
+                    if ( is_array( $top_level_classes ) && in_array( 'wpae-generated-content-shell', $top_level_classes, true ) ) {
+                        $has_content_shell = true;
+                        break;
+                    }
+                }
+            }
             if ( $depth === 0 ) {
                 $settings['background_background'] = 'classic';
                 $settings['background_color'] = $theme['root'];
@@ -1051,11 +1065,11 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                 $settings['_css_classes'] = trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-fallback-variant-' . (string) $variant );
                 $settings['_wpae_visual_variant'] = $variant;
                 $settings['_wpae_visual_layout'] = $layout;
-                $settings['flex_direction'] = in_array( $layout, [ 1, 5 ], true ) ? 'row' : 'column';
-                $settings['flex_wrap'] = in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap';
-                $settings['flex_justify_content'] = $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' );
-                $settings['flex_align_items'] = $layout === 1 ? 'stretch' : 'flex-start';
-                if ( in_array( $layout, [ 1, 5 ], true ) ) {
+                $settings['flex_direction'] = $has_content_shell ? 'column' : ( in_array( $layout, [ 1, 5 ], true ) ? 'row' : 'column' );
+                $settings['flex_wrap'] = $has_content_shell ? 'nowrap' : ( in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap' );
+                $settings['flex_justify_content'] = $has_content_shell ? 'flex-start' : ( $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' ) );
+                $settings['flex_align_items'] = $has_content_shell ? 'stretch' : ( $layout === 1 ? 'stretch' : 'flex-start' );
+                if ( $has_content_shell || in_array( $layout, [ 1, 5 ], true ) ) {
                     foreach ( $element['elements'] as &$top_child ) {
                         if ( ! is_array( $top_child ) ) {
                             continue;
@@ -1064,6 +1078,8 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                         $top_child_classes = preg_split( '/\s+/', trim( (string) ( $top_child_settings['_css_classes'] ?? '' ) ) );
                         $top_child_type = (string) ( $top_child['widgetType'] ?? '' );
                         if ( is_array( $top_child_classes ) && in_array( 'wpae-generated-badge', $top_child_classes, true ) ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, 100 );
+                        } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-generated-content-shell', $top_child_classes, true ) ) {
                             wpae_llm_set_variant_container_width( $top_child_settings, 100 );
                         } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-bento-grid', $top_child_classes, true ) ) {
                             wpae_llm_set_variant_container_width( $top_child_settings, 100 );
@@ -1355,25 +1371,94 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         }
         $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
-        $has_badge = false;
-        foreach ( $root['elements'] as $child_index => $child ) {
+        $original_settings = $root['settings'];
+        $badge = null;
+        $content_shell = null;
+        $content_elements = [];
+        foreach ( $root['elements'] as $child ) {
             if ( ! is_array( $child ) ) {
                 continue;
             }
             $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
             if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
-                $root['elements'][ $child_index ] = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
-                $changed++;
-                $has_badge = true;
-                break;
+                $badge = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
+            } elseif ( is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true ) ) {
+                $content_shell = $child;
+            } else {
+                $content_elements[] = $child;
             }
         }
-        if ( ! $has_badge ) {
-            array_unshift( $root['elements'], wpae_llm_badge_widget( 'wpae-generated-badge', $archetype ) );
+        if ( ! $badge ) {
+            $badge = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
             $changed++;
         }
+        $root['elements'] = $content_shell ? [ $badge, $content_shell ] : array_merge( [ $badge ], $content_elements );
         $root['elements'] = wpae_llm_normalize_card_heading_icons( $root['elements'], 0, $changed );
+        $badge = $root['elements'][0] ?? $badge;
+        $content_shell = null;
+        $content_elements = [];
+        foreach ( array_slice( $root['elements'], 1 ) as $child ) {
+            if ( ! is_array( $child ) ) {
+                continue;
+            }
+            $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true ) ) {
+                $content_shell = $child;
+            } else {
+                $content_elements[] = $child;
+            }
+        }
+        if ( ! $content_shell ) {
+            $original_gap = $original_settings['flex_gap'] ?? $original_settings['gap'] ?? [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+            $content_shell = [
+                'id' => (string) ( $root['id'] ?? 'wpae-generated' ) . '-content-shell',
+                'elType' => 'container',
+                'settings' => [
+                    '_css_classes' => 'wpae-generated-content-shell',
+                    'content_width' => 'full',
+                    'flex_direction' => (string) ( $original_settings['flex_direction'] ?? 'column' ),
+                    'flex_direction_mobile' => (string) ( $original_settings['flex_direction_mobile'] ?? 'column' ),
+                    'flex_wrap' => (string) ( $original_settings['flex_wrap'] ?? 'nowrap' ),
+                    'flex_wrap_mobile' => (string) ( $original_settings['flex_wrap_mobile'] ?? 'nowrap' ),
+                    'flex_justify_content' => (string) ( $original_settings['flex_justify_content'] ?? 'flex-start' ),
+                    'flex_align_items' => (string) ( $original_settings['flex_align_items'] ?? 'stretch' ),
+                    'flex_align_items_mobile' => (string) ( $original_settings['flex_align_items_mobile'] ?? 'stretch' ),
+                    'flex_gap' => $original_gap,
+                    'flex_gap_mobile' => $original_settings['flex_gap_mobile'] ?? [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+                    'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                    'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                    'background_background' => 'classic',
+                    'background_color' => 'transparent',
+                    'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    '_element_width' => 'initial',
+                    '_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    '_element_width_mobile' => 'initial',
+                    '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    '_flex_size' => 'custom',
+                    '_flex_grow' => 0,
+                    '_flex_shrink' => 0,
+                    '_flex_size_mobile' => 'custom',
+                    '_flex_grow_mobile' => 0,
+                    '_flex_shrink_mobile' => 0,
+                ],
+                'elements' => $content_elements,
+            ];
+            $changed++;
+        } elseif ( $content_elements ) {
+            $content_shell['elements'] = array_merge( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $content_elements );
+        }
+        $root['settings']['flex_direction'] = 'column';
+        $root['settings']['flex_direction_mobile'] = 'column';
+        $root['settings']['flex_wrap'] = 'nowrap';
+        $root['settings']['flex_justify_content'] = 'flex-start';
+        $root['settings']['flex_align_items'] = 'stretch';
+        $root['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+        $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+        $root['elements'] = [ $badge, $content_shell ];
+        $changed++;
         $elements[ $index ] = $root;
     }
 
