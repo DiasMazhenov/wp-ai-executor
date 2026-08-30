@@ -771,6 +771,102 @@ function wpae_llm_generation_visual_grammar_hint(): string {
     return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с коротким заголовком обязана использовать native icon-box с иконкой слева от заголовка. В testimonial-карточке цитата является текстом, а иконка относится только к имени или короткому заголовку, не к цитате. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
+function wpae_llm_fallback_variant( string $message ): int {
+    return hexdec( substr( md5( wpae_llm_normalize_content_text( $message ) ), 0, 6 ) ) % 10;
+}
+
+function wpae_llm_fallback_theme( int $variant ): array {
+    $themes = [
+        [ 'root' => '#f7f7f5', 'cards' => [ '#ffffff' ], 'border' => '#d1d5db', 'radius' => 0.75, 'gap' => '1.5', 'padding' => [ 'top' => '2.5', 'right' => '1.5', 'bottom' => '2.5', 'left' => '1.5' ] ],
+        [ 'root' => '#fff7ed', 'cards' => [ '#ffffff', '#ffedd5' ], 'border' => '#c2410c', 'radius' => 1.25, 'gap' => '1.25', 'padding' => [ 'top' => '3', 'right' => '1.75', 'bottom' => '3', 'left' => '1.75' ] ],
+        [ 'root' => '#ecfeff', 'cards' => [ '#ffffff', '#f0fdfa' ], 'border' => '#0f766e', 'radius' => 0.5, 'gap' => '1.75', 'padding' => [ 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2' ] ],
+        [ 'root' => '#f8fafc', 'cards' => [ '#ffffff', '#fef3c7', '#e0f2fe' ], 'border' => '#64748b', 'radius' => 1.5, 'gap' => '1', 'padding' => [ 'top' => '3.5', 'right' => '1.25', 'bottom' => '3.5', 'left' => '1.25' ] ],
+        [ 'root' => '#fef2f2', 'cards' => [ '#ffffff', '#fff1f2' ], 'border' => '#be123c', 'radius' => 0.25, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5' ] ],
+        [ 'root' => '#f0fdf4', 'cards' => [ '#ffffff', '#dcfce7' ], 'border' => '#15803d', 'radius' => 1, 'gap' => '1.25', 'padding' => [ 'top' => '2.75', 'right' => '1.75', 'bottom' => '2.75', 'left' => '1.75' ] ],
+        [ 'root' => '#fffbeb', 'cards' => [ '#ffffff', '#fef3c7' ], 'border' => '#a16207', 'radius' => 0.5, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '2', 'bottom' => '2.25', 'left' => '2' ] ],
+        [ 'root' => '#eff6ff', 'cards' => [ '#ffffff', '#dbeafe' ], 'border' => '#1d4ed8', 'radius' => 1.25, 'gap' => '1.75', 'padding' => [ 'top' => '3', 'right' => '1.5', 'bottom' => '3', 'left' => '1.5' ] ],
+        [ 'root' => '#f5f5f4', 'cards' => [ '#ffffff', '#e7e5e4' ], 'border' => '#57534e', 'radius' => 0.25, 'gap' => '1', 'padding' => [ 'top' => '2.5', 'right' => '1.25', 'bottom' => '2.5', 'left' => '1.25' ] ],
+        [ 'root' => '#f0fdfa', 'cards' => [ '#ffffff', '#ccfbf1' ], 'border' => '#115e59', 'radius' => 1.75, 'gap' => '1.25', 'padding' => [ 'top' => '3.25', 'right' => '1.75', 'bottom' => '3.25', 'left' => '1.75' ] ],
+    ];
+    return $themes[ abs( $variant ) % count( $themes ) ];
+}
+
+function wpae_llm_select_fallback_variant( array $elements, int $seed ): int {
+    $used = [];
+    $collect = static function ( array $nodes ) use ( &$collect, &$used ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            preg_match_all( '/(?:^|\s)wpae-fallback-variant-(\d+)(?:\s|$)/', (string) ( $settings['_css_classes'] ?? '' ), $matches );
+            foreach ( (array) ( $matches[1] ?? [] ) as $match ) {
+                $used[] = absint( $match );
+            }
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $collect( $node['elements'] );
+            }
+        }
+    };
+    $collect( $elements );
+    $used = array_values( array_unique( $used ) );
+    $variant_count = 10;
+    $start = abs( $seed ) % $variant_count;
+    for ( $offset = 0; $offset < $variant_count; $offset++ ) {
+        $candidate = ( $start + $offset ) % $variant_count;
+        if ( ! in_array( $candidate, $used, true ) ) {
+            return $candidate;
+        }
+    }
+    return $start;
+}
+
+function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $archetype, array $theme, int $variant, int $depth, int &$card_index ): void {
+    $repeatable = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        if ( ( $element['elType'] ?? '' ) === 'container' ) {
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+            if ( $depth === 0 ) {
+                $settings['background_background'] = 'classic';
+                $settings['background_color'] = $theme['root'];
+                $settings['flex_gap'] = [ 'column' => $theme['gap'], 'row' => $theme['gap'], 'isLinked' => true, 'unit' => 'rem', 'size' => $theme['gap'] ];
+                $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                $settings['padding'] = array_merge( [ 'unit' => 'rem', 'isLinked' => false ], $theme['padding'] );
+                $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '2', 'right' => '1', 'bottom' => '2', 'left' => '1', 'isLinked' => true ];
+                $settings['_css_classes'] = trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-fallback-variant-' . (string) $variant );
+            } elseif ( in_array( $archetype, $repeatable, true ) && $depth >= 2 && ! $is_grid ) {
+                $card_index++;
+                $settings['background_background'] = 'classic';
+                $settings['background_color'] = $theme['cards'][ ( $card_index - 1 ) % count( $theme['cards'] ) ];
+                $settings['border_border'] = 'solid';
+                $settings['border_color'] = $theme['border'];
+                $settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+                $settings['border_radius'] = [ 'unit' => 'rem', 'size' => $theme['radius'], 'isLinked' => true ];
+            }
+            if ( $is_grid ) {
+                $settings['flex_justify_content'] = $variant % 2 === 0 ? 'space-between' : 'flex-start';
+                $settings['flex_align_items'] = $variant % 3 === 0 ? 'stretch' : 'flex-start';
+            }
+            $element['settings'] = $settings;
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            wpae_llm_apply_fallback_variant_recursive( $element['elements'], $archetype, $theme, $variant, $depth + 1, $card_index );
+        }
+    }
+    unset( $element );
+}
+
+function wpae_llm_apply_fallback_variant( array $elements, string $archetype, int $variant ): array {
+    $card_index = 0;
+    wpae_llm_apply_fallback_variant_recursive( $elements, $archetype, wpae_llm_fallback_theme( $variant ), $variant, 0, $card_index );
+    return $elements;
+}
+
 function wpae_llm_badge_label( string $archetype ): string {
     $labels = [
         'hero' => 'ПЕРВЫЙ ЭКРАН',
@@ -1146,6 +1242,8 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         'action' => 'insert_elements',
         'post_id' => $post_id,
         'position' => 'end',
+        'fallback_archetype' => $archetype,
+        'fallback_variant' => wpae_llm_fallback_variant( $message ),
         'elements' => [ [ 'id' => 'llm-fallback', 'elType' => 'container', 'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'background_background' => 'classic', 'background_color' => '#f7f7f5', 'flex_gap' => $gap, 'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ], 'padding' => $padding, 'padding_mobile' => [ 'unit' => 'rem', 'top' => '2', 'right' => '1', 'bottom' => '2', 'left' => '1', 'isLinked' => true ] ], 'elements' => $elements ] ],
     ];
 }
@@ -1436,6 +1534,15 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
         $existing = wpae_elementor_normalize_data( $existing )['data'];
     }
     $steps[] = [ 'id' => 'page_context', 'status' => 'ok', 'message' => $initial_page ? 'Страница пустая: разрешена безопасная инициализация Elementor.' : 'Текущая структура страницы прочитана.', 'details' => [ 'existing_element_count' => count( $existing ) ] ];
+    $fallback_variant_applied = false;
+    $fallback_variant = null;
+    if ( isset( $action['fallback_variant'], $action['fallback_archetype'] ) && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
+        $fallback_variant = wpae_llm_select_fallback_variant( $existing, absint( $action['fallback_variant'] ) + count( $existing ) );
+        $fallback_archetype = sanitize_key( (string) $action['fallback_archetype'] );
+        $elements = wpae_llm_apply_fallback_variant( $elements, $fallback_archetype, $fallback_variant );
+        $fallback_variant_applied = true;
+        $steps[] = [ 'id' => 'fallback_variation', 'status' => 'ok', 'message' => 'Для fallback-композиции выбран новый визуальный вариант без повтора уже добавленных fallback-блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $fallback_archetype, 'available_variants' => 10 ] ];
+    }
     if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
         $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );
     }
@@ -1511,6 +1618,7 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
         'post_id' => $post_id,
         'inserted_count' => count( $elements ),
         'inserted_widget_count' => wpae_llm_count_widgets( $elements ),
+        'fallback_variant' => $fallback_variant_applied ? $fallback_variant : null,
         'action_summary' => 'Добавлен блок ' . ( $action['position'] ?? 'end' ) . ': ' . count( $elements ) . ' контейнер.',
         'diff' => $diff,
         'editor_sync' => [
@@ -1571,8 +1679,12 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 $system_prompt .= ' Замечания Vision: ' . $vision_findings;
             }
         }
+        $variation_seed = hexdec( substr( md5( $message . '|' . microtime( true ) ), 0, 6 ) ) % 100000;
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
         $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; задай явный фон корневого контейнера, контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder.' . wpae_llm_generation_visual_grammar_hint() . ' Не удаляй и не заменяй существующие элементы.';
+        if ( ! $targeted_edit ) {
+            $system_prompt .= ' Выбери для этого запуска новую композицию и не копируй предыдущие блоки: меняй ритм, соотношение зон, плотность и акцентную иерархию, сохраняя смысл и весь пользовательский контент. Внутренний номер варианта: ' . (string) $variation_seed . '.';
+        }
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         $system_prompt .= $targeted_edit ? ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только JSON-объект patch_elements. Не возвращай URL, endpoint, пояснения или markdown.' : ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
     }
@@ -1701,6 +1813,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . wpae_llm_generation_visual_grammar_hint() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
                 [ 'role' => 'user', 'content' => $message ],
             ];
+            if ( isset( $variation_seed ) ) {
+                $repair_messages[0]['content'] .= ' Выбери новую композицию, не копируй прошлый блок; внутренний номер варианта: ' . (string) $variation_seed . '.';
+            }
             for ( $repair_attempt = 1; $repair_attempt <= 2 && ! $action_repair; $repair_attempt++ ) {
                 $repair_body = $request_body;
                 $repair_body['messages'] = $repair_messages;
@@ -1746,8 +1861,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $action_diagnostics = [
                 'response_type' => 'deterministic_fallback',
                 'json_decoded' => true,
-                'response_keys' => [ 'action', 'post_id', 'position', 'elements' ],
+                'response_keys' => [ 'action', 'post_id', 'position', 'fallback_archetype', 'fallback_variant', 'elements' ],
                 'fallback_archetype' => wpae_llm_detect_block_archetype( $message ),
+                'fallback_variant' => absint( $action['fallback_variant'] ?? 0 ),
                 'fallback_reason' => 'Provider and bounded repair response did not contain a usable native widget tree.',
             ];
             $action_fallback = true;
