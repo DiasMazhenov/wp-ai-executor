@@ -772,7 +772,11 @@ function wpae_llm_generation_visual_grammar_hint(): string {
 }
 
 function wpae_llm_fallback_variant( string $message ): int {
-    return hexdec( substr( md5( wpae_llm_normalize_content_text( $message ) ), 0, 6 ) ) % 10;
+    return hexdec( substr( md5( wpae_llm_normalize_content_text( $message ) ), 0, 6 ) ) % wpae_llm_visual_variant_count();
+}
+
+function wpae_llm_visual_variant_count(): int {
+    return 60;
 }
 
 function wpae_llm_fallback_theme( int $variant ): array {
@@ -791,7 +795,7 @@ function wpae_llm_fallback_theme( int $variant ): array {
     return $themes[ abs( $variant ) % count( $themes ) ];
 }
 
-function wpae_llm_select_fallback_variant( array $elements, int $seed ): int {
+function wpae_llm_select_fallback_variant( array $elements, int $seed, array $candidate_elements = [], string $archetype = '' ): int {
     $used = [];
     $collect = static function ( array $nodes ) use ( &$collect, &$used ): void {
         foreach ( $nodes as $node ) {
@@ -803,6 +807,9 @@ function wpae_llm_select_fallback_variant( array $elements, int $seed ): int {
             foreach ( (array) ( $matches[1] ?? [] ) as $match ) {
                 $used[] = absint( $match );
             }
+            if ( isset( $settings['_wpae_visual_variant'] ) && is_numeric( $settings['_wpae_visual_variant'] ) ) {
+                $used[] = absint( $settings['_wpae_visual_variant'] );
+            }
             if ( is_array( $node['elements'] ?? null ) ) {
                 $collect( $node['elements'] );
             }
@@ -810,19 +817,138 @@ function wpae_llm_select_fallback_variant( array $elements, int $seed ): int {
     };
     $collect( $elements );
     $used = array_values( array_unique( $used ) );
-    $variant_count = 10;
+    $used_signatures = wpae_llm_collect_visual_signatures( $elements );
+    $variant_count = wpae_llm_visual_variant_count();
     $start = abs( $seed ) % $variant_count;
     for ( $offset = 0; $offset < $variant_count; $offset++ ) {
         $candidate = ( $start + $offset ) % $variant_count;
-        if ( ! in_array( $candidate, $used, true ) ) {
-            return $candidate;
+        if ( in_array( $candidate, $used, true ) ) {
+            continue;
         }
+        if ( ! empty( $candidate_elements ) ) {
+            $candidate_signatures = wpae_llm_collect_visual_signatures( wpae_llm_apply_fallback_variant( $candidate_elements, $archetype, $candidate ) );
+            if ( array_intersect( $candidate_signatures, $used_signatures ) ) {
+                continue;
+            }
+        }
+        return $candidate;
     }
     return $start;
 }
 
+function wpae_llm_set_variant_container_width( array &$settings, float $width ): void {
+    $width = max( 0, min( 100, $width ) );
+    $settings['width'] = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
+    $settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+    $settings['_element_width'] = 'initial';
+    $settings['_element_custom_width'] = [ 'unit' => '%', 'size' => $width, 'sizes' => [] ];
+    $settings['_element_width_mobile'] = 'initial';
+    $settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+    $settings['_flex_size'] = 'custom';
+    $settings['_flex_grow'] = 0;
+    $settings['_flex_shrink'] = 0;
+    $settings['_flex_size_mobile'] = 'custom';
+    $settings['_flex_grow_mobile'] = 0;
+    $settings['_flex_shrink_mobile'] = 0;
+}
+
+function wpae_llm_variant_card_widths( int $variant, int $count ): array {
+    $layout = intdiv( abs( $variant ) % wpae_llm_visual_variant_count(), 10 );
+    if ( $count <= 0 ) {
+        return [];
+    }
+    if ( $count === 1 ) {
+        return [ 100 ];
+    }
+
+    $widths = [];
+    if ( $layout === 1 ) {
+        $widths = array_fill( 0, $count, 48 );
+    } elseif ( $layout === 2 ) {
+        $widths = [ 48 ];
+        for ( $index = 1; $index < $count; $index++ ) {
+            $widths[] = 23;
+        }
+    } elseif ( $layout === 3 ) {
+        $widths = $count >= 4 ? [ 31, 31, 31, 100 ] : array_fill( 0, $count, 23 );
+    } elseif ( $layout === 4 ) {
+        $widths = [ 100 ];
+        for ( $index = 1; $index < $count; $index++ ) {
+            $widths[] = 31;
+        }
+    } elseif ( $layout === 5 ) {
+        $widths = [ 23 ];
+        for ( $index = 1; $index < $count; $index++ ) {
+            $widths[] = $index === 1 ? 48 : 23;
+        }
+    } else {
+        $width = $count >= 4 ? 23 : ( $count === 3 ? 31 : 48 );
+        $widths = array_fill( 0, $count, $width );
+    }
+
+    return array_slice( $widths, 0, $count );
+}
+
+function wpae_llm_visual_signature( array $root ): string {
+    $containers = [];
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$containers ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) || ( $node['elType'] ?? '' ) !== 'container' ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            $children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
+            $child_widths = [];
+            foreach ( $children as $child ) {
+                if ( ! is_array( $child ) ) {
+                    continue;
+                }
+                $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+                $width = $child_settings['width'] ?? $child_settings['_element_custom_width'] ?? null;
+                if ( is_array( $width ) ) {
+                    $child_widths[] = [ 'unit' => (string) ( $width['unit'] ?? '' ), 'size' => (string) ( $width['size'] ?? '' ) ];
+                } else {
+                    $child_widths[] = (string) $width;
+                }
+            }
+            $containers[] = [
+                'depth' => $depth,
+                'grid' => is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ),
+                'background' => (string) ( $settings['background_color'] ?? '' ),
+                'border' => (string) ( $settings['border_color'] ?? '' ),
+                'radius' => $settings['border_radius'] ?? null,
+                'direction' => (string) ( $settings['flex_direction'] ?? '' ),
+                'wrap' => (string) ( $settings['flex_wrap'] ?? '' ),
+                'justify' => (string) ( $settings['flex_justify_content'] ?? '' ),
+                'align' => (string) ( $settings['flex_align_items'] ?? '' ),
+                'gap' => $settings['flex_gap'] ?? $settings['gap'] ?? null,
+                'padding' => $settings['padding'] ?? null,
+                'child_widths' => $child_widths,
+                'child_count' => count( $children ),
+            ];
+            if ( $children ) {
+                $walk( $children, $depth + 1 );
+            }
+        }
+    };
+    $walk( [ $root ] );
+    return hash( 'sha256', (string) wp_json_encode( $containers ) );
+}
+
+function wpae_llm_collect_visual_signatures( array $elements ): array {
+    $signatures = [];
+    foreach ( $elements as $element ) {
+        if ( is_array( $element ) && ( $element['elType'] ?? '' ) === 'container' ) {
+            $signatures[] = wpae_llm_visual_signature( $element );
+        }
+    }
+    return array_values( array_unique( $signatures ) );
+}
+
 function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $archetype, array $theme, int $variant, int $depth, int &$card_index ): void {
     $repeatable = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
+    $layout = intdiv( abs( $variant ) % wpae_llm_visual_variant_count(), 10 );
     foreach ( $elements as &$element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -839,6 +965,35 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                 $settings['padding'] = array_merge( [ 'unit' => 'rem', 'isLinked' => false ], $theme['padding'] );
                 $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '2', 'right' => '1', 'bottom' => '2', 'left' => '1', 'isLinked' => true ];
                 $settings['_css_classes'] = trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-fallback-variant-' . (string) $variant );
+                $settings['_wpae_visual_variant'] = $variant;
+                $settings['_wpae_visual_layout'] = $layout;
+                $settings['flex_direction'] = in_array( $layout, [ 1, 5 ], true ) ? 'row' : 'column';
+                $settings['flex_wrap'] = in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap';
+                $settings['flex_justify_content'] = $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' );
+                $settings['flex_align_items'] = $layout === 1 ? 'stretch' : 'flex-start';
+                if ( in_array( $layout, [ 1, 5 ], true ) ) {
+                    foreach ( $element['elements'] as &$top_child ) {
+                        if ( ! is_array( $top_child ) ) {
+                            continue;
+                        }
+                        $top_child_settings = is_array( $top_child['settings'] ?? null ) ? $top_child['settings'] : [];
+                        $top_child_classes = preg_split( '/\s+/', trim( (string) ( $top_child_settings['_css_classes'] ?? '' ) ) );
+                        $top_child_type = (string) ( $top_child['widgetType'] ?? '' );
+                        if ( is_array( $top_child_classes ) && in_array( 'wpae-generated-badge', $top_child_classes, true ) ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, 100 );
+                        } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-bento-grid', $top_child_classes, true ) ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, 100 );
+                        } elseif ( $top_child_type === 'heading' ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, $layout === 5 ? 58 : 48 );
+                        } elseif ( $top_child_type === 'text-editor' ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, $layout === 5 ? 38 : 48 );
+                        } elseif ( $top_child_type === 'button' ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, $layout === 5 ? 38 : 48 );
+                        }
+                        $top_child['settings'] = $top_child_settings;
+                    }
+                    unset( $top_child );
+                }
             } elseif ( in_array( $archetype, $repeatable, true ) && $depth >= 2 && ! $is_grid ) {
                 $card_index++;
                 $settings['background_background'] = 'classic';
@@ -849,8 +1004,25 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                 $settings['border_radius'] = [ 'unit' => 'rem', 'size' => $theme['radius'], 'isLinked' => true ];
             }
             if ( $is_grid ) {
-                $settings['flex_justify_content'] = $variant % 2 === 0 ? 'space-between' : 'flex-start';
-                $settings['flex_align_items'] = $variant % 3 === 0 ? 'stretch' : 'flex-start';
+                $settings['flex_direction'] = 'row';
+                $settings['flex_wrap'] = 'wrap';
+                $settings['flex_justify_content'] = in_array( $layout, [ 1, 4 ], true ) ? 'flex-start' : 'space-between';
+                $settings['flex_align_items'] = in_array( $layout, [ 0, 4 ], true ) ? 'stretch' : 'flex-start';
+                $grid_cards = [];
+                foreach ( $element['elements'] as $grid_index => $grid_child ) {
+                    if ( is_array( $grid_child ) && ( $grid_child['elType'] ?? '' ) === 'container' ) {
+                        $grid_cards[] = $grid_index;
+                    }
+                }
+                foreach ( wpae_llm_variant_card_widths( $variant, count( $grid_cards ) ) as $width_index => $width ) {
+                    $grid_index = $grid_cards[ $width_index ] ?? null;
+                    if ( $grid_index === null ) {
+                        continue;
+                    }
+                    $card_settings = is_array( $element['elements'][ $grid_index ]['settings'] ?? null ) ? $element['elements'][ $grid_index ]['settings'] : [];
+                    wpae_llm_set_variant_container_width( $card_settings, (float) $width );
+                    $element['elements'][ $grid_index ]['settings'] = $card_settings;
+                }
             }
             $element['settings'] = $settings;
         }
@@ -1539,11 +1711,11 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     $variation_requested = isset( $action['fallback_variant'] ) || $variation_seed >= 0;
     if ( $variation_requested && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
         $variation_source = isset( $action['fallback_variant'] ) ? absint( $action['fallback_variant'] ) : $variation_seed;
-        $fallback_variant = wpae_llm_select_fallback_variant( $existing, $variation_source + count( $existing ) );
         $variation_archetype = sanitize_key( (string) ( $action['fallback_archetype'] ?? $archetype ) );
+        $fallback_variant = wpae_llm_select_fallback_variant( $existing, $variation_source + count( $existing ), $elements, $variation_archetype );
         $elements = wpae_llm_apply_fallback_variant( $elements, $variation_archetype, $fallback_variant );
         $fallback_variant_applied = true;
-        $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбран новый визуальный вариант без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => 10 ] ];
+        $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
     }
     if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
         $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.59`
+- Plugin: `v02.09.60`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -163,6 +163,17 @@ contains no native Elementor widget, preventing a false success that leaves only
 an empty container. After a successful write, the chat reloads the current
 Elementor preview; progress statuses appear while the synchronous request is
 running, followed by confirmed server steps as separate assistant messages.
+Generated blocks receive a post-parse visual-variation guard. It selects from
+60 combinations of ten coherent surface themes and six responsive compositions,
+compares the candidate visual signature with every saved top-level block, and
+stores `_wpae_visual_variant`/`_wpae_visual_layout` metadata. This prevents a
+provider or fallback from passing off the same grid as a new design, including
+when older blocks have no WPAE variant class. Repeatable grids keep a maximum of
+four cards per row and each composition has a mobile single-column fallback.
+The candidate signature is calculated after the variant is applied, before the
+write, so selection cannot rely only on an LLM seed or on a class that Elementor
+may omit from the editor DOM.
+
 When the Elementor transaction fails after a write and rollback, the chat now
 exposes `update_error`, `failed_checks`, and readable `failure_details` in the
 assistant message and copied JSON log instead of reducing the failure to HTTP
