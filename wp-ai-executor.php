@@ -9,7 +9,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_VERSION = 'v02.09.46';
+const WPAE_VERSION = 'v02.09.47';
 const WPAE_GUIDE_VERSION = 'v02.05.77';
 const WPAE_ROLLBACK_TTL_SECONDS = 7200;
 const WPAE_ROLLBACK_MAX_SNAPSHOTS = 20;

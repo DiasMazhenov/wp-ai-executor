@@ -265,7 +265,37 @@
         var iframe = getPreviewIframe();
         return iframe && iframe.contentDocument ? iframe.contentDocument.querySelectorAll('.elementor-widget').length : 0;
     }
-    function getPreviewRenderContext() {
+    function getEditorSyncIds(editorSync) {
+        return editorSync && Array.isArray(editorSync.elements) ? editorSync.elements.map(function (element) {
+            return element && element.id ? String(element.id) : '';
+        }).filter(Boolean) : [];
+    }
+    function focusEditorSync(editorSync) {
+        var ids = getEditorSyncIds(editorSync);
+        if (!ids.length) return Promise.resolve(false);
+        return new Promise(function (resolve) {
+            var started = Date.now();
+            var findTarget = function () {
+                var iframe = getPreviewIframe();
+                var doc = iframe && iframe.contentDocument;
+                var target = doc ? Array.prototype.slice.call(doc.querySelectorAll('[data-id]')).find(function (element) {
+                    return ids.indexOf(element.getAttribute('data-id')) !== -1;
+                }) : null;
+                if (target) {
+                    target.scrollIntoView({ block: 'start', inline: 'nearest' });
+                    resolve(true);
+                    return;
+                }
+                if (Date.now() - started >= 6000) {
+                    resolve(false);
+                    return;
+                }
+                window.setTimeout(findTarget, 200);
+            };
+            findTarget();
+        });
+    }
+    function getPreviewRenderContext(targetElementIds) {
         var iframe = getPreviewIframe();
         var doc = iframe && iframe.contentDocument;
         if (!doc) return {};
@@ -283,7 +313,8 @@
             viewport_width: doc.documentElement.clientWidth || iframe.clientWidth || 0,
             viewport_height: iframe.clientHeight || doc.documentElement.clientHeight || 0,
             horizontal_overflow: !!(body && body.scrollWidth > doc.documentElement.clientWidth + 2),
-            visible_element_ids: ids
+            visible_element_ids: ids,
+            target_element_ids: Array.isArray(targetElementIds) ? targetElementIds.slice(0, 8) : []
         };
     }
     function reloadPreviewIframe() {
@@ -374,7 +405,7 @@
         });
         return visionCapturePromise;
     }
-    function capturePreviewScreenshot() {
+    function capturePreviewScreenshot(targetElementIds) {
         var iframe = document.querySelector('#elementor-preview-iframe');
         if (!iframe || !iframe.contentDocument) return Promise.reject(new Error('Текущий Elementor preview недоступен для screenshot.'));
         var doc = iframe.contentDocument;
@@ -414,7 +445,7 @@
                 restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
-                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height, render_context: getPreviewRenderContext() };
+                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height, render_context: getPreviewRenderContext(targetElementIds) };
             }, function (error) {
                 restore();
                 throw error;
@@ -444,13 +475,13 @@
             });
         });
     }
-    function requestVisionReview(snapshotId, captureError, brief) {
+    function requestVisionReview(snapshotId, captureError, brief, editorSync) {
         return postVisionReview({
             post_id: Number(config.postId) || 0,
             rollback_snapshot_id: snapshotId,
             vision_capture_error: captureError,
             brief: brief || '',
-            render_context: getPreviewRenderContext()
+            render_context: getPreviewRenderContext(getEditorSyncIds(editorSync))
         });
     }
     function postVisionReview(payload) {
@@ -483,10 +514,19 @@
             });
         });
     }
-    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief) {
+    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync) {
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
         return waitForPreviewRefresh(alreadySynced ? Promise.resolve(true) : refreshElementorPreview(), minimumWidgetCount).then(function () {
-            return capturePreviewScreenshot().then(function (capture) {
+            return focusEditorSync(editorSync).then(function (focused) {
+                if (focused) return true;
+                return refreshElementorPreview().then(function (refreshed) {
+                    if (!refreshed) throw new Error('Новый блок не найден в preview Elementor после realtime-вставки.');
+                    return focusEditorSync(editorSync).then(function (refocused) {
+                        if (!refocused) throw new Error('Новый блок не найден в preview Elementor после обновления.');
+                        return true;
+                    });
+                });
+            }).then(function () { return capturePreviewScreenshot(getEditorSyncIds(editorSync)); }).then(function (capture) {
                 return postVisionReview({
                     post_id: Number(config.postId) || 0,
                     rollback_snapshot_id: snapshotId,
@@ -497,7 +537,7 @@
                     render_context: capture.render_context
                 });
             }, function (error) {
-                return requestVisionReview(snapshotId, error.message, brief);
+                return requestVisionReview(snapshotId, error.message, brief, editorSync);
             });
         });
     }
@@ -642,20 +682,21 @@
             if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
                 var expectedWidgetCount = beforeWidgetCount + Number(body.write.inserted_widget_count || body.write.inserted_count || 0);
                 var editorSyncedState = false;
+                var editorSyncData = body.write.editor_sync;
                 visionPromise = Promise.resolve(syncEditorElements(body.write.editor_sync)).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
                     if (editorSynced) {
-                        return waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount).then(function () {
+                        return waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
                             addMessage('assistant', 'Новые элементы добавлены в открытый Elementor без перезагрузки редактора.');
                             return true;
                         }).catch(function () {
-                            return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () {
+                            return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
                                 addMessage('assistant', 'Canvas не подтвердил realtime-вставку, preview обновлён из сохранённых данных.');
                                 return false;
                             });
                         });
                     }
-                    return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () {
+                    return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
                         addMessage('assistant', 'Предпросмотр Elementor обновлён из сохранённых данных.');
                         return false;
                     }).catch(function (error) {
@@ -664,7 +705,7 @@
                     });
                 }).then(function () {
                     if (!options.skipVision && config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
-                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief);
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData);
                     }
                     return true;
                 });

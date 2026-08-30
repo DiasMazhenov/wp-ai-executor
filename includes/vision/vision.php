@@ -168,6 +168,14 @@ function wpae_vision_render_context( $value ): array {
         }
     }
     $context['visible_element_ids'] = array_values( array_unique( $ids ) );
+    $target_ids = [];
+    foreach ( array_slice( (array) ( $value['target_element_ids'] ?? [] ), 0, 8 ) as $id ) {
+        $id = sanitize_key( (string) $id );
+        if ( $id !== '' ) {
+            $target_ids[] = $id;
+        }
+    }
+    $context['target_element_ids'] = array_values( array_unique( $target_ids ) );
     return array_filter( $context, static fn( $item ) => $item !== '' && $item !== 0 );
 }
 
