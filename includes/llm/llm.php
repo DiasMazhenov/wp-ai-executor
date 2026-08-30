@@ -744,7 +744,7 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
 }
 
 function wpae_llm_generation_visual_grammar_hint(): string {
-    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с заголовком обязана использовать native icon-box с иконкой слева от заголовка. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с коротким заголовком обязана использовать native icon-box с иконкой слева от заголовка. В testimonial-карточке цитата является текстом, а иконка относится только к имени или короткому заголовку, не к цитате. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
 function wpae_llm_badge_label( string $archetype ): string {
@@ -844,7 +844,57 @@ function wpae_llm_card_heading_widget( string $id, array $source ): array {
     ];
 }
 
-function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_depth = -1, int &$changed = 0 ): array {
+function wpae_llm_card_widget_text( array $element ): string {
+    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+    $widget_type = (string) ( $element['widgetType'] ?? '' );
+    $key = $widget_type === 'heading' ? 'title' : ( $widget_type === 'icon-box' ? 'title_text' : ( $widget_type === 'text-editor' ? 'editor' : '' ) );
+    if ( $key === '' || ! is_scalar( $settings[ $key ] ?? null ) ) {
+        return '';
+    }
+    $text = wp_strip_all_tags( html_entity_decode( (string) $settings[ $key ], ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+    return trim( preg_replace( '/\s+/u', ' ', $text ) );
+}
+
+function wpae_llm_is_probable_card_heading( string $text ): bool {
+    $text = trim( preg_replace( '/\s+/u', ' ', $text ) );
+    $length = function_exists( 'mb_strlen' ) ? mb_strlen( $text ) : strlen( $text );
+    if ( $text === '' || $length > 72 ) {
+        return false;
+    }
+    if ( preg_match( '/^\s*[«"“„]|[»"”]\s*$/u', $text ) || preg_match( '/[.!?…]\s*$/u', $text ) ) {
+        return false;
+    }
+    return true;
+}
+
+function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_depth = -1, int &$changed = 0, string $archetype = '' ): array {
+    $nested_container_count = count( array_filter( $elements, static fn( $item ) => is_array( $item ) && ( $item['elType'] ?? '' ) === 'container' ) );
+    $is_card_contents = $parent_depth >= 1 && $nested_container_count === 0;
+
+    if ( $is_card_contents && $archetype === 'testimonials' ) {
+        foreach ( $elements as $index => $element ) {
+            if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'widget' ) {
+                continue;
+            }
+            $widget_type = (string) ( $element['widgetType'] ?? '' );
+            $text = wpae_llm_card_widget_text( $element );
+            if ( in_array( $widget_type, [ 'heading', 'icon-box' ], true ) && ! wpae_llm_is_probable_card_heading( $text ) ) {
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $quote = $text;
+                $description = trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) );
+                if ( $description !== '' && $description !== $quote ) {
+                    $quote .= ' ' . $description;
+                }
+                if ( $quote !== '' ) {
+                    $element['widgetType'] = 'text-editor';
+                    $element['settings'] = [ 'editor' => $quote ];
+                    $elements[ $index ] = $element;
+                    $changed++;
+                }
+            }
+        }
+    }
+
     $has_marked_card_heading = false;
     foreach ( $elements as $element ) {
         if ( ! is_array( $element ) || (string) ( $element['widgetType'] ?? '' ) !== 'icon-box' ) {
@@ -852,9 +902,27 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-        if ( is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) ) {
+        if ( is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
             $has_marked_card_heading = true;
             break;
+        }
+    }
+
+    $candidate_index = null;
+    if ( $is_card_contents && ! $has_marked_card_heading ) {
+        foreach ( $elements as $index => $element ) {
+            if ( is_array( $element ) && ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'heading' && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
+                $candidate_index = $index;
+                break;
+            }
+        }
+        if ( $candidate_index === null && $archetype === 'testimonials' ) {
+            foreach ( array_reverse( $elements, true ) as $index => $element ) {
+                if ( is_array( $element ) && ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'text-editor' && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
+                    $candidate_index = $index;
+                    break;
+                }
+            }
         }
     }
 
@@ -870,14 +938,18 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
             $elements[ $index ] = $element;
             continue;
         }
-        if ( $element_type === 'widget' && $parent_depth >= 1 && $widget_type === 'heading' && ! $has_marked_card_heading ) {
+        if ( $index === $candidate_index ) {
+            if ( $widget_type === 'text-editor' ) {
+                $element['settings'] = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $element['settings']['title'] = wpae_llm_card_widget_text( $element );
+            }
             $elements[ $index ] = wpae_llm_card_heading_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element );
             $changed++;
             continue;
         }
-        if ( $element_type === 'widget' && $parent_depth >= 1 && $widget_type === 'icon-box' ) {
+        if ( $element_type === 'widget' && $is_card_contents && $widget_type === 'icon-box' ) {
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
-            if ( trim( (string) ( $settings['title_text'] ?? '' ) ) !== '' ) {
+            if ( wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
                 $before = wp_json_encode( $settings );
                 $selected_icon = is_array( $settings['selected_icon'] ?? null ) ? $settings['selected_icon'] : [];
                 $settings['selected_icon'] = trim( (string) ( $selected_icon['value'] ?? '' ) ) !== '' ? $selected_icon : [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ];
@@ -891,7 +963,7 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
         if ( is_array( $element['elements'] ?? null ) ) {
             $element_depth = $element_type === 'container' ? $parent_depth + 1 : $parent_depth;
-            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed );
+            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed, $archetype );
         }
         $elements[ $index ] = $element;
     }
