@@ -1447,8 +1447,14 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
                 'elements' => $content_elements,
             ];
             $changed++;
-        } elseif ( $content_elements ) {
-            $content_shell['elements'] = array_merge( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $content_elements );
+        } else {
+            $content_shell_settings = is_array( $content_shell['settings'] ?? null ) ? $content_shell['settings'] : [];
+            $content_shell_settings['background_background'] = 'classic';
+            $content_shell_settings['background_color'] = 'transparent';
+            $content_shell['settings'] = $content_shell_settings;
+            if ( $content_elements ) {
+                $content_shell['elements'] = array_merge( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $content_elements );
+            }
         }
         $root['settings']['flex_direction'] = 'column';
         $root['settings']['flex_direction_mobile'] = 'column';

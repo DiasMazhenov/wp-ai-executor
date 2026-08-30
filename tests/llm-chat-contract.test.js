@@ -198,6 +198,7 @@ assert.match(llm, /function wpae_llm_variant_card_widths/);
 assert.match(llm, /_wpae_visual_variant/);
 assert.match(llm, /wpae_llm_set_variant_container_width/);
 assert.match(llm, /\$settings\['background_color'\] = 'transparent';/);
+assert.match(llm, /\$content_shell_settings\['background_color'\] = 'transparent';/);
 assert.match(llm, /внешний контейнер и контейнер bento-сетки оставляй прозрачными/);
 assert.match(llm, /visual_variation/);
 assert.match(llm, /available_variants' => wpae_llm_visual_variant_count\(\)/);
