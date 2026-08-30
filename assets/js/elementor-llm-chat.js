@@ -50,16 +50,13 @@
     close.textContent = '×';
     close.setAttribute('aria-label', strings.close);
     var copy = document.createElement('button');
-    copy.className = 'wpae-llm-copy';
+    copy.className = 'wpae-llm-icon-button wpae-llm-copy';
     copy.type = 'button';
-    copy.textContent = strings.copyLog;
-    copy.setAttribute('aria-label', strings.copyLog);
+    addIcon(copy, 'eicon-code', strings.copyLog);
     var copySelection = document.createElement('button');
-    copySelection.className = 'wpae-llm-copy-selection';
+    copySelection.className = 'wpae-llm-icon-button wpae-llm-copy-selection';
     copySelection.type = 'button';
-    copySelection.textContent = strings.copySelection;
-    copySelection.setAttribute('aria-label', strings.copySelection);
-    copySelection.setAttribute('title', strings.copySelection);
+    addIcon(copySelection, 'eicon-copy', strings.copySelection);
     var headActions = document.createElement('div');
     headActions.className = 'wpae-llm-head-actions';
     headActions.appendChild(copy);
@@ -83,9 +80,9 @@
     input.maxLength = 4000;
     input.placeholder = strings.placeholder;
     var send = document.createElement('button');
-    send.className = 'wpae-llm-send';
+    send.className = 'wpae-llm-icon-button wpae-llm-send';
     send.type = 'submit';
-    send.textContent = strings.send;
+    addIcon(send, 'eicon-arrow-right', strings.send);
     form.appendChild(input);
     form.appendChild(send);
     panel.appendChild(head);
@@ -98,6 +95,18 @@
     function setOpen(value) {
         root.classList.toggle('wpae-llm-chat-root--open', value);
         if (value) input.focus();
+    }
+    function addIcon(button, iconClass, label) {
+        var icon = document.createElement('i');
+        icon.className = iconClass;
+        icon.setAttribute('aria-hidden', 'true');
+        button.appendChild(icon);
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+    }
+    function setButtonLabel(button, label) {
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
     }
     function addMessage(role, text) {
         var item = document.createElement('div');
@@ -247,8 +256,8 @@
     }
     function copyChatLog() {
         copyText(chatLog()).then(function () {
-            copy.textContent = strings.copied;
-            window.setTimeout(function () { copy.textContent = strings.copyLog; }, 1600);
+            setButtonLabel(copy, strings.copied);
+            window.setTimeout(function () { setButtonLabel(copy, strings.copyLog); }, 1600);
         }).catch(function () {});
     }
     function selectedModels() {
@@ -285,9 +294,9 @@
             elements: models.map(serializeSelectedModel)
         };
         copyText(JSON.stringify(payload, null, 2)).then(function () {
-            copySelection.textContent = strings.selectionCopied;
+            setButtonLabel(copySelection, strings.selectionCopied);
             addMessage('assistant', strings.selectionCopied);
-            window.setTimeout(function () { copySelection.textContent = strings.copySelection; }, 1600);
+            window.setTimeout(function () { setButtonLabel(copySelection, strings.copySelection); }, 1600);
         }).catch(function () {
             addMessage('assistant', strings.selectionCopyError || strings.copyError);
         });
@@ -631,11 +640,11 @@
         label.textContent = 'Изменения применены';
         var undo = document.createElement('button');
         undo.type = 'button';
-        undo.className = 'wpae-llm-undo';
-        undo.textContent = 'Отменить';
+        undo.className = 'wpae-llm-icon-button wpae-llm-undo';
+        addIcon(undo, 'eicon-undo', 'Отменить');
         undo.addEventListener('click', function () {
             undo.disabled = true;
-            undo.textContent = 'Отмена…';
+            setButtonLabel(undo, 'Отмена…');
             fetch(config.undoEndpoint, {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -650,7 +659,7 @@
                 });
             }).catch(function (error) {
                 undo.disabled = false;
-                undo.textContent = 'Отменить';
+                setButtonLabel(undo, 'Отменить');
                 addMessage('assistant', 'Не удалось отменить изменение: ' + error.message);
             });
         });
