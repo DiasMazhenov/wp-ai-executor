@@ -212,7 +212,7 @@ assert.match(js, /originalBrief: originalBrief/);
 assert.match(js, /visionRegenerate: true/);
 assert.match(js, /Откатываю неудачную версию и заново генерирую полноценный дизайн/);
 assert.match(js, /Vision повторно обнаружил проблемы после двух bounded repair-проходов/);
-assert.match(js, /Передаю замечания Vision агенту для точечной правки/);
+assert.match(js, /Передаю замечания Vision агенту для полной регенерации дизайна/);
 assert.match(js, /Перегенерируй текущий дизайн по исходному запросу пользователя/);
 assert.match(js, /options\.selectedElements \|\| selectedElements\(\)/);
 assert.match(js, /!options\.skipVision/);

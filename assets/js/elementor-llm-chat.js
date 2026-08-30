@@ -196,7 +196,13 @@
         }
         addMessage('assistant', 'LLM-провайдер недоступен. Перезагружаю страницу и повторю запрос один раз.');
         status.textContent = 'Перезагрузка страницы…';
-        window.setTimeout(function () { window.location.reload(); }, 250);
+        window.setTimeout(function () {
+            window.location.reload();
+            // ponytail: embedded browsers may ignore reload; retry locally once instead of looping.
+            window.setTimeout(function () {
+                if (readProviderRetry()) retryProviderRequestAfterReload();
+            }, 1800);
+        }, 250);
         return true;
     }
     function retryProviderRequestAfterReload() {
@@ -665,7 +671,7 @@
             }
             return visionPromise.then(function (review) {
                 if (review && review.gate && review.gate.quality_failed) {
-                    addMessage('assistant', describeVisionReview(review) + ' Передаю замечания Vision агенту для точечной правки.');
+                    addMessage('assistant', describeVisionReview(review) + ' Передаю замечания Vision агенту для полной регенерации дизайна.');
                     if (repairDepth >= 2) {
                         return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
                             if (rolledBack) refreshElementorPreview();
