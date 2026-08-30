@@ -387,6 +387,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(анна|мария|дмитрий|руслан|марат|отзыв|рекомендац|понравилось|получили)\b/iu', $normalized ) || preg_match( '/[«"]/u', $message ) ) {
             return 'testimonials';
         }
+        if ( preg_match( '/\b(быстрый старт|понятная структура|поддержка после запуска|преимуществ|выгод)\b/iu', $normalized ) ) {
+            return 'benefits';
+        }
         if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем)\b/iu', $normalized ) ) {
             return 'process';
         }
@@ -576,6 +579,21 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
             $cards = array_values( array_filter( $child['elements'], static fn( $item ) => is_array( $item ) && ( $item['elType'] ?? '' ) === 'container' ) );
             if ( count( $cards ) < 2 ) {
                 continue;
+            }
+            $target_card_count = min( 4, max( 2, count( $pairs ) ) );
+            if ( count( $cards ) > $target_card_count ) {
+                $trimmed = [];
+                $card_count = 0;
+                foreach ( $child['elements'] as $item ) {
+                    if ( is_array( $item ) && ( $item['elType'] ?? '' ) === 'container' ) {
+                        if ( $card_count >= $target_card_count ) {
+                            continue;
+                        }
+                        $card_count++;
+                    }
+                    $trimmed[] = $item;
+                }
+                $child['elements'] = $trimmed;
             }
             foreach ( $child['elements'] as &$card ) {
                 if ( ! is_array( $card ) || ( $card['elType'] ?? '' ) !== 'container' || ! isset( $pairs[0] ) ) {
