@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.32`
-- Guide: `v02.05.76`
+- Plugin: `v02.09.33`
+- Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -43,6 +43,9 @@ matching heading/text widgets when possible and rejects the action with a
 missing-content list when fidelity cannot be proven. Editor Vision also receives
 the original brief and a bounded visible-text excerpt, so content fidelity is a
 separate review concern from visual composition.
+Vision reports with major/critical findings, a score below 75, or malformed
+payloads are blocking; the editor chat reports the findings and attempts the
+available rollback instead of claiming success.
 Testimonial fallback output uses a wrapping Flexbox card grid with one editable
 native card container per quote and a single-column mobile layout.
 Generated testimonial author headings are guarded to native h5/h6 typography;
@@ -261,7 +264,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.32` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.33` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -274,7 +277,7 @@ Vision default model, the populated-native-widget action rule, and action JSON
  diagnostics and live Elementor preview refresh are published on GitHub `main`; `v02.09.25` fixes the native Elementor card sizing mode with custom flex sizing and explicit grow/shrink values. `v02.09.24` adds backend bento normalization for repeatable blocks, native Flexbox card wrapping, a four-items-per-row cap, and single-column mobile sizing without adding the layout requirement to the user prompt. Earlier releases: `v02.08.96` added the stronger realtime canvas refresh, the hero composition guard, and the strict editor Vision quality gate, `v02.08.97` disables visual-regression comparison for first insertion into an empty Elementor post while retaining it for existing content, `v02.08.98` makes regression comparative and raises the compact action-JSON budget, `v02.08.99` skips unreliable public baselines for draft posts, `v02.09.00` skips editor Vision rollback for draft posts, `v02.09.01` verifies that the preview contains the newly inserted widgets, `v02.09.02` refreshes the preview URL version key, `v02.09.03` synchronizes saved action elements into the open Elementor editor model through the official create command, `v02.09.04` accepts double-encoded JSON returned by OpenAI-compatible providers, `v02.09.05` requests provider JSON mode and compatible OpenRouter routing for action commands, `v02.09.06` retries `openrouter/free` without optional structured-output parameters when that route rejects them, `v02.09.07` exposes sanitized provider transport details in editor chat errors, `v02.09.08` constrains action prompts to one compact populated hero container, `v02.09.09` adds one bounded repair pass for invalid action shapes, `v02.09.10` gives that repair pass a minimal JSON-only context, `v02.09.11` passes the exact current post_id into repair prompts, `v02.09.12` requires non-empty heading, text-editor, and button content in the repair-pass contract, `v02.09.13` keeps low Vision score as a warning while reserving rollback for major or critical findings and exposes report details in chat errors, `v02.09.14` gives the bounded action repair-pass a concrete populated native-widget JSON exemplar, `v02.09.15` retries an invalid repair response once and reports the failure details instead of silently stopping, `v02.09.16` keeps major Vision findings advisory so only critical findings roll back a successful editor-chat write, `v02.09.17` forbids placeholder content in repair responses and asks for request-specific copy, `v02.09.18` excludes Elementor editor-only overlays and dropzones from the Vision screenshot to prevent false critical findings, and `v02.09.19` makes editor-chat Vision reports advisory while retaining strict rollback only for transaction Vision gates.
 - `v02.09.27` keeps section headings, intro copy, and CTA outside repeatable bento card grids; deterministic benefits, pricing, process, and portfolio fallbacks now create populated native card containers.
 
-The latest local release `v02.09.32` is published on GitHub `main`, but the
+The latest local release `v02.09.33` is published on GitHub `main`, but the
 currently open Elementor editor was verified on 2026-08-30 and still reports
 live plugin `v02.09.28` and guide `v02.05.72`; content-fidelity and provider
 retry fixes therefore remain pending live deployment. Browser tests on the old
@@ -411,7 +414,7 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 
 ## Normalizer update
 
-`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context. `v02.09.30` adds deterministic content-fidelity validation, content-aware fallback repair, and passes the user brief plus a bounded preview text excerpt to the Vision review. `v02.09.32` also extracts unquoted natural-language label/description pairs and maps them into fallback cards before the fidelity gate.
+`v02.09.28` improves the shared Elementor normalizer: legacy alignment/gap aliases migrate to current Flexbox controls and responsive variants, containers receive `container_type=flex`, and native buttons receive explicit design-token background/text colors so theme defaults cannot change the generated contrast. `v02.09.29` extends the chat contract with strict root-shape validation, operation IDs, compact diffs, targeted native patches, one-click undo, stable realtime sync confirmation, and advisory Vision render context. `v02.09.30` adds deterministic content-fidelity validation, content-aware fallback repair, and passes the user brief plus a bounded preview text excerpt to the Vision review. `v02.09.32` also extracts unquoted natural-language label/description pairs and maps them into fallback cards before the fidelity gate. `v02.09.33` makes Vision score below 75 and major/critical findings blocking, returns the actual `quality_failed` state, and makes the editor chat attempt rollback after a failed Vision review.
 
 ## Next block-library steps
 

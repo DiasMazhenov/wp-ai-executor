@@ -54,10 +54,12 @@ function wpae_build_elementor_design_review( array $elementor_data, array $conte
         $vision_status = ! empty( $vision_gate['blocking'] ) ? 'fail' : ( ! empty( $vision_gate['major_count'] ) ? 'warn' : 'pass' );
         $reviews['vision_visual_review'] = [
             'status' => $vision_status,
-            'must_fix' => (array) ( $vision_gate['must_fix'] ?? [] ),
+            'must_fix' => ! empty( $vision_gate['must_fix'] )
+                ? (array) $vision_gate['must_fix']
+                : ( $vision_status === 'fail' ? [ (string) ( $vision_gate['message'] ?? 'AI Vision rejected the visual result.' ) ] : [] ),
         ];
         if ( $vision_status === 'fail' ) {
-            $must_fix = array_merge( $must_fix, (array) ( $vision_gate['must_fix'] ?? [] ) );
+            $must_fix = array_merge( $must_fix, $reviews['vision_visual_review']['must_fix'] );
         }
     }
 

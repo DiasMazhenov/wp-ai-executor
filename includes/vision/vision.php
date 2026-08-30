@@ -344,6 +344,8 @@ function wpae_evaluate_vision_report( array $report ): array {
             'blocking' => true,
             'critical_count' => 0,
             'major_count' => 0,
+            'quality_failed' => true,
+            'score_below_floor' => true,
             'must_fix' => [ 'AI Vision report is malformed and cannot satisfy a transaction gate.' ],
             'message' => 'AI Vision report is invalid.',
             'validation_errors' => $validation_errors,
@@ -359,13 +361,25 @@ function wpae_evaluate_vision_report( array $report ): array {
             $major[] = $finding;
         }
     }
+    $quality_floor = 75;
+    $vision_score = absint( $report['vision_score'] ?? $report['score'] ?? 0 );
+    $score_below_floor = $vision_score < $quality_floor;
+    $quality_failed = ! empty( $critical ) || ! empty( $major ) || $score_below_floor;
+    $must_fix = (array) ( $report['must_fix'] ?? [] );
+    if ( $score_below_floor ) {
+        $must_fix[] = 'AI Vision score is below the minimum quality floor of ' . $quality_floor . '.';
+    }
     return [
-        'ok' => empty( $critical ),
-        'blocking' => ! empty( $critical ),
+        'ok' => ! $quality_failed,
+        'blocking' => $quality_failed,
         'critical_count' => count( $critical ),
         'major_count' => count( $major ),
-        'must_fix' => (array) ( $report['must_fix'] ?? [] ),
-        'message' => empty( $critical ) ? 'AI Vision found no critical visual defects.' : 'AI Vision found critical visual defects.',
+        'quality_floor' => $quality_floor,
+        'vision_score' => $vision_score,
+        'score_below_floor' => $score_below_floor,
+        'quality_failed' => $quality_failed,
+        'must_fix' => array_values( array_unique( array_filter( $must_fix ) ) ),
+        'message' => $quality_failed ? 'AI Vision found visual quality issues that require revision.' : 'AI Vision passed the visual quality gate.',
     ];
 }
 
@@ -528,6 +542,7 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
         . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
         . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. If requested content is missing, substituted, or materially different, add a major finding with category content_fidelity and a concrete fix. If the content cannot be verified, say so as a minor finding instead of claiming it matches.\n"
+        . "Do not approve sparse or unfinished composition: large unused regions, detached text columns, accidental template fragments, missing card/group structure, weak hierarchy, or a CTA without a coherent supporting layout are major visual defects. For these cases use a score below 75 and provide a concrete fix.\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )
         . ( $render_context_text !== '' ? "Objective render context: {$render_context_text}\n" : '' )
@@ -809,20 +824,20 @@ function wpae_vision_editor_review( WP_REST_Request $request ): WP_REST_Response
     $gate = wpae_evaluate_vision_report( $report );
     $vision_score = absint( $report['vision_score'] ?? 0 );
     $quality_floor = 75;
-    $quality_failed = ! empty( $gate['major_count'] );
+    $quality_failed = ! empty( $gate['quality_failed'] ) || ! empty( $gate['blocking'] );
     return new WP_REST_Response( [
-        'ok' => true,
+        'ok' => ! $quality_failed,
         'rolled_back' => false,
         'report' => $report,
         'gate' => array_merge( $gate, [
             'quality_floor' => $quality_floor,
             'score_below_floor' => $vision_score < $quality_floor,
-            'quality_failed' => false,
+            'quality_failed' => $quality_failed,
             'blocking_advisory' => ! empty( $gate['blocking'] ),
             'quality_warning' => $quality_failed,
             'advisory' => true,
         ] ),
-    ], 200 );
+    ], $quality_failed ? 422 : 200 );
 }
 
 function wpae_get_vision_status(): array {

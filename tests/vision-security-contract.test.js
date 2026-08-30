@@ -27,9 +27,10 @@ assert.match(vision, /'rolled_back' => false/);
 assert.match(vision, /wpae_vision_capture_failed/);
 assert.match(vision, /provider_http_status/);
 assert.match(vision, /provider_message/);
-assert.match(vision, /\$quality_failed = ! empty\( \$gate\['major_count'\] \)/);
+assert.match(vision, /\$quality_failed = ! empty\( \$gate\['quality_failed'\] \)/);
 assert.match(vision, /'blocking_advisory' => ! empty\( \$gate\['blocking'\] \)/);
 assert.match(vision, /'quality_warning' => \$quality_failed/);
+assert.doesNotMatch(vision, /'quality_failed' => false/);
 assert.match(vision, /score_below_floor/);
 assert.match(transactions, /wpae_vision_unverified_report/);
 

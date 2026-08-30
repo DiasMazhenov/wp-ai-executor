@@ -7,7 +7,7 @@
     "assets/css/elementor-llm-chat.css": "9c4c058e09041f282fb3c82f292dab3e117a4482877a602be5b7538d691e511c",
     "assets/js/elementor-block-library-ui.js": "d08efe3aaa6ef875b283dfc26f6a39fb7d3899cd76dafbfabeca31ea77c7290d",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "0dc3e31c69d48bc54688143dee291b965e10c186c25527bf8539684f4191dc87",
+    "assets/js/elementor-llm-chat.js": "50646edb8be811492e2f5d19ca70788c333c3f2cfd5528ab4213dd1488cb474a",
     "includes/admin/dashboard.php": "b2c1a8d0d5971175726a60eb69f64ccddb5f036db5536c1225d3ab1e874a6fe7",
     "includes/design/system.php": "a9bd3eba468e2d5f1507ef5a07defd9f730f80897517744c6547f2c718fbccde",
     "includes/elementor/block-library.php": "ab52756e475900d587fabe54ee0c25c12735bfe7c523381c9b05dbd79ea5e151",
@@ -16,7 +16,7 @@
     "includes/elementor/css-native.php": "cf54e83d28d3788e98a82542458ccd8fa71e7366c6543a74b0c3494772df0732",
     "includes/elementor/data.php": "d306f94a7a13bdcc017b41f549d818c2058ec351802715c609a73526efbc81c1",
     "includes/elementor/design-contract.php": "6fd0d37d715b4312cf948589da0708ea65073e11d314a68793c947785ef9d293",
-    "includes/elementor/design-review.php": "3c3aaa47f0124c4581c334a927fde59b656690ad2cad5952adbda5a3e6f53942",
+    "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editor-chat.php": "e85d92755fc10e6f9159b6307696d5342e987ea05554b849a0736945ffcfdb47",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/normalize.php": "80869c7daf958921bd9ba942275b35d869a5f13285c963850137bc2c9f8ff8b0",
@@ -30,7 +30,7 @@
     "includes/elementor/visual-audit.php": "db0bb0df396671d058d82ad652989e19ee9974f8c4b74422107b440e7ae20854",
     "includes/execution/run.php": "ddba4fb5de66f62488305625cdd96bc040f1af55e569468005da4210cc2300d1",
     "includes/exports/exports.php": "b471d8020b0cd7240895817ecaf92aa1138cb6a0a7da58b6fb0a3afe1e894dca",
-    "includes/guide/guide.php": "0a8a72cd986b40ab66fbfad51cf866184e4165f43954f4978a9a2af522ad261c",
+    "includes/guide/guide.php": "d5a7ae7fba00d1205755e619e7d4b6dc41ca4b61e4fa017b3ec91c22d2b98b8c",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
     "includes/llm/llm.php": "ea55b827bcf46af997422775ce97649f261315de4bda3f348ed10e82c0266daf",
@@ -43,7 +43,7 @@
     "includes/support/logging.php": "5d8360abf0981be17fe47af6797309a8a3f7804c59c60998633f6b225afcd186",
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
-    "includes/vision/vision.php": "0eabcb5538b21ac8b5105e92e3d9f32e6957e8fe54bb7d37e8f664c406d35425",
-    "wp-ai-executor.php": "f71f6a9d4899debd1e0cbc1030b47fe885321a6028ce1bc7a530a8a45c95e503"
+    "includes/vision/vision.php": "71a2a04e8a02321696f329376039dc30e3b3e12857452736c85418515fca33fb",
+    "wp-ai-executor.php": "b91c902e4cb4ca2e7d64f13be55b65279fa6b2373bfb1d8ae2d3eda91a60c169"
   }
 }

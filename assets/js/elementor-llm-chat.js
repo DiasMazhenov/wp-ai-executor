@@ -442,6 +442,7 @@
         }).then(function (response) {
             return response.json().catch(function () { return {}; }).then(function (body) {
                 if (!response.ok) {
+                    if (body.gate && body.gate.quality_failed) return body;
                     var detail = body.error || body.message || ('HTTP ' + response.status);
                     if (body.code) detail += ' [' + body.code + ']';
                     var visionDetails = body.details || {};
@@ -526,6 +527,19 @@
         var confidence = report.confidence === undefined ? '' : ' confidence ' + Math.round(Number(report.confidence) * 100) + '%.';
         var warning = gate.quality_warning || gate.score_below_floor ? ' Требуется дополнительная визуальная проверка.' : '';
         return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + confidence + warning + summary + (findings ? ' ' + findings : '');
+    }
+    function rollbackVisionFailure(snapshotId) {
+        if (!snapshotId || !config.undoEndpoint) return Promise.resolve(false);
+        return fetch(config.undoEndpoint, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+            body: JSON.stringify({ post_id: Number(config.postId) || 0, rollback_snapshot_id: snapshotId })
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (body) {
+                return !!response.ok && !!body.ok;
+            });
+        }, function () { return false; });
     }
     function request(message, retried) {
         var beforeWidgetCount = getPreviewWidgetCount();
@@ -625,6 +639,13 @@
                 });
             }
             return visionPromise.then(function (review) {
+                if (review && review.gate && review.gate.quality_failed) {
+                    return rollbackVisionFailure(body.write && body.write.rollback_snapshot_id).then(function (rolledBack) {
+                        addMessage('assistant', describeVisionReview(review) + ' Результат отклонён AI Vision.' + (rolledBack ? ' Изменения откатены.' : ' Автоматический откат не выполнен.'));
+                        if (rolledBack) refreshElementorPreview();
+                        status.textContent = strings.error;
+                    });
+                }
                 if (review && review.rolled_back) {
                     addMessage('assistant', 'AI Vision обнаружил критические дефекты. Изменения откатены.');
                     refreshElementorPreview();

@@ -16,7 +16,7 @@ function wpae_agent_guide(): array {
             'action_contract' => 'Chat action writes accept only one populated root Flexbox container with native Elementor descendants and the exact current post_id. Tutorial text, REST instructions, flat widget lists, or empty containers are rejected.',
             'realtime' => 'After a confirmed write, synchronize the normalized elements into the currently open Elementor editor model. A saved HTTP 200 is not sufficient: verify the canvas/widget count and report sync status.',
             'preview_and_undo' => 'Every successful chat write returns an operation_id, compact diff, rollback snapshot and an undo path. The UI must expose the latest change and allow one-click undo while the snapshot is valid.',
-            'vision' => 'Editor-chat Vision is advisory. Analyze the rendered page body with editor chrome/dropzones excluded and use render-context evidence. Screenshot/provider failure must not roll back a successful editor write; strict rollback belongs only to an explicitly requested transaction Vision gate.',
+            'vision' => 'Editor-chat Vision reviews the rendered page body with editor chrome/dropzones excluded and uses render-context evidence. A score below 75 or any major/critical finding rejects the result and the chat attempts to roll back the write; screenshot/provider failures are reported separately. Strict server-side rollback remains available through an explicitly requested transaction Vision gate.',
             'composition' => 'Choose a semantic block archetype and a varied composition. Repeatable content uses native card containers, bento layout, a maximum of four desktop items per row, and a single-column mobile fallback.',
             'skills' => 'Apply every enabled compatible skill in the guided context and expose the skill count and guide version in the execution trace.',
             'editing' => 'Use patch semantics for targeted property changes when a selected element is available; do not rebuild unrelated page sections.',
@@ -133,8 +133,8 @@ function wpae_agent_guide(): array {
             '18. Read preflight and agent_conformance in write responses and fix weak/blocked criteria, including design quality gates, before considering the task complete.',
             '19. If any endpoint or verification step fails, report concrete error details: endpoint/action, HTTP status or exception, plugin error code/message, details/preflight/blocking_errors, and the next safe fix.',
             '20. Library blocks use draft -> approved -> published. Run the Design Review Gate before approval; never instantiate a draft or publish with ship_best.',
-            '21. When AI Vision is enabled, review desktop and mobile screenshots with /vision/analyze or submit an external report to /vision/report, then combine it with /vision/page-review; treat Vision as additional evidence, not a replacement for deterministic audits or public browser verification.',
-            '22. For risky Elementor writes, pass transaction_vision_review=true only with a same-post provider report created by /vision/analyze; external /vision/report data is advisory and cannot satisfy the atomic rollback gate. Critical Vision findings must be fixed before the transaction can complete.',
+            '21. When AI Vision is enabled, review desktop and mobile screenshots with /vision/analyze or submit an external report to /vision/report, then combine it with /vision/page-review; a score below 75 or major/critical finding requires revision, and Vision remains additional evidence rather than a replacement for deterministic audits or public browser verification.',
+            '22. For risky Elementor writes, pass transaction_vision_review=true only with a same-post provider report created by /vision/analyze; external /vision/report data is advisory and cannot satisfy the atomic rollback gate. A failed Vision quality gate, including a score below 75 or major/critical findings, must be fixed before the transaction can complete.',
         ],
         'frontend_design' => [
             'principles' => [
@@ -175,7 +175,7 @@ function wpae_agent_guide(): array {
             'native_style_first_rule' => 'When changing any element style, write it to native Elementor settings/style controls first. CSS is only an exception for complex behavior, animations, hover/focus refinements, browser fixes, or specificity conflicts after native settings exist.',
             'elementor_editor_editability_rule' => 'All design properties that Elementor can edit must remain editable through native Elementor controls/settings. Native settings are the editable source of truth, not something to delete; only remove local overrides when the user explicitly asks for global inheritance/design-token control.',
             'global_typography_editability_rule' => 'For typography that the user should control globally in Elementor, do not hardcode typography_* overrides on every widget. Use global typography roles, inherited/container typography, or leave widget typography unset; local typography_* settings are allowed only for deliberate exceptions such as a hero display wordmark.',
-            'ai_vision_rule' => 'When AI Vision is enabled, use it as a second visual review layer for desktop/mobile screenshots. The floating Elementor chat must analyze the refreshed preview after a successful write and roll back the write snapshot on critical findings or failed review. Do not treat a Vision pass as proof of DOM validity, Elementor editability, computed CSS, keyboard behavior, or animation correctness.',
+            'ai_vision_rule' => 'When AI Vision is enabled, use it as a second visual review layer for desktop/mobile screenshots. The floating Elementor chat must analyze the refreshed preview after a successful write, reject scores below 75 or major/critical findings, and attempt to roll back the write snapshot on a failed review. Do not treat a Vision pass as proof of DOM validity, Elementor editability, computed CSS, keyboard behavior, or animation correctness.',
         ],
         'jezweb_claude_skills' => [
             'source' => 'https://github.com/jezweb/claude-skills',
@@ -520,7 +520,7 @@ function wpae_agent_guide(): array {
                 'transaction_verify_public=true fetches the public permalink after save and runs /visual-audit style checks; failure triggers rollback.',
                 'transaction_visual_regression=true captures a public HTML/audit baseline before existing-page writes and compares status, visible text, CTA, overflow, empty blocks, and audit level after save; failure triggers rollback.',
                 'transaction_strict_quality=true treats weak/blocked static visual audit as a transaction failure.',
-                'transaction_vision_review=true requires vision_report_id or inline vision_report; critical findings fail the atomic transaction and trigger rollback.',
+                'transaction_vision_review=true requires vision_report_id or inline vision_report; a score below 75 or major/critical findings fail the atomic transaction and trigger rollback.',
             ],
             'failure_rule' => 'If transaction.ok=false, read transaction.failed_checks and transaction.auto_rollback. Do not retry through /run, WP Admin, browser writes, or direct metadata edits. Fix the payload and repeat dry_run first.',
         ],
