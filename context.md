@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.55`
+- Plugin: `v02.09.56`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -51,7 +51,9 @@ Action generation classifies natural-language block requests into hero,
 benefits, pricing, testimonials, FAQ, process, CTA, or portfolio archetypes.
 Content-only prompts with at least two natural label-description pairs are also
 classified as generation requests, so users do not need to name an Elementor
-widget or add a technical command verb.
+widget or add a technical command verb. Briefs made from three or more
+sentence/line units with a content signal or CTA are classified the same way,
+even when they contain no labels or technical action words.
 When those prompts do not name a block type, archetype detection uses the
 content semantics: question pairs become FAQ, price pairs pricing, testimonial
 language becomes testimonials, step language becomes process, case/result
@@ -317,7 +319,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.55` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.56` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -339,8 +341,9 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.53` adds explicit selected-Elementor JSON export to the floating chat, including native settings and recursive child elements without adding the full payload to LLM requests.
 - `v02.09.54` replaces chat control text with Elementor icon buttons while retaining accessible labels and tooltips.
 - `v02.09.55` fixes the chat input height to match the 42px send icon button and disables outer textarea resizing.
+- `v02.09.56` recognizes natural content-only briefs made from sentence or line units with a CTA/content signal, so the editor chat requests generation instead of returning advisory instructions.
 
-The latest local release `v02.09.55` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.56` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the

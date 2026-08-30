@@ -229,7 +229,22 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
         return false;
     }
 
-    return count( wpae_llm_extract_labeled_content( $message ) ) >= 2;
+    if ( count( wpae_llm_extract_labeled_content( $message ) ) >= 2 ) {
+        return true;
+    }
+
+    $sentences = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+)/u', $message, -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    $sentences = array_filter(
+        $sentences,
+        static function ( $sentence ): bool {
+            return strlen( trim( (string) $sentence ) ) >= 8;
+        }
+    );
+    $has_cta = (bool) preg_match( '/\b(обсудить|получить|узнать|заказать|написать|связаться|оставить\s+заявк|смотреть)\b/iu', $message );
+    $has_content_signal = (bool) preg_match( '/[«»"]|₸|\$|€|₽|\b(дизайн|сайт|страниц|проект|бизнес|клиент|услуг|продукт|команд|запуск|результат)\b/iu', $message );
+
+    // Content-only briefs often have a headline, body copy, and CTA without labels.
+    return count( $sentences ) >= 3 && ( $has_cta || $has_content_signal );
 }
 
 function wpae_llm_is_action_request( string $message ): bool {
