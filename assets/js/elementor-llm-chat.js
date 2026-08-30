@@ -242,37 +242,14 @@
             };
         });
     }
-    function visionRepairElements() {
-        var iframe = getPreviewIframe();
-        var doc = iframe && iframe.contentDocument;
-        if (!doc) return selectedElements();
-        var seen = {};
-        var elements = [];
-        Array.prototype.forEach.call(doc.querySelectorAll('.elementor-element[data-id]'), function (node) {
-            if (elements.length >= 8) return;
-            var id = String(node.getAttribute('data-id') || '').trim();
-            if (!id || seen[id]) return;
-            seen[id] = true;
-            var classes = String(node.className || '');
-            var widgetMatch = classes.match(/elementor-widget-([a-z0-9_-]+)/i);
-            var visibleText = String(node.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 240);
-            elements.push({
-                id: id,
-                elType: widgetMatch ? 'widget' : 'container',
-                widgetType: widgetMatch ? widgetMatch[1] : '',
-                visible_text: visibleText
-            });
-        });
-        return elements.length ? elements : selectedElements();
-    }
-    function buildVisionRepairMessage(review) {
+    function buildVisionRepairMessage(review, originalBrief) {
         var report = review && review.report ? review.report : {};
         var findings = Array.isArray(report.findings) ? report.findings.slice(0, 6).map(function (finding) {
             var message = finding.message || 'исправление визуальной проблемы';
             var fix = finding.fix ? ' Исправление: ' + finding.fix : '';
             return (finding.severity || 'info') + ': ' + message + fix;
         }).join('; ') : '';
-        return 'Исправь текущий дизайн по замечаниям AI Vision. Сохрани существующий контент и не добавляй новые блоки. ' + (findings || 'Устрани нарушения композиции, типографики, отступов и переполнения.');
+        return 'Перегенерируй текущий дизайн по исходному запросу пользователя с учетом замечаний AI Vision. Создай полноценный красивый блок заново, не урезай композицию и не оставляй placeholder-тексты. Исходный запрос пользователя: «' + String(originalBrief || '').slice(0, 4000) + '». ' + (findings || 'Устрани нарушения композиции, типографики, отступов и переполнения.');
     }
     function getPreviewIframe() {
         var iframe = document.querySelector('#elementor-preview-iframe');
@@ -580,6 +557,8 @@
     }
     function request(message, retried, options) {
         options = options || {};
+        var repairDepth = Number(options.repairDepth) || 0;
+        var originalBrief = options.originalBrief || message;
         var beforeWidgetCount = getPreviewWidgetCount();
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {
             return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: item.textContent };
@@ -603,6 +582,8 @@
             selected_elements: options.selectedElements || selectedElements()
         };
         if (options.visionRepair) requestContext.vision_repair = true;
+        if (options.visionRegenerate) requestContext.vision_regenerate = true;
+        if (options.visionFindings) requestContext.vision_findings = String(options.visionFindings).slice(0, 3600);
         return fetch(config.endpoint, {
             method: 'POST',
             credentials: 'same-origin',
@@ -677,7 +658,7 @@
                     });
                 }).then(function () {
                     if (!options.skipVision && config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
-                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, message);
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief);
                     }
                     return true;
                 });
@@ -685,17 +666,20 @@
             return visionPromise.then(function (review) {
                 if (review && review.gate && review.gate.quality_failed) {
                     addMessage('assistant', describeVisionReview(review) + ' Передаю замечания Vision агенту для точечной правки.');
-                    var repairTargets = visionRepairElements();
-                    if (!repairTargets.length) {
-                        addActionControls(body.write);
-                        addMessage('assistant', 'Vision оставил замечания, но в canvas не найдены элементы для безопасной точечной правки.');
-                        addMessage('assistant', body.message || strings.done);
-                        status.textContent = strings.done;
-                        return;
+                    if (repairDepth >= 2) {
+                        return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
+                            if (rolledBack) refreshElementorPreview();
+                            addMessage('assistant', 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
+                            status.textContent = strings.error;
+                        });
                     }
-                    addMessage('assistant', 'Выполняется: Исправляю существующие Elementor-элементы по замечаниям Vision.');
-                    addMessage('assistant', 'Vision repair использует только существующие элементы и native settings.');
-                    return request(buildVisionRepairMessage(review), false, { visionRepair: true, skipVision: true, selectedElements: repairTargets });
+                    addMessage('assistant', 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
+                    return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
+                        if (!rolledBack) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией.');
+                        return refreshElementorPreview().then(function () {
+                            return request(originalBrief, false, { visionRepair: true, visionRegenerate: true, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief) });
+                        });
+                    });
                 }
                 if (review && review.rolled_back) {
                     addMessage('assistant', 'AI Vision обнаружил критические дефекты. Изменения откатены.');

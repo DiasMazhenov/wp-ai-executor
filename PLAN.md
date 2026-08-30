@@ -1,5 +1,10 @@
 # План WP AI Executor
 
+## v02.09.41
+
+- AI Vision repair больше не урезает слабый блок точечным patch: неудачная версия откатывается и полностью перегенерируется по исходному brief и findings Vision.
+- Полная regeneration использует native `insert_elements`, не затрагивает существующие блоки страницы и повторяет Vision-проверку максимум два раза.
+
 ## v02.09.40
 
 - AI Vision findings теперь передаются обратно в editor-chat LLM как один bounded repair-проход.

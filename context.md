@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.40`
+- Plugin: `v02.09.41`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -27,15 +27,16 @@
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
-code graph contains 586 nodes and 1386 edges, with `graphify-out/GRAPH_TREE.html`
+code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
 
-The editor-chat Vision review is advisory: quality findings do not rollback a
-successful write. They start one bounded repair pass that sends the findings,
-recommended fixes, and a sanitized visible-text/element-ID map back to the LLM;
-the repair may only return `patch_elements` for existing native settings and
-cannot add, delete, replace, or recurse into another Vision review. Atomic
-rollback remains limited to explicit `transaction_vision_review` transactions.
+The editor-chat Vision review is advisory: quality findings trigger a bounded
+rollback-and-regenerate workflow instead of silently keeping a weak block. The
+failed generated version is rolled back, then the original brief plus sanitized
+Vision findings are sent to the LLM for one complete native `insert_elements`
+regeneration; up to two repair passes are allowed, with no changes to unrelated
+existing page blocks. Atomic rollback remains limited to explicit
+`transaction_vision_review` transactions.
 
 Action generation classifies natural-language block requests into hero,
 benefits, pricing, testimonials, FAQ, process, CTA, or portfolio archetypes.
@@ -51,9 +52,9 @@ missing-content list when fidelity cannot be proven. Editor Vision also receives
 the original brief and a bounded visible-text excerpt, so content fidelity is a
 separate review concern from visual composition.
 Vision reports with major/critical findings or a score below 75 trigger the
-bounded editor-chat repair workflow; malformed/provider failures remain visible
-errors. The chat only reports repair success after the patch endpoint confirms
-the write.
+bounded editor-chat regeneration workflow; malformed/provider failures remain
+visible errors. The chat only reports regeneration success after Elementor
+confirms the new write.
 The targeted Elementor patch branch keeps balanced nested arrays in its
 progress-step merge; PHP syntax is checked before release to prevent a bootstrap
 fatal error from taking down WordPress.
