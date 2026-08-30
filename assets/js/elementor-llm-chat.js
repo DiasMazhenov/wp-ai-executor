@@ -270,6 +270,13 @@
             return element && element.id ? String(element.id) : '';
         }).filter(Boolean) : [];
     }
+    function findPreviewTarget(doc, targetElementIds) {
+        if (!doc || !Array.isArray(targetElementIds) || !targetElementIds.length) return null;
+        var ids = targetElementIds.map(function (id) { return String(id || ''); }).filter(Boolean);
+        return Array.prototype.slice.call(doc.querySelectorAll('[data-id]')).find(function (element) {
+            return ids.indexOf(element.getAttribute('data-id')) !== -1;
+        }) || null;
+    }
     function focusEditorSync(editorSync) {
         var ids = getEditorSyncIds(editorSync);
         if (!ids.length) return Promise.resolve(false);
@@ -278,9 +285,7 @@
             var findTarget = function () {
                 var iframe = getPreviewIframe();
                 var doc = iframe && iframe.contentDocument;
-                var target = doc ? Array.prototype.slice.call(doc.querySelectorAll('[data-id]')).find(function (element) {
-                    return ids.indexOf(element.getAttribute('data-id')) !== -1;
-                }) : null;
+                var target = findPreviewTarget(doc, ids);
                 if (target) {
                     target.scrollIntoView({ block: 'start', inline: 'nearest' });
                     resolve(true);
@@ -300,19 +305,24 @@
         var doc = iframe && iframe.contentDocument;
         if (!doc) return {};
         var body = doc.body;
-        var ids = Array.prototype.slice.call(doc.querySelectorAll('[data-id]')).filter(function (element) {
+        var target = findPreviewTarget(doc, targetElementIds);
+        var scope = target || body || doc.documentElement;
+        var ids = Array.prototype.slice.call(scope.querySelectorAll('[data-id]')).filter(function (element) {
             var style = doc.defaultView.getComputedStyle(element);
             return style.display !== 'none' && style.visibility !== 'hidden';
         }).slice(0, 40).map(function (element) { return element.getAttribute('data-id'); });
+        if (target && target.getAttribute('data-id')) ids.unshift(target.getAttribute('data-id'));
+        ids = Array.from(new Set(ids)).filter(function (id) { return !!id; });
         return {
             source: 'elementor_editor_preview',
             editor_chrome_excluded: true,
-            widget_count: doc.querySelectorAll('.elementor-widget').length,
-            text_length: body ? (body.innerText || '').trim().length : 0,
-            text_excerpt: body ? (body.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 4000) : '',
+            target_found: !!target,
+            widget_count: scope ? scope.querySelectorAll('.elementor-widget').length : 0,
+            text_length: scope ? (scope.innerText || '').trim().length : 0,
+            text_excerpt: scope ? (scope.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 4000) : '',
             viewport_width: doc.documentElement.clientWidth || iframe.clientWidth || 0,
             viewport_height: iframe.clientHeight || doc.documentElement.clientHeight || 0,
-            horizontal_overflow: !!(body && body.scrollWidth > doc.documentElement.clientWidth + 2),
+            horizontal_overflow: !!(scope && scope.scrollWidth > scope.clientWidth + 2),
             visible_element_ids: ids,
             target_element_ids: Array.isArray(targetElementIds) ? targetElementIds.slice(0, 8) : []
         };
@@ -427,25 +437,43 @@
                 hidden.push({ element: element, display: element.style.display });
                 element.style.display = 'none';
             });
+            var target = findPreviewTarget(doc, targetElementIds);
+            if (Array.isArray(targetElementIds) && targetElementIds.length && !target) {
+                hidden.forEach(function (item) { item.element.style.display = item.display; });
+                throw new Error('Новый блок не найден в preview Elementor для Vision screenshot.');
+            }
+            var captureTarget = target || doc.body || doc.documentElement;
+            var targetRect = captureTarget.getBoundingClientRect();
+            var captureWidth = target ? Math.ceil(targetRect.width) : width;
+            var captureHeight = target ? Math.ceil(targetRect.height) : height;
+            if (captureWidth < 1 || captureHeight < 1) {
+                hidden.forEach(function (item) { item.element.style.display = item.display; });
+                throw new Error('Сгенерированный блок имеет нулевой размер в preview Elementor.');
+            }
+            captureWidth = Math.max(320, Math.min(captureWidth, 4000));
+            captureHeight = Math.max(320, Math.min(captureHeight, 4000));
+            var targetBackground = doc.defaultView.getComputedStyle(captureTarget).backgroundColor;
+            if (!targetBackground || targetBackground === 'rgba(0, 0, 0, 0)') targetBackground = doc.defaultView.getComputedStyle(doc.body || doc.documentElement).backgroundColor;
+            if (!targetBackground || targetBackground === 'rgba(0, 0, 0, 0)') targetBackground = '#ffffff';
             var restore = function () {
                 hidden.forEach(function (item) { item.element.style.display = item.display; });
             };
-            return capture(doc.body || doc.documentElement, {
-                backgroundColor: '#ffffff',
+            return capture(captureTarget, {
+                backgroundColor: targetBackground,
                 useCORS: true,
                 logging: false,
                 scale: 1,
-                width: width,
-                height: height,
+                width: captureWidth,
+                height: captureHeight,
                 windowWidth: width,
                 windowHeight: height,
                 x: 0,
-                y: doc.defaultView ? doc.defaultView.scrollY : 0
+                y: 0
             }).then(function (canvas) {
                 restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
-                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: width + 'x' + height, render_context: getPreviewRenderContext(targetElementIds) };
+                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: captureWidth + 'x' + captureHeight, render_context: getPreviewRenderContext(targetElementIds) };
             }, function (error) {
                 restore();
                 throw error;

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.50`
+- Plugin: `v02.09.51`
 - Guide: `v02.05.77`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -311,7 +311,7 @@ window to limit accidental spend. AI Vision is additional visual evidence only:
 deterministic validation, native Elementor editability, public browser
 screenshots, and animation/WebGL checks remain mandatory.
 
-Release state: local `v02.09.50` prepared, including the LLM proxy, Elementor editor chat,
+Release state: local `v02.09.51` prepared, including the LLM proxy, Elementor editor chat,
 action execution, Enter-to-send behavior, provider-response diagnostics,
 JSON chat logs, initial empty-page action support, design-system
 normalization, native widget content alias mapping, safe operational step traces,
@@ -328,8 +328,9 @@ Vision default model, the populated-native-widget action rule, and action JSON
 - `v02.09.48` enforces one outlined rounded badge per generated root block and native `icon-box` headings with left-side icons inside repeatable cards, independent of provider prompt compliance.
 - `v02.09.49` renders that badge as a compact native pill container with a heading label and keeps the container around repeatable cards transparent.
 - `v02.09.50` prevents testimonial quotes from being misclassified as card headings: quote-like heading/icon-box widgets are demoted to text, while short author/heading content receives the native icon-box treatment.
+- `v02.09.51` captures only the new Elementor root for editor Vision and reports a missing or zero-size target instead of sending the old full-page viewport for review.
 
-The latest local release `v02.09.50` is prepared for publication on GitHub `main`. On
+The latest local release `v02.09.51` is prepared for publication on GitHub `main`. On
 2026-08-30, when the original Elementor tab continued serving v02.09.40, a
 same-URL duplicate tab loaded v02.09.41 and the stale tab was closed. After the
 v02.09.42 delivery, a second same-URL duplicate tab loaded v02.09.42 and the
