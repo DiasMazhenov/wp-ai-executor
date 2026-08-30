@@ -931,19 +931,18 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             'flex_direction_mobile' => 'column',
             'flex_wrap' => 'nowrap',
             'flex_wrap_mobile' => 'nowrap',
-            'flex_justify_content' => 'space-between',
+            'flex_justify_content' => 'flex-start',
             'flex_justify_content_mobile' => 'flex-start',
             'flex_align_items' => 'center',
             'flex_align_items_mobile' => 'stretch',
-            'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+            'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
             'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
-            'padding' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
-            'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
+            'padding' => [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
+            'padding_mobile' => [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
             'background_background' => 'classic',
             'background_color' => 'transparent',
-            'border_border' => 'solid',
-            'border_color' => '#e5e7eb',
-            'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
+            'border_border' => 'none',
+            'custom_css' => 'selector { width: fit-content; max-width: 100%; align-self: flex-start; }',
         ],
         'elements' => [
             [
@@ -1593,7 +1592,15 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
                 $element['settings'] = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
                 $element['settings']['title'] = wpae_llm_card_widget_text( $element );
             }
-            $elements[ $index ] = wpae_llm_card_heading_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element );
+            $card_heading = wpae_llm_card_heading_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element );
+            if ( $archetype === 'testimonials' ) {
+                $card_heading['settings']['title_size'] = 'h6';
+                $card_heading['settings']['title_typography_typography'] = 'custom';
+                $card_heading['settings']['title_typography_font_size'] = [ 'unit' => 'rem', 'size' => 1 ];
+                $card_heading['settings']['title_typography_font_weight'] = '600';
+                $card_heading['settings']['title_typography_line_height'] = [ 'unit' => 'em', 'size' => 1.2 ];
+            }
+            $elements[ $index ] = $card_heading;
             $changed++;
             continue;
         }
