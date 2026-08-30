@@ -42,6 +42,9 @@ assert.match(llm, /unset\( \$request_body\['response_format'\], \$request_body\[
 assert.match(llm, /function wpae_llm_provider_request/);
 assert.match(llm, /Исправь Elementor action JSON/);
 assert.match(llm, /Используй именно post_id/);
+assert.match(llm, /strpos\( \$label, ':' \)/);
+assert.match(llm, /\$is_pricing_shell = \$archetype === 'pricing'/);
+assert.match(llm, /\(\?:кнопка\|cta\)\\s\*:/);
 assert.match(llm, /settings\.title/);
 assert.match(llm, /settings\.editor/);
 assert.match(llm, /settings\.text/);

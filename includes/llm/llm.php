@@ -415,6 +415,10 @@ function wpae_llm_extract_labeled_content( string $message ): array {
             continue;
         }
         $label = trim( sanitize_text_field( (string) $match[1] ) );
+        if ( strpos( $label, ':' ) !== false ) {
+            $parts = preg_split( '/:\s*/u', $label );
+            $label = trim( (string) end( $parts ) );
+        }
         $content = trim( sanitize_text_field( (string) $match[2] ) );
         if ( $label !== '' && $content !== '' ) {
             $pairs[] = [ 'label' => $label, 'content' => $content ];
@@ -464,14 +468,15 @@ function wpae_llm_content_fidelity( string $message, array $elements ): array {
     ];
 }
 
-function wpae_llm_apply_fallback_content( array &$elements, array &$missing, string $archetype, int &$changed ): void {
+function wpae_llm_apply_fallback_content( array &$elements, array &$missing, string $archetype, int &$changed, int $depth = 0 ): void {
     foreach ( $elements as &$element ) {
         if ( ! is_array( $element ) ) {
             continue;
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $widget_type = (string) ( $element['widgetType'] ?? '' );
-        if ( ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
+        $is_pricing_shell = $archetype === 'pricing' && $depth === 1;
+        if ( ! $is_pricing_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
             $value_index = 0;
             if ( $archetype === 'pricing' ) {
                 $is_numeric = static fn( $value ): bool => (bool) preg_match( '/\d|₸|\$|€|₽/u', (string) $value );
@@ -493,7 +498,7 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         $element['settings'] = $settings;
         foreach ( [ 'elements' ] as $child_key ) {
             if ( is_array( $element[ $child_key ] ?? null ) ) {
-                wpae_llm_apply_fallback_content( $element[ $child_key ], $missing, $archetype, $changed );
+                wpae_llm_apply_fallback_content( $element[ $child_key ], $missing, $archetype, $changed, $depth + 1 );
             }
         }
     }
@@ -513,8 +518,11 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
         $heading = trim( sanitize_text_field( (string) $match[1] ) );
     }
     $cta = '';
+    if ( preg_match( '/(?:кнопка|cta)\s*:\s*([^\.\n]{3,120})/iu', $message, $match ) ) {
+        $cta = trim( sanitize_text_field( (string) $match[1] ) );
+    }
     foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-        if ( preg_match( '/получить|расч[её]т|обсудить|задать|узнать|смотреть/iu', $value ) ) {
+        if ( $cta === '' && preg_match( '/получить|расч[её]т|обсудить|задать|узнать|смотреть/iu', $value ) ) {
             $cta = $value;
             break;
         }
