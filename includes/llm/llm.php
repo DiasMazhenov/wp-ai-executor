@@ -223,6 +223,18 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
     return $response;
 }
 
+function wpae_llm_content_units( string $message ): array {
+    $segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+)/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    $units = [];
+    foreach ( $segments as $segment ) {
+        $unit = trim( preg_replace( '/^[\s]+|[\s.!?]+$/u', '', sanitize_text_field( (string) $segment ) ) );
+        if ( strlen( $unit ) >= 8 ) {
+            $units[] = $unit;
+        }
+    }
+    return $units;
+}
+
 function wpae_llm_is_content_composition_request( string $message ): bool {
     $message = trim( $message );
     if ( strlen( $message ) < 40 || preg_match( '/[?؟]\s*$/u', $message ) ) {
@@ -233,13 +245,7 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
         return true;
     }
 
-    $sentences = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+)/u', $message, -1, PREG_SPLIT_NO_EMPTY ) ?: [];
-    $sentences = array_filter(
-        $sentences,
-        static function ( $sentence ): bool {
-            return strlen( trim( (string) $sentence ) ) >= 8;
-        }
-    );
+    $sentences = wpae_llm_content_units( $message );
     $has_cta = (bool) preg_match( '/\b(обсудить|получить|узнать|заказать|написать|связаться|оставить\s+заявк|смотреть)\b/iu', $message );
     $has_content_signal = (bool) preg_match( '/[«»"]|₸|\$|€|₽|\b(дизайн|сайт|страниц|проект|бизнес|клиент|услуг|продукт|команд|запуск|результат)\b/iu', $message );
 
@@ -448,6 +454,9 @@ function wpae_llm_extract_requested_content( string $message ): array {
     foreach ( wpae_llm_extract_labeled_content( $message ) as $pair ) {
         $matches[] = $pair['label'];
         $matches[] = $pair['content'];
+    }
+    if ( empty( $matches ) ) {
+        $matches = wpae_llm_content_units( $message );
     }
     $content = [];
     foreach ( $matches as $value ) {
