@@ -543,6 +543,12 @@
             });
         });
     }
+    function hidePreviewLoading() {
+        var loading = document.querySelector('#elementor-preview-loading');
+        if (!loading) return;
+        loading.style.display = 'none';
+        loading.setAttribute('aria-hidden', 'true');
+    }
     function waitForPreviewRefresh(refreshPromise, minimumWidgetCount) {
         return Promise.resolve(refreshPromise).then(function (refreshed) {
             if (!refreshed) throw new Error('Не удалось обновить текущий preview Elementor.');
@@ -553,6 +559,7 @@
                     var iframe = getPreviewIframe();
                     var doc = iframe && iframe.contentDocument;
                     if (doc && doc.querySelectorAll('.elementor-widget').length >= minimumWidgetCount) {
+                        hidePreviewLoading();
                         resolve(true);
                         return;
                     }

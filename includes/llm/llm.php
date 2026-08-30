@@ -778,15 +778,15 @@ function wpae_llm_fallback_variant( string $message ): int {
 function wpae_llm_fallback_theme( int $variant ): array {
     $themes = [
         [ 'root' => '#f7f7f5', 'cards' => [ '#ffffff' ], 'border' => '#d1d5db', 'radius' => 0.75, 'gap' => '1.5', 'padding' => [ 'top' => '2.5', 'right' => '1.5', 'bottom' => '2.5', 'left' => '1.5' ] ],
-        [ 'root' => '#fff7ed', 'cards' => [ '#ffffff', '#ffedd5' ], 'border' => '#c2410c', 'radius' => 1.25, 'gap' => '1.25', 'padding' => [ 'top' => '3', 'right' => '1.75', 'bottom' => '3', 'left' => '1.75' ] ],
-        [ 'root' => '#ecfeff', 'cards' => [ '#ffffff', '#f0fdfa' ], 'border' => '#0f766e', 'radius' => 0.5, 'gap' => '1.75', 'padding' => [ 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2' ] ],
-        [ 'root' => '#f8fafc', 'cards' => [ '#ffffff', '#fef3c7', '#e0f2fe' ], 'border' => '#64748b', 'radius' => 1.5, 'gap' => '1', 'padding' => [ 'top' => '3.5', 'right' => '1.25', 'bottom' => '3.5', 'left' => '1.25' ] ],
-        [ 'root' => '#fef2f2', 'cards' => [ '#ffffff', '#fff1f2' ], 'border' => '#be123c', 'radius' => 0.25, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5' ] ],
-        [ 'root' => '#f0fdf4', 'cards' => [ '#ffffff', '#dcfce7' ], 'border' => '#15803d', 'radius' => 1, 'gap' => '1.25', 'padding' => [ 'top' => '2.75', 'right' => '1.75', 'bottom' => '2.75', 'left' => '1.75' ] ],
-        [ 'root' => '#fffbeb', 'cards' => [ '#ffffff', '#fef3c7' ], 'border' => '#a16207', 'radius' => 0.5, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '2', 'bottom' => '2.25', 'left' => '2' ] ],
-        [ 'root' => '#eff6ff', 'cards' => [ '#ffffff', '#dbeafe' ], 'border' => '#1d4ed8', 'radius' => 1.25, 'gap' => '1.75', 'padding' => [ 'top' => '3', 'right' => '1.5', 'bottom' => '3', 'left' => '1.5' ] ],
-        [ 'root' => '#f5f5f4', 'cards' => [ '#ffffff', '#e7e5e4' ], 'border' => '#57534e', 'radius' => 0.25, 'gap' => '1', 'padding' => [ 'top' => '2.5', 'right' => '1.25', 'bottom' => '2.5', 'left' => '1.25' ] ],
-        [ 'root' => '#f0fdfa', 'cards' => [ '#ffffff', '#ccfbf1' ], 'border' => '#115e59', 'radius' => 1.75, 'gap' => '1.25', 'padding' => [ 'top' => '3.25', 'right' => '1.75', 'bottom' => '3.25', 'left' => '1.75' ] ],
+        [ 'root' => '#fff7ed', 'cards' => [ '#fffbf5' ], 'border' => '#c2410c', 'radius' => 1.25, 'gap' => '1.25', 'padding' => [ 'top' => '3', 'right' => '1.75', 'bottom' => '3', 'left' => '1.75' ] ],
+        [ 'root' => '#ecfeff', 'cards' => [ '#f5fffe' ], 'border' => '#0f766e', 'radius' => 0.5, 'gap' => '1.75', 'padding' => [ 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2' ] ],
+        [ 'root' => '#f8fafc', 'cards' => [ '#ffffff' ], 'border' => '#64748b', 'radius' => 1.5, 'gap' => '1', 'padding' => [ 'top' => '3.5', 'right' => '1.25', 'bottom' => '3.5', 'left' => '1.25' ] ],
+        [ 'root' => '#fef2f2', 'cards' => [ '#fff8f9' ], 'border' => '#be123c', 'radius' => 0.25, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5' ] ],
+        [ 'root' => '#f0fdf4', 'cards' => [ '#f7fff9' ], 'border' => '#15803d', 'radius' => 1, 'gap' => '1.25', 'padding' => [ 'top' => '2.75', 'right' => '1.75', 'bottom' => '2.75', 'left' => '1.75' ] ],
+        [ 'root' => '#fffbeb', 'cards' => [ '#fffdf5' ], 'border' => '#a16207', 'radius' => 0.5, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '2', 'bottom' => '2.25', 'left' => '2' ] ],
+        [ 'root' => '#eff6ff', 'cards' => [ '#f8fbff' ], 'border' => '#1d4ed8', 'radius' => 1.25, 'gap' => '1.75', 'padding' => [ 'top' => '3', 'right' => '1.5', 'bottom' => '3', 'left' => '1.5' ] ],
+        [ 'root' => '#f5f5f4', 'cards' => [ '#ffffff' ], 'border' => '#57534e', 'radius' => 0.25, 'gap' => '1', 'padding' => [ 'top' => '2.5', 'right' => '1.25', 'bottom' => '2.5', 'left' => '1.25' ] ],
+        [ 'root' => '#f0fdfa', 'cards' => [ '#f5fffd' ], 'border' => '#115e59', 'radius' => 1.75, 'gap' => '1.25', 'padding' => [ 'top' => '3.25', 'right' => '1.75', 'bottom' => '3.25', 'left' => '1.75' ] ],
     ];
     return $themes[ abs( $variant ) % count( $themes ) ];
 }
@@ -1456,7 +1456,7 @@ function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     return $decoded;
 }
 
-function wpae_llm_execute_action( array $action, int $post_id ): array {
+function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1 ): array {
     $operation_id = wpae_llm_new_operation_id();
     $received_action = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
     $received_post_id = absint( $action['post_id'] ?? 0 );
@@ -1536,12 +1536,14 @@ function wpae_llm_execute_action( array $action, int $post_id ): array {
     $steps[] = [ 'id' => 'page_context', 'status' => 'ok', 'message' => $initial_page ? 'Страница пустая: разрешена безопасная инициализация Elementor.' : 'Текущая структура страницы прочитана.', 'details' => [ 'existing_element_count' => count( $existing ) ] ];
     $fallback_variant_applied = false;
     $fallback_variant = null;
-    if ( isset( $action['fallback_variant'], $action['fallback_archetype'] ) && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
-        $fallback_variant = wpae_llm_select_fallback_variant( $existing, absint( $action['fallback_variant'] ) + count( $existing ) );
-        $fallback_archetype = sanitize_key( (string) $action['fallback_archetype'] );
-        $elements = wpae_llm_apply_fallback_variant( $elements, $fallback_archetype, $fallback_variant );
+    $variation_requested = isset( $action['fallback_variant'] ) || $variation_seed >= 0;
+    if ( $variation_requested && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
+        $variation_source = isset( $action['fallback_variant'] ) ? absint( $action['fallback_variant'] ) : $variation_seed;
+        $fallback_variant = wpae_llm_select_fallback_variant( $existing, $variation_source + count( $existing ) );
+        $variation_archetype = sanitize_key( (string) ( $action['fallback_archetype'] ?? $archetype ) );
+        $elements = wpae_llm_apply_fallback_variant( $elements, $variation_archetype, $fallback_variant );
         $fallback_variant_applied = true;
-        $steps[] = [ 'id' => 'fallback_variation', 'status' => 'ok', 'message' => 'Для fallback-композиции выбран новый визуальный вариант без повтора уже добавленных fallback-блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $fallback_archetype, 'available_variants' => 10 ] ];
+        $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбран новый визуальный вариант без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => 10 ] ];
     }
     if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
         $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );
@@ -1927,7 +1929,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         if ( $visual_grammar_changed > 0 ) {
             $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge и иконки у карточечных заголовков.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'icon-box', 'icon_position' => 'left' ] ];
         }
-        $execution = wpae_llm_execute_action( $action, $post_id );
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, isset( $variation_seed ) ? (int) $variation_seed : -1 );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );
