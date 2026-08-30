@@ -191,6 +191,7 @@ assert.match(llm, /function wpae_llm_apply_fallback_cta/);
 assert.match(llm, /wpae_llm_apply_fallback_cta\( \$elements, \$cta, \$changed \)/);
 assert.match(llm, /count\( \$labeled_pairs \) >= 3/);
 assert.match(llm, /return 'portfolio';/);
+assert.ok(llm.indexOf('анна|мария') < llm.indexOf('count( $labeled_pairs ) >= 3'), 'testimonial classification must precede portfolio label heuristics');
 assert.match(llm, /wpae_llm_content_mismatch/);
 assert.match(llm, /function wpae_llm_bento_card/);
 assert.match(llm, /function wpae_llm_generation_visual_grammar_hint/);
