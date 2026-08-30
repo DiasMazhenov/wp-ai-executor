@@ -1237,7 +1237,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $selected_element_ids = array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) );
             $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids );
             $patch_execution['steps'] = array_merge(
-                [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и контекст выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ],
+                [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и контекст выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ] ],
                 [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],
                 (array) ( $patch_execution['steps'] ?? [] )
             );
