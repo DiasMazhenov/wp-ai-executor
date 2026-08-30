@@ -804,6 +804,49 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
     ];
 }
 
+function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
+    if ( empty( $elements ) ) {
+        return $elements;
+    }
+    $last_index = array_key_last( $elements );
+    $last = $elements[ $last_index ] ?? null;
+    if ( ! is_array( $last ) || ( $last['elType'] ?? '' ) !== 'widget' || ( $last['widgetType'] ?? '' ) !== 'button' ) {
+        return $elements;
+    }
+    $last_settings = is_array( $last['settings'] ?? null ) ? $last['settings'] : [];
+    $last_classes = preg_split( '/\s+/', trim( (string) ( $last_settings['_css_classes'] ?? '' ) ) );
+    if ( is_array( $last_classes ) && in_array( 'wpae-generated-cta', $last_classes, true ) ) {
+        return $elements;
+    }
+    $elements[ $last_index ] = [
+        'id' => (string) ( $last['id'] ?? 'wpae-generated-cta' ) . '-row',
+        'elType' => 'container',
+        'settings' => [
+            '_css_classes' => 'wpae-generated-cta-row',
+            'content_width' => 'full',
+            'flex_direction' => 'row',
+            'flex_direction_mobile' => 'row',
+            'flex_wrap' => 'nowrap',
+            'flex_wrap_mobile' => 'nowrap',
+            'flex_justify_content' => 'flex-start',
+            'flex_align_items' => 'center',
+            'flex_align_items_mobile' => 'center',
+            'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+            'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+            'padding' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
+            'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0', 'bottom' => '0.25', 'left' => '0', 'isLinked' => false ],
+            'background_background' => 'classic',
+            'background_color' => 'transparent',
+            'border_border' => 'solid',
+            'border_color' => '#e5e7eb',
+            'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
+        ],
+        'elements' => [ $last ],
+    ];
+    $changed++;
+    return $elements;
+}
+
 function wpae_llm_generation_visual_grammar_hint(): string {
     return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с коротким заголовком обязана использовать native icon-box с иконкой слева от заголовка. В testimonial-карточке цитата является текстом, а иконка относится только к имени или короткому заголовку, не к цитате. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
@@ -960,6 +1003,25 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed ): void {
     if ( $before !== wp_json_encode( [ $settings, $children ] ) ) {
         $changed++;
     }
+}
+
+function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$changed ): void {
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        if ( ( $element['elType'] ?? '' ) === 'container' ) {
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
+                wpae_llm_normalize_bento_grid( $element, $changed );
+            }
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            wpae_llm_normalize_bento_grids_recursive( $element['elements'], $changed );
+        }
+    }
+    unset( $element );
 }
 
 function wpae_llm_visual_signature( array $root ): string {
@@ -1522,6 +1584,7 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
                 $content_shell['elements'] = array_merge( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $content_elements );
             }
         }
+        $content_shell['elements'] = wpae_llm_wrap_generation_cta( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $changed );
         $root['settings']['flex_direction'] = 'column';
         $root['settings']['flex_direction_mobile'] = 'column';
         $root['settings']['flex_wrap'] = 'nowrap';
@@ -2311,6 +2374,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $visual_grammar_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
+            $final_bento_changed = 0;
+            wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed );
+            $bento_changed += $final_bento_changed;
         }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
