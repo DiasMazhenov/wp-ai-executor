@@ -65,6 +65,7 @@ assert.match(llm, /Ограничения компактности action-JSON/)
 assert.match(llm, /likely_truncated/);
 assert.match(js, /finish_reason/);
 assert.match(llm, /wpae_llm_is_action_request/);
+assert.match(llm, /измени\|поменяй\|исправь/);
 assert.match(llm, /function wpae_llm_is_content_composition_request/);
 assert.match(llm, /function wpae_llm_content_units/);
 assert.match(llm, /function wpae_llm_extract_labeled_content/);

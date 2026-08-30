@@ -257,7 +257,7 @@ function wpae_llm_is_action_request( string $message ): bool {
     if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
         return false;
     }
-    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|исправь|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
+    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
 }
 
 function wpae_llm_is_targeted_edit_request( string $message ): bool {
