@@ -229,16 +229,7 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
         return false;
     }
 
-    $segments = preg_split( '/(?:\r?\n+|[.!?]\s+)/u', $message, -1, PREG_SPLIT_NO_EMPTY );
-    $pairs = 0;
-    foreach ( $segments as $segment ) {
-        $segment = trim( $segment, " \t\n\r\0\x0B\"«»" );
-        if ( preg_match( '/^.{2,80}\s*(?:—|–|-|:)\s*\S.{4,180}$/u', $segment ) ) {
-            $pairs++;
-        }
-    }
-
-    return $pairs >= 2;
+    return count( wpae_llm_extract_labeled_content( $message ) ) >= 2;
 }
 
 function wpae_llm_is_action_request( string $message ): bool {
@@ -361,23 +352,11 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
 }
 
 function wpae_llm_detect_block_archetype( string $message ): string {
-    $patterns = [
-        'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
-        'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
-        'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
-        'testimonials' => '/\b(отзыв|testimonial|клиентск|рекомендац)/iu',
-        'faq' => '/\b(faq|вопрос|ответ|аккордеон)/iu',
-        'process' => '/\b(процесс|этап|шаг|process|steps?)/iu',
-        'cta' => '/\b(cta|заявк|связ|контакт|призыв)/iu',
-        'portfolio' => '/\b(портфолио|кейс|работ|portfolio|project)/iu',
-    ];
-    foreach ( $patterns as $archetype => $pattern ) {
-        if ( preg_match( $pattern, $message ) ) {
-            return $archetype;
-        }
-    }
     if ( wpae_llm_is_content_composition_request( $message ) ) {
         $normalized = wpae_llm_normalize_content_text( $message );
+        if ( preg_match( '/\b(первый экран|hero|хиро|обложк)\b/iu', $message ) ) {
+            return 'hero';
+        }
         if ( preg_match( '/\?|؟/u', $message ) ) {
             return 'faq';
         }
@@ -393,10 +372,29 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем)\b/iu', $normalized ) ) {
             return 'process';
         }
-        if ( preg_match( '/\b(кейс|проект|рост|увелич|сократ|результат|клиент)\b/iu', $normalized ) ) {
+        if ( preg_match( '/(?:кейс\w*|портфолио|работ\w*|рост\w*|вырос\w*|увелич\w*|сократ\w*|результат\w*|проект\w*)/iu', $normalized ) ) {
             return 'portfolio';
         }
+        if ( preg_match( '/(?:заявк\w*|связ\w*|контакт\w*|обсудить|призыв\w*)/iu', $normalized ) ) {
+            return 'cta';
+        }
         return 'benefits';
+    }
+
+    $patterns = [
+        'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
+        'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
+        'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
+        'testimonials' => '/\b(отзыв|testimonial|клиентск|рекомендац)/iu',
+        'faq' => '/\b(faq|вопрос|ответ|аккордеон)/iu',
+        'process' => '/\b(процесс|этап|шаг|process|steps?)/iu',
+        'cta' => '/\b(cta|заявк|связ|контакт|призыв)/iu',
+        'portfolio' => '/\b(портфолио|кейс|работ|portfolio|project)/iu',
+    ];
+    foreach ( $patterns as $archetype => $pattern ) {
+        if ( preg_match( $pattern, $message ) ) {
+            return $archetype;
+        }
     }
     return 'custom';
 }
@@ -449,7 +447,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
 
 function wpae_llm_extract_labeled_content( string $message ): array {
     $pairs = [];
-    $segments = preg_split( '/(?:\r?\n|(?<=[.!?])\s+)/u', $message ) ?: [];
+    $segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+(?=[^—–-]))/u', $message ) ?: [];
     foreach ( $segments as $segment ) {
         if ( ! preg_match( '/^\s*([^—–-]{2,80}?)\s*[—–-]\s*(.{3,240})\s*$/u', trim( (string) $segment ), $match ) ) {
             continue;
@@ -481,6 +479,9 @@ function wpae_llm_collect_action_content( array $elements ): string {
             if ( is_scalar( $element[ $key ] ?? null ) ) {
                 $content[] = (string) $element[ $key ];
             }
+        }
+        if ( is_array( $settings['tabs'] ?? null ) ) {
+            $content[] = wpae_llm_collect_action_content( $settings['tabs'] );
         }
         foreach ( [ 'tabs', 'elements' ] as $child_key ) {
             if ( is_array( $element[ $child_key ] ?? null ) ) {
@@ -517,7 +518,7 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         $widget_type = (string) ( $element['widgetType'] ?? '' );
         $repeatable_archetypes = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
         $is_repeatable_shell = in_array( $archetype, $repeatable_archetypes, true ) && $depth === 1;
-        if ( ! $is_repeatable_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
+        if ( ! $is_repeatable_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'text-editor', 'button' ], true ) ) {
             $value_index = 0;
             if ( $archetype === 'pricing' ) {
                 $is_numeric = static fn( $value ): bool => (bool) preg_match( '/\d|₸|\$|€|₽/u', (string) $value );
@@ -531,7 +532,7 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
             } elseif ( $archetype === 'testimonials' && $widget_type === 'heading' ) {
                 $value_index = count( $missing ) - 1;
             }
-            $key = $widget_type === 'heading' ? 'title' : 'editor';
+            $key = $widget_type === 'heading' ? 'title' : ( $widget_type === 'button' ? 'text' : 'editor' );
             $settings[ $key ] = $missing[ $value_index ];
             array_splice( $missing, $value_index, 1 );
             $changed++;
@@ -541,6 +542,19 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
             if ( is_array( $element[ $child_key ] ?? null ) ) {
                 wpae_llm_apply_fallback_content( $element[ $child_key ], $missing, $archetype, $changed, $depth + 1 );
             }
+        }
+        if ( $depth === 0 && ( $element['elType'] ?? '' ) === 'container' && ! empty( $missing ) ) {
+            foreach ( array_values( $missing ) as $index => $value ) {
+                $element['elements'][] = [
+                    'id' => 'llm-fallback-copy-' . (string) ( $index + 1 ),
+                    'elType' => 'widget',
+                    'widgetType' => 'text-editor',
+                    'settings' => [ 'editor' => $value ],
+                    'elements' => [],
+                ];
+                $changed++;
+            }
+            $missing = [];
         }
     }
     unset( $element );
@@ -581,6 +595,18 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
                 continue;
             }
             $target_card_count = min( 4, max( 2, count( $pairs ) ) );
+            while ( count( $cards ) < $target_card_count ) {
+                $template = $cards[ count( $cards ) - 1 ];
+                $new_card_index = count( $cards ) + 1;
+                $template['id'] = 'llm-' . $archetype . '-' . (string) $new_card_index;
+                foreach ( (array) ( $template['elements'] ?? [] ) as $widget_index => $widget ) {
+                    if ( is_array( $widget ) ) {
+                        $template['elements'][ $widget_index ]['id'] = $template['id'] . '-' . (string) ( $widget_index + 1 );
+                    }
+                }
+                $child['elements'][] = $template;
+                $cards[] = $template;
+            }
             if ( count( $cards ) > $target_card_count ) {
                 $trimmed = [];
                 $card_count = 0;
@@ -602,7 +628,8 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
                 $pair = array_shift( $pairs );
                 $title_set = false;
                 $copy_set = false;
-                foreach ( $card['elements'] ?? [] as &$widget ) {
+                $card_elements = is_array( $card['elements'] ?? null ) ? $card['elements'] : [];
+                foreach ( $card_elements as &$widget ) {
                     if ( ! is_array( $widget ) ) {
                         continue;
                     }
@@ -622,6 +649,7 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
                     }
                 }
                 unset( $widget );
+                $card['elements'] = $card_elements;
             }
             unset( $card );
         }
@@ -631,6 +659,32 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
             $root['elements'][0]['settings']['title'] = $heading;
             $changed++;
         }
+    }
+    unset( $root );
+}
+
+function wpae_llm_apply_fallback_faq_content( array &$elements, string $message, int &$changed ): void {
+    $pairs = wpae_llm_extract_labeled_content( $message );
+    if ( count( $pairs ) < 2 ) {
+        return;
+    }
+    foreach ( $elements as &$root ) {
+        if ( ! is_array( $root ) || ! is_array( $root['elements'] ?? null ) ) {
+            continue;
+        }
+        foreach ( $root['elements'] as &$element ) {
+            if ( ! is_array( $element ) || ( $element['widgetType'] ?? '' ) !== 'accordion' ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $settings['tabs'] = [];
+            foreach ( array_slice( $pairs, 0, 6 ) as $pair ) {
+                $settings['tabs'][] = [ 'tab_title' => $pair['label'], 'tab_content' => $pair['content'] ];
+            }
+            $element['settings'] = $settings;
+            $changed += count( $settings['tabs'] );
+        }
+        unset( $element );
     }
     unset( $root );
 }
@@ -1394,12 +1448,15 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $action_archetype = wpae_llm_detect_block_archetype( $message );
         $fallback_content_changed = 0;
         if ( $action_fallback ) {
+            wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
+            if ( $action_archetype === 'faq' ) {
+                wpae_llm_apply_fallback_faq_content( $action['elements'], $message, $fallback_content_changed );
+            }
             $fallback_fidelity = wpae_llm_content_fidelity( $message, (array) $action['elements'] );
             $missing_content = (array) ( $fallback_fidelity['missing'] ?? [] );
             if ( ! empty( $missing_content ) ) {
                 wpae_llm_apply_fallback_content( $action['elements'], $missing_content, $action_archetype, $fallback_content_changed );
             }
-            wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
         }
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
