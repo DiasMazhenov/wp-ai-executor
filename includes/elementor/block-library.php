@@ -405,6 +405,38 @@ function wpae_block_library_bundled_fixtures(): array {
     return $fixtures = is_array( $loaded ) ? $loaded : [];
 }
 
+function wpae_block_library_is_trusted_bundled_fixture( array $record ): bool {
+    if ( (string) ( $record['source'] ?? '' ) !== 'copyelement' ) {
+        return false;
+    }
+
+    $fixture_id = sanitize_key( (string) ( $record['bundled_fixture_id'] ?? '' ) );
+    $fixture_hash = strtolower( (string) ( $record['bundled_fixture_sha256'] ?? '' ) );
+    $content_hash = strtolower( (string) ( $record['bundled_fixture_content_hash'] ?? '' ) );
+    $elementor_data = (array) ( $record['elementor_data'] ?? [] );
+    if (
+        $fixture_id === ''
+        || ! preg_match( '/^[a-f0-9]{64}$/', $fixture_hash )
+        || ! preg_match( '/^[a-f0-9]{64}$/', $content_hash )
+        || ! hash_equals( $content_hash, strtolower( (string) ( $record['content_hash'] ?? '' ) ) )
+        || ! hash_equals( $content_hash, hash( 'sha256', (string) wp_json_encode( $elementor_data ) ) )
+    ) {
+        return false;
+    }
+
+    foreach ( wpae_block_library_bundled_fixtures() as $fixture ) {
+        if (
+            is_array( $fixture )
+            && $fixture_id === sanitize_key( (string) ( $fixture['id'] ?? '' ) )
+            && hash_equals( $fixture_hash, strtolower( (string) ( $fixture['sha256'] ?? '' ) ) )
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function wpae_block_library_seed_bundled_templates(): array {
     static $result;
     if ( is_array( $result ) ) {
@@ -428,23 +460,39 @@ function wpae_block_library_seed_bundled_templates(): array {
             continue;
         }
 
+        $path = __DIR__ . '/copyelement/' . $filename;
+        $parsed = null;
+        $fixture_content_hash = '';
+        if ( is_readable( $path ) && hash_equals( $expected_hash, (string) hash_file( 'sha256', $path ) ) ) {
+            $raw = file_get_contents( $path );
+            $parsed = wpae_block_library_extract_elements( is_string( $raw ) ? $raw : '' );
+            if ( ! is_wp_error( $parsed ) ) {
+                $fixture_content_hash = hash( 'sha256', (string) wp_json_encode( $parsed['elementor_data'] ) );
+            }
+        }
+
         $known = is_array( $state[ $fixture_id ] ?? null ) ? $state[ $fixture_id ] : [];
         if ( hash_equals( $expected_hash, strtolower( (string) ( $known['sha256'] ?? '' ) ) ) ) {
             $known_post = wpae_block_library_get_post( absint( $known['post_id'] ?? 0 ) );
             if ( ! is_wp_error( $known_post ) ) {
+                $known_record = wpae_block_library_decode_post( $known_post );
+                if (
+                    ! is_wp_error( $known_record )
+                    && (string) ( $known_record['source'] ?? '' ) === 'copyelement'
+                    && $fixture_content_hash !== ''
+                    && hash_equals( $fixture_content_hash, strtolower( (string) ( $known_record['content_hash'] ?? '' ) ) )
+                    && ! wpae_block_library_is_trusted_bundled_fixture( $known_record )
+                ) {
+                    $known_record['bundled_fixture_id'] = $fixture_id;
+                    $known_record['bundled_fixture_sha256'] = $expected_hash;
+                    $known_record['bundled_fixture_content_hash'] = $fixture_content_hash;
+                    wpae_block_library_store_record( (int) $known_post->ID, $known_record );
+                }
                 continue;
             }
         }
 
-        $path = __DIR__ . '/copyelement/' . $filename;
-        if ( ! is_readable( $path ) || ! hash_equals( $expected_hash, (string) hash_file( 'sha256', $path ) ) ) {
-            $result['skipped'][] = $fixture_id;
-            continue;
-        }
-
-        $raw = file_get_contents( $path );
-        $parsed = wpae_block_library_extract_elements( is_string( $raw ) ? $raw : '' );
-        if ( is_wp_error( $parsed ) ) {
+        if ( ! is_array( $parsed ) || $fixture_content_hash === '' ) {
             $result['skipped'][] = $fixture_id;
             continue;
         }
@@ -464,6 +512,9 @@ function wpae_block_library_seed_bundled_templates(): array {
             ],
         ];
         $record = wpae_block_library_build_record( $parsed, $input );
+        $record['bundled_fixture_id'] = $fixture_id;
+        $record['bundled_fixture_sha256'] = $expected_hash;
+        $record['bundled_fixture_content_hash'] = $fixture_content_hash;
         $post_id = wp_insert_post( [
             'post_type' => WPAE_BLOCK_LIBRARY_POST_TYPE,
             'post_status' => 'private',
@@ -531,6 +582,8 @@ function wpae_block_library_retrieval_aliases( string $archetype ): array {
         'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'преимуществ', 'выгод' ],
         'pricing' => [ 'pricing', 'price', 'тариф', 'цена', 'стоимость', 'пакет' ],
         'testimonials' => [ 'testimonial', 'testimonials', 'отзыв', 'рекомендац', 'клиент' ],
+        'team' => [ 'team', 'команд', 'сотрудник', 'специалист', 'коллег', 'about' ],
+        'about' => [ 'about', 'company', 'компан', 'о нас', 'о компании' ],
         'faq' => [ 'faq', 'вопрос', 'ответ', 'accordion', 'аккордеон' ],
         'process' => [ 'process', 'step', 'steps', 'процесс', 'этап', 'шаг' ],
         'cta' => [ 'cta', 'contact', 'контакт', 'заявк', 'связ' ],
@@ -542,7 +595,7 @@ function wpae_block_library_retrieval_aliases( string $archetype ): array {
 function wpae_block_library_retrieve_for_prompt( string $message, string $archetype = '' ): array {
     $result = [
         'status' => 'no_match',
-        'reason' => 'No approved library block matched the request.',
+        'reason' => 'No approved or trusted bundled library block matched the request.',
         'available_count' => 0,
         'candidate_count' => 0,
         'candidates' => [],
@@ -565,7 +618,12 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
 
     foreach ( $posts as $post ) {
         $record = wpae_block_library_decode_post( $post );
-        if ( is_wp_error( $record ) || ! in_array( wpae_block_library_status( $record ), [ 'approved', 'published' ], true ) ) {
+        if ( is_wp_error( $record ) ) {
+            continue;
+        }
+        $record_status = wpae_block_library_status( $record );
+        $trusted_bundled = wpae_block_library_is_trusted_bundled_fixture( $record );
+        if ( ! $trusted_bundled && ! in_array( $record_status, [ 'approved', 'published' ], true ) ) {
             continue;
         }
         $result['available_count']++;
@@ -624,6 +682,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             'score' => $score,
             'matched_terms' => $matched_terms,
             'summary' => $summary,
+            'trusted_bundled' => $trusted_bundled,
             'elementor_data' => (array) ( $record['elementor_data'] ?? [] ),
         ];
     }
@@ -644,20 +703,23 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     }
     if ( empty( $ranked ) ) {
         $result['reason'] = $result['available_count'] > 0
-            ? 'Approved library blocks exist, but none match the request or current compatibility contract.'
-            : 'The private library has no approved or published blocks for retrieval.';
+            ? 'Approved or trusted bundled library blocks exist, but none match the request or current compatibility contract.'
+            : 'The private library has no approved, published, or trusted bundled blocks for retrieval.';
         return $result;
     }
 
     $selected = $ranked[0];
     $result['status'] = 'matched';
-    $result['reason'] = 'An approved library block matched the request.';
+    $result['reason'] = ! empty( $selected['trusted_bundled'] )
+        ? 'A trusted bundled library block matched the request.'
+        : 'An approved library block matched the request.';
     $result['selected'] = [
         'id' => (int) ( $selected['summary']['id'] ?? 0 ),
         'title' => (string) ( $selected['summary']['title'] ?? '' ),
         'category' => (string) ( $selected['summary']['category'] ?? '' ),
         'source' => (string) ( $selected['summary']['source'] ?? '' ),
         'status' => (string) ( $selected['summary']['status'] ?? '' ),
+        'trusted_bundled' => ! empty( $selected['trusted_bundled'] ),
         'score' => (int) $selected['score'],
         'matched_terms' => $selected['matched_terms'],
         'elementor_data' => $selected['elementor_data'],

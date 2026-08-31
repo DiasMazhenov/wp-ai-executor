@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.94`
+- Plugin: `v02.09.95`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -96,6 +96,24 @@ fourth bundled fixture. It contains 25 elements and 16 native widgets and is
 declared with its SHA-256 in the private-library manifest. It has no supplied
 preview asset and remains a draft `wpae_block` record until Design Review Gate
 approval.
+
+Release v02.09.95 keeps arbitrary private-library drafts out of automatic
+retrieval, but marks the four exact bundled CopyElement fixtures with their
+manifest hash and immutable parsed-content hash after seeding. Those trusted
+bundled fixtures may be used by new chat generation while direct draft
+instantiation and the Design Review approval workflow remain unchanged. The
+seed migrates existing fixture records only when their stored content hash
+still matches the packaged file.
+
+Release v02.09.95 also recognizes team/about requests before the name-based
+testimonial heuristic, parses several natural `label — description` pairs in
+one sentence, and adapts non-card two-column layouts such as About through
+native heading content when no repeatable card group exists.
+
+The v02.09.95 fixture self-check now passes all four bundled designs: Team,
+Testimonials, About, and Image Box retain every requested label and description
+after library adaptation. Heading descriptions are written to the next heading
+when a source layout has no dedicated body-text widget.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
