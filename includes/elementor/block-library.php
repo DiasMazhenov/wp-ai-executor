@@ -506,6 +506,165 @@ function wpae_block_library_decode_post( WP_Post $post ) {
     return $record;
 }
 
+function wpae_block_library_retrieval_tokens( $value ): array {
+    $value = wp_strip_all_tags( html_entity_decode( (string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+    $value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value ) : strtolower( $value );
+    $tokens = preg_split( '/[^\p{L}\p{N}]+/u', $value, -1, PREG_SPLIT_NO_EMPTY );
+    $stop_words = [
+        'блок', 'блока', 'добавь', 'добавить', 'сделай', 'создай', 'создать', 'для', 'это', 'как',
+        'and', 'the', 'with', 'from', 'make', 'create', 'block', 'section',
+    ];
+    $result = [];
+    foreach ( (array) $tokens as $token ) {
+        $token = trim( (string) $token );
+        if ( $token === '' || strlen( $token ) < 3 || in_array( $token, $stop_words, true ) ) {
+            continue;
+        }
+        $result[ $token ] = true;
+    }
+    return array_keys( $result );
+}
+
+function wpae_block_library_retrieval_aliases( string $archetype ): array {
+    $aliases = [
+        'hero' => [ 'hero', 'хиро', 'первый', 'экран', 'обложка', 'cover', 'image', 'image-box' ],
+        'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'преимуществ', 'выгод' ],
+        'pricing' => [ 'pricing', 'price', 'тариф', 'цена', 'стоимость', 'пакет' ],
+        'testimonials' => [ 'testimonial', 'testimonials', 'отзыв', 'рекомендац', 'клиент' ],
+        'faq' => [ 'faq', 'вопрос', 'ответ', 'accordion', 'аккордеон' ],
+        'process' => [ 'process', 'step', 'steps', 'процесс', 'этап', 'шаг' ],
+        'cta' => [ 'cta', 'contact', 'контакт', 'заявк', 'связ' ],
+        'portfolio' => [ 'portfolio', 'case', 'cases', 'project', 'проекты', 'кейс', 'работ', 'image', 'image-box' ],
+    ];
+    return $aliases[ $archetype ] ?? [];
+}
+
+function wpae_block_library_retrieve_for_prompt( string $message, string $archetype = '' ): array {
+    $result = [
+        'status' => 'no_match',
+        'reason' => 'No approved library block matched the request.',
+        'available_count' => 0,
+        'candidate_count' => 0,
+        'candidates' => [],
+        'selected' => null,
+    ];
+    if ( function_exists( 'wpae_block_library_seed_bundled_templates' ) ) {
+        wpae_block_library_seed_bundled_templates();
+    }
+
+    $prompt_tokens = wpae_block_library_retrieval_tokens( $message );
+    $aliases = wpae_block_library_retrieval_aliases( sanitize_key( $archetype ) );
+    $posts = get_posts( [
+        'post_type' => WPAE_BLOCK_LIBRARY_POST_TYPE,
+        'post_status' => 'private',
+        'posts_per_page' => 100,
+        'orderby' => 'modified',
+        'order' => 'DESC',
+    ] );
+    $ranked = [];
+
+    foreach ( $posts as $post ) {
+        $record = wpae_block_library_decode_post( $post );
+        if ( is_wp_error( $record ) || ! in_array( wpae_block_library_status( $record ), [ 'approved', 'published' ], true ) ) {
+            continue;
+        }
+        $result['available_count']++;
+        $compatibility = is_array( $record['compatibility'] ?? null ) ? $record['compatibility'] : [];
+        if ( empty( $compatibility['raw_valid'] ) || empty( $compatibility['normalizable'] ) || ! empty( $compatibility['unavailable_widget_types'] ) ) {
+            continue;
+        }
+
+        $category = sanitize_key( (string) ( $record['category'] ?? '' ) );
+        $tags = array_map( 'sanitize_key', (array) ( $record['tags'] ?? [] ) );
+        $candidate_text = implode( ' ', [
+            $category,
+            implode( ' ', $tags ),
+            (string) ( $record['title'] ?? '' ),
+            (string) ( $record['description'] ?? '' ),
+        ] );
+        $candidate_tokens = wpae_block_library_retrieval_tokens( $candidate_text );
+        $score = 0;
+        $matched_terms = [];
+        foreach ( $aliases as $alias ) {
+            $alias_key = sanitize_key( $alias );
+            $alias_tokens = wpae_block_library_retrieval_tokens( $alias );
+            if ( $alias_key === '' && empty( $alias_tokens ) ) {
+                continue;
+            }
+            if ( ( $alias_key !== '' && ( $category === $alias_key || in_array( $alias_key, $tags, true ) ) ) ) {
+                $score += 8;
+                $matched_terms[] = $alias_key;
+                continue;
+            }
+            foreach ( $alias_tokens as $alias_token ) {
+                if ( in_array( $alias_token, $candidate_tokens, true ) ) {
+                    $score += 3;
+                    $matched_terms[] = $alias_token;
+                    break;
+                }
+            }
+        }
+        foreach ( $prompt_tokens as $token ) {
+            if ( in_array( $token, $candidate_tokens, true ) ) {
+                $score += 2;
+                $matched_terms[] = $token;
+            }
+        }
+        if ( in_array( 'bento', $tags, true ) && in_array( sanitize_key( $archetype ), [ 'hero', 'portfolio' ], true ) ) {
+            $score++;
+            $matched_terms[] = 'bento';
+        }
+        $matched_terms = array_values( array_unique( $matched_terms ) );
+        if ( $score < 5 ) {
+            continue;
+        }
+
+        $summary = wpae_block_library_summary( $record );
+        $ranked[] = [
+            'score' => $score,
+            'matched_terms' => $matched_terms,
+            'summary' => $summary,
+            'elementor_data' => (array) ( $record['elementor_data'] ?? [] ),
+        ];
+    }
+
+    usort( $ranked, static function ( array $left, array $right ): int {
+        return (int) $right['score'] <=> (int) $left['score'];
+    } );
+    $result['candidate_count'] = count( $ranked );
+    foreach ( array_slice( $ranked, 0, 3 ) as $candidate ) {
+        $result['candidates'][] = [
+            'id' => (int) ( $candidate['summary']['id'] ?? 0 ),
+            'title' => (string) ( $candidate['summary']['title'] ?? '' ),
+            'category' => (string) ( $candidate['summary']['category'] ?? '' ),
+            'score' => (int) $candidate['score'],
+            'matched_terms' => $candidate['matched_terms'],
+            'status' => (string) ( $candidate['summary']['status'] ?? '' ),
+        ];
+    }
+    if ( empty( $ranked ) ) {
+        $result['reason'] = $result['available_count'] > 0
+            ? 'Approved library blocks exist, but none match the request or current compatibility contract.'
+            : 'The private library has no approved or published blocks for retrieval.';
+        return $result;
+    }
+
+    $selected = $ranked[0];
+    $result['status'] = 'matched';
+    $result['reason'] = 'An approved library block matched the request.';
+    $result['selected'] = [
+        'id' => (int) ( $selected['summary']['id'] ?? 0 ),
+        'title' => (string) ( $selected['summary']['title'] ?? '' ),
+        'category' => (string) ( $selected['summary']['category'] ?? '' ),
+        'source' => (string) ( $selected['summary']['source'] ?? '' ),
+        'status' => (string) ( $selected['summary']['status'] ?? '' ),
+        'score' => (int) $selected['score'],
+        'matched_terms' => $selected['matched_terms'],
+        'elementor_data' => $selected['elementor_data'],
+    ];
+    return $result;
+}
+
 function wpae_block_library_summary( array $record ): array {
     $manifest = wpae_block_library_normalize_record_manifest( $record );
     return [

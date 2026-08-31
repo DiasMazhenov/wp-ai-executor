@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.91`
-- Guide: `v02.05.90`
+- Plugin: `v02.09.92`
+- Guide: `v02.05.91`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -72,6 +72,16 @@ Release v02.09.91 adds this bundled CopyElement fixture importer. The private
 library now accepts the captured `preview_url` metadata and JSON up to 4 MB;
 the list response reports bundled import results for diagnostics, and the
 editor library details panel renders the stored preview URL.
+
+Release v02.09.92 adds a separate private-library retrieval step to new
+natural-language Elementor generation. It ranks only approved/published,
+compatible blocks by detected archetype, tags, title, description, and prompt
+terms; adapts repeatable native card content from label-description pairs with
+no more than four cards; and requires native-shape plus content-fidelity checks
+before insertion. Targeted edits and Vision repair remain isolated from
+retrieval. The chat exposes safe `library_retrieval` metadata without raw
+stored JSON; if no approved match exists, normal generation remains the
+fallback.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

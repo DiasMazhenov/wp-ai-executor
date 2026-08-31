@@ -503,6 +503,14 @@ CopyElement `Image Box c2644` JSON under
 idempotently as a private `wpae_block` record with its preview URL. This is the
 plugin's private library, not Elementor's `elementor_library`.
 
+New action requests in the editor chat retrieve only `approved` or `published`
+private blocks, rank them by archetype, tags, title, description, and prompt
+terms, then adapt a compatible repeated-card composition to the user's content.
+The adapted result must pass the native shape and content-fidelity checks before
+it replaces the provider composition; targeted edits and Vision repair passes
+keep their bounded scope. The chat response exposes a `library_retrieval` step
+with candidate and selection metadata without returning the stored block JSON.
+
 ### Native Elementor Templates
 
 Native saved templates from Elementor's `elementor_library` post type are

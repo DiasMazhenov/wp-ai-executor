@@ -883,6 +883,143 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
     wpae_llm_apply_fallback_cta( $elements, $cta, $changed );
 }
 
+function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, int &$changed ): bool {
+    $title = trim( (string) ( $pair['label'] ?? '' ) );
+    $content = trim( (string) ( $pair['content'] ?? '' ) );
+    $title_set = false;
+    $content_set = false;
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        if ( ( $element['elType'] ?? '' ) === 'widget' ) {
+            $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            if ( $title !== '' && ! $title_set && $widget_type === 'heading' ) {
+                $settings['title'] = $title;
+                $title_set = true;
+                $changed++;
+            } elseif ( $title !== '' && ! $title_set && $widget_type === 'icon-box' ) {
+                $settings['title_text'] = $title;
+                $title_set = true;
+                $changed++;
+            } elseif ( $title !== '' && ! $title_set && $widget_type === 'testimonial' ) {
+                $settings['testimonial_name'] = $title;
+                $title_set = true;
+                $changed++;
+            }
+            if ( $content !== '' && ! $content_set && $widget_type === 'icon-box' ) {
+                $settings['description_text'] = $content;
+                $content_set = true;
+                $changed++;
+            } elseif ( $content !== '' && ! $content_set && $widget_type === 'testimonial' ) {
+                $settings['testimonial_content'] = $content;
+                $content_set = true;
+                $changed++;
+            } elseif ( $content !== '' && ! $content_set && $widget_type === 'text-editor' ) {
+                $settings['editor'] = $content;
+                $content_set = true;
+                $changed++;
+            }
+            $element['settings'] = $settings;
+        }
+        if ( ( $title_set && ( $content_set || $content === '' ) ) ) {
+            return true;
+        }
+        if ( is_array( $element['elements'] ?? null ) && wpae_llm_apply_library_pair_to_widgets( $element['elements'], $pair, $changed ) ) {
+            return true;
+        }
+    }
+    unset( $element );
+    return $title_set && ( $content_set || $content === '' );
+}
+
+function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed ): array {
+    $pairs = wpae_llm_extract_labeled_content( $message );
+    if ( count( $pairs ) < 2 ) {
+        return [];
+    }
+    $applied = false;
+    $has_content_widget = static function ( array $elements ) use ( &$has_content_widget ): bool {
+        foreach ( $elements as $element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $element['widgetType'] ?? '' ) ), [ 'icon-box', 'testimonial', 'text-editor' ], true ) ) {
+                return true;
+            }
+            if ( is_array( $element['elements'] ?? null ) && $has_content_widget( $element['elements'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget ): void {
+        if ( $applied ) {
+            return;
+        }
+        foreach ( $elements as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+            $card_indexes = [];
+            foreach ( $children as $index => $child ) {
+                if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' && $has_content_widget( is_array( $child['elements'] ?? null ) ? $child['elements'] : [] ) ) {
+                    $card_indexes[] = $index;
+                }
+            }
+            if ( count( $card_indexes ) >= 2 ) {
+                $target_count = min( 4, max( 2, count( $pairs ) ) );
+                $target_count = min( $target_count, count( $card_indexes ) );
+                $next_children = [];
+                $card_position = 0;
+                $group_applied = 0;
+                foreach ( $children as $index => $child ) {
+                    if ( ! in_array( $index, $card_indexes, true ) ) {
+                        $next_children[] = $child;
+                        continue;
+                    }
+                    if ( $card_position >= $target_count ) {
+                        $changed++;
+                        continue;
+                    }
+                    $pair = $pairs[ $card_position ] ?? null;
+                    $child_elements = is_array( $child['elements'] ?? null ) ? $child['elements'] : [];
+                    if ( is_array( $pair ) && wpae_llm_apply_library_pair_to_widgets( $child_elements, $pair, $changed ) ) {
+                        $child['elements'] = $child_elements;
+                        $group_applied++;
+                    }
+                    $next_children[] = $child;
+                    $card_position++;
+                }
+                if ( $group_applied > 0 ) {
+                    $element['elements'] = $next_children;
+                    $applied = true;
+                    return;
+                }
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+                if ( $applied ) {
+                    return;
+                }
+            }
+        }
+        unset( $element );
+    };
+    $walk( $template_elements );
+    if ( ! $applied ) {
+        return [];
+    }
+
+    $missing = (array) ( wpae_llm_content_fidelity( $message, $template_elements )['missing'] ?? [] );
+    if ( ! empty( $missing ) ) {
+        wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
+    }
+    return $template_elements;
+}
+
 function wpae_llm_apply_fallback_cta( array &$elements, string $cta, int &$changed ): void {
     if ( $cta === '' ) {
         return;
@@ -2435,6 +2572,20 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     $vision_regenerate = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_regenerate'] );
     $vision_findings = $vision_regenerate && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
     $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
+    $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
+    $library_retrieval = [
+        'status' => 'skipped',
+        'reason' => $targeted_edit || $vision_repair || $vision_regenerate
+            ? 'Library retrieval is skipped for targeted edits and Vision repair passes.'
+            : 'Library retrieval is available for new block generation.',
+        'available_count' => 0,
+        'candidate_count' => 0,
+        'candidates' => [],
+        'selected' => null,
+    ];
+    if ( $action_request && ! $targeted_edit && ! $vision_repair && ! $vision_regenerate && function_exists( 'wpae_block_library_retrieve_for_prompt' ) ) {
+        $library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
+    }
     $system_prompt = 'Ты помогаешь работать с WordPress и Elementor. Не заявляй, что изменения выполнены, если не получил подтверждение API. Соблюдай native Elementor settings, Flexbox Containers, mobile-first и сохраняй существующие WebGL/GSAP/Three.js enhancement-зоны.';
     $guided_context = [];
     if ( $action_request ) {
@@ -2446,6 +2597,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             'capabilities' => function_exists( 'wpae_get_capabilities_payload' ) ? wpae_get_capabilities_payload() : [],
         ];
         $system_prompt .= "\nЭто guided-режим WP AI Executor. Перед выполнением обязательно применяй agent_rules, все custom_skills и capabilities из следующего контекста. Правила WP AI Executor имеют приоритет при конфликте:\n" . wp_json_encode( $guided_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+        if ( $library_retrieval['status'] === 'matched' && is_array( $library_retrieval['selected'] ?? null ) ) {
+            $system_prompt .= "\nДля этого нового блока найден одобренный шаблон из private block library: «" . sanitize_text_field( (string) ( $library_retrieval['selected']['title'] ?? '' ) ) . '». Сервер адаптирует его композицию и применит только после проверки native-структуры и точного пользовательского контента. Не возвращай служебные инструкции или JSON библиотеки; сгенерируй контент по запросу пользователя.';
+        }
     }
     if ( $action_request ) {
         $system_prompt .= $targeted_edit
@@ -2650,7 +2804,6 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $typography_changed = 0;
         $bento_changed = 0;
         $process_labels_changed = 0;
-        $action_archetype = wpae_llm_detect_block_archetype( $message );
         $fallback_content_changed = 0;
         if ( $action_fallback ) {
             wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
@@ -2661,6 +2814,31 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $missing_content = (array) ( $fallback_fidelity['missing'] ?? [] );
             if ( ! empty( $missing_content ) ) {
                 wpae_llm_apply_fallback_content( $action['elements'], $missing_content, $action_archetype, $fallback_content_changed );
+            }
+        }
+        $library_applied = false;
+        $library_changed = 0;
+        $library_skip_reason = '';
+        $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
+        if ( ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
+            $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed );
+            if ( ! empty( $library_elements ) ) {
+                $library_action = [
+                    'action' => 'insert_elements',
+                    'post_id' => $post_id,
+                    'position' => 'end',
+                    'elements' => $library_elements,
+                ];
+                $library_shape = wpae_llm_validate_action_shape( $library_action, $post_id );
+                $library_fidelity = wpae_llm_content_fidelity( $message, $library_elements );
+                if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) ) {
+                    $action['elements'] = $library_elements;
+                    $library_applied = true;
+                } else {
+                    $library_skip_reason = 'Adapted library block failed the native shape or content-fidelity check.';
+                }
+            } else {
+                $library_skip_reason = 'The selected library block has no repeatable content group that can be adapted.';
             }
         }
         if ( is_array( $action['elements'] ?? null ) ) {
@@ -2684,6 +2862,23 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как Elementor JSON-команда.' : 'Ответ не разобран как Elementor JSON-команда.',
                 'details' => $action_diagnostics,
             ],
+        ];
+        $library_trace = [
+            'status' => $library_applied ? 'applied' : (string) ( $library_retrieval['status'] ?? 'skipped' ),
+            'reason' => $library_applied
+                ? 'Approved library composition was adapted to the user content and passed native checks.'
+                : ( $library_skip_reason !== '' ? $library_skip_reason : (string) ( $library_retrieval['reason'] ?? 'Library retrieval was skipped.' ) ),
+            'available_count' => (int) ( $library_retrieval['available_count'] ?? 0 ),
+            'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ),
+            'candidates' => (array) ( $library_retrieval['candidates'] ?? [] ),
+            'selected' => ! empty( $selected_library ) ? array_intersect_key( $selected_library, array_flip( [ 'id', 'title', 'category', 'source', 'status', 'score', 'matched_terms' ] ) ) : null,
+            'content_changes' => $library_changed,
+        ];
+        $action_steps[] = [
+            'id' => 'library_retrieval',
+            'status' => $library_applied ? 'ok' : 'skipped',
+            'message' => $library_applied ? 'Одобренный шаблон найден, адаптирован под контент и подготовлен к вставке.' : 'Подходящий одобренный шаблон не применен; использована обычная генерация.',
+            'details' => $library_trace,
         ];
         $content_fidelity = wpae_llm_content_fidelity( $message, (array) ( $action['elements'] ?? [] ) );
         $action_steps[] = [
@@ -2714,12 +2909,13 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         if ( $visual_grammar_changed > 0 ) {
             $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge и иконки у карточечных заголовков.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'icon-box', 'icon_position' => 'left' ] ];
         }
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, isset( $variation_seed ) ? (int) $variation_seed : -1 );
+        $execution_variation_seed = $library_applied ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );
         }
-        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'operation_id' => $execution['operation_id'] ?? null, 'action' => $execution['action'], 'write' => $execution, 'steps' => $execution['steps'], 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
+        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'operation_id' => $execution['operation_id'] ?? null, 'action' => $execution['action'], 'write' => $execution, 'steps' => $execution['steps'], 'library' => $library_trace, 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
     }
     return new WP_REST_Response( [
         'ok' => true,
