@@ -638,9 +638,10 @@
             var restore = function () {
                 hidden.forEach(function (item) { item.element.style.display = item.display; });
             };
-            return capture(captureTarget, {
+            var captureOptions = {
                 backgroundColor: targetBackground,
                 useCORS: true,
+                imageTimeout: 2500,
                 logging: false,
                 scale: 1,
                 width: captureWidth,
@@ -649,7 +650,11 @@
                 windowHeight: height,
                 x: 0,
                 y: 0
-            }).then(function (canvas) {
+            };
+            var captureTimeout = new Promise(function (_, reject) {
+                window.setTimeout(function () { reject(new Error('Screenshot preview capture exceeded 12 seconds.')); }, 12000);
+            });
+            return Promise.race([capture(captureTarget, captureOptions), captureTimeout]).then(function (canvas) {
                 restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');

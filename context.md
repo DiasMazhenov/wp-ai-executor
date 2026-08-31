@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.01`
+- Plugin: `v02.10.02`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -163,6 +163,11 @@ Release v02.10.01 bounds the Elementor editor screenshot capture wait for remote
 images: each pending image now settles on load, error, or a 2.5-second timeout.
 This prevents one unavailable preview asset from leaving the chat permanently
 stuck at "Обновляю preview и проверяю результат через AI Vision".
+
+Release v02.10.02 also bounds the `html2canvas` capture itself to 12 seconds
+and passes its image timeout through to the capture library. A slow or broken
+preview asset now falls back to a visible Vision error path instead of freezing
+the editor chat and leaving the result unverifiable.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
