@@ -271,7 +271,7 @@ assert.match(llm, /widgetType.*icon-box/);
 assert.match(llm, /wpae-card-heading/);
 assert.match(llm, /title_typography_font_size.*size.*1/);
 assert.match(llm, /title_typography_line_height.*size.*1\.2/);
-assert.match(llm, /custom_css' => 'selector \{ width: 100%; max-width: 100%; align-self: stretch; \}'/);
+assert.match(llm, /custom_css' => 'selector \{ width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; \}'/);
 assert.match(llm, /wpae-bento-grid/);
 assert.match(llm, /function wpae_llm_apply_generation_visual_grammar/);
 assert.match(llm, /wpae-generated-content-shell/);

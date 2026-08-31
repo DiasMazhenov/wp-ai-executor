@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.05`
+- Plugin: `v02.10.06`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -186,6 +186,12 @@ markers are evaluated before the generic `команда` token, so a brief endi
 with «передаем готовый результат команде» remains a process block instead of
 falling back to a team composition. This keeps Vision repair aligned with the
 user's actual process content.
+
+Release v02.10.06 keeps the shared generated CTA row compact: its transparent
+wrapper uses content width instead of stretching across the whole block, while
+the label and button remain responsive and editable native Elementor widgets.
+This removes the empty horizontal surface that Vision identified beneath
+generated bento compositions.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

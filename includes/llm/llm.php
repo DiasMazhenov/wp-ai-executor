@@ -1320,6 +1320,8 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             'flex_justify_content_mobile' => 'flex-start',
             'flex_align_items' => 'center',
             'flex_align_items_mobile' => 'stretch',
+            'align_self' => 'flex-start',
+            'align_self_mobile' => 'stretch',
             'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
             'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
             'padding' => [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
@@ -1327,7 +1329,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             'background_background' => 'classic',
             'background_color' => 'transparent',
             'border_border' => 'none',
-            'custom_css' => 'selector { width: 100%; max-width: 100%; align-self: stretch; }',
+            'custom_css' => 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }',
         ],
         'elements' => [
             [
@@ -1346,7 +1348,6 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
             $last,
         ],
     ];
-    wpae_llm_set_variant_container_width( $elements[ $last_index ]['settings'], 100 );
     $changed++;
     return $elements;
 }
