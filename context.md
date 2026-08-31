@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.87`
-- Guide: `v02.05.87`
+- Plugin: `v02.09.88`
+- Guide: `v02.05.88`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -30,6 +30,12 @@ The floating Elementor chat can explicitly export selected native Elementor
 models as `wpae-elementor-selection-v1` JSON with recursive child elements;
 the copy-only export stays local to the browser, while a bounded sanitized copy
 of the selected subtree is sent with a selected-edit chat request.
+
+Release v02.09.88 keeps selected-container patches realtime in the open editor:
+after native Backbone settings are applied, the current preview iframe is
+refreshed before the chat reports success or sends the screenshot to Vision.
+This rehydrates Elementor CSS such as `border_radius` without reloading the
+editor page or closing the active browser tab.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

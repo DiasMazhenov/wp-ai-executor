@@ -562,7 +562,11 @@
             });
             if (model && applyEditorPatch(model, patch)) applied += 1;
         });
-        return applied === editorSync.patches.length ? waitForPreviewPaint().then(function () { return true; }) : Promise.resolve(false);
+        return applied === editorSync.patches.length
+            ? waitForPreviewPaint()
+                .then(function () { return refreshElementorPreview(); })
+                .then(function (refreshed) { return refreshed === true; })
+            : Promise.resolve(false);
     }
     var visionCapturePromise = null;
     function loadVisionCapture() {
