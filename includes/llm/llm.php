@@ -557,6 +557,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/₸|\$|€|₽|\b(цена|стоимост|тариф|пакет|от\s+\d+)/iu', $message ) ) {
             return 'pricing';
         }
+        if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
+            return 'process';
+        }
         if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
             return 'team';
         }
@@ -571,9 +574,6 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         }
         if ( preg_match( '/\b(быстрый старт|понятная структура|поддержка после запуска|преимуществ|выгод)\b/iu', $normalized ) ) {
             return 'benefits';
-        }
-        if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем)\b/iu', $normalized ) ) {
-            return 'process';
         }
         if ( preg_match( '/(?:кейс\w*|портфолио|работ\w*|рост\w*|вырос\w*|увелич\w*|сократ\w*|результат\w*|проект\w*)/iu', $normalized ) ) {
             return 'portfolio';

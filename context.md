@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.04`
+- Plugin: `v02.10.05`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -180,6 +180,12 @@ bento card grid. Each requested question gets an icon heading and its answer
 in the same card, so Vision and users can inspect the complete content without
 opening an accordion item; the old accordion remains supported for imported
 templates.
+
+Release v02.10.05 fixes natural process classification: stage/launch/transfer
+markers are evaluated before the generic `команда` token, so a brief ending
+with «передаем готовый результат команде» remains a process block instead of
+falling back to a team composition. This keeps Vision repair aligned with the
+user's actual process content.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

@@ -237,6 +237,7 @@ assert.match(llm, /\$is_card_group = true/);
 assert.match(llm, /quis autem/);
 assert.match(llm, /'team' => \[ 'команда\/team'/);
 assert.match(llm, /'about' => \[ 'о компании\/about'/);
+assert.ok(llm.indexOf("'process'" ) < llm.indexOf("'team' => \[ 'команда"), 'process intent must take precedence over the word команда in a process brief');
 assert.match(llm, /PREG_SET_ORDER/);
 assert.match(llm, /wpae_block_library_retrieve_for_prompt\( \$message, \$action_archetype \)/);
 assert.match(llm, /id' => 'library_retrieval'/);
