@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.06`
+- Plugin: `v02.10.08`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -196,6 +196,13 @@ generated bento compositions.
 Release v02.10.07 removes the extra generated CTA wrapper entirely. The native
 button remains directly in the content shell, so visual grammar cannot create
 an empty card-like surface around an otherwise valid CTA.
+
+Release v02.10.08 makes CopyElement testimonial adaptation quote-aware: natural
+«name, company - quote» pairs stay together, imported author demo descriptions are
+cleared, attribution typography is bounded, and testimonial bento cards keep their
+natural height without cross-row stretching. The four bundled templates remain the
+live Browser Use test set; each test requires screenshot, AI Vision, and the
+design-taste-frontend visual rubric before it is accepted.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

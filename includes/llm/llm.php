@@ -668,6 +668,21 @@ function wpae_llm_extract_requested_content( string $message ): array {
 }
 
 function wpae_llm_extract_labeled_content( string $message ): array {
+    $quoted_pairs = [];
+    if ( preg_match_all( '/(?:^|(?<=[.!?»])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
+        foreach ( $quoted_matches as $match ) {
+            $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+            $company = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+            $quote = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+            if ( $name !== '' && $company !== '' && $quote !== '' ) {
+                $quoted_pairs[] = [ 'label' => $name . ', ' . $company, 'content' => $quote ];
+            }
+        }
+    }
+    if ( count( $quoted_pairs ) >= 2 ) {
+        return $quoted_pairs;
+    }
+
     $pairs = [];
     $segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+(?=[^—–-]))/u', $message ) ?: [];
     foreach ( $segments as $segment ) {
@@ -973,6 +988,10 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
                 $settings['testimonial_name'] = $title;
                 $title_set = true;
                 $title_set_on_current_widget = true;
+                $changed++;
+            }
+            if ( $archetype === 'testimonials' && $title_set_on_current_widget && $content_set && trim( (string) ( $settings['description_text'] ?? '' ) ) !== '' ) {
+                $settings['description_text'] = '';
                 $changed++;
             }
             if ( $content !== '' && ! $content_set && $widget_type === 'icon-box' ) {
@@ -1443,7 +1462,7 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
     return array_fill( 0, $count, $width );
 }
 
-function wpae_llm_normalize_bento_grid( array &$element, int &$changed ): void {
+function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $archetype = '' ): void {
     if ( ( $element['elType'] ?? '' ) !== 'container' ) {
         return;
     }
@@ -1465,7 +1484,10 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed ): void {
     $settings['flex_direction'] = 'row';
     $settings['flex_wrap'] = 'wrap';
     $settings['flex_justify_content'] = 'space-between';
-    $settings['flex_align_items'] = 'stretch';
+    $settings['flex_align_items'] = $archetype === 'testimonials' ? 'flex-start' : 'stretch';
+    if ( $archetype === 'testimonials' ) {
+        $settings['flex_align_items_mobile'] = 'flex-start';
+    }
     $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
     $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
     $settings['background_background'] = 'classic';
@@ -1487,7 +1509,7 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed ): void {
     }
 }
 
-function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$changed ): void {
+function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$changed, string $archetype = '' ): void {
     foreach ( $elements as &$element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -1496,11 +1518,11 @@ function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$chang
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             if ( is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
-                wpae_llm_normalize_bento_grid( $element, $changed );
+                wpae_llm_normalize_bento_grid( $element, $changed, $archetype );
             }
         }
         if ( is_array( $element['elements'] ?? null ) ) {
-            wpae_llm_normalize_bento_grids_recursive( $element['elements'], $changed );
+            wpae_llm_normalize_bento_grids_recursive( $element['elements'], $changed, $archetype );
         }
     }
     unset( $element );
@@ -1969,6 +1991,13 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
                 $settings['selected_icon'] = trim( (string) ( $selected_icon['value'] ?? '' ) ) !== '' ? $selected_icon : [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ];
                 $settings['position'] = 'left';
                 $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-card-heading' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-card-heading' );
+                if ( $archetype === 'testimonials' ) {
+                    $settings['description_text'] = '';
+                    $settings['title_typography_typography'] = 'custom';
+                    $settings['title_typography_font_size'] = [ 'unit' => 'rem', 'size' => 1 ];
+                    $settings['title_typography_font_weight'] = '600';
+                    $settings['title_typography_line_height'] = [ 'unit' => 'em', 'size' => 1.25 ];
+                }
                 $element['settings'] = $settings;
                 if ( $before !== wp_json_encode( $settings ) ) {
                     $changed++;
@@ -2449,6 +2478,27 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $child_containers[] = $child_index;
                     }
                 }
+                if ( $archetype === 'testimonials' && $depth >= 2 && empty( $child_containers ) && $contains_card_signal( $children ) ) {
+                    $before_card = wp_json_encode( $settings );
+                    $settings['container_type'] = 'flex';
+                    $settings['flex_direction'] = 'column';
+                    $settings['flex_wrap'] = 'nowrap';
+                    $settings['flex_justify_content'] = 'flex-start';
+                    $settings['flex_align_items'] = 'stretch';
+                    $settings['flex_gap'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                    $settings['flex_gap_mobile'] = [ 'column' => '0.875', 'row' => '0.875', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.875' ];
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = '#ffffff';
+                    $settings['border_border'] = 'solid';
+                    $settings['border_color'] = '#d1d5db';
+                    $settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+                    $settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                    $settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.5', 'bottom' => '1.5', 'left' => '1.5', 'isLinked' => true ];
+                    $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.25', 'left' => '1.25', 'isLinked' => true ];
+                    if ( $before_card !== wp_json_encode( $settings ) ) {
+                        $changed++;
+                    }
+                }
                 $carousel_groups = [];
                 foreach ( $children as $child_index => $child ) {
                     if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' || ( $child['widgetType'] ?? '' ) !== 'nested-carousel' || ! is_array( $child['elements'] ?? null ) ) {
@@ -2513,7 +2563,10 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $settings['flex_direction'] = 'row';
                         $settings['flex_wrap'] = 'wrap';
                         $settings['flex_justify_content'] = 'space-between';
-                        $settings['flex_align_items'] = 'stretch';
+                        $settings['flex_align_items'] = $archetype === 'testimonials' ? 'flex-start' : 'stretch';
+                        if ( $archetype === 'testimonials' ) {
+                            $settings['flex_align_items_mobile'] = 'flex-start';
+                        }
                         $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
                         $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
                         $classes[] = 'wpae-bento-grid';
@@ -2698,7 +2751,7 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         }
 
         if ( $is_grid ) {
-            wpae_llm_normalize_bento_grid( $element, $changed );
+            wpae_llm_normalize_bento_grid( $element, $changed, $archetype );
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : $settings;
         }
 
@@ -2917,7 +2970,7 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     }
     if ( function_exists( 'wpae_llm_normalize_bento_grids_recursive' ) ) {
         $final_bento_changed = 0;
-        wpae_llm_normalize_bento_grids_recursive( $elements, $final_bento_changed );
+        wpae_llm_normalize_bento_grids_recursive( $elements, $final_bento_changed, $archetype );
         if ( $final_bento_changed > 0 ) {
             $steps[] = [ 'id' => 'bento_layout_final', 'status' => 'ok', 'message' => 'Финальная проверка выровняла bento-карточки после всех Elementor-нормализаторов.', 'details' => [ 'containers_updated' => $final_bento_changed, 'max_items_per_row' => 4 ] ];
         }
@@ -3321,7 +3374,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
             $final_bento_changed = 0;
-            wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed );
+            wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed, $action_archetype );
             $bento_changed += $final_bento_changed;
         }
         $action_steps = [
