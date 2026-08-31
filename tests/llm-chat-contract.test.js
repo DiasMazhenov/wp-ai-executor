@@ -210,6 +210,8 @@ assert.match(llm, /wpae_llm_apply_fallback_cta\( \$elements, \$cta, \$changed \)
 assert.match(llm, /function wpae_llm_apply_library_pair_to_widgets/);
 assert.match(llm, /function wpae_llm_apply_library_template/);
 assert.match(llm, /function wpae_llm_normalize_library_layout/);
+assert.match(llm, /if \( \$placeholder_heading_index === 0 \) \{/);
+assert.match(llm, /\$action_fallback = false;/);
 assert.match(llm, /\$element\['widgetType'\] = 'text-editor';/);
 assert.match(llm, /\$settings\['container_type'\] = 'flex';/);
 assert.match(llm, /bool \$inside_bento_grid/);

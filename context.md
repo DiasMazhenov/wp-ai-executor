@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.97`
+- Plugin: `v02.09.98`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -134,6 +134,13 @@ marked bento grid, so section titles and descriptions do not receive stray
 icons. Full Vision regeneration can retrieve the same trusted bundled template
 again, while a successfully adapted library block skips the broad generated
 bento pass that previously changed its composition.
+
+Release v02.09.98 removes the first service placeholder heading from an imported
+CopyElement tree before the shared visual grammar adds its single outlined badge;
+this prevents duplicate badge/title hierarchies such as `КОМАНДА` plus `Наша
+команда`. A library-applied action is no longer reported as a deterministic
+fallback even when the provider response required the local fallback before the
+trusted template was selected.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

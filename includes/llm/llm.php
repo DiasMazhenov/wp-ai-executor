@@ -2313,7 +2313,12 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $changed++;
                 }
                 if ( $widget_type === 'heading' && $is_placeholder( $settings['title'] ?? '' ) ) {
-                    $replacement = $placeholder_heading_index === 0 ? wpae_llm_badge_label( $archetype ) : ( $placeholder_heading_index === 1 ? $copyelement_defaults['title'] : $copyelement_defaults['card'] );
+                    if ( $placeholder_heading_index === 0 ) {
+                        $placeholder_heading_index++;
+                        $changed++;
+                        continue;
+                    }
+                    $replacement = $placeholder_heading_index === 1 ? $copyelement_defaults['title'] : $copyelement_defaults['card'];
                     $settings['title'] = $replacement;
                     $placeholder_heading_index++;
                     $changed++;
@@ -3212,6 +3217,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
+                    $action_fallback = false;
                     $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
                 } else {
                     $library_skip_reason = 'Adapted library block failed the native shape or content-fidelity check.';
