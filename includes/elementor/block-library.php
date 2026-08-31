@@ -6,7 +6,7 @@ const WPAE_BLOCK_LIBRARY_POST_TYPE = 'wpae_block';
 const WPAE_BLOCK_LIBRARY_SCHEMA = 'wpae-elementor-block-v1';
 const WPAE_BLOCK_LIBRARY_SCHEMA_VERSION = '1.1.0';
 const WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA = 'wpae-elementor-block-manifest-v1';
-const WPAE_BLOCK_LIBRARY_MAX_BYTES = 1048576;
+const WPAE_BLOCK_LIBRARY_MAX_BYTES = 4194304;
 const WPAE_BLOCK_LIBRARY_MAX_METADATA_BYTES = 32768;
 const WPAE_BLOCK_LIBRARY_META_KEY = '_wpae_block_payload';
 
@@ -53,7 +53,7 @@ function wpae_block_library_is_list( array $value ): bool {
 function wpae_block_library_decode_input( $payload ) {
     if ( is_string( $payload ) ) {
         if ( strlen( $payload ) > WPAE_BLOCK_LIBRARY_MAX_BYTES ) {
-            return new WP_Error( 'wpae_block_too_large', 'Elementor block JSON exceeds the 1 MB limit.', [ 'status' => 413 ] );
+            return new WP_Error( 'wpae_block_too_large', 'Elementor block JSON exceeds the 4 MB limit.', [ 'status' => 413 ] );
         }
 
         $payload = json_decode( $payload, true );
@@ -68,7 +68,7 @@ function wpae_block_library_decode_input( $payload ) {
 
     $encoded = wp_json_encode( $payload );
     if ( ! is_string( $encoded ) || strlen( $encoded ) > WPAE_BLOCK_LIBRARY_MAX_BYTES ) {
-        return new WP_Error( 'wpae_block_too_large', 'Elementor block JSON exceeds the 1 MB limit.', [ 'status' => 413 ] );
+        return new WP_Error( 'wpae_block_too_large', 'Elementor block JSON exceeds the 4 MB limit.', [ 'status' => 413 ] );
     }
 
     return $payload;
@@ -90,6 +90,9 @@ function wpae_block_library_extract_elements( $payload ) {
         $elements = $payload['content'];
     } elseif ( isset( $payload['elementor_data'] ) && is_array( $payload['elementor_data'] ) ) {
         $elements = $payload['elementor_data'];
+    } elseif ( isset( $payload['elements'] ) && is_array( $payload['elements'] ) ) {
+        $source_mode = 'elementor_export';
+        $elements = $payload['elements'];
     } elseif ( isset( $payload['elType'] ) ) {
         $elements = [ $payload ];
     } elseif ( wpae_block_library_is_list( $payload ) ) {
@@ -97,7 +100,7 @@ function wpae_block_library_extract_elements( $payload ) {
     } else {
         return new WP_Error(
             'wpae_unsupported_block_shape',
-            'Expected a native Elementor element, element list, template content, or wpae-elementor-block-v1 payload.',
+            'Expected a native Elementor element, element list, Elementor export with an elements array, template content, or wpae-elementor-block-v1 payload.',
             [ 'status' => 422 ]
         );
     }
@@ -320,7 +323,7 @@ function wpae_block_library_build_record( array $parsed, array $input, array $ex
     $source_manifest = is_array( $source_metadata['manifest'] ?? null ) ? $source_metadata['manifest'] : [];
     $now = gmdate( 'c' );
     $source = sanitize_key( (string) ( $input['source'] ?? $source_metadata['source'] ?? $existing['source'] ?? 'foreign' ) );
-    if ( ! in_array( $source, [ 'local', 'foreign', 'agent', 'import' ], true ) ) {
+    if ( ! in_array( $source, [ 'local', 'foreign', 'agent', 'import', 'copyelement' ], true ) ) {
         $source = 'foreign';
     }
 
@@ -334,6 +337,7 @@ function wpae_block_library_build_record( array $parsed, array $input, array $ex
     $native_payload = $parsed['source_mode'] === 'wpae_library_block'
         ? ( $source_metadata['native_payload'] ?? $elements )
         : $source_payload;
+    $preview_url = esc_url_raw( (string) ( $input['preview_url'] ?? $source_metadata['preview_url'] ?? $existing['preview_url'] ?? '' ) );
 
     $status = empty( $existing ) ? 'draft' : 'draft';
     $source_skill = wpae_block_library_sanitize_source_skill( $input['source_skill'] ?? $source_metadata['source_skill'] ?? $source_manifest['source_skill'] ?? $existing['manifest']['source_skill'] ?? [] );
@@ -371,6 +375,7 @@ function wpae_block_library_build_record( array $parsed, array $input, array $ex
         'source_mode' => $parsed['source_mode'],
         'source' => $source,
         'source_post_id' => absint( $input['source_post_id'] ?? $source_metadata['source_post_id'] ?? $existing['source_post_id'] ?? 0 ),
+        'preview_url' => $preview_url !== '' ? $preview_url : null,
         'elementor_version' => sanitize_text_field( (string) ( $input['elementor_version'] ?? $source_metadata['elementor_version'] ?? $existing['elementor_version'] ?? '' ) ),
         'design_system_id' => $design_system_id !== '' ? $design_system_id : null,
         'native_payload' => $native_payload,
@@ -407,6 +412,7 @@ function wpae_block_library_summary( array $record ): array {
         'tags' => array_values( (array) ( $record['tags'] ?? [] ) ),
         'source_mode' => (string) ( $record['source_mode'] ?? 'native_elementor_json' ),
         'source' => (string) ( $record['source'] ?? 'foreign' ),
+        'preview_url' => $record['preview_url'] ?? null,
         'elementor_version' => (string) ( $record['elementor_version'] ?? '' ),
         'design_system_id' => $record['design_system_id'] ?? null,
         'status' => wpae_block_library_status( $record ),
@@ -470,6 +476,7 @@ function wpae_block_library_request_payload( WP_REST_Request $request ) {
         && (
             isset( $json['schema'] )
             || isset( $json['content'] )
+            || isset( $json['elements'] )
             || isset( $json['elType'] )
             || wpae_block_library_is_list( $json )
         )
@@ -524,7 +531,7 @@ function wpae_block_library_list( WP_REST_Request $request ): WP_REST_Response {
         'schema' => WPAE_BLOCK_LIBRARY_SCHEMA,
         'count' => count( $items ),
         'items' => $items,
-        'supported_input_formats' => [ 'native_elementor_json', WPAE_BLOCK_LIBRARY_SCHEMA ],
+        'supported_input_formats' => [ 'native_elementor_json', 'elementor_export', WPAE_BLOCK_LIBRARY_SCHEMA ],
         'instantiate_modes' => [ 'preserve', 'compatibility', 'adapt' ],
     ], 200 );
 }
@@ -548,7 +555,7 @@ function wpae_block_library_store_record( int $post_id, array $record ) {
     }
     $record_json = wp_json_encode( $record, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     if ( ! is_string( $record_json ) || strlen( $record_json ) > WPAE_BLOCK_LIBRARY_MAX_BYTES ) {
-        return new WP_Error( 'wpae_block_too_large', 'Elementor block JSON exceeds the 1 MB limit.', [ 'status' => 413 ] );
+        return new WP_Error( 'wpae_block_too_large', 'Elementor block JSON exceeds the 4 MB limit.', [ 'status' => 413 ] );
     }
     $updated = update_post_meta( $post_id, WPAE_BLOCK_LIBRARY_META_KEY, wp_slash( $record_json ) );
     if ( $updated === false && ! metadata_exists( 'post', $post_id, WPAE_BLOCK_LIBRARY_META_KEY ) ) {
@@ -641,6 +648,9 @@ function wpae_block_library_update( WP_REST_Request $request ): WP_REST_Response
         }
         if ( array_key_exists( 'tags', $input ) ) {
             $record['tags'] = wpae_block_library_sanitize_tags( $input['tags'] );
+        }
+        if ( array_key_exists( 'preview_url', $input ) ) {
+            $record['preview_url'] = esc_url_raw( (string) $input['preview_url'] ) ?: null;
         }
         $manifest = wpae_block_library_normalize_record_manifest( $record );
         if ( array_key_exists( 'source_skill', $input ) ) {

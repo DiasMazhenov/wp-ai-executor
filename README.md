@@ -453,6 +453,7 @@ Supported input formats:
 
 - a raw native Elementor element object;
 - an array of native Elementor elements;
+- an Elementor export envelope with `type: "elementor"` and an `elements` array;
 - an Elementor template object with a `content` array;
 - a `wpae-elementor-block-v1` wrapper.
 
@@ -492,6 +493,11 @@ normalization requirements, and protected enhancement zones. The wrapper keeps
 both the extracted `elementor_data` used for insertion and the exact
 `native_payload`, so foreign template-level fields such as `page_settings` are
 not discarded.
+
+Imports may also include `source: "copyelement"`, `source_url` and a
+`preview_url`. The preview is stored as sanitized source metadata next to the
+JSON; the remote image is not bundled into the plugin. The accepted payload
+size for the private library is 4 MB.
 
 ### Native Elementor Templates
 

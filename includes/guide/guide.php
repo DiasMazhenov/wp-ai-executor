@@ -703,6 +703,7 @@ function wpae_agent_guide(): array {
                 'accepted_formats' => [
                     'Raw native Elementor element object.',
                     'Native Elementor element array.',
+                    'Elementor export envelope with type=elementor and an elements array.',
                     'Elementor template object with content array.',
                     WPAE_BLOCK_LIBRARY_SCHEMA . ' wrapper.',
                 ],

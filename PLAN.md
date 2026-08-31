@@ -1,5 +1,19 @@
 # План WP AI Executor
 
+## v02.09.90
+
+- Принимать официальный Elementor export-envelope с верхнеуровневыми
+  `type`, `siteurl` и `elements` в существующей private block library через
+  `X-AI-Key`, сохраняя исходный payload и native data.
+- Принимать для private library данные CopyElement с `source: copyelement` и
+  `preview_url`; хранить URL превью рядом с JSON без встраивания чужих image
+  bytes в plugin package.
+- Поднять лимит private library до 4 MB для крупных реально скопированных
+  компонентов.
+- Не встраивать облачные Wireframe-превью без их JSON: получить точные
+  шаблоны только через официальный export/import и затем прогнать общий
+  normalize/compatibility/review pipeline.
+
 ## v02.09.89
 
 - Добавить read-only доступ к нативным Elementor Templates через `X-AI-Key`:

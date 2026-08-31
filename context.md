@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.89`
-- Guide: `v02.05.89`
+- Plugin: `v02.09.90`
+- Guide: `v02.05.90`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -44,6 +44,26 @@ require the canonical `X-AI-Key`, expose `elementor_library` summaries or
 decoded template data with normalization/compatibility reports, and never
 send the key to browser JavaScript. The existing WPAE block library remains a
 separate storage and import path.
+
+Release v02.09.90 accepts an Elementor export envelope with top-level
+`type: "elementor"`, `siteurl`, and `elements` through the existing private
+block-library POST route. The original envelope is retained as `native_payload`
+while its native `elements` array is normalized, compatibility-checked, and
+stored for later instantiation through `X-AI-Key`. The Elementor Kit Library
+Wireframe tab was inspected in Browser Use: it listed 11 Wireframe previews, but
+the official `Download Website ZIP` action returned Elementor's visible
+`Something went wrong` state, so no cloud template JSON was bundled or guessed.
+Exact Wireframe templates require their official exported JSON (or a successful
+local Elementor import) before they can be committed as plugin fixtures.
+
+CopyElement Browser Use inspection on 2026-08-31 found 54 free component cards
+and 54 preview image URLs. Thirty unique Elementor JSON payloads were retained
+after freshness/deduplication checks; later copy attempts returned the previous
+clipboard value and CopyElement displayed an account usage-ban message. No
+third-party payloads or image bytes were added to the plugin package, and no
+remote library records were created without reading or exposing `X-AI-Key`.
+The private library now accepts the captured `preview_url` metadata and JSON up
+to 4 MB for a later authenticated import.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
@@ -467,7 +487,7 @@ Implementation:
 - Storage: private `wpae_block` custom posts plus revision-enabled
   `_wpae_block_payload` post meta
 - Public files: none
-- Maximum accepted JSON input: 1 MB
+- Maximum accepted JSON input: 4 MB
 
 Accepted inputs:
 
@@ -481,6 +501,7 @@ Each stored wrapper contains:
 - exact `native_payload` for lossless foreign template storage;
 - extracted `elementor_data` for insertion;
 - title, description, category, tags and source metadata;
+- optional sanitized `preview_url` for an external component thumbnail;
 - Elementor/design-system versions;
 - compatibility report, content hash, media references and protected zones.
 
