@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.09.94
+
+- Добавить переданный пользователем CopyElement JSON `Team c1429` в bundled
+  private library.
+- Зафиксировать SHA-256, native-совместимость и idempotent seeding; оставить
+  шаблон draft до Design Review Gate.
+- Не придумывать preview URL или preview asset, если они не переданы вместе с
+  экспортом.
+
 ## v02.09.93
 
 - Добавить в bundled private library два переданных пользователем JSON:

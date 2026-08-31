@@ -509,6 +509,10 @@ c1198` and `About c70` exports. They are imported into the same private
 before retrieval can use them. Their source exports did not include preview
 assets, so the package keeps their preview metadata empty.
 
+The bundled set also includes the user-supplied CopyElement `Team c1429`
+export. It follows the same private-library import and Design Review Gate
+workflow; its preview metadata remains empty when no preview asset is supplied.
+
 New action requests in the editor chat retrieve only `approved` or `published`
 private blocks, rank them by archetype, tags, title, description, and prompt
 terms, then adapt a compatible repeated-card composition to the user's content.

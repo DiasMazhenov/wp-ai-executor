@@ -36,4 +36,15 @@ return [
         'source_url' => 'https://copyelement.com/components/free',
         'preview_url' => '',
     ],
+    [
+        'id' => 'copyelement-team-c1429',
+        'file' => 'team-c1429.json',
+        'sha256' => 'ec2835357a6582d0157fb18b9427c3835884aabb9f1c5f72db261ce1e8a0c1a6',
+        'title' => 'Team c1429',
+        'description' => "CopyElement's Wireframe - Team c1429.",
+        'category' => 'team',
+        'tags' => [ 'copyelement', 'wireframe', 'team', 'about', 'bento' ],
+        'source_url' => 'https://copyelement.com/components/free',
+        'preview_url' => '',
+    ],
 ];

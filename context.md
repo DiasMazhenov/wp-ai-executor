@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.93`
-- Guide: `v02.05.92`
+- Plugin: `v02.09.94`
+- Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -90,6 +90,12 @@ duplicated. All three bundled fixtures are declared with SHA-256 entries and
 are seeded idempotently as draft `wpae_block` records until the Design Review
 Gate approves them. The two new exports contain no preview image URL, so no
 preview asset was invented or bundled.
+
+Release v02.09.94 adds the user-supplied CopyElement `Team c1429` export as the
+fourth bundled fixture. It contains 25 elements and 16 native widgets and is
+declared with its SHA-256 in the private-library manifest. It has no supplied
+preview asset and remains a draft `wpae_block` record until Design Review Gate
+approval.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
