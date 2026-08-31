@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.09.89
+
+- Добавить read-only доступ к нативным Elementor Templates через `X-AI-Key`:
+  список `elementor_library` и получение исходного/нормализованного
+  `elementor_data` с compatibility report.
+- Синхронизировать `/guide`, `/capabilities` и skill endpoint allowlist; не
+  передавать ключ в браузерный Elementor JS.
+
 ## v02.09.88
 
 - После realtime patch выбранного контейнера обновлять текущий preview-iframe до сообщения об успехе и AI Vision, чтобы CSS native-свойств (включая `border_radius`) реально применялся в canvas без перезагрузки редактора.

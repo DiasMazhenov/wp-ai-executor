@@ -493,6 +493,23 @@ both the extracted `elementor_data` used for insertion and the exact
 `native_payload`, so foreign template-level fields such as `page_settings` are
 not discarded.
 
+### Native Elementor Templates
+
+Native saved templates from Elementor's `elementor_library` post type are
+available to an agent through the canonical `X-AI-Key` header:
+
+```text
+GET    /wp-json/ai-executor/v1/elementor/templates?q=hero&type=section&limit=20
+GET    /wp-json/ai-executor/v1/elementor/templates/{id}
+```
+
+The list is a lightweight summary. The detail response is read-only and
+contains the original `elementor_data`, `normalized_elementor_data`,
+`page_settings`, and a compatibility report. Validate the normalized data
+before using the existing structured Elementor write endpoints. The key is
+never sent to browser JavaScript; the Elementor editor continues to use its
+logged-in WordPress REST nonce for its own UI requests.
+
 ### `GET|POST /wp-json/ai-executor/v1/skills`
 
 Stores custom agent skills in the WordPress database. Skills are returned inside

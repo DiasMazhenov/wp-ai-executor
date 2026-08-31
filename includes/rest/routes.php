@@ -215,6 +215,18 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_block_library_read_permission',
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/templates', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_elementor_template_list',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
+    register_rest_route( 'ai-executor/v1', '/elementor/templates/(?P<id>\d+)', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_elementor_template_get',
+        'permission_callback' => 'wpae_auth',
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/visual-audit', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_visual_audit',

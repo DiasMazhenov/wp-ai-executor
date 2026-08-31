@@ -22,6 +22,8 @@ function wpae_skill_manifest_pipeline_endpoints(): array {
         '/elementor/blocks' => [ 'GET', 'POST' ],
         '/elementor/blocks/{id}' => [ 'GET', 'DELETE' ],
         '/elementor/blocks/{id}/instantiate' => [ 'GET' ],
+        '/elementor/templates' => [ 'GET' ],
+        '/elementor/templates/{id}' => [ 'GET' ],
         '/elementor/normalize' => [ 'POST' ],
         '/elementor/validate' => [ 'POST' ],
         '/elementor/visual-audit' => [ 'POST' ],

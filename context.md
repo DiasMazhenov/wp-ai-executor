@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.88`
-- Guide: `v02.05.88`
+- Plugin: `v02.09.89`
+- Guide: `v02.05.89`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -16,7 +16,8 @@
 - `security/` - API key and capability profiles;
 - `guide/` - mandatory agent contract and guide-token flow;
 - `elementor/` - validation, normalization, recipes, compose, transactions,
-  editability, CSS-to-native migration, page writes, and block library;
+  editability, CSS-to-native migration, page writes, native template access,
+  and block library;
 - `vision/` - optional provider-backed screenshot review, normalized reports,
   and transaction Vision gate;
 - `llm/` - encrypted OpenAI-compatible provider settings, rate-limited chat
@@ -36,6 +37,13 @@ after native Backbone settings are applied, the current preview iframe is
 refreshed before the chat reports success or sends the screenshot to Vision.
 This rehydrates Elementor CSS such as `border_radius` without reloading the
 editor page or closing the active browser tab.
+
+Release v02.09.89 adds read-only native Elementor Template access through
+`GET /elementor/templates` and `GET /elementor/templates/{id}`. Both routes
+require the canonical `X-AI-Key`, expose `elementor_library` summaries or
+decoded template data with normalization/compatibility reports, and never
+send the key to browser JavaScript. The existing WPAE block library remains a
+separate storage and import path.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
