@@ -827,7 +827,7 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
             if ( count( $cards ) < 2 ) {
                 continue;
             }
-            $target_card_count = min( 4, max( 2, count( $pairs ) ) );
+            $target_card_count = min( 12, max( 2, count( $pairs ) ) );
             while ( count( $cards ) < $target_card_count ) {
                 $template = $cards[ count( $cards ) - 1 ];
                 $new_card_index = count( $cards ) + 1;
@@ -995,7 +995,19 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         }
         return false;
     };
-    $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget, $archetype ): void {
+    $clone_with_ids = static function ( array $element, string $seed ) use ( &$clone_with_ids ): array {
+        $old_id = (string) ( $element['id'] ?? 'element' );
+        $element['id'] = substr( md5( $seed . '|' . $old_id ), 0, 7 );
+        if ( is_array( $element['elements'] ?? null ) ) {
+            $children = [];
+            foreach ( $element['elements'] as $index => $child ) {
+                $children[] = is_array( $child ) ? $clone_with_ids( $child, $seed . '|' . (string) $index ) : $child;
+            }
+            $element['elements'] = $children;
+        }
+        return $element;
+    };
+    $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget, $archetype, $clone_with_ids ): void {
         if ( $applied ) {
             return;
         }
@@ -1011,8 +1023,19 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                 }
             }
             if ( count( $card_indexes ) >= 2 ) {
-                $target_count = min( 4, max( 2, count( $pairs ) ) );
-                $target_count = min( $target_count, count( $card_indexes ) );
+                $target_count = max( 2, count( $pairs ) );
+                if ( count( $card_indexes ) < $target_count ) {
+                    $source_index = (int) $card_indexes[ count( $card_indexes ) - 1 ];
+                    $insert_at = $source_index + 1;
+                    $source_card = $children[ $source_index ];
+                    while ( count( $card_indexes ) < $target_count ) {
+                        $clone_position = count( $card_indexes ) + 1;
+                        array_splice( $children, $insert_at, 0, [ $clone_with_ids( $source_card, 'library-' . $archetype . '-' . (string) $clone_position ) ] );
+                        $card_indexes[] = $insert_at;
+                        $insert_at++;
+                        $changed++;
+                    }
+                }
                 $next_children = [];
                 $card_position = 0;
                 $group_applied = 0;
@@ -1065,7 +1088,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
             }
             return false;
         };
-        $layout_walk = static function ( array &$elements ) use ( &$layout_walk, &$pairs, &$applied, &$changed, &$has_layout_content_widget, $archetype ): void {
+        $layout_walk = static function ( array &$elements ) use ( &$layout_walk, &$pairs, &$applied, &$changed, &$has_layout_content_widget, $archetype, $clone_with_ids ): void {
             if ( $applied ) {
                 return;
             }
@@ -1081,7 +1104,19 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                     }
                 }
                 if ( count( $zone_indexes ) >= 2 ) {
-                    $target_count = min( 4, max( 2, count( $pairs ) ), count( $zone_indexes ) );
+                    $target_count = max( 2, count( $pairs ) );
+                    if ( count( $zone_indexes ) < $target_count ) {
+                        $source_index = (int) $zone_indexes[ count( $zone_indexes ) - 1 ];
+                        $insert_at = $source_index + 1;
+                        $source_zone = $children[ $source_index ];
+                        while ( count( $zone_indexes ) < $target_count ) {
+                            $clone_position = count( $zone_indexes ) + 1;
+                            array_splice( $children, $insert_at, 0, [ $clone_with_ids( $source_zone, 'library-' . $archetype . '-zone-' . (string) $clone_position ) ] );
+                            $zone_indexes[] = $insert_at;
+                            $insert_at++;
+                            $changed++;
+                        }
+                    }
                     $zone_position = 0;
                     $group_applied = 0;
                     foreach ( $zone_indexes as $index ) {
@@ -1389,13 +1424,15 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
         return array_fill( 0, $count, 31 );
     }
 
-    // Keep every row balanced. The two-column mode gives a different bento
-    // rhythm without creating oversized lead cards or orphaned narrow cards.
-    if ( in_array( $layout, [ 1, 3, 5 ], true ) ) {
-        return array_fill( 0, $count, 48 );
+    // Keep rows balanced: five or six cards use three columns, while seven
+    // or more use no more than four columns without leaving a narrow orphan.
+    if ( in_array( $layout, [ 1, 3, 5 ], true ) && $count <= 4 ) {
+        return array_fill( 0, $count, $count === 4 ? 48 : 31 );
     }
 
-    $width = $count >= 4 ? 23 : ( $count === 3 ? 31 : 48 );
+    $rows = (int) ceil( $count / 4 );
+    $columns = (int) ceil( $count / max( 1, $rows ) );
+    $width = $columns >= 4 ? 23 : ( $columns === 3 ? 31 : 48 );
     return array_fill( 0, $count, $width );
 }
 
@@ -2240,9 +2277,17 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
     $is_placeholder = static function ( $value ): bool {
         $normalized = wpae_llm_normalize_content_text( $value );
         return $normalized === 'sample subtitle'
+            || $normalized === 'sample title'
+            || $normalized === 'new block title'
+            || $normalized === 'block title'
+            || $normalized === 'section title'
+            || $normalized === 'заголовок блока'
+            || $normalized === 'текст заголовка'
+            || $normalized === 'новый блок'
             || strpos( $normalized, 'quis autem' ) === 0
             || strpos( $normalized, 'amnis natus' ) === 0
             || strpos( $normalized, 'lorem ipsum' ) === 0
+            || strpos( $normalized, 'lorem dolor' ) === 0
             || strpos( $normalized, 'sed ut unde omnis' ) === 0
             || strpos( $normalized, 'volur tatem accus' ) !== false;
     };
@@ -2321,12 +2366,13 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $changed++;
                 }
                 if ( $widget_type === 'heading' && $is_placeholder( $settings['title'] ?? '' ) ) {
-                    if ( $placeholder_heading_index === 0 ) {
+                    $placeholder_text = wpae_llm_normalize_content_text( $settings['title'] ?? '' );
+                    if ( $placeholder_heading_index === 0 && $placeholder_text === 'sample subtitle' ) {
                         $placeholder_heading_index++;
                         $changed++;
                         continue;
                     }
-                    $replacement = $placeholder_heading_index === 1 ? $copyelement_defaults['title'] : $copyelement_defaults['card'];
+                    $replacement = $placeholder_heading_index <= 1 ? $copyelement_defaults['title'] : $copyelement_defaults['card'];
                     $settings['title'] = $replacement;
                     $placeholder_heading_index++;
                     $changed++;

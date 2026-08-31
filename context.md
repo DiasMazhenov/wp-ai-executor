@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.99`
+- Plugin: `v02.10.00`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -149,6 +149,16 @@ second copy of the quote from appearing in the author block. The recursive
 library adapter now passes the archetype through both traversal closures and the
 four bundled fixtures pass the local adaptation/fidelity matrix.
 
+Release v02.10.00 expands trusted library card groups to the number of supplied
+content pairs, cloning complete native card subtrees with unique Elementor IDs
+when the source has fewer cards. It replaces generic CopyElement headings such
+as `New Block Title` with the archetype heading, keeps only `Sample Subtitle` as
+an optional removable label, and keeps repeatable fallback blocks bounded while
+allowing more than four cards to wrap into later rows. Card widths now choose
+balanced two-, three-, or four-column rows for up to twelve cards, preventing a
+single narrow orphan in a second row. The local fixture matrix covers these
+rules for Team, Testimonials, About, and Image Box.
+
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
@@ -184,8 +194,9 @@ content semantics: question pairs become FAQ, price pairs pricing, testimonial
 language becomes testimonials, step language becomes process, case/result
 language becomes portfolio, and neutral pairs become benefits cards.
 Benefits language is checked before process language, and fallback repeatable
-grids are resized to the number of supplied pairs (minimum two, maximum four)
-so template cards cannot remain as orphaned content.
+grids are resized to the number of supplied pairs (minimum two, bounded at
+twelve) and native Flexbox widths keep no more than four cards per row without
+leaving a narrow orphan where a balanced row is possible.
 The LLM prompt and bounded repair pass choose matching native Elementor widgets
 when available, while retaining the one-root-Flexbox, populated-content,
 design-system, and editability gates.
