@@ -108,6 +108,9 @@ assert.match(llm, /\$card_elements = is_array\( \$card\['elements'\] \?\? null \
 assert.match(llm, /foreach \( \$card_elements as &\$widget \)/);
 assert.match(llm, /function wpae_llm_apply_fallback_faq_content/);
 assert.match(llm, /\$pairs = wpae_llm_extract_faq_content\( \$message \)/);
+assert.match(llm, /\$faq_pairs = array_slice\( wpae_llm_extract_faq_content\( \$message \), 0, 12 \)/);
+assert.match(llm, /\$grid\( 'llm-faq-grid', \$faq_cards \)/);
+assert.match(llm, /wpae_llm_card_heading_widget\(/);
 assert.match(llm, /\$settings\['tabs'\] = \[\];/);
 assert.match(llm, /\$archetype === 'faq'/);
 assert.match(llm, /wpae_llm_apply_fallback_faq_content\( \$action\['elements'\]/);

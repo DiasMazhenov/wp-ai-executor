@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.04
+
+- Заменить deterministic FAQ fallback с accordion на видимую bento-сетку
+  native-карточек: вопрос с иконкой и ответ должны быть в одной карточке.
+- Обновить плагин через WP Pusher и повторить FAQ-промт в открытом Elementor
+  через Browser Use, screenshot и AI Vision после неудачного repair-прохода.
+
 ## v02.10.03
 
 - Исправить разбор естественных FAQ-промтов: сохранять каждый вопрос и его

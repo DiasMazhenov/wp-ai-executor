@@ -2190,9 +2190,32 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'faq' ) {
+        $faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 12 );
+        if ( empty( $faq_pairs ) ) {
+            $faq_pairs = [
+                [ 'label' => 'Можно ли изменить блок позже?', 'content' => 'Да, все основные настройки остаются доступными в Elementor.' ],
+                [ 'label' => 'Будет ли версия для мобильных?', 'content' => 'Да, композиция и spacing задаются с учетом mobile-first.' ],
+            ];
+        }
+        $faq_cards = [];
+        foreach ( $faq_pairs as $index => $pair ) {
+            $question = trim( (string) ( $pair['label'] ?? '' ) );
+            if ( $question !== '' && ! preg_match( '/[?؟]$/u', $question ) ) {
+                $question .= '?';
+            }
+            $faq_card_id = 'llm-faq-' . (string) ( $index + 1 );
+            $faq_heading = wpae_llm_card_heading_widget(
+                $faq_card_id . '-title',
+                $widget( $faq_card_id . '-source', 'heading', [ 'title' => $question, 'header_size' => 'h4' ] )
+            );
+            $faq_cards[] = $card( $faq_card_id, [
+                $faq_heading,
+                $widget( $faq_card_id . '-answer', 'text-editor', [ 'editor' => trim( (string) ( $pair['content'] ?? '' ) ) ] ),
+            ] );
+        }
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Частые вопросы', 'header_size' => 'h2' ] ),
-            $widget( 'llm-accordion', 'accordion', [ 'tabs' => [ [ 'tab_title' => 'Можно ли изменить блок позже?', 'tab_content' => 'Да, все основные настройки остаются доступными в Elementor.' ], [ 'tab_title' => 'Будет ли версия для мобильных?', 'tab_content' => 'Да, композиция и spacing задаются с учетом mobile-first.' ] ] ] ),
+            $grid( 'llm-faq-grid', $faq_cards ),
             $widget( 'llm-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'process' ) {

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.03`
+- Plugin: `v02.10.04`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -174,6 +174,12 @@ question/answer pairs stay together in the native accordion, and an unmatched
 FAQ remainder is rejected by content fidelity instead of becoming an orphan
 text widget. Provider retries also preserve bounded Vision repair options and
 findings across the forced reload.
+
+Release v02.10.04 changes the deterministic FAQ fallback to a visible native
+bento card grid. Each requested question gets an icon heading and its answer
+in the same card, so Vision and users can inspect the complete content without
+opening an accordion item; the old accordion remains supported for imported
+templates.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
