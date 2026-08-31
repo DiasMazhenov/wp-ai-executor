@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.09.92`
-- Guide: `v02.05.91`
+- Plugin: `v02.09.93`
+- Guide: `v02.05.92`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -82,6 +82,14 @@ before insertion. Targeted edits and Vision repair remain isolated from
 retrieval. The chat exposes safe `library_retrieval` metadata without raw
 stored JSON; if no approved match exists, normal generation remains the
 fallback.
+
+Release v02.09.93 adds the next two user-supplied CopyElement fixtures to the
+same private library package: `Testimonials c1198` and `About c70`. The supplied
+`Image Box c2644` was matched to the existing canonical fixture and was not
+duplicated. All three bundled fixtures are declared with SHA-256 entries and
+are seeded idempotently as draft `wpae_block` records until the Design Review
+Gate approves them. The two new exports contain no preview image URL, so no
+preview asset was invented or bundled.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

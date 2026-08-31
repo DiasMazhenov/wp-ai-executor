@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.09.93
+
+- Добавить в bundled private library два переданных пользователем JSON:
+  `Testimonials c1198` и `About c70`.
+- Распознать уже существующий `Image Box c2644` и не создавать дубликат.
+- Зафиксировать SHA-256, manifest и idempotent seeding для всех трёх
+  CopyElement-дизайнов; новые записи оставить draft до Design Review Gate.
+- Не придумывать preview URL для двух экспортов без переданного preview asset.
+
 ## v02.09.92
 
 - Добавить retrieval-шаг в обычную генерацию Elementor-чата: искать только

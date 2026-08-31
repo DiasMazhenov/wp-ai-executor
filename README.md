@@ -503,6 +503,12 @@ CopyElement `Image Box c2644` JSON under
 idempotently as a private `wpae_block` record with its preview URL. This is the
 plugin's private library, not Elementor's `elementor_library`.
 
+The bundled set also includes the user-supplied CopyElement `Testimonials
+c1198` and `About c70` exports. They are imported into the same private
+`wpae_block` library as draft records and must pass the Design Review Gate
+before retrieval can use them. Their source exports did not include preview
+assets, so the package keeps their preview metadata empty.
+
 New action requests in the editor chat retrieve only `approved` or `published`
 private blocks, rank them by archetype, tags, title, description, and prompt
 terms, then adapt a compatible repeated-card composition to the user's content.
