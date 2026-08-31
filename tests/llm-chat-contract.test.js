@@ -242,6 +242,7 @@ assert.match(llm, /quis autem/);
 assert.match(llm, /'team' => \[ 'команда\/team'/);
 assert.match(llm, /'about' => \[ 'о компании\/about'/);
 assert.ok(llm.indexOf("'process'" ) < llm.indexOf("'team' => \[ 'команда"), 'process intent must take precedence over the word команда in a process brief');
+assert.ok(llm.indexOf("'/\\b(о\\s+компани") < llm.indexOf("'/\\b(команд"), 'about intent must take precedence over team words in an about brief');
 assert.match(llm, /PREG_SET_ORDER/);
 assert.match(llm, /wpae_block_library_retrieve_for_prompt\( \$message, \$action_archetype \)/);
 assert.match(llm, /id' => 'library_retrieval'/);

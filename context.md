@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.13`
+- Plugin: `v02.10.14`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -31,6 +31,10 @@ The floating Elementor chat can explicitly export selected native Elementor
 models as `wpae-elementor-selection-v1` JSON with recursive child elements;
 the copy-only export stays local to the browser, while a bounded sanitized copy
 of the selected subtree is sent with a selected-edit chat request.
+
+Release v02.10.14 gives explicit About intent priority over incidental Team words
+inside content-only briefs, so phrases such as "о компании ... рядом с командой"
+retrieve the About template instead of the Team template.
 
 Release v02.10.13 makes the required post-generation JSON diagnostic reliable
 in embedded editors: the chat retries clipboard writes through the native

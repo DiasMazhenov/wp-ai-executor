@@ -50,6 +50,6 @@
     "includes/updates/package-updater.php": "6318e132636f838ee2e9dfece3cdc3c414b6e81fb437cc1c8d075ed51b6f1304",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "545d85fa455b1f967f3a5a56252d11318a56448e2778db8b59e9a8408cddbac5",
-    "wp-ai-executor.php": "4fc23de03b19234806def497537e0245ff7af3098cd2715ea21abfdb542042a1"
+    "wp-ai-executor.php": "254c8182f56423639a5a811e8b8cfc60b9e745a080d3ed231e061a311c378454"
   }
 }

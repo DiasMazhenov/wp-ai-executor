@@ -560,11 +560,11 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }
-        if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
-            return 'team';
-        }
         if ( preg_match( '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu', $normalized ) ) {
             return 'about';
+        }
+        if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
+            return 'team';
         }
         if ( preg_match( '/\b(анна|мария|дмитрий|руслан|марат|отзыв|рекомендац|понравилось|получили)\b/iu', $normalized ) ) {
             return 'testimonials';
@@ -591,8 +591,8 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
         'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
-        'team' => '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)/iu',
         'about' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)/iu',
+        'team' => '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)/iu',
         'testimonials' => '/\b(отзыв|testimonial|клиентск|рекомендац)/iu',
         'faq' => '/\b(faq|вопрос|ответ|аккордеон)/iu',
         'process' => '/\b(процесс|этап|шаг|process|steps?)/iu',
