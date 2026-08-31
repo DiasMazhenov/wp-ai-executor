@@ -258,21 +258,89 @@ function wpae_llm_is_action_request( string $message ): bool {
     if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
         return false;
     }
-    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
+    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|скругл\w*|закругл\w*|округл\w*|радиус\w*|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
 }
 
 function wpae_llm_is_targeted_edit_request( string $message ): bool {
-    if ( ! preg_match( '/\b(измени|поменяй|поставь|сделай|увеличь|уменьши|замени|настрой|улучши|обнови|оформи|перестрой)\b/iu', $message ) ) {
+    if ( ! preg_match( '/\b(измени|поменяй|поставь|сделай|увеличь|уменьши|замени|настрой|улучши|обнови|оформи|перестрой|скругл\w*|закругл\w*|округл\w*)\b/iu', $message ) ) {
         return false;
     }
 
-    $property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
-    $selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран|выделен|текущ|внутри|содержим|дочерн)/iu', $message );
+    $property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус\w*|скругл\w*|угл\w*|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
+    $selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран\w*|выделен\w*|текущ\w*|внутри|содержим|дочерн\w*)/iu', $message );
     $insert_signal = (bool) preg_match( '/\b(добавь|создай|собери|вставь|новый|новую|новое)\b/iu', $message );
     if ( $insert_signal ) {
         return false;
     }
     return $selection_signal || $property_signal;
+}
+
+function wpae_llm_is_border_radius_request( string $message ): bool {
+    return (bool) preg_match( '/\b(скругл\w*|закругл\w*|округл\w*|радиус\w*|угл\w*)\b/iu', $message );
+}
+
+function wpae_llm_border_radius_patch_value( string $message ): array {
+    $remove_radius = (bool) preg_match( '/\b(убери|сними|убрать|снять|прям\w*|без)\b.*\b(скругл\w*|радиус\w*|угл\w*)\b/iu', $message );
+    $size = $remove_radius ? 0 : 1;
+
+    return [
+        'unit' => 'rem',
+        'top' => (string) $size,
+        'right' => (string) $size,
+        'bottom' => (string) $size,
+        'left' => (string) $size,
+        'size' => $size,
+        'isLinked' => true,
+    ];
+}
+
+function wpae_llm_ensure_targeted_border_radius_patch( array $action, string $message, int $post_id, array $selected_elements ): array {
+    if ( ! wpae_llm_is_border_radius_request( $message ) ) {
+        return $action;
+    }
+
+    $selected_ids = [];
+    foreach ( array_slice( $selected_elements, 0, 8 ) as $element ) {
+        $id = is_array( $element ) ? sanitize_key( (string) ( $element['id'] ?? $element['element_id'] ?? '' ) ) : sanitize_key( (string) $element );
+        if ( $id !== '' ) {
+            $selected_ids[ $id ] = true;
+        }
+    }
+    $selected_ids = array_keys( $selected_ids );
+    if ( empty( $selected_ids ) ) {
+        return $action;
+    }
+
+    $selected_id_map = array_fill_keys( $selected_ids, true );
+    $radius_patches = [];
+    $other_patches = [];
+    foreach ( is_array( $action['patches'] ?? null ) ? $action['patches'] : [] as $patch ) {
+        if ( ! is_array( $patch ) ) {
+            continue;
+        }
+        $patch_id = sanitize_key( (string) ( $patch['element_id'] ?? $patch['id'] ?? '' ) );
+        $patch_path = (string) ( $patch['path'] ?? '' );
+        if ( isset( $selected_id_map[ $patch_id ] ) && ( $patch_path === 'settings.border_radius' || strpos( $patch_path, 'settings.border_radius.' ) === 0 ) ) {
+            continue;
+        }
+        $other_patches[] = $patch;
+    }
+    foreach ( $selected_ids as $selected_id ) {
+        $radius_patches[ $selected_id ] = [
+            'element_id' => $selected_id,
+            'path' => 'settings.border_radius',
+            'op' => 'set',
+            'value' => wpae_llm_border_radius_patch_value( $message ),
+        ];
+    }
+
+    $radius_patches = array_values( $radius_patches );
+    $action['action'] = 'patch_elements';
+    $action['post_id'] = $post_id;
+    $action['patches'] = array_merge( array_slice( $other_patches, 0, max( 0, 12 - count( $radius_patches ) ) ), $radius_patches );
+    $action['_wpae_diagnostics'] = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
+    $action['_wpae_diagnostics']['deterministic_border_radius_patch'] = true;
+    return $action;
 }
 
 function wpae_llm_sanitize_editor_context_value( $value, int $depth = 0 ) {
@@ -2495,10 +2563,15 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
         if ( $targeted_edit ) {
             $selected_element_ids = array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) );
+            $action = wpae_llm_ensure_targeted_border_radius_patch( $action, $message, $post_id, (array) ( $editor_context_input['selected_elements'] ?? [] ) );
+            $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : $action_diagnostics;
+            $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
+            $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
+            $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
             $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids );
             $patch_execution['steps'] = array_merge(
                 [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и полное дерево выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ] ],
-                [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],
+                [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) || ! empty( $action_diagnostics['deterministic_border_radius_patch'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) || ! empty( $action_diagnostics['deterministic_border_radius_patch'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],
                 (array) ( $patch_execution['steps'] ?? [] )
             );
             if ( empty( $patch_execution['ok'] ) ) {

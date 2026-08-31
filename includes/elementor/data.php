@@ -138,6 +138,55 @@ function wpae_is_allowed_elementor_patch_path( string $path ): bool {
     return (bool) preg_match( '/^(settings|elements\\.[0-9]+\\.settings)\\.[A-Za-z0-9_.-]+$/', $path );
 }
 
+function wpae_normalize_elementor_border_radius_value( $value, $current = null ): array {
+    $source = is_array( $value ) ? $value : [];
+    $current_source = is_array( $current ) ? $current : [];
+    $units = [ 'px', '%', 'em', 'rem', 'vh', 'vw' ];
+    $unit = strtolower( sanitize_text_field( (string) ( $source['unit'] ?? $current_source['unit'] ?? 'px' ) ) );
+    if ( ! in_array( $unit, $units, true ) ) {
+        $unit = 'px';
+    }
+
+    $size = $source['size'] ?? ( is_array( $value ) ? null : $value );
+    $raw_size = is_scalar( $size ) ? trim( str_replace( ',', '.', (string) $size ) ) : '';
+    if ( preg_match( '/^(-?\d+(?:\.\d+)?)\s*(px|%|em|rem|vh|vw)?$/i', $raw_size, $matches ) ) {
+        $size = (float) $matches[1];
+        if ( ! empty( $matches[2] ) && in_array( strtolower( $matches[2] ), $units, true ) ) {
+            $unit = strtolower( $matches[2] );
+        }
+    } elseif ( ! is_numeric( $size ) ) {
+        $size = null;
+        foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+            if ( isset( $source[ $side ] ) && is_scalar( $source[ $side ] ) && trim( (string) $source[ $side ] ) !== '' ) {
+                $size = $source[ $side ];
+                break;
+            }
+        }
+    }
+    $size = is_numeric( $size ) ? max( 0, min( 999, (float) $size ) ) : 0;
+    $sides = [];
+    foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+        $side_value = array_key_exists( $side, $source ) ? $source[ $side ] : $size;
+        $raw_side = is_scalar( $side_value ) ? trim( str_replace( ',', '.', (string) $side_value ) ) : '';
+        if ( preg_match( '/^(-?\d+(?:\.\d+)?)/', $raw_side, $side_matches ) ) {
+            $side_value = max( 0, min( 999, (float) $side_matches[1] ) );
+        } else {
+            $side_value = $size;
+        }
+        $sides[ $side ] = (string) $side_value;
+    }
+
+    return [
+        'unit' => $unit,
+        'top' => $sides['top'],
+        'right' => $sides['right'],
+        'bottom' => $sides['bottom'],
+        'left' => $sides['left'],
+        'size' => $size,
+        'isLinked' => array_key_exists( 'isLinked', $source ) ? (bool) $source['isLinked'] : true,
+    ];
+}
+
 function wpae_set_array_path_value( array &$target, array $segments, $value ): void {
     $cursor =& $target;
     $last_index = count( $segments ) - 1;
@@ -242,7 +291,13 @@ function wpae_apply_elementor_patch_to_element( array &$elements, string $elemen
             } elseif ( $op === 'delete' ) {
                 $changed = wpae_delete_array_path_value( $element, $segments );
             } else {
-                wpae_set_array_path_value( $element, $segments, $patch['value'] ?? null );
+                $patch_value = $patch['value'] ?? null;
+                if ( $property_path === 'settings.border_radius' ) {
+                    $patch_value = wpae_normalize_elementor_border_radius_value( $patch_value, $element['settings']['border_radius'] ?? null );
+                } elseif ( strpos( $property_path, 'settings.border_radius.' ) === 0 ) {
+                    $element['settings']['border_radius'] = wpae_normalize_elementor_border_radius_value( $element['settings']['border_radius'] ?? null, $element['settings']['border_radius'] ?? null );
+                }
+                wpae_set_array_path_value( $element, $segments, $patch_value );
                 $changed = true;
             }
 
