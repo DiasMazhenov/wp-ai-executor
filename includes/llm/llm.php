@@ -1409,6 +1409,7 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed ): void {
     }
 
     $before = wp_json_encode( [ $settings, $children ] );
+    $settings['container_type'] = 'flex';
     $settings['flex_direction'] = 'row';
     $settings['flex_wrap'] = 'wrap';
     $settings['flex_justify_content'] = 'space-between';
@@ -2190,6 +2191,132 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     ];
 }
 
+function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0 ): array {
+    $walk = static function ( array &$nodes, int $depth = 0 ) use ( &$walk, &$changed ): void {
+        foreach ( $nodes as $index => &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $element_type = (string) ( $element['elType'] ?? '' );
+            if ( $element_type === 'widget' ) {
+                foreach ( [ '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
+                    if ( array_key_exists( $key, $settings ) ) {
+                        unset( $settings[ $key ] );
+                        $changed++;
+                    }
+                }
+                foreach ( [ '_margin', '_margin_tablet', '_margin_mobile' ] as $key ) {
+                    if ( ! is_array( $settings[ $key ] ?? null ) ) {
+                        continue;
+                    }
+                    $negative_found = false;
+                    foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+                        if ( isset( $settings[ $key ][ $side ] ) && is_numeric( $settings[ $key ][ $side ] ) && (float) $settings[ $key ][ $side ] < 0 ) {
+                            $settings[ $key ][ $side ] = '0';
+                            $negative_found = true;
+                        }
+                    }
+                    if ( $negative_found ) {
+                        $changed++;
+                    }
+                }
+                foreach ( [ 'animation', 'animation_duration', 'animation_delay' ] as $key ) {
+                    if ( array_key_exists( $key, $settings ) ) {
+                        unset( $settings[ $key ] );
+                        $changed++;
+                    }
+                }
+
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                $title = trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) );
+                $title_length = function_exists( 'mb_strlen' ) ? mb_strlen( $title ) : strlen( $title );
+                if ( $widget_type === 'heading' && strtolower( (string) ( $settings['header_size'] ?? '' ) ) === 'p' && $title_length > 80 ) {
+                    $element['widgetType'] = 'text-editor';
+                    $settings['editor'] = $title;
+                    $settings['typography_typography'] = 'custom';
+                    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.125 ];
+                    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1.0625 ];
+                    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 1 ];
+                    $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.5 ];
+                    if ( ! empty( $settings['title_color'] ) ) {
+                        $settings['text_color'] = $settings['title_color'];
+                    }
+                    unset( $settings['title'], $settings['header_size'], $settings['title_color'] );
+                    $changed++;
+                }
+            } elseif ( $element_type === 'container' ) {
+                foreach ( [ 'height', 'height_tablet', 'height_mobile', 'min_height', 'min_height_tablet', 'min_height_mobile', 'max_height', 'max_height_tablet', 'max_height_mobile', 'flex_basis', 'flex_basis_tablet', 'flex_basis_mobile' ] as $key ) {
+                    if ( isset( $settings[ $key ] ) && is_array( $settings[ $key ] ) && (string) ( $settings[ $key ]['size'] ?? '' ) !== '' ) {
+                        unset( $settings[ $key ] );
+                        $changed++;
+                    }
+                }
+                foreach ( [ 'animation', 'animation_duration', 'animation_delay' ] as $key ) {
+                    if ( array_key_exists( $key, $settings ) ) {
+                        unset( $settings[ $key ] );
+                        $changed++;
+                    }
+                }
+
+                $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+                $child_containers = [];
+                foreach ( $children as $child_index => $child ) {
+                    if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+                        $child_containers[] = $child_index;
+                    }
+                }
+                if ( $depth > 0 && count( $child_containers ) >= 2 ) {
+                    $before_group = wp_json_encode( [ $settings, $children ] );
+                    $settings['container_type'] = 'flex';
+                    $settings['flex_direction'] = 'row';
+                    $settings['flex_wrap'] = 'wrap';
+                    $settings['flex_justify_content'] = 'space-between';
+                    $settings['flex_align_items'] = 'stretch';
+                    $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+                    $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = 'transparent';
+                    $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
+                    foreach ( wpae_llm_variant_card_widths( 0, count( $child_containers ) ) as $width_index => $width ) {
+                        $child_index = $child_containers[ $width_index ] ?? null;
+                        if ( $child_index === null ) {
+                            continue;
+                        }
+                        $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
+                        $child_settings['container_type'] = 'flex';
+                        $child_settings['background_background'] = 'classic';
+                        $child_settings['background_color'] = '#ffffff';
+                        $child_settings['border_border'] = 'solid';
+                        $child_settings['border_color'] = '#d1d5db';
+                        $child_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+                        $child_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                        $child_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
+                        $child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
+                        wpae_llm_set_variant_container_width( $child_settings, (float) $width );
+                        $children[ $child_index ]['settings'] = $child_settings;
+                    }
+                    if ( $before_group !== wp_json_encode( [ $settings, $children ] ) ) {
+                        $changed++;
+                    }
+                    $element['elements'] = $children;
+                }
+            }
+
+            $element['settings'] = $settings;
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'], $depth + 1 );
+            }
+            $nodes[ $index ] = $element;
+        }
+        unset( $element );
+    };
+
+    $walk( $elements );
+    return $elements;
+}
+
 function wpae_llm_normalize_generated_typography( array $elements, string $archetype, int $depth = 0, int &$changed = 0 ): array {
     foreach ( $elements as $index => $element ) {
         if ( ! is_array( $element ) ) {
@@ -2915,6 +3042,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         $library_applied = false;
         $library_changed = 0;
+        $library_layout_changed = 0;
         $library_skip_reason = '';
         $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
         if ( ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
@@ -2931,6 +3059,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
+                    $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed );
                 } else {
                     $library_skip_reason = 'Adapted library block failed the native shape or content-fidelity check.';
                 }
@@ -2970,6 +3099,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             'candidates' => (array) ( $library_retrieval['candidates'] ?? [] ),
             'selected' => ! empty( $selected_library ) ? array_intersect_key( $selected_library, array_flip( [ 'id', 'title', 'category', 'source', 'status', 'trusted_bundled', 'score', 'matched_terms' ] ) ) : null,
             'content_changes' => $library_changed,
+            'layout_changes' => $library_layout_changed,
         ];
         $action_steps[] = [
             'id' => 'library_retrieval',
@@ -2977,6 +3107,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             'message' => $library_applied ? 'Шаблон найден, адаптирован под контент и подготовлен к вставке.' : 'Подходящий шаблон не применен; использована обычная генерация.',
             'details' => $library_trace,
         ];
+        if ( $library_layout_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'library_layout', 'status' => 'ok', 'message' => 'Исходная геометрия библиотечного шаблона нормализована под native Flexbox и адаптивную bento-сетку.', 'details' => [ 'changes' => $library_layout_changed, 'container_type' => 'flex', 'max_items_per_row' => 4 ] ];
+        }
         $content_fidelity = wpae_llm_content_fidelity( $message, (array) ( $action['elements'] ?? [] ) );
         $action_steps[] = [
             'id' => 'content_fidelity',

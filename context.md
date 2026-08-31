@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.95`
+- Plugin: `v02.09.96`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -114,6 +114,16 @@ The v02.09.95 fixture self-check now passes all four bundled designs: Team,
 Testimonials, About, and Image Box retain every requested label and description
 after library adaptation. Heading descriptions are written to the next heading
 when a source layout has no dedicated body-text widget.
+
+Release v02.09.96 normalizes imported CopyElement geometry before the shared
+generation grammar: long source `heading` widgets used as paragraph text become
+native `text-editor` widgets with bounded responsive typography, source widget
+fixed widths and negative margins are removed, delayed animations are disabled
+for stable preview checks, and nested multi-container groups become transparent
+native Flexbox bento grids. Direct cards receive bounded responsive widths,
+outlined rounded surfaces, and the group remains capped at four items per row.
+The helper runs only after a trusted bundled template is selected, so ordinary
+LLM/fallback generation keeps its existing behavior.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
