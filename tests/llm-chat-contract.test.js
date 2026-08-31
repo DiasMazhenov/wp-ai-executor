@@ -220,6 +220,8 @@ assert.match(llm, /function wpae_llm_apply_fallback_cta/);
 assert.match(llm, /wpae_llm_apply_fallback_cta\( \$elements, \$cta, \$changed \)/);
 assert.match(llm, /function wpae_llm_apply_library_pair_to_widgets/);
 assert.match(llm, /function wpae_llm_apply_library_template/);
+assert.match(llm, /function wpae_llm_invalidate_render_cache/);
+assert.match(llm, /\[\s*'htmlCache',\s*'html_cache'\s*\]/);
 assert.match(llm, /function wpae_llm_normalize_library_layout/);
 assert.match(llm, /\$clone_with_ids = static function/);
 assert.match(llm, /library-' \. \$archetype \. '-' \. \(string\) \$clone_position/);

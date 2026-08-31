@@ -1219,6 +1219,24 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     return $template_elements;
 }
 
+function wpae_llm_invalidate_render_cache( array &$elements, int &$changed ): void {
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        foreach ( [ 'htmlCache', 'html_cache' ] as $cache_key ) {
+            if ( array_key_exists( $cache_key, $element ) && $element[ $cache_key ] !== null ) {
+                $element[ $cache_key ] = null;
+                $changed++;
+            }
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            wpae_llm_invalidate_render_cache( $element['elements'], $changed );
+        }
+    }
+    unset( $element );
+}
+
 function wpae_llm_apply_fallback_cta( array &$elements, string $cta, int &$changed ): void {
     if ( $cta === '' ) {
         return;
@@ -3380,6 +3398,10 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed, $action_archetype );
             $bento_changed += $final_bento_changed;
         }
+        $render_cache_changed = 0;
+        if ( is_array( $action['elements'] ?? null ) ) {
+            wpae_llm_invalidate_render_cache( $action['elements'], $render_cache_changed );
+        }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
@@ -3439,6 +3461,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         if ( $visual_grammar_changed > 0 ) {
             $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge и иконки у карточечных заголовков.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'icon-box', 'icon_position' => 'left' ] ];
+        }
+        if ( $render_cache_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'render_cache', 'status' => 'ok', 'message' => 'Устаревший Elementor render cache очищен перед записью обновленного контента.', 'details' => [ 'nodes_cleared' => $render_cache_changed ] ];
         }
         $execution_variation_seed = $library_applied ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
         $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed );
