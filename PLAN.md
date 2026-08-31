@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.09
+
+- Исправить классификацию проектных промтов с кавычками: три и более проектных
+  пары должны выбирать portfolio/Image Box до общего quote-признака отзывов.
+- Повторно проверить Image Box и затем остальные три bundled-шаблона через
+  Browser Use, screenshot, AI Vision и design-taste-frontend.
+
 ## v02.10.08
 
 - Исправить адаптацию CopyElement testimonials: сохранять естественные пары

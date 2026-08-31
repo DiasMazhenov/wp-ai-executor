@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.08`
+- Plugin: `v02.10.09`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -203,6 +203,13 @@ cleared, attribution typography is bounded, and testimonial bento cards keep the
 natural height without cross-row stretching. The four bundled templates remain the
 live Browser Use test set; each test requires screenshot, AI Vision, and the
 design-taste-frontend visual rubric before it is accepted.
+
+Release v02.10.09 fixes natural project briefs being classified as testimonials
+only because they contain quoted project names. Named testimonial signals and
+explicit review language still select testimonials, while three or more project
+label-description pairs select portfolio before the generic quote fallback. This
+keeps CopyElement retrieval aligned with the user's content and the matching
+Image Box/portfolio fixture.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
