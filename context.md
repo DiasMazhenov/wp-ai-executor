@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.14`
+- Plugin: `v02.10.15`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -31,6 +31,12 @@ The floating Elementor chat can explicitly export selected native Elementor
 models as `wpae-elementor-selection-v1` JSON with recursive child elements;
 the copy-only export stays local to the browser, while a bounded sanitized copy
 of the selected subtree is sent with a selected-edit chat request.
+
+Release v02.10.15 keeps testimonial cards semantic: their author is rendered
+with a native heading and their quote with a native text editor, so the shared
+card-icon normalizer no longer turns testimonial authors into `icon-box`
+widgets. Generic card heading icons use a white icon on a contrasting stacked
+background.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"

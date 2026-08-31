@@ -275,6 +275,10 @@ assert.match(llm, /В testimonial-карточке цитата является
 assert.match(llm, /wpae_llm_is_probable_card_heading\( \$text \)/);
 assert.match(llm, /selected_icon/);
 assert.match(llm, /widgetType.*icon-box/);
+assert.match(llm, /icon_color' => '#ffffff'/);
+assert.match(llm, /icon_background_color' => '#1f2937'/);
+assert.match(llm, /wpae-testimonial-author/);
+assert.match(llm, /\$archetype !== 'testimonials'/);
 assert.match(llm, /wpae-card-heading/);
 assert.match(llm, /title_typography_font_size.*size.*1/);
 assert.match(llm, /title_typography_line_height.*size.*1\.2/);

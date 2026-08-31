@@ -1402,7 +1402,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
 }
 
 function wpae_llm_generation_visual_grammar_hint(): string {
-    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с коротким заголовком обязана использовать native icon-box с иконкой слева от заголовка. В testimonial-карточке цитата является текстом, а иконка относится только к имени или короткому заголовку, не к цитате. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Каждая повторяющаяся карточка с коротким заголовком обязана использовать native icon-box с контрастной белой иконкой на совместимом фоне слева от заголовка. В testimonial-карточке цитата является текстом, а иконка относится только к имени или короткому заголовку, не к цитате. При этом testimonial-карточка не использует icon-box: имя/компания выводятся обычным native heading, цитата — native text-editor, а отдельная quote/icon-иконка допускается только как декоративный маркер. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
 function wpae_llm_fallback_variant( string $message ): int {
@@ -1927,7 +1927,10 @@ function wpae_llm_card_heading_widget( string $id, array $source ): array {
             'view' => 'default',
             'title_size' => $title_size,
             'title_color' => (string) ( $source_settings['title_color'] ?? '#111827' ),
-            'icon_color' => '#c75b3b',
+            'icon_color' => '#ffffff',
+            'icon_background_color' => '#1f2937',
+            'icon_view' => 'stacked',
+            'icon_shape' => 'circle',
             'icon_size' => [ 'unit' => 'rem', 'size' => 1.25 ],
             'icon_space' => [ 'unit' => 'rem', 'size' => 0.6 ],
             'content_vertical_alignment' => 'middle',
@@ -1970,6 +1973,33 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
                 continue;
             }
             $widget_type = (string) ( $element['widgetType'] ?? '' );
+            if ( $widget_type === 'icon-box' ) {
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $title = trim( wp_strip_all_tags( (string) ( $settings['title_text'] ?? '' ) ) );
+                $description = trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) );
+                if ( $title !== '' || $description !== '' ) {
+                    $author = $title;
+                    if ( $description !== '' && strpos( wpae_llm_normalize_content_text( $author ), wpae_llm_normalize_content_text( $description ) ) === false ) {
+                        $author .= ' · ' . $description;
+                    }
+                    $element['widgetType'] = 'heading';
+                    $element['settings'] = [
+                        'title' => $author,
+                        'header_size' => 'h6',
+                        'title_color' => (string) ( $settings['title_color'] ?? '#111827' ),
+                        'typography_typography' => 'custom',
+                        'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                        'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
+                        'typography_font_weight' => '600',
+                        'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+                        'align' => 'left',
+                        '_css_classes' => 'wpae-testimonial-author',
+                    ];
+                    $elements[ $index ] = $element;
+                    $changed++;
+                    continue;
+                }
+            }
             $text = wpae_llm_card_widget_text( $element );
             if ( in_array( $widget_type, [ 'heading', 'icon-box' ], true ) && ! wpae_llm_is_probable_card_heading( $text ) ) {
                 $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
@@ -2002,7 +2032,7 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
     }
 
     $candidate_index = null;
-    if ( $is_card_contents && ! $has_marked_card_heading ) {
+    if ( $is_card_contents && $archetype !== 'testimonials' && ! $has_marked_card_heading ) {
         foreach ( $elements as $index => $element ) {
             if ( is_array( $element ) && ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'heading' && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
                 $candidate_index = $index;
@@ -2048,7 +2078,7 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
             $changed++;
             continue;
         }
-        if ( $element_type === 'widget' && $is_card_contents && $widget_type === 'icon-box' ) {
+        if ( $element_type === 'widget' && $is_card_contents && $archetype !== 'testimonials' && $widget_type === 'icon-box' ) {
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             if ( wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
                 $before = wp_json_encode( $settings );
