@@ -908,7 +908,7 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
     wpae_llm_apply_fallback_cta( $elements, $cta, $changed );
 }
 
-function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, int &$changed ): bool {
+function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, int &$changed, string $archetype = '', bool $content_already_set = false ): bool {
     $title = trim( (string) ( $pair['label'] ?? '' ) );
     $content = trim( (string) ( $pair['content'] ?? '' ) );
     $title_set = false;
@@ -938,9 +938,17 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
                 $changed++;
             }
             if ( $content !== '' && ! $content_set && $widget_type === 'icon-box' ) {
-                $settings['description_text'] = $content;
-                $content_set = true;
-                $changed++;
+                if ( $archetype === 'testimonials' && $content_already_set ) {
+                    if ( trim( (string) ( $settings['description_text'] ?? '' ) ) !== '' ) {
+                        $settings['description_text'] = '';
+                        $changed++;
+                    }
+                    $content_set = true;
+                } else {
+                    $settings['description_text'] = $content;
+                    $content_set = true;
+                    $changed++;
+                }
             } elseif ( $content !== '' && ! $content_set && $widget_type === 'testimonial' ) {
                 $settings['testimonial_content'] = $content;
                 $content_set = true;
@@ -959,7 +967,7 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
         if ( ( $title_set && ( $content_set || $content === '' ) ) ) {
             return true;
         }
-        if ( is_array( $element['elements'] ?? null ) && wpae_llm_apply_library_pair_to_widgets( $element['elements'], $pair, $changed ) ) {
+        if ( is_array( $element['elements'] ?? null ) && wpae_llm_apply_library_pair_to_widgets( $element['elements'], $pair, $changed, $archetype, $content_set || $content_already_set ) ) {
             return true;
         }
     }
@@ -987,7 +995,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         }
         return false;
     };
-    $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget ): void {
+    $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget, $archetype ): void {
         if ( $applied ) {
             return;
         }
@@ -1019,7 +1027,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                     }
                     $pair = $pairs[ $card_position ] ?? null;
                     $child_elements = is_array( $child['elements'] ?? null ) ? $child['elements'] : [];
-                    if ( is_array( $pair ) && wpae_llm_apply_library_pair_to_widgets( $child_elements, $pair, $changed ) ) {
+                    if ( is_array( $pair ) && wpae_llm_apply_library_pair_to_widgets( $child_elements, $pair, $changed, $archetype ) ) {
                         $child['elements'] = $child_elements;
                         $group_applied++;
                     }
@@ -1057,7 +1065,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
             }
             return false;
         };
-        $layout_walk = static function ( array &$elements ) use ( &$layout_walk, &$pairs, &$applied, &$changed, &$has_layout_content_widget ): void {
+        $layout_walk = static function ( array &$elements ) use ( &$layout_walk, &$pairs, &$applied, &$changed, &$has_layout_content_widget, $archetype ): void {
             if ( $applied ) {
                 return;
             }
@@ -1082,7 +1090,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                         }
                         $pair = $pairs[ $zone_position ] ?? null;
                         $child_elements = is_array( $children[ $index ]['elements'] ?? null ) ? $children[ $index ]['elements'] : [];
-                        if ( is_array( $pair ) && wpae_llm_apply_library_pair_to_widgets( $child_elements, $pair, $changed ) ) {
+                        if ( is_array( $pair ) && wpae_llm_apply_library_pair_to_widgets( $child_elements, $pair, $changed, $archetype ) ) {
                             $children[ $index ]['elements'] = $child_elements;
                             $group_applied++;
                         }

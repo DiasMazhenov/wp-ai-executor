@@ -458,4 +458,5 @@ assert.match(blockLibraryUi, /wpae-library__preview/);
 assert.match(blockLibraryUi, /preview\.src = item\.preview_url/);
 assert.match(blockLibraryCss, /\.wpae-library__preview/);
 assert.match(guide, /type=elementor and an elements array/);
+assert.match(llm, /\$archetype === 'testimonials' && \$content_already_set[\s\S]*description_text.*= ''/);
 console.log('llm chat contract: OK');

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.98`
+- Plugin: `v02.09.99`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -141,6 +141,13 @@ this prevents duplicate badge/title hierarchies such as `КОМАНДА` plus `�
 команда`. A library-applied action is no longer reported as a deterministic
 fallback even when the provider response required the local fallback before the
 trusted template was selected.
+
+Release v02.09.99 keeps testimonial quote content in the library's direct quote
+widget and clears the template author's demo description when the same card has
+already received the quote. This prevents imported values such as `London` or a
+second copy of the quote from appearing in the author block. The recursive
+library adapter now passes the archetype through both traversal closures and the
+four bundled fixtures pass the local adaptation/fidelity matrix.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
