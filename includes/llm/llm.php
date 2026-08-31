@@ -1707,6 +1707,9 @@ function wpae_llm_badge_label( string $archetype ): string {
         'process' => 'ПРОЦЕСС',
         'cta' => 'СЛЕДУЮЩИЙ ШАГ',
         'portfolio' => 'КЕЙСЫ',
+        'team' => 'КОМАНДА',
+        'about' => 'О КОМПАНИИ',
+        'image-box' => 'ПРОЕКТЫ',
     ];
 
     return $labels[ $archetype ] ?? 'НОВЫЙ БЛОК';
@@ -1818,9 +1821,9 @@ function wpae_llm_is_probable_card_heading( string $text ): bool {
     return true;
 }
 
-function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_depth = -1, int &$changed = 0, string $archetype = '' ): array {
+function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_depth = -1, int &$changed = 0, string $archetype = '', bool $inside_bento_grid = false ): array {
     $nested_container_count = count( array_filter( $elements, static fn( $item ) => is_array( $item ) && ( $item['elType'] ?? '' ) === 'container' ) );
-    $is_card_contents = $parent_depth >= 1 && $nested_container_count === 0;
+    $is_card_contents = $inside_bento_grid && $parent_depth >= 1 && $nested_container_count === 0;
 
     if ( $is_card_contents && $archetype === 'testimonials' ) {
         foreach ( $elements as $index => $element ) {
@@ -1922,7 +1925,11 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
         if ( is_array( $element['elements'] ?? null ) ) {
             $element_depth = $element_type === 'container' ? $parent_depth + 1 : $parent_depth;
-            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed, $archetype );
+            $is_bento_container = false;
+            if ( $element_type === 'container' ) {
+                $is_bento_container = is_array( $element_classes ) && in_array( 'wpae-bento-grid', $element_classes, true );
+            }
+            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed, $archetype, $inside_bento_grid || $is_bento_container );
         }
         $elements[ $index ] = $element;
     }
@@ -2124,6 +2131,28 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                 $card( 'llm-pricing-3', [ $widget( 'llm-pricing-3-title', 'heading', [ 'title' => 'Поддержка', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-3-copy', 'text-editor', [ 'editor' => '<strong>Развитие проекта</strong><br>Точечные улучшения, новые блоки и контроль качества после запуска.' ] ), $widget( 'llm-pricing-3-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ) ] ),
             ] ),
         ];
+    } elseif ( $archetype === 'team' ) {
+        $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 4 );
+        if ( count( $pairs ) < 2 ) {
+            $pairs = [
+                [ 'label' => 'Стратегия', 'content' => 'Помогаем определить цель и собрать ясный план.' ],
+                [ 'label' => 'Дизайн', 'content' => 'Превращаем смысл проекта в понятную визуальную систему.' ],
+            ];
+        }
+        $cards = [];
+        foreach ( $pairs as $index => $pair ) {
+            $number = (string) ( $index + 1 );
+            $cards[] = $card( 'llm-team-' . $number, [
+                $widget( 'llm-team-' . $number . '-title', 'heading', [ 'title' => (string) $pair['label'], 'header_size' => 'h4' ] ),
+                $widget( 'llm-team-' . $number . '-copy', 'text-editor', [ 'editor' => (string) $pair['content'] ] ),
+            ] );
+        }
+        $elements = [
+            $widget( 'llm-heading', 'heading', [ 'title' => 'Наша команда', 'header_size' => 'h2' ] ),
+            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Специалисты, которые ведут проект от идеи до результата.' ] ),
+            $grid( 'llm-team-grid', $cards ),
+            $widget( 'llm-button', 'button', [ 'text' => 'Связаться', 'link' => [ 'url' => '#contact' ] ] ),
+        ];
     } elseif ( $archetype === 'testimonials' ) {
         $card = static function ( string $id, string $quote, string $author ) use ( $widget ): array {
             return [
@@ -2191,9 +2220,45 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     ];
 }
 
-function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0 ): array {
-    $walk = static function ( array &$nodes, int $depth = 0 ) use ( &$walk, &$changed ): void {
-        foreach ( $nodes as $index => &$element ) {
+function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, string $archetype = '' ): array {
+    $defaults = [
+        'team' => [ 'title' => 'Наша команда', 'description' => 'Специалисты, которые ведут проект от идеи до результата.', 'cta' => 'Связаться', 'card' => 'Специалист' ],
+        'testimonials' => [ 'title' => 'Что говорят клиенты', 'description' => 'Реальные результаты клиентов вместо общих обещаний.', 'cta' => 'Обсудить проект', 'card' => 'Отзыв' ],
+        'about' => [ 'title' => 'О компании', 'description' => 'Работаем прозрачно, объясняем сложное и доводим до результата.', 'cta' => 'Обсудить проект', 'card' => 'Принцип' ],
+        'portfolio' => [ 'title' => 'Избранные проекты', 'description' => 'Показываем задачу, решение и результат без лишнего шума.', 'cta' => 'Смотреть проекты', 'card' => 'Проект' ],
+        'image-box' => [ 'title' => 'Избранные проекты', 'description' => 'Показываем задачу, решение и результат без лишнего шума.', 'cta' => 'Смотреть проекты', 'card' => 'Проект' ],
+    ];
+    $copyelement_defaults = $defaults[ $archetype ] ?? $defaults['portfolio'];
+    $is_placeholder = static function ( $value ): bool {
+        $normalized = wpae_llm_normalize_content_text( $value );
+        return $normalized === 'sample subtitle'
+            || strpos( $normalized, 'quis autem' ) === 0
+            || strpos( $normalized, 'amnis natus' ) === 0
+            || strpos( $normalized, 'lorem ipsum' ) === 0
+            || strpos( $normalized, 'sed ut unde omnis' ) === 0
+            || strpos( $normalized, 'volur tatem accus' ) !== false;
+    };
+    $contains_card_signal = static function ( array $nodes ) use ( &$contains_card_signal, $archetype ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+                $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+                if ( in_array( $widget_type, [ 'icon-box', 'testimonial' ], true ) || ( $archetype === 'about' && $widget_type === 'counter' ) ) {
+                    return true;
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) && $contains_card_signal( $node['elements'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $placeholder_heading_index = 0;
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, &$placeholder_heading_index ): array {
+        $normalized_nodes = [];
+        foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
                 continue;
             }
@@ -2244,7 +2309,35 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0 )
                         $settings['text_color'] = $settings['title_color'];
                     }
                     unset( $settings['title'], $settings['header_size'], $settings['title_color'] );
+                    $widget_type = 'text-editor';
                     $changed++;
+                }
+                if ( $widget_type === 'heading' && $is_placeholder( $settings['title'] ?? '' ) ) {
+                    $replacement = $placeholder_heading_index === 0 ? wpae_llm_badge_label( $archetype ) : ( $placeholder_heading_index === 1 ? $copyelement_defaults['title'] : $copyelement_defaults['card'] );
+                    $settings['title'] = $replacement;
+                    $placeholder_heading_index++;
+                    $changed++;
+                } elseif ( $widget_type === 'text-editor' && $is_placeholder( $settings['editor'] ?? '' ) ) {
+                    $settings['editor'] = $copyelement_defaults['description'];
+                    $changed++;
+                } elseif ( $widget_type === 'icon-box' ) {
+                    if ( $is_placeholder( $settings['title_text'] ?? '' ) ) {
+                        $settings['title_text'] = $copyelement_defaults['card'];
+                        $changed++;
+                    }
+                    if ( $is_placeholder( $settings['description_text'] ?? '' ) ) {
+                        $settings['description_text'] = $copyelement_defaults['description'];
+                        $changed++;
+                    }
+                } elseif ( $widget_type === 'button' ) {
+                    $button_text = trim( wp_strip_all_tags( (string) ( $settings['text'] ?? '' ) ) );
+                    if ( $button_text === '' ) {
+                        continue;
+                    }
+                    if ( in_array( strtolower( $button_text ), [ 'learn more', 'read more' ], true ) ) {
+                        $settings['text'] = $copyelement_defaults['cta'];
+                        $changed++;
+                    }
                 }
             } elseif ( $element_type === 'container' ) {
                 foreach ( [ 'height', 'height_tablet', 'height_mobile', 'min_height', 'min_height_tablet', 'min_height_mobile', 'max_height', 'max_height_tablet', 'max_height_mobile', 'flex_basis', 'flex_basis_tablet', 'flex_basis_mobile' ] as $key ) {
@@ -2267,36 +2360,94 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0 )
                         $child_containers[] = $child_index;
                     }
                 }
-                if ( $depth > 0 && count( $child_containers ) >= 2 ) {
-                    $before_group = wp_json_encode( [ $settings, $children ] );
-                    $settings['container_type'] = 'flex';
-                    $settings['flex_direction'] = 'row';
-                    $settings['flex_wrap'] = 'wrap';
-                    $settings['flex_justify_content'] = 'space-between';
-                    $settings['flex_align_items'] = 'stretch';
-                    $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
-                    $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                $carousel_groups = [];
+                foreach ( $children as $child_index => $child ) {
+                    if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' || ( $child['widgetType'] ?? '' ) !== 'nested-carousel' || ! is_array( $child['elements'] ?? null ) ) {
+                        continue;
+                    }
+                    $slide_indexes = [];
+                    foreach ( $child['elements'] as $slide_index => $slide ) {
+                        if ( is_array( $slide ) && ( $slide['elType'] ?? '' ) === 'container' && $contains_card_signal( (array) ( $slide['elements'] ?? [] ) ) ) {
+                            $slide_indexes[] = $slide_index;
+                        }
+                    }
+                    if ( count( $slide_indexes ) >= 2 ) {
+                        $carousel_groups[ $child_index ] = $slide_indexes;
+                    }
+                }
+                foreach ( $carousel_groups as $carousel_index => $slide_indexes ) {
+                    $before_carousel = wp_json_encode( [ $settings, $children[ $carousel_index ] ] );
                     $settings['background_background'] = 'classic';
                     $settings['background_color'] = 'transparent';
-                    $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
-                    foreach ( wpae_llm_variant_card_widths( 0, count( $child_containers ) ) as $width_index => $width ) {
-                        $child_index = $child_containers[ $width_index ] ?? null;
-                        if ( $child_index === null ) {
+                    $carousel_classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                    $carousel_classes = is_array( $carousel_classes ) ? $carousel_classes : [];
+                    $carousel_classes[] = 'wpae-bento-grid';
+                    $settings['_css_classes'] = implode( ' ', array_values( array_unique( array_filter( $carousel_classes ) ) ) );
+                    foreach ( wpae_llm_variant_card_widths( 0, count( $slide_indexes ) ) as $width_index => $width ) {
+                        $slide_index = $slide_indexes[ $width_index ] ?? null;
+                        if ( $slide_index === null ) {
                             continue;
                         }
-                        $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
-                        $child_settings['container_type'] = 'flex';
-                        $child_settings['background_background'] = 'classic';
-                        $child_settings['background_color'] = '#ffffff';
-                        $child_settings['border_border'] = 'solid';
-                        $child_settings['border_color'] = '#d1d5db';
-                        $child_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-                        $child_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
-                        $child_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
-                        $child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
-                        wpae_llm_set_variant_container_width( $child_settings, (float) $width );
-                        $children[ $child_index ]['settings'] = $child_settings;
+                        $slide_settings = is_array( $children[ $carousel_index ]['elements'][ $slide_index ]['settings'] ?? null ) ? $children[ $carousel_index ]['elements'][ $slide_index ]['settings'] : [];
+                        $slide_settings['container_type'] = 'flex';
+                        $slide_settings['flex_direction'] = 'column';
+                        $slide_settings['background_background'] = 'classic';
+                        $slide_settings['background_color'] = '#ffffff';
+                        $slide_settings['border_border'] = 'solid';
+                        $slide_settings['border_color'] = '#d1d5db';
+                        $slide_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+                        $slide_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                        $slide_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
+                        $slide_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
+                        wpae_llm_set_variant_container_width( $slide_settings, (float) $width );
+                        $children[ $carousel_index ]['elements'][ $slide_index ]['settings'] = $slide_settings;
                     }
+                    if ( $before_carousel !== wp_json_encode( [ $settings, $children[ $carousel_index ] ] ) ) {
+                        $changed++;
+                    }
+                }
+                if ( $depth > 0 && count( $child_containers ) >= 2 ) {
+                    $is_card_group = true;
+                    foreach ( $child_containers as $child_index ) {
+                        if ( ! $contains_card_signal( (array) ( $children[ $child_index ]['elements'] ?? [] ) ) ) {
+                            $is_card_group = false;
+                            break;
+                        }
+                    }
+                    $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                    $classes = is_array( $classes ) ? array_values( array_filter( $classes, static fn( $class ) => $class !== '' && $class !== 'wpae-bento-grid' ) ) : [];
+                    $before_group = wp_json_encode( [ $settings, $children ] );
+                    $settings['container_type'] = 'flex';
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = 'transparent';
+                    if ( $is_card_group ) {
+                        $settings['flex_direction'] = 'row';
+                        $settings['flex_wrap'] = 'wrap';
+                        $settings['flex_justify_content'] = 'space-between';
+                        $settings['flex_align_items'] = 'stretch';
+                        $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+                        $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                        $classes[] = 'wpae-bento-grid';
+                        foreach ( wpae_llm_variant_card_widths( 0, count( $child_containers ) ) as $width_index => $width ) {
+                            $child_index = $child_containers[ $width_index ] ?? null;
+                            if ( $child_index === null ) {
+                                continue;
+                            }
+                            $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
+                            $child_settings['container_type'] = 'flex';
+                            $child_settings['background_background'] = 'classic';
+                            $child_settings['background_color'] = '#ffffff';
+                            $child_settings['border_border'] = 'solid';
+                            $child_settings['border_color'] = '#d1d5db';
+                            $child_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+                            $child_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                            $child_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
+                            $child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
+                            wpae_llm_set_variant_container_width( $child_settings, (float) $width );
+                            $children[ $child_index ]['settings'] = $child_settings;
+                        }
+                    }
+                    $settings['_css_classes'] = implode( ' ', array_values( array_unique( $classes ) ) );
                     if ( $before_group !== wp_json_encode( [ $settings, $children ] ) ) {
                         $changed++;
                     }
@@ -2306,15 +2457,14 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0 )
 
             $element['settings'] = $settings;
             if ( is_array( $element['elements'] ?? null ) ) {
-                $walk( $element['elements'], $depth + 1 );
+                $element['elements'] = $walk( $element['elements'], $depth + 1 );
             }
-            $nodes[ $index ] = $element;
+            $normalized_nodes[] = $element;
         }
-        unset( $element );
+        return $normalized_nodes;
     };
 
-    $walk( $elements );
-    return $elements;
+    return $walk( $elements );
 }
 
 function wpae_llm_normalize_generated_typography( array $elements, string $archetype, int $depth = 0, int &$changed = 0 ): array {
@@ -2798,15 +2948,18 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
     $library_retrieval = [
         'status' => 'skipped',
-        'reason' => $targeted_edit || $vision_repair || $vision_regenerate
-            ? 'Library retrieval is skipped for targeted edits and Vision repair passes.'
-            : 'Library retrieval is available for new block generation.',
+        'reason' => $targeted_edit
+            ? 'Library retrieval is skipped for targeted edits.'
+            : ( $vision_regenerate
+                ? 'Library retrieval is available for full Vision regeneration.'
+                : ( $vision_repair ? 'Library retrieval is skipped for selected-element Vision repair.' : 'Library retrieval is available for new block generation.' ) ),
         'available_count' => 0,
         'candidate_count' => 0,
         'candidates' => [],
         'selected' => null,
     ];
-    if ( $action_request && ! $targeted_edit && ! $vision_repair && ! $vision_regenerate && function_exists( 'wpae_block_library_retrieve_for_prompt' ) ) {
+    $library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
+    if ( $library_retrieval_enabled ) {
         $library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
     }
     $system_prompt = 'Ты помогаешь работать с WordPress и Elementor. Не заявляй, что изменения выполнены, если не получил подтверждение API. Соблюдай native Elementor settings, Flexbox Containers, mobile-first и сохраняй существующие WebGL/GSAP/Three.js enhancement-зоны.';
@@ -3059,7 +3212,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
-                    $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed );
+                    $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
                 } else {
                     $library_skip_reason = 'Adapted library block failed the native shape or content-fidelity check.';
                 }
@@ -3069,7 +3222,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
-            $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
+            if ( ! $library_applied ) {
+                $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
+            }
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;

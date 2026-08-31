@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.96`
+- Plugin: `v02.09.97`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -124,6 +124,16 @@ native Flexbox bento grids. Direct cards receive bounded responsive widths,
 outlined rounded surfaces, and the group remains capped at four items per row.
 The helper runs only after a trusted bundled template is selected, so ordinary
 LLM/fallback generation keeps its existing behavior.
+
+Release v02.09.97 fixes the remaining bundled-template visual regression: the
+library normalizer identifies card groups by semantic native widgets instead of
+boxing every multi-container composition, keeps composition shells transparent,
+removes empty buttons and CopyElement placeholder text, and localizes remaining
+demo CTAs. Card-heading icon conversion is now limited to descendants of a
+marked bento grid, so section titles and descriptions do not receive stray
+icons. Full Vision regeneration can retrieve the same trusted bundled template
+again, while a successfully adapted library block skips the broad generated
+bento pass that previously changed its composition.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
