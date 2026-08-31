@@ -1,5 +1,16 @@
 # План WP AI Executor
 
+## v02.09.91
+
+- Сохранить восстановленный CopyElement JSON как bundled-шаблон нашего
+  плагина: `Image Box c2644` хранится в `includes/elementor/copyelement/`.
+- При первом чтении private block library идемпотентно создать запись
+  `wpae_block` с JSON, URL превью, provenance и compatibility report; не
+  использовать `elementor_library`.
+- Показать сохраненное превью в деталях шаблона нашей библиотеки.
+- Не выдавать отсутствующие payload как сохраненные: из-за сброса Browser Use
+  полностью восстановлен только один JSON.
+
 ## v02.09.90
 
 - Принимать официальный Elementor export-envelope с верхнеуровневыми

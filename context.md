@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.09.90`
+- Plugin: `v02.09.91`
 - Guide: `v02.05.90`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -59,11 +59,19 @@ local Elementor import) before they can be committed as plugin fixtures.
 CopyElement Browser Use inspection on 2026-08-31 found 54 free component cards
 and 54 preview image URLs. Thirty unique Elementor JSON payloads were retained
 after freshness/deduplication checks; later copy attempts returned the previous
-clipboard value and CopyElement displayed an account usage-ban message. No
-third-party payloads or image bytes were added to the plugin package, and no
-remote library records were created without reading or exposing `X-AI-Key`.
-The private library now accepts the captured `preview_url` metadata and JSON up
-to 4 MB for a later authenticated import.
+clipboard value and CopyElement displayed an account usage-ban message. Only
+the complete `image-box-c2644` payload was recoverable after the Browser Use
+kernel reset. It is now bundled under `includes/elementor/copyelement/` with
+its preview URL and SHA-256 manifest. The first authenticated read of the
+private library imports that fixture as a private `wpae_block` record,
+idempotently; it never writes to Elementor's `elementor_library`. The
+remaining 29 payloads were not guessed or claimed as saved because their raw
+JSON was not recovered.
+
+Release v02.09.91 adds this bundled CopyElement fixture importer. The private
+library now accepts the captured `preview_url` metadata and JSON up to 4 MB;
+the list response reports bundled import results for diagnostics, and the
+editor library details panel renders the stored preview URL.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

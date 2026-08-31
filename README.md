@@ -497,7 +497,11 @@ not discarded.
 Imports may also include `source: "copyelement"`, `source_url` and a
 `preview_url`. The preview is stored as sanitized source metadata next to the
 JSON; the remote image is not bundled into the plugin. The accepted payload
-size for the private library is 4 MB.
+size for the private library is 4 MB. The package also contains the recovered
+CopyElement `Image Box c2644` JSON under
+`includes/elementor/copyelement/`; the first library read imports it
+idempotently as a private `wpae_block` record with its preview URL. This is the
+plugin's private library, not Elementor's `elementor_library`.
 
 ### Native Elementor Templates
 

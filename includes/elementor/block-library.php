@@ -9,6 +9,7 @@ const WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA = 'wpae-elementor-block-manifest-v1';
 const WPAE_BLOCK_LIBRARY_MAX_BYTES = 4194304;
 const WPAE_BLOCK_LIBRARY_MAX_METADATA_BYTES = 32768;
 const WPAE_BLOCK_LIBRARY_META_KEY = '_wpae_block_payload';
+const WPAE_BLOCK_LIBRARY_FIXTURE_OPTION = 'wpae_block_library_fixture_state';
 
 add_action( 'init', function (): void {
     register_post_type( WPAE_BLOCK_LIBRARY_POST_TYPE, [
@@ -389,6 +390,109 @@ function wpae_block_library_build_record( array $parsed, array $input, array $ex
     ];
 }
 
+function wpae_block_library_bundled_fixtures(): array {
+    static $fixtures;
+    if ( is_array( $fixtures ) ) {
+        return $fixtures;
+    }
+
+    $manifest_path = __DIR__ . '/copyelement/manifest.php';
+    if ( ! is_readable( $manifest_path ) ) {
+        return $fixtures = [];
+    }
+
+    $loaded = include $manifest_path;
+    return $fixtures = is_array( $loaded ) ? $loaded : [];
+}
+
+function wpae_block_library_seed_bundled_templates(): array {
+    static $result;
+    if ( is_array( $result ) ) {
+        return $result;
+    }
+
+    $result = [ 'imported' => [], 'skipped' => [] ];
+    $state = get_option( WPAE_BLOCK_LIBRARY_FIXTURE_OPTION, [] );
+    $state = is_array( $state ) ? $state : [];
+
+    foreach ( wpae_block_library_bundled_fixtures() as $fixture ) {
+        if ( ! is_array( $fixture ) ) {
+            continue;
+        }
+
+        $fixture_id = sanitize_key( (string) ( $fixture['id'] ?? '' ) );
+        $filename = basename( (string) ( $fixture['file'] ?? '' ) );
+        $expected_hash = strtolower( (string) ( $fixture['sha256'] ?? '' ) );
+        if ( $fixture_id === '' || $filename === '' || ! preg_match( '/^[a-f0-9]{64}$/', $expected_hash ) ) {
+            $result['skipped'][] = $fixture_id ?: 'invalid';
+            continue;
+        }
+
+        $known = is_array( $state[ $fixture_id ] ?? null ) ? $state[ $fixture_id ] : [];
+        if ( hash_equals( $expected_hash, strtolower( (string) ( $known['sha256'] ?? '' ) ) ) ) {
+            $known_post = wpae_block_library_get_post( absint( $known['post_id'] ?? 0 ) );
+            if ( ! is_wp_error( $known_post ) ) {
+                continue;
+            }
+        }
+
+        $path = __DIR__ . '/copyelement/' . $filename;
+        if ( ! is_readable( $path ) || ! hash_equals( $expected_hash, (string) hash_file( 'sha256', $path ) ) ) {
+            $result['skipped'][] = $fixture_id;
+            continue;
+        }
+
+        $raw = file_get_contents( $path );
+        $parsed = wpae_block_library_extract_elements( is_string( $raw ) ? $raw : '' );
+        if ( is_wp_error( $parsed ) ) {
+            $result['skipped'][] = $fixture_id;
+            continue;
+        }
+
+        $source_url = esc_url_raw( (string) ( $fixture['source_url'] ?? '' ) );
+        $input = [
+            'title' => (string) ( $fixture['title'] ?? $fixture_id ),
+            'description' => (string) ( $fixture['description'] ?? '' ),
+            'category' => (string) ( $fixture['category'] ?? 'custom' ),
+            'tags' => (array) ( $fixture['tags'] ?? [] ),
+            'source' => 'copyelement',
+            'preview_url' => (string) ( $fixture['preview_url'] ?? '' ),
+            'source_url' => $source_url,
+            'provenance' => [
+                'source' => 'copyelement',
+                'source_url' => $source_url,
+            ],
+        ];
+        $record = wpae_block_library_build_record( $parsed, $input );
+        $post_id = wp_insert_post( [
+            'post_type' => WPAE_BLOCK_LIBRARY_POST_TYPE,
+            'post_status' => 'private',
+            'post_title' => $record['title'],
+            'post_content' => '',
+            'post_author' => get_current_user_id(),
+        ], true );
+        if ( is_wp_error( $post_id ) || is_wp_error( wpae_block_library_store_record( (int) $post_id, $record ) ) ) {
+            if ( ! is_wp_error( $post_id ) ) {
+                wp_delete_post( $post_id, true );
+            }
+            $result['skipped'][] = $fixture_id;
+            continue;
+        }
+
+        $state[ $fixture_id ] = [
+            'sha256' => $expected_hash,
+            'post_id' => (int) $post_id,
+        ];
+        $result['imported'][] = [ 'id' => $fixture_id, 'post_id' => (int) $post_id, 'title' => $record['title'] ];
+    }
+
+    if ( ! empty( $result['imported'] ) ) {
+        update_option( WPAE_BLOCK_LIBRARY_FIXTURE_OPTION, $state, false );
+    }
+
+    return $result;
+}
+
 function wpae_block_library_decode_post( WP_Post $post ) {
     $stored_json = get_post_meta( $post->ID, WPAE_BLOCK_LIBRARY_META_KEY, true );
     $record = json_decode( (string) $stored_json, true );
@@ -495,6 +599,7 @@ function wpae_block_library_request_payload( WP_REST_Request $request ) {
 }
 
 function wpae_block_library_list( WP_REST_Request $request ): WP_REST_Response {
+    $bundled = wpae_block_library_seed_bundled_templates();
     $limit = max( 1, min( 100, absint( $request->get_param( 'limit' ) ?: 50 ) ) );
     $query = sanitize_text_field( (string) $request->get_param( 'q' ) );
     $category = sanitize_key( (string) $request->get_param( 'category' ) );
@@ -531,6 +636,7 @@ function wpae_block_library_list( WP_REST_Request $request ): WP_REST_Response {
         'schema' => WPAE_BLOCK_LIBRARY_SCHEMA,
         'count' => count( $items ),
         'items' => $items,
+        'bundled' => $bundled,
         'supported_input_formats' => [ 'native_elementor_json', 'elementor_export', WPAE_BLOCK_LIBRARY_SCHEMA ],
         'instantiate_modes' => [ 'preserve', 'compatibility', 'adapt' ],
     ], 200 );

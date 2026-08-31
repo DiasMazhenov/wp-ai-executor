@@ -132,6 +132,15 @@
         heading.appendChild( createElement( 'h3', '', item.title ) );
         panel.appendChild( heading );
 
+        if ( item.preview_url ) {
+            const preview = createElement( 'img', 'wpae-library__preview' );
+            preview.src = item.preview_url;
+            preview.alt = item.title;
+            preview.loading = 'lazy';
+            preview.decoding = 'async';
+            panel.appendChild( preview );
+        }
+
         if ( item.description ) {
             panel.appendChild( createElement( 'p', 'wpae-library__description', item.description ) );
         }

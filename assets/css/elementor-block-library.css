@@ -278,6 +278,17 @@ body.wpae-library-open {
     font-size: 1.6rem;
 }
 
+.wpae-library__preview {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    margin: 1rem 0;
+    object-fit: cover;
+    background: var(--wpae-paper);
+    border: 1px solid var(--wpae-line);
+    border-radius: 4px;
+}
+
 .wpae-library__description,
 .wpae-library__details-empty,
 .wpae-library__empty {
