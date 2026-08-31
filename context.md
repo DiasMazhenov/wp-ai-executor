@@ -193,6 +193,10 @@ the label and button remain responsive and editable native Elementor widgets.
 This removes the empty horizontal surface that Vision identified beneath
 generated bento compositions.
 
+Release v02.10.07 removes the extra generated CTA wrapper entirely. The native
+button remains directly in the content shell, so visual grammar cannot create
+an empty card-like surface around an otherwise valid CTA.
+
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.

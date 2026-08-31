@@ -1306,48 +1306,13 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
     if ( is_array( $last_classes ) && in_array( 'wpae-generated-cta', $last_classes, true ) ) {
         return $elements;
     }
-    $elements[ $last_index ] = [
-        'id' => (string) ( $last['id'] ?? 'wpae-generated-cta' ) . '-row',
-        'elType' => 'container',
-        'settings' => [
-            '_css_classes' => 'wpae-generated-cta-row',
-            'content_width' => 'full',
-            'flex_direction' => 'row',
-            'flex_direction_mobile' => 'column',
-            'flex_wrap' => 'nowrap',
-            'flex_wrap_mobile' => 'nowrap',
-            'flex_justify_content' => 'flex-start',
-            'flex_justify_content_mobile' => 'flex-start',
-            'flex_align_items' => 'center',
-            'flex_align_items_mobile' => 'stretch',
-            'align_self' => 'flex-start',
-            'align_self_mobile' => 'stretch',
-            'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
-            'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
-            'padding' => [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
-            'padding_mobile' => [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
-            'background_background' => 'classic',
-            'background_color' => 'transparent',
-            'border_border' => 'none',
-            'custom_css' => 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }',
-        ],
-        'elements' => [
-            [
-                'id' => (string) ( $last['id'] ?? 'wpae-generated-cta' ) . '-label',
-                'elType' => 'widget',
-                'widgetType' => 'text-editor',
-                'settings' => [
-                    'editor' => 'Готовы обсудить задачу?',
-                    '_css_classes' => 'wpae-generated-cta-label',
-                    'text_color' => '#6b7280',
-                    'align_self' => 'center',
-                    'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
-                ],
-                'elements' => [],
-            ],
-            $last,
-        ],
-    ];
+    $last_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+        ? wpae_append_css_classes( $last_settings['_css_classes'] ?? '', [ 'wpae-generated-cta' ] )
+        : trim( (string) ( $last_settings['_css_classes'] ?? '' ) . ' wpae-generated-cta' );
+    $last_settings['align_self'] = 'flex-start';
+    $last_settings['align_self_mobile'] = 'stretch';
+    $last['settings'] = $last_settings;
+    $elements[ $last_index ] = $last;
     $changed++;
     return $elements;
 }
