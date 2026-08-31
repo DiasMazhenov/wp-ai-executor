@@ -169,6 +169,7 @@ assert.match(js, /function focusEditorSync/);
 assert.match(js, /target_element_ids/);
 assert.match(js, /target_found/);
 assert.match(js, /captureTarget/);
+assert.match(js, /window\.setTimeout\(settle, 2500\)/);
 assert.match(js, /focusEditorSync\(editorSyncData\)/);
 assert.match(js, /runVisionReview\(body\.write\.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData\)/);
 assert.match(js, /Новый блок не найден в preview Elementor/);

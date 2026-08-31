@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.01
+
+- Устранить зависание editor-chat Vision на незавершившемся remote image во
+  время screenshot capture: завершать ожидание по `load`, `error` или bounded
+  timeout.
+- После публикации повторить естественный контентный промт в свежем Elementor
+  и проверить screenshot/Vision до отчета.
+
 ## v02.10.00
 
 - Исправить root cause несоответствия библиотечных шаблонов: клонировать

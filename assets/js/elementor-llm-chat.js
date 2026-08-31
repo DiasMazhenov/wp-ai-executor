@@ -596,7 +596,17 @@
         if (doc.fonts && doc.fonts.ready) stable = stable.then(function () { return doc.fonts.ready; });
         stable = stable.then(function () {
             var pending = Array.prototype.slice.call(doc.images || []).filter(function (image) { return !image.complete; }).map(function (image) {
-                return new Promise(function (resolve) { image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true }); });
+                return new Promise(function (resolve) {
+                    var settled = false;
+                    var settle = function () {
+                        if (settled) return;
+                        settled = true;
+                        resolve();
+                    };
+                    image.addEventListener('load', settle, { once: true });
+                    image.addEventListener('error', settle, { once: true });
+                    window.setTimeout(settle, 2500);
+                });
             });
             return Promise.all(pending);
         });

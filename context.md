@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.00`
+- Plugin: `v02.10.01`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -158,6 +158,11 @@ allowing more than four cards to wrap into later rows. Card widths now choose
 balanced two-, three-, or four-column rows for up to twelve cards, preventing a
 single narrow orphan in a second row. The local fixture matrix covers these
 rules for Team, Testimonials, About, and Image Box.
+
+Release v02.10.01 bounds the Elementor editor screenshot capture wait for remote
+images: each pending image now settles on load, error, or a 2.5-second timeout.
+This prevents one unavailable preview asset from leaving the chat permanently
+stuck at "Обновляю preview и проверяю результат через AI Vision".
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`
