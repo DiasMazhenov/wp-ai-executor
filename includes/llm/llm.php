@@ -569,7 +569,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(анна|мария|дмитрий|руслан|марат|отзыв|рекомендац|понравилось|получили)\b/iu', $normalized ) ) {
             return 'testimonials';
         }
-        if ( count( $labeled_pairs ) >= 3 && preg_match( '/(?:кейс\w*|портфолио|проект\w*|бренд\w*|сайт\w*|сервис\w*|редизайн\w*|продукт\w*|магазин\w*)/iu', $labeled_text ) ) {
+        if ( count( $labeled_pairs ) >= 3 && preg_match( '/(?:кейс\w*|портфолио|проект\w*|бренд\w*|сайт\w*|сервис\w*|редизайн\w*|продукт\w*|магазин\w*)/iu', $labeled_text . ' ' . $normalized ) ) {
             return 'portfolio';
         }
         if ( preg_match( '/[«"]/u', $message ) ) {

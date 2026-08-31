@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.09`
+- Plugin: `v02.10.10`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -210,6 +210,12 @@ explicit review language still select testimonials, while three or more project
 label-description pairs select portfolio before the generic quote fallback. This
 keeps CopyElement retrieval aligned with the user's content and the matching
 Image Box/portfolio fixture.
+
+Release v02.10.10 completes that classifier fix by checking project terms in the
+full normalized brief as well as pair labels. Quoted project names such as
+«Точка», «Маяк» and «Север» therefore select the portfolio/Image Box fixture,
+while named reviews remain testimonials. The live four-template test remains
+blocked on rechecking all four fixtures after delivery.
 
 Graphify navigation was refreshed on 2026-08-30 after this change: the local
 code graph contains 585 nodes and 1383 edges, with `graphify-out/GRAPH_TREE.html`

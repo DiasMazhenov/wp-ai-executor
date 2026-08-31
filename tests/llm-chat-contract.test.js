@@ -246,6 +246,7 @@ assert.match(llm, /\$execution_variation_seed = \$library_applied \? -1/);
 assert.match(llm, /count\( \$labeled_pairs \) >= 3/);
 assert.match(llm, /return 'portfolio';/);
 assert.ok(llm.indexOf('анна|мария') < llm.indexOf('count( $labeled_pairs ) >= 3'), 'named testimonial classification must precede portfolio label heuristics');
+assert.match(llm, /\$labeled_text \. ' ' \. \$normalized/);
 assert.ok(llm.indexOf('count( $labeled_pairs ) >= 3') < llm.indexOf("if ( preg_match( '/[«\"]"), 'project pairs must beat generic quote-based testimonial detection');
 assert.match(llm, /wpae_llm_content_mismatch/);
 assert.match(llm, /function wpae_llm_bento_card/);
