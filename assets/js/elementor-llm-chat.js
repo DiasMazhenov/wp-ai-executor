@@ -219,10 +219,19 @@
         if (providerStatus === 408 || providerStatus === 425 || providerStatus === 429 || providerStatus >= 500) return true;
         return error.wpaeCode === 'wpae_llm_provider_error' && String(error.message || '').indexOf('finish_reason: error') !== -1;
     }
-    function scheduleProviderRetry(message) {
+    function scheduleProviderRetry(message, options) {
         if (readProviderRetry()) return false;
         try {
-            window.sessionStorage.setItem(providerRetryKey, JSON.stringify({ message: String(message).slice(0, 4000), createdAt: Date.now() }));
+            var retryOptions = options && typeof options === 'object' ? {
+                repairDepth: Number(options.repairDepth) || 0,
+                originalBrief: String(options.originalBrief || '').slice(0, 4000),
+                visionRepair: Boolean(options.visionRepair),
+                visionRegenerate: Boolean(options.visionRegenerate),
+                visionFindings: String(options.visionFindings || '').slice(0, 3600),
+                skipVision: Boolean(options.skipVision),
+                selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined
+            } : {};
+            window.sessionStorage.setItem(providerRetryKey, JSON.stringify({ message: String(message).slice(0, 4000), options: retryOptions, createdAt: Date.now() }));
         } catch (error) {
             return false;
         }
@@ -246,7 +255,7 @@
         status.textContent = strings.sending;
         addMessage('user', pending.message);
         addMessage('assistant', 'Повторяю запрос после перезагрузки страницы.');
-        window.setTimeout(function () { request(pending.message, true); }, 0);
+        window.setTimeout(function () { request(pending.message, true, pending.options || {}); }, 0);
     }
     function copyText(text) {
         if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
@@ -992,7 +1001,7 @@
         }).catch(function (error) {
             window.clearInterval(progressTimer);
             if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
-            if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message)) return;
+            if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message, options)) return;
             clearProviderRetry();
             addMessage('assistant', strings.error + ': ' + error.message);
             status.textContent = strings.error;

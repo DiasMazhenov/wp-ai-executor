@@ -638,11 +638,15 @@ function wpae_llm_extract_requested_content( string $message ): array {
         }
     }
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
-    foreach ( $labeled_pairs as $pair ) {
+    $structured_pairs = $labeled_pairs;
+    if ( count( $structured_pairs ) < 2 && preg_match( '/\?|؟/u', $message ) ) {
+        $structured_pairs = wpae_llm_extract_faq_content( $message );
+    }
+    foreach ( $structured_pairs as $pair ) {
         $matches[] = $pair['label'];
         $matches[] = $pair['content'];
     }
-    if ( ! empty( $labeled_pairs ) ) {
+    if ( ! empty( $structured_pairs ) ) {
         foreach ( wpae_llm_content_units( $message ) as $unit ) {
             if ( preg_match( '/\\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\\s+заявк|смотреть)\\b/iu', $unit ) ) {
                 $matches[] = $unit;
@@ -696,6 +700,37 @@ function wpae_llm_extract_labeled_content( string $message ): array {
         }
     }
     return $pairs;
+}
+
+function wpae_llm_extract_faq_content( string $message ): array {
+    $message = trim( sanitize_text_field( $message ) );
+    $message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $message );
+    $message = preg_replace( '/^\s*(?:faq|частые вопросы|вопросы)\s*:\s*/iu', '', $message );
+    $units = preg_split( '/(?:\r?\n+|(?<=[.!?؟])\s+)/u', trim( (string) $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    $pairs = [];
+    for ( $index = 0, $count = count( $units ); $index < $count; $index++ ) {
+        $question = trim( (string) $units[ $index ] );
+        if ( ! preg_match( '/[?؟]\s*$/u', $question ) ) {
+            continue;
+        }
+        $label = trim( preg_replace( '/[?؟\s]+$/u', '', $question ) );
+        $answer_parts = [];
+        for ( $answer_index = $index + 1; $answer_index < $count; $answer_index++ ) {
+            $candidate = trim( (string) $units[ $answer_index ] );
+            if ( preg_match( '/[?؟]\s*$/u', $candidate ) ) {
+                break;
+            }
+            $answer_parts[] = $candidate;
+        }
+        $content = trim( preg_replace( '/[.!?؟\s]+$/u', '', implode( ' ', $answer_parts ) ) );
+        $label = trim( sanitize_text_field( $label ) );
+        $content = trim( sanitize_text_field( $content ) );
+        if ( $label !== '' && $content !== '' ) {
+            $pairs[] = [ 'label' => $label, 'content' => $content ];
+        }
+        $index += count( $answer_parts );
+    }
+    return array_slice( $pairs, 0, 12 );
 }
 
 function wpae_llm_collect_action_content( array $elements ): string {
@@ -777,6 +812,9 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
             }
         }
         if ( $depth === 0 && ( $element['elType'] ?? '' ) === 'container' && ! empty( $missing ) ) {
+            if ( $archetype === 'faq' ) {
+                continue;
+            }
             foreach ( array_values( $missing ) as $index => $value ) {
                 $element['elements'][] = [
                     'id' => 'llm-fallback-copy-' . (string) ( $index + 1 ),
@@ -1183,8 +1221,11 @@ function wpae_llm_apply_fallback_cta( array &$elements, string $cta, int &$chang
 }
 
 function wpae_llm_apply_fallback_faq_content( array &$elements, string $message, int &$changed ): void {
-    $pairs = wpae_llm_extract_labeled_content( $message );
-    if ( count( $pairs ) < 2 ) {
+    $pairs = wpae_llm_extract_faq_content( $message );
+    if ( empty( $pairs ) ) {
+        $pairs = wpae_llm_extract_labeled_content( $message );
+    }
+    if ( empty( $pairs ) ) {
         return;
     }
     foreach ( $elements as &$root ) {

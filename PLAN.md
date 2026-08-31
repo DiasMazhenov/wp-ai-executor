@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.03
+
+- Исправить разбор естественных FAQ-промтов: сохранять каждый вопрос и его
+  ответ в native accordion, не добавлять остаток отдельным текстовым виджетом.
+- Сохранять bounded Vision repair options и findings при provider retry после
+  принудительной перезагрузки.
+- Обновить плагин через WP Pusher и проверить FAQ-промт в открытом Elementor
+  через Browser Use, screenshot и AI Vision.
+
 ## v02.10.02
 
 - Ограничить сам `html2canvas` capture 12 секундами и передать ему bounded
