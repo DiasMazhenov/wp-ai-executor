@@ -1,5 +1,15 @@
 # План WP AI Executor
 
+## v02.10.12
+
+- Закрепить естественный парсер отзывов с разделителем `;` и общий
+  нормализатор библиотеки: bounded rem-отступы, прозрачные root/bento shells,
+  responsive typography для ролей и защищённая геометрия CTA.
+- Перед commit прогнать syntax/contract checks и локальную матрицу всех четырёх
+  fixtures; после доставки выполнить Browser Use generation -> screenshot ->
+  Vision/design-taste -> selected JSON export и повторять цикл при плохом
+  результате.
+
 ## v02.10.11
 
 - Очищать устаревший Elementor `htmlCache`/`html_cache` во всех вложенных

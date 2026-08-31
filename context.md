@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.11`
+- Plugin: `v02.10.12`
 - Guide: `v02.05.93`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -216,6 +216,17 @@ full normalized brief as well as pair labels. Quoted project names such as
 «Точка», «Маяк» and «Север» therefore select the portfolio/Image Box fixture,
 while named reviews remain testimonials.
 
+Release v02.10.12 extends the trusted-library normalization after the stale
+cache fix: natural `name, company - quote` pairs separated by semicolons are
+retained, source pixel padding is converted to bounded responsive rem spacing,
+library roots and bento shells stay transparent, native headings/body text are
+assigned bounded responsive typography by composition role, and all generated
+buttons receive content-sized responsive geometry with safe wrapping and
+rounded padding. The four bundled fixtures pass a local adaptation,
+typography, geometry, and cache matrix; every live generation still requires
+Browser Use screenshot, AI Vision, design-taste validation, and selected JSON
+export before acceptance.
+
 Release v02.10.11 clears stale `htmlCache`/`html_cache` values recursively from
 generated library elements before the Elementor write. This prevents copied
 CopyElement preview markup such as `Brand Identity`, `Learn More`, and lorem
@@ -224,7 +235,7 @@ The four bundled fixtures pass the local adaptation/cache matrix and still
 require live Browser Use verification after delivery.
 
 Graphify navigation was refreshed on 2026-09-01 after this change: the local
-code graph contains 679 nodes and 1616 edges, with `graphify-out/GRAPH_TREE.html`
+code graph contains 681 nodes and 1623 edges, with `graphify-out/GRAPH_TREE.html`
 regenerated as an untracked analysis artifact.
 
 The editor-chat Vision review is advisory: quality findings trigger a bounded

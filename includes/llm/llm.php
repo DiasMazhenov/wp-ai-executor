@@ -672,7 +672,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
 
 function wpae_llm_extract_labeled_content( string $message ): array {
     $quoted_pairs = [];
-    if ( preg_match_all( '/(?:^|(?<=[.!?»])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
+    if ( preg_match_all( '/(?:^|(?<=[.!?»;])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
         foreach ( $quoted_matches as $match ) {
             $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
             $company = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
@@ -684,6 +684,24 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     }
     if ( count( $quoted_pairs ) >= 2 ) {
         return $quoted_pairs;
+    }
+
+    $natural_pairs = [];
+    $natural_segments = preg_split( '/(?:\r?\n+|;\s*)/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    foreach ( $natural_segments as $segment ) {
+        $segment = trim( (string) $segment );
+        if ( ! preg_match( '/(?:^|[.!?]\s+)([^,.;—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(.{3,320})$/u', $segment, $match ) ) {
+            continue;
+        }
+        $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+        $company = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+        $content = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+        if ( $name !== '' && $company !== '' && $content !== '' ) {
+            $natural_pairs[] = [ 'label' => $name . ', ' . $company, 'content' => $content ];
+        }
+    }
+    if ( count( $natural_pairs ) >= 2 ) {
+        return $natural_pairs;
     }
 
     $pairs = [];
@@ -1332,6 +1350,33 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
     ];
 }
 
+function wpae_llm_normalize_generated_button_settings( array &$settings ): bool {
+    $before = wp_json_encode( $settings );
+    foreach ( [ 'width', 'width_tablet', 'width_mobile', 'min_width', 'max_width', '_element_width', '_element_width_tablet', '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
+        unset( $settings[ $key ] );
+    }
+    $settings['align'] = 'left';
+    $settings['align_tablet'] = 'left';
+    $settings['align_mobile'] = 'left';
+    $settings['align_self'] = 'flex-start';
+    $settings['align_self_mobile'] = 'stretch';
+    $settings['typography_typography'] = 'custom';
+    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 0.95 ];
+    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 0.95 ];
+    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 0.9 ];
+    $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.2 ];
+    $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.2 ];
+    $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.2 ];
+    $settings['text_padding'] = [ 'unit' => 'rem', 'top' => '0.7', 'right' => '1.1', 'bottom' => '0.7', 'left' => '1.1', 'isLinked' => false ];
+    $settings['border_radius'] = [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0.75', 'bottom' => '0.75', 'left' => '0.75', 'isLinked' => true ];
+    $custom_css = trim( (string) ( $settings['custom_css'] ?? '' ) );
+    if ( strpos( $custom_css, 'white-space' ) === false || strpos( $custom_css, 'max-width' ) === false ) {
+        $custom_css .= ( $custom_css !== '' ? "\n" : '' ) . 'selector .elementor-button { max-width: 100%; white-space: normal; box-sizing: border-box; }';
+        $settings['custom_css'] = $custom_css;
+    }
+    return $before !== wp_json_encode( $settings );
+}
+
 function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
     if ( empty( $elements ) ) {
         return $elements;
@@ -1349,8 +1394,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
     $last_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
         ? wpae_append_css_classes( $last_settings['_css_classes'] ?? '', [ 'wpae-generated-cta' ] )
         : trim( (string) ( $last_settings['_css_classes'] ?? '' ) . ' wpae-generated-cta' );
-    $last_settings['align_self'] = 'flex-start';
-    $last_settings['align_self_mobile'] = 'stretch';
+    wpae_llm_normalize_generated_button_settings( $last_settings );
     $last['settings'] = $last_settings;
     $elements[ $last_index ] = $last;
     $changed++;
@@ -2047,6 +2091,11 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
         $original_settings = $root['settings'];
+        if ( wpae_llm_normalize_generated_container_spacing( $root['settings'] ) ) {
+            $changed++;
+        }
+        $root['settings']['background_background'] = 'classic';
+        $root['settings']['background_color'] = 'transparent';
         $root_classes = preg_split( '/\s+/', trim( (string) ( $root['settings']['_css_classes'] ?? '' ) ) );
         $root_was_bento_grid = is_array( $root_classes ) && in_array( 'wpae-bento-grid', $root_classes, true );
         $badge = null;
@@ -2345,6 +2394,34 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     ];
 }
 
+function wpae_llm_normalize_generated_container_spacing( array &$settings ): bool {
+    $before = wp_json_encode( $settings );
+    foreach ( [ 'padding', 'padding_tablet', 'padding_mobile', '_padding', '_padding_tablet', '_padding_mobile' ] as $key ) {
+        if ( ! is_array( $settings[ $key ] ?? null ) || strtolower( (string) ( $settings[ $key ]['unit'] ?? '' ) ) !== 'px' ) {
+            continue;
+        }
+        $spacing = $settings[ $key ];
+        $vertical = array_filter( [ $spacing['top'] ?? null, $spacing['bottom'] ?? null ], 'is_numeric' );
+        if ( empty( $vertical ) || max( array_map( 'floatval', $vertical ) ) <= 80 ) {
+            continue;
+        }
+        $spacing['unit'] = 'rem';
+        $spacing['isLinked'] = false;
+        foreach ( [ 'top', 'bottom' ] as $side ) {
+            if ( is_numeric( $spacing[ $side ] ?? null ) ) {
+                $spacing[ $side ] = (string) min( 3, max( 0, round( (float) $spacing[ $side ] / 16, 3 ) ) );
+            }
+        }
+        foreach ( [ 'right', 'left' ] as $side ) {
+            if ( is_numeric( $spacing[ $side ] ?? null ) ) {
+                $spacing[ $side ] = (string) min( 2.5, max( 0, round( (float) $spacing[ $side ] / 16, 3 ) ) );
+            }
+        }
+        $settings[ $key ] = $spacing;
+    }
+    return $before !== wp_json_encode( $settings );
+}
+
 function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, string $archetype = '' ): array {
     $defaults = [
         'team' => [ 'title' => 'Наша команда', 'description' => 'Специалисты, которые ведут проект от идеи до результата.', 'cta' => 'Связаться', 'card' => 'Специалист' ],
@@ -2477,8 +2554,14 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $settings['text'] = $copyelement_defaults['cta'];
                         $changed++;
                     }
+                    if ( wpae_llm_normalize_generated_button_settings( $settings ) ) {
+                        $changed++;
+                    }
                 }
             } elseif ( $element_type === 'container' ) {
+                if ( wpae_llm_normalize_generated_container_spacing( $settings ) ) {
+                    $changed++;
+                }
                 foreach ( [ 'height', 'height_tablet', 'height_mobile', 'min_height', 'min_height_tablet', 'min_height_mobile', 'max_height', 'max_height_tablet', 'max_height_mobile', 'flex_basis', 'flex_basis_tablet', 'flex_basis_mobile' ] as $key ) {
                     if ( isset( $settings[ $key ] ) && is_array( $settings[ $key ] ) && (string) ( $settings[ $key ]['size'] ?? '' ) !== '' ) {
                         unset( $settings[ $key ] );
@@ -2630,7 +2713,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
     return $walk( $elements );
 }
 
-function wpae_llm_normalize_generated_typography( array $elements, string $archetype, int $depth = 0, int &$changed = 0 ): array {
+function wpae_llm_normalize_generated_typography( array $elements, string $archetype, int $depth = 0, int &$changed = 0, bool $inside_bento_grid = false ): array {
     foreach ( $elements as $index => $element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -2638,17 +2721,51 @@ function wpae_llm_normalize_generated_typography( array $elements, string $arche
 
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $widget_type = (string) ( $element['widgetType'] ?? '' );
-        if ( $archetype === 'testimonials' && $widget_type === 'heading' && $depth >= 2 ) {
-            $header_size = strtolower( (string) ( $settings['header_size'] ?? '' ) );
-            if ( ! in_array( $header_size, [ 'h5', 'h6' ], true ) ) {
-                $settings['header_size'] = 'h5';
-                $changed++;
-            }
+        $element_classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        $is_bento_grid = (string) ( $element['elType'] ?? '' ) === 'container'
+            && is_array( $element_classes )
+            && in_array( 'wpae-bento-grid', $element_classes, true );
+        $next_inside_bento_grid = $inside_bento_grid || $is_bento_grid;
+        $before = wp_json_encode( $settings );
+
+        if ( $widget_type === 'heading' && ( ! is_array( $element_classes ) || ! in_array( 'wpae-generated-badge-label', $element_classes, true ) ) ) {
+            $is_card_heading = $next_inside_bento_grid;
+            $settings['header_size'] = $is_card_heading ? 'h4' : 'h2';
+            $settings['typography_typography'] = 'custom';
+            $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.25 : 2.5 ];
+            $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.15 : 2.1 ];
+            $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.05 : 1.75 ];
+            $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => $is_card_heading ? 1.2 : 1.1 ];
+            $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => $is_card_heading ? 1.2 : 1.15 ];
+            $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.15 ];
+            $settings['typography_font_weight'] = '700';
+        } elseif ( $widget_type === 'icon-box' && $next_inside_bento_grid ) {
+            $settings['title_typography_typography'] = 'custom';
+            $settings['title_typography_font_size'] = [ 'unit' => 'rem', 'size' => $archetype === 'testimonials' ? 1.05 : 1.1 ];
+            $settings['title_typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1.05 ];
+            $settings['title_typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 1 ];
+            $settings['title_typography_font_weight'] = '600';
+            $settings['title_typography_line_height'] = [ 'unit' => 'em', 'size' => 1.2 ];
+            $settings['title_typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.2 ];
+        } elseif ( $widget_type === 'text-editor' && $next_inside_bento_grid ) {
+            $settings['typography_typography'] = 'custom';
+            $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1 ];
+            $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1 ];
+            $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 0.95 ];
+            $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.45 ];
+            $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.4 ];
+        }
+
+        if ( $widget_type === 'button' ) {
+            wpae_llm_normalize_generated_button_settings( $settings );
+        }
+        if ( $before !== wp_json_encode( $settings ) ) {
+            $changed++;
         }
 
         $element['settings'] = $settings;
         if ( is_array( $element['elements'] ?? null ) ) {
-            $element['elements'] = wpae_llm_normalize_generated_typography( $element['elements'], $archetype, $depth + 1, $changed );
+            $element['elements'] = wpae_llm_normalize_generated_typography( $element['elements'], $archetype, $depth + 1, $changed, $next_inside_bento_grid );
         }
         $elements[ $index ] = $element;
     }
