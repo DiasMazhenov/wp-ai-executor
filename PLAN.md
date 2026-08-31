@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.10.13
+
+- Сделать обязательный post-generation export выбранного JSON надежным в
+  embedded Elementor: fallback после отказа `navigator.clipboard`, затем
+  Browser Use screenshot, Vision/design-taste и сверка результата.
+
 ## v02.10.12
 
 - Закрепить естественный парсер отзывов с разделителем `;` и общий

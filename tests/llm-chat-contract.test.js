@@ -141,6 +141,8 @@ assert.match(js, /event\.isComposing/);
 assert.match(js, /form\.requestSubmit\(\)/);
 assert.match(js, /errorData\.details/);
 assert.match(js, /navigator\.clipboard\.writeText/);
+assert.match(js, /navigator\.clipboard\.writeText\(text\)\.catch\(fallbackCopy\)/);
+assert.match(js, /function copyText\(text\)[\s\S]*document\.execCommand\('copy'\)/);
 assert.match(js, /strings\.copyLog/);
 assert.match(js, /function selectedModels/);
 assert.match(js, /function serializeSelectedModel/);

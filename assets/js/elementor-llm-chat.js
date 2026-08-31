@@ -258,23 +258,26 @@
         window.setTimeout(function () { request(pending.message, true, pending.options || {}); }, 0);
     }
     function copyText(text) {
+        var fallbackCopy = function () {
+            return new Promise(function (resolve, reject) {
+                var fallback = document.createElement('textarea');
+                fallback.value = text;
+                fallback.setAttribute('readonly', '');
+                fallback.style.position = 'fixed';
+                fallback.style.opacity = '0';
+                document.body.appendChild(fallback);
+                fallback.select();
+                var copied = false;
+                try { copied = document.execCommand('copy'); } catch (error) {}
+                document.body.removeChild(fallback);
+                if (copied) resolve();
+                else reject(new Error(strings.copyError || 'Не удалось скопировать текст.'));
+            });
+        };
         if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-            return navigator.clipboard.writeText(text);
+            return navigator.clipboard.writeText(text).catch(fallbackCopy);
         }
-        return new Promise(function (resolve, reject) {
-            var fallback = document.createElement('textarea');
-            fallback.value = text;
-            fallback.setAttribute('readonly', '');
-            fallback.style.position = 'fixed';
-            fallback.style.opacity = '0';
-            document.body.appendChild(fallback);
-            fallback.select();
-            var copied = false;
-            try { copied = document.execCommand('copy'); } catch (error) {}
-            document.body.removeChild(fallback);
-            if (copied) resolve();
-            else reject(new Error(strings.copyError || 'Не удалось скопировать текст.'));
-        });
+        return fallbackCopy();
     }
     function copyChatLog() {
         copyText(chatLog()).then(function () {
