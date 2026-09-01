@@ -933,12 +933,19 @@
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
         if (options.visionFindings) requestContext.vision_findings = String(options.visionFindings).slice(0, 3600);
         var editorSyncDataForReview = null;
-        return fetch(config.endpoint, {
+        var requestController = typeof window.AbortController === 'function' ? new window.AbortController() : null;
+        var requestTimer = requestController ? window.setTimeout(function () {
+            requestController.abort();
+        }, 55000) : null;
+        var requestOptions = {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
             body: JSON.stringify({ message: message, history: history, context: requestContext })
-        }).then(function (response) {
+        };
+        if (requestController) requestOptions.signal = requestController.signal;
+        return fetch(config.endpoint, requestOptions).then(function (response) {
+            if (requestTimer) window.clearTimeout(requestTimer);
             return response.json().catch(function () { return {}; }).then(function (body) {
                 if (!response.ok) {
                     var detail = body.message || body.code || ('HTTP ' + response.status);
@@ -978,6 +985,15 @@
                 }
                 return body;
             });
+        }, function (error) {
+            if (requestTimer) window.clearTimeout(requestTimer);
+            if (error && error.name === 'AbortError') {
+                var timeoutError = new Error('LLM-провайдер недоступен: превышено время ожидания ответа.');
+                timeoutError.wpaeCode = 'wpae_llm_provider_request_failed';
+                timeoutError.httpStatus = 504;
+                throw timeoutError;
+            }
+            throw error;
         }).then(function (body) {
             window.clearInterval(progressTimer);
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);

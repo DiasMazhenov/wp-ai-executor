@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.51`
+- Plugin: `v02.10.52`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -74,6 +74,11 @@ container with empty background settings, so transparent source wrappers remain
 transparent. Trusted bundled library roots are marked as source-of-truth before
 the design-token pass; their palette, CTA styling, typography and media are not
 rewritten by the project-wide token map while their requested copy is adapted.
+
+Release v02.10.52 fixes the live transport hang found after the v02.10.51
+reload: the Elementor chat aborts an LLM fetch after 55 seconds and routes the
+timeout through the existing single provider-unavailable reload/retry path
+instead of leaving the UI permanently on “waiting for JSON”.
 
 ## Architecture
 
