@@ -248,6 +248,8 @@ assert.match(llm, /native_widgets/);
 assert.match(llm, /function wpae_llm_apply_bento_layout/);
 assert.match(llm, /function wpae_llm_normalize_bento_grids_recursive/);
 assert.match(llm, /function wpae_llm_wrap_generation_cta/);
+assert.match(llm, /function wpae_llm_normalize_requested_cta/);
+assert.match(llm, /wpae_llm_normalize_requested_cta\( \$action\['elements'\], \$message, \$cta_changed \)/);
 assert.match(llm, /wpae-generated-cta/);
 assert.match(llm, /align_self'\] = 'flex-start'/);
 assert.match(llm, /function wpae_llm_content_fidelity/);

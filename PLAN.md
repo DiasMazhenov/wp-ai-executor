@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.43
+
+- Преобразовывать явно запрошенный standalone CTA из text-editor в native
+  button после визуальной нормализации, сохраняя текст пользователя.
+- Повторно проверить Vocario Home и другие типы в Browser Use со screenshot,
+  AI Vision/design-taste и JSON после доставки обновления.
+
 ## v02.10.42
 
 - Явно зафиксировать `container_type=flex` во всех 13 исходных Vocario JSON.

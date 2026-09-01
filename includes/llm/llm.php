@@ -1754,6 +1754,121 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
     return $elements;
 }
 
+function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed ): array {
+    $cta = '';
+    foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
+        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|регистрац\w*)\b/iu', $value ) ) {
+            $cta = trim( (string) $value );
+            break;
+        }
+    }
+    if ( $cta === '' ) {
+        return $elements;
+    }
+
+    $normalized_cta = wpae_llm_normalize_content_text( $cta );
+    $button_found = false;
+    $replaced_text = false;
+    $walk = static function ( array &$nodes ) use ( &$walk, $cta, $normalized_cta, &$button_found, &$replaced_text, &$changed ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            if ( $widget_type === 'button' ) {
+                $settings['text'] = $cta;
+                $settings['link'] = [ 'url' => '#contact' ];
+                $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+                    ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-generated-cta' ] )
+                    : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-generated-cta' );
+                wpae_llm_normalize_generated_button_settings( $settings );
+                $element['settings'] = $settings;
+                $button_found = true;
+            } elseif ( $widget_type === 'text-editor' && ! $button_found ) {
+                $editor_text = wpae_llm_normalize_content_text( $settings['editor'] ?? '' );
+                if ( $editor_text === $normalized_cta ) {
+                    $element['widgetType'] = 'button';
+                    $settings = [
+                        'text' => $cta,
+                        'link' => [ 'url' => '#contact' ],
+                        '_css_classes' => 'wpae-generated-cta',
+                    ];
+                    wpae_llm_normalize_generated_button_settings( $settings );
+                    $element['settings'] = $settings;
+                    $element['elements'] = [];
+                    $button_found = true;
+                    $replaced_text = true;
+                    $changed++;
+                }
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+
+    if ( $button_found ) {
+        if ( $replaced_text ) {
+            $changed++;
+        }
+        return $elements;
+    }
+
+    $button = [
+        'id' => 'wpae-generated-cta-' . substr( md5( $normalized_cta ), 0, 7 ),
+        'elType' => 'widget',
+        'widgetType' => 'button',
+        'settings' => [
+            'text' => $cta,
+            'link' => [ 'url' => '#contact' ],
+            '_css_classes' => 'wpae-generated-cta',
+        ],
+        'elements' => [],
+    ];
+    $target = null;
+    $find_shell = static function ( array &$nodes ) use ( &$find_shell, &$target ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( ( $element['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true ) ) {
+                $target =& $element['elements'];
+                return;
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $find_shell( $element['elements'] );
+                if ( is_array( $target ) ) {
+                    return;
+                }
+            }
+        }
+        unset( $element );
+    };
+    $find_shell( $elements );
+    if ( ! is_array( $target ) ) {
+        foreach ( $elements as &$root ) {
+            if ( is_array( $root ) && ( $root['elType'] ?? '' ) === 'container' ) {
+                $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+                $target =& $root['elements'];
+                break;
+            }
+        }
+        unset( $root );
+    }
+    if ( is_array( $target ) ) {
+        wpae_llm_normalize_generated_button_settings( $button['settings'] );
+        $target[] = $button;
+        $changed++;
+    }
+    unset( $target );
+    return $elements;
+}
+
 function wpae_llm_generation_visual_grammar_hint(): string {
     return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Icon-box запрещен: заголовок карточки всегда остается обычным native heading, а иконка при необходимости выводится отдельным native icon. В testimonial-карточке имя/компания выводятся native heading, цитата — native text-editor, а quote/icon-иконка допускается только как декоративный маркер. В testimonial-карточке цитата является текстом и не должна превращаться в иконку. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
@@ -4062,6 +4177,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $final_bento_changed = 0;
             wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed, $action_archetype );
             $bento_changed += $final_bento_changed;
+            $cta_changed = 0;
+            $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed );
         }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {

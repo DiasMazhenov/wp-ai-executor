@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.42`
+- Plugin: `v02.10.43`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -13,6 +13,10 @@ Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,
 course, event, blog, footer, form and 404 wording through the existing
 archetype aliases, while the shared runtime normalizer remains the final guard.
+
+Release v02.10.43 adds a post-grammar CTA pass: an explicitly requested
+standalone call-to-action cannot remain a plain text-editor; it is replaced or
+inserted as a styled native Elementor button inside the generated content shell.
 
 ## Architecture
 
