@@ -1220,6 +1220,17 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                 if ( preg_match( '/^\s*([^:]{3,80}):/u', $requested_content, $heading_match ) ) {
                     $heading_text = trim( sanitize_text_field( (string) ( $heading_match[1] ?? '' ) ) );
                 }
+                $partner_names = [];
+                if ( preg_match( '/(?:партн[её]ры|логотипы)\s*:\s*([^.!?]+)/iu', $requested_content, $partner_match ) ) {
+                    $partner_text = trim( (string) ( $partner_match[1] ?? '' ) );
+                    $partner_text = preg_replace( '/\s+и\s+/iu', ', ', $partner_text );
+                    foreach ( preg_split( '/,\s*/u', (string) $partner_text, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $partner_name ) {
+                        $partner_name = trim( sanitize_text_field( (string) $partner_name ) );
+                        if ( $partner_name !== '' ) {
+                            $partner_names[ wpae_llm_normalize_content_text( $partner_name ) ] = $partner_name;
+                        }
+                    }
+                }
                 $content_elements = [
                     [
                         'id' => 'library-carousel-heading',
@@ -1236,6 +1247,50 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                         'elements' => [],
                     ],
                 ];
+                if ( count( $partner_names ) >= 2 ) {
+                    $partner_labels = [];
+                    foreach ( array_slice( array_values( $partner_names ), 0, 8 ) as $partner_index => $partner_name ) {
+                        $partner_labels[] = [
+                            'id' => 'library-carousel-partner-' . (string) ( $partner_index + 1 ),
+                            'elType' => 'widget',
+                            'widgetType' => 'heading',
+                            'settings' => [
+                                'title' => $partner_name,
+                                'header_size' => 'h5',
+                                '_css_classes' => 'wpae-carousel-partner-label',
+                                'background_background' => 'classic',
+                                'background_color' => '#f7f7f5',
+                                'border_border' => 'solid',
+                                'border_color' => '#6b7280',
+                                'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+                                'border_radius' => [ 'unit' => 'px', 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'size' => 999, 'isLinked' => true ],
+                                'padding' => [ 'unit' => 'rem', 'top' => '0.55', 'right' => '1', 'bottom' => '0.55', 'left' => '1', 'isLinked' => false ],
+                                'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                            ],
+                            'elements' => [],
+                        ];
+                    }
+                    $content_elements[] = [
+                        'id' => 'library-carousel-partners',
+                        'elType' => 'container',
+                        'settings' => [
+                            '_css_classes' => 'wpae-carousel-partner-rail',
+                            'container_type' => 'flex',
+                            'content_width' => 'full',
+                            'flex_direction' => 'row',
+                            'flex_wrap' => 'wrap',
+                            'flex_justify_content' => 'flex-start',
+                            'flex_align_items' => 'center',
+                            'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+                            'flex_gap_mobile' => [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ],
+                            'background_background' => 'classic',
+                            'background_color' => 'transparent',
+                            'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                            'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                        ],
+                        'elements' => $partner_labels,
+                    ];
+                }
                 $template_elements = [
                     [
                         'id' => $wrapper_id,

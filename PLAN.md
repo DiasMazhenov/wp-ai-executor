@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.41
+
+- Добавить прозрачную Flexbox-ленту outlined-лейблов партнёров под сохранённой
+  каруселью, если имена явно присутствуют в контенте.
+- Обновить пакет, доставить через WP Pusher и повторить Browser Use screenshot,
+  Vision/design-taste и JSON-проверку.
+
 ## v02.10.40
 
 - Заменить generic badge у carousel на semantic `ПАРТНЁРЫ`.

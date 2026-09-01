@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.40`
+- Plugin: `v02.10.41`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -96,6 +96,11 @@ fallback block.
 Release v02.10.40 gives carousel blocks a semantic `ПАРТНЁРЫ` badge instead of
 the generic `НОВЫЙ БЛОК` label, keeping the shared outlined-badge rule useful for
 this archetype and preventing placeholder text from reaching the live canvas.
+
+Release v02.10.41 keeps the supplied image-carousel media rail and adds a
+transparent Flexbox partner-label rail when the content-only brief names
+partners. Each name is a native outlined pill, so brands are visually distinct
+without replacing the original carousel with generic cards.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the
