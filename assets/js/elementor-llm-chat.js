@@ -987,6 +987,7 @@
                 var editorSyncedState = false;
                 var editorSyncData = body.write.editor_sync;
                 editorSyncDataForReview = editorSyncData;
+                addGeneratedJsonSpoiler(editorSyncData && Array.isArray(editorSyncData.elements) ? editorSyncData.elements : []);
                 var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
                     ? syncEditorPatches(body.write.editor_sync)
                     : syncEditorElements(body.write.editor_sync);
@@ -1049,7 +1050,6 @@
                     return;
                 }
                 if (review && review.report) addMessage('assistant', describeVisionReview(review));
-                addGeneratedJsonSpoiler(body.write && body.write.editor_sync ? body.write.editor_sync.elements : []);
                 addActionControls(body.write);
                 addMessage('assistant', body.message || strings.error);
                 status.textContent = strings.done;

@@ -149,7 +149,7 @@ assert.match(js, /function copyText\(text\)[\s\S]*document\.execCommand\('copy'\
 assert.match(js, /function addGeneratedJsonSpoiler/);
 assert.match(js, /wpae-elementor-generated-v1/);
 assert.match(js, /Копировать JSON дизайна/);
-assert.match(js, /body\.write && body\.write\.editor_sync/);
+assert.match(js, /addGeneratedJsonSpoiler\(editorSyncData && Array\.isArray\(editorSyncData\.elements\)/);
 assert.match(js, /strings\.copyLog/);
 assert.match(js, /function selectedModels/);
 assert.match(js, /function liveSelectedModels/);

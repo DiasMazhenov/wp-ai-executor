@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.25`
+- Plugin: `v02.10.26`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -27,13 +27,14 @@
 - `updates/` - single-file and manifest-based package updates;
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
 
-Release v02.10.25 makes selected-container JSON export resilient to Elementor
+Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the
 active editor model, and retains the last valid selected models while the copy
 button receives focus. This keeps recursive `wpae-elementor-selection-v1`
 exports available when a selected container loses transient selection state. It
-also adds a collapsed JSON spoiler after accepted generation, containing the
-exact native elements returned in `editor_sync` and a local copy button.
+also adds a collapsed JSON spoiler immediately after each successful Elementor
+write, before Vision repair can start, containing the exact native elements
+returned in `editor_sync` and a local copy button.
 
 The floating Elementor chat can explicitly export selected native Elementor
 models as `wpae-elementor-selection-v1` JSON with recursive child elements;
