@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.29`
+- Plugin: `v02.10.30`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -39,6 +39,11 @@ fallback.
 
 Release v02.10.29 repairs the package manifest hash for the guide file and
 keeps the update package verifiable before WP Pusher delivery.
+
+Release v02.10.30 prevents incidental words inside card descriptions, such as
+`команда`, from misclassifying a benefits brief as a team block. Explicit
+benefit labels now win before team matching, so library retrieval keeps the
+requested composition while preserving the user's content.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

@@ -571,6 +571,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu', $normalized ) ) {
             return 'about';
         }
+        if ( count( $labeled_pairs ) >= 2 && preg_match( '/\b(стратег\w*|редактируем\w*|мобильн\w*|преимуществ\w*|выгод\w*|опор\w*|понятн\w*|удобн\w*)\b/iu', $labeled_text ) ) {
+            return 'benefits';
+        }
         if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
             return 'team';
         }

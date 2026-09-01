@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.10.30
+
+- При классификации content-only brief учитывать заголовки пар раньше
+  случайных слов в описаниях, чтобы `команда` внутри copy не выбирала Team.
+- Проверить повторный benefits-тест, JSON, Vision и отсутствие `icon-box`.
+
 ## v02.10.29
 
 - Исправить устаревший SHA-256 `includes/guide/guide.php` в package manifest.
