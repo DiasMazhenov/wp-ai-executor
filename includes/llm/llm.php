@@ -565,6 +565,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(отзыв\w*|рекомендац\w*|понравил\w*|получил\w*)\b/iu', $normalized ) ) {
             return 'testimonials';
         }
+        if ( preg_match( '/[«"]/u', $message ) ) {
+            return 'testimonials';
+        }
         if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }
@@ -579,9 +582,6 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         }
         if ( count( $labeled_pairs ) >= 3 && preg_match( '/(?:кейс\w*|портфолио|проект\w*|бренд\w*|сайт\w*|сервис\w*|редизайн\w*|продукт\w*|магазин\w*)/iu', $labeled_text . ' ' . $normalized ) ) {
             return 'portfolio';
-        }
-        if ( preg_match( '/[«"]/u', $message ) ) {
-            return 'testimonials';
         }
         if ( preg_match( '/\b(быстрый старт|понятная структура|поддержка после запуска|преимуществ|выгод)\b/iu', $normalized ) ) {
             return 'benefits';

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.33`
+- Plugin: `v02.10.34`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -62,6 +62,10 @@ including containers nested inside widget payloads such as Mega Menu. Grid-only
 settings are mapped to Flexbox gaps/alignment where possible and then removed.
 Bundled library records are stored and migrated with the normalized Flexbox
 payload, while retrieval normalizes older records before generation.
+
+Release v02.10.34 gives quoted testimonial content priority over process keywords
+inside the quote. A review containing a phrase such as «каждый шаг» now remains
+a testimonials composition instead of being misclassified as a process block.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the
