@@ -624,6 +624,7 @@ function wpae_block_library_retrieval_tokens( $value ): array {
 function wpae_block_library_retrieval_aliases( string $archetype ): array {
     $aliases = [
         'mega_menu' => [ 'mega-menu', 'mega menu', 'мега меню', 'меню', 'навигац', 'header', 'шапк' ],
+        'carousel' => [ 'carousel', 'slider', 'карусел', 'слайдер', 'логотип', 'логотипы', 'партнер', 'партнёр', 'бренд' ],
         'hero' => [ 'hero', 'хиро', 'первый', 'экран', 'обложка', 'cover', 'image', 'image-box' ],
         'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'преимуществ', 'выгод' ],
         'pricing' => [ 'pricing', 'price', 'тариф', 'цена', 'стоимость', 'пакет' ],

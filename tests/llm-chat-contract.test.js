@@ -516,6 +516,7 @@ assert.match(blockLibrary, /function wpae_block_library_bundled_preview_url/);
 assert.match(blockLibrary, /function wpae_block_library_filter_compatible_roots/);
 assert.match(blockLibrary, /\.\(\?:png\|jpe\?g\)/);
 assert.match(blockLibrary, /function wpae_block_library_seed_bundled_templates/);
+assert.match(blockLibrary, /'carousel' => \[ 'carousel', 'slider'/);
 assert.match(blockLibrary, /\$raw_elements = \$parsed\['elementor_data'\]/);
 assert.match(blockLibrary, /\$normalized = wpae_elementor_normalize_data\( \$raw_elements \)/);
 assert.match(blockLibrary, /'migrated' => \[\]/);

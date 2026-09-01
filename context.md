@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.38`
+- Plugin: `v02.10.39`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -86,6 +86,12 @@ the private CopyElement library. Carousel requests are classified separately;
 the native `image-carousel` is validated for at least two real media slides,
 wrapped in one transparent Flexbox container, and kept as a carousel instead of
 being flattened into generic cards.
+
+Release v02.10.39 fixes carousel retrieval aliases for content-only partner,
+logo, and slider briefs. The standalone carousel adapter now preserves the
+source carousel while adding native heading and text-editor content from the
+brief, so the content-fidelity gate cannot silently replace it with a generic
+fallback block.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

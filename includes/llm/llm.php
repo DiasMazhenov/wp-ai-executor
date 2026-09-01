@@ -1215,6 +1215,27 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                 $settings['_css_classes'] = wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-library-carousel' ] );
                 $carousel['settings'] = $settings;
                 $wrapper_id = 'library-carousel-' . substr( md5( (string) ( $carousel['id'] ?? 'carousel' ) ), 0, 7 );
+                $requested_content = trim( sanitize_text_field( $message ) );
+                $heading_text = 'Партнёры проекта';
+                if ( preg_match( '/^\s*([^:]{3,80}):/u', $requested_content, $heading_match ) ) {
+                    $heading_text = trim( sanitize_text_field( (string) ( $heading_match[1] ?? '' ) ) );
+                }
+                $content_elements = [
+                    [
+                        'id' => 'library-carousel-heading',
+                        'elType' => 'widget',
+                        'widgetType' => 'heading',
+                        'settings' => [ 'title' => $heading_text, 'header_size' => 'h2' ],
+                        'elements' => [],
+                    ],
+                    [
+                        'id' => 'library-carousel-copy',
+                        'elType' => 'widget',
+                        'widgetType' => 'text-editor',
+                        'settings' => [ 'editor' => $requested_content ],
+                        'elements' => [],
+                    ],
+                ];
                 $template_elements = [
                     [
                         'id' => $wrapper_id,
@@ -1234,7 +1255,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                             'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
                             'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
                         ],
-                        'elements' => [ $carousel ],
+                        'elements' => array_merge( $content_elements, [ $carousel ] ),
                     ],
                 ];
                 $changed++;

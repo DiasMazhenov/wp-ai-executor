@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.39
+
+- Исправить retrieval aliases для content-only запросов о партнерах, логотипах
+  и слайдерах.
+- Добавить над standalone Image Carousel нативные heading/text-editor с полным
+  пользовательским контентом, сохранив исходные реальные слайды.
+- Доставить пакет и повторить Browser Use тест после обновления страницы со
+  screenshot, Vision/design-taste и JSON спойлером.
+
 ## v02.10.38
 
 - Добавить присланный standalone Image Carousel в private CopyElement library.
