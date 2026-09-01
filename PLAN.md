@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.57
+
+- Исправить `Value of type null is not callable` в адаптации narrative-шаблонов:
+  рекурсивный mapper должен явно захватывать callback компактного copy и его
+  производные фрагменты.
+- Закрепить захват зависимостей контракт-тестом и runtime smoke-тестом для
+  trusted library template, затем повторно прогнать полный PHP lint и chat/vision
+  contract tests перед push.
+
 ## v02.10.56
 
 - Исправить Gemini action-запросы: не отправлять в Google OpenAI-compatible

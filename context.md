@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.56`
+- Plugin: `v02.10.57`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -101,6 +101,12 @@ converts unexpected PHP `Throwable` failures into a JSON `WP_Error`, logs the
 server-side file/line for diagnosis, and keeps network exceptions mapped to the
 existing single provider reload/retry path. The chat surfaces the safe exception
 message instead of showing WordPress' HTML critical-error page.
+
+Release v02.10.57 fixes the `Value of type null is not callable` failure in
+trusted library narrative adaptation. The recursive copy mapper now captures
+its compact-copy callback and derived content fragments explicitly, so repeated
+headings, body widgets, icon lists and CTAs no longer resolve the callback as
+null. The chat and library narrative regression smoke tests cover this path.
 
 ## Architecture
 

@@ -1278,7 +1278,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     $body_set = false;
     $cta_set = false;
     $target_widget_ids = [];
-    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, $clear_unrequested_copy, &$title_set, &$body_set, &$cta_set, &$target_widget_ids, &$changed ): void {
+    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, $clear_unrequested_copy, $numeric_copy, $audience_copy, $first_body_unit, $next_compact_copy, &$title_set, &$body_set, &$cta_set, &$target_widget_ids, &$changed ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;

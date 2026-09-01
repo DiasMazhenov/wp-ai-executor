@@ -85,6 +85,7 @@ assert.match(llm, /function wpae_llm_chat_request/);
 assert.match(llm, /catch \( Throwable \$error \)/);
 assert.match(llm, /wpae_llm_internal_error/);
 assert.match(llm, /Provider request failed for %s/);
+assert.match(llm, /\$clear_unrequested_copy, \$numeric_copy, \$audience_copy, \$first_body_unit, \$next_compact_copy, &\$title_set/);
 assert.match(llm, /Исправь Elementor action JSON/);
 assert.match(llm, /Используй именно post_id/);
 assert.match(llm, /strpos\( \$label, ':' \)/);
