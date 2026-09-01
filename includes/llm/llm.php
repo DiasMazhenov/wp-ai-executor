@@ -785,9 +785,10 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     if ( ! is_string( $content_message ) || $content_message === '' ) {
         $content_message = $message;
     }
+    $dash_separator = '(?:\s*[—–]\s*|\s+-\s+)';
     if (
-        preg_match( '/(?:«[^»]{2,80}»|"[^"\n]{2,80}")\s*[—–-]/u', $content_message )
-        && preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*[—–-]\s*(.*?)(?=;\s*(?:«|\")|(?:\.\s+)(?=(?:К\s+каждому|В\s+конце|Добавь|Добавить)\b)|$)/us', $content_message, $quoted_label_matches, PREG_SET_ORDER )
+        preg_match( '/(?:«[^»]{2,80}»|"[^"\n]{2,80}")' . $dash_separator . '/u', $content_message )
+        && preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")' . $dash_separator . '(.*?)(?=;\s*(?:«|\")|(?:\.\s+)(?=(?:К\s+каждому|В\s+конце|Добавь|Добавить)\b)|$)/us', $content_message, $quoted_label_matches, PREG_SET_ORDER )
     ) {
         $quoted_label_pairs = [];
         foreach ( $quoted_label_matches as $match ) {
@@ -802,7 +803,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
         }
     }
     $quoted_pairs = [];
-    if ( preg_match_all( '/(?:^|(?<=[.!?»;])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $content_message, $quoted_matches, PREG_SET_ORDER ) ) {
+    if ( preg_match_all( '/(?:^|(?<=[.!?»;])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)' . $dash_separator . '(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $content_message, $quoted_matches, PREG_SET_ORDER ) ) {
         foreach ( $quoted_matches as $match ) {
             $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
             $company = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
@@ -835,7 +836,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     $dash_segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+|;\s*)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     foreach ( $dash_segments as $segment ) {
         $segment = trim( (string) $segment );
-        if ( ! preg_match( '/^\s*([^—–,:;]{2,80}?)\s*[—–-]\s*(.{3,320}?)\s*[.!?]?\s*$/u', $segment, $match ) ) {
+        if ( ! preg_match( '/^\s*([^—–,:;]{2,80}?)' . $dash_separator . '(.{3,320}?)\s*[.!?]?\s*$/u', $segment, $match ) ) {
             continue;
         }
         $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
@@ -852,7 +853,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     $natural_segments = preg_split( '/(?:\r?\n+|;\s*|(?<=[.!?])\s+)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     foreach ( $natural_segments as $segment ) {
         $segment = trim( (string) $segment );
-        if ( ! preg_match( '/(?:^|[.!?]\s+)([^,.;—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(.{3,320})$/u', $segment, $match ) ) {
+        if ( ! preg_match( '/(?:^|[.!?]\s+)([^,.;—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)' . $dash_separator . '(.{3,320})$/u', $segment, $match ) ) {
             continue;
         }
         $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
@@ -873,16 +874,16 @@ function wpae_llm_extract_labeled_content( string $message ): array {
         $colon_position = strpos( $segment, ':' );
         if (
             $colon_position !== false
-            && preg_match( '/^\s*[^—–,:-]{2,80}?\s*[—–-]/u', substr( $segment, $colon_position + 1 ) )
+            && preg_match( '/^\s*[^—–,:-]{2,80}?' . $dash_separator . '/u', substr( $segment, $colon_position + 1 ) )
         ) {
             $segment = trim( substr( $segment, $colon_position + 1 ) );
         }
 
         $matched_pairs = [];
-        if ( preg_match_all( '/(?:^|[,;]\s*)([^—–,:-]{2,80}?)\s*[—–-]\s*(.{3,240}?)(?=(?:[,;]\s*[^—–,:-]{2,80}?\s*[—–-])|$)/u', $segment, $matches, PREG_SET_ORDER ) ) {
+        if ( preg_match_all( '/(?:^|[,;]\s*)([^—–,:-]{2,80}?)' . $dash_separator . '(.{3,240}?)(?=(?:[,;]\s*[^—–,:-]{2,80}?' . $dash_separator . ')|$)/u', $segment, $matches, PREG_SET_ORDER ) ) {
             $matched_pairs = $matches;
         }
-        if ( empty( $matched_pairs ) && preg_match( '/^\s*([^—–-]{2,80}?)\s*[—–-]\s*(.{3,240})\s*$/u', $segment, $match ) ) {
+        if ( empty( $matched_pairs ) && preg_match( '/^\s*([^—–-]{2,80}?)' . $dash_separator . '(.{3,240})\s*$/u', $segment, $match ) ) {
             $matched_pairs = [ $match ];
         }
         foreach ( $matched_pairs as $match ) {

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.57`
+- Plugin: `v02.10.58`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -107,6 +107,13 @@ trusted library narrative adaptation. The recursive copy mapper now captures
 its compact-copy callback and derived content fragments explicitly, so repeated
 headings, body widgets, icon lists and CTAs no longer resolve the callback as
 null. The chat and library narrative regression smoke tests cover this path.
+
+Release v02.10.58 fixes content parsing for hyphenated words such as
+`Онлайн-школа`. The labeled-content parser now treats only spaced hyphens as
+label separators while preserving em/en dash punctuation, so content-only
+briefs are not split into false label/description pairs before template
+adaptation. The parser contract and runtime smoke checks verify intact
+requested content and still accept real `label - description` pairs.
 
 ## Architecture
 
