@@ -262,6 +262,7 @@ assert.match(llm, /function wpae_llm_content_fidelity/);
 assert.match(llm, /structured_response_failed/);
 assert.match(llm, /finish_reason.*error/);
 assert.match(llm, /function wpae_llm_extract_requested_content/);
+assert.ok(llm.includes("школ\\w*\\s+публичн\\w*\\s+выступлен\\w*"));
 assert.match(llm, /function wpae_llm_apply_fallback_content/);
 assert.match(llm, /function wpae_llm_extract_labeled_content/);
 assert.match(llm, /function wpae_llm_apply_fallback_archetype_content/);

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.44`
+- Plugin: `v02.10.45`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -23,6 +23,12 @@ CopyElement manifest with the Flex-converted JSON files. Without this, the
 bundled-template seed skipped the changed files and retrieval could select
 stale database records. The contract test now verifies every manifest fixture
 hash before delivery.
+
+Release v02.10.45 fixes Vocario archetype routing: an ordinary mention of
+partners no longer forces a carousel, while explicit carousel/slider/logo
+language still does. A public-speaking-school content brief now matches the
+Vocario Home Hero root, preserving its real image-led Flex composition instead
+of generating a sparse partner block.
 
 ## Architecture
 

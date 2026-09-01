@@ -553,11 +553,14 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
             return 'mega_menu';
         }
-        if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu', $message ) ) {
+        if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu', $message ) ) {
             return 'carousel';
         }
-        if ( preg_match( '/\b(первый экран|hero|хиро|обложк|главн\w*|home)\b/iu', $message ) ) {
+        if ( preg_match( '/\b(первый экран|hero|хиро|обложк|главн\w*|home)\b|школ\w*\s+публичн\w*\s+выступлен\w*/iu', $message ) ) {
             return 'hero';
+        }
+        if ( preg_match( '/\bпартн[её]р\w*\b/iu', $message ) ) {
+            return 'carousel';
         }
         if ( preg_match( '/\?|؟/u', $message ) ) {
             return 'faq';
@@ -606,8 +609,8 @@ function wpae_llm_detect_block_archetype( string $message ): string {
 
     $patterns = [
         'mega_menu' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
-        'carousel' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu',
-        'hero' => '/\b(hero|хиро|первый экран|обложк|главн\w*|home)/iu',
+        'carousel' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu',
+        'hero' => '/\b(hero|хиро|первый экран|обложк|главн\w*|home)\b|школ\w*\s+публичн\w*\s+выступлен\w*/iu',
         'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
         'about' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)/iu',

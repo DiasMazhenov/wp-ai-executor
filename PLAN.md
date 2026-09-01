@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.45
+
+- Исправить false-positive классификацию: слово «партнеры» само по себе не
+  должно выбирать карусель, а контент школы публичных выступлений должен
+  выбирать Vocario Hero.
+- Обновить пакет и проверить Home, Team, Courses и Event через Browser Use с
+  JSON, screenshot, AI Vision и design-taste review.
+
 ## v02.10.44
 
 - Синхронизировать SHA-256 Vocario JSON в CopyElement manifest после перевода
