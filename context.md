@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.64`
+- Plugin: `v02.10.66`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -34,11 +34,28 @@ referenced source-only Elementor global color IDs. Known Vocario colors are
 materialized into explicit native widget settings before insertion, so CTA
 labels and template typography keep their intended contrast on the target site.
 
-Release v02.10.64 fixes the next live Vision failure: generated roots are no
-longer appended repeatedly to the live Elementor model while Vision performs
-repair passes, and failed reviews now surface rollback errors instead of
-claiming success. Long library headings receive bounded responsive sizes so
-the preserved composition remains readable on the editor canvas.
+Release v02.10.64 fixes the next live Vision failure: failed reviews now
+surface rollback errors instead of claiming success, and long library
+headings receive bounded responsive sizes so the preserved composition remains
+readable on the editor canvas. Its first attempt to suppress duplicate roots
+by skipping live sync caused a blank canvas and was not retained.
+
+Release v02.10.65 keeps first generation realtime in the open Elementor
+editor, while tracking only the roots created by the current chat request.
+Before a Vision repair or rollback those tracked roots are deleted through the
+Elementor Commands API, then the replacement is inserted. This prevents old
+sections from accumulating without hiding a new successful design from the
+canvas.
+
+Release v02.10.66 fixes the deeper visual causes found by comparing the
+trusted Vocario source JSON with its live Elementor render. Third-party
+`jkit_heading` conversion now carries the source focused/title color into the
+native heading, so white hero type stays readable on the source image. Trusted
+library typography clamps extreme `em` sizes and negative text margins without
+rewriting the source composition. Generated bento cards use flexible Flex grow
+and shrink behavior and no longer use the narrow `23%` four-column fallback.
+The existing Vision repair loop and current-request root cleanup remain
+enabled; Vision findings are now actionable against the actual source causes.
 
 Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,

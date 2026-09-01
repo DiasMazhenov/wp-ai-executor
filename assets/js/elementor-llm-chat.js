@@ -530,28 +530,74 @@
             }, officialRefresh ? 250 : 0);
         });
     }
-    function syncEditorElements(editorSync) {
+    var liveGeneratedRootIds = [];
+
+    function getEditorModelId(model) {
+        if (!model) return '';
+        if (model.id) return String(model.id);
+        if (typeof model.get === 'function') {
+            var id = model.get('id');
+            if (id) return String(id);
+        }
+        if (model.attributes && model.attributes.id) return String(model.attributes.id);
+        return '';
+    }
+    function findLiveGeneratedRoots() {
+        if (!liveGeneratedRootIds.length || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return [];
+        var container = window.elementor.getPreviewContainer();
+        if (!container) return [];
+        var wanted = liveGeneratedRootIds.slice();
+        return getEditorModelChildren(container).filter(function (model) {
+            return wanted.indexOf(getEditorModelId(model)) !== -1;
+        });
+    }
+    function removeLiveGeneratedRoots() {
+        var roots = findLiveGeneratedRoots();
+        if (!roots.length) {
+            liveGeneratedRootIds = [];
+            return Promise.resolve(true);
+        }
+        if (!window.$e || typeof window.$e.run !== 'function') return Promise.resolve(false);
+        return roots.reduce(function (promise, model) {
+            return promise.then(function (ok) {
+                if (!ok) return false;
+                try {
+                    return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () { return true; }, function () { return false; });
+                } catch (error) {
+                    return false;
+                }
+            });
+        }, Promise.resolve(true)).then(function (ok) {
+            if (ok) liveGeneratedRootIds = [];
+            return ok;
+        });
+    }
+    function syncEditorElements(editorSync, repairDepth) {
         if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
-        // Vision reviews use the saved preview as the source of truth. Appending the same
-        // root to the live editor model on every repair pass creates phantom duplicates.
-        if (config.vision && config.vision.ready && editorSync.mode !== 'patch') return Promise.resolve(false);
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
         var container = window.elementor.getPreviewContainer();
         if (!container) return Promise.resolve(false);
         var elements = editorSync.elements.slice();
         var position = editorSync.position === 'start' ? 'start' : 'end';
         if (position === 'start') elements.reverse();
-        try {
-            return Promise.all(elements.map(function (model) {
-                return Promise.resolve(window.$e.run('document/elements/create', {
-                    container: container,
-                    model: model,
-                    options: { at: position === 'start' ? 0 : null, clone: false }
-                }));
-            })).then(function () { return true; }, function () { return false; });
-        } catch (error) {
-            return Promise.resolve(false);
-        }
+        var prepare = Number(repairDepth) > 0 ? removeLiveGeneratedRoots() : Promise.resolve(true);
+        return prepare.then(function (ready) {
+            if (!ready) return false;
+            try {
+                return Promise.all(elements.map(function (model) {
+                    return Promise.resolve(window.$e.run('document/elements/create', {
+                        container: container,
+                        model: model,
+                        options: { at: position === 'start' ? 0 : null, clone: false }
+                    }));
+                })).then(function () {
+                    liveGeneratedRootIds = elements.map(getEditorModelId).filter(Boolean);
+                    return true;
+                }, function () { return false; });
+            } catch (error) {
+                return Promise.resolve(false);
+            }
+        });
     }
     function getEditorModelChildren(model) {
         var children = model && typeof model.get === 'function' ? model.get('elements') : null;
@@ -1016,7 +1062,7 @@
                 addGeneratedJsonSpoiler(editorSyncData && Array.isArray(editorSyncData.elements) ? editorSyncData.elements : []);
                 var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
                     ? syncEditorPatches(body.write.editor_sync)
-                    : syncEditorElements(body.write.editor_sync);
+                    : syncEditorElements(body.write.editor_sync, repairDepth);
                 visionPromise = Promise.resolve(editorSyncPromise).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
                     if (editorSynced) {
@@ -1057,7 +1103,10 @@
                     if (repairDepth >= 2) {
                         return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
                             if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);
-                            return refreshElementorPreview().then(function () {
+                            return removeLiveGeneratedRoots().then(function (removed) {
+                                if (!removed) throw new Error('Не удалось убрать неудачную версию из открытого Elementor.');
+                                return refreshElementorPreview();
+                            }).then(function () {
                                 addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; исходный выбранный элемент сохранен.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
                                 status.textContent = strings.error;
                             });
@@ -1066,7 +1115,10 @@
                     addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
                     return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
                         if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией: ' + rollback.error);
-                        return refreshElementorPreview().then(function () {
+                        return removeLiveGeneratedRoots().then(function (removed) {
+                            if (!removed) throw new Error('Не удалось убрать неудачную версию из открытого Elementor.');
+                            return refreshElementorPreview();
+                        }).then(function () {
                             return request(originalBrief, false, { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), selectedElements: requestContext.selected_elements });
                         });
                     });

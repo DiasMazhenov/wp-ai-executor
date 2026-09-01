@@ -172,6 +172,16 @@ function wpae_normalize_known_third_party_widget( array &$element, array &$repor
             $native[ $native_key ] = is_array( $source[ $source_key ] ) ? $source[ $source_key ] : (string) $source[ $source_key ];
         }
     }
+    if ( empty( $native['title_color'] ) ) {
+        foreach ( [ 'st_title_color_responsive', 'st_title_color', 'st_focused_color_responsive', 'st_focused_color', 'st_focused_background_background_color' ] as $color_key ) {
+            $color = trim( (string) ( $source[ $color_key ] ?? '' ) );
+            if ( $color === '' || ! preg_match( '/^(?:#[0-9a-f]{3,8}|rgba?\([^)]*\)|hsla?\([^)]*\))$/i', $color ) ) {
+                continue;
+            }
+            $native['title_color'] = $color;
+            break;
+        }
+    }
     foreach ( [ '_element_width', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile', '_margin', '_padding', '_animation', 'animation_duration', '__globals__' ] as $key ) {
         if ( array_key_exists( $key, $source ) ) {
             $native[ $key ] = $source[ $key ];

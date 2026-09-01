@@ -1468,6 +1468,97 @@ function wpae_llm_materialize_preserved_library_colors( array $elements, int &$c
     return $elements;
 }
 
+function wpae_llm_normalize_preserved_library_typography( array $elements, int &$changed = 0 ): array {
+    $read_rem_size = static function ( $value ): ?float {
+        if ( ! is_array( $value ) || ! is_numeric( $value['size'] ?? null ) ) {
+            return null;
+        }
+        $size = (float) $value['size'];
+        $unit = strtolower( (string) ( $value['unit'] ?? '' ) );
+        if ( $unit === 'px' ) {
+            return $size / 16;
+        }
+        if ( in_array( $unit, [ 'em', 'rem' ], true ) ) {
+            return $size;
+        }
+        return null;
+    };
+    $set_responsive_heading_size = static function ( array &$settings, bool $long_heading ): void {
+        $sizes = $long_heading ? [ 3.1, 2.6, 2.1 ] : [ 4.2, 3.4, 2.6 ];
+        $settings['typography_typography'] = 'custom';
+        $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => $sizes[0] ];
+        $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => $sizes[1] ];
+        $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => $sizes[2] ];
+        $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.05 ];
+        $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.08 ];
+        $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.12 ];
+    };
+    $clear_negative_vertical_margin = static function ( array &$settings ): bool {
+        $did_change = false;
+        foreach ( [ 'margin', 'margin_tablet', 'margin_mobile', '_margin', '_margin_tablet', '_margin_mobile' ] as $key ) {
+            if ( ! is_array( $settings[ $key ] ?? null ) ) {
+                continue;
+            }
+            foreach ( [ 'top', 'bottom' ] as $side ) {
+                if ( is_numeric( $settings[ $key ][ $side ] ?? null ) && (float) $settings[ $key ][ $side ] < 0 ) {
+                    $settings[ $key ][ $side ] = '0';
+                    $did_change = true;
+                }
+            }
+        }
+        return $did_change;
+    };
+    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $read_rem_size, $set_responsive_heading_size, $clear_negative_vertical_margin ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'widget' ) {
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $text_key = $widget_type === 'text-editor' ? 'editor' : 'title';
+                $text = trim( wp_strip_all_tags( (string) ( $settings[ $text_key ] ?? '' ) ) );
+                $length = function_exists( 'mb_strlen' ) ? mb_strlen( $text ) : strlen( $text );
+                if ( $widget_type === 'heading' ) {
+                    $size = $read_rem_size( $settings['typography_font_size'] ?? null );
+                    $unit = strtolower( (string) ( $settings['typography_font_size']['unit'] ?? '' ) );
+                    $is_extreme = $size !== null && ( $size > 5.5 || ( $unit === 'em' && $size > 4.5 ) );
+                    $is_long_heading = $length > 44;
+                    if ( $is_extreme || ( $is_long_heading && $size !== null && $size > 3.8 ) ) {
+                        $set_responsive_heading_size( $settings, $is_long_heading );
+                        $changed++;
+                    }
+                    if ( $clear_negative_vertical_margin( $settings ) ) {
+                        $changed++;
+                    }
+                } elseif ( $widget_type === 'text-editor' ) {
+                    $size = $read_rem_size( $settings['typography_font_size'] ?? null );
+                    if ( $size !== null && $size > 2.25 ) {
+                        $settings['typography_typography'] = 'custom';
+                        $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.15 ];
+                        $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1.05 ];
+                        $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 0.95 ];
+                        $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.5 ];
+                        $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.5 ];
+                        $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.45 ];
+                        $changed++;
+                    }
+                    if ( $clear_negative_vertical_margin( $settings ) ) {
+                        $changed++;
+                    }
+                }
+                $element['settings'] = $settings;
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+    return $elements;
+}
+
 function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$changed = 0 ): array {
     $read_percent_width = static function ( array $settings ): ?float {
         foreach ( [ 'width', '_element_custom_width' ] as $key ) {
@@ -2386,6 +2477,18 @@ function wpae_llm_set_variant_container_width( array &$settings, float $width ):
     $settings['align_self_mobile'] = 'stretch';
 }
 
+function wpae_llm_set_flexible_bento_container_width( array &$settings, float $width ): void {
+    wpae_llm_set_variant_container_width( $settings, $width );
+    $settings['_flex_grow'] = 1;
+    $settings['_flex_shrink'] = 1;
+    $settings['flex_grow'] = 1;
+    $settings['flex_shrink'] = 1;
+    $settings['_flex_grow_mobile'] = 1;
+    $settings['_flex_shrink_mobile'] = 1;
+    $settings['flex_grow_mobile'] = 1;
+    $settings['flex_shrink_mobile'] = 1;
+}
+
 function wpae_llm_variant_card_widths( int $variant, int $count ): array {
     $layout = intdiv( abs( $variant ) % wpae_llm_visual_variant_count(), 10 );
     if ( $count <= 0 ) {
@@ -2407,7 +2510,7 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
 
     $rows = (int) ceil( $count / 4 );
     $columns = (int) ceil( $count / max( 1, $rows ) );
-    $width = $columns >= 4 ? 23 : ( $columns === 3 ? 31 : 48 );
+    $width = $columns >= 4 ? 31 : ( $columns === 3 ? 31 : 48 );
     return array_fill( 0, $count, $width );
 }
 
@@ -2448,7 +2551,7 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
             continue;
         }
         $card_settings = is_array( $children[ $grid_index ]['settings'] ?? null ) ? $children[ $grid_index ]['settings'] : [];
-        wpae_llm_set_variant_container_width( $card_settings, (float) $width );
+        wpae_llm_set_flexible_bento_container_width( $card_settings, (float) $width );
         $children[ $grid_index ]['settings'] = $card_settings;
     }
     $element['settings'] = $settings;
@@ -2701,7 +2804,7 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                         continue;
                     }
                     $card_settings = is_array( $element['elements'][ $grid_index ]['settings'] ?? null ) ? $element['elements'][ $grid_index ]['settings'] : [];
-                    wpae_llm_set_variant_container_width( $card_settings, (float) $width );
+                    wpae_llm_set_flexible_bento_container_width( $card_settings, (float) $width );
                     $element['elements'][ $grid_index ]['settings'] = $card_settings;
                 }
             }
@@ -3719,7 +3822,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $slide_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
                         $slide_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
                         $slide_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
-                        wpae_llm_set_variant_container_width( $slide_settings, (float) $width );
+                        wpae_llm_set_flexible_bento_container_width( $slide_settings, (float) $width );
                         $children[ $carousel_index ]['elements'][ $slide_index ]['settings'] = $slide_settings;
                     }
                     if ( $before_carousel !== wp_json_encode( [ $settings, $children[ $carousel_index ] ] ) ) {
@@ -3766,7 +3869,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                             $child_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
                             $child_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
                             $child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
-                            wpae_llm_set_variant_container_width( $child_settings, (float) $width );
+                            wpae_llm_set_flexible_bento_container_width( $child_settings, (float) $width );
                             $children[ $child_index ]['settings'] = $child_settings;
                         }
                     }
@@ -3953,7 +4056,7 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
                     continue;
                 }
                 $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
-                wpae_llm_set_variant_container_width( $child_settings, (float) $width );
+                wpae_llm_set_flexible_bento_container_width( $child_settings, (float) $width );
                 $children[ $child_index ]['settings'] = $child_settings;
             }
             $element['elements'] = $children;
@@ -4608,6 +4711,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                         unset( $action['fallback_variant'] );
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
                         $action['elements'] = wpae_llm_materialize_preserved_library_colors( $action['elements'], $library_layout_changed );
+                        $action['elements'] = wpae_llm_normalize_preserved_library_typography( $action['elements'], $library_layout_changed );
                         $action['elements'] = wpae_llm_normalize_preserved_library_geometry( $action['elements'], $library_layout_changed );
                     }
                     if ( ! $library_preserve_design ) {
