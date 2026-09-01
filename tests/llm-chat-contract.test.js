@@ -109,6 +109,8 @@ assert.ok(quotedTestimonialPriority >= 0 && processPriority >= 0 && quotedTestim
 assert.match(llm, /\$archetype === 'process'/);
 assert.match(llm, /image-carousel/);
 assert.match(llm, /\$action\['elements'\] = wpae_llm_apply_bento_layout/);
+assert.match(llm, /\$natural_segments = preg_split/);
+assert.ok(llm.includes("(?<=[.!?])\\s+"));
 assert.match(llm, /\$structured_pairs = \$labeled_pairs/);
 assert.match(llm, /count\( wpae_llm_extract_labeled_content\( \$message \) \)/);
 assert.match(llm, /has_cta/);

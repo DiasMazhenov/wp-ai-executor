@@ -785,7 +785,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     }
 
     $natural_pairs = [];
-    $natural_segments = preg_split( '/(?:\r?\n+|;\s*)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    $natural_segments = preg_split( '/(?:\r?\n+|;\s*|(?<=[.!?])\s+)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     foreach ( $natural_segments as $segment ) {
         $segment = trim( (string) $segment );
         if ( ! preg_match( '/(?:^|[.!?]\s+)([^,.;—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(.{3,320})$/u', $segment, $match ) ) {
