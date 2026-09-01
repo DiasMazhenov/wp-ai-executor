@@ -18,6 +18,16 @@
 - A live generation is not successful until its scoped JSON, DOM, screenshot,
   AI Vision result, and `design-taste-frontend` review agree.
 
+Release v02.10.71 fixes the live hero classification failure found in the
+v02.10.70 Browser Use run. A natural course offer with a clear signup CTA was
+classified as benefits, so a trusted library path supplied a detached
+«ПРЕИМУЩЕСТВА» badge and skipped hero alignment. Marketing hero briefs with a
+single offer and signup CTA are now classified as `hero`; trusted bundled
+preservation is disabled for hero even when retrieval selects a trusted source.
+The hero pass applies a native black overlay and white descendant typography
+to photo-backed text, while keeping one shared alignment for badge, heading,
+body, icons, and CTA.
+
 Release v02.10.68 fixes the deeper live-preview corruption found in the v67
 Browser Use run. The Elementor editor kept roots from earlier generation and
 Vision repair requests even after the server rollback, so each new template was

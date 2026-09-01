@@ -35,6 +35,24 @@ before making a new change to the plugin.
 - **Regression status:** Contract coverage added. Live verification is pending
   a fresh Browser Use generation after delivery.
 
+## EJ-004: Natural hero brief was routed through trusted benefits design
+
+- **Observed:** The content-only brief «Школа переговоров для руководителей...
+  Запишитесь на вводную встречу» produced a photo-backed hero, but the action
+  log said `Hero-нормализация не требуется`, and the result used a detached
+  «ПРЕИМУЩЕСТВА» badge. AI Vision scored the result `55` and reported nearly
+  invisible description text, a detached badge, and weak CTA presentation.
+- **Root cause:** The natural brief did not contain the literal `hero`/«первый
+  экран» marker, so archetype detection returned `benefits`. Retrieval then
+  selected a trusted bundled source and `trusted-preservation` bypassed the
+  hero alignment and contrast pass.
+- **Fix:** v02.10.71 recognizes a single marketing offer with a signup CTA as
+  `hero`, disables trusted preservation for hero while retaining the source
+  layout, applies a native black overlay for photo-backed text, and forces
+  white descendant typography plus one shared alignment.
+- **Regression status:** Contract coverage added. Fresh Browser Use generation
+  is required before marking the issue resolved.
+
 ## EJ-003: Light text over photo lacked native overlay
 
 - **Observed:** In the live Vocario Hero, the badge and white text sat directly

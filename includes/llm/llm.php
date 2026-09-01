@@ -620,6 +620,13 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(первый экран|hero|хиро|обложк|главн\w*|home)\b|школ\w*\s+публичн\w*\s+выступлен\w*/iu', $message ) ) {
             return 'hero';
         }
+        if (
+            count( $labeled_pairs ) < 2
+            && preg_match( '/\b(запишитесь|записаться|оставьте\s+заявк\w*|начните|попробуйте)\b/iu', $message )
+            && preg_match( '/\b(для\s+\p{L}+|школ\w*|курс\w*|обучен\w*|заняти\w*|практик\w*|тренер\w*|результат\w*)\b/iu', $message )
+        ) {
+            return 'hero';
+        }
         if ( preg_match( '/\bпартн[её]р\w*\b/iu', $message ) ) {
             return 'carousel';
         }
@@ -1583,22 +1590,6 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
         }
         return false;
     };
-    $has_card_surface = static function ( array $settings ): bool {
-        if ( trim( (string) ( $settings['border_border'] ?? '' ) ) !== '' ) {
-            return true;
-        }
-        foreach ( [ 'border_radius', 'box_shadow' ] as $key ) {
-            if ( ! is_array( $settings[ $key ] ?? null ) ) {
-                continue;
-            }
-            foreach ( [ 'size', 'top', 'right', 'bottom', 'left', 'blur', 'spread' ] as $dimension ) {
-                if ( is_numeric( $settings[ $key ][ $dimension ] ?? null ) && (float) $settings[ $key ][ $dimension ] > 0 ) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    };
     $is_white = static function ( string $color ): bool {
         return in_array( strtolower( trim( $color ) ), [ '#fff', '#ffffff', 'white', 'rgb(255, 255, 255)', 'rgba(255, 255, 255, 1)' ], true );
     };
@@ -1615,6 +1606,22 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
             }
             if ( $has_light_text( (array) ( $node['elements'] ?? [] ) ) ) {
                 return true;
+            }
+        }
+        return false;
+    };
+    $has_card_surface = static function ( array $settings ): bool {
+        if ( trim( (string) ( $settings['border_border'] ?? '' ) ) !== '' ) {
+            return true;
+        }
+        foreach ( [ 'border_radius', 'box_shadow' ] as $key ) {
+            if ( ! is_array( $settings[ $key ] ?? null ) ) {
+                continue;
+            }
+            foreach ( [ 'size', 'top', 'right', 'bottom', 'left', 'blur', 'spread' ] as $dimension ) {
+                if ( is_numeric( $settings[ $key ][ $dimension ] ?? null ) && (float) $settings[ $key ][ $dimension ] > 0 ) {
+                    return true;
+                }
             }
         }
         return false;
@@ -1760,7 +1767,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         }
         return null;
     };
-    $apply = static function ( array &$nodes, string $alignment, bool $inside_content = false ) use ( &$apply, $to_flex_alignment, $has_text_content, $has_media, $has_background_image, $has_light_text ): void {
+    $apply = static function ( array &$nodes, string $alignment, bool $inside_content = false, bool $photo_backed = false ) use ( &$apply, $to_flex_alignment, $has_text_content, $has_media, $has_background_image ): void {
         $flex_alignment = $to_flex_alignment( $alignment );
         $align_self = $alignment === 'center' ? 'center' : ( $alignment === 'right' ? 'flex-end' : 'flex-start' );
         foreach ( $nodes as &$node ) {
@@ -1773,9 +1780,11 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             $is_badge = $element_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true );
             $is_content_container = $inside_content;
+            $is_photo_container = false;
             if ( $element_type === 'container' && ! $is_badge ) {
                 $children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
-                if ( $has_background_image( $settings ) && $has_light_text( $children ) ) {
+                $is_photo_container = $has_background_image( $settings );
+                if ( $is_photo_container && $has_text_content( $children ) ) {
                     $settings['background_overlay_background'] = 'classic';
                     $settings['background_overlay_color'] = '#000000';
                     $settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
@@ -1803,11 +1812,28 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
                 $settings['align_self'] = $align_self;
                 $settings['align_self_tablet'] = $align_self;
                 $settings['align_self_mobile'] = $align_self;
+                if ( $photo_backed ) {
+                    if ( $widget_type === 'heading' ) {
+                        $settings['title_color'] = '#ffffff';
+                    } elseif ( $widget_type === 'text-editor' ) {
+                        $settings['text_color'] = '#ffffff';
+                    } elseif ( $widget_type === 'button' ) {
+                        $settings['button_text_color'] = '#ffffff';
+                    } elseif ( $widget_type === 'icon' ) {
+                        $settings['primary_color'] = '#ffffff';
+                    } elseif ( $widget_type === 'icon-box' ) {
+                        $settings['title_color'] = '#ffffff';
+                        $settings['description_color'] = '#ffffff';
+                    } elseif ( $widget_type === 'icon-list' ) {
+                        $settings['icon_color'] = '#ffffff';
+                        $settings['text_color'] = '#ffffff';
+                    }
+                }
             }
             $node['settings'] = $settings;
             $next_inside_content = $inside_content || $is_content_container;
             if ( is_array( $node['elements'] ?? null ) ) {
-                $apply( $node['elements'], $alignment, $next_inside_content );
+                $apply( $node['elements'], $alignment, $next_inside_content, $photo_backed || $is_photo_container );
             }
         }
         unset( $node );
@@ -5071,7 +5097,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
                     $action_fallback = false;
-                    $library_preserve_design = ! empty( $selected_library['trusted_bundled'] );
+                    $library_preserve_design = ! empty( $selected_library['trusted_bundled'] ) && $action_archetype !== 'hero';
                     if ( $library_preserve_design ) {
                         unset( $action['fallback_variant'] );
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );

@@ -1,5 +1,16 @@
 # План WP AI Executor
 
+## v02.10.71
+
+- Исправить live-классификацию естественного hero-промта: оффер с signup CTA
+  не должен превращаться в benefits/trusted-композицию с чужим бейджем.
+- Отключить trusted-preservation для hero, сохранить библиотечную композицию
+  только как источник, затем применить native overlay, белую типографику и
+  единое выравнивание всех элементов текстовой колонки.
+- Повторить Browser Use generation со screenshot, scoped JSON, DOM, AI Vision
+  и design-taste review; подтвердить, что Vision больше не видит detached badge,
+  low-contrast copy и повторяющиеся корни.
+
 ## v02.10.70
 
 - Вернуть обязательный outlined badge в trusted library-композиции и разместить
