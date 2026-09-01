@@ -957,6 +957,7 @@
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
                     if (diagnostics.error && (!body.details || !body.details.error)) detail += ': ' + diagnostics.error;
                     if (diagnostics.details && diagnostics.details.error) detail += ': ' + diagnostics.details.error;
+                    if (diagnostics.exception) detail += ': ' + diagnostics.exception;
                     if (diagnostics.update_error) detail += ': ' + diagnostics.update_error;
                     if (Array.isArray(diagnostics.blocking_errors) && diagnostics.blocking_errors.length) detail += ': ' + diagnostics.blocking_errors.join('; ');
                     if (diagnostics.received_action || diagnostics.received_post_id) detail += ' (получено: action=' + (diagnostics.received_action || 'не указано') + ', post_id=' + (diagnostics.received_post_id || 'не указан') + ')';

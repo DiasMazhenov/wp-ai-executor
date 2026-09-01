@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.55`
+- Plugin: `v02.10.56`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -93,6 +93,14 @@ storage path.
 Release v02.10.55 adds a Gemini model selector with Flash, Flash-Lite and Pro
 choices. The dashboard switches between the Gemini select and the existing
 free-text model field for other/custom providers without exposing API keys.
+
+Release v02.10.56 fixes Gemini action requests for Google's OpenAI-compatible
+endpoint by removing unsupported OpenAI-only `response_format` and
+`max_completion_tokens` fields before transport. The `/llm/chat` callback now
+converts unexpected PHP `Throwable` failures into a JSON `WP_Error`, logs the
+server-side file/line for diagnosis, and keeps network exceptions mapped to the
+existing single provider reload/retry path. The chat surfaces the safe exception
+message instead of showing WordPress' HTML critical-error page.
 
 ## Architecture
 

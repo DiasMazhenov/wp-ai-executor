@@ -233,23 +233,46 @@ function wpae_llm_response_diagnostics( $body ): array {
     ];
 }
 
-function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider ) {
-    $remote_args['body'] = wp_json_encode( $request_body );
-    $response = wp_safe_remote_post( $url, $remote_args );
-    if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
-        $initial_status = wp_remote_retrieve_response_code( $response );
-        $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
-        $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
-        $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
-        $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
-        $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && ( $initial_diagnostics['finish_reason'] ?? '' ) === 'error';
-        if ( $structured_route_rejected || $structured_response_failed ) {
-            unset( $request_body['response_format'], $request_body['provider'] );
-            $remote_args['body'] = wp_json_encode( $request_body );
-            $response = wp_safe_remote_post( $url, $remote_args );
-        }
+function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider ): array {
+    if ( $provider !== 'gemini' ) {
+        return $request_body;
     }
-    return $response;
+
+    // Gemini's OpenAI-compatible endpoint does not accept OpenAI-only action fields.
+    unset( $request_body['max_completion_tokens'] );
+    if ( $action_request ) {
+        unset( $request_body['response_format'] );
+    }
+
+    return $request_body;
+}
+
+function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider ) {
+    try {
+        $request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider );
+        $remote_args['body'] = wp_json_encode( $request_body );
+        $response = wp_safe_remote_post( $url, $remote_args );
+        if ( ! is_wp_error( $response ) && $action_request && $provider === 'openrouter' ) {
+            $initial_status = wp_remote_retrieve_response_code( $response );
+            $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
+            $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
+            $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
+            $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
+            $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && ( $initial_diagnostics['finish_reason'] ?? '' ) === 'error';
+            if ( $structured_route_rejected || $structured_response_failed ) {
+                unset( $request_body['response_format'], $request_body['provider'] );
+                $remote_args['body'] = wp_json_encode( $request_body );
+                $response = wp_safe_remote_post( $url, $remote_args );
+            }
+        }
+        return $response;
+    } catch ( Throwable $error ) {
+        error_log( sprintf( '[WP AI Executor] Provider request failed for %s: %s in %s:%d', $provider, $error->getMessage(), $error->getFile(), $error->getLine() ) );
+        return new WP_Error( 'wpae_llm_provider_request_failed', $error->getMessage(), [
+            'provider' => $provider,
+            'exception_type' => get_class( $error ),
+        ] );
+    }
 }
 
 function wpae_llm_content_units( string $message ): array {
@@ -4114,6 +4137,23 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
 }
 
 function wpae_llm_chat( WP_REST_Request $request ) {
+    try {
+        return wpae_llm_chat_request( $request );
+    } catch ( Throwable $error ) {
+        $provider = sanitize_key( (string) ( wpae_llm_get_stored_settings()['provider'] ?? 'unknown' ) );
+        error_log( sprintf( '[WP AI Executor] LLM chat failed for provider %s: %s in %s:%d', $provider, $error->getMessage(), $error->getFile(), $error->getLine() ) );
+        return new WP_Error( 'wpae_llm_internal_error', 'Внутренняя ошибка LLM-запроса. Подробности записаны в журнал WordPress.', [
+            'status' => 500,
+            'provider' => $provider,
+            'details' => [
+                'exception' => sanitize_text_field( $error->getMessage() ),
+                'exception_type' => sanitize_text_field( get_class( $error ) ),
+            ],
+        ] );
+    }
+}
+
+function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( ! wpae_llm_rate_limit_check() ) {
         return new WP_Error( 'wpae_llm_rate_limited', 'Лимит LLM-запросов исчерпан. Повторите позже.', [ 'status' => 429, 'window_seconds' => WPAE_LLM_CALL_WINDOW ] );
     }

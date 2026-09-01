@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.56
+
+- Исправить Gemini action-запросы: не отправлять в Google OpenAI-compatible
+  endpoint неподдерживаемые `response_format` и `max_completion_tokens`.
+- Защитить `/llm/chat` от PHP `Throwable`: возвращать JSON-ошибку с безопасной
+  диагностикой и сохранять исходную причину в журнале WordPress.
+- Сохранить единичный reload/retry для сетевых ошибок провайдера и проверить
+  Gemini payload, PHP lint и LLM chat contract до доставки.
+
 ## v02.10.55
 
 - Добавить несколько актуальных Gemini-моделей в отдельный select в разделе
