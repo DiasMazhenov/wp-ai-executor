@@ -214,6 +214,8 @@ assert.match(llm, /function wpae_llm_wrap_generation_cta/);
 assert.match(llm, /wpae-generated-cta/);
 assert.match(llm, /align_self'\] = 'flex-start'/);
 assert.match(llm, /function wpae_llm_content_fidelity/);
+assert.match(llm, /structured_response_failed/);
+assert.match(llm, /finish_reason.*error/);
 assert.match(llm, /function wpae_llm_extract_requested_content/);
 assert.match(llm, /function wpae_llm_apply_fallback_content/);
 assert.match(llm, /function wpae_llm_extract_labeled_content/);

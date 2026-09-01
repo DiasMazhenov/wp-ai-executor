@@ -213,8 +213,10 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
         $initial_status = wp_remote_retrieve_response_code( $response );
         $initial_body = json_decode( wp_remote_retrieve_body( $response ), true );
         $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
-        $structured_route_rejected = $initial_status >= 400 && $initial_status < 500 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false );
-        if ( $structured_route_rejected ) {
+        $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
+        $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
+        $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && ( $initial_diagnostics['finish_reason'] ?? '' ) === 'error';
+        if ( $structured_route_rejected || $structured_response_failed ) {
             unset( $request_body['response_format'], $request_body['provider'] );
             $remote_args['body'] = wp_json_encode( $request_body );
             $response = wp_safe_remote_post( $url, $remote_args );

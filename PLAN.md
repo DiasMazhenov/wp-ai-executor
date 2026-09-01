@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.22
+
+- Для OpenRouter повторять structured action request без несовместимых
+  `response_format/provider`, если ответ содержит generic provider error или
+  `finish_reason: error`.
+- Обновить package hash, локальные тесты и повторить Browser Use screenshot,
+  Vision/design-taste и selected JSON проверки.
+
 ## v02.10.21
 
 - Обобщить разбор quoted-label карточек для этапов и других контентных блоков;

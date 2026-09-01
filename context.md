@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.21`
+- Plugin: `v02.10.22`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -66,6 +66,10 @@ rejects valid pricing briefs.
 Release v02.10.21 generalizes that parser fix to all quoted content labels
 followed by a dash, including process steps, while keeping sentence-level CTA
 instructions outside the card description.
+
+Release v02.10.22 retries OpenRouter structured action requests once without
+`response_format` and `provider` when the route returns a generic provider
+error or `finish_reason: error`, before the editor performs its reload retry.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"
