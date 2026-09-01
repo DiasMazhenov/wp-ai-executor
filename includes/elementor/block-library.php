@@ -328,7 +328,9 @@ function wpae_block_library_manifest_metadata_size_ok( array $manifest ): bool {
 }
 
 function wpae_block_library_build_record( array $parsed, array $input, array $existing = [] ): array {
-    $elements = $parsed['elementor_data'];
+    $raw_elements = $parsed['elementor_data'];
+    $normalized = wpae_elementor_normalize_data( $raw_elements );
+    $elements = $normalized['data'];
     $source_payload = $parsed['source_payload'];
     $source_metadata = $parsed['source_mode'] === 'wpae_library_block' && is_array( $source_payload )
         ? $source_payload
@@ -466,7 +468,7 @@ function wpae_block_library_seed_bundled_templates(): array {
         return $result;
     }
 
-    $result = [ 'imported' => [], 'skipped' => [] ];
+    $result = [ 'imported' => [], 'migrated' => [], 'skipped' => [] ];
     $state = get_option( WPAE_BLOCK_LIBRARY_FIXTURE_OPTION, [] );
     $state = is_array( $state ) ? $state : [];
 
@@ -490,34 +492,8 @@ function wpae_block_library_seed_bundled_templates(): array {
             $raw = file_get_contents( $path );
             $parsed = wpae_block_library_extract_elements( is_string( $raw ) ? $raw : '' );
             if ( ! is_wp_error( $parsed ) ) {
-                $fixture_content_hash = hash( 'sha256', (string) wp_json_encode( $parsed['elementor_data'] ) );
+                $fixture_content_hash = hash( 'sha256', (string) wp_json_encode( wpae_elementor_normalize_data( $parsed['elementor_data'] )['data'] ) );
             }
-        }
-
-        $known = is_array( $state[ $fixture_id ] ?? null ) ? $state[ $fixture_id ] : [];
-        if ( hash_equals( $expected_hash, strtolower( (string) ( $known['sha256'] ?? '' ) ) ) ) {
-            $known_post = wpae_block_library_get_post( absint( $known['post_id'] ?? 0 ) );
-            if ( ! is_wp_error( $known_post ) ) {
-                $known_record = wpae_block_library_decode_post( $known_post );
-                if (
-                    ! is_wp_error( $known_record )
-                    && (string) ( $known_record['source'] ?? '' ) === 'copyelement'
-                    && $fixture_content_hash !== ''
-                    && hash_equals( $fixture_content_hash, strtolower( (string) ( $known_record['content_hash'] ?? '' ) ) )
-                    && ! wpae_block_library_is_trusted_bundled_fixture( $known_record )
-                ) {
-                    $known_record['bundled_fixture_id'] = $fixture_id;
-                    $known_record['bundled_fixture_sha256'] = $expected_hash;
-                    $known_record['bundled_fixture_content_hash'] = $fixture_content_hash;
-                    wpae_block_library_store_record( (int) $known_post->ID, $known_record );
-                }
-                continue;
-            }
-        }
-
-        if ( ! is_array( $parsed ) || $fixture_content_hash === '' ) {
-            $result['skipped'][] = $fixture_id;
-            continue;
         }
 
         $source_url = esc_url_raw( (string) ( $fixture['source_url'] ?? '' ) );
@@ -536,6 +512,50 @@ function wpae_block_library_seed_bundled_templates(): array {
                 'source_url' => $source_url,
             ],
         ];
+
+        $known = is_array( $state[ $fixture_id ] ?? null ) ? $state[ $fixture_id ] : [];
+        if ( hash_equals( $expected_hash, strtolower( (string) ( $known['sha256'] ?? '' ) ) ) ) {
+            $known_post = wpae_block_library_get_post( absint( $known['post_id'] ?? 0 ) );
+            if ( ! is_wp_error( $known_post ) ) {
+                $known_record = wpae_block_library_decode_post( $known_post );
+                if (
+                    ! is_wp_error( $known_record )
+                    && (string) ( $known_record['source'] ?? '' ) === 'copyelement'
+                ) {
+                    if (
+                        $fixture_content_hash !== ''
+                        && hash_equals( $fixture_content_hash, strtolower( (string) ( $known_record['content_hash'] ?? '' ) ) )
+                        && ! wpae_block_library_is_trusted_bundled_fixture( $known_record )
+                    ) {
+                        $known_record['bundled_fixture_id'] = $fixture_id;
+                        $known_record['bundled_fixture_sha256'] = $expected_hash;
+                        $known_record['bundled_fixture_content_hash'] = $fixture_content_hash;
+                        wpae_block_library_store_record( (int) $known_post->ID, $known_record );
+                    } elseif (
+                        is_array( $parsed )
+                        && $fixture_content_hash !== ''
+                        && ! wpae_block_library_is_trusted_bundled_fixture( $known_record )
+                    ) {
+                        $record = wpae_block_library_build_record( $parsed, $input, $known_record );
+                        $record['bundled_fixture_id'] = $fixture_id;
+                        $record['bundled_fixture_sha256'] = $expected_hash;
+                        $record['bundled_fixture_content_hash'] = $fixture_content_hash;
+                        if ( ! is_wp_error( wpae_block_library_store_record( (int) $known_post->ID, $record ) ) ) {
+                            $result['migrated'][] = [ 'id' => $fixture_id, 'post_id' => (int) $known_post->ID, 'title' => $record['title'] ];
+                        } else {
+                            $result['skipped'][] = $fixture_id;
+                        }
+                    }
+                }
+                continue;
+            }
+        }
+
+        if ( ! is_array( $parsed ) || $fixture_content_hash === '' ) {
+            $result['skipped'][] = $fixture_id;
+            continue;
+        }
+
         $record = wpae_block_library_build_record( $parsed, $input );
         $record['bundled_fixture_id'] = $fixture_id;
         $record['bundled_fixture_sha256'] = $expected_hash;
@@ -562,7 +582,7 @@ function wpae_block_library_seed_bundled_templates(): array {
         $result['imported'][] = [ 'id' => $fixture_id, 'post_id' => (int) $post_id, 'title' => $record['title'] ];
     }
 
-    if ( ! empty( $result['imported'] ) ) {
+    if ( ! empty( $result['imported'] ) || ! empty( $result['migrated'] ) ) {
         update_option( WPAE_BLOCK_LIBRARY_FIXTURE_OPTION, $state, false );
     }
 
@@ -658,6 +678,9 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             continue;
         }
         $elementor_data = (array) ( $record['elementor_data'] ?? [] );
+        if ( function_exists( 'wpae_elementor_normalize_data' ) ) {
+            $elementor_data = wpae_elementor_normalize_data( $elementor_data )['data'];
+        }
         if ( ! empty( $compatibility['unavailable_widget_types'] ) ) {
             $elementor_data = wpae_block_library_filter_compatible_roots( $elementor_data );
             if ( empty( $elementor_data ) ) {

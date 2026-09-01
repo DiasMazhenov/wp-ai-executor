@@ -127,6 +127,71 @@ function wpae_normalize_native_widget_content( array &$settings, string $widget_
 }
 
 function wpae_elementor_normalize_flex_settings( array &$settings, array &$report, string $element_path ): void {
+    $container_type = sanitize_key( (string) ( $settings['container_type'] ?? '' ) );
+    $was_grid = $container_type === 'grid';
+    $grid_gaps = is_array( $settings['grid_gaps'] ?? null ) ? $settings['grid_gaps'] : [];
+    $grid_gaps_mobile = is_array( $settings['grid_gaps_mobile'] ?? null ) ? $settings['grid_gaps_mobile'] : [];
+    $grid_gaps_tablet = is_array( $settings['grid_gaps_tablet'] ?? null ) ? $settings['grid_gaps_tablet'] : [];
+
+    if ( $container_type !== 'flex' ) {
+        $settings['container_type'] = 'flex';
+        wpae_elementor_normalize_add_change(
+            $report,
+            'converted_container_type',
+            $element_path,
+            'Converted the Elementor layout container to Flexbox.',
+            [ 'from' => $container_type !== '' ? $container_type : 'unspecified', 'to' => 'flex' ]
+        );
+    }
+
+    if ( $was_grid ) {
+        if ( (string) ( $settings['flex_direction'] ?? '' ) === '' || (string) ( $settings['flex_direction'] ?? '' ) === 'column' ) {
+            $settings['flex_direction'] = 'row';
+        }
+        if ( (string) ( $settings['flex_wrap'] ?? '' ) === '' || (string) ( $settings['flex_wrap'] ?? '' ) === 'nowrap' ) {
+            $settings['flex_wrap'] = 'wrap';
+        }
+        if ( ! array_key_exists( 'flex_justify_content', $settings ) && is_scalar( $settings['grid_justify_content'] ?? null ) ) {
+            $settings['flex_justify_content'] = sanitize_key( (string) $settings['grid_justify_content'] );
+        }
+        if ( ! array_key_exists( 'flex_align_items', $settings ) && is_scalar( $settings['grid_align_items'] ?? null ) ) {
+            $settings['flex_align_items'] = sanitize_key( (string) $settings['grid_align_items'] );
+        }
+    }
+
+    $map_grid_gap = static function ( array $grid_gap ): ?array {
+        $unit = sanitize_key( (string) ( $grid_gap['unit'] ?? '' ) );
+        $column = $grid_gap['column'] ?? null;
+        $row = $grid_gap['row'] ?? null;
+        if ( $unit === '' || ! is_scalar( $column ) || ! is_scalar( $row ) || ! is_numeric( $column ) || ! is_numeric( $row ) ) {
+            return null;
+        }
+        $column = (string) $column;
+        $row = (string) $row;
+        return [
+            'column' => $column,
+            'row' => $row,
+            'isLinked' => $column === $row,
+            'unit' => $unit,
+            'size' => $column === $row ? $column : '',
+        ];
+    };
+    if ( $was_grid && ! empty( $grid_gaps ) ) {
+        $mapped_gap = $map_grid_gap( $grid_gaps );
+        if ( is_array( $mapped_gap ) ) {
+            $settings['flex_gap'] = $mapped_gap;
+        }
+    }
+    foreach ( [ 'mobile' => $grid_gaps_mobile, 'tablet' => $grid_gaps_tablet ] as $device => $grid_gap ) {
+        if ( empty( $grid_gap ) ) {
+            continue;
+        }
+        $mapped_gap = $map_grid_gap( $grid_gap );
+        if ( is_array( $mapped_gap ) ) {
+            $settings[ 'flex_gap_' . $device ] = $mapped_gap;
+        }
+    }
+
     $aliases = [
         'justify_content' => 'flex_justify_content',
         'align_items' => 'flex_align_items',
@@ -174,6 +239,20 @@ function wpae_elementor_normalize_flex_settings( array &$settings, array &$repor
             $element_path,
             'Migrated a legacy container gap setting to the current Elementor Flexbox control.',
             [ 'from' => $legacy_key, 'to' => $modern_key ]
+        );
+    }
+
+    foreach ( array_keys( $settings ) as $setting_key ) {
+        if ( ! preg_match( '/^_?grid(?:_|$)/', (string) $setting_key ) ) {
+            continue;
+        }
+        unset( $settings[ $setting_key ] );
+        wpae_elementor_normalize_add_change(
+            $report,
+            'removed_grid_setting',
+            $element_path,
+            'Removed a grid-only setting after converting the container to Flexbox.',
+            [ 'setting' => $setting_key ]
         );
     }
 }
@@ -236,7 +315,23 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 $element['elements'] = [];
                 wpae_elementor_normalize_add_change( $report, 'filled_elements', $element_path, 'Filled missing widget elements array.' );
             }
+            foreach ( array_keys( $element['settings'] ) as $setting_key ) {
+                if ( ! preg_match( '/^_?grid(?:_|$)/', (string) $setting_key ) ) {
+                    continue;
+                }
+                unset( $element['settings'][ $setting_key ] );
+                wpae_elementor_normalize_add_change(
+                    $report,
+                    'removed_grid_setting',
+                    $element_path,
+                    'Removed a grid-only widget placement setting for Flexbox compatibility.',
+                    [ 'setting' => $setting_key ]
+                );
+            }
             wpae_normalize_native_widget_content( $element['settings'], sanitize_key( (string) $element['widgetType'] ), $report, $element_path );
+            if ( ! empty( $element['elements'] ) ) {
+                $element['elements'] = wpae_elementor_normalize_elements( $element['elements'], $report, $element_path );
+            }
         } else {
             $element['elType'] = 'container';
 

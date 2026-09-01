@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.32`
+- Plugin: `v02.10.33`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -56,6 +56,12 @@ normalizer no longer mutates the card widget array while iterating it, so adding
 a native icon cannot skip the heading or duplicate the description. Benefits
 and other repeatable cards retain exact label/description pairs after the full
 visual grammar pipeline.
+
+Release v02.10.33 converts every library/template container to native Flexbox,
+including containers nested inside widget payloads such as Mega Menu. Grid-only
+settings are mapped to Flexbox gaps/alignment where possible and then removed.
+Bundled library records are stored and migrated with the normalized Flexbox
+payload, while retrieval normalizes older records before generation.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the
