@@ -1,4 +1,5 @@
 const assert = require('assert');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -27,6 +28,11 @@ const megaMenuFixture = JSON.parse(read('includes/elementor/copyelement/mega-men
 const vocarioFixtureFiles = fs.readdirSync(path.join(root, 'includes/elementor/copyelement'))
     .filter((file) => file.startsWith('vocario-') && file.endsWith('.json'))
     .sort();
+for (const match of copyElementManifest.matchAll(/'file' => '([^']+)'[\s\S]*?'sha256' => '([a-f0-9]{64})'/g)) {
+    const fixturePath = path.join(root, 'includes/elementor/copyelement', match[1]);
+    const actualHash = crypto.createHash('sha256').update(fs.readFileSync(fixturePath)).digest('hex');
+    assert.equal(actualHash, match[2], `${match[1]} hash differs from copyelement manifest`);
+}
 const blockLibraryUi = read('assets/js/elementor-block-library-ui.js');
 const blockLibraryCss = read('assets/css/elementor-block-library.css');
 

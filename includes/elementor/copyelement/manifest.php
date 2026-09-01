@@ -73,7 +73,7 @@ return [
     [
         'id' => 'vocario-404',
         'file' => 'vocario-404.json',
-        'sha256' => '59fb0aaaa680e8cf8a22468d07eebb984da56ae7e321a342675f10284ba40af6',
+        'sha256' => '4766652b63ba30dc62d0e40674d2f28a914601c9b1e034c4b9db9a678ad5b8a1',
         'title' => 'Vocario 404',
         'description' => 'Vocario Public Speaking Class template kit - 404.',
         'category' => '404',
@@ -85,7 +85,7 @@ return [
     [
         'id' => 'vocario-home',
         'file' => 'vocario-home.json',
-        'sha256' => 'df26f744a05877cf3965f84f800ab6649624451c4ed1ed4ad4333003dcd3b78e',
+        'sha256' => '80ac99c4a7b3b3ea0676c0e49999c2e2c87beb100117474250d2b4ce47150dcc',
         'title' => 'Vocario Home',
         'description' => 'Vocario Public Speaking Class template kit - Home.',
         'category' => 'home',
@@ -97,7 +97,7 @@ return [
     [
         'id' => 'vocario-about-us',
         'file' => 'vocario-about-us.json',
-        'sha256' => 'aaa7e54e1448e84351ec8561f269a28989e464742ca7cc001b64733619eea058',
+        'sha256' => '9190d6c51e322c20a2de6a47f380c9b7607aafb14cb489e7f31227ea3d43a2d8',
         'title' => 'Vocario About Us',
         'description' => 'Vocario Public Speaking Class template kit - About Us.',
         'category' => 'about',
@@ -109,7 +109,7 @@ return [
     [
         'id' => 'vocario-our-team',
         'file' => 'vocario-our-team.json',
-        'sha256' => '79fee4747f620bd6dd5024cb831a25ec931704e4605228f506533117d8bf6002',
+        'sha256' => '8fe6bb9cb3548de7dda15d4783603bb885f60aacaa62587f40443f2bfc76a959',
         'title' => 'Vocario Our Team',
         'description' => 'Vocario Public Speaking Class template kit - Our Team.',
         'category' => 'team',
@@ -121,7 +121,7 @@ return [
     [
         'id' => 'vocario-courses',
         'file' => 'vocario-courses.json',
-        'sha256' => '4b88ba8a72f913de523bd3ad90b3d8b86c6cdeb6a27a63c5693f109acd28ace7',
+        'sha256' => 'fb59d66eb60ff67fda245c7f8bf885a2738a1df784d2733d5a9e5292aead5073',
         'title' => 'Vocario Courses',
         'description' => 'Vocario Public Speaking Class template kit - Courses.',
         'category' => 'courses',
@@ -133,7 +133,7 @@ return [
     [
         'id' => 'vocario-upcoming-event',
         'file' => 'vocario-upcoming-event.json',
-        'sha256' => 'df4a405c8c6845e644378b92de875a7eae0f25cf690f8ad9420f64a27078ddc8',
+        'sha256' => '70522de8aa09ca1c0ecf2093673b1cade407f81ae34b92abd100bc867bb75751',
         'title' => 'Vocario Upcoming Event',
         'description' => 'Vocario Public Speaking Class template kit - Upcoming Event.',
         'category' => 'events',
@@ -145,7 +145,7 @@ return [
     [
         'id' => 'vocario-pricing',
         'file' => 'vocario-pricing.json',
-        'sha256' => 'a7747e9f947996917166b6bf768af6c0fa698e8db6e17b549c40676ddac0e439',
+        'sha256' => '6fbf001486346dc87e0442f2bf54892fc5ba3db548a8aaa146469ddc28abae9b',
         'title' => 'Vocario Pricing',
         'description' => 'Vocario Public Speaking Class template kit - Pricing.',
         'category' => 'pricing',
@@ -157,7 +157,7 @@ return [
     [
         'id' => 'vocario-blog',
         'file' => 'vocario-blog.json',
-        'sha256' => '23d1cf461d28cbdb90225da008fa651dbafc297cc2dd07f89fa680c7e330905f',
+        'sha256' => '1cf6e05b8ea2ea7e2ca3c2ed9e483359a9eee691156208e80ce77a0d19fd59fd',
         'title' => 'Vocario Blog',
         'description' => 'Vocario Public Speaking Class template kit - Blog.',
         'category' => 'blog',
@@ -169,7 +169,7 @@ return [
     [
         'id' => 'vocario-faq',
         'file' => 'vocario-faq.json',
-        'sha256' => 'a16a04ca01707a3522b01c1bf6f9ce527cc5806b60933f7a2fe3bc459e195642',
+        'sha256' => '1142807204358582562e8f93caeec9c878339ebf21ae52540ca1dc0faca4efc3',
         'title' => 'Vocario FAQ',
         'description' => 'Vocario Public Speaking Class template kit - FAQ.',
         'category' => 'faq',
@@ -181,7 +181,7 @@ return [
     [
         'id' => 'vocario-contact-us',
         'file' => 'vocario-contact-us.json',
-        'sha256' => '277cda7b1b7880a9c047d2c2cbdaf1a4d7589c4f63ce676006e2c8d5b832dbd4',
+        'sha256' => 'b6ebc4cd1e2d180cfdd80d245dc47a42a184e33e88e3f16be7d618c928b6be26',
         'title' => 'Vocario Contact Us',
         'description' => 'Vocario Public Speaking Class template kit - Contact Us.',
         'category' => 'contact',
@@ -193,7 +193,7 @@ return [
     [
         'id' => 'vocario-contact-us-form',
         'file' => 'vocario-contact-us-form.json',
-        'sha256' => 'f8c9aa26efd9d02290a908d68d50961ccfc3285b89d31effa21937d3d9030d83',
+        'sha256' => '2c4a43515f23f3fba7ad163d3d9689395bf998ab9684f35402af8940a8d129fd',
         'title' => 'Vocario Contact Us Form',
         'description' => 'Vocario Public Speaking Class template kit - Contact Us Form.',
         'category' => 'contact-form',
@@ -205,7 +205,7 @@ return [
     [
         'id' => 'vocario-header',
         'file' => 'vocario-header.json',
-        'sha256' => 'abd3e9ed3f9cbfc59a90c35372bffc0f5554c866b6aea0965bacd80fbff517c4',
+        'sha256' => '6af07490c501a321b879f0ad267e86d2916bc39f8f10cddf8ffc63acf7e664e0',
         'title' => 'Vocario Header',
         'description' => 'Vocario Public Speaking Class template kit - Header.',
         'category' => 'header',
@@ -217,7 +217,7 @@ return [
     [
         'id' => 'vocario-footer',
         'file' => 'vocario-footer.json',
-        'sha256' => 'f204f263993833d2dac8e8bf0f50ae9c0d8b683607f31cac82fac43ced8ae8de',
+        'sha256' => '69d3c19d76d7a56e0c556fad94a99ed21be3b5d22be58f2070e2e93ec43aeffd',
         'title' => 'Vocario Footer',
         'description' => 'Vocario Public Speaking Class template kit - Footer.',
         'category' => 'footer',

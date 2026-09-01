@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.44
+
+- Синхронизировать SHA-256 Vocario JSON в CopyElement manifest после перевода
+  всех 393 контейнеров на Flexbox, чтобы seed/retrieval не использовал старые
+  записи из БД.
+- Добавить автоматическую проверку целостности fixture manifest и повторно
+  протестировать Vocario через Browser Use со screenshot, Vision/design-taste
+  и фактическим JSON.
+
 ## v02.10.43
 
 - Преобразовывать явно запрошенный standalone CTA из text-editor в native

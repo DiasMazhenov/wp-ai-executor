@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.43`
+- Plugin: `v02.10.44`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -17,6 +17,12 @@ archetype aliases, while the shared runtime normalizer remains the final guard.
 Release v02.10.43 adds a post-grammar CTA pass: an explicitly requested
 standalone call-to-action cannot remain a plain text-editor; it is replaced or
 inserted as a styled native Elementor button inside the generated content shell.
+
+Release v02.10.44 synchronizes all Vocario fixture SHA-256 values in the
+CopyElement manifest with the Flex-converted JSON files. Without this, the
+bundled-template seed skipped the changed files and retrieval could select
+stale database records. The contract test now verifies every manifest fixture
+hash before delivery.
 
 ## Architecture
 
