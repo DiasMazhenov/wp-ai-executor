@@ -9,6 +9,12 @@
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
 
+Release v02.10.60 fixes trusted library narrative adaptation: requested copy is
+now assigned to one title, one body, one CTA and at most one instance of each
+numeric, audience and confidence slot. Duplicate source copy widgets are
+pruned instead of being filled by cycling fragments, while the template's
+Flex geometry, palette, media and responsive composition remain untouched.
+
 Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,
 course, event, blog, footer, form and 404 wording through the existing
