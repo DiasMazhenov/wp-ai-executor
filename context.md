@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.34`
+- Plugin: `v02.10.35`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -66,6 +66,12 @@ payload, while retrieval normalizes older records before generation.
 Release v02.10.34 gives quoted testimonial content priority over process keywords
 inside the quote. A review containing a phrase such as «каждый шаг» now remains
 a testimonials composition instead of being misclassified as a process block.
+
+Release v02.10.35 rejects a process library candidate when it contains media or
+too few real step headings for the requested content. Accepted library blocks
+now also pass through the shared bento/Flex layout normalizer, so content
+fidelity cannot approve a visually incomplete composition. Structural library
+wrappers no longer accumulate left/right padding; card-level padding remains.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

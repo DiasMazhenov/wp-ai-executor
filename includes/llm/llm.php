@@ -1416,6 +1416,35 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     if ( ! empty( $missing ) ) {
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
     }
+    if ( $archetype === 'process' ) {
+        $process_heading_count = 0;
+        $process_media_count = 0;
+        $collect_process_quality = static function ( array $nodes ) use ( &$collect_process_quality, &$process_heading_count, &$process_media_count ): void {
+            foreach ( $nodes as $node ) {
+                if ( ! is_array( $node ) ) {
+                    continue;
+                }
+                if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+                    $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+                    $node_settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+                    if ( $widget_type === 'heading' && trim( wp_strip_all_tags( (string) ( $node_settings['title'] ?? '' ) ) ) !== '' ) {
+                        $process_heading_count++;
+                    }
+                    if ( in_array( $widget_type, [ 'image', 'image-carousel', 'gallery' ], true ) ) {
+                        $process_media_count++;
+                    }
+                }
+                if ( is_array( $node['elements'] ?? null ) ) {
+                    $collect_process_quality( $node['elements'] );
+                }
+            }
+        };
+        $collect_process_quality( $template_elements );
+        $required_process_headings = max( 2, min( 4, count( $pairs ) ) );
+        if ( $process_media_count > 0 || $process_heading_count < $required_process_headings ) {
+            return [];
+        }
+    }
     return $template_elements;
 }
 
@@ -2943,6 +2972,19 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $child_containers[] = $child_index;
                     }
                 }
+                $container_classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                $is_structural_container = count( $child_containers ) >= 2
+                    || ( is_array( $container_classes ) && ( in_array( 'wpae-bento-grid', $container_classes, true ) || in_array( 'wpae-generated-content-shell', $container_classes, true ) ) );
+                if ( $is_structural_container ) {
+                    foreach ( [ 'padding', 'padding_tablet', 'padding_mobile' ] as $padding_key ) {
+                        if ( ! is_array( $settings[ $padding_key ] ?? null ) ) {
+                            continue;
+                        }
+                        $settings[ $padding_key ]['left'] = '0';
+                        $settings[ $padding_key ]['right'] = '0';
+                        $settings[ $padding_key ]['isLinked'] = false;
+                    }
+                }
                 if ( $archetype === 'testimonials' && $depth >= 2 && empty( $child_containers ) && $contains_card_signal( $children ) ) {
                     $before_card = wp_json_encode( $settings );
                     $settings['container_type'] = 'flex';
@@ -3868,9 +3910,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         }
         if ( is_array( $action['elements'] ?? null ) ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
-            if ( ! $library_applied ) {
-                $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
-            }
+            $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
