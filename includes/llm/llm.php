@@ -556,7 +556,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu', $message ) ) {
             return 'carousel';
         }
-        if ( preg_match( '/\b(первый экран|hero|хиро|обложк)\b/iu', $message ) ) {
+        if ( preg_match( '/\b(первый экран|hero|хиро|обложк|главн\w*|home)\b/iu', $message ) ) {
             return 'hero';
         }
         if ( preg_match( '/\?|؟/u', $message ) ) {
@@ -571,7 +571,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/[«"]/u', $message ) ) {
             return 'testimonials';
         }
-        if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
+        if ( preg_match( '/\b(шаг|этап|событи\w*|мероприяти\w*|мастер-класс|event\w*|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }
         if ( preg_match( '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu', $normalized ) ) {
@@ -579,6 +579,12 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         }
         if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
             return 'team';
+        }
+        if ( preg_match( '/\b(курс\w*|обучен\w*|заняти\w*|программ\w*)\b/iu', $normalized ) ) {
+            return 'benefits';
+        }
+        if ( preg_match( '/\b(блог\w*|стать\w*|article\w*)\b/iu', $normalized ) ) {
+            return 'portfolio';
         }
         if ( count( $labeled_pairs ) >= 2 && preg_match( '/\b(стратег\w*|редактируем\w*|мобильн\w*|преимуществ\w*|выгод\w*|опор\w*|понятн\w*|удобн\w*)\b/iu', $labeled_text ) ) {
             return 'benefits';
@@ -601,14 +607,14 @@ function wpae_llm_detect_block_archetype( string $message ): string {
     $patterns = [
         'mega_menu' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
         'carousel' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu',
-        'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
+        'hero' => '/\b(hero|хиро|первый экран|обложк|главн\w*|home)/iu',
         'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
         'about' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)/iu',
         'team' => '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)/iu',
         'testimonials' => '/\b(отзыв|testimonial|клиентск|рекомендац)/iu',
         'faq' => '/\b(faq|вопрос|ответ|аккордеон)/iu',
-        'process' => '/\b(процесс|этап|шаг|process|steps?)/iu',
+        'process' => '/\b(процесс|этап|шаг|событи\w*|мероприяти\w*|event\w*|process|steps?)/iu',
         'cta' => '/\b(cta|заявк|связ|контакт|призыв)/iu',
         'portfolio' => '/\b(портфолио|кейс|работ|portfolio|project)/iu',
     ];

@@ -24,6 +24,9 @@ const testimonialsFixture = JSON.parse(read('includes/elementor/copyelement/test
 const aboutFixture = JSON.parse(read('includes/elementor/copyelement/about-c70.json'));
 const teamFixture = JSON.parse(read('includes/elementor/copyelement/team-c1429.json'));
 const megaMenuFixture = JSON.parse(read('includes/elementor/copyelement/mega-menu-c3372.json'));
+const vocarioFixtureFiles = fs.readdirSync(path.join(root, 'includes/elementor/copyelement'))
+    .filter((file) => file.startsWith('vocario-') && file.endsWith('.json'))
+    .sort();
 const blockLibraryUi = read('assets/js/elementor-block-library-ui.js');
 const blockLibraryCss = read('assets/css/elementor-block-library.css');
 
@@ -104,7 +107,7 @@ assert.match(llm, /стратег\\w\*/);
 assert.match(llm, /function wpae_llm_extract_faq_content/);
 assert.match(llm, /wpae_llm_extract_faq_content\( \$message \)/);
 const quotedTestimonialPriority = llm.indexOf("return 'testimonials';", llm.indexOf("preg_match( '/[«\"]"));
-const processPriority = llm.indexOf('(шаг|этап|сначала|затем|после этого|проверяем|запускаем|переда[её]м)');
+const processPriority = llm.indexOf('(шаг|этап|событи\\w*|мероприяти\\w*|мастер-класс');
 assert.ok(quotedTestimonialPriority >= 0 && processPriority >= 0 && quotedTestimonialPriority < processPriority);
 const teamPriority = llm.indexOf("return 'team';", llm.indexOf("function wpae_llm_detect_block_archetype"));
 const benefitsPriority = llm.indexOf("return 'benefits';", teamPriority);
@@ -520,6 +523,9 @@ assert.match(blockLibrary, /function wpae_block_library_filter_compatible_roots/
 assert.match(blockLibrary, /\.\(\?:png\|jpe\?g\)/);
 assert.match(blockLibrary, /function wpae_block_library_seed_bundled_templates/);
 assert.match(blockLibrary, /'carousel' => \[ 'carousel', 'slider'/);
+assert.match(blockLibrary, /'benefits' => \[ 'benefit', 'benefits', 'feature', 'features', 'course', 'courses'/);
+assert.match(blockLibrary, /'process' => \[ 'process', 'step', 'steps', 'event', 'events'/);
+assert.match(blockLibrary, /'portfolio' => \[ 'portfolio', 'case', 'cases', 'project', 'blog', 'article'/);
 assert.match(blockLibrary, /\$raw_elements = \$parsed\['elementor_data'\]/);
 assert.match(blockLibrary, /\$normalized = wpae_elementor_normalize_data\( \$raw_elements \)/);
 assert.match(blockLibrary, /'migrated' => \[\]/);
@@ -557,6 +563,25 @@ assert.ok(Array.isArray(teamFixture.content) && teamFixture.content.length > 0);
 assert.equal(megaMenuFixture.type, 'container');
 assert.ok(Array.isArray(megaMenuFixture.content) && megaMenuFixture.content.length > 0);
 assert.ok(JSON.stringify(megaMenuFixture).includes('mega-menu'));
+assert.equal(vocarioFixtureFiles.length, 13);
+for (const file of vocarioFixtureFiles) {
+    const fixture = JSON.parse(read(`includes/elementor/copyelement/${file}`));
+    const visit = (node) => {
+        if (!node || typeof node !== 'object') return;
+        if (Array.isArray(node)) {
+            node.forEach(visit);
+            return;
+        }
+        if (node.elType === 'section' || node.elType === 'column') {
+            assert.fail(`${file} contains legacy ${node.elType}`);
+        }
+        if (node.elType === 'container') {
+            assert.equal(node.settings?.container_type, 'flex', `${file} contains a non-Flexbox container`);
+        }
+        Object.values(node).forEach(visit);
+    };
+    visit(fixture);
+}
 assert.match(blockLibraryUi, /wpae-library__preview/);
 assert.match(blockLibraryUi, /preview\.src = item\.preview_url/);
 assert.match(blockLibraryCss, /\.wpae-library__preview/);

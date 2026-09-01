@@ -625,16 +625,16 @@ function wpae_block_library_retrieval_aliases( string $archetype ): array {
     $aliases = [
         'mega_menu' => [ 'mega-menu', 'mega menu', 'мега меню', 'меню', 'навигац', 'header', 'шапк' ],
         'carousel' => [ 'carousel', 'slider', 'карусел', 'слайдер', 'логотип', 'логотипы', 'партнер', 'партнёр', 'бренд' ],
-        'hero' => [ 'hero', 'хиро', 'первый', 'экран', 'обложка', 'cover', 'image', 'image-box' ],
-        'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'преимуществ', 'выгод' ],
+        'hero' => [ 'hero', 'хиро', 'первый', 'экран', 'обложка', 'cover', 'home', 'главн', 'image', 'image-box' ],
+        'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'course', 'courses', 'курс', 'курсы', 'обучен', 'заняти', 'программ', 'преимуществ', 'выгод' ],
         'pricing' => [ 'pricing', 'price', 'тариф', 'цена', 'стоимость', 'пакет' ],
         'testimonials' => [ 'testimonial', 'testimonials', 'отзыв', 'рекомендац', 'клиент' ],
         'team' => [ 'team', 'команд', 'сотрудник', 'специалист', 'коллег', 'about' ],
         'about' => [ 'about', 'company', 'компан', 'о нас', 'о компании' ],
         'faq' => [ 'faq', 'вопрос', 'ответ', 'accordion', 'аккордеон' ],
-        'process' => [ 'process', 'step', 'steps', 'процесс', 'этап', 'шаг' ],
-        'cta' => [ 'cta', 'contact', 'контакт', 'заявк', 'связ' ],
-        'portfolio' => [ 'portfolio', 'case', 'cases', 'project', 'проекты', 'кейс', 'работ', 'image', 'image-box' ],
+        'process' => [ 'process', 'step', 'steps', 'event', 'events', 'событи', 'мероприяти', 'мастер-класс', 'процесс', 'этап', 'шаг' ],
+        'cta' => [ 'cta', 'contact', 'footer', '404', 'form', 'подвал', 'не найд', 'контакт', 'заявк', 'связ' ],
+        'portfolio' => [ 'portfolio', 'case', 'cases', 'project', 'blog', 'article', 'стать', 'блог', 'проекты', 'кейс', 'работ', 'image', 'image-box' ],
     ];
     return $aliases[ $archetype ] ?? [];
 }

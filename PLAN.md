@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.42
+
+- Явно зафиксировать `container_type=flex` во всех 13 исходных Vocario JSON.
+- Усилить retrieval для Home/Courses/Event/Blog/Footer/404 и проверить
+  структурный контракт всех Vocario-шаблонов.
+- Доставить пакет и повторно проверить Vocario в Browser Use со screenshot,
+  AI Vision/design-taste и JSON.
+
 ## v02.10.41
 
 - Добавить прозрачную Flexbox-ленту outlined-лейблов партнёров под сохранённой

@@ -2,12 +2,17 @@
 
 ## Current release
 
-- Plugin: `v02.10.41`
+- Plugin: `v02.10.42`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+
+Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
+JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,
+course, event, blog, footer, form and 404 wording through the existing
+archetype aliases, while the shared runtime normalizer remains the final guard.
 
 ## Architecture
 

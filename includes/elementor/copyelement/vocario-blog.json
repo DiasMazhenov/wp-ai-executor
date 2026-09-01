@@ -86,7 +86,8 @@
                     "id": "",
                     "size": ""
                 },
-                "background_overlay_hover_slideshow_gallery": []
+                "background_overlay_hover_slideshow_gallery": [],
+                "container_type": "flex"
             },
             "elements": [
                 {
@@ -146,7 +147,8 @@
                             "id": "",
                             "size": ""
                         },
-                        "background_overlay_hover_slideshow_gallery": []
+                        "background_overlay_hover_slideshow_gallery": [],
+                        "container_type": "flex"
                     },
                     "elements": [
                         {
@@ -517,7 +519,8 @@
                     "id": "",
                     "size": ""
                 },
-                "background_overlay_hover_slideshow_gallery": []
+                "background_overlay_hover_slideshow_gallery": [],
+                "container_type": "flex"
             },
             "elements": [
                 {
@@ -593,7 +596,8 @@
                             "id": "",
                             "size": ""
                         },
-                        "background_overlay_hover_slideshow_gallery": []
+                        "background_overlay_hover_slideshow_gallery": [],
+                        "container_type": "flex"
                     },
                     "elements": [
                         {
@@ -842,7 +846,8 @@
                     "id": "",
                     "size": ""
                 },
-                "background_overlay_hover_slideshow_gallery": []
+                "background_overlay_hover_slideshow_gallery": [],
+                "container_type": "flex"
             },
             "elements": [
                 {
@@ -904,7 +909,8 @@
                             "id": "",
                             "size": ""
                         },
-                        "background_overlay_hover_slideshow_gallery": []
+                        "background_overlay_hover_slideshow_gallery": [],
+                        "container_type": "flex"
                     },
                     "elements": [
                         {
@@ -1216,7 +1222,8 @@
                             "id": "",
                             "size": ""
                         },
-                        "background_overlay_hover_slideshow_gallery": []
+                        "background_overlay_hover_slideshow_gallery": [],
+                        "container_type": "flex"
                     },
                     "elements": [
                         {
