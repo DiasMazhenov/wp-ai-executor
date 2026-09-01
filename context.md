@@ -54,6 +54,10 @@ and bundled testimonial cards inside nested carousels are converted from
 `icon-box` into separate native author headings and quote text editors. Legacy
 carousel widget names are recognized by both layout and typography normalizers.
 
+Release v02.10.19 removes empty testimonial image widgets during library
+normalization, so a template cannot render gray media placeholders when no
+author image was supplied. Real image URLs or media IDs remain untouched.
+
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"
 retrieve the About template instead of the Team template.

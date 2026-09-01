@@ -2535,6 +2535,26 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             $element_type = (string) ( $element['elType'] ?? '' );
             if ( $element_type === 'widget' ) {
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                if ( $archetype === 'testimonials' && $widget_type === 'image' ) {
+                    $image = is_array( $settings['image'] ?? null ) ? $settings['image'] : [];
+                    $image_url = trim( (string) ( $image['url'] ?? $settings['image_url'] ?? '' ) );
+                    $image_id = absint( $image['id'] ?? $settings['image_id'] ?? 0 );
+                    if ( $image_url === '' && $image_id < 1 ) {
+                        $changed++;
+                        continue;
+                    }
+                    if ( $image_url !== '' && $image_id > 0 && function_exists( 'home_url' ) && function_exists( 'wp_parse_url' ) ) {
+                        $site_host = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+                        $image_host = strtolower( (string) wp_parse_url( $image_url, PHP_URL_HOST ) );
+                        if ( $site_host !== '' && $image_host !== '' && $site_host !== $image_host ) {
+                            $image['id'] = 0;
+                            $image['source'] = 'url';
+                            $settings['image'] = $image;
+                            $changed++;
+                        }
+                    }
+                }
                 foreach ( [ '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
                     if ( array_key_exists( $key, $settings ) ) {
                         unset( $settings[ $key ] );
@@ -2563,7 +2583,6 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     }
                 }
 
-                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
                 $title = trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) );
                 $title_length = function_exists( 'mb_strlen' ) ? mb_strlen( $title ) : strlen( $title );
                 if ( $widget_type === 'heading' && strtolower( (string) ( $settings['header_size'] ?? '' ) ) === 'p' && $title_length > 80 ) {

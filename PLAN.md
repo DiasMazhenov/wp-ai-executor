@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.19
+
+- Не рендерить пустые image-widget-заглушки в testimonial-карточках; реальные
+  URL/ID изображений сохранять.
+- Обновить package hash, локальные тесты и повторить Browser Use screenshot,
+  Vision/design-taste и selected JSON проверки.
+
 ## v02.10.18
 
 - Исправить выбор Testimonials-шаблона для естественных промтов с отзывами и

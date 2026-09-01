@@ -257,6 +257,8 @@ assert.match(llm, /\$content_message = preg_replace/);
 assert.match(llm, /array_splice\( \$elements, \$index, 1, \$replacement \)/);
 assert.match(llm, /wpae-testimonial-quote/);
 assert.match(llm, /\[ 'nested-carousel', 'n-carousel' \]/);
+assert.match(llm, /\$archetype === 'testimonials' && \$widget_type === 'image'/);
+assert.match(llm, /\$image_url === '' && \$image_id < 1/);
 assert.match(llm, /wpae_llm_content_mismatch/);
 assert.match(llm, /function wpae_llm_bento_card/);
 assert.match(llm, /function wpae_llm_generation_visual_grammar_hint/);
