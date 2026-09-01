@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.37`
+- Plugin: `v02.10.38`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -80,6 +80,12 @@ generic card copy.
 Release v02.10.37 prioritizes explicit team semantics before benefits keywords,
 so a role such as «стратег» inside a team prompt cannot misclassify the whole
 composition as a benefits block.
+
+Release v02.10.38 imports the supplied standalone Image Carousel fixture into
+the private CopyElement library. Carousel requests are classified separately;
+the native `image-carousel` is validated for at least two real media slides,
+wrapped in one transparent Flexbox container, and kept as a carousel instead of
+being flattened into generic cards.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

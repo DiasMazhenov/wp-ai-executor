@@ -60,6 +60,17 @@ return [
         'preview_url' => '',
     ],
     [
+        'id' => 'copyelement-image-carousel-a4516bb',
+        'file' => 'image-carousel-a4516bb.json',
+        'sha256' => 'adce53f13e2bff9b0ca5744515a980e043334124e03f32ac24e285d12c34f376',
+        'title' => 'Image Carousel a4516bb',
+        'description' => "CopyElement's Image Carousel with five visual slides.",
+        'category' => 'carousel',
+        'tags' => [ 'copyelement', 'carousel', 'image-carousel', 'logos', 'partners' ],
+        'source_url' => 'https://copyelement.com/components/free',
+        'preview_url' => '',
+    ],
+    [
         'id' => 'vocario-404',
         'file' => 'vocario-404.json',
         'sha256' => '59fb0aaaa680e8cf8a22468d07eebb984da56ae7e321a342675f10284ba40af6',

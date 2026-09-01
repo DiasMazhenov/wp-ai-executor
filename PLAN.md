@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.38
+
+- Добавить присланный standalone Image Carousel в private CopyElement library.
+- Распознавать carousel/slider/logo/partner briefs отдельно от portfolio.
+- Оборачивать валидный native `image-carousel` в прозрачный Flexbox-контейнер
+  и не превращать его в bento-карточки.
+- Доставить пакет и проверить content-only carousel prompt в Browser Use со
+  screenshot, Vision/design-taste и JSON.
+
 ## v02.10.37
 
 - Исправить приоритет archetype detection: «команда/специалисты» должна

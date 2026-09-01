@@ -553,6 +553,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
             return 'mega_menu';
         }
+        if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu', $message ) ) {
+            return 'carousel';
+        }
         if ( preg_match( '/\b(первый экран|hero|хиро|обложк)\b/iu', $message ) ) {
             return 'hero';
         }
@@ -597,6 +600,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
 
     $patterns = [
         'mega_menu' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
+        'carousel' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu',
         'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
         'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
@@ -620,6 +624,7 @@ function wpae_llm_block_archetype_hint( string $message ): string {
     $archetype = wpae_llm_detect_block_archetype( $message );
     $labels = [
         'mega_menu' => [ 'мега меню/навигация', 'image, mega-menu и button в сохраненной grid-композиции' ],
+        'carousel' => [ 'карусель/логотипы', 'image-carousel с реальными изображениями и responsive-настройками' ],
         'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
         'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
         'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
@@ -1182,6 +1187,61 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         }
         return $element;
     };
+    if ( $archetype === 'carousel' && count( $template_elements ) === 1 ) {
+        $carousel = is_array( $template_elements[0] ) ? $clone_with_ids( $template_elements[0], 'library-carousel' ) : [];
+        if ( (string) ( $carousel['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $carousel['widgetType'] ?? '' ) ) === 'image-carousel' ) {
+            $settings = is_array( $carousel['settings'] ?? null ) ? $carousel['settings'] : [];
+            $slides = [];
+            foreach ( (array) ( $settings['carousel'] ?? [] ) as $slide ) {
+                if ( ! is_array( $slide ) ) {
+                    continue;
+                }
+                $url = esc_url_raw( (string) ( $slide['url'] ?? '' ) );
+                $attachment_id = absint( $slide['id'] ?? 0 );
+                if ( $url === '' && $attachment_id < 1 ) {
+                    continue;
+                }
+                $slide['url'] = $url;
+                $slides[] = $slide;
+            }
+            if ( count( $slides ) >= 2 ) {
+                $settings['carousel'] = $slides;
+                $settings['slides_to_show'] = '1';
+                $settings['slides_to_show_tablet'] = '3';
+                $settings['slides_to_show_mobile'] = '2';
+                $settings['navigation'] = (string) ( $settings['navigation'] ?? 'none' );
+                $settings['autoplay'] = (string) ( $settings['autoplay'] ?? 'yes' );
+                $settings['infinite'] = (string) ( $settings['infinite'] ?? 'yes' );
+                $settings['_css_classes'] = wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-library-carousel' ] );
+                $carousel['settings'] = $settings;
+                $wrapper_id = 'library-carousel-' . substr( md5( (string) ( $carousel['id'] ?? 'carousel' ) ), 0, 7 );
+                $template_elements = [
+                    [
+                        'id' => $wrapper_id,
+                        'elType' => 'container',
+                        'settings' => [
+                            '_css_classes' => 'wpae-generated-carousel',
+                            'container_type' => 'flex',
+                            'content_width' => 'full',
+                            'flex_direction' => 'column',
+                            'flex_wrap' => 'nowrap',
+                            'flex_justify_content' => 'flex-start',
+                            'flex_align_items' => 'stretch',
+                            'flex_gap' => [ 'column' => '1.5', 'row' => '1.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.5' ],
+                            'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+                            'background_background' => 'classic',
+                            'background_color' => 'transparent',
+                            'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                            'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                        ],
+                        'elements' => [ $carousel ],
+                    ],
+                ];
+                $changed++;
+                return $template_elements;
+            }
+        }
+    }
     if ( count( $template_elements ) > 1 ) {
         $root_patterns = [
             'hero' => '/hero|banner|header|первый|обложк/iu',
