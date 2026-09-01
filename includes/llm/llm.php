@@ -1168,6 +1168,76 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
     return $title_set && ( $content_set || $content === '' );
 }
 
+function wpae_llm_apply_library_narrative_content( array &$elements, array $requested, int &$changed ): bool {
+    if ( empty( $requested ) ) {
+        return false;
+    }
+
+    $title = trim( (string) array_shift( $requested ) );
+    $cta = '';
+    for ( $index = count( $requested ) - 1; $index >= 0; $index-- ) {
+        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|регистрац\w*)\b/iu', (string) $requested[ $index ] ) ) {
+            $cta = trim( (string) $requested[ $index ] );
+            array_splice( $requested, $index, 1 );
+            break;
+        }
+    }
+    $body = trim( implode( ' ', array_filter( array_map( 'strval', $requested ) ) ) );
+    $title_set = false;
+    $body_set = false;
+    $cta_set = false;
+    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, &$title_set, &$body_set, &$cta_set, &$changed ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            if ( $widget_type === 'heading' && ! $title_set ) {
+                $settings['title'] = $title;
+                $title_set = true;
+                $changed++;
+            } elseif ( $widget_type === 'text-editor' && $body !== '' && ! $body_set ) {
+                $settings['editor'] = $body;
+                $body_set = true;
+                $changed++;
+            } elseif ( $widget_type === 'button' && $cta !== '' && ! $cta_set ) {
+                $settings['text'] = $cta;
+                $cta_set = true;
+                $changed++;
+            }
+            $element['settings'] = $settings;
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+
+    if ( $body !== '' && ! $body_set ) {
+        foreach ( $elements as &$root ) {
+            if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
+                continue;
+            }
+            $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+            $root['elements'][] = [
+                'id' => 'wpae-library-copy-' . substr( md5( $body ), 0, 7 ),
+                'elType' => 'widget',
+                'widgetType' => 'text-editor',
+                'settings' => [ 'editor' => $body ],
+                'elements' => [],
+            ];
+            $body_set = true;
+            $changed++;
+            break;
+        }
+        unset( $root );
+    }
+
+    return $title_set && ( $body === '' || $body_set ) && ( $cta === '' || $cta_set );
+}
+
 function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed ): array {
     $applied = false;
     $has_content_widget = static function ( array $elements ) use ( &$has_content_widget ): bool {
@@ -1408,6 +1478,9 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         $missing = wpae_llm_extract_requested_content( $message );
         if ( empty( $missing ) ) {
             return [];
+        }
+        if ( wpae_llm_apply_library_narrative_content( $template_elements, $missing, $changed ) ) {
+            return $template_elements;
         }
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
         return empty( $missing ) ? $template_elements : [];
@@ -1757,7 +1830,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
     return $elements;
 }
 
-function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed ): array {
+function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed, bool $preserve_style = false ): array {
     $cta = '';
     foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
         if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|регистрац\w*)\b/iu', $value ) ) {
@@ -1781,11 +1854,13 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             if ( $widget_type === 'button' ) {
                 $settings['text'] = $cta;
-                $settings['link'] = [ 'url' => '#contact' ];
-                $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
-                    ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-generated-cta' ] )
-                    : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-generated-cta' );
-                wpae_llm_normalize_generated_button_settings( $settings );
+                if ( ! $preserve_style ) {
+                    $settings['link'] = [ 'url' => '#contact' ];
+                    $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+                        ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-generated-cta' ] )
+                        : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-generated-cta' );
+                    wpae_llm_normalize_generated_button_settings( $settings );
+                }
                 $element['settings'] = $settings;
                 $button_found = true;
             } elseif ( $widget_type === 'text-editor' && ! $button_found ) {
@@ -1863,7 +1938,7 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
         }
         unset( $root );
     }
-    if ( is_array( $target ) ) {
+    if ( is_array( $target ) && ! $preserve_style ) {
         wpae_llm_normalize_generated_button_settings( $button['settings'] );
         $target[] = $button;
         $changed++;
@@ -4145,6 +4220,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $library_changed = 0;
         $library_layout_changed = 0;
         $library_skip_reason = '';
+        $library_preserve_design = false;
         $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
         if ( ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
             $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed );
@@ -4161,7 +4237,10 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
                     $action_fallback = false;
-                    $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
+                    $library_preserve_design = ! empty( $selected_library['trusted_bundled'] );
+                    if ( ! $library_preserve_design ) {
+                        $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
+                    }
                 } else {
                     $library_skip_reason = 'Adapted library block failed the native shape or content-fidelity check.';
                 }
@@ -4169,19 +4248,22 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                 $library_skip_reason = 'The selected library block has no repeatable content group that can be adapted.';
             }
         }
-        if ( is_array( $action['elements'] ?? null ) ) {
+        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
-        if ( is_array( $action['elements'] ?? null ) ) {
+        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design ) {
             $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
             $final_bento_changed = 0;
             wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed, $action_archetype );
             $bento_changed += $final_bento_changed;
             $cta_changed = 0;
             $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed );
+        } elseif ( is_array( $action['elements'] ?? null ) ) {
+            $cta_changed = 0;
+            $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed, true );
         }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
@@ -4208,6 +4290,8 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             'selected' => ! empty( $selected_library ) ? array_intersect_key( $selected_library, array_flip( [ 'id', 'title', 'category', 'source', 'status', 'trusted_bundled', 'score', 'matched_terms' ] ) ) : null,
             'content_changes' => $library_changed,
             'layout_changes' => $library_layout_changed,
+            'design_preserved' => $library_preserve_design,
+            'bundled_fixture_id' => (string) ( $selected_library['bundled_fixture_id'] ?? '' ),
         ];
         $action_steps[] = [
             'id' => 'library_retrieval',

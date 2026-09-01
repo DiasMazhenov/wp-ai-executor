@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.47
+
+- Preserve trusted bundled library geometry and styling instead of applying the
+  generic generated bento/visual-grammar wrapper after retrieval.
+- Map natural library content into the first semantic heading, body text and
+  CTA widgets so decorative statistics and template labels remain intact.
+- Expose the bundled fixture id in retrieval diagnostics for live verification.
+
 ## v02.10.46
 
 - Исправить потерю Vocario Hero: известный `jkit_heading` нормализуется в

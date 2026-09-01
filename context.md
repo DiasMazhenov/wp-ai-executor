@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.46`
+- Plugin: `v02.10.47`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -38,6 +38,15 @@ root. The shared Elementor normalizer now converts that known widget to native
 typography, alignment, width and animation settings before compatibility
 filtering. This keeps the image-led Hero root eligible for retrieval while
 remaining native Flexbox-compatible.
+
+Release v02.10.47 fixes the visual mismatch found after live Vision review:
+trusted bundled templates no longer pass through the generic generated bento
+layout, typography and badge/content-shell grammar after retrieval. Their
+source composition, media, spacing and responsive settings are preserved while
+natural content is mapped to the first semantic heading, body text and CTA,
+leaving decorative template statistics and labels intact. Bundled fixture ids
+are included in retrieval diagnostics so live tests can prove which source
+template was selected.
 
 ## Architecture
 
