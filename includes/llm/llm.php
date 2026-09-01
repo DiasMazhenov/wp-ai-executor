@@ -40,6 +40,22 @@ function wpae_llm_provider_options(): array {
     ];
 }
 
+function wpae_llm_provider_model_options( string $provider ): array {
+    if ( $provider !== 'gemini' ) {
+        return [];
+    }
+
+    return [
+        'gemini-3.7-flash' => 'Gemini 3.7 Flash - агентские задачи',
+        'gemini-3.6-flash' => 'Gemini 3.6 Flash - скорость и качество',
+        'gemini-3.5-flash' => 'Gemini 3.5 Flash - универсальный режим',
+        'gemini-3.5-flash-lite' => 'Gemini 3.5 Flash-Lite - экономичный режим',
+        'gemini-3.1-pro-preview' => 'Gemini 3.1 Pro Preview - сложные задачи',
+        'gemini-2.5-flash' => 'Gemini 2.5 Flash - reasoning и скорость',
+        'gemini-2.5-flash-lite' => 'Gemini 2.5 Flash-Lite - минимальная стоимость',
+    ];
+}
+
 function wpae_llm_get_stored_settings(): array {
     $stored = get_option( WPAE_LLM_SETTINGS_OPTION, [] );
     return is_array( $stored ) ? $stored : [];
@@ -61,6 +77,9 @@ function wpae_llm_get_settings(): array {
         $base_url = $providers[ $provider ]['base_url'];
     }
     if ( $model === '' ) {
+        $model = $providers[ $provider ]['model'];
+    }
+    if ( $provider === 'gemini' && ! isset( wpae_llm_provider_model_options( 'gemini' )[ $model ] ) ) {
         $model = $providers[ $provider ]['model'];
     }
 
@@ -117,6 +136,9 @@ function wpae_update_llm_settings( array $input ) {
 
     $model = sanitize_text_field( (string) ( $input['model'] ?? '' ) );
     $model = substr( $model !== '' ? $model : $providers[ $provider ]['model'], 0, 120 );
+    if ( $provider === 'gemini' && ! isset( wpae_llm_provider_model_options( 'gemini' )[ $model ] ) ) {
+        $model = $providers[ $provider ]['model'];
+    }
     $stored = wpae_llm_get_stored_settings();
     $api_key = trim( (string) ( $input['api_key'] ?? '' ) );
     if ( ! empty( $input['clear_api_key'] ) ) {

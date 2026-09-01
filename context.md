@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.54`
+- Plugin: `v02.10.55`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -89,6 +89,10 @@ Release v02.10.54 adds Gemini as a first-class LLM provider. Its official
 OpenAI-compatible Base URL and default model are populated by the provider
 selector, while the Gemini API key follows the existing encrypted server-side
 storage path.
+
+Release v02.10.55 adds a Gemini model selector with Flash, Flash-Lite and Pro
+choices. The dashboard switches between the Gemini select and the existing
+free-text model field for other/custom providers without exposing API keys.
 
 ## Architecture
 
@@ -588,7 +592,8 @@ selected-element subtree are sent to the model; secrets and executable fields
 are removed before the snapshot is serialized.
 
 LLM settings use provider-owned built-in HTTPS base URLs. OpenRouter defaults to
-`openrouter/free`, Gemini uses Google's OpenAI-compatible endpoint, and custom
+`openrouter/free`, Gemini uses Google's OpenAI-compatible endpoint with a
+curated model selector, and custom
 base URLs are available only for the custom provider.
 An existing provider key is shown in the dashboard as a bullet placeholder while
 the submitted value remains empty, so saving the form cannot replace it.
