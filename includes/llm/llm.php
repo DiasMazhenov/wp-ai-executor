@@ -1183,6 +1183,47 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
         }
     }
     $body = trim( implode( ' ', array_filter( array_map( 'strval', $requested ) ) ) );
+    $compact_copy = [];
+    $add_compact_copy = static function ( $value ) use ( &$compact_copy ): void {
+        $value = trim( preg_replace( '/\s+/u', ' ', sanitize_text_field( (string) $value ) ) );
+        $length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+        if ( $length < 3 || $length > 96 ) {
+            return;
+        }
+        $compact_copy[ wpae_llm_normalize_content_text( $value ) ] = $value;
+    };
+    if ( preg_match( '/\bдля\s+[^,.!?]+/iu', $title, $title_audience ) ) {
+        $add_compact_copy( $title_audience[0] );
+    }
+    foreach ( wpae_llm_content_units( $body ) as $unit ) {
+        foreach ( preg_split( '/\s*(?:[,;]|\s+и\s+)\s*/iu', $unit, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $part ) {
+            $add_compact_copy( $part );
+        }
+        $add_compact_copy( $unit );
+    }
+    if ( empty( $compact_copy ) ) {
+        $add_compact_copy( $title );
+        $add_compact_copy( $body );
+    }
+    $compact_copy = array_values( $compact_copy );
+    $compact_copy_index = 0;
+    $next_compact_copy = static function () use ( &$compact_copy, &$compact_copy_index, $title, $body ): string {
+        if ( empty( $compact_copy ) ) {
+            return $title !== '' ? $title : $body;
+        }
+        $value = (string) $compact_copy[ $compact_copy_index % count( $compact_copy ) ];
+        $compact_copy_index++;
+        return $value;
+    };
+    $numeric_copy = '';
+    if ( preg_match( '/\b\d+\s*(?:недел(?:я|и|ь)|месяц(?:а|ев)?|заняти(?:е|я|й)|лет|года?|%)/iu', $body, $numeric_match ) ) {
+        $numeric_copy = trim( (string) $numeric_match[0] );
+    }
+    $audience_copy = '';
+    if ( preg_match( '/\bдля\s+[^,.!?]+/iu', $title, $audience_match ) ) {
+        $audience_copy = trim( (string) $audience_match[0] );
+    }
+    $first_body_unit = (string) ( wpae_llm_content_units( $body )[0] ?? $body );
     $title_set = false;
     $body_set = false;
     $cta_set = false;
@@ -1194,6 +1235,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
             }
             $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $source_text = trim( wp_strip_all_tags( (string) ( $settings['title'] ?? $settings['text'] ?? '' ) ) );
             if ( $widget_type === 'heading' && ! $title_set ) {
                 $settings['title'] = $title;
                 if ( $clear_unrequested_copy ) {
@@ -1206,6 +1248,12 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
                     $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.1 ];
                 }
                 $title_set = true;
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
+                $changed++;
+            } elseif ( $widget_type === 'heading' && $clear_unrequested_copy ) {
+                $settings['title'] = preg_match( '/50\+|week|недел|month|месяц/i', $source_text ) && $numeric_copy !== ''
+                    ? $numeric_copy
+                    : ( preg_match( '/coach|speaker|trainer|руковод/i', $source_text ) && $audience_copy !== '' ? $audience_copy : $next_compact_copy() );
                 $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             } elseif ( $widget_type === 'text-editor' && $body !== '' && ! $body_set ) {
@@ -1225,9 +1273,38 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
                 $body_set = true;
                 $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
+            } elseif ( $widget_type === 'text-editor' && $clear_unrequested_copy ) {
+                $settings['editor'] = $next_compact_copy();
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
+                $changed++;
             } elseif ( $widget_type === 'button' && $cta !== '' && ! $cta_set ) {
                 $settings['text'] = $cta;
                 $cta_set = true;
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
+                $changed++;
+            } elseif ( $widget_type === 'button' && $clear_unrequested_copy ) {
+                $settings['text'] = $cta !== '' ? $cta : $next_compact_copy();
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
+                $changed++;
+            } elseif ( $widget_type === 'icon-list' && $clear_unrequested_copy ) {
+                $items = is_array( $settings['icon_list'] ?? null ) ? $settings['icon_list'] : [];
+                foreach ( $items as &$item ) {
+                    if ( is_array( $item ) ) {
+                        $source_item_text = trim( (string) ( $item['text'] ?? '' ) );
+                        $item['text'] = preg_match( '/week|недел|program|программ/i', $source_item_text ) && $numeric_copy !== ''
+                            ? $numeric_copy
+                            : ( preg_match( '/confidence|уверен/i', $source_item_text ) && $first_body_unit !== '' ? $first_body_unit : $next_compact_copy() );
+                    }
+                }
+                unset( $item );
+                if ( ! empty( $items ) ) {
+                    $settings['icon_list'] = $items;
+                    $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
+                    $changed++;
+                }
+            } elseif ( $widget_type === 'icon-box' && $clear_unrequested_copy ) {
+                $settings['title_text'] = $next_compact_copy();
+                $settings['description_text'] = $body !== '' ? $body : $next_compact_copy();
                 $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             }

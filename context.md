@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.49`
+- Plugin: `v02.10.50`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -59,6 +59,14 @@ Russian heading replaces the compact English source heading, the adapter now
 applies responsive native heading/body sizes and line-heights and removes the
 source negative body margin. This preserves the Vocario composition while
 preventing heading line overlap and CTA collisions.
+
+Release v02.10.50 fixes the next live fidelity failure: removing all unrequested
+Vocario copy left source images, icons and blue-card backgrounds without their
+intended textual hierarchy. Trusted narrative adaptation now replaces every
+supported source heading, text editor, button, icon-list and icon-box text with
+compact fragments from the user content, using numeric/audience fragments for
+compact template slots, while preserving the original media, Flex containers and
+visual composition.
 
 ## Architecture
 
