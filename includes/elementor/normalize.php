@@ -445,7 +445,7 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 }
             }
 
-            if ( ! isset( $element['settings']['gap'] ) ) {
+            if ( ! isset( $element['settings']['gap'] ) && ! isset( $element['settings']['flex_gap'] ) ) {
                 $element['settings']['gap'] = [
                     'unit' => 'rem',
                     'size' => 1.5,

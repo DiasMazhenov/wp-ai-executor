@@ -423,6 +423,7 @@ assert.match(llm, /wpae_agent_prompt/);
 assert.match(llm, /wpae_get_enabled_skills_for_guide/);
 assert.match(read('includes/elementor/normalize.php'), /mapped_native_widget_content/);
 assert.match(read('includes/elementor/normalize.php'), /wpae_elementor_normalize_flex_settings/);
+assert.match(read('includes/elementor/normalize.php'), /isset\( \$element\['settings'\]\['gap'\] \) && ! isset\( \$element\['settings'\]\['flex_gap'\] \)/);
 assert.match(read('includes/elementor/normalize.php'), /migrated_flex_setting/);
 assert.match(read('includes/elementor/token-map.php'), /button_background_color/);
 assert.match(read('includes/elementor/token-map.php'), /button_text_color/);

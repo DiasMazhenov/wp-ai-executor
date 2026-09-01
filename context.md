@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.52`
+- Plugin: `v02.10.53`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -79,6 +79,11 @@ Release v02.10.52 fixes the live transport hang found after the v02.10.51
 reload: the Elementor chat aborts an LLM fetch after 55 seconds and routes the
 timeout through the existing single provider-unavailable reload/retry path
 instead of leaving the UI permanently on “waiting for JSON”.
+
+Release v02.10.53 keeps the shared Flexbox normalizer from adding a legacy
+`gap` baseline when a container already has native `flex_gap`. This removes a
+second spacing source from trusted Vocario layouts and keeps their source Flex
+geometry intact.
 
 ## Architecture
 
