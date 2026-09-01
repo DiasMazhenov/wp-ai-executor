@@ -96,6 +96,8 @@ assert.match(llm, /function wpae_llm_extract_navigation_content/);
 assert.match(llm, /quoted_label_matches/);
 assert.match(llm, /reverse_quoted_pairs/);
 assert.match(llm, /reverse_quoted_matches/);
+assert.match(llm, /\$dash_pairs = \[\];/);
+assert.match(llm, /\$dash_segments = preg_split/);
 assert.match(llm, /count\( \$labeled_pairs \) >= 2 && preg_match/);
 assert.match(llm, /стратег\\w\*/);
 assert.match(llm, /function wpae_llm_extract_faq_content/);

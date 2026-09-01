@@ -767,6 +767,23 @@ function wpae_llm_extract_labeled_content( string $message ): array {
         return $reverse_quoted_pairs;
     }
 
+    $dash_pairs = [];
+    $dash_segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+|;\s*)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    foreach ( $dash_segments as $segment ) {
+        $segment = trim( (string) $segment );
+        if ( ! preg_match( '/^\s*([^—–,:;]{2,80}?)\s*[—–-]\s*(.{3,320}?)\s*[.!?]?\s*$/u', $segment, $match ) ) {
+            continue;
+        }
+        $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+        $content = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+        if ( $label !== '' && $content !== '' ) {
+            $dash_pairs[] = [ 'label' => $label, 'content' => $content ];
+        }
+    }
+    if ( count( $dash_pairs ) >= 2 ) {
+        return $dash_pairs;
+    }
+
     $natural_pairs = [];
     $natural_segments = preg_split( '/(?:\r?\n+|;\s*)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     foreach ( $natural_segments as $segment ) {
@@ -2288,7 +2305,7 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-        if ( in_array( $widget_type, [ 'heading', 'icon-box' ], true ) && is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
+        if ( is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
             $has_marked_card_heading = true;
             break;
         }
