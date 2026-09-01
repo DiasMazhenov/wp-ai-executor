@@ -1736,7 +1736,36 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         }
         return false;
     };
-    $find_alignment = static function ( array $nodes ) use ( &$find_alignment, $to_alignment ): ?string {
+    $find_text_alignment = static function ( array $nodes ) use ( &$find_text_alignment, $to_alignment ): ?string {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                continue;
+            }
+            $element_type = (string) ( $node['elType'] ?? '' );
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            if ( $element_type === 'widget' && in_array( $widget_type, [ 'heading', 'text-editor', 'button', 'icon-box', 'icon-list' ], true ) ) {
+                $widget_alignment = $to_alignment( $settings['align'] ?? '' );
+                if ( $widget_alignment !== null ) {
+                    return $widget_alignment;
+                }
+            }
+            $nested_alignment = $find_text_alignment( (array) ( $node['elements'] ?? [] ) );
+            if ( $nested_alignment !== null ) {
+                return $nested_alignment;
+            }
+        }
+        return null;
+    };
+    $find_alignment = static function ( array $nodes ) use ( &$find_alignment, $find_text_alignment, $to_alignment ): ?string {
+        $text_alignment = $find_text_alignment( $nodes );
+        if ( $text_alignment !== null ) {
+            return $text_alignment;
+        }
         foreach ( $nodes as $node ) {
             if ( ! is_array( $node ) ) {
                 continue;
@@ -1819,6 +1848,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
                         $settings['text_color'] = '#ffffff';
                     } elseif ( $widget_type === 'button' ) {
                         $settings['button_text_color'] = '#ffffff';
+                        $settings['button_hover_text_color'] = '#ffffff';
                     } elseif ( $widget_type === 'icon' ) {
                         $settings['primary_color'] = '#ffffff';
                     } elseif ( $widget_type === 'icon-box' ) {
@@ -1842,6 +1872,64 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
     foreach ( $elements as $index => $root ) {
         if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
             continue;
+        }
+        $root_children = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+        $content_shell_index = null;
+        $root_badges = [];
+        foreach ( $root_children as $child_index => $child ) {
+            if ( ! is_array( $child ) ) {
+                continue;
+            }
+            $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+            $child_classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $child_classes ) && in_array( 'wpae-generated-badge', $child_classes, true ) ) {
+                $root_badges[] = $child_index;
+            }
+            if ( is_array( $child_classes ) && in_array( 'wpae-generated-content-shell', $child_classes, true ) ) {
+                $content_shell_index = $child_index;
+            }
+        }
+        if ( $content_shell_index !== null && ! empty( $root_badges ) ) {
+            $shell = is_array( $root_children[ $content_shell_index ] ?? null ) ? $root_children[ $content_shell_index ] : [];
+            $shell_children = is_array( $shell['elements'] ?? null ) ? $shell['elements'] : [];
+            $badge = $root_children[ $root_badges[0] ] ?? null;
+            $shell_badge = null;
+            $shell_without_badges = [];
+            foreach ( $shell_children as $shell_child ) {
+                if ( ! is_array( $shell_child ) ) {
+                    $shell_without_badges[] = $shell_child;
+                    continue;
+                }
+                $shell_child_settings = is_array( $shell_child['settings'] ?? null ) ? $shell_child['settings'] : [];
+                $shell_child_classes = preg_split( '/\s+/', trim( (string) ( $shell_child_settings['_css_classes'] ?? '' ) ) );
+                if ( is_array( $shell_child_classes ) && in_array( 'wpae-generated-badge', $shell_child_classes, true ) ) {
+                    $shell_badge = $shell_badge ?? $shell_child;
+                    continue;
+                }
+                $shell_without_badges[] = $shell_child;
+            }
+            if ( $shell_badge === null && is_array( $badge ) ) {
+                $shell_badge = $badge;
+            }
+            if ( is_array( $shell_badge ) ) {
+                $heading_index = count( $shell_without_badges );
+                foreach ( $shell_without_badges as $shell_child_index => $shell_child ) {
+                    if ( is_array( $shell_child ) && ( $shell_child['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $shell_child['widgetType'] ?? '' ) ) === 'heading' ) {
+                        $heading_index = $shell_child_index;
+                        break;
+                    }
+                }
+                array_splice( $shell_without_badges, $heading_index, 0, [ $shell_badge ] );
+                $shell['elements'] = $shell_without_badges;
+                $new_root_children = [];
+                foreach ( $root_children as $child_index => $child ) {
+                    if ( in_array( $child_index, $root_badges, true ) ) {
+                        continue;
+                    }
+                    $new_root_children[] = $child_index === $content_shell_index ? $shell : $child;
+                }
+                $root['elements'] = $new_root_children;
+            }
         }
         $mode = $find_alignment( [ $root ] ) ?? 'left';
         $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];

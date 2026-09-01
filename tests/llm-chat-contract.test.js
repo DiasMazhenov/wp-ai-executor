@@ -405,6 +405,8 @@ assert.match(llm, /function wpae_llm_apply_generation_visual_grammar/);
 assert.match(llm, /function wpae_llm_enforce_preserved_library_badge/);
 assert.match(llm, /wpae_llm_enforce_preserved_library_badge\(\s*\$action\['elements'\]/);
 assert.match(llm, /wpae-generated-content-shell/);
+assert.match(llm, /\$content_shell_index = null/);
+assert.match(llm, /array_splice\( \$shell_without_badges, \$heading_index, 0, \[ \$shell_badge \] \)/);
 assert.match(llm, /\$has_content_shell/);
 assert.match(llm, /background_overlay_background.*classic/);
 assert.match(llm, /background_overlay_color.*#000000/);
@@ -416,6 +418,8 @@ assert.match(llm, /count\( \$labeled_pairs \) < 2[\s\S]*запишитесь/iu)
 assert.match(llm, /\$library_preserve_design = ! empty\( \$selected_library\['trusted_bundled'\] \) && \$action_archetype !== 'hero'/);
 assert.match(llm, /if \( \$is_photo_container && \$has_text_content\( \$children \) \)/);
 assert.match(llm, /\$settings\['title_color'\] = '#ffffff'/);
+assert.match(llm, /\$settings\['button_hover_text_color'\] = '#ffffff'/);
+assert.match(llm, /\$text_alignment = \$find_text_alignment\( \$nodes \)/);
 assert.match(llm, /trusted-preservation применяется только к явно доверенному источнику/);
 assert.match(llm, /\$settings\['flex_align_items_mobile'\] = \$flex_alignment/);
 assert.match(llm, /\$settings\['align_mobile'\] = \$alignment/);

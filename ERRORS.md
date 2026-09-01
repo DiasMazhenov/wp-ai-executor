@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-005: Hero badge and content alignment remained visually detached
+
+- **Observed:** The v02.10.71 live screenshot still showed the outlined
+  «ПРЕИМУЩЕСТВА» badge detached in the top-left, gray body copy over the photo,
+  and a green CTA with blue text. The centered heading and surrounding content
+  therefore did not form one coherent hero composition.
+- **Root cause:** Hero normalization treated the generated badge and the
+  content shell as sibling roots, and alignment discovery could return the
+  outer container's `flex-start` before inspecting text-widget alignment. The
+  button color pass also did not cover Elementor's hover text setting.
+- **Fix:** v02.10.72 reparents the badge into the content shell immediately
+  before the first heading, prioritizes text-widget alignment, and sets normal
+  and hover CTA text to white while retaining the native black photo overlay.
+- **Regression status:** Contract coverage added. Fresh Browser Use generation
+  with scoped JSON, DOM, screenshot, AI Vision, and design-taste review is
+  pending.
+
 ## EJ-001: Elementor roots duplicated after a clean generation
 
 - **Observed:** After deleting and publishing 9 stale AI sections, a fresh

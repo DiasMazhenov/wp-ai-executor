@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.70`
+- Plugin: `v02.10.72`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -27,6 +27,15 @@ preservation is disabled for hero even when retrieval selects a trusted source.
 The hero pass applies a native black overlay and white descendant typography
 to photo-backed text, while keeping one shared alignment for badge, heading,
 body, icons, and CTA.
+
+Release v02.10.72 fixes the remaining live hero composition failure found in
+the v02.10.71 screenshot. The generated badge was still a detached root at
+the top-left, the outer container could override the heading's alignment, and
+the CTA could retain blue text on a green surface. Hero normalization now
+moves the badge inside the content shell immediately before the first heading,
+prioritizes alignment declared by text widgets over structural containers, and
+sets both normal and hover CTA text to white. Live Browser Use regression is
+required before this issue can be closed.
 
 Release v02.10.68 fixes the deeper live-preview corruption found in the v67
 Browser Use run. The Elementor editor kept roots from earlier generation and
