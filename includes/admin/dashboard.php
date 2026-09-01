@@ -914,7 +914,7 @@ function wpae_settings_page() {
 
             <div class="wpae-card wpae-card-wide" data-wpae-tab="llm">
                 <h2>Подключение LLM-агента</h2>
-                <p>Единый OpenAI-compatible proxy поддерживает OpenAI, DeepSeek, OpenRouter и другие сервисы с совместимым Chat Completions API. Ключ не передается в Elementor или браузер.</p>
+                <p>Единый OpenAI-compatible proxy поддерживает OpenAI, DeepSeek, OpenRouter, Gemini и другие сервисы с совместимым Chat Completions API. Ключ не передается в Elementor или браузер.</p>
                 <div class="wpae-status-grid" style="padding:0;margin-top:12px">
                     <div class="wpae-stat">
                         <p class="wpae-stat-label">Провайдер</p>

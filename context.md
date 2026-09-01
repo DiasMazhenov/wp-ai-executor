@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.53`
+- Plugin: `v02.10.54`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -84,6 +84,11 @@ Release v02.10.53 keeps the shared Flexbox normalizer from adding a legacy
 `gap` baseline when a container already has native `flex_gap`. This removes a
 second spacing source from trusted Vocario layouts and keeps their source Flex
 geometry intact.
+
+Release v02.10.54 adds Gemini as a first-class LLM provider. Its official
+OpenAI-compatible Base URL and default model are populated by the provider
+selector, while the Gemini API key follows the existing encrypted server-side
+storage path.
 
 ## Architecture
 
@@ -583,7 +588,8 @@ selected-element subtree are sent to the model; secrets and executable fields
 are removed before the snapshot is serialized.
 
 LLM settings use provider-owned built-in HTTPS base URLs. OpenRouter defaults to
-`openrouter/free`; custom base URLs are available only for the custom provider.
+`openrouter/free`, Gemini uses Google's OpenAI-compatible endpoint, and custom
+base URLs are available only for the custom provider.
 An existing provider key is shown in the dashboard as a bullet placeholder while
 the submitted value remains empty, so saving the form cannot replace it.
 The Elementor floating chat also detects the explicit admin editor URL

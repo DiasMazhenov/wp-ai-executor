@@ -27,6 +27,11 @@ function wpae_llm_provider_options(): array {
             'base_url' => 'https://openrouter.ai/api/v1',
             'model' => 'openrouter/free',
         ],
+        'gemini' => [
+            'label' => 'Gemini',
+            'base_url' => 'https://generativelanguage.googleapis.com/v1beta/openai',
+            'model' => 'gemini-3.7-flash',
+        ],
         'custom' => [
             'label' => 'Другой OpenAI-compatible провайдер',
             'base_url' => '',
@@ -4538,7 +4543,7 @@ function wpae_get_llm_guide(): array {
         'enabled' => function_exists( 'wpae_capability_enabled' ) && wpae_capability_enabled( 'llm_chat' ),
         'configured' => ! empty( $settings['has_api_key'] ) && $settings['base_url'] !== '',
         'endpoint' => 'POST /wp-json/ai-executor/v1/llm/chat',
-        'protocol' => 'OpenAI-compatible Chat Completions; supports OpenAI, DeepSeek, OpenRouter, and custom HTTPS-compatible gateways.',
+        'protocol' => 'OpenAI-compatible Chat Completions; supports OpenAI, DeepSeek, OpenRouter, Gemini, and custom HTTPS-compatible gateways.',
         'request' => [
             'message' => 'Required string, maximum 4000 characters.',
             'history' => 'Optional last 12 user/assistant messages; not stored by the plugin.',
