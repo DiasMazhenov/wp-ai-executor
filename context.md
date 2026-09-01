@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.10.15`
-- Guide: `v02.05.93`
+- Plugin: `v02.10.16`
+- Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -37,6 +37,11 @@ with a native heading and their quote with a native text editor, so the shared
 card-icon normalizer no longer turns testimonial authors into `icon-box`
 widgets. Generic card heading icons use a white icon on a contrasting stacked
 background.
+
+Release v02.10.16 removes the remaining contradictory generic `icon-box` rule
+from the guide and execution metadata. Testimonial semantics are now explicit
+in the guide, action trace, and LLM guide: author/company is a native heading,
+quote is a native text-editor, and any icon is decorative only.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"

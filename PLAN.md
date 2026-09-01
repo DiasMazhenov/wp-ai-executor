@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.16
+
+- Убрать оставшееся противоречие из guide, LLM guide и execution trace: для
+  testimonial автор/компания остаются native heading, цитата native
+  text-editor, а иконка только декоративная; `icon-box` оставить для обычных
+  повторяющихся карточек.
+- Обновить package hashes и проверить live guide в открытом Elementor через
+  Browser Use после reload, не удаляя текущие тестовые секции.
+
 ## v02.10.15
 
 - Убрать `icon-box` из testimonial-карточек: имя и компания должны быть
