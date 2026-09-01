@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.31`
+- Plugin: `v02.10.32`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -50,6 +50,12 @@ before fallback adaptation, so benefits and similar blocks preserve each
 requested pair instead of failing the content-fidelity gate. The card-heading
 normalizer no longer relies on a stale widget-type variable when checking
 native heading markers; generated output remains free of `icon-box`.
+
+Release v02.10.32 fixes card-heading insertion during visual normalization. The
+normalizer no longer mutates the card widget array while iterating it, so adding
+a native icon cannot skip the heading or duplicate the description. Benefits
+and other repeatable cards retain exact label/description pairs after the full
+visual grammar pipeline.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

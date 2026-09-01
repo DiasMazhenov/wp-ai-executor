@@ -2329,6 +2329,7 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
     }
 
+    $card_heading_insertions = [];
     foreach ( $elements as $index => $element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -2355,7 +2356,8 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
                 $card_heading['settings']['title_typography_line_height'] = [ 'unit' => 'em', 'size' => 1.2 ];
             }
             if ( $archetype !== 'testimonials' && ! wpae_llm_card_has_visual_icon( $elements ) ) {
-                array_splice( $elements, $index, 1, [ wpae_llm_card_icon_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element ), $card_heading ] );
+                // Defer insertion until the loop ends; mutating this array here skips the next card widget.
+                $card_heading_insertions[ $index ] = [ wpae_llm_card_icon_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element ), $card_heading ];
                 $changed += 2;
             } else {
                 $elements[ $index ] = $card_heading;
@@ -2376,6 +2378,18 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
             $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed, $archetype, $inside_card_collection );
         }
         $elements[ $index ] = $element;
+    }
+
+    if ( ! empty( $card_heading_insertions ) ) {
+        $normalized_elements = [];
+        foreach ( $elements as $index => $element ) {
+            if ( isset( $card_heading_insertions[ $index ] ) ) {
+                array_push( $normalized_elements, ...$card_heading_insertions[ $index ] );
+                continue;
+            }
+            $normalized_elements[] = $element;
+        }
+        $elements = $normalized_elements;
     }
 
     return $elements;

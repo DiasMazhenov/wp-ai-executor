@@ -315,6 +315,8 @@ assert.match(llm, /card_widget' => 'heading \+ icon \+ text-editor'/);
 assert.match(llm, /separate-native-widget/);
 	assert.match(guide, /Icon-box is forbidden/);
 assert.match(llm, /wpae-card-heading/);
+assert.match(llm, /\$card_heading_insertions = \[\];/);
+assert.match(llm, /Defer insertion until the loop ends/);
 assert.match(llm, /typography_font_size.*size.*1\.25/);
 assert.match(llm, /typography_line_height.*size.*1\.2/);
 assert.match(llm, /wpae_append_css_classes\( \$last_settings\['_css_classes'\]/);
