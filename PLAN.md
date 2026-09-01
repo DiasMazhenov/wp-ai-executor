@@ -8,6 +8,14 @@
 - Проверить live в Elementor через новый content-only prompt, screenshot,
   Vision и JSON свежего объекта.
 
+## v02.10.49
+
+- Адаптировать типографику только заменённых Vocario Hero heading/body под
+  длину русскоязычного контента: убрать наследуемые 12em/0.9em и отрицательный
+  нижний отступ, чтобы строки и CTA не пересекались.
+- Повторить live content-only тест и принять результат только после screenshot,
+  Vision и проверки JSON нового объекта.
+
 ## v02.10.47
 
 - Preserve trusted bundled library geometry and styling instead of applying the

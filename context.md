@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.48`
+- Plugin: `v02.10.49`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -53,6 +53,12 @@ templates no longer retain unrelated source copy such as English labels and
 decorative statistics when a content-only prompt is adapted. The adapter keeps
 the source containers, images, icons and Flex geometry, maps the requested title,
 body and CTA, and removes only non-target text-bearing widgets.
+
+Release v02.10.49 fixes the remaining live Hero geometry failure: when a long
+Russian heading replaces the compact English source heading, the adapter now
+applies responsive native heading/body sizes and line-heights and removes the
+source negative body margin. This preserves the Vocario composition while
+preventing heading line overlap and CTA collisions.
 
 ## Architecture
 

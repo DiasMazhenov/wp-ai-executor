@@ -1187,7 +1187,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     $body_set = false;
     $cta_set = false;
     $target_widget_ids = [];
-    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, &$title_set, &$body_set, &$cta_set, &$target_widget_ids, &$changed ): void {
+    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, $clear_unrequested_copy, &$title_set, &$body_set, &$cta_set, &$target_widget_ids, &$changed ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
@@ -1196,11 +1196,32 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             if ( $widget_type === 'heading' && ! $title_set ) {
                 $settings['title'] = $title;
+                if ( $clear_unrequested_copy ) {
+                    $settings['typography_typography'] = 'custom';
+                    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 3.75 ];
+                    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 3.1 ];
+                    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 2.35 ];
+                    $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.05 ];
+                    $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.05 ];
+                    $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.1 ];
+                }
                 $title_set = true;
                 $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             } elseif ( $widget_type === 'text-editor' && $body !== '' && ! $body_set ) {
                 $settings['editor'] = $body;
+                if ( $clear_unrequested_copy ) {
+                    $settings['typography_typography'] = 'custom';
+                    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.15 ];
+                    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1.05 ];
+                    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 0.95 ];
+                    $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.5 ];
+                    $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.5 ];
+                    $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.45 ];
+                    if ( is_array( $settings['_margin'] ?? null ) ) {
+                        $settings['_margin']['bottom'] = '0';
+                    }
+                }
                 $body_set = true;
                 $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
