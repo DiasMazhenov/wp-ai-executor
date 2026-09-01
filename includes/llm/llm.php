@@ -4033,7 +4033,18 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     $steps[] = [ 'id' => 'page_context', 'status' => 'ok', 'message' => $initial_page ? 'Страница пустая: разрешена безопасная инициализация Elementor.' : 'Текущая структура страницы прочитана.', 'details' => [ 'existing_element_count' => count( $existing ) ] ];
     $fallback_variant_applied = false;
     $fallback_variant = null;
-    $variation_requested = isset( $action['fallback_variant'] ) || $variation_seed >= 0;
+    $preserved_library_design = false;
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $classes = preg_split( '/\s+/', trim( (string) ( $element['settings']['_css_classes'] ?? '' ) ) );
+        if ( is_array( $classes ) && in_array( 'wpae-preserve-library-design', $classes, true ) ) {
+            $preserved_library_design = true;
+            break;
+        }
+    }
+    $variation_requested = ! $preserved_library_design && ( isset( $action['fallback_variant'] ) || $variation_seed >= 0 );
     if ( $variation_requested && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
         $variation_source = isset( $action['fallback_variant'] ) ? absint( $action['fallback_variant'] ) : $variation_seed;
         $variation_archetype = sanitize_key( (string) ( $action['fallback_archetype'] ?? $archetype ) );
@@ -4449,6 +4460,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     $action_fallback = false;
                     $library_preserve_design = ! empty( $selected_library['trusted_bundled'] );
                     if ( $library_preserve_design ) {
+                        unset( $action['fallback_variant'] );
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
                     }
                     if ( ! $library_preserve_design ) {

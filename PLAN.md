@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.59
+
+- Устранить источник мусорной верстки в live Browser Use: после выбора
+  trusted Vocario-шаблона не применять к нему `fallback_variant`, оставшийся от
+  промежуточного deterministic fallback.
+- Защитить executor по marker сохраненной library-композиции, удалить stale
+  variant в chat pipeline, прогнать lint/contract tests, затем доставить пакет
+  через WPPusher и повторить браузерную генерацию со screenshot и Vision.
+
 ## v02.10.58
 
 - Исправить parser content-only запросов: дефис внутри слов вроде

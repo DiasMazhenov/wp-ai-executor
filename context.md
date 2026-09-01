@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.58`
+- Plugin: `v02.10.59`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -114,6 +114,15 @@ label separators while preserving em/en dash punctuation, so content-only
 briefs are not split into false label/description pairs before template
 adaptation. The parser contract and runtime smoke checks verify intact
 requested content and still accept real `label - description` pairs.
+
+Release v02.10.59 fixes the visual corruption found in the live Browser Use
+test: a deterministic fallback action retained `fallback_variant` after a
+trusted Vocario library composition replaced its generated elements. The
+Elementor executor then applied the generic variation pass to the preserved
+library root, overwriting source geometry and creating duplicate, misplaced
+content. Trusted library roots now skip fallback variation defensively, and
+the chat path removes the stale variant marker before execution. The contract
+test covers both guards.
 
 ## Architecture
 
