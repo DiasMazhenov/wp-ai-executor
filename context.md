@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.17`
+- Plugin: `v02.10.18`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -46,6 +46,13 @@ quote is a native text-editor, and any icon is decorative only.
 Release v02.10.17 makes the testimonial exception the first rule in the
 generation hint, so the model cannot interpret a later exception as permission
 to use `icon-box` for testimonial authors or quotes.
+
+Release v02.10.18 fixes the full testimonial library path. Natural prompts that
+say "отзывы" now win over incidental portfolio words such as "сервис" or
+"продукт", the command prefix is removed before extracting the first author,
+and bundled testimonial cards inside nested carousels are converted from
+`icon-box` into separate native author headings and quote text editors. Legacy
+carousel widget names are recognized by both layout and typography normalizers.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"

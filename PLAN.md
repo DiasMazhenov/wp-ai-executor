@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.18
+
+- Исправить выбор Testimonials-шаблона для естественных промтов с отзывами и
+  не включать командный префикс в имя первого автора.
+- Разделять импортированный testimonial `icon-box` на native heading автора и
+  native text-editor цитаты, включая карточки внутри nested/n-carousel.
+- Обновить package hashes, прогнать локальные проверки и подтвердить live-путь
+  через Browser Use: промт, скриншот, Vision/design-taste и selected JSON.
+
 ## v02.10.17
 
 - Поставить исключение testimonial перед общим правилом `icon-box` в

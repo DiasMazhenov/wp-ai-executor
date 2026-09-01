@@ -557,6 +557,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/₸|\$|€|₽|\b(цена|стоимост|тариф|пакет|от\s+\d+)/iu', $message ) ) {
             return 'pricing';
         }
+        if ( preg_match( '/\b(отзыв\w*|рекомендац\w*|понравил\w*|получил\w*)\b/iu', $normalized ) ) {
+            return 'testimonials';
+        }
         if ( preg_match( '/\b(шаг|этап|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }
@@ -565,9 +568,6 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         }
         if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
             return 'team';
-        }
-        if ( preg_match( '/\b(анна|мария|дмитрий|руслан|марат|отзыв|рекомендац|понравилось|получили)\b/iu', $normalized ) ) {
-            return 'testimonials';
         }
         if ( count( $labeled_pairs ) >= 3 && preg_match( '/(?:кейс\w*|портфолио|проект\w*|бренд\w*|сайт\w*|сервис\w*|редизайн\w*|продукт\w*|магазин\w*)/iu', $labeled_text . ' ' . $normalized ) ) {
             return 'portfolio';
@@ -671,8 +671,12 @@ function wpae_llm_extract_requested_content( string $message ): array {
 }
 
 function wpae_llm_extract_labeled_content( string $message ): array {
+    $content_message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
+    if ( ! is_string( $content_message ) || $content_message === '' ) {
+        $content_message = $message;
+    }
     $quoted_pairs = [];
-    if ( preg_match_all( '/(?:^|(?<=[.!?»;])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
+    if ( preg_match_all( '/(?:^|(?<=[.!?»;])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $content_message, $quoted_matches, PREG_SET_ORDER ) ) {
         foreach ( $quoted_matches as $match ) {
             $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
             $company = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
@@ -687,7 +691,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     }
 
     $natural_pairs = [];
-    $natural_segments = preg_split( '/(?:\r?\n+|;\s*)/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    $natural_segments = preg_split( '/(?:\r?\n+|;\s*)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     foreach ( $natural_segments as $segment ) {
         $segment = trim( (string) $segment );
         if ( ! preg_match( '/(?:^|[.!?]\s+)([^,.;—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(.{3,320})$/u', $segment, $match ) ) {
@@ -705,7 +709,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     }
 
     $pairs = [];
-    $segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+(?=[^—–-]))/u', $message ) ?: [];
+    $segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+(?=[^—–-]))/u', $content_message ) ?: [];
     foreach ( $segments as $segment ) {
         $segment = trim( (string) $segment );
         $colon_position = strpos( $segment, ':' );
@@ -1968,7 +1972,8 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
     $is_card_contents = $inside_bento_grid && $parent_depth >= 1 && $nested_container_count === 0;
 
     if ( $is_card_contents && $archetype === 'testimonials' ) {
-        foreach ( $elements as $index => $element ) {
+        for ( $index = 0, $element_count = count( $elements ); $index < $element_count; $index++ ) {
+            $element = $elements[ $index ] ?? null;
             if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'widget' ) {
                 continue;
             }
@@ -1978,25 +1983,45 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
                 $title = trim( wp_strip_all_tags( (string) ( $settings['title_text'] ?? '' ) ) );
                 $description = trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) );
                 if ( $title !== '' || $description !== '' ) {
-                    $author = $title;
-                    if ( $description !== '' && strpos( wpae_llm_normalize_content_text( $author ), wpae_llm_normalize_content_text( $description ) ) === false ) {
-                        $author .= ' · ' . $description;
+                    $replacement = [];
+                    if ( $title !== '' ) {
+                        $author = $element;
+                        $author['widgetType'] = 'heading';
+                        $author['settings'] = [
+                            'title' => $title,
+                            'header_size' => 'h6',
+                            'title_color' => (string) ( $settings['title_color'] ?? '#111827' ),
+                            'typography_typography' => 'custom',
+                            'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                            'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
+                            'typography_font_weight' => '600',
+                            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+                            'align' => 'left',
+                            '_css_classes' => 'wpae-testimonial-author',
+                        ];
+                        $replacement[] = $author;
                     }
-                    $element['widgetType'] = 'heading';
-                    $element['settings'] = [
-                        'title' => $author,
-                        'header_size' => 'h6',
-                        'title_color' => (string) ( $settings['title_color'] ?? '#111827' ),
-                        'typography_typography' => 'custom',
-                        'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
-                        'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
-                        'typography_font_weight' => '600',
-                        'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
-                        'align' => 'left',
-                        '_css_classes' => 'wpae-testimonial-author',
-                    ];
-                    $elements[ $index ] = $element;
-                    $changed++;
+                    if ( $description !== '' ) {
+                        $quote = $element;
+                        $quote['id'] = (string) ( $element['id'] ?? 'wpae-testimonial' ) . '-quote';
+                        $quote['widgetType'] = 'text-editor';
+                        $quote['settings'] = [
+                            'editor' => $description,
+                            'text_color' => (string) ( $settings['description_color'] ?? '#6b7280' ),
+                            'typography_typography' => 'custom',
+                            'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                            'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
+                            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.45 ],
+                            'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.4 ],
+                            'align' => 'left',
+                            '_css_classes' => 'wpae-testimonial-quote',
+                        ];
+                        $replacement[] = $quote;
+                    }
+                    array_splice( $elements, $index, 1, $replacement );
+                    $element_count += count( $replacement ) - 1;
+                    $index += count( $replacement ) - 1;
+                    $changed += count( $replacement );
                     continue;
                 }
             }
@@ -2105,7 +2130,11 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
             if ( $element_type === 'container' ) {
                 $is_bento_container = is_array( $element_classes ) && in_array( 'wpae-bento-grid', $element_classes, true );
             }
-            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed, $archetype, $inside_bento_grid || $is_bento_container );
+            $inside_card_collection = $inside_bento_grid || $is_bento_container;
+            if ( $archetype === 'testimonials' && $element_type === 'widget' && in_array( $widget_type, [ 'nested-carousel', 'n-carousel' ], true ) ) {
+                $inside_card_collection = true;
+            }
+            $element['elements'] = wpae_llm_normalize_card_heading_icons( $element['elements'], $element_depth, $changed, $archetype, $inside_card_collection );
         }
         $elements[ $index ] = $element;
     }
@@ -2580,7 +2609,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     if ( $button_text === '' ) {
                         continue;
                     }
-                    if ( in_array( strtolower( $button_text ), [ 'learn more', 'read more' ], true ) ) {
+                    if ( in_array( strtolower( $button_text ), [ 'learn more', 'read more', 'смотреть проекты', 'смотреть кейсы', 'view projects' ], true ) ) {
                         $settings['text'] = $copyelement_defaults['cta'];
                         $changed++;
                     }
@@ -2635,7 +2664,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                 }
                 $carousel_groups = [];
                 foreach ( $children as $child_index => $child ) {
-                    if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' || ( $child['widgetType'] ?? '' ) !== 'nested-carousel' || ! is_array( $child['elements'] ?? null ) ) {
+                    if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' || ! in_array( (string) ( $child['widgetType'] ?? '' ), [ 'nested-carousel', 'n-carousel' ], true ) || ! is_array( $child['elements'] ?? null ) ) {
                         continue;
                     }
                     $slide_indexes = [];
@@ -2752,10 +2781,14 @@ function wpae_llm_normalize_generated_typography( array $elements, string $arche
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $widget_type = (string) ( $element['widgetType'] ?? '' );
         $element_classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-        $is_bento_grid = (string) ( $element['elType'] ?? '' ) === 'container'
+        $element_type = (string) ( $element['elType'] ?? '' );
+        $is_bento_grid = $element_type === 'container'
             && is_array( $element_classes )
             && in_array( 'wpae-bento-grid', $element_classes, true );
-        $next_inside_bento_grid = $inside_bento_grid || $is_bento_grid;
+        $is_testimonial_carousel = $archetype === 'testimonials'
+            && $element_type === 'widget'
+            && in_array( $widget_type, [ 'nested-carousel', 'n-carousel' ], true );
+        $next_inside_bento_grid = $inside_bento_grid || $is_bento_grid || $is_testimonial_carousel;
         $before = wp_json_encode( $settings );
 
         if ( $widget_type === 'heading' && ( ! is_array( $element_classes ) || ! in_array( 'wpae-generated-badge-label', $element_classes, true ) ) ) {
