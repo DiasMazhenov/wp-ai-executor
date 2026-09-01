@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.10.27
+
+- Keep generated and imported card composition free of `icon-box`: preserve an
+  existing native icon, or emit a separate native `icon` beside a native
+  heading/text-editor.
+
 ## v02.10.26
 
 - Сделать копирование JSON выбранного контейнера устойчивым к потере фокуса и

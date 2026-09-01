@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.26`
+- Plugin: `v02.10.27`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -26,6 +26,10 @@
 - `admin/` - Russian dashboard;
 - `updates/` - single-file and manifest-based package updates;
 - `support/`, `health/`, `rollback/`, `media/`, `exports/`, `skills/`.
+
+Release v02.10.27 forbids the Icon Box widget in generated and imported
+templates. Card headings remain native heading widgets; existing card icons are
+preserved, and cards without one receive a separate native icon widget.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

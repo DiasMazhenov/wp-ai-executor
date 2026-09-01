@@ -620,7 +620,7 @@ function wpae_llm_block_archetype_hint( string $message ): string {
         'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
         'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
         'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
-        'team' => [ 'команда/team', 'heading, image и повторяющиеся icon-box карточки' ],
+        'team' => [ 'команда/team', 'heading, image, icon и повторяющиеся карточки' ],
         'about' => [ 'о компании/about', 'heading, image, icon-list и counter при необходимости' ],
         'testimonials' => [ 'отзывы/testimonials', 'heading, quote/proof widgets и повторяющиеся native items' ],
         'faq' => [ 'FAQ', 'heading и accordion с заполненными вопросами и ответами' ],
@@ -1549,7 +1549,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
 }
 
 function wpae_llm_generation_visual_grammar_hint(): string {
-    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Важно: testimonial-карточки являются исключением и никогда не используют icon-box: имя/компания выводятся обычным native heading, цитата — native text-editor, а отдельная quote/icon-иконка допускается только как декоративный маркер. Для остальных повторяющихся карточек с коротким заголовком используй native icon-box с контрастной белой иконкой на совместимом фоне слева от заголовка. В testimonial-карточке цитата является текстом и не должна превращаться в иконку или icon-box. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Icon-box запрещен: заголовок карточки всегда остается обычным native heading, а иконка при необходимости выводится отдельным native icon. В testimonial-карточке имя/компания выводятся native heading, цитата — native text-editor, а quote/icon-иконка допускается только как декоративный маркер. В testimonial-карточке цитата является текстом и не должна превращаться в иконку. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
 function wpae_llm_fallback_variant( string $message ): int {
@@ -2052,6 +2052,40 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
     ];
 }
 
+function wpae_llm_card_icon_widget( string $id, array $source = [] ): array {
+    $source_settings = is_array( $source['settings'] ?? null ) ? $source['settings'] : [];
+    $selected_icon = is_array( $source_settings['selected_icon'] ?? null ) ? $source_settings['selected_icon'] : [];
+    if ( trim( (string) ( $selected_icon['value'] ?? '' ) ) === '' ) {
+        $selected_icon = [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ];
+    }
+    return [
+        'id' => $id,
+        'elType' => 'widget',
+        'widgetType' => 'icon',
+        'settings' => [
+            'selected_icon' => $selected_icon,
+            'primary_color' => (string) ( $source_settings['icon_color'] ?? '#1f2937' ),
+            'size' => is_array( $source_settings['icon_size'] ?? null ) ? $source_settings['icon_size'] : [ 'unit' => 'rem', 'size' => 1.25 ],
+            'align' => (string) ( $source_settings['align'] ?? 'left' ),
+            'content_width' => 'full',
+            '_css_classes' => 'wpae-card-icon',
+        ],
+        'elements' => [],
+    ];
+}
+
+function wpae_llm_card_has_visual_icon( array $elements ): bool {
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'widget' ) {
+            continue;
+        }
+        if ( in_array( sanitize_key( (string) ( $element['widgetType'] ?? '' ) ), [ 'icon', 'image' ], true ) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function wpae_llm_card_heading_widget( string $id, array $source ): array {
     $source_settings = is_array( $source['settings'] ?? null ) ? $source['settings'] : [];
     $title = trim( (string) ( $source_settings['title'] ?? '' ) );
@@ -2066,26 +2100,68 @@ function wpae_llm_card_heading_widget( string $id, array $source ): array {
     return [
         'id' => $id,
         'elType' => 'widget',
-        'widgetType' => 'icon-box',
+        'widgetType' => 'heading',
         'settings' => [
-            'selected_icon' => [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ],
-            'title_text' => $title,
-            'description_text' => '',
-            'position' => 'left',
-            'view' => 'default',
-            'title_size' => $title_size,
+            'title' => $title,
+            'header_size' => $title_size,
             'title_color' => (string) ( $source_settings['title_color'] ?? '#111827' ),
-            'icon_color' => '#ffffff',
-            'icon_background_color' => '#1f2937',
-            'icon_view' => 'stacked',
-            'icon_shape' => 'circle',
-            'icon_size' => [ 'unit' => 'rem', 'size' => 1.25 ],
-            'icon_space' => [ 'unit' => 'rem', 'size' => 0.6 ],
-            'content_vertical_alignment' => 'middle',
+            'typography_typography' => 'custom',
+            'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.25 ],
+            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+            'typography_font_weight' => '600',
+            'align' => 'left',
             '_css_classes' => 'wpae-card-heading',
         ],
         'elements' => [],
     ];
+}
+
+function wpae_llm_convert_icon_boxes_to_native_widgets( array $elements, int &$changed ): array {
+    $normalized = [];
+    $has_visual_sibling = wpae_llm_card_has_visual_icon( $elements );
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) ) {
+            continue;
+        }
+        $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+        if ( ( $element['elType'] ?? '' ) === 'widget' && $widget_type === 'icon-box' ) {
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $title = trim( wp_strip_all_tags( (string) ( $settings['title_text'] ?? '' ) ) );
+            $description = trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) );
+            $replacement = [];
+            if ( ! $has_visual_sibling && ! empty( $settings['selected_icon']['value'] ) ) {
+                $replacement[] = wpae_llm_card_icon_widget( (string) ( $element['id'] ?? 'wpae-card' ) . '-icon', $element );
+            }
+            if ( $title !== '' ) {
+                $replacement[] = wpae_llm_card_heading_widget( (string) ( $element['id'] ?? 'wpae-card' ) . '-heading', [ 'settings' => [ 'title' => $title, 'header_size' => $settings['title_size'] ?? 'h4', 'title_color' => $settings['title_color'] ?? '#111827' ] ] );
+            }
+            if ( $description !== '' ) {
+                $replacement[] = [
+                    'id' => (string) ( $element['id'] ?? 'wpae-card' ) . '-description',
+                    'elType' => 'widget',
+                    'widgetType' => 'text-editor',
+                    'settings' => [
+                        'editor' => $description,
+                        'text_color' => (string) ( $settings['description_color'] ?? '#6b7280' ),
+                        'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                        'typography_line_height' => [ 'unit' => 'em', 'size' => 1.45 ],
+                        '_css_classes' => 'wpae-card-description',
+                    ],
+                    'elements' => [],
+                ];
+            }
+            if ( ! empty( $replacement ) ) {
+                array_push( $normalized, ...$replacement );
+                $changed++;
+            }
+            continue;
+        }
+        if ( is_array( $element['elements'] ?? null ) ) {
+            $element['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( $element['elements'], $changed );
+        }
+        $normalized[] = $element;
+    }
+    return $normalized;
 }
 
 function wpae_llm_card_widget_text( array $element ): string {
@@ -2194,7 +2270,7 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-        if ( is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
+        if ( in_array( $widget_type, [ 'heading', 'icon-box' ], true ) && is_array( $classes ) && in_array( 'wpae-card-heading', $classes, true ) && wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
             $has_marked_card_heading = true;
             break;
         }
@@ -2243,30 +2319,14 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
                 $card_heading['settings']['title_typography_font_weight'] = '600';
                 $card_heading['settings']['title_typography_line_height'] = [ 'unit' => 'em', 'size' => 1.2 ];
             }
-            $elements[ $index ] = $card_heading;
-            $changed++;
-            continue;
-        }
-        if ( $element_type === 'widget' && $is_card_contents && $archetype !== 'testimonials' && $widget_type === 'icon-box' ) {
-            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
-            if ( wpae_llm_is_probable_card_heading( wpae_llm_card_widget_text( $element ) ) ) {
-                $before = wp_json_encode( $settings );
-                $selected_icon = is_array( $settings['selected_icon'] ?? null ) ? $settings['selected_icon'] : [];
-                $settings['selected_icon'] = trim( (string) ( $selected_icon['value'] ?? '' ) ) !== '' ? $selected_icon : [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ];
-                $settings['position'] = 'left';
-                $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-card-heading' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-card-heading' );
-                if ( $archetype === 'testimonials' ) {
-                    $settings['description_text'] = '';
-                    $settings['title_typography_typography'] = 'custom';
-                    $settings['title_typography_font_size'] = [ 'unit' => 'rem', 'size' => 1 ];
-                    $settings['title_typography_font_weight'] = '600';
-                    $settings['title_typography_line_height'] = [ 'unit' => 'em', 'size' => 1.25 ];
-                }
-                $element['settings'] = $settings;
-                if ( $before !== wp_json_encode( $settings ) ) {
-                    $changed++;
-                }
+            if ( $archetype !== 'testimonials' && ! wpae_llm_card_has_visual_icon( $elements ) ) {
+                array_splice( $elements, $index, 1, [ wpae_llm_card_icon_widget( (string) ( $element['id'] ?? 'wpae-card-heading' ) . '-icon', $element ), $card_heading ] );
+                $changed += 2;
+            } else {
+                $elements[ $index ] = $card_heading;
+                $changed++;
             }
+            continue;
         }
         if ( is_array( $element['elements'] ?? null ) ) {
             $element_depth = $element_type === 'container' ? $parent_depth + 1 : $parent_depth;
@@ -2353,6 +2413,7 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         }
         $root['elements'] = $content_shell ? [ $badge, $content_shell ] : array_merge( [ $badge ], $content_elements );
         $root['elements'] = wpae_llm_normalize_card_heading_icons( $root['elements'], 0, $changed, $archetype );
+        $root['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( $root['elements'], $changed );
         $badge = $root['elements'][0] ?? $badge;
         $content_shell = null;
         $content_elements = [];
@@ -3832,7 +3893,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
             $action_steps[] = [ 'id' => 'process_labels', 'status' => 'ok', 'message' => 'Нумерация карточек процесса выровнена по порядку без изменения текста шагов.', 'details' => [ 'labels_updated' => $process_labels_changed ] ];
         }
         if ( $visual_grammar_changed > 0 ) {
-            $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge и семантические карточки.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => $action_archetype === 'testimonials' ? 'heading + text-editor' : 'icon-box', 'icon_position' => $action_archetype === 'testimonials' ? 'decorative-only' : 'left' ] ];
+            $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge, отдельные native icon и семантические карточки.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'heading + icon + text-editor', 'icon_position' => 'separate-native-widget' ] ];
         }
         if ( $render_cache_changed > 0 ) {
             $action_steps[] = [ 'id' => 'render_cache', 'status' => 'ok', 'message' => 'Устаревший Elementor render cache очищен перед записью обновленного контента.', 'details' => [ 'nodes_cleared' => $render_cache_changed ] ];
@@ -3906,7 +3967,7 @@ function wpae_get_llm_guide(): array {
         'guided_editor_mode' => 'The floating Elementor editor chat injects the current guide, enabled custom skills, capabilities, and project design system into action requests. It uses the same internal Elementor validation/update pipeline without exposing the site API key to browser JavaScript.',
         'editor_preview_sync' => 'After a successful insert, the floating chat synchronizes new models through the open Elementor editor API. After a selected patch, it applies native settings to the selected model tree and refreshes the preview only when the canvas cannot confirm the change. The response reports the sync mode and changed ids; it does not claim realtime success without a canvas check.',
         'action_content_gate' => 'An explicit insert action is rejected unless it contains exactly one populated root container with at least one native Elementor widget. A targeted patch is rejected unless it has a current post_id, bounded patches, existing selected element ids, and native editable paths.',
-        'visual_grammar' => 'Every generated root block receives one compact outlined rounded native badge. Generic repeatable card headings may be normalized to a native icon-box with a contrasting icon on the left; testimonial cards are the semantic exception and use a native heading for author/company plus a native text-editor for the quote, with icons decorative only. This is enforced after provider decoding and before Elementor preflight.',
+        'visual_grammar' => 'Every generated root block receives one compact outlined rounded native badge. Icon-box is forbidden: card headings remain native heading widgets and any card icon is a separate native icon widget. Testimonial cards use a native heading for author/company plus a native text-editor for the quote, with icons decorative only. This is enforced after provider decoding and before Elementor preflight.',
         'preview_and_undo' => 'Every successful write returns operation_id, compact diff, rollback_snapshot_id, and rollback expiry. The editor chat exposes one-click undo through POST /wp-json/ai-executor/v1/llm/undo, scoped to the current post and authenticated editor.',
         'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, preview, native normalization, design-system mapping, page context, Elementor update, sync, Vision review, and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
         'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief and a bounded visible-text excerpt. Vision must check content_fidelity as well as visual quality. The editor-chat review is advisory and never rolls back a successful write from subjective screenshot findings; strict rollback remains available through transaction_vision_review. Screenshot or provider failures are reported without undoing the editor write.',
