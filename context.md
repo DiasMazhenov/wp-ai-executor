@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.69`
+- Plugin: `v02.10.70`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -28,13 +28,21 @@ only editor roots absent from that snapshot, then inserts the current template.
 The existing request-scoped generated-root cleanup remains the repair fallback.
 Contract coverage protects the root reconciliation and snapshot ID payload.
 
-Release v02.10.69 restores the required outlined badge for trusted library
+Release v02.10.70 restores the required outlined badge for trusted library
 compositions. The trusted path previously skipped the generic visual grammar,
 so imported blocks could lose the badge rule; badge enforcement now runs after
-trusted content adaptation and places one outlined badge above the preserved
-content shell without replacing the source composition. The live cleanup also
-retries Elementor's native delete command and verifies model removal before
-continuing, addressing stale roots that survived a single delete attempt.
+trusted content adaptation and places one contrast-safe outlined badge above the
+preserved content shell without replacing the source composition. Photo-backed
+trusted blocks with light text now receive Elementor's native black semi-
+transparent Background Overlay, while the content shell no longer duplicates
+the root media settings. The badge uses a white surface for contrast. Hero
+blocks are normalized as their own archetype rather than being treated as
+trusted: every text-column child uses the same left, center, or right alignment,
+and photo-backed light text receives the same native overlay rule. Vision repair
+persists its pending request across a
+full Elementor page reload, because reloading only the preview iframe did not
+reset stale editor roots. Final failed reviews reload the saved rollback state
+instead of leaving materialized copies in the canvas.
 
 Release v02.10.67 fixes the live trusted-template failure found in the v66
 Browser Use run. The Vocario Hero source has a photo background, but stale

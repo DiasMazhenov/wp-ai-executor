@@ -1602,7 +1602,24 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
     $is_white = static function ( string $color ): bool {
         return in_array( strtolower( trim( $color ) ), [ '#fff', '#ffffff', 'white', 'rgb(255, 255, 255)', 'rgba(255, 255, 255, 1)' ], true );
     };
-    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $has_background_image, $has_card_surface, $is_white ): void {
+    $has_light_text = static function ( array $nodes ) use ( &$has_light_text, $is_white ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            foreach ( [ 'title_color', 'text_color', 'button_text_color', 'icon_color' ] as $key ) {
+                if ( $is_white( trim( (string) ( $settings[ $key ] ?? '' ) ) ) ) {
+                    return true;
+                }
+            }
+            if ( $has_light_text( (array) ( $node['elements'] ?? [] ) ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $has_background_image, $has_card_surface, $is_white, $has_light_text ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
@@ -1617,6 +1634,11 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
                 if ( $color !== '' && $is_white( $color ) && ( $has_background_image( $settings ) || ! $has_card_surface( $settings ) ) ) {
                     $settings['background_color'] = 'transparent';
                 }
+                if ( $has_background_image( $settings ) && $has_light_text( (array) ( $element['elements'] ?? [] ) ) ) {
+                    $settings['background_overlay_background'] = 'classic';
+                    $settings['background_overlay_color'] = '#000000';
+                    $settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
+                }
             }
             if ( $before !== wp_json_encode( $settings ) ) {
                 $changed++;
@@ -1629,6 +1651,188 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
         unset( $element );
     };
     $walk( $elements );
+    return $elements;
+}
+
+function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0 ): array {
+    $to_alignment = static function ( $value ): ?string {
+        $value = strtolower( trim( (string) $value ) );
+        if ( in_array( $value, [ 'left', 'center', 'right' ], true ) ) {
+            return $value;
+        }
+        return [ 'flex-start' => 'left', 'flex-end' => 'right' ][ $value ] ?? null;
+    };
+    $to_flex_alignment = static function ( string $alignment ): string {
+        return [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $alignment ] ?? 'flex-start';
+    };
+    $is_white = static function ( string $color ): bool {
+        return in_array( strtolower( trim( $color ) ), [ '#fff', '#ffffff', 'white', 'rgb(255, 255, 255)', 'rgba(255, 255, 255, 1)' ], true );
+    };
+    $has_light_text = static function ( array $nodes ) use ( &$has_light_text, $is_white ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            foreach ( [ 'title_color', 'text_color', 'button_text_color', 'icon_color' ] as $key ) {
+                if ( $is_white( trim( (string) ( $settings[ $key ] ?? '' ) ) ) ) {
+                    return true;
+                }
+            }
+            if ( $has_light_text( (array) ( $node['elements'] ?? [] ) ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $has_background_image = static function ( array $settings ): bool {
+        foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
+            $image = $settings[ $key ] ?? null;
+            if ( is_array( $image ) && trim( (string) ( $image['url'] ?? '' ) ) !== '' ) {
+                return true;
+            }
+            if ( is_string( $image ) && trim( $image ) !== '' ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $has_text_content = static function ( array $nodes ) use ( &$has_text_content ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            if ( ( $node['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $node['widgetType'] ?? '' ) ), [ 'heading', 'text-editor', 'button', 'icon-box', 'icon-list' ], true ) ) {
+                return true;
+            }
+            if ( $has_text_content( (array) ( $node['elements'] ?? [] ) ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $has_media = static function ( array $nodes ) use ( &$has_media, $has_background_image ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            if ( ( $node['elType'] ?? '' ) === 'container' && $has_background_image( $settings ) ) {
+                return true;
+            }
+            if ( ( $node['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $node['widgetType'] ?? '' ) ), [ 'image', 'video', 'video-playlist' ], true ) ) {
+                return true;
+            }
+            if ( $has_media( (array) ( $node['elements'] ?? [] ) ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $find_alignment = static function ( array $nodes ) use ( &$find_alignment, $to_alignment ): ?string {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                continue;
+            }
+            $element_type = (string) ( $node['elType'] ?? '' );
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            if ( $element_type === 'container' && strtolower( (string) ( $settings['flex_direction'] ?? 'column' ) ) === 'column' ) {
+                $container_alignment = $to_alignment( $settings['flex_align_items'] ?? '' );
+                if ( $container_alignment !== null ) {
+                    return $container_alignment;
+                }
+            }
+            if ( $element_type === 'widget' && in_array( $widget_type, [ 'heading', 'text-editor', 'button', 'icon', 'icon-box', 'icon-list', 'image' ], true ) ) {
+                $widget_alignment = $to_alignment( $settings['align'] ?? '' );
+                if ( $widget_alignment !== null ) {
+                    return $widget_alignment;
+                }
+            }
+            $nested_alignment = $find_alignment( (array) ( $node['elements'] ?? [] ) );
+            if ( $nested_alignment !== null ) {
+                return $nested_alignment;
+            }
+        }
+        return null;
+    };
+    $apply = static function ( array &$nodes, string $alignment, bool $inside_content = false ) use ( &$apply, $to_flex_alignment, $has_text_content, $has_media, $has_background_image, $has_light_text ): void {
+        $flex_alignment = $to_flex_alignment( $alignment );
+        $align_self = $alignment === 'center' ? 'center' : ( $alignment === 'right' ? 'flex-end' : 'flex-start' );
+        foreach ( $nodes as &$node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $element_type = (string) ( $node['elType'] ?? '' );
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            $is_badge = $element_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true );
+            $is_content_container = $inside_content;
+            if ( $element_type === 'container' && ! $is_badge ) {
+                $children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
+                if ( $has_background_image( $settings ) && $has_light_text( $children ) ) {
+                    $settings['background_overlay_background'] = 'classic';
+                    $settings['background_overlay_color'] = '#000000';
+                    $settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
+                }
+                $child_containers = count( array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) );
+                $split_layout = ! $inside_content && $has_text_content( $children ) && $child_containers >= 2 && $has_media( $children );
+                if ( ! $inside_content && ! $split_layout && $has_text_content( $children ) ) {
+                    $is_content_container = true;
+                }
+                if ( $is_content_container ) {
+                    $settings['flex_align_items'] = $flex_alignment;
+                    $settings['flex_align_items_tablet'] = $flex_alignment;
+                    $settings['flex_align_items_mobile'] = $flex_alignment;
+                }
+            }
+            if ( $is_badge ) {
+                $settings['align_self'] = $align_self;
+                $settings['align_self_tablet'] = $align_self;
+                $settings['align_self_mobile'] = $align_self;
+                $settings['flex_align_items'] = 'center';
+            } elseif ( $element_type === 'widget' && ( $inside_content || $is_content_container ) && in_array( $widget_type, [ 'heading', 'text-editor', 'button', 'icon', 'icon-box', 'icon-list', 'image' ], true ) ) {
+                $settings['align'] = $alignment;
+                $settings['align_tablet'] = $alignment;
+                $settings['align_mobile'] = $alignment;
+                $settings['align_self'] = $align_self;
+                $settings['align_self_tablet'] = $align_self;
+                $settings['align_self_mobile'] = $align_self;
+            }
+            $node['settings'] = $settings;
+            $next_inside_content = $inside_content || $is_content_container;
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $apply( $node['elements'], $alignment, $next_inside_content );
+            }
+        }
+        unset( $node );
+    };
+
+    foreach ( $elements as $index => $root ) {
+        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $mode = $find_alignment( [ $root ] ) ?? 'left';
+        $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+        if ( $has_background_image( $root_settings ) && $has_light_text( (array) ( $root['elements'] ?? [] ) ) ) {
+            $root_settings['background_overlay_background'] = 'classic';
+            $root_settings['background_overlay_color'] = '#000000';
+            $root_settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
+            $root['settings'] = $root_settings;
+        }
+        $root_nodes = [ $root ];
+        $apply( $root_nodes, $mode );
+        if ( wp_json_encode( $root ) !== wp_json_encode( $root_nodes[0] ) ) {
+            $changed++;
+        }
+        $elements[ $index ] = $root_nodes[0];
+    }
+
     return $elements;
 }
 
@@ -2450,7 +2654,7 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
 }
 
 function wpae_llm_generation_visual_grammar_hint(): string {
-    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Icon-box запрещен: заголовок карточки всегда остается обычным native heading, а иконка при необходимости выводится отдельным native icon. В testimonial-карточке имя/компания выводятся native heading, цитата — native text-editor, а quote/icon-иконка допускается только как декоративный маркер. В testimonial-карточке цитата является текстом и не должна превращаться в иконку. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Icon-box запрещен: заголовок карточки всегда остается обычным native heading, а иконка при необходимости выводится отдельным native icon. В testimonial-карточке имя/компания выводятся native heading, цитата — native text-editor, а quote/icon-иконка допускается только как декоративный маркер. В testimonial-карточке цитата является текстом и не должна превращаться в иконку. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Hero — самостоятельная композиция; trusted-preservation применяется только к явно доверенному источнику. Внутри каждой текстовой колонки выбери одно выравнивание и примени его одновременно к badge, заголовку, тексту, иконкам и CTA; если выбран center, все элементы центрированы, если left, все элементы прижаты к left. Для hero с фото и светлым текстом используй черный полупрозрачный native Background Overlay. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
 function wpae_llm_fallback_variant( string $message ): int {
@@ -2928,7 +3132,7 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
             'flex_justify_content' => 'center',
             'flex_align_items' => 'center',
             'background_background' => 'classic',
-            'background_color' => 'transparent',
+            'background_color' => '#ffffff',
             'border_border' => 'solid',
             'border_color' => '#1f2937',
             'border_width' => [ 'unit' => 'px', 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2', 'isLinked' => true ],
@@ -3010,6 +3214,11 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
 
         if ( $content_shell === null ) {
             $shell_settings = $original_settings;
+            foreach ( [ 'background_background', 'background_color', 'background_color_b', 'background_image', 'background_overlay_background', 'background_overlay_color', 'background_overlay_color_b', 'background_overlay_opacity', 'background_position', 'background_repeat', 'background_size', 'background_hover_background', 'background_hover_color', 'background_hover_image', 'background_overlay_image', 'background_video_fallback', 'background_slideshow_gallery', 'background_overlay_video_fallback', 'background_overlay_slideshow_gallery' ] as $background_key ) {
+                unset( $shell_settings[ $background_key ] );
+            }
+            $shell_settings['background_background'] = 'classic';
+            $shell_settings['background_color'] = 'transparent';
             $shell_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
                 ? wpae_append_css_classes( $shell_settings['_css_classes'] ?? '', [ 'wpae-generated-content-shell' ] )
                 : trim( (string) ( $shell_settings['_css_classes'] ?? '' ) . ' wpae-generated-content-shell' );
@@ -4901,6 +5110,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $cta_changed = 0;
             $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed, true );
         }
+        $hero_composition_changed = 0;
+        if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
+            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed );
+        }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
             wpae_llm_invalidate_render_cache( $action['elements'], $render_cache_changed );
@@ -4913,6 +5126,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed',
                 'message' => ! empty( $action_diagnostics['json_decoded'] ) ? 'Ответ разобран как Elementor JSON-команда.' : 'Ответ не разобран как Elementor JSON-команда.',
                 'details' => $action_diagnostics,
+            ],
+            [
+                'id' => 'hero_composition',
+                'status' => $action_archetype === 'hero' ? 'ok' : 'skipped',
+                'message' => $action_archetype === 'hero' ? 'Hero выровнен единообразно: badge, текст, иконки и CTA используют одну ось.' : 'Hero-нормализация не требуется для этого типа блока.',
+                'details' => [ 'settings_updated' => $hero_composition_changed ],
             ],
         ];
         $library_trace = [

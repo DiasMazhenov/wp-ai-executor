@@ -13,13 +13,15 @@ before making a new change to the plugin.
   3 top-level roots with identical title, subtitle, body, and CTA. The
   screenshot showed the Hero repeated vertically; AI Vision scored it `40`
   and rolled the request back after two repair passes.
-- **Likely boundary:** The v02.10.68 editor-root reconciliation does not yet
-  prevent multiple server writes or repair inserts from materializing the same
-  template during one request. This must be traced through request IDs,
-  `editor_sync.before_top_level_ids`, repair depth, and Elementor write calls
-  before changing normalization or prompts.
-- **Status:** Open. Do not treat v02.10.68 as visually fixed until a clean
-  generation leaves exactly one scoped root and passes Vision/design review.
+- **Root cause:** The Elementor preview iframe refresh did not reset the parent
+  editor model after rollback, so repeated repair inserts could survive even
+  though every server write started from `before_top_level_ids: []`. A single
+  native delete/retry was insufficient for this boundary.
+- **Fix:** v02.10.69 persists Vision repair state and performs a full Elementor
+  page reload between repair writes; final rollback also reloads the saved
+  state. Native delete/retry remains a guarded fallback for in-session cleanup.
+- **Status:** Open pending a fresh live generation proving exactly one root and
+  a passing Vision/design review.
 
 ## EJ-002: Trusted library badge disappeared
 
@@ -30,5 +32,20 @@ before making a new change to the plugin.
 - **Fix:** v02.10.69 adds a trusted-only badge enforcement pass that preserves
   the source content in a Flex content shell and inserts exactly one outlined
   badge before it.
+- **Regression status:** Contract coverage added. Live verification is pending
+  a fresh Browser Use generation after delivery.
+
+## EJ-003: Light text over photo lacked native overlay
+
+- **Observed:** In the live Vocario Hero, the badge and white text sat directly
+  over a dark photo; the badge was technically present but visually weak.
+- **Root cause:** The trusted visual-state normalizer preserved the image but had
+  no contrast rule for light descendant text. Badge enforcement also copied the
+  root background image into the content shell, duplicating the media layer.
+- **Fix:** v02.10.70 adds a native black semi-transparent Elementor Background
+  Overlay when a photo-backed container contains white text, and strips root
+  media/overlay settings from the structural content shell. Hero composition
+  normalization now applies the same contrast rule outside the trusted path and
+  synchronizes all text-column alignment; the badge gets a white surface.
 - **Regression status:** Contract coverage added. Live verification is pending
   a fresh Browser Use generation after delivery.

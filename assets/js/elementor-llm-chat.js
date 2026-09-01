@@ -257,6 +257,60 @@
         addMessage('assistant', 'Повторяю запрос после перезагрузки страницы.');
         window.setTimeout(function () { request(pending.message, true, pending.options || {}); }, 0);
     }
+    var visionRepairKey = 'wpae_llm_vision_repair:' + String(config.postId || '0');
+    var visionRepairTtl = 120000;
+    function readVisionRepair() {
+        try {
+            var raw = window.sessionStorage.getItem(visionRepairKey);
+            if (!raw) return null;
+            var state = JSON.parse(raw);
+            if (!state || !state.message || Date.now() - Number(state.createdAt || 0) > visionRepairTtl) {
+                window.sessionStorage.removeItem(visionRepairKey);
+                return null;
+            }
+            return state;
+        } catch (error) {
+            return null;
+        }
+    }
+    function clearVisionRepair() {
+        try { window.sessionStorage.removeItem(visionRepairKey); } catch (error) {}
+    }
+    function scheduleVisionRepairAfterReload(message, options) {
+        if (readVisionRepair()) return false;
+        try {
+            var repairOptions = options && typeof options === 'object' ? {
+                repairDepth: Number(options.repairDepth) || 0,
+                originalBrief: String(options.originalBrief || '').slice(0, 4000),
+                visionRepair: true,
+                visionRegenerate: Boolean(options.visionRegenerate),
+                visionFindings: String(options.visionFindings || '').slice(0, 3600),
+                selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined
+            } : {};
+            window.sessionStorage.setItem(visionRepairKey, JSON.stringify({ message: String(message).slice(0, 4000), options: repairOptions, createdAt: Date.now() }));
+        } catch (error) {
+            return false;
+        }
+        status.textContent = 'Перезагрузка страницы…';
+        window.setTimeout(function () {
+            window.location.reload();
+            window.setTimeout(function () {
+                if (readVisionRepair()) retryVisionRepairAfterReload();
+            }, 1800);
+        }, 250);
+        return true;
+    }
+    function retryVisionRepairAfterReload() {
+        var pending = readVisionRepair();
+        if (!pending) return;
+        clearVisionRepair();
+        if (!config.ready) return;
+        setOpen(true);
+        status.textContent = strings.sending;
+        addMessage('user', pending.message);
+        addMessage('assistant', 'Повторяю генерацию после полной перезагрузки Elementor.');
+        window.setTimeout(function () { request(pending.message, false, pending.options || {}); }, 0);
+    }
     function copyText(text) {
         var fallbackCopy = function () {
             return new Promise(function (resolve, reject) {
@@ -1140,24 +1194,18 @@
                     if (repairDepth >= 2) {
                         return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
                             if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);
-                            return removeLiveGeneratedRoots().then(function (removed) {
-                                if (!removed) throw new Error('Не удалось убрать неудачную версию из открытого Elementor.');
-                                return refreshElementorPreview();
-                            }).then(function () {
-                                addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; исходный выбранный элемент сохранен.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
-                                status.textContent = strings.error;
-                            });
+                            addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; перезагружаю Elementor из сохраненного состояния.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; перезагружаю Elementor из сохраненного состояния.');
+                            status.textContent = strings.error;
+                            window.setTimeout(function () { window.location.reload(); }, 250);
+                            return true;
                         });
                     }
                     addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
                     return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
                         if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией: ' + rollback.error);
-                        return removeLiveGeneratedRoots().then(function (removed) {
-                            if (!removed) throw new Error('Не удалось убрать неудачную версию из открытого Elementor.');
-                            return refreshElementorPreview();
-                        }).then(function () {
-                            return request(originalBrief, false, { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), selectedElements: requestContext.selected_elements });
-                        });
+                        var repairOptions = { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), selectedElements: requestContext.selected_elements };
+                        if (!scheduleVisionRepairAfterReload(originalBrief, repairOptions)) throw new Error('Не удалось сохранить Vision repair перед перезагрузкой Elementor.');
+                        return true;
                     });
                 }
                 if (review && review.rolled_back) {
@@ -1212,4 +1260,5 @@
         request(message);
     });
     retryProviderRequestAfterReload();
+    retryVisionRepairAfterReload();
 }());
