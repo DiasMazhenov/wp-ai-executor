@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.63`
+- Plugin: `v02.10.64`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -33,6 +33,12 @@ Release v02.10.63 fixes the live render mismatch where Vocario templates
 referenced source-only Elementor global color IDs. Known Vocario colors are
 materialized into explicit native widget settings before insertion, so CTA
 labels and template typography keep their intended contrast on the target site.
+
+Release v02.10.64 fixes the next live Vision failure: generated roots are no
+longer appended repeatedly to the live Elementor model while Vision performs
+repair passes, and failed reviews now surface rollback errors instead of
+claiming success. Long library headings receive bounded responsive sizes so
+the preserved composition remains readable on the editor canvas.
 
 Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,

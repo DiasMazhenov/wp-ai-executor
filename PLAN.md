@@ -1,5 +1,16 @@
 # План WP AI Executor
 
+## v02.10.64
+
+- Устранить повторное появление старых секций в live Elementor: при включенном
+  Vision не добавлять каждый repair-root повторно в редакторскую модель, а
+  показывать сохраненный preview как источник истины.
+- Не скрывать ошибки rollback после провальной Vision-проверки; останавливать
+  цикл только после подтвержденного отката.
+- Ограничить responsive typography длинного заголовка trusted Vocario Hero,
+  затем пройти lint/контрактные тесты и повторить browser generation со
+  screenshot, JSON, AI Vision и design-taste review.
+
 ## v02.10.62
 
 - Устранить Vision-ошибку v02.10.61: не дублировать фразы из полного title/body

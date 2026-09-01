@@ -1271,10 +1271,14 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
             if ( $widget_type === 'heading' && ! $title_set ) {
                 $settings['title'] = $title;
                 if ( $clear_unrequested_copy ) {
+                    $title_length = function_exists( 'mb_strlen' ) ? mb_strlen( $title ) : strlen( $title );
+                    $heading_desktop_size = $title_length > 48 ? 2.9 : 3.3;
+                    $heading_tablet_size = $title_length > 48 ? 2.4 : 2.7;
+                    $heading_mobile_size = $title_length > 48 ? 1.95 : 2.1;
                     $settings['typography_typography'] = 'custom';
-                    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 3.75 ];
-                    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 3.1 ];
-                    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 2.35 ];
+                    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => $heading_desktop_size ];
+                    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => $heading_tablet_size ];
+                    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => $heading_mobile_size ];
                     $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.05 ];
                     $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.05 ];
                     $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.1 ];

@@ -532,6 +532,9 @@
     }
     function syncEditorElements(editorSync) {
         if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
+        // Vision reviews use the saved preview as the source of truth. Appending the same
+        // root to the live editor model on every repair pass creates phantom duplicates.
+        if (config.vision && config.vision.ready && editorSync.mode !== 'patch') return Promise.resolve(false);
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
         var container = window.elementor.getPreviewContainer();
         if (!container) return Promise.resolve(false);
@@ -891,7 +894,7 @@
         return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + confidence + warning + summary + (findings ? ' ' + findings : '');
     }
     function rollbackVisionFailure(snapshotId) {
-        if (!snapshotId || !config.undoEndpoint) return Promise.resolve(false);
+        if (!snapshotId || !config.undoEndpoint) return Promise.resolve({ ok: false, error: 'Rollback endpoint or snapshot is unavailable.' });
         return fetch(config.undoEndpoint, {
             method: 'POST',
             credentials: 'same-origin',
@@ -899,9 +902,15 @@
             body: JSON.stringify({ post_id: Number(config.postId) || 0, rollback_snapshot_id: snapshotId })
         }).then(function (response) {
             return response.json().catch(function () { return {}; }).then(function (body) {
-                return !!response.ok && !!body.ok;
+                return {
+                    ok: !!response.ok && !!body.ok,
+                    status: response.status,
+                    error: body.error || body.message || ('HTTP ' + response.status)
+                };
             });
-        }, function () { return false; });
+        }, function (error) {
+            return { ok: false, status: 0, error: error.message || 'Network error.' };
+        });
     }
     function request(message, retried, options) {
         options = options || {};
@@ -1046,15 +1055,17 @@
                     var targetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
                     addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю замечания Vision для повторной правки выбранного дерева.' : ' Передаю замечания Vision агенту для полной регенерации дизайна.'));
                     if (repairDepth >= 2) {
-                        return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
-                            if (rolledBack) refreshElementorPreview();
-                            addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; исходный выбранный элемент сохранен.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
-                            status.textContent = strings.error;
+                        return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
+                            if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);
+                            return refreshElementorPreview().then(function () {
+                                addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; исходный выбранный элемент сохранен.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; автоматическая правка остановлена.');
+                                status.textContent = strings.error;
+                            });
                         });
                     }
                     addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
-                    return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rolledBack) {
-                        if (!rolledBack) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией.');
+                    return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
+                        if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией: ' + rollback.error);
                         return refreshElementorPreview().then(function () {
                             return request(originalBrief, false, { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), selectedElements: requestContext.selected_elements });
                         });
