@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.59`
+- Plugin: `v02.10.61`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -14,6 +14,14 @@ now assigned to one title, one body, one CTA and at most one instance of each
 numeric, audience and confidence slot. Duplicate source copy widgets are
 pruned instead of being filled by cycling fragments, while the template's
 Flex geometry, palette, media and responsive composition remain untouched.
+
+Release v02.10.61 fixes the remaining live Flex geometry failure in trusted
+library compositions. A two-column row with one explicit percentage width and
+one intrinsic-width child now receives a bounded complementary width, safe
+flex shrinking, and responsive wrapping; negative horizontal source offsets are
+removed without rewriting the source palette or vertical composition. Compact
+icon-list accents are truncated to a short phrase while the complete requested
+body remains in the main text widget.
 
 Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,

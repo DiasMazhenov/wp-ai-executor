@@ -1243,6 +1243,11 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
         $audience_copy = trim( (string) $audience_match[0] );
     }
     $first_body_unit = (string) ( wpae_llm_content_units( $body )[0] ?? $body );
+    $first_body_unit = trim( (string) ( preg_split( '/\s+(?=(?:практика|разбор|прогресс|срок(?:и)?|фокус|результат)\b)/iu', $first_body_unit, 2 )[0] ?? $first_body_unit ) );
+    $first_body_words = preg_split( '/\s+/u', $first_body_unit, -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    if ( count( $first_body_words ) > 6 ) {
+        $first_body_unit = implode( ' ', array_slice( $first_body_words, 0, 6 ) );
+    }
     $title_set = false;
     $body_set = false;
     $cta_set = false;
@@ -1409,6 +1414,114 @@ function wpae_llm_mark_preserved_library_design( array $elements ): array {
         $element['settings'] = $settings;
     }
     unset( $element );
+    return $elements;
+}
+
+function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$changed = 0 ): array {
+    $read_percent_width = static function ( array $settings ): ?float {
+        foreach ( [ 'width', '_element_custom_width' ] as $key ) {
+            $width = $settings[ $key ] ?? null;
+            if ( ! is_array( $width ) || strtolower( (string) ( $width['unit'] ?? '' ) ) !== '%' || ! is_numeric( $width['size'] ?? null ) ) {
+                continue;
+            }
+            return max( 0, min( 100, (float) $width['size'] ) );
+        }
+        return null;
+    };
+    $has_gap = static function ( array $settings ): bool {
+        foreach ( [ 'flex_gap', 'flex_gap_tablet', 'flex_gap_mobile' ] as $key ) {
+            $gap = $settings[ $key ] ?? null;
+            if ( ! is_array( $gap ) ) {
+                continue;
+            }
+            foreach ( [ 'column', 'row', 'size' ] as $side ) {
+                if ( is_numeric( $gap[ $side ] ?? null ) && (float) $gap[ $side ] > 0 ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    $clear_negative_horizontal_margin = static function ( array &$settings ): bool {
+        $changed_margin = false;
+        foreach ( [ 'margin', 'margin_tablet', 'margin_mobile', '_margin', '_margin_tablet', '_margin_mobile' ] as $key ) {
+            if ( ! is_array( $settings[ $key ] ?? null ) ) {
+                continue;
+            }
+            foreach ( [ 'left', 'right' ] as $side ) {
+                if ( is_numeric( $settings[ $key ][ $side ] ?? null ) && (float) $settings[ $key ][ $side ] < 0 ) {
+                    $settings[ $key ][ $side ] = '0';
+                    $changed_margin = true;
+                }
+            }
+        }
+        return $changed_margin;
+    };
+    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $read_percent_width, $has_gap, $clear_negative_horizontal_margin ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            if ( $clear_negative_horizontal_margin( $settings ) ) {
+                $changed++;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'container' ) {
+                $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+                $child_indexes = [];
+                foreach ( $children as $child_index => $child ) {
+                    if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+                        $child_indexes[] = $child_index;
+                    }
+                }
+                $direction = strtolower( (string) ( $settings['flex_direction'] ?? '' ) );
+                if ( in_array( $direction, [ 'row', 'row-reverse' ], true ) && count( $child_indexes ) === 2 ) {
+                    $widths = [];
+                    foreach ( $child_indexes as $child_index ) {
+                        $widths[] = $read_percent_width( is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [] );
+                    }
+                    $target_total = $has_gap( $settings ) ? 98.0 : 100.0;
+                    if ( $widths[0] === null && $widths[1] === null ) {
+                        $widths = [ $target_total / 2, $target_total / 2 ];
+                    } elseif ( $widths[0] === null && $widths[1] !== null ) {
+                        $widths[0] = max( 1, $target_total - $widths[1] );
+                    } elseif ( $widths[1] === null && $widths[0] !== null ) {
+                        $widths[1] = max( 1, $target_total - $widths[0] );
+                    } elseif ( ( $widths[0] + $widths[1] ) > $target_total ) {
+                        $scale = $target_total / max( 1, $widths[0] + $widths[1] );
+                        $widths[0] *= $scale;
+                        $widths[1] *= $scale;
+                    }
+                    $settings['flex_wrap'] = 'nowrap';
+                    $settings['flex_wrap_tablet'] = 'wrap';
+                    $settings['flex_wrap_mobile'] = 'wrap';
+                    foreach ( $child_indexes as $width_index => $child_index ) {
+                        $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
+                        $before_child = wp_json_encode( $child_settings );
+                        wpae_llm_set_variant_container_width( $child_settings, (float) $widths[ $width_index ] );
+                        $child_settings['width_tablet'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+                        $child_settings['_element_width_tablet'] = 'initial';
+                        $child_settings['_element_custom_width_tablet'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+                        $child_settings['flex_shrink'] = 1;
+                        $child_settings['_flex_shrink'] = 1;
+                        $child_settings['flex_shrink_tablet'] = 1;
+                        $child_settings['flex_shrink_mobile'] = 1;
+                        $children[ $child_index ]['settings'] = $child_settings;
+                        if ( $before_child !== wp_json_encode( $child_settings ) ) {
+                            $changed++;
+                        }
+                    }
+                    $element['elements'] = $children;
+                }
+            }
+            $element['settings'] = $settings;
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
     return $elements;
 }
 
@@ -4443,6 +4556,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     if ( $library_preserve_design ) {
                         unset( $action['fallback_variant'] );
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
+                        $action['elements'] = wpae_llm_normalize_preserved_library_geometry( $action['elements'], $library_layout_changed );
                     }
                     if ( ! $library_preserve_design ) {
                         $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
