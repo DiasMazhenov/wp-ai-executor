@@ -272,6 +272,8 @@ assert.match(llm, /function wpae_llm_card_heading_widget/);
 assert.match(llm, /function wpae_llm_card_widget_text/);
 assert.match(llm, /function wpae_llm_is_probable_card_heading/);
 assert.match(llm, /В testimonial-карточке цитата является текстом/);
+assert.doesNotMatch(llm, /Каждая повторяющаяся карточка с коротким заголовком обязана использовать native icon-box/);
+assert.match(llm, /testimonial-карточки являются исключением и никогда не используют icon-box/);
 assert.match(llm, /wpae_llm_is_probable_card_heading\( \$text \)/);
 assert.match(llm, /selected_icon/);
 assert.match(llm, /widgetType.*icon-box/);

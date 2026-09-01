@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.16`
+- Plugin: `v02.10.17`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -42,6 +42,10 @@ Release v02.10.16 removes the remaining contradictory generic `icon-box` rule
 from the guide and execution metadata. Testimonial semantics are now explicit
 in the guide, action trace, and LLM guide: author/company is a native heading,
 quote is a native text-editor, and any icon is decorative only.
+
+Release v02.10.17 makes the testimonial exception the first rule in the
+generation hint, so the model cannot interpret a later exception as permission
+to use `icon-box` for testimonial authors or quotes.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"
