@@ -1168,7 +1168,7 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
     return $title_set && ( $content_set || $content === '' );
 }
 
-function wpae_llm_apply_library_narrative_content( array &$elements, array $requested, int &$changed ): bool {
+function wpae_llm_apply_library_narrative_content( array &$elements, array $requested, int &$changed, bool $clear_unrequested_copy = false ): bool {
     if ( empty( $requested ) ) {
         return false;
     }
@@ -1186,7 +1186,8 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     $title_set = false;
     $body_set = false;
     $cta_set = false;
-    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, &$title_set, &$body_set, &$cta_set, &$changed ): void {
+    $target_widget_ids = [];
+    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, &$title_set, &$body_set, &$cta_set, &$target_widget_ids, &$changed ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
@@ -1196,14 +1197,17 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
             if ( $widget_type === 'heading' && ! $title_set ) {
                 $settings['title'] = $title;
                 $title_set = true;
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             } elseif ( $widget_type === 'text-editor' && $body !== '' && ! $body_set ) {
                 $settings['editor'] = $body;
                 $body_set = true;
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             } elseif ( $widget_type === 'button' && $cta !== '' && ! $cta_set ) {
                 $settings['text'] = $cta;
                 $cta_set = true;
+                $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             }
             $element['settings'] = $settings;
@@ -1214,6 +1218,31 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
         unset( $element );
     };
     $walk( $elements );
+
+    if ( $clear_unrequested_copy ) {
+        $copy_widget_types = [ 'heading', 'text-editor', 'button', 'icon-box', 'image-box', 'testimonial', 'counter', 'icon-list', 'call-to-action' ];
+        $prune = static function ( array &$nodes ) use ( &$prune, $copy_widget_types, $target_widget_ids, &$changed ): void {
+            $kept = [];
+            foreach ( $nodes as $element ) {
+                if ( ! is_array( $element ) ) {
+                    continue;
+                }
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                $is_copy_widget = ( $element['elType'] ?? '' ) === 'widget' && in_array( $widget_type, $copy_widget_types, true );
+                $is_target = isset( $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] );
+                if ( $is_copy_widget && ! $is_target ) {
+                    $changed++;
+                    continue;
+                }
+                if ( is_array( $element['elements'] ?? null ) ) {
+                    $prune( $element['elements'] );
+                }
+                $kept[] = $element;
+            }
+            $nodes = $kept;
+        };
+        $prune( $elements );
+    }
 
     if ( $body !== '' && ! $body_set ) {
         foreach ( $elements as &$root ) {
@@ -1238,7 +1267,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     return $title_set && ( $body === '' || $body_set ) && ( $cta === '' || $cta_set );
 }
 
-function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed ): array {
+function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed, bool $clear_unrequested_copy = false ): array {
     $applied = false;
     $has_content_widget = static function ( array $elements ) use ( &$has_content_widget ): bool {
         foreach ( $elements as $element ) {
@@ -1479,7 +1508,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         if ( empty( $missing ) ) {
             return [];
         }
-        if ( wpae_llm_apply_library_narrative_content( $template_elements, $missing, $changed ) ) {
+        if ( wpae_llm_apply_library_narrative_content( $template_elements, $missing, $changed, $clear_unrequested_copy ) ) {
             return $template_elements;
         }
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
@@ -4223,7 +4252,7 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         $library_preserve_design = false;
         $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
         if ( ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
-            $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed );
+            $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
             if ( ! empty( $library_elements ) ) {
                 $library_action = [
                     'action' => 'insert_elements',

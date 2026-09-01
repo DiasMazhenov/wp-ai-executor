@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.47`
+- Plugin: `v02.10.48`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -47,6 +47,12 @@ natural content is mapped to the first semantic heading, body text and CTA,
 leaving decorative template statistics and labels intact. Bundled fixture ids
 are included in retrieval diagnostics so live tests can prove which source
 template was selected.
+
+Release v02.10.48 fixes the next live Vision mismatch: trusted Vocario narrative
+templates no longer retain unrelated source copy such as English labels and
+decorative statistics when a content-only prompt is adapted. The adapter keeps
+the source containers, images, icons and Flex geometry, maps the requested title,
+body and CTA, and removes only non-target text-bearing widgets.
 
 ## Architecture
 

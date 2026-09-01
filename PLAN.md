@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.48
+
+- Сохранить композицию и медиа доверенных Vocario-шаблонов, но удалять из
+  narrative-блоков несвязанные исходные текстовые виджеты, чтобы английские
+  остатки и случайные статистики не смешивались с контентом запроса.
+- Проверить live в Elementor через новый content-only prompt, screenshot,
+  Vision и JSON свежего объекта.
+
 ## v02.10.47
 
 - Preserve trusted bundled library geometry and styling instead of applying the

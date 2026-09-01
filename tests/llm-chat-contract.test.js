@@ -271,6 +271,8 @@ assert.match(llm, /function wpae_llm_apply_fallback_cta/);
 assert.match(llm, /wpae_llm_apply_fallback_cta\( \$elements, \$cta, \$changed \)/);
 assert.match(llm, /function wpae_llm_apply_library_pair_to_widgets/);
 assert.match(llm, /function wpae_llm_apply_library_template/);
+assert.match(llm, /\$clear_unrequested_copy = false/);
+assert.match(llm, /\$copy_widget_types = \[ 'heading', 'text-editor', 'button'/);
 assert.match(llm, /function wpae_llm_invalidate_render_cache/);
 assert.match(llm, /\[\s*'htmlCache',\s*'html_cache'\s*\]/);
 assert.match(llm, /function wpae_llm_normalize_library_layout/);
