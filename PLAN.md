@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.28
+
+- Распознавать естественный формат отзывов `«цитата». Имя, компания.` и
+  подставлять пары в импортированный шаблон до visual normalization.
+- Проверить fallback, content fidelity, отсутствие `icon-box` и live Elementor
+  результат в Browser Use.
+
 ## v02.10.27
 
 - Keep generated and imported card composition free of `icon-box`: preserve an

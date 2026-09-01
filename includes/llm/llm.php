@@ -749,6 +749,21 @@ function wpae_llm_extract_labeled_content( string $message ): array {
         return $quoted_pairs;
     }
 
+    $reverse_quoted_pairs = [];
+    if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[.!?]?\s*([^,.;\n—–-]{2,80})\s*,\s*([^.!?;\n—–-]{2,120})(?=\s*[.!?;]|$)/u', $content_message, $reverse_quoted_matches, PREG_SET_ORDER ) ) {
+        foreach ( $reverse_quoted_matches as $match ) {
+            $quote = trim( (string) ( $match[1] !== '' ? '«' . $match[1] . '»' : '"' . ( $match[2] ?? '' ) . '"' ) );
+            $name = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+            $company = trim( sanitize_text_field( (string) ( $match[4] ?? '' ) ) );
+            if ( $name !== '' && $company !== '' && $quote !== '' ) {
+                $reverse_quoted_pairs[] = [ 'label' => $name . ', ' . $company, 'content' => $quote ];
+            }
+        }
+    }
+    if ( count( $reverse_quoted_pairs ) >= 2 ) {
+        return $reverse_quoted_pairs;
+    }
+
     $natural_pairs = [];
     $natural_segments = preg_split( '/(?:\r?\n+|;\s*)/u', trim( $content_message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     foreach ( $natural_segments as $segment ) {

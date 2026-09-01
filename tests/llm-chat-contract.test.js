@@ -94,6 +94,8 @@ assert.match(llm, /process_labels/);
 assert.match(llm, /function wpae_llm_extract_labeled_content/);
 assert.match(llm, /function wpae_llm_extract_navigation_content/);
 assert.match(llm, /quoted_label_matches/);
+assert.match(llm, /reverse_quoted_pairs/);
+assert.match(llm, /reverse_quoted_matches/);
 assert.match(llm, /function wpae_llm_extract_faq_content/);
 assert.match(llm, /wpae_llm_extract_faq_content\( \$message \)/);
 assert.match(llm, /\$structured_pairs = \$labeled_pairs/);
