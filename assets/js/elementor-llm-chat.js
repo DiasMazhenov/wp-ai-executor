@@ -285,14 +285,66 @@
             window.setTimeout(function () { setButtonLabel(copy, strings.copyLog); }, 1600);
         }).catch(function () {});
     }
-    function selectedModels() {
-        var selection = window.elementor && window.elementor.selection;
+    function addGeneratedJsonSpoiler(elements) {
+        if (!Array.isArray(elements) || !elements.length) return;
+        var payload = {
+            format: 'wpae-elementor-generated-v1',
+            post_id: Number(config.postId) || 0,
+            captured_at: new Date().toISOString(),
+            elements: elements
+        };
+        var json = JSON.stringify(payload, null, 2);
+        var spoiler = document.createElement('details');
+        spoiler.className = 'wpae-llm-json-spoiler';
+        var summary = document.createElement('summary');
+        summary.textContent = 'JSON сгенерированного дизайна';
+        var content = document.createElement('div');
+        content.className = 'wpae-llm-json-content';
+        var code = document.createElement('pre');
+        code.textContent = json;
+        var copyButton = document.createElement('button');
+        copyButton.type = 'button';
+        copyButton.className = 'wpae-llm-icon-button wpae-llm-copy-generated';
+        addIcon(copyButton, 'eicon-copy', 'Копировать JSON дизайна');
+        copyButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            copyText(json).then(function () {
+                setButtonLabel(copyButton, 'JSON дизайна скопирован');
+                window.setTimeout(function () { setButtonLabel(copyButton, 'Копировать JSON дизайна'); }, 1600);
+            }).catch(function () {
+                setButtonLabel(copyButton, strings.copyError || 'Ошибка копирования');
+            });
+        });
+        content.appendChild(code);
+        content.appendChild(copyButton);
+        spoiler.appendChild(summary);
+        spoiler.appendChild(content);
+        messages.appendChild(spoiler);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    var selectedModelCache = [];
+    function liveSelectedModels() {
+        var editor = window.elementor;
+        var selection = editor && editor.selection;
         var models = selection && typeof selection.getElements === 'function' ? selection.getElements() : [];
+        if (!models.length && editor && editor.channels && editor.channels.editor && typeof editor.channels.editor.get === 'function') {
+            var activeModel = editor.channels.editor.get('activeModel');
+            if (activeModel) models = [activeModel];
+        }
         return Array.prototype.slice.call(models || [], 0, 8).map(function (container) {
             return container && container.model ? container.model : container;
         }).filter(function (model) {
             return Boolean(model && (typeof model.toJSON === 'function' || model.attributes));
         });
+    }
+    function selectedModels() {
+        return liveSelectedModels();
+    }
+    function copySelectionModels() {
+        var models = liveSelectedModels();
+        if (models.length) selectedModelCache = models;
+        return models.length ? models : selectedModelCache;
     }
     function serializeSelectedModel(model) {
         var raw = model && typeof model.toJSON === 'function' ? model.toJSON() : (model && model.attributes ? model.attributes : {});
@@ -307,7 +359,7 @@
         return data;
     }
     function copySelectedJson() {
-        var models = selectedModels();
+        var models = copySelectionModels();
         if (!models.length) {
             addMessage('assistant', strings.selectionEmpty);
             return;
@@ -997,6 +1049,7 @@
                     return;
                 }
                 if (review && review.report) addMessage('assistant', describeVisionReview(review));
+                addGeneratedJsonSpoiler(body.write && body.write.editor_sync ? body.write.editor_sync.elements : []);
                 addActionControls(body.write);
                 addMessage('assistant', body.message || strings.error);
                 status.textContent = strings.done;
