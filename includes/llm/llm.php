@@ -677,19 +677,18 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     }
     if (
         preg_match( '/(?:«[^»]{2,80}»|"[^"\n]{2,80}")\s*[—–-]/u', $content_message )
-        && preg_match( '/₸|\$|€|₽|цен\w*|стоим\w*|тариф\w*|пакет\w*|вариант\w*/iu', $content_message )
-        && preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*[—–-]\s*(.*?)(?=;\s*(?:«|\")|(?:\.\s+)(?=К\s+каждому\b)|$)/us', $content_message, $pricing_matches, PREG_SET_ORDER )
+        && preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*[—–-]\s*(.*?)(?=;\s*(?:«|\")|(?:\.\s+)(?=(?:К\s+каждому|В\s+конце|Добавь|Добавить)\b)|$)/us', $content_message, $quoted_label_matches, PREG_SET_ORDER )
     ) {
-        $pricing_pairs = [];
-        foreach ( $pricing_matches as $match ) {
+        $quoted_label_pairs = [];
+        foreach ( $quoted_label_matches as $match ) {
             $label = trim( sanitize_text_field( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) ) );
             $content = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
             if ( $label !== '' && $content !== '' ) {
-                $pricing_pairs[] = [ 'label' => $label, 'content' => $content ];
+                $quoted_label_pairs[] = [ 'label' => $label, 'content' => $content ];
             }
         }
-        if ( count( $pricing_pairs ) >= 2 ) {
-            return $pricing_pairs;
+        if ( count( $quoted_label_pairs ) >= 2 ) {
+            return $quoted_label_pairs;
         }
     }
     $quoted_pairs = [];

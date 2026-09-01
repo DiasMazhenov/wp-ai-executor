@@ -91,7 +91,7 @@ assert.match(llm, /function wpae_llm_normalize_process_card_heading/);
 assert.match(llm, /wpae_llm_normalize_process_card_heading\( \$card\['elements'\]/);
 assert.match(llm, /process_labels/);
 assert.match(llm, /function wpae_llm_extract_labeled_content/);
-assert.match(llm, /pricing_matches/);
+assert.match(llm, /quoted_label_matches/);
 assert.match(llm, /function wpae_llm_extract_faq_content/);
 assert.match(llm, /wpae_llm_extract_faq_content\( \$message \)/);
 assert.match(llm, /\$structured_pairs = \$labeled_pairs/);

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.20`
+- Plugin: `v02.10.21`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -62,6 +62,10 @@ Release v02.10.20 fixes natural pricing content parsing. Quoted package names
 with comma-separated prices and semicolon-separated descriptions are kept as
 three correct label/content pairs, so the content-fidelity gate no longer
 rejects valid pricing briefs.
+
+Release v02.10.21 generalizes that parser fix to all quoted content labels
+followed by a dash, including process steps, while keeping sentence-level CTA
+instructions outside the card description.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"
