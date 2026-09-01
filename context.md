@@ -2,12 +2,21 @@
 
 ## Current release
 
-- Plugin: `v02.10.68`
+- Plugin: `v02.10.69`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+
+## Mandatory error journal workflow
+
+- Every confirmed live or code error must be recorded in `ERRORS.md` with its
+  evidence, root cause, fix, and regression test status.
+- Before each new code change, read `ERRORS.md` and the latest release notes in
+  this file; do not repeat a known failure mode.
+- A live generation is not successful until its scoped JSON, DOM, screenshot,
+  AI Vision result, and `design-taste-frontend` review agree.
 
 Release v02.10.68 fixes the deeper live-preview corruption found in the v67
 Browser Use run. The Elementor editor kept roots from earlier generation and
@@ -18,6 +27,14 @@ server snapshot's top-level root IDs; before realtime insertion the chat removes
 only editor roots absent from that snapshot, then inserts the current template.
 The existing request-scoped generated-root cleanup remains the repair fallback.
 Contract coverage protects the root reconciliation and snapshot ID payload.
+
+Release v02.10.69 restores the required outlined badge for trusted library
+compositions. The trusted path previously skipped the generic visual grammar,
+so imported blocks could lose the badge rule; badge enforcement now runs after
+trusted content adaptation and places one outlined badge above the preserved
+content shell without replacing the source composition. The live cleanup also
+retries Elementor's native delete command and verifies model removal before
+continuing, addressing stale roots that survived a single delete attempt.
 
 Release v02.10.67 fixes the live trusted-template failure found in the v66
 Browser Use run. The Vocario Hero source has a photo background, but stale

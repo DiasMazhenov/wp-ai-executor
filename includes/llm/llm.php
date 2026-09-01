@@ -2966,6 +2966,88 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
     ];
 }
 
+function wpae_llm_enforce_preserved_library_badge( array $elements, string $archetype, int &$changed = 0 ): array {
+    foreach ( $elements as $index => $root ) {
+        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+
+        $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+        $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+        $original_settings = $root['settings'];
+        $badge = null;
+        $content_shell = null;
+        $content_elements = [];
+
+        foreach ( $root['elements'] as $child ) {
+            if ( ! is_array( $child ) ) {
+                continue;
+            }
+            $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                if ( $badge === null ) {
+                    $badge = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
+                } else {
+                    $changed++;
+                }
+            } elseif ( is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true ) ) {
+                if ( $content_shell === null ) {
+                    $content_shell = $child;
+                } else {
+                    $content_shell['elements'] = array_merge( (array) ( $content_shell['elements'] ?? [] ), (array) ( $child['elements'] ?? [] ) );
+                    $changed++;
+                }
+            } else {
+                $content_elements[] = $child;
+            }
+        }
+
+        if ( $badge === null ) {
+            $badge = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
+            $changed++;
+        }
+
+        if ( $content_shell === null ) {
+            $shell_settings = $original_settings;
+            $shell_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+                ? wpae_append_css_classes( $shell_settings['_css_classes'] ?? '', [ 'wpae-generated-content-shell' ] )
+                : trim( (string) ( $shell_settings['_css_classes'] ?? '' ) . ' wpae-generated-content-shell' );
+            $shell_settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+            $shell_settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+            $content_shell = [
+                'id' => (string) ( $root['id'] ?? 'wpae-preserved-library' ) . '-content-shell',
+                'elType' => 'container',
+                'settings' => $shell_settings,
+                'elements' => $content_elements,
+            ];
+            $changed++;
+        } elseif ( $content_elements ) {
+            $content_shell['elements'] = array_merge( (array) ( $content_shell['elements'] ?? [] ), $content_elements );
+            $changed++;
+        }
+
+        $root['settings']['container_type'] = 'flex';
+        $root['settings']['content_width'] = 'full';
+        $root['settings']['background_background'] = 'classic';
+        $root['settings']['background_color'] = 'transparent';
+        $root['settings']['flex_direction'] = 'column';
+        $root['settings']['flex_direction_mobile'] = 'column';
+        $root['settings']['flex_wrap'] = 'nowrap';
+        $root['settings']['flex_justify_content'] = 'flex-start';
+        $root['settings']['flex_align_items'] = 'stretch';
+        $root['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+        $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+        $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+        $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+        $root['elements'] = [ $badge, $content_shell ];
+        $changed++;
+        $elements[ $index ] = $root;
+    }
+
+    return $elements;
+}
+
 function wpae_llm_card_icon_widget( string $id, array $source = [] ): array {
     $source_settings = is_array( $source['settings'] ?? null ) ? $source['settings'] : [];
     $selected_icon = is_array( $source_settings['selected_icon'] ?? null ) ? $source_settings['selected_icon'] : [];
@@ -4805,6 +4887,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
+        if ( is_array( $action['elements'] ?? null ) && $library_preserve_design ) {
+            $action['elements'] = wpae_llm_enforce_preserved_library_badge( $action['elements'], $action_archetype, $visual_grammar_changed );
+        }
         if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design ) {
             $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
             $final_bento_changed = 0;

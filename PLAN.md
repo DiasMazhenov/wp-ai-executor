@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.69
+
+- Вернуть обязательный outlined badge в trusted library-композиции и разместить
+  его над сохраненным контентом, не урезая исходный дизайн.
+- Повторить удаление live Elementor roots через штатный Commands API с проверкой
+  фактического исчезновения модели, чтобы stale-дубли не оставались в canvas.
+- Пройти контрактные тесты, PHP lint, доставить пакет через WP Pusher и провести
+  live generation со scoped JSON, screenshot, AI Vision и design-taste review.
+
 ## v02.10.68
 
 - Trace the v67 live Vision failure to stale Elementor editor roots surviving

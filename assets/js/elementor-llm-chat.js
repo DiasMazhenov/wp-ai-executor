@@ -558,14 +558,21 @@
             return Promise.resolve(true);
         }
         if (!window.$e || typeof window.$e.run !== 'function') return Promise.resolve(false);
+        function deleteModel(model, attempt) {
+            try {
+                return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () {
+                    if (getEditorModelChildren(window.elementor.getPreviewContainer()).indexOf(model) === -1) return true;
+                    if (attempt >= 2) return false;
+                    return new Promise(function (resolve) { window.setTimeout(resolve, 160); }).then(function () { return deleteModel(model, attempt + 1); });
+                }, function () { return false; });
+            } catch (error) {
+                return Promise.resolve(false);
+            }
+        }
         return roots.reduce(function (promise, model) {
             return promise.then(function (ok) {
                 if (!ok) return false;
-                try {
-                    return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () { return true; }, function () { return false; });
-                } catch (error) {
-                    return false;
-                }
+                return deleteModel(model, 0);
             });
         }, Promise.resolve(true)).then(function (ok) {
             if (ok) liveGeneratedRootIds = [];
@@ -580,14 +587,21 @@
         var expected = expectedRootIds.map(String).filter(Boolean);
         var stale = roots.filter(function (model) { return expected.indexOf(getEditorModelId(model)) === -1; });
         if (!stale.length) return Promise.resolve(true);
+        function deleteStaleModel(model, attempt) {
+            try {
+                return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () {
+                    if (getEditorModelChildren(container).indexOf(model) === -1) return true;
+                    if (attempt >= 2) return false;
+                    return new Promise(function (resolve) { window.setTimeout(resolve, 160); }).then(function () { return deleteStaleModel(model, attempt + 1); });
+                }, function () { return false; });
+            } catch (error) {
+                return Promise.resolve(false);
+            }
+        }
         return stale.reduce(function (promise, model) {
             return promise.then(function (ok) {
                 if (!ok) return false;
-                try {
-                    return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () { return true; }, function () { return false; });
-                } catch (error) {
-                    return false;
-                }
+                return deleteStaleModel(model, 0);
             });
         }, Promise.resolve(true));
     }
