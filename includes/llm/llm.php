@@ -524,6 +524,15 @@ function wpae_llm_validate_action_shape( array $action, int $post_id ): array {
 
 function wpae_llm_action_diff( array $before, array $inserted, array $after ): array {
     $ids = [];
+    $top_level_ids = static function ( array $elements ): array {
+        $ids = [];
+        foreach ( $elements as $element ) {
+            if ( is_array( $element ) && ! empty( $element['id'] ) ) {
+                $ids[] = sanitize_key( (string) $element['id'] );
+            }
+        }
+        return array_values( array_unique( array_filter( $ids ) ) );
+    };
     foreach ( $inserted as $element ) {
         if ( is_array( $element ) && ! empty( $element['id'] ) ) {
             $ids[] = sanitize_key( (string) $element['id'] );
@@ -533,6 +542,8 @@ function wpae_llm_action_diff( array $before, array $inserted, array $after ): a
         'before_top_level_count' => count( $before ),
         'inserted_top_level_count' => count( $inserted ),
         'after_top_level_count' => count( $after ),
+        'before_top_level_ids' => $top_level_ids( $before ),
+        'after_top_level_ids' => $top_level_ids( $after ),
         'inserted_ids' => array_values( array_unique( $ids ) ),
         'changed' => count( $after ) !== count( $before ),
     ];
@@ -4451,6 +4462,7 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         'editor_sync' => [
             'position' => $position,
             'elements' => $elements,
+            'before_top_level_ids' => (array) ( $diff['before_top_level_ids'] ?? [] ),
         ],
         'quality_summary' => $data['quality_summary'] ?? null,
         'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,

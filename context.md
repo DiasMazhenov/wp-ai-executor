@@ -2,12 +2,22 @@
 
 ## Current release
 
-- Plugin: `v02.10.67`
+- Plugin: `v02.10.68`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+
+Release v02.10.68 fixes the deeper live-preview corruption found in the v67
+Browser Use run. The Elementor editor kept roots from earlier generation and
+Vision repair requests even after the server rollback, so each new template was
+inserted beside stale duplicates and Vision correctly reported overlapping
+headings, detached CTAs and broken hierarchy. Insert responses now include the
+server snapshot's top-level root IDs; before realtime insertion the chat removes
+only editor roots absent from that snapshot, then inserts the current template.
+The existing request-scoped generated-root cleanup remains the repair fallback.
+Contract coverage protects the root reconciliation and snapshot ID payload.
 
 Release v02.10.67 fixes the live trusted-template failure found in the v66
 Browser Use run. The Vocario Hero source has a photo background, but stale

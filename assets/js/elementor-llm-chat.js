@@ -572,6 +572,25 @@
             return ok;
         });
     }
+    function reconcileEditorRoots(expectedRootIds) {
+        if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
+        var container = window.elementor.getPreviewContainer();
+        var roots = getEditorModelChildren(container);
+        if (!container || !roots.length || !Array.isArray(expectedRootIds)) return Promise.resolve(true);
+        var expected = expectedRootIds.map(String).filter(Boolean);
+        var stale = roots.filter(function (model) { return expected.indexOf(getEditorModelId(model)) === -1; });
+        if (!stale.length) return Promise.resolve(true);
+        return stale.reduce(function (promise, model) {
+            return promise.then(function (ok) {
+                if (!ok) return false;
+                try {
+                    return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () { return true; }, function () { return false; });
+                } catch (error) {
+                    return false;
+                }
+            });
+        }, Promise.resolve(true));
+    }
     function syncEditorElements(editorSync, repairDepth) {
         if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
@@ -580,7 +599,10 @@
         var elements = editorSync.elements.slice();
         var position = editorSync.position === 'start' ? 'start' : 'end';
         if (position === 'start') elements.reverse();
-        var prepare = Number(repairDepth) > 0 ? removeLiveGeneratedRoots() : Promise.resolve(true);
+        var expectedRootIds = Array.isArray(editorSync.before_top_level_ids) ? editorSync.before_top_level_ids : null;
+        var prepare = Number(repairDepth) > 0
+            ? removeLiveGeneratedRoots().then(function (removed) { return removed ? reconcileEditorRoots(expectedRootIds) : false; })
+            : reconcileEditorRoots(expectedRootIds);
         return prepare.then(function (ready) {
             if (!ready) return false;
             try {

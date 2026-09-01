@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.68
+
+- Trace the v67 live Vision failure to stale Elementor editor roots surviving
+  rollback and being combined with later trusted-template insertions.
+- Return server before/after top-level IDs in the insert diff and reconcile the
+  open editor model against the server snapshot before realtime insertion.
+- Keep the cleanup scoped to roots absent from the saved snapshot and verify
+  PHP syntax, contract tests, delivery and a fresh live Vision run.
+
 ## v02.10.67
 
 - Устранить подтвержденный live-провал Vocario Hero: белые структурные слои,
