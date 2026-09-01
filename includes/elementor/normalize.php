@@ -126,6 +126,69 @@ function wpae_normalize_native_widget_content( array &$settings, string $widget_
     }
 }
 
+function wpae_normalize_known_third_party_widget( array &$element, array &$report, string $element_path ): void {
+    $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+    if ( $widget_type !== 'jkit_heading' ) {
+        return;
+    }
+
+    $source = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+    $title = trim( implode( ' ', array_filter( [
+        (string) ( $source['sg_title_before'] ?? '' ),
+        (string) ( $source['sg_title_focused'] ?? '' ),
+        (string) ( $source['sg_title_after'] ?? '' ),
+    ], static fn( string $part ): bool => trim( $part ) !== '' ) ) );
+    if ( $title === '' ) {
+        $title = trim( (string) ( $source['sg_title_text'] ?? '' ) );
+    }
+    if ( $title === '' ) {
+        return;
+    }
+
+    $header_size = strtolower( (string) ( $source['sg_title_html_tag'] ?? 'h2' ) );
+    if ( ! in_array( $header_size, [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], true ) ) {
+        $header_size = 'h2';
+    }
+
+    $native = [
+        'title' => preg_replace( '/\s+/u', ' ', $title ),
+        'header_size' => $header_size,
+    ];
+    $setting_aliases = [
+        'st_title_typography_content_typography_font_family' => 'typography_font_family',
+        'st_title_typography_content_typography_font_size' => 'typography_font_size',
+        'st_title_typography_content_typography_font_size_tablet' => 'typography_font_size_tablet',
+        'st_title_typography_content_typography_font_size_mobile' => 'typography_font_size_mobile',
+        'st_title_typography_content_typography_font_weight' => 'typography_font_weight',
+        'st_title_typography_content_typography_line_height' => 'typography_line_height',
+        'st_title_typography_content_typography_text_transform' => 'typography_text_transform',
+        'st_title_typography_content_typography_typography' => 'typography_typography',
+        'st_general_alignment_responsive' => 'align',
+        'st_general_alignment_responsive_mobile' => 'align_mobile',
+        'st_title_color_responsive' => 'title_color',
+    ];
+    foreach ( $setting_aliases as $source_key => $native_key ) {
+        if ( array_key_exists( $source_key, $source ) && ( is_scalar( $source[ $source_key ] ) || is_array( $source[ $source_key ] ) ) ) {
+            $native[ $native_key ] = is_array( $source[ $source_key ] ) ? $source[ $source_key ] : (string) $source[ $source_key ];
+        }
+    }
+    foreach ( [ '_element_width', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile', '_margin', '_padding', '_animation', 'animation_duration', '__globals__' ] as $key ) {
+        if ( array_key_exists( $key, $source ) ) {
+            $native[ $key ] = $source[ $key ];
+        }
+    }
+
+    $element['widgetType'] = 'heading';
+    $element['settings'] = $native;
+    wpae_elementor_normalize_add_change(
+        $report,
+        'converted_known_third_party_widget',
+        $element_path,
+        'Converted a known third-party heading widget to a native Elementor heading while preserving its content and key visual settings.',
+        [ 'from' => $widget_type, 'to' => 'heading' ]
+    );
+}
+
 function wpae_elementor_normalize_flex_settings( array &$settings, array &$report, string $element_path ): void {
     $container_type = sanitize_key( (string) ( $settings['container_type'] ?? '' ) );
     $was_grid = $container_type === 'grid';
@@ -310,6 +373,8 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 $element['widgetType'] = wpae_elementor_infer_widget_type( $element, $settings );
                 wpae_elementor_normalize_add_change( $report, 'inferred_widget_type', $element_path, 'Filled missing widgetType with best-effort native widget type.', [ 'widgetType' => $element['widgetType'] ] );
             }
+
+            wpae_normalize_known_third_party_widget( $element, $report, $element_path );
 
             if ( ! isset( $element['elements'] ) || ! is_array( $element['elements'] ) ) {
                 $element['elements'] = [];

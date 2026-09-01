@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.45`
+- Plugin: `v02.10.46`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -29,6 +29,15 @@ partners no longer forces a carousel, while explicit carousel/slider/logo
 language still does. A public-speaking-school content brief now matches the
 Vocario Home Hero root, preserving its real image-led Flex composition instead
 of generating a sparse partner block.
+
+Release v02.10.46 fixes the next retrieval failure found in live Browser Use:
+the Vocario Hero root was discarded because it contained the unavailable
+third-party `jkit_heading` widget, so retrieval fell back to the `Trusted By`
+root. The shared Elementor normalizer now converts that known widget to native
+`heading`, preserving its composed title, HTML heading level, responsive
+typography, alignment, width and animation settings before compatibility
+filtering. This keeps the image-led Hero root eligible for retrieval while
+remaining native Flexbox-compatible.
 
 ## Architecture
 

@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.46
+
+- Исправить потерю Vocario Hero: известный `jkit_heading` нормализуется в
+  native `heading` с сохранением текста, уровня и ключевой типографики.
+- Проверить, что retrieval больше не заменяет Hero на `Trusted By`, затем
+  повторить живую генерацию с JSON, screenshot, Vision и design-taste review.
+
 ## v02.10.45
 
 - Исправить false-positive классификацию: слово «партнеры» само по себе не

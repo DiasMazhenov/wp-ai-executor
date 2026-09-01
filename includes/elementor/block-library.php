@@ -237,9 +237,14 @@ function wpae_block_library_filter_compatible_roots( array $elementor_data ): ar
         if ( ! is_array( $element ) || (string) ( $element['elType'] ?? '' ) !== 'container' ) {
             continue;
         }
-        $report = wpae_block_library_compatibility_report( [ $element ] );
+        $candidate = $element;
+        if ( function_exists( 'wpae_elementor_normalize_data' ) ) {
+            $normalized = wpae_elementor_normalize_data( [ $element ] );
+            $candidate = is_array( $normalized['data'][0] ?? null ) ? $normalized['data'][0] : $element;
+        }
+        $report = wpae_block_library_compatibility_report( [ $candidate ] );
         if ( ! empty( $report['raw_valid'] ) && ! empty( $report['normalizable'] ) && empty( $report['unavailable_widget_types'] ) ) {
-            $compatible[] = $element;
+            $compatible[] = $candidate;
         }
     }
     return $compatible;
