@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.61`
+- Plugin: `v02.10.62`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -22,6 +22,12 @@ flex shrinking, and responsive wrapping; negative horizontal source offsets are
 removed without rewriting the source palette or vertical composition. Compact
 icon-list accents are truncated to a short phrase while the complete requested
 body remains in the main text widget.
+
+Release v02.10.62 fixes the next live Vision failure: trusted template
+decorative slots are no longer populated with a phrase already present in the
+requested title or body. Repeated confidence, audience, and duration copy is
+pruned instead of being rendered as overlapping duplicate text; unique source
+slots remain eligible for adaptation.
 
 Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,

@@ -1248,6 +1248,11 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     if ( count( $first_body_words ) > 6 ) {
         $first_body_unit = implode( ' ', array_slice( $first_body_words, 0, 6 ) );
     }
+    $normalized_requested_copy = wpae_llm_normalize_content_text( $title . ' ' . $body );
+    $is_unique_slot_copy = static function ( string $value ) use ( $normalized_requested_copy ): bool {
+        $normalized_slot = wpae_llm_normalize_content_text( $value );
+        return $normalized_slot !== '' && strpos( $normalized_requested_copy, $normalized_slot ) === false;
+    };
     $title_set = false;
     $body_set = false;
     $cta_set = false;
@@ -1255,7 +1260,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     $audience_set = false;
     $confidence_set = false;
     $target_widget_ids = [];
-    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, $clear_unrequested_copy, $numeric_copy, $audience_copy, $first_body_unit, &$title_set, &$body_set, &$cta_set, &$numeric_set, &$audience_set, &$confidence_set, &$target_widget_ids, &$changed ): void {
+    $walk = static function ( array &$nodes ) use ( &$walk, $title, $body, $cta, $clear_unrequested_copy, $numeric_copy, $audience_copy, $first_body_unit, $is_unique_slot_copy, &$title_set, &$body_set, &$cta_set, &$numeric_set, &$audience_set, &$confidence_set, &$target_widget_ids, &$changed ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
@@ -1278,8 +1283,8 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
                 $target_widget_ids[ (string) ( $element['id'] ?? '' ) ] = true;
                 $changed++;
             } elseif ( $widget_type === 'heading' && $clear_unrequested_copy ) {
-                $is_numeric_slot = preg_match( '/50\+|week|недел|month|месяц/i', $source_text ) && $numeric_copy !== '' && ! $numeric_set;
-                $is_audience_slot = preg_match( '/coach|speaker|trainer|руковод/i', $source_text ) && $audience_copy !== '' && ! $audience_set;
+                $is_numeric_slot = preg_match( '/50\+|week|недел|month|месяц/i', $source_text ) && $numeric_copy !== '' && ! $numeric_set && $is_unique_slot_copy( $numeric_copy );
+                $is_audience_slot = preg_match( '/coach|speaker|trainer|руковод/i', $source_text ) && $audience_copy !== '' && ! $audience_set && $is_unique_slot_copy( $audience_copy );
                 if ( $is_numeric_slot ) {
                     $settings['title'] = $numeric_copy;
                     $numeric_set = true;
@@ -1319,11 +1324,11 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
                 foreach ( $items as &$item ) {
                     if ( is_array( $item ) ) {
                         $source_item_text = trim( (string) ( $item['text'] ?? '' ) );
-                        if ( preg_match( '/week|недел|program|программ/i', $source_item_text ) && $numeric_copy !== '' && ! $numeric_set ) {
+                        if ( preg_match( '/week|недел|program|программ/i', $source_item_text ) && $numeric_copy !== '' && ! $numeric_set && $is_unique_slot_copy( $numeric_copy ) ) {
                             $item['text'] = $numeric_copy;
                             $numeric_set = true;
                             $adapted_items[] = $item;
-                        } elseif ( preg_match( '/confidence|уверен/i', $source_item_text ) && $first_body_unit !== '' && ! $confidence_set ) {
+                        } elseif ( preg_match( '/confidence|уверен/i', $source_item_text ) && $first_body_unit !== '' && ! $confidence_set && $is_unique_slot_copy( $first_body_unit ) ) {
                             $item['text'] = $first_body_unit;
                             $confidence_set = true;
                             $adapted_items[] = $item;

@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.62
+
+- Устранить Vision-ошибку v02.10.61: не дублировать фразы из полного title/body
+  в декоративных confidence/audience/duration слотах trusted-шаблона.
+- Сохранить уникальные смысловые слоты, но удалить повторяющиеся виджеты через
+  существующий content-fidelity pipeline; затем повторить live generation,
+  scoped screenshot, Vision и design-taste review.
+
 ## v02.10.61
 
 - Устранить подтвержденное live-переполнение trusted Vocario Hero: второй
