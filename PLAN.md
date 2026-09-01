@@ -1,5 +1,15 @@
 # План WP AI Executor
 
+## v02.10.23
+
+- Добавить CopyElement Mega Menu c3372 в private block library вместе с
+  локальным preview asset и безопасной package-доставкой PNG.
+- Распознавать мега-меню отдельным archetype, подставлять пункты/CTA из
+  обычного контентного промта и сохранять исходную native grid-композицию.
+- Подключить 13 JSON-шаблонов Vocario и их локальные JPG/PNG-превью в private
+  block library; из много-секционных страниц выбирать совместимый root.
+- Обновить package hash и прогнать syntax/contract и library-adaptation проверки.
+
 ## v02.10.22
 
 - Для OpenRouter повторять structured action request без несовместимых

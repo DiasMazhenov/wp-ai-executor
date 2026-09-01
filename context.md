@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.22`
+- Plugin: `v02.10.23`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -70,6 +70,19 @@ instructions outside the card description.
 Release v02.10.22 retries OpenRouter structured action requests once without
 `response_format` and `provider` when the route returns a generic provider
 error or `finish_reason: error`, before the editor performs its reload retry.
+
+Release v02.10.23 adds the CopyElement Mega Menu c3372 fixture and its local
+preview to the private block library. Mega-menu prompts now retrieve the
+dedicated template, preserve its native grid header, and can replace menu
+labels and CTA text from ordinary user content without converting the layout
+into generic cards.
+
+Release v02.10.23 also bundles 13 usable JSON templates from the downloaded
+Vocario Public Speaking Class kit with their local JPG/PNG previews. Global kit
+styles are intentionally excluded because they are not an insertable content
+block. Multi-section kit pages stay as source records, while retrieval filters
+unavailable roots and the LLM adapter selects one archetype-matching root so a
+full page is never inserted as one generated block.
 
 Release v02.10.14 gives explicit About intent priority over incidental Team words
 inside content-only briefs, so phrases such as "о компании ... рядом с командой"

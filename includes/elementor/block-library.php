@@ -231,6 +231,20 @@ function wpae_block_library_compatibility_report( array $elementor_data ): array
     ];
 }
 
+function wpae_block_library_filter_compatible_roots( array $elementor_data ): array {
+    $compatible = [];
+    foreach ( $elementor_data as $element ) {
+        if ( ! is_array( $element ) || (string) ( $element['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $report = wpae_block_library_compatibility_report( [ $element ] );
+        if ( ! empty( $report['raw_valid'] ) && ! empty( $report['normalizable'] ) && empty( $report['unavailable_widget_types'] ) ) {
+            $compatible[] = $element;
+        }
+    }
+    return $compatible;
+}
+
 function wpae_block_library_sanitize_tags( $tags ): array {
     if ( is_string( $tags ) ) {
         $tags = preg_split( '/[,;\n]+/', $tags );
@@ -405,6 +419,15 @@ function wpae_block_library_bundled_fixtures(): array {
     return $fixtures = is_array( $loaded ) ? $loaded : [];
 }
 
+function wpae_block_library_bundled_preview_url( string $preview_file ): string {
+    $preview_file = ltrim( $preview_file, '/' );
+    if ( ! preg_match( '#^assets/[a-z0-9][a-z0-9_./-]*\.(?:png|jpe?g)$#i', $preview_file ) || ! function_exists( 'plugins_url' ) ) {
+        return '';
+    }
+
+    return esc_url_raw( (string) plugins_url( $preview_file, dirname( __DIR__, 2 ) . '/wp-ai-executor.php' ) );
+}
+
 function wpae_block_library_is_trusted_bundled_fixture( array $record ): bool {
     if ( (string) ( $record['source'] ?? '' ) !== 'copyelement' ) {
         return false;
@@ -504,7 +527,9 @@ function wpae_block_library_seed_bundled_templates(): array {
             'category' => (string) ( $fixture['category'] ?? 'custom' ),
             'tags' => (array) ( $fixture['tags'] ?? [] ),
             'source' => 'copyelement',
-            'preview_url' => (string) ( $fixture['preview_url'] ?? '' ),
+            'preview_url' => (string) ( $fixture['preview_url'] ?? '' ) !== ''
+                ? (string) $fixture['preview_url']
+                : wpae_block_library_bundled_preview_url( (string) ( $fixture['preview_file'] ?? '' ) ),
             'source_url' => $source_url,
             'provenance' => [
                 'source' => 'copyelement',
@@ -578,6 +603,7 @@ function wpae_block_library_retrieval_tokens( $value ): array {
 
 function wpae_block_library_retrieval_aliases( string $archetype ): array {
     $aliases = [
+        'mega_menu' => [ 'mega-menu', 'mega menu', 'мега меню', 'меню', 'навигац', 'header', 'шапк' ],
         'hero' => [ 'hero', 'хиро', 'первый', 'экран', 'обложка', 'cover', 'image', 'image-box' ],
         'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'преимуществ', 'выгод' ],
         'pricing' => [ 'pricing', 'price', 'тариф', 'цена', 'стоимость', 'пакет' ],
@@ -628,8 +654,15 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         }
         $result['available_count']++;
         $compatibility = is_array( $record['compatibility'] ?? null ) ? $record['compatibility'] : [];
-        if ( empty( $compatibility['raw_valid'] ) || empty( $compatibility['normalizable'] ) || ! empty( $compatibility['unavailable_widget_types'] ) ) {
+        if ( empty( $compatibility['raw_valid'] ) || empty( $compatibility['normalizable'] ) ) {
             continue;
+        }
+        $elementor_data = (array) ( $record['elementor_data'] ?? [] );
+        if ( ! empty( $compatibility['unavailable_widget_types'] ) ) {
+            $elementor_data = wpae_block_library_filter_compatible_roots( $elementor_data );
+            if ( empty( $elementor_data ) ) {
+                continue;
+            }
         }
 
         $category = sanitize_key( (string) ( $record['category'] ?? '' ) );
@@ -683,7 +716,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             'matched_terms' => $matched_terms,
             'summary' => $summary,
             'trusted_bundled' => $trusted_bundled,
-            'elementor_data' => (array) ( $record['elementor_data'] ?? [] ),
+            'elementor_data' => $elementor_data,
         ];
     }
 

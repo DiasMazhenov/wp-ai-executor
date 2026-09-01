@@ -16,7 +16,7 @@ function wpae_is_safe_package_relative_path( string $path ): bool {
         return false;
     }
 
-    if ( ! preg_match( '#^(?:wp-ai-executor\.php|includes/[a-z0-9][a-z0-9_./-]*\.(?:php|json)|assets/[a-z0-9][a-z0-9_./-]*\.(?:js|css))$#i', $path ) ) {
+    if ( ! preg_match( '#^(?:wp-ai-executor\.php|includes/[a-z0-9][a-z0-9_./-]*\.(?:php|json)|assets/[a-z0-9][a-z0-9_./-]*\.(?:js|css|png|jpe?g))$#i', $path ) ) {
         return false;
     }
 

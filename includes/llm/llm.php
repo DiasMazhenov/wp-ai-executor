@@ -550,6 +550,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         $normalized = wpae_llm_normalize_content_text( $message );
         $labeled_pairs = wpae_llm_extract_labeled_content( $message );
         $labeled_text = wpae_llm_normalize_content_text( implode( ' ', array_map( static fn( $pair ): string => (string) ( $pair['label'] ?? '' ), $labeled_pairs ) ) );
+        if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
+            return 'mega_menu';
+        }
         if ( preg_match( '/\b(первый экран|hero|хиро|обложк)\b/iu', $message ) ) {
             return 'hero';
         }
@@ -590,6 +593,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
     }
 
     $patterns = [
+        'mega_menu' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
         'hero' => '/\b(hero|хиро|первый экран|обложк)/iu',
         'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
@@ -612,6 +616,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
 function wpae_llm_block_archetype_hint( string $message ): string {
     $archetype = wpae_llm_detect_block_archetype( $message );
     $labels = [
+        'mega_menu' => [ 'мега меню/навигация', 'image, mega-menu и button в сохраненной grid-композиции' ],
         'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
         'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
         'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
@@ -637,6 +642,7 @@ function wpae_llm_normalize_content_text( $value ): string {
 
 function wpae_llm_extract_requested_content( string $message ): array {
     $matches = [];
+    $navigation_request = false;
     foreach ( [ '/«([^»]{2,240})»/u', '/"([^"\\n]{2,240})"/u' ] as $pattern ) {
         if ( preg_match_all( $pattern, $message, $found ) ) {
             $matches = array_merge( $matches, $found[1] );
@@ -644,6 +650,16 @@ function wpae_llm_extract_requested_content( string $message ): array {
     }
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
     $structured_pairs = $labeled_pairs;
+    if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
+        $navigation_request = true;
+        $navigation = wpae_llm_extract_navigation_content( $message );
+        foreach ( (array) ( $navigation['items'] ?? [] ) as $item ) {
+            $matches[] = $item;
+        }
+        if ( ! empty( $navigation['cta'] ) ) {
+            $matches[] = $navigation['cta'];
+        }
+    }
     if ( count( $structured_pairs ) < 2 && preg_match( '/\?|؟/u', $message ) ) {
         $structured_pairs = wpae_llm_extract_faq_content( $message );
     }
@@ -658,7 +674,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
             }
         }
     }
-    if ( empty( $matches ) ) {
+    if ( empty( $matches ) && ! $navigation_request ) {
         $matches = wpae_llm_content_units( $message );
     }
     $content = [];
@@ -670,6 +686,31 @@ function wpae_llm_extract_requested_content( string $message ): array {
         }
     }
     return array_values( $content );
+}
+
+function wpae_llm_extract_navigation_content( string $message ): array {
+    $raw_message = trim( $message );
+    $has_explicit_list = (bool) preg_match( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', $raw_message );
+    $message = trim( (string) preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $raw_message ) );
+    $cta = '';
+    if ( preg_match( '/(?:кнопка|cta|button)\s*:\s*([^.;\n]+)/iu', $message, $match ) ) {
+        $cta = trim( sanitize_text_field( (string) $match[1] ) );
+        $message = trim( (string) preg_replace( '/(?:кнопка|cta|button)\s*:\s*[^.;\n]+/iu', '', $message ) );
+    }
+
+    $items = [];
+    foreach ( preg_split( '/(?:\r?\n+|[,;|]+)/u', $message, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $segment ) {
+        $item = trim( sanitize_text_field( (string) $segment ), " \t\n\r\0\x0B.,:;|\"«»" );
+        if ( $item === '' || preg_match( '/^(?:добавь|добавить|создай|создать|сделай|сформируй|меню|навигац\w*)\b/iu', $item ) || ( ! $has_explicit_list && preg_match( '/^(?:мега[\s-]*меню|mega[\s-]*menu)\b/iu', $item ) ) ) {
+            continue;
+        }
+        $length = function_exists( 'mb_strlen' ) ? mb_strlen( $item ) : strlen( $item );
+        if ( $length >= 2 && $length <= 60 ) {
+            $items[ wpae_llm_normalize_content_text( $item ) ] = $item;
+        }
+    }
+
+    return [ 'items' => array_slice( array_values( $items ), 0, 8 ), 'cta' => $cta ];
 }
 
 function wpae_llm_extract_labeled_content( string $message ): array {
@@ -798,7 +839,7 @@ function wpae_llm_collect_action_content( array $elements ): string {
             continue;
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
-        foreach ( [ 'title', 'title_text', 'description_text', 'editor', 'text', 'tab_title', 'tab_content' ] as $key ) {
+        foreach ( [ 'title', 'title_text', 'description_text', 'editor', 'text', 'tab_title', 'tab_content', 'item_title' ] as $key ) {
             if ( is_scalar( $settings[ $key ] ?? null ) ) {
                 $content[] = (string) $settings[ $key ];
             }
@@ -809,7 +850,10 @@ function wpae_llm_collect_action_content( array $elements ): string {
         if ( is_array( $settings['tabs'] ?? null ) ) {
             $content[] = wpae_llm_collect_action_content( $settings['tabs'] );
         }
-        foreach ( [ 'tabs', 'elements' ] as $child_key ) {
+        if ( is_array( $settings['menu_items'] ?? null ) ) {
+            $content[] = wpae_llm_collect_action_content( $settings['menu_items'] );
+        }
+        foreach ( [ 'tabs', 'elements', 'menu_items' ] as $child_key ) {
             if ( is_array( $element[ $child_key ] ?? null ) ) {
                 $content[] = wpae_llm_collect_action_content( $element[ $child_key ] );
             }
@@ -1076,10 +1120,6 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
 }
 
 function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed ): array {
-    $pairs = wpae_llm_extract_labeled_content( $message );
-    if ( count( $pairs ) < 2 ) {
-        return [];
-    }
     $applied = false;
     $has_content_widget = static function ( array $elements ) use ( &$has_content_widget ): bool {
         foreach ( $elements as $element ) {
@@ -1107,6 +1147,91 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         }
         return $element;
     };
+    if ( count( $template_elements ) > 1 ) {
+        $root_patterns = [
+            'hero' => '/hero|banner|header|первый|обложк/iu',
+            'benefits' => '/benefit|feature|why\s+choose|преимуществ|выгод/iu',
+            'pricing' => '/pricing|price|тариф|стоимост|пакет/iu',
+            'testimonials' => '/testimonial|review|отзыв|клиент/iu',
+            'team' => '/team|команд|сотрудник|специалист/iu',
+            'about' => '/about|о\s+нас|о\s+компани/iu',
+            'faq' => '/faq|question|вопрос|ответ/iu',
+            'process' => '/process|step|этап|шаг/iu',
+            'cta' => '/cta|contact|контакт|заявк/iu',
+            'portfolio' => '/portfolio|case|project|кейс|проект/iu',
+        ];
+        $pattern = $root_patterns[ $archetype ] ?? '';
+        $best_index = 0;
+        $best_score = -1;
+        foreach ( $template_elements as $index => $root ) {
+            if ( ! is_array( $root ) ) {
+                continue;
+            }
+            $title = (string) ( $root['settings']['_title'] ?? '' );
+            $score = $pattern !== '' && preg_match( $pattern, $title ) ? 30 : 0;
+            if ( $pattern !== '' && preg_match( $pattern, wpae_llm_collect_action_content( [ $root ] ) ) ) {
+                $score += 5;
+            }
+            if ( wpae_llm_count_widgets( [ $root ] ) >= 3 ) {
+                $score++;
+            }
+            if ( $score > $best_score ) {
+                $best_index = (int) $index;
+                $best_score = $score;
+            }
+        }
+        $template_elements = [ $template_elements[ $best_index ] ];
+    }
+    if ( $archetype === 'mega_menu' ) {
+        $navigation = wpae_llm_extract_navigation_content( $message );
+        $navigation_items = (array) ( $navigation['items'] ?? [] );
+        $navigation_cta = trim( (string) ( $navigation['cta'] ?? '' ) );
+        $template_elements = array_map( static fn( $element ): array => is_array( $element ) ? $clone_with_ids( $element, 'library-mega-menu' ) : [], $template_elements );
+        $apply_navigation = static function ( array &$elements ) use ( &$apply_navigation, $navigation_items, $navigation_cta, &$changed ): void {
+            foreach ( $elements as &$element ) {
+                if ( ! is_array( $element ) ) {
+                    continue;
+                }
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                if ( $widget_type === 'mega-menu' && ! empty( $navigation_items ) ) {
+                    $menu_items = is_array( $settings['menu_items'] ?? null ) ? $settings['menu_items'] : [];
+                    $next_items = [];
+                    foreach ( $navigation_items as $index => $item_title ) {
+                        $menu_item = is_array( $menu_items[ $index ] ?? null ) ? $menu_items[ $index ] : [ '_id' => substr( md5( 'library-mega-menu-item-' . (string) $index ), 0, 7 ) ];
+                        $menu_item['item_title'] = $item_title;
+                        if ( $index === 1 ) {
+                            $menu_item['item_dropdown_content'] = 'yes';
+                        }
+                        $next_items[] = $menu_item;
+                    }
+                    if ( wp_json_encode( $menu_items ) !== wp_json_encode( $next_items ) ) {
+                        $settings['menu_items'] = $next_items;
+                        $changed++;
+                    }
+                } elseif ( $widget_type === 'button' && $navigation_cta !== '' && (string) ( $settings['text'] ?? '' ) !== $navigation_cta ) {
+                    $settings['text'] = $navigation_cta;
+                    $changed++;
+                }
+                $element['settings'] = $settings;
+                if ( is_array( $element['elements'] ?? null ) ) {
+                    $apply_navigation( $element['elements'] );
+                }
+            }
+            unset( $element );
+        };
+        $apply_navigation( $template_elements );
+        return $template_elements;
+    }
+    $pairs = wpae_llm_extract_labeled_content( $message );
+    if ( count( $pairs ) < 2 ) {
+        $missing = wpae_llm_extract_requested_content( $message );
+        if ( empty( $missing ) ) {
+            return [];
+        }
+        wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
+        return empty( $missing ) ? $template_elements : [];
+    }
     $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget, $archetype, $clone_with_ids ): void {
         if ( $applied ) {
             return;
@@ -1860,6 +1985,7 @@ function wpae_llm_apply_fallback_variant( array $elements, string $archetype, in
 
 function wpae_llm_badge_label( string $archetype ): string {
     $labels = [
+        'mega_menu' => 'МЕГА МЕНЮ',
         'hero' => 'ПЕРВЫЙ ЭКРАН',
         'benefits' => 'ПРЕИМУЩЕСТВА',
         'pricing' => 'ФОРМАТЫ',
@@ -2170,6 +2296,35 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         $original_settings = $root['settings'];
         if ( wpae_llm_normalize_generated_container_spacing( $root['settings'] ) ) {
             $changed++;
+        }
+        if ( $archetype === 'mega_menu' ) {
+            $badge = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
+            $content_shell = [
+                'id' => (string) ( $root['id'] ?? 'wpae-mega-menu' ) . '-content-shell',
+                'elType' => 'container',
+                'settings' => $original_settings,
+                'elements' => wpae_llm_wrap_generation_cta( $root['elements'], $changed ),
+            ];
+            $root['settings']['container_type'] = 'flex';
+            $root['settings']['content_width'] = 'full';
+            $root['settings']['background_background'] = 'classic';
+            $root['settings']['background_color'] = 'transparent';
+            $root['settings']['flex_direction'] = 'column';
+            $root['settings']['flex_direction_mobile'] = 'column';
+            $root['settings']['flex_wrap'] = 'nowrap';
+            $root['settings']['flex_justify_content'] = 'flex-start';
+            $root['settings']['flex_align_items'] = 'stretch';
+            $root['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+            $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+            $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+            $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+            foreach ( [ 'grid_columns_grid', 'grid_columns_grid_tablet', 'grid_columns_grid_mobile', 'grid_rows_grid', 'grid_gaps', 'grid_align_items' ] as $grid_key ) {
+                unset( $root['settings'][ $grid_key ] );
+            }
+            $root['elements'] = [ $badge, $content_shell ];
+            $changed++;
+            $elements[ $index ] = $root;
+            continue;
         }
         $root['settings']['background_background'] = 'classic';
         $root['settings']['background_color'] = 'transparent';
