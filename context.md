@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.39`
+- Plugin: `v02.10.40`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -92,6 +92,10 @@ logo, and slider briefs. The standalone carousel adapter now preserves the
 source carousel while adding native heading and text-editor content from the
 brief, so the content-fidelity gate cannot silently replace it with a generic
 fallback block.
+
+Release v02.10.40 gives carousel blocks a semantic `ПАРТНЁРЫ` badge instead of
+the generic `НОВЫЙ БЛОК` label, keeping the shared outlined-badge rule useful for
+this archetype and preventing placeholder text from reaching the live canvas.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the

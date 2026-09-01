@@ -1,5 +1,11 @@
 # План WP AI Executor
 
+## v02.10.40
+
+- Заменить generic badge у carousel на semantic `ПАРТНЁРЫ`.
+- Обновить пакет, доставить через WP Pusher и повторить Browser Use screenshot,
+  Vision/design-taste и JSON-проверку карусели.
+
 ## v02.10.39
 
 - Исправить retrieval aliases для content-only запросов о партнерах, логотипах

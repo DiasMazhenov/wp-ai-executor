@@ -115,6 +115,7 @@ assert.match(llm, /return 'carousel';/);
 assert.match(llm, /wpae-generated-carousel/);
 assert.match(llm, /wpae-library-carousel/);
 assert.match(llm, /count\( \$slides \) >= 2/);
+assert.match(llm, /'carousel' => 'ПАРТНЁРЫ'/);
 assert.match(llm, /\$action\['elements'\] = wpae_llm_apply_bento_layout/);
 assert.match(llm, /\$natural_segments = preg_split/);
 assert.ok(llm.includes("(?<=[.!?])\\s+"));

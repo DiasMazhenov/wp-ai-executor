@@ -2142,6 +2142,7 @@ function wpae_llm_badge_label( string $archetype ): string {
         'team' => 'КОМАНДА',
         'about' => 'О КОМПАНИИ',
         'image-box' => 'ПРОЕКТЫ',
+        'carousel' => 'ПАРТНЁРЫ',
     ];
 
     return $labels[ $archetype ] ?? 'НОВЫЙ БЛОК';
