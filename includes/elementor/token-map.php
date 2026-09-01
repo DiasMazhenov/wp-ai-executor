@@ -243,7 +243,7 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
     return $elements;
 }
 
-function wpae_apply_design_token_map( array $elements ): array {
+function wpae_apply_design_token_map( array $elements, bool $preserve_library_design = false ): array {
     $report = [
         'mapped' => [],
         'unmatched' => [],
@@ -253,7 +253,7 @@ function wpae_apply_design_token_map( array $elements ): array {
         'native_paths' => [],
         'source_roles' => [],
     ];
-    $elements = wpae_token_map_apply_elements( $elements, wpae_get_project_design_tokens(), $report );
+    $elements = wpae_token_map_apply_elements( $elements, wpae_get_project_design_tokens(), $report, 0, $preserve_library_design );
 
     foreach ( $report['source_roles'] as $fingerprint => $roles ) {
         $roles = array_keys( $roles );

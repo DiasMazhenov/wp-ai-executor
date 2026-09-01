@@ -1,5 +1,17 @@
 # План WP AI Executor
 
+## v02.10.67
+
+- Устранить подтвержденный live-провал Vocario Hero: белые структурные слои,
+  оставшиеся после materialize/token-map, перекрывали фото и белый контент.
+- Сохранять белый фон только у намеренных карточек с border/radius/shadow,
+  удалять устаревшие entrance-animation settings и не переназначать цвета
+  trusted-композиции через design-token map.
+- Сбросить tracking корней в начале нового запроса и накапливать все корни
+  текущей repair-цепочки, чтобы Vision не оставлял дубли.
+- Пройти lint/контрактные тесты, доставить пакет через WP Pusher и повторить
+  live generation со screenshot, JSON, DOM, AI Vision и design-taste review.
+
 ## v02.10.66
 
 - Перенести цвет `jkit_heading` из source `st_focused_*` в native heading,

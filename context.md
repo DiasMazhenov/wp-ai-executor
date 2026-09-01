@@ -2,12 +2,24 @@
 
 ## Current release
 
-- Plugin: `v02.10.66`
+- Plugin: `v02.10.67`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+
+Release v02.10.67 fixes the live trusted-template failure found in the v66
+Browser Use run. The Vocario Hero source has a photo background, but stale
+materialized/token-mapped white fills could remain on structural child
+containers and cover the photo and white text. Trusted-library preparation now
+removes only non-card white surfaces when they have no deliberate card border,
+radius or shadow, clears stale entrance-animation settings, and passes the
+trusted marker through the token-map stage so source colors are not remapped.
+The live request tracker also resets at the start of a new generation and
+accumulates every root created in its repair chain, preventing duplicate Hero
+roots during Vision repair or rollback. Contract coverage protects both
+visual-state cleanup and request-scoped root tracking.
 
 Release v02.10.60 fixes trusted library narrative adaptation: requested copy is
 now assigned to one title, one body, one CTA and at most one instance of each

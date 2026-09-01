@@ -591,7 +591,7 @@
                         options: { at: position === 'start' ? 0 : null, clone: false }
                     }));
                 })).then(function () {
-                    liveGeneratedRootIds = elements.map(getEditorModelId).filter(Boolean);
+                    liveGeneratedRootIds = liveGeneratedRootIds.concat(elements.map(getEditorModelId).filter(Boolean));
                     return true;
                 }, function () { return false; });
             } catch (error) {
@@ -961,6 +961,7 @@
     function request(message, retried, options) {
         options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
+        if (repairDepth === 0) liveGeneratedRootIds = [];
         var originalBrief = options.originalBrief || message;
         var beforeWidgetCount = getPreviewWidgetCount();
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {

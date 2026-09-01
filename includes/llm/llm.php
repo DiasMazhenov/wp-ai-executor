@@ -1559,6 +1559,68 @@ function wpae_llm_normalize_preserved_library_typography( array $elements, int &
     return $elements;
 }
 
+function wpae_llm_normalize_preserved_library_visual_state( array $elements, int &$changed = 0 ): array {
+    $has_background_image = static function ( array $settings ): bool {
+        foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
+            $image = $settings[ $key ] ?? null;
+            if ( is_array( $image ) && trim( (string) ( $image['url'] ?? '' ) ) !== '' ) {
+                return true;
+            }
+            if ( is_string( $image ) && trim( $image ) !== '' ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $has_card_surface = static function ( array $settings ): bool {
+        if ( trim( (string) ( $settings['border_border'] ?? '' ) ) !== '' ) {
+            return true;
+        }
+        foreach ( [ 'border_radius', 'box_shadow' ] as $key ) {
+            if ( ! is_array( $settings[ $key ] ?? null ) ) {
+                continue;
+            }
+            foreach ( [ 'size', 'top', 'right', 'bottom', 'left', 'blur', 'spread' ] as $dimension ) {
+                if ( is_numeric( $settings[ $key ][ $dimension ] ?? null ) && (float) $settings[ $key ][ $dimension ] > 0 ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    $is_white = static function ( string $color ): bool {
+        return in_array( strtolower( trim( $color ) ), [ '#fff', '#ffffff', 'white', 'rgb(255, 255, 255)', 'rgba(255, 255, 255, 1)' ], true );
+    };
+    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $has_background_image, $has_card_surface, $is_white ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $before = wp_json_encode( $settings );
+            foreach ( [ '_animation', 'animation', 'animation_duration', 'animation_delay', 'entrance_animation', 'entrance_animation_duration' ] as $key ) {
+                unset( $settings[ $key ] );
+            }
+            if ( ( $element['elType'] ?? '' ) === 'container' ) {
+                $color = trim( (string) ( $settings['background_color'] ?? '' ) );
+                if ( $color !== '' && $is_white( $color ) && ( $has_background_image( $settings ) || ! $has_card_surface( $settings ) ) ) {
+                    $settings['background_color'] = 'transparent';
+                }
+            }
+            if ( $before !== wp_json_encode( $settings ) ) {
+                $changed++;
+            }
+            $element['settings'] = $settings;
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+    return $elements;
+}
+
 function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$changed = 0 ): array {
     $read_percent_width = static function ( array $settings ): ?float {
         foreach ( [ 'width', '_element_custom_width' ] as $key ) {
@@ -4264,9 +4326,20 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $elements = wpae_elementor_normalize_data( $elements )['data'];
     }
     $steps[] = [ 'id' => 'native_normalize', 'status' => $native_normalized ? 'ok' : 'skipped', 'message' => $native_normalized ? 'Структура виджетов нормализована под native Elementor и Flexbox.' : 'Нормализация Elementor недоступна и пропущена.', 'details' => [ 'element_count' => count( $elements ) ] ];
+    $preserved_library_design = false;
+    foreach ( $elements as $element ) {
+        if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $classes = preg_split( '/\s+/', trim( (string) ( $element['settings']['_css_classes'] ?? '' ) ) );
+        if ( is_array( $classes ) && in_array( 'wpae-preserve-library-design', $classes, true ) ) {
+            $preserved_library_design = true;
+            break;
+        }
+    }
     $design_mapped = function_exists( 'wpae_apply_design_token_map' );
     if ( $design_mapped ) {
-        $elements = wpae_apply_design_token_map( $elements )['data'];
+        $elements = wpae_apply_design_token_map( $elements, $preserved_library_design )['data'];
     }
     $steps[] = [ 'id' => 'design_system', 'status' => $design_mapped ? 'ok' : 'skipped', 'message' => $design_mapped ? 'Применены совместимые native-токены активной дизайн-системы.' : 'Маппинг дизайн-системы недоступен и пропущен.', 'details' => [ 'element_count' => count( $elements ) ] ];
     $existing = wpae_get_elementor_data_for_post( $post_id );
@@ -4281,17 +4354,6 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     $steps[] = [ 'id' => 'page_context', 'status' => 'ok', 'message' => $initial_page ? 'Страница пустая: разрешена безопасная инициализация Elementor.' : 'Текущая структура страницы прочитана.', 'details' => [ 'existing_element_count' => count( $existing ) ] ];
     $fallback_variant_applied = false;
     $fallback_variant = null;
-    $preserved_library_design = false;
-    foreach ( $elements as $element ) {
-        if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {
-            continue;
-        }
-        $classes = preg_split( '/\s+/', trim( (string) ( $element['settings']['_css_classes'] ?? '' ) ) );
-        if ( is_array( $classes ) && in_array( 'wpae-preserve-library-design', $classes, true ) ) {
-            $preserved_library_design = true;
-            break;
-        }
-    }
     $variation_requested = ! $preserved_library_design && ( isset( $action['fallback_variant'] ) || $variation_seed >= 0 );
     if ( $variation_requested && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
         $variation_source = isset( $action['fallback_variant'] ) ? absint( $action['fallback_variant'] ) : $variation_seed;
@@ -4711,6 +4773,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                         unset( $action['fallback_variant'] );
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
                         $action['elements'] = wpae_llm_materialize_preserved_library_colors( $action['elements'], $library_layout_changed );
+                        $action['elements'] = wpae_llm_normalize_preserved_library_visual_state( $action['elements'], $library_layout_changed );
                         $action['elements'] = wpae_llm_normalize_preserved_library_typography( $action['elements'], $library_layout_changed );
                         $action['elements'] = wpae_llm_normalize_preserved_library_geometry( $action['elements'], $library_layout_changed );
                     }
