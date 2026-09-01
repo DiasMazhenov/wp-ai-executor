@@ -1,5 +1,12 @@
 # План WP AI Executor
 
+## v02.10.37
+
+- Исправить приоритет archetype detection: «команда/специалисты» должна
+  опережать слова ролей вроде «стратег», чтобы не получать benefits layout.
+- Доставить пакет и проверить новый team prompt в Browser Use со screenshot,
+  Vision/design-taste и JSON.
+
 ## v02.10.36
 
 - Разбирать естественные пары имя — роль после точек, чтобы content-only prompt

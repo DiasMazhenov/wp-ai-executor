@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.36`
+- Plugin: `v02.10.37`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -76,6 +76,10 @@ wrappers no longer accumulate left/right padding; card-level padding remains.
 Release v02.10.36 splits natural labeled content at sentence boundaries, so
 name-role pairs in content-only prompts are preserved instead of falling back to
 generic card copy.
+
+Release v02.10.37 prioritizes explicit team semantics before benefits keywords,
+so a role such as «стратег» inside a team prompt cannot misclassify the whole
+composition as a benefits block.
 
 Release v02.10.26 makes selected-container JSON export resilient to Elementor
 selection focus changes: the chat reads the live selection, falls back to the
