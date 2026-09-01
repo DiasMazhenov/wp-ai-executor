@@ -1365,6 +1365,21 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     return $title_set && ( $body === '' || $body_set ) && ( $cta === '' || $cta_set );
 }
 
+function wpae_llm_mark_preserved_library_design( array $elements ): array {
+    foreach ( $elements as &$element ) {
+        if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+            ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-preserve-library-design' ] )
+            : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-preserve-library-design' );
+        $element['settings'] = $settings;
+    }
+    unset( $element );
+    return $elements;
+}
+
 function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed, bool $clear_unrequested_copy = false ): array {
     $applied = false;
     $has_content_widget = static function ( array $elements ) use ( &$has_content_widget ): bool {
@@ -4365,6 +4380,9 @@ function wpae_llm_chat( WP_REST_Request $request ) {
                     $library_applied = true;
                     $action_fallback = false;
                     $library_preserve_design = ! empty( $selected_library['trusted_bundled'] );
+                    if ( $library_preserve_design ) {
+                        $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
+                    }
                     if ( ! $library_preserve_design ) {
                         $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
                     }

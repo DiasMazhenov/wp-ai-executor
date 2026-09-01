@@ -121,7 +121,7 @@ function wpae_token_map_color_role( string $key, string $el_type, string $widget
     return null;
 }
 
-function wpae_token_map_apply_elements( array $elements, array $tokens, array &$report, int $depth = 0 ): array {
+function wpae_token_map_apply_elements( array $elements, array $tokens, array &$report, int $depth = 0, bool $preserve_library_design = false ): array {
     foreach ( $elements as $index => $element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -131,6 +131,16 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
         $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        $is_preserved_library = $preserve_library_design || ( $depth === 0 && is_array( $classes ) && in_array( 'wpae-preserve-library-design', $classes, true ) );
+        if ( $is_preserved_library ) {
+            $report['protected_skips'][] = [ 'element_id' => $element_id, 'reason' => 'Trusted library design is preserved without remapping source tokens.' ];
+            $element['settings'] = $settings;
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $element['elements'] = wpae_token_map_apply_elements( $element['elements'], $tokens, $report, $depth + 1, true );
+            }
+            $elements[ $index ] = $element;
+            continue;
+        }
         $is_generated_badge = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true );
         $is_bento_grid = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
         $is_generated_content_shell = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );

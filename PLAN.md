@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.51
+
+- Исправить фактический live-Flex рендер доверенных Vocario-шаблонов: пустые
+  вложенные контейнеры не должны получать белый фон, а source palette и CTA
+  не должны заменяться общими токенами проекта.
+- Доставить пакет с правильной корневой директорией, затем проверить Hero в
+  открытом Elementor через content-only prompt, JSON, screenshot, Vision и
+  design-taste review.
+
 ## v02.10.50
 
 - Исправить root cause live mismatch доверенных Vocario-блоков: не оставлять

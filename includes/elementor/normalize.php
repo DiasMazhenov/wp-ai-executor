@@ -437,7 +437,7 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 'content_width' => 'boxed',
                 'flex_direction' => 'column',
                 'background_background' => 'classic',
-                'background_color' => '#ffffff',
+                'background_color' => 'transparent',
             ] as $setting_key => $setting_value ) {
                 if ( empty( $element['settings'][ $setting_key ] ) ) {
                     $element['settings'][ $setting_key ] = $setting_value;

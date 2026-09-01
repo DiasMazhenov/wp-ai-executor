@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.50`
+- Plugin: `v02.10.51`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -67,6 +67,13 @@ supported source heading, text editor, button, icon-list and icon-box text with
 compact fragments from the user content, using numeric/audience fragments for
 compact template slots, while preserving the original media, Flex containers and
 visual composition.
+
+Release v02.10.51 fixes the actual live Flex rendering mismatch found after the
+v02.10.50 browser test. The shared normalizer no longer assigns white to every
+container with empty background settings, so transparent source wrappers remain
+transparent. Trusted bundled library roots are marked as source-of-truth before
+the design-token pass; their palette, CTA styling, typography and media are not
+rewritten by the project-wide token map while their requested copy is adapted.
 
 ## Architecture
 
