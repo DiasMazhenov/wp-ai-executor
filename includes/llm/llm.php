@@ -1422,6 +1422,48 @@ function wpae_llm_mark_preserved_library_design( array $elements ): array {
     return $elements;
 }
 
+function wpae_llm_materialize_preserved_library_colors( array $elements, int &$changed = 0 ): array {
+    // Vocario templates reference custom Elementor colors that are not present on the target site.
+    $known_colors = [
+        '1edeba7' => '#4460EC',
+        '6a41369' => '#FFFFFF',
+        '81bea52' => '#000000',
+        'ce10ccb' => '#04103A',
+        'c81787f' => '#F0F0F0',
+    ];
+    $walk = static function ( array &$nodes ) use ( &$walk, $known_colors, &$changed ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $globals = is_array( $settings['__globals__'] ?? null ) ? $settings['__globals__'] : [];
+            foreach ( $globals as $key => $reference ) {
+                if ( ! is_string( $reference ) || ! preg_match( '#^globals/colors\?id=([a-z0-9]+)$#i', $reference, $match ) ) {
+                    continue;
+                }
+                $color = $known_colors[ strtolower( (string) $match[1] ) ] ?? '';
+                if ( $color === '' || (string) ( $settings[ $key ] ?? '' ) === $color ) {
+                    continue;
+                }
+                $settings[ $key ] = $color;
+                unset( $settings['__globals__'][ $key ] );
+                $changed++;
+            }
+            if ( empty( $settings['__globals__'] ) ) {
+                unset( $settings['__globals__'] );
+            }
+            $element['settings'] = $settings;
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+    return $elements;
+}
+
 function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$changed = 0 ): array {
     $read_percent_width = static function ( array $settings ): ?float {
         foreach ( [ 'width', '_element_custom_width' ] as $key ) {
@@ -4561,6 +4603,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     if ( $library_preserve_design ) {
                         unset( $action['fallback_variant'] );
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
+                        $action['elements'] = wpae_llm_materialize_preserved_library_colors( $action['elements'], $library_layout_changed );
                         $action['elements'] = wpae_llm_normalize_preserved_library_geometry( $action['elements'], $library_layout_changed );
                     }
                     if ( ! $library_preserve_design ) {

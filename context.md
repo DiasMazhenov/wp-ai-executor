@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.62`
+- Plugin: `v02.10.63`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -28,6 +28,11 @@ decorative slots are no longer populated with a phrase already present in the
 requested title or body. Repeated confidence, audience, and duration copy is
 pruned instead of being rendered as overlapping duplicate text; unique source
 slots remain eligible for adaptation.
+
+Release v02.10.63 fixes the live render mismatch where Vocario templates
+referenced source-only Elementor global color IDs. Known Vocario colors are
+materialized into explicit native widget settings before insertion, so CTA
+labels and template typography keep their intended contrast on the target site.
 
 Release v02.10.42 explicitly marks all 393 containers in the 13 bundled Vocario
 JSON fixtures with `container_type=flex`. Vocario retrieval now recognizes home,

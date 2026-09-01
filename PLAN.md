@@ -8,6 +8,13 @@
   существующий content-fidelity pipeline; затем повторить live generation,
   scoped screenshot, Vision и design-taste review.
 
+## v02.10.63
+
+- Материализовать известные Vocario `globals/colors` в явные native Elementor
+  color settings, чтобы на target site не терялись CTA и контраст текста.
+- Повторить live generation на чистой странице и проверить scoped screenshot,
+  JSON, DOM, AI Vision и design-taste review.
+
 ## v02.10.61
 
 - Устранить подтвержденное live-переполнение trusted Vocario Hero: второй
