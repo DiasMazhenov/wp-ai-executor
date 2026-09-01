@@ -675,6 +675,23 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     if ( ! is_string( $content_message ) || $content_message === '' ) {
         $content_message = $message;
     }
+    if (
+        preg_match( '/(?:«[^»]{2,80}»|"[^"\n]{2,80}")\s*[—–-]/u', $content_message )
+        && preg_match( '/₸|\$|€|₽|цен\w*|стоим\w*|тариф\w*|пакет\w*|вариант\w*/iu', $content_message )
+        && preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*[—–-]\s*(.*?)(?=;\s*(?:«|\")|(?:\.\s+)(?=К\s+каждому\b)|$)/us', $content_message, $pricing_matches, PREG_SET_ORDER )
+    ) {
+        $pricing_pairs = [];
+        foreach ( $pricing_matches as $match ) {
+            $label = trim( sanitize_text_field( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) ) );
+            $content = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+            if ( $label !== '' && $content !== '' ) {
+                $pricing_pairs[] = [ 'label' => $label, 'content' => $content ];
+            }
+        }
+        if ( count( $pricing_pairs ) >= 2 ) {
+            return $pricing_pairs;
+        }
+    }
     $quoted_pairs = [];
     if ( preg_match_all( '/(?:^|(?<=[.!?»;])\s+)([^,.\n—–-]{2,80})\s*,\s*([^—–,:;]{2,120}?)\s*[—–-]\s*(«[^»]{2,240}»|"[^"\n]{2,240}")/u', $content_message, $quoted_matches, PREG_SET_ORDER ) ) {
         foreach ( $quoted_matches as $match ) {
