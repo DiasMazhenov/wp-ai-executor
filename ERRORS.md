@@ -3,6 +3,26 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-038: Content-only fallback redistributed brief text across the wrong widgets
+
+- **Observed:** The live v02.11.06 benefits generation rendered a reasonable
+  three-card grid, but one requested phrase was duplicated between a card
+  heading and another card's body, while an unrequested `Обсудить проект` CTA
+  appeared detached below the grid. The screenshot therefore did not match
+  the content-only brief even though the request was written successfully.
+- **Root cause:** When the provider and bounded repair returned no usable tree,
+  generic fallback content filling assigned missing units in widget order. It
+  treated the section title, card copy, and button as interchangeable slots;
+  the fallback's sample card descriptions and default CTA remained in the
+  output.
+- **Fix:** v02.11.07 maps unlabeled repeatable content deterministically: the
+  first unit becomes the section heading, each remaining unit becomes one card
+  heading, and fallback-only body/CTA widgets are removed unless requested.
+- **Regression status:** Local contract tests, PHP lint and diff checks must
+  pass. A fresh Browser Use generation must show exact requested card copy,
+  no invented CTA, balanced Flexbox cards, and a passing screenshot,
+  Vision/design-taste and Impeccable review.
+
 ## EJ-037: Four-card fallback composition overflowed and used giant headings
 
 - **Observed:** The live content-only benefits generation rendered each card as

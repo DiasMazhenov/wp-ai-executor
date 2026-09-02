@@ -4689,16 +4689,38 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
     ];
     if ( $archetype === 'benefits' ) {
-        $elements = [
-            $widget( 'llm-heading', 'heading', [ 'title' => 'Преимущества для вашего проекта', 'header_size' => 'h2' ] ),
-            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Три опоры, которые делают страницу понятной, убедительной и готовой к заявке.' ] ),
-            $grid( 'llm-benefits-grid', [
-                $card( 'llm-benefit-1', [ $widget( 'llm-benefit-1-title', 'heading', [ 'title' => 'Понятная структура', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-1-copy', 'text-editor', [ 'editor' => 'Посетитель быстро понимает предложение и следующий шаг.' ] ) ] ),
-                $card( 'llm-benefit-2', [ $widget( 'llm-benefit-2-title', 'heading', [ 'title' => 'Native Elementor', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-2-copy', 'text-editor', [ 'editor' => 'Контент и стили остаются редактируемыми в визуальном редакторе.' ] ) ] ),
-                $card( 'llm-benefit-3', [ $widget( 'llm-benefit-3-title', 'heading', [ 'title' => 'Готово к росту', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-3-copy', 'text-editor', [ 'editor' => 'Компоненты и адаптивная сетка не рассыпаются на мобильных устройствах.' ] ) ] ),
-            ] ),
-            $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
-        ];
+        $content_units = array_values( array_filter(
+            wpae_llm_extract_requested_content( $message ),
+            static fn( $unit ): bool => ! preg_match( '/\b(обсуд\w*|получ\w*|узна\w*|заказ\w*|оформ\w*|куп\w*|нач\w*|выбр\w*|напис\w*|связ\w*|остав\w*\s+заявк\w*|смотр\w*|запиш\w*|заброн\w*|регистрац\w*)\b/iu', (string) $unit )
+        ) );
+        if ( count( $content_units ) >= 3 ) {
+            $section_title = array_shift( $content_units );
+            $benefit_cards = [];
+            foreach ( array_slice( $content_units, 0, 6 ) as $index => $unit ) {
+                $card_number = (string) ( $index + 1 );
+                $benefit_cards[] = $card( 'llm-benefit-' . $card_number, [
+                    wpae_llm_card_heading_widget(
+                        'llm-benefit-' . $card_number . '-title',
+                        $widget( 'llm-benefit-' . $card_number . '-source', 'heading', [ 'title' => $unit, 'header_size' => 'h4' ] )
+                    ),
+                ] );
+            }
+            $elements = [
+                $widget( 'llm-heading', 'heading', [ 'title' => $section_title, 'header_size' => 'h2' ] ),
+                $grid( 'llm-benefits-grid', $benefit_cards ),
+            ];
+        } else {
+            $elements = [
+                $widget( 'llm-heading', 'heading', [ 'title' => 'Преимущества для вашего проекта', 'header_size' => 'h2' ] ),
+                $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Три опоры, которые делают страницу понятной, убедительной и готовой к заявке.' ] ),
+                $grid( 'llm-benefits-grid', [
+                    $card( 'llm-benefit-1', [ $widget( 'llm-benefit-1-title', 'heading', [ 'title' => 'Понятная структура', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-1-copy', 'text-editor', [ 'editor' => 'Посетитель быстро понимает предложение и следующий шаг.' ] ) ] ),
+                    $card( 'llm-benefit-2', [ $widget( 'llm-benefit-2-title', 'heading', [ 'title' => 'Native Elementor', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-2-copy', 'text-editor', [ 'editor' => 'Контент и стили остаются редактируемыми в визуальном редакторе.' ] ) ] ),
+                    $card( 'llm-benefit-3', [ $widget( 'llm-benefit-3-title', 'heading', [ 'title' => 'Готово к росту', 'header_size' => 'h4' ] ), $widget( 'llm-benefit-3-copy', 'text-editor', [ 'editor' => 'Компоненты и адаптивная сетка не рассыпаются на мобильных устройствах.' ] ) ] ),
+                ] ),
+                $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
+            ];
+        }
     } elseif ( $archetype === 'faq' ) {
         $faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 12 );
         if ( empty( $faq_pairs ) ) {

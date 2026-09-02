@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.06`
+- Plugin: `v02.11.07`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -137,6 +137,11 @@
   composition at `48%` widths instead of four incompatible `31%` widths. Card
   containers are normalized to the same vertical direction and marked card
   headings are clamped to compact semantic typography before the write.
+- v02.11.07: Content-only repeatable briefs map the first content unit to the
+  section heading and the remaining units to card headings instead of filling
+  every fallback widget sequentially. Unrequested fallback descriptions and
+  CTAs are removed, so the rendered block cannot invent a disconnected button
+  or duplicate a requested phrase in a neighboring card.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
