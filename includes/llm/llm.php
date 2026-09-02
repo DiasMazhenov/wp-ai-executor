@@ -3529,6 +3529,7 @@ function wpae_llm_repair_unbalanced_repeatable_layout( array $elements, string $
 
     $section_title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? '' ) );
     $normalized_section_title = wpae_llm_normalize_content_text( $section_title );
+    $content_units = array_values( array_filter( array_slice( wpae_llm_content_units( $message ), 1 ), static fn( $unit ): bool => trim( (string) $unit ) !== '' ) );
     $leaf_cards = static function ( array $nodes ) use ( &$leaf_cards ): array {
         $cards = [];
         foreach ( $nodes as $node ) {
@@ -3633,6 +3634,60 @@ function wpae_llm_repair_unbalanced_repeatable_layout( array $elements, string $
             return false;
         };
         $set_section_heading( $elements );
+    }
+
+    if ( $normalized_section_title !== '' && ! empty( $content_units ) ) {
+        $repair_duplicate_card_heading = static function ( array &$nodes, bool $inside_grid = false ) use ( &$repair_duplicate_card_heading, $normalized_section_title, $content_units, &$changed ): void {
+            foreach ( $nodes as &$element ) {
+                if ( ! is_array( $element ) ) {
+                    continue;
+                }
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                $in_grid = $inside_grid || ( is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) );
+                if ( $in_grid && ( $element['elType'] ?? '' ) === 'container' ) {
+                    $heading_index = null;
+                    $copy_index = null;
+                    foreach ( (array) ( $element['elements'] ?? [] ) as $child_index => $child ) {
+                        if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
+                            continue;
+                        }
+                        $widget_type = sanitize_key( (string) ( $child['widgetType'] ?? '' ) );
+                        $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+                        if ( $widget_type === 'heading' && $heading_index === null && wpae_llm_normalize_content_text( $child_settings['title'] ?? '' ) === $normalized_section_title ) {
+                            $heading_index = $child_index;
+                        } elseif ( $widget_type === 'text-editor' && $copy_index === null ) {
+                            $copy_index = $child_index;
+                        }
+                    }
+                    if ( $heading_index !== null && $copy_index !== null ) {
+                        $heading_settings = is_array( $element['elements'][ $heading_index ]['settings'] ?? null ) ? $element['elements'][ $heading_index ]['settings'] : [];
+                        $copy_settings = is_array( $element['elements'][ $copy_index ]['settings'] ?? null ) ? $element['elements'][ $copy_index ]['settings'] : [];
+                        $current_copy = trim( sanitize_text_field( (string) ( $copy_settings['editor'] ?? '' ) ) );
+                        if ( $current_copy !== '' ) {
+                            $heading_settings['title'] = $current_copy;
+                            $replacement_copy = '';
+                            foreach ( $content_units as $unit ) {
+                                $candidate = trim( sanitize_text_field( (string) $unit ) );
+                                if ( $candidate !== '' && wpae_llm_normalize_content_text( $candidate ) !== wpae_llm_normalize_content_text( $current_copy ) && wpae_llm_normalize_content_text( $candidate ) !== $normalized_section_title ) {
+                                    $replacement_copy = $candidate;
+                                    break;
+                                }
+                            }
+                            $copy_settings['editor'] = $replacement_copy !== '' ? $replacement_copy : $current_copy;
+                            $element['elements'][ $heading_index ]['settings'] = $heading_settings;
+                            $element['elements'][ $copy_index ]['settings'] = $copy_settings;
+                            $changed++;
+                        }
+                    }
+                }
+                if ( is_array( $element['elements'] ?? null ) ) {
+                    $repair_duplicate_card_heading( $element['elements'], $in_grid );
+                }
+            }
+            unset( $element );
+        };
+        $repair_duplicate_card_heading( $elements );
     }
 
     return $elements;

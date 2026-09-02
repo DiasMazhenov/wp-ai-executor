@@ -548,3 +548,18 @@ before making a new change to the plugin.
   required. Fresh live benefits generation must prove the repair step and
   pass screenshot, scoped JSON/DOM, Vision/design-taste, and Impeccable
   review before the remaining block matrix is accepted.
+
+## EJ-034: Fallback card repeated the section heading
+
+- **Observed:** Fresh v02.11.00 content-only benefits generation kept the
+  section title in the first card heading while the first requested benefit
+  remained in that card body.
+- **Root cause:** Fallback content fidelity treated the section title as the
+  first missing unit and then assigned it to the first repeatable card heading
+  without checking the already populated section heading.
+- **Fix:** v02.11.01 adds a shared repeatable-card repair pass that detects the
+  duplicate, promotes the card's requested body copy to its heading, and moves
+  the next requested unit into the body.
+- **Regression status:** Local contract and PHP syntax checks pass; a fresh
+  Browser Use benefits generation must confirm the duplicate is gone before
+  the remaining block matrix is accepted.

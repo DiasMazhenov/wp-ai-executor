@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.00`
+- Plugin: `v02.11.01`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -112,6 +112,10 @@
   dense right column, and isolated CTA. Fresh Browser Use screenshots plus
   Vision/design-taste and Impeccable review remain mandatory for all block
   types.
+- v02.11.01: Repeatable fallback content no longer leaves the first card
+  heading equal to the section heading. A duplicate card heading is replaced
+  with its requested copy and the next requested unit remains in the card
+  body, without adding technical instructions to the user prompt.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
