@@ -3,6 +3,18 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-008: Release metadata was not bumped with the fix
+
+- **Observed:** WP Pusher reported a successful update after the image fix,
+  but the live Elementor chat still displayed `v02.10.73`.
+- **Root cause:** The release notes and implementation had been prepared for
+  v02.10.74, while the plugin header and `WPAE_VERSION` constant remained at
+  v02.10.73.
+- **Fix:** Synchronize both plugin metadata locations to `v02.10.74` and
+  require a live version check after delivery.
+- **Regression status:** Local source check added by inspection; Browser Use
+  delivery verification is required before the block test run continues.
+
 ## EJ-007: Known library image placeholders survived trusted adaptation
 
 - **Observed:** The v02.10.73 testimonials screenshot still showed a gray

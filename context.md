@@ -55,6 +55,10 @@ only known placeholder URLs in image and image-box widgets with relevant
 network images for the selected block archetype, adds alt text, and preserves
 real source media. Remaining block types require fresh Browser Use validation.
 
+The v02.10.74 package metadata is synchronized in both the WordPress plugin
+header and `WPAE_VERSION`, so the live Elementor chat can verify that WP Pusher
+installed the same release that was tested locally.
+
 Release v02.10.68 fixes the deeper live-preview corruption found in the v67
 Browser Use run. The Elementor editor kept roots from earlier generation and
 Vision repair requests even after the server rollback, so each new template was

@@ -39,6 +39,8 @@ const blockLibraryCss = read('assets/css/elementor-block-library.css');
 assert.match(llm, /'openai'/);
 assert.match(llm, /'deepseek'/);
 assert.match(llm, /'openrouter'/);
+assert.match(bootstrap, /Version:\s+v02\.10\.74/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.10\.74'/);
 assert.match(llm, /'model' => 'openrouter\/free'/);
 assert.match(llm, /'gemini'/);
 assert.match(llm, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
