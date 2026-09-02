@@ -3,6 +3,22 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-041: Preserved Team cards leaked the forbidden Icon Box widget
+
+- **Observed:** The fresh Team generation had the requested parent padding and
+  an `H2` section heading, but all three live cards still rendered as
+  `elementor-widget-icon-box` widgets.
+- **Root cause:** Generated branches already converted Icon Box widgets, while
+  the trusted-library badge pass rebuilt the root without passing its content
+  through the shared native-widget converter.
+- **Fix:** v02.11.09 runs the existing converter on preserved-library content
+  before Team heading promotion and final root assembly. Icon Box content is
+  retained as native heading/body widgets, and image siblings remain intact.
+- **Regression status:** Recheck with Browser Use using screenshot ->
+  Vision/design-taste -> prompt comparison -> scoped JSON and DOM. Require
+  Team parent side padding, visible `H2`, no `icon-box` widgets, preserved
+  portraits, no overflow and a healthy Elementor iframe.
+
 ## EJ-040: Preserved Team template lost parent side padding and heading tier
 
 - **Observed:** The live Team block rendered with `padding-left/right: 0px`,

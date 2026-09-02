@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.08`
+- Plugin: `v02.11.09`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -148,6 +148,10 @@
   `1.5rem` desktop and `1.25rem` mobile. An outside `Наша команда` source
   widget is promoted to a native `h2` heading instead of rendering as a small
   paragraph, and Team headings are exempt from badge-label deduplication.
+- v02.11.09: Preserved library content now converts source `icon-box` widgets
+  to native `heading` plus `text-editor` widgets before the final write. Team
+  portraits and copy remain intact while the forbidden Icon Box widget cannot
+  leak back from trusted templates.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
