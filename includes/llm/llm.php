@@ -1824,6 +1824,22 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
     return $elements;
 }
 
+function wpae_llm_sanitize_background_image_urls( $urls ): array {
+    if ( ! is_array( $urls ) ) {
+        return [];
+    }
+
+    $sanitized = [];
+    foreach ( array_slice( $urls, 0, 48 ) as $url ) {
+        $url = esc_url_raw( (string) $url );
+        if ( $url !== '' && preg_match( '#^https?://#i', $url ) ) {
+            $sanitized[] = $url;
+        }
+    }
+
+    return array_values( array_unique( $sanitized ) );
+}
+
 function wpae_llm_collect_background_image_urls( array $nodes, array &$urls = [] ): array {
     foreach ( $nodes as $node ) {
         if ( ! is_array( $node ) ) {
@@ -1842,7 +1858,7 @@ function wpae_llm_collect_background_image_urls( array $nodes, array &$urls = []
         }
     }
 
-    return array_values( array_unique( $urls ) );
+    return wpae_llm_sanitize_background_image_urls( $urls );
 }
 
 function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false, int $image_variant = -1, array $used_image_urls = [] ): array {
@@ -2060,6 +2076,14 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/man-giving-presentation-to-an-audience-indoors-2026-03-10-03-17-22-utc-1.jpg',
         'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/woman-speaking-at-event-with-audience-members-2026-03-26-22-59-42-utc.jpg',
         'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/confident-professional-woman-speaking-into-microph-2026-05-18-21-28-38-utc.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/smiling-woman-speaking-at-corporate-event-2026-01-11-11-10-44-utc-200kb.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/businessman-holding-microphone-at-business-seminar-2026-01-09-08-36-06-utc-200kb.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/business-presentation-of-marketing-plan-and-data-a-2026-03-15-00-39-37-utc.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/woman-in-lab-coat-speaking-at-conference-2026-01-23-00-14-47-utc.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/happy-entrepreneur-communicating-with-coworkers-wh-2026-07-14-20-39-23-utc.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/confident-businesswoman-standing-in-modern-office-2026-04-14-19-34-06-utc.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/cropped-view-of-journalists-holding-microphones-ne-2026-03-25-10-30-11-utc-200kb.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/asian-businesswoman-presenting-financial-data-to-o-2026-01-09-12-00-44-utc-200kb.jpg',
     ];
     $used_image_urls = array_values( array_unique( array_filter( array_map( 'trim', $used_image_urls ) ) ) );
     $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image, $clean_trusted_source, $trusted_hero_images, $image_variant, $message, $used_image_urls ): array {
@@ -5398,6 +5422,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 
     $action_request = wpae_llm_is_action_request( $message );
     $editor_context_input = $request->get_param( 'context' );
+    $live_background_image_urls = is_array( $editor_context_input )
+        ? wpae_llm_sanitize_background_image_urls( $editor_context_input['background_image_urls'] ?? [] )
+        : [];
     $selected_element_count = is_array( $editor_context_input ) && is_array( $editor_context_input['selected_elements'] ?? null ) ? count( $editor_context_input['selected_elements'] ) : 0;
     $vision_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_repair'] );
     $vision_regenerate = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_regenerate'] );
@@ -5479,6 +5506,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'post_id' => absint( $context['post_id'] ?? 0 ),
             'selection_scope' => ! empty( $selected_elements ) ? 'selected_element_and_descendants' : 'page',
             'selected_elements' => $selected_elements,
+            'background_image_urls' => $live_background_image_urls,
         ];
         $messages[0]['content'] .= "\nКонтекст редактора: " . wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     }
@@ -5724,6 +5752,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 }
             }
             $existing_image_urls = wpae_llm_collect_background_image_urls( $existing_for_image_rotation );
+            $existing_image_urls = wpae_llm_sanitize_background_image_urls( array_merge( $existing_image_urls, $live_background_image_urls ) );
             $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1, $existing_image_urls );
         }
         $render_cache_changed = 0;

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.90`
+- Plugin: `v02.10.91`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -66,6 +66,12 @@
   next trusted hero while unused bundled candidates remain. The prior 500 was
   caused by referencing `$existing` from `wpae_llm_chat_request()`, where it
   was undefined. Runtime rotation self-check passes.
+- v02.10.91: Hero rotation also receives bounded, sanitized background URLs
+  from the live Elementor preview, so unsaved in-memory roots cannot silently
+  reuse a photo that the server-side `_elementor_data` snapshot does not
+  contain. The trusted Vocario photo pool now includes additional relevant
+  speaking, presentation, seminar, and business-event images instead of
+  cycling through only five sources.
 
 ## Mandatory error journal workflow
 

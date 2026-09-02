@@ -10,20 +10,24 @@ before making a new change to the plugin.
   duplicates could still receive a photo already used elsewhere, making the
   whole page look repetitive.
 - **Root cause:** v02.10.84-v02.10.87 compared the candidate only with the
-  source root being normalized; the hero normalizer had no view of background
-  URLs in the existing Elementor page.
+  source root being normalized. v02.10.90 added saved `_elementor_data`
+  collection, but the active Elementor editor can retain newer in-memory
+  roots that are not present in that server snapshot; the trusted pool also
+  contained only five photos.
 - **Attempted fix:** v02.10.88 collected existing background URLs before hero
   normalization and skipped them while an unused relevant photo remained. A
   fresh Browser Use content-only generation then returned HTTP 500, so this
   implementation was not accepted as a live fix.
-- **Fix:** v02.10.90 moves page-wide collection behind the existing
-  `wpae_get_elementor_data_for_post()` boundary, passes only a validated array
-  of background URLs to the hero normalizer, and skips used bundled photos while
-  an unused candidate remains. The v02.10.88 failure was caused by referencing
-  `$existing` from `wpae_llm_chat_request()`, where it was undefined.
+- **Fix:** v02.10.90 moves saved collection behind the existing
+  `wpae_get_elementor_data_for_post()` boundary, and v02.10.91 adds bounded,
+  sanitized background URLs from the live preview to the same exclusion set
+  while expanding the trusted Vocario pool with relevant photos. The v02.10.88
+  failure was caused by referencing `$existing` from `wpae_llm_chat_request()`,
+  where it was undefined.
 - **Regression status:** Contract tests, PHP lint, diff check, and a runtime
-  nested-tree rotation self-check pass. Fresh Browser Use generation remains
-  required before release acceptance.
+  nested-tree rotation self-check pass. Fresh Browser Use generation must show
+  the new hero avoiding all currently visible trusted background URLs while an
+  unused pool candidate remains.
 
 ## EJ-021: Booking CTA stayed as text in trusted hero generations
 
