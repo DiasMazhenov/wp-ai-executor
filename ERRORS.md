@@ -3,6 +3,61 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-047: Live runtime was behind the paste-ready JSON release
+
+- **Observed:** On an earlier live check the Elementor editor showed
+  `Выбрано: 1 объект`. The existing `Копировать JSON выделенного` action
+  copied a valid `wpae-elementor-selection-v1` envelope of 1,130,957 bytes for
+  post 4556. Browser Use clipboard reading works when this payload path runs.
+  The new `Копировать JSON для вставки в Elementor` action was absent from the
+  live DOM.
+- **Live mismatch:** The chat DOM reported `v02.11.13`; the repository was
+  `v02.11.15`. The live site was therefore running the previous release, not the
+  paste-ready implementation.
+- **Root cause:** The current evidence points to a stale live deployment. The
+  earlier no-selection result was a transient empty-editor state, not proof
+  that the old Elementor selection bridge is broken.
+- **Fix:** Closed on 2026-09-03. Browser Use now reports live version `v02.11.15`
+  and the new paste-ready button is present in the chat DOM.
+- **Regression status:** Require a real selected Elementor element, the
+  `Копировать JSON для вставки в Elementor` button in the DOM, parsed clipboard
+  JSON with at least one element, and live version `v02.11.15`. Treat the
+  existing `gtag`, Elementor checklist, MCP REST 404, and Angie console errors
+  as separate external editor/site noise unless they change chat behavior.
+
+## EJ-048: Content-only pricing brief fell back to an empty shell
+
+- **Observed:** On 2026-09-03 a Browser Use generation for three pricing tiers
+  (`Старт`, `Про`, `Команда`) wrote successfully, but AI Vision scored the
+  result 65 because the tier cards and their prices/descriptions were missing or
+  clipped. Two bounded repairs scored 45 and 60 and showed the same failure;
+  the final version was rolled back.
+- **Root cause:** The current fallback/template route can preserve the badge and
+  category heading while losing the repeated pricing-card content and usable
+  vertical composition. A successful Elementor update is therefore not enough.
+- **Fix:** Open. Make the pricing semantic plan a hard pre-write contract and
+  reject any fallback that does not contain all tier names, prices, descriptions,
+  and visible repeated card roots before writing.
+- **Regression status:** A live test must prove all three tiers in the rendered
+  screenshot and scoped DOM, with native Flex containers and no clipping, then
+  pass the screenshot -> Vision/design-taste -> prompt comparison loop.
+
+## EJ-049: Content-only FAQ brief collapsed into one text block
+
+- **Observed:** On 2026-09-03 a Browser Use FAQ generation preserved the text but
+  rendered the questions and answers as one unstructured block. AI Vision scored
+  68; the repair scored 62 with an empty/clipped CTA and sparse composition.
+  A subsequent Vision request failed with `Failed to fetch`, so the repair was
+  rolled back.
+- **Root cause:** The fallback content path preserves FAQ copy without reliably
+  creating repeated question/answer units and without a stable compact layout.
+- **Fix:** Open. Add a FAQ semantic contract that requires one visible unit per
+  question, answer text in each unit, and bounded spacing before Elementor write
+  and Vision acceptance.
+- **Regression status:** A live test must prove four distinct FAQ units, no empty
+  CTA shell, native Flex structure, and a passing screenshot -> Vision/design-taste
+  -> prompt comparison loop.
+
 ## EJ-046: Generation quality checks were disconnected
 
 - **Observed:** Provider output could drift from a selected library composition,

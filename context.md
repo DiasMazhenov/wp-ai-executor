@@ -27,7 +27,7 @@
   Vision repair refreshes the preview before retry because embedded Elementor
   can ignore `window.location.reload()`. Fresh live visual validation remains
   mandatory after deployment.
-- Design validation: Impeccable `3.9.1` is installed globally at
+- Design validation: Impeccable `4.1.3` is installed globally at
   `~/.agents/skills/impeccable` and applies to every customer-facing Elementor
   generation. Use its hierarchy, contrast, anti-slop, responsive, and live
   review rules together with Elementor's official Flexbox guide
@@ -203,12 +203,15 @@
 - Before each new code change, read `ERRORS.md` and the latest release notes in
   this file; do not repeat a known failure mode.
 - A live generation is not successful until its scoped JSON, DOM, screenshot,
-  AI Vision result, and `design-taste-frontend` review agree.
+  AI Vision result, and separate Impeccable/design-taste review agree. A Vision
+  score alone is never an acceptance signal; visible hierarchy, repeated-item
+  structure, spacing, typography, contrast, overflow, and prompt fidelity must
+  pass the Impeccable review.
 
 ## Mandatory visual validation sequence
 
 - After every design generation, follow this exact sequence:
-  `screenshot -> Vision/design-taste -> compare with prompt -> fix`.
+  `screenshot -> AI Vision -> Impeccable/design-taste -> compare with prompt -> fix`.
 - The screenshot must scope the newly generated or selected object, not an
   unrelated page area. Compare the rendered composition with the requested
   content and the source template, including hierarchy, alignment, spacing,
