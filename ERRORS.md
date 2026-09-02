@@ -20,6 +20,18 @@ before making a new change to the plugin.
   Browser Use must show each supported block type selecting a matching
   template or a type-specific native fallback before this issue is closed.
 
+## EJ-026: Incidental team wording changed a benefits archetype
+
+- **Observed:** The benefits brief mentioned support for a team, but the live
+  generated JSON was classified and rendered as `Team c1429`.
+- **Root cause:** The generic Team classifier matched any occurrence of
+  `команд*`, including ordinary body copy such as `поддержка команды`.
+- **Fix:** v02.10.95 limits Team classification to explicit team headings,
+  team lists, or labeled member entries.
+- **Regression status:** Local contract tests and PHP lint pass. Re-run the
+  benefits prompt in Browser Use and confirm its selected library category is
+  `benefits`/`courses` or that its native fallback is benefits-shaped.
+
 ## EJ-023: Advisory editor Vision still rolled back valid writes
 
 - **Observed:** A live Hero screenshot showed a populated photo, readable

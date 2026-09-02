@@ -77,6 +77,10 @@
   advisory response has `quality_failed`; the screenshot, scoped DOM/JSON, and
   Impeccable review remain visible evidence for deciding whether a new repair
   is actually needed.
+- v02.10.95: Incidental Team wording no longer changes a benefits archetype.
+  Team classification now requires an explicit team heading/list or at least
+  two labeled member entries; ordinary copy such as `поддержка команды`
+  remains content.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

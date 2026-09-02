@@ -665,7 +665,11 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         ) {
             return 'about';
         }
-        if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
+        if (
+            preg_match( '/\b(?:наша|о\s+нашей|про\s+нашу|в\s+нашей)\s+команд\w*\b/iu', $normalized )
+            || preg_match( '/\bкоманд\w*\s*:/iu', $normalized )
+            || ( count( $labeled_pairs ) >= 2 && preg_match( '/\b(сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) )
+        ) {
             return 'team';
         }
         if ( preg_match( '/\b(курс\w*|обучен\w*|заняти\w*|программ\w*)\b/iu', $normalized ) ) {
