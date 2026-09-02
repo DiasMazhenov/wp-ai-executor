@@ -72,6 +72,10 @@
   then rerun portfolio, about, FAQ, testimonials, process, CTA, carousel, and
   mega-menu with photo-bearing prompts and the mandatory screenshot ->
   Vision/Impeccable -> comparison loop.
+- 2026-09-03 deployment probe: a fresh Browser Use tab opened the WP Pusher
+  plugins admin page and received server `Internal Server Error`; the prior
+  hook-error tab is also still failed. The Elementor tab was preserved. This
+  is recorded as `ERRORS.md` EJ-060; do not treat GitHub push as live deploy.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
