@@ -103,6 +103,41 @@ before making a new change to the plugin.
   Impeccable acceptance successful until the editor reports v02.11.18 and a
   fresh generation is inspected in its scoped JSON/DOM and screenshot.
 
+## EJ-057: New block types still collapse or misroute on stale live runtime
+
+- **Observed:** Browser Use tests on live `v02.11.16` for FAQ, testimonials,
+  process, portfolio, CTA, carousel, about, and mega-menu produced no clean
+  acceptance. FAQ/portfolio/CTA collapsed content into sparse shells; process
+  was rejected after library adaptation; carousel became a service grid; about
+  repeated copy across cards; mega-menu became a services grid. Testimonials
+  were written, but author headings dominated the quotes and overflowed the
+  editor viewport.
+- **Root cause:** The live site does not contain the catalog and semantic audit
+  from `v02.11.18`. The old runtime falls back to generic compositions, and
+  its Vision report can score a valid crop instead of the requested block type.
+  Existing historical roots also contaminate the page during retries.
+- **Evidence:** Every test used content-only prompts, DOM inspection, a
+  post-generation screenshot, and Impeccable visual review. Vision scores
+  ranged from 60 to 85 and contradicted visible clipping, sparse whitespace,
+  missing structure, or wrong archetypes.
+- **Regression status:** Keep open until WP Pusher deploys `v02.11.18`, then
+  rerun the same non-Hero matrix with scoped JSON/DOM, screenshots, and the
+  screenshot -> Vision/Impeccable -> prompt comparison loop.
+
+## EJ-058: Elementor editor emits unrelated console errors during live tests
+
+- **Observed:** Live console contains `gtag is not defined`, Elementor
+  `ToggleIcon` reading `parentElement` from null, REST `404 rest_no_route`, and
+  `Angie is not available` while the editor is open.
+- **Root cause:** These errors originate in the site/Elementor editor shell,
+  not in the plugin's chat request. They remain relevant because they can
+  interfere with preview refresh and make editor crashes look like generation
+  failures.
+- **Regression status:** Track separately. Before calling a future live test
+  successful, verify that these errors do not appear during generation,
+  refresh, screenshot, and rollback; fix them at their owning integration if
+  they affect chat or canvas.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed

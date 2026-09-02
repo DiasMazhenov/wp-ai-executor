@@ -48,6 +48,15 @@
   where Vision could approve a valid crop around a mixed root. The current
   live editor remains on v02.11.16 because WP Pusher has no WP AI Executor
   package row and the supplied hook currently returns HTTP 400.
+- 2026-09-03 live non-Hero matrix: FAQ, testimonials, process, portfolio, CTA,
+  carousel, about, and mega-menu were tested with content-only prompts through
+  Browser Use. Every result received a screenshot and visual review. FAQ,
+  portfolio, CTA, and process failed through sparse fallback or rejected
+  library adaptation; carousel and mega-menu were misclassified as ordinary
+  service grids; about repeated copy; testimonials overflowed at the heading
+  tier. Treat all results as stale-runtime diagnostics until live reports
+  v02.11.18. Console also reports external `gtag`, Elementor checklist,
+  REST-404, and Angie errors; see `ERRORS.md` EJ-057/EJ-058.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
