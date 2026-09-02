@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.14`
+- Plugin: `v02.11.15`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -16,6 +16,12 @@
   treat AI Vision as a bounded quality gate: screenshot plus scoped JSON/DOM
   review can trigger at most two repair passes, then rollback; targeted patches
   stay advisory. Read `ERRORS.md` before every change.
+- v02.11.15: The Elementor chat keeps the training-oriented selected/generated
+  JSON envelopes separate from a dedicated paste-ready clipboard action. The
+  latter emits only `{type: "elementor", siteurl: "", elements: [...]}` for
+  direct Elementor paste workflows, while the original envelopes remain
+  available for debugging and teaching. The action is client-side only and
+  does not bypass server validation or Elementor write transactions.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor

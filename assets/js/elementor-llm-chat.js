@@ -62,10 +62,15 @@
     copySelection.className = 'wpae-llm-icon-button wpae-llm-copy-selection';
     copySelection.type = 'button';
     addIcon(copySelection, 'eicon-copy', strings.copySelection);
+    var copySelectionPasteReady = document.createElement('button');
+    copySelectionPasteReady.className = 'wpae-llm-icon-button wpae-llm-copy-selection-paste-ready';
+    copySelectionPasteReady.type = 'button';
+    addIcon(copySelectionPasteReady, 'eicon-library-open', strings.copyPasteReady);
     var headActions = document.createElement('div');
     headActions.className = 'wpae-llm-head-actions';
     headActions.appendChild(copy);
     headActions.appendChild(copySelection);
+    headActions.appendChild(copySelectionPasteReady);
     headActions.appendChild(close);
     head.appendChild(heading);
     head.appendChild(headActions);
@@ -384,8 +389,25 @@
                 setButtonLabel(copyButton, strings.copyError || 'Ошибка копирования');
             });
         });
+        var pasteReadyButton = document.createElement('button');
+        pasteReadyButton.type = 'button';
+        pasteReadyButton.className = 'wpae-llm-icon-button wpae-llm-copy-generated wpae-llm-copy-paste-ready';
+        addIcon(pasteReadyButton, 'eicon-library-open', strings.copyPasteReady);
+        pasteReadyButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            var pasteReady = buildPasteReadyPayload(elements);
+            if (!pasteReady) return;
+            copyText(JSON.stringify(pasteReady, null, 2)).then(function () {
+                setButtonLabel(pasteReadyButton, strings.pasteReadyCopied);
+                window.setTimeout(function () { setButtonLabel(pasteReadyButton, strings.copyPasteReady); }, 1600);
+            }).catch(function () {
+                setButtonLabel(pasteReadyButton, strings.copyError || 'Ошибка копирования');
+            });
+        });
         content.appendChild(code);
         content.appendChild(copyButton);
+        content.appendChild(pasteReadyButton);
         spoiler.appendChild(summary);
         spoiler.appendChild(content);
         messages.appendChild(spoiler);
@@ -444,6 +466,30 @@
             window.setTimeout(function () { setButtonLabel(copySelection, strings.copySelection); }, 1600);
         }).catch(function () {
             addMessage('assistant', strings.selectionCopyError || strings.copyError);
+        });
+    }
+    function buildPasteReadyPayload(elements) {
+        if (!Array.isArray(elements) || !elements.length) return null;
+        return {
+            type: 'elementor',
+            siteurl: '',
+            elements: elements
+        };
+    }
+    function copySelectedPasteReadyJson() {
+        var models = copySelectionModels();
+        if (!models.length) {
+            addMessage('assistant', strings.selectionEmpty);
+            return;
+        }
+        var pasteReady = buildPasteReadyPayload(models.map(serializeSelectedModel));
+        if (!pasteReady) return;
+        copyText(JSON.stringify(pasteReady, null, 2)).then(function () {
+            setButtonLabel(copySelectionPasteReady, strings.pasteReadyCopied);
+            addMessage('assistant', strings.pasteReadyCopied);
+            window.setTimeout(function () { setButtonLabel(copySelectionPasteReady, strings.copyPasteReady); }, 1600);
+        }).catch(function () {
+            addMessage('assistant', strings.copyError || 'Ошибка копирования');
         });
     }
     function selectedElements() {
@@ -1348,6 +1394,7 @@
     close.addEventListener('click', function () { setOpen(false); });
     copy.addEventListener('click', copyChatLog);
     copySelection.addEventListener('click', copySelectedJson);
+    copySelectionPasteReady.addEventListener('click', copySelectedPasteReadyJson);
     input.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
             event.preventDefault();

@@ -54,6 +54,8 @@ function wpae_enqueue_elementor_llm_chat(): void {
             'copied' => 'JSON-лог скопирован',
             'copySelection' => 'Копировать JSON выделенного',
             'selectionCopied' => 'JSON выделенного скопирован',
+            'copyPasteReady' => 'Копировать JSON для вставки в Elementor',
+            'pasteReadyCopied' => 'JSON для вставки в Elementor скопирован',
             'selectionEmpty' => 'Выделите элемент в Elementor и повторите.',
             'selectionCopyError' => 'Не удалось скопировать JSON выделенного.',
             'copyError' => 'Не удалось скопировать текст.',
