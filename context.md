@@ -77,6 +77,12 @@
   advisory response has `quality_failed`; the screenshot, scoped DOM/JSON, and
   Impeccable review remain visible evidence for deciding whether a new repair
   is actually needed.
+- v02.10.94: Library retrieval now enforces the requested block archetype
+  against the stored category. A content-only benefits brief could otherwise
+  select a Team fixture because shared words and source preference outweighed
+  the intended composition; only matching categories, or explicitly tagged
+  `custom` records, are now eligible. Local contract checks and PHP lint pass;
+  fresh Browser Use validation must cover every supported block type.
 - v02.10.93: Trusted pair-based library adaptation now removes stale source
   copy after mapping requested content, and long CTA sentences are compacted
   to readable button labels. This prevents English template titles, prices,

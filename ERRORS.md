@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-025: Content fidelity accepted a library block of the wrong type
+
+- **Observed:** A content-only benefits generation selected `Team c1429` and
+  rendered the requested copy inside a team/image composition. Vision reported
+  duplicate headings, empty space, and no usable benefits grid, while the
+  content gate passed because the requested words were present.
+- **Root cause:** Library retrieval ranked shared prompt tokens and the
+  CopyElement preference without enforcing the requested archetype against the
+  stored category. Content fidelity checked text, but not composition type.
+- **Fix:** v02.10.94 filters known archetypes to matching library categories;
+  only explicitly tagged `custom` records can match without a canonical
+  category. A wrong-type library fixture can no longer replace the native
+  fallback for a content-only request.
+- **Regression status:** Local contract tests, PHP lint, and diff check pass.
+  Browser Use must show each supported block type selecting a matching
+  template or a type-specific native fallback before this issue is closed.
+
 ## EJ-023: Advisory editor Vision still rolled back valid writes
 
 - **Observed:** A live Hero screenshot showed a populated photo, readable

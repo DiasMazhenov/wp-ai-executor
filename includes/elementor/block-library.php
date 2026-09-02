@@ -658,7 +658,23 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     }
 
     $prompt_tokens = wpae_block_library_retrieval_tokens( $message );
-    $aliases = wpae_block_library_retrieval_aliases( sanitize_key( $archetype ) );
+    $archetype = sanitize_key( $archetype );
+    $aliases = wpae_block_library_retrieval_aliases( $archetype );
+    $category_aliases = [
+        'hero' => [ 'hero', 'home' ],
+        'benefits' => [ 'benefits', 'courses' ],
+        'pricing' => [ 'pricing' ],
+        'testimonials' => [ 'testimonials', 'reviews' ],
+        'team' => [ 'team' ],
+        'about' => [ 'about' ],
+        'faq' => [ 'faq' ],
+        'process' => [ 'process', 'events' ],
+        'portfolio' => [ 'portfolio', 'blog', 'project' ],
+        'carousel' => [ 'carousel' ],
+        'mega_menu' => [ 'mega-menu', 'navigation', 'header' ],
+        'cta' => [ 'cta', 'contact', 'form', 'footer', '404' ],
+    ];
+    $allowed_categories = $category_aliases[ $archetype ] ?? [];
     $prompt_requests_vocario = (bool) preg_match( '/\b(?:vocario|template[\s-]*kit)\b/iu', $message );
     $posts = get_posts( [
         'post_type' => WPAE_BLOCK_LIBRARY_POST_TYPE,
@@ -697,6 +713,15 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
 
         $category = sanitize_key( (string) ( $record['category'] ?? '' ) );
         $tags = array_map( 'sanitize_key', (array) ( $record['tags'] ?? [] ) );
+        if ( ! empty( $allowed_categories ) ) {
+            $type_match = in_array( $category, $allowed_categories, true );
+            if ( ! $type_match && $category === 'custom' ) {
+                $type_match = ! empty( array_intersect( $allowed_categories, $tags ) );
+            }
+            if ( ! $type_match ) {
+                continue;
+            }
+        }
         $candidate_text = implode( ' ', [
             $category,
             implode( ' ', $tags ),
