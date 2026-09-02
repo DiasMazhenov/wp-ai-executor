@@ -1,5 +1,14 @@
 # План WP AI Executor
 
+## v02.10.77
+
+- Исправить приоритет классификации: явный brief «Наша команда/Команда» должен
+  выбирать Team до общих hero-сигналов, не ломая About с фразой «оставляем
+  команде».
+- Пройти lint/контрактные тесты, доставить через WP Pusher и повторить Team,
+  затем Image Box и Testimonials через Browser Use со screenshot, scoped JSON,
+  DOM, AI Vision и `design-taste-frontend`.
+
 ## v02.10.76
 
 - Удалить из trusted About пустые вложенные контейнеры без видимых виджетов или

@@ -3,6 +3,21 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-011: Explicit Team brief was routed to the Hero template
+
+- **Observed:** The v02.10.76 natural Team brief began with «Наша команда»,
+  but the generated block used the Vocario Hero composition, including a
+  «ПЕРВЫЙ ЭКРАН» badge, oversized empty hero surface and one flat paragraph.
+  Vision scored it 60/62 and reported missing team cards and a floating graphic.
+- **Root cause:** The generic Hero detector matched «главное» in the Team
+  description before the later Team detector ran.
+- **Fix:** v02.10.77 recognizes an explicit Team heading at the start of the
+  content brief before generic Hero signals; incidental About mentions remain
+  unaffected.
+- **Regression status:** Contract coverage added. Fresh Browser Use Team,
+  Image Box and Testimonials generation with scoped JSON/DOM, screenshot, AI
+  Vision and design-taste review is required.
+
 ## EJ-010: Trusted About kept empty placeholder layers and negative offset
 
 - **Observed:** The v02.10.75 About c70 generation loaded the replacement photo,

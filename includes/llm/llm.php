@@ -617,6 +617,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu', $message ) ) {
             return 'carousel';
         }
+        if ( preg_match( '/(?:^|[.!?\n]\s*)(?:наша\s+)?команд\w*\b/iu', trim( $message ) ) ) {
+            return 'team';
+        }
         if ( preg_match( '/\b(первый экран|hero|хиро|обложк|главн\w*|home)\b|школ\w*\s+публичн\w*\s+выступлен\w*/iu', $message ) ) {
             return 'hero';
         }

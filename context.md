@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.76`
+- Plugin: `v02.10.77`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -69,6 +69,13 @@ library geometry also clears negative top/right/bottom/left margins, including
 the source `-262px` vertical offset that created detached empty placeholder
 layers. Fresh Browser Use validation is required for About and every remaining
 trusted block.
+
+Release v02.10.77 fixes explicit Team briefs being misclassified as Hero when
+their descriptions contain words such as «главное». A brief beginning with
+«Наша команда» or «Команда» now selects the Team archetype before generic hero
+signals, while incidental mentions such as «оставляем команде» remain eligible
+for About. The Team block must be re-tested through Browser Use with scoped JSON,
+DOM, screenshot, AI Vision and `design-taste-frontend`.
 
 The v02.10.74 package metadata is synchronized in both the WordPress plugin
 header and `WPAE_VERSION`, so the live Elementor chat can verify that WP Pusher
