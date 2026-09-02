@@ -2751,7 +2751,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     if ( count( $template_elements ) > 1 ) {
         $root_patterns = [
             'hero' => '/hero|banner|header|первый|обложк/iu',
-            'benefits' => '/benefit|feature|why\s+choose(?:\s+us)?|почему|опор|преимуществ|выгод/iu',
+            'benefits' => '/benefit|feature|course|courses|обуч|why\s+choose(?:\s+us)?|почему|опор|преимуществ|выгод/iu',
             'pricing' => '/pricing|price|тариф|стоимост|пакет/iu',
             'testimonials' => '/testimonial|review|отзыв|клиент/iu',
             'team' => '/team|команд|сотрудник|специалист/iu',

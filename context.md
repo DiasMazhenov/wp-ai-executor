@@ -84,8 +84,11 @@
 - v02.10.96: Explicit benefits/features headings now take priority over
   incidental process words such as `этап` inside the description. This keeps
   content-only benefits briefs on the benefits archetype before retrieval and
-  prevents a wrong process/template composition. Fresh Browser Use visual
-  matrix validation remains required for every supported block type.
+  prevents a wrong process/template composition. Benefits retrieval also
+  recognizes the `Courses` root inside multi-section Vocario files instead of
+  taking the first `Hero` root. The plugin header and `WPAE_VERSION` are
+  synchronized to this release. Fresh Browser Use visual matrix validation
+  remains required for every supported block type.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

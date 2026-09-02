@@ -13,8 +13,9 @@ before making a new change to the plugin.
   recognizing an explicit benefits section heading, so `этап` could override
   the user's declared block type.
 - **Fix:** v02.10.96 recognizes explicit benefits/features headings before the
-  generic process branch. The local classifier-order contract now protects the
-  priority.
+  generic process branch and matches the `Courses` root inside a multi-section
+  Vocario file. The plugin version metadata is synchronized to the release;
+  local contracts protect both priorities.
 - **Regression status:** Node contract test, PHP lint, and diff check pass.
   Browser Use must confirm the fresh benefits root uses the benefits category,
   contains its requested copy, and passes the screenshot/Impeccable review.
@@ -31,6 +32,19 @@ before making a new change to the plugin.
   unavailable. Provider health remains an open deployment check.
 - **Regression status:** Must be tracked separately from visual acceptance;
   a generation is not accepted without screenshot plus Impeccable review.
+
+## EJ-029: Benefits retrieval selected the first Hero root in a kit file
+
+- **Observed:** The request was classified as `benefits`, but the selected
+  Vocario file contained several top-level sections and the generated JSON had
+  `_title: Hero` instead of the Courses/benefits composition.
+- **Root cause:** Internal root scoring recognized benefits vocabulary but did
+  not include `course/courses/обуч`, so the first root won on widget count.
+- **Fix:** v02.10.96 expands the benefits root matcher to include course
+  vocabulary, allowing the `Courses` section to win inside Vocario files.
+- **Regression status:** Local contract checks pass after release bump.
+  Browser Use must confirm the generated root title/category and rendered
+  benefits cards before this is closed.
 
 ## EJ-025: Content fidelity accepted a library block of the wrong type
 
