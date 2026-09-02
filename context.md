@@ -220,6 +220,24 @@
   before another generation is accepted. A structurally valid JSON or a
   provider response alone is never a successful visual result.
 
+## Latest live test matrix
+
+- 2026-09-03: Content-only `Отзывы клиентов` rendered with a Vision score of
+  88, but Impeccable rejected the visual hierarchy because card roles became
+  larger than the section heading.
+- 2026-09-03: `Тарифы` scored 65, 45, and 60 through two bounded repairs; the
+  pricing cards and descriptions remained missing or clipped, so the result
+  was rolled back.
+- 2026-09-03: `Частые вопросы` scored 68 and 62; FAQ pairs collapsed into one
+  text block and the repair ended with `Failed to fetch`, so it was rolled back.
+- 2026-09-03: `Кейсы клиентов` and `Как мы работаем` were rejected before
+  Elementor update for violating the semantic plan. `Контакты` scored 45 and
+  68 after repair; its details were clumped at the bottom of an empty canvas
+  and the final version was rolled back.
+- No block in this matrix is accepted until the separate Impeccable review
+  passes; the next implementation target is explicit semantic mapping and
+  native repeated-unit builders for unsupported content-only archetypes.
+
 Release v02.10.78 fixes three trusted-library adaptation gaps found while
 testing the remaining CopyElement blocks. Team briefs in the natural
 «name, role. description» format now map to separate source member cards.

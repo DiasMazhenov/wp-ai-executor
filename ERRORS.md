@@ -58,6 +58,25 @@ before making a new change to the plugin.
   CTA shell, native Flex structure, and a passing screenshot -> Vision/design-taste
   -> prompt comparison loop.
 
+## EJ-050: Unsupported content-only block types reject or use a sparse shell
+
+- **Observed:** On 2026-09-03 Browser Use tests for `Кейсы клиентов` and
+  `Как мы работаем` were rejected before Elementor update because the fallback
+  violated the semantic plan. `Контакты` was written, but AI Vision scored the
+  first version 45 and the repaired version 68: the details were clumped at the
+  bottom of a mostly empty canvas. Two bounded repairs ended with rollback.
+- **Root cause:** Content-only briefs outside the tested Hero, benefits, Team,
+  reviews, pricing, and FAQ paths are not mapped to stable semantic archetypes.
+  The current behavior alternates between rejecting the command and emitting a
+  generic sparse shell instead of failing before layout generation.
+- **Fix:** Open. Register explicit semantic plans and native fallback builders
+  for case-list, process-step, and contact-information blocks. If no plan is
+  available, reject before provider write and do not emit a generic visual
+  shell.
+- **Regression status:** Live tests must prove the requested repeated units,
+  content grouping, bounded whitespace, native Flex structure, and the full
+  screenshot -> AI Vision -> Impeccable/design-taste -> prompt comparison loop.
+
 ## EJ-046: Generation quality checks were disconnected
 
 - **Observed:** Provider output could drift from a selected library composition,
