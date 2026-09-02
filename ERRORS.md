@@ -162,19 +162,23 @@ before making a new change to the plugin.
   Impeccable -> prompt comparison loop. Do not accept `HTTP 500`, stale-canvas
   screenshots, or provider-only success as generation success.
 
-## EJ-060: WP Pusher admin page is unavailable during deployment check
+## EJ-060: WordPress admin returns Internal Server Error during deployment check
 
 - **Observed:** On 2026-09-03 a fresh Browser Use tab opened the WP Pusher
   plugins admin page and received `Internal Server Error` from the server.
-  The existing hook-error tab remains failed as well; the Elementor tab was
-  kept open and was not used as a deployment workaround.
-- **Root cause:** The deployment integration is currently unavailable on the
-  site. The server response does not identify whether the failure is WP
-  Pusher, PHP, or hosting configuration, so this cannot be attributed to the
-  plugin source without server logs.
-- **Regression status:** Open. Restore the WP Pusher admin page/package first,
-  confirm the live plugin reports `v02.11.19`, then rerun photo generation and
-  its screenshot -> Vision/design-taste/Impeccable validation loop.
+  The existing hook-error tab remains failed as well. Fresh requests to the
+  `wp-ai-executor` settings page and the ordinary WordPress
+  `/wp-admin/plugins.php` control page returned the same error. The Elementor
+  tab was kept open and was not used as a deployment workaround.
+- **Root cause status:** Current evidence points to a site-wide
+  WordPress/PHP/hosting or server-configuration failure, not specifically the
+  WP Pusher screen or our plugin. The source has no WP Pusher-specific hooks.
+  The generic 500 response cannot identify the exact fatal without server
+  PHP/web-server logs or WordPress Recovery Mode details.
+- **Regression status:** Open. Restore a baseline WordPress admin page first,
+  confirm the live plugin reports `v02.11.19` (live currently reports
+  `v02.11.16`), then rerun photo generation and its screenshot ->
+  Vision/design-taste/Impeccable validation loop.
 
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 

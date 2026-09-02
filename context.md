@@ -74,8 +74,13 @@
   Vision/Impeccable -> comparison loop.
 - 2026-09-03 deployment probe: a fresh Browser Use tab opened the WP Pusher
   plugins admin page and received server `Internal Server Error`; the prior
-  hook-error tab is also still failed. The Elementor tab was preserved. This
-  is recorded as `ERRORS.md` EJ-060; do not treat GitHub push as live deploy.
+  hook-error tab is also still failed. Fresh requests to the plugin settings
+  page and ordinary WordPress `/wp-admin/plugins.php` returned the same error.
+  The control test points to a site-wide WordPress/PHP/hosting or server
+  configuration outage, not specifically our plugin or WP Pusher; exact cause
+  requires server-side logs or Recovery Mode. The Elementor tab was preserved.
+  This is recorded as `ERRORS.md` EJ-060; do not treat GitHub push as live
+  deploy. Live is still `v02.11.16`; repository is `v02.11.19`.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
