@@ -3,6 +3,24 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-015: Trusted hero source preserved decorative geometry after adaptation
+
+- **Observed:** v02.10.80 generated a native Flex hero from the Vocario source,
+  but the screenshot still showed the source white panel, blue decorative
+  shape, black circle, oversized spacing, and weak hierarchy. AI Vision scored
+  the result `62`; Impeccable also rejected the composition.
+- **Root cause:** Disabling trusted preservation only skipped the preservation
+  marker. The source hero tree still passed through generic wrappers, so its
+  descendant geometry, decoration, and third-party widgets survived until the
+  final native conversion.
+- **Fix:** v02.10.81 adds a trusted-hero adapter that keeps only the root photo,
+  rebuilds requested content as native heading/text-editor/button widgets in a
+  transparent Flex shell, puts the outlined badge above the heading, and
+  applies a black semi-transparent native Background Overlay.
+- **Regression status:** Local contract tests and PHP lint pending. Fresh live
+  Browser Use validation must pass the screenshot -> Vision/design-taste ->
+  prompt comparison loop before the 10-iteration run continues.
+
 ## EJ-014: Vision repair could be lost after Elementor reload
 
 - **Observed:** Iteration 1 received Vision score 60 with major layout defects,

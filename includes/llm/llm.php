@@ -1818,7 +1818,7 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
     return $elements;
 }
 
-function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0 ): array {
+function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false ): array {
     $to_alignment = static function ( $value ): ?string {
         $value = strtolower( trim( (string) $value ) );
         if ( in_array( $value, [ 'left', 'center', 'right' ], true ) ) {
@@ -2026,9 +2026,153 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         unset( $node );
     };
 
+    $content_units = wpae_llm_content_units( $message );
+    $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image ): array {
+        if ( count( $units ) < 2 ) {
+            return $root;
+        }
+
+        $title = (string) array_shift( $units );
+        $cta = '';
+        $body = [];
+        foreach ( $units as $unit ) {
+            if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь)\b/iu', $unit ) ) {
+                $cta = $unit;
+                continue;
+            }
+            $body[] = $unit;
+        }
+
+        $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+        $has_photo = $has_background_image( $root_settings );
+        foreach ( [
+            'width', 'width_tablet', 'width_mobile', '_element_width', '_element_width_tablet',
+            '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet',
+            '_element_custom_width_mobile', 'min_height_tablet', 'min_height_mobile', 'height',
+            'height_tablet', 'height_mobile', 'background_overlay_image', 'background_overlay_color_b',
+            'background_overlay_color_b_stop', 'background_overlay_opacity_b', 'background_hover_background',
+            'background_hover_color', 'background_hover_image', 'background_video_fallback',
+            'background_slideshow_gallery', 'background_overlay_video_fallback',
+            'background_overlay_slideshow_gallery', 'grid_columns_grid', 'grid_columns_grid_tablet',
+            'grid_columns_grid_mobile', 'grid_rows_grid', 'grid_gaps', 'grid_align_items',
+        ] as $key ) {
+            unset( $root_settings[ $key ] );
+        }
+        $root_settings['container_type'] = 'flex';
+        $root_settings['content_width'] = 'full';
+        $root_settings['background_background'] = 'classic';
+        $root_settings['background_color'] = 'transparent';
+        $root_settings['flex_direction'] = 'column';
+        $root_settings['flex_direction_tablet'] = 'column';
+        $root_settings['flex_direction_mobile'] = 'column';
+        $root_settings['flex_wrap'] = 'nowrap';
+        $root_settings['flex_wrap_tablet'] = 'nowrap';
+        $root_settings['flex_wrap_mobile'] = 'nowrap';
+        $root_settings['flex_justify_content'] = 'center';
+        $root_settings['flex_align_items'] = 'stretch';
+        $root_settings['flex_align_items_tablet'] = 'stretch';
+        $root_settings['flex_align_items_mobile'] = 'stretch';
+        $root_settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+        $root_settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+        $root_settings['padding'] = [ 'unit' => 'rem', 'top' => '4', 'right' => '4', 'bottom' => '4', 'left' => '4', 'isLinked' => false ];
+        $root_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '2.5', 'right' => '1.25', 'bottom' => '2.5', 'left' => '1.25', 'isLinked' => false ];
+        $root_settings['min_height'] = [ 'unit' => 'vh', 'size' => 72, 'sizes' => [] ];
+        $root_settings['min_height_mobile'] = [ 'unit' => 'vh', 'size' => 78, 'sizes' => [] ];
+        if ( $has_photo ) {
+            $root_settings['background_overlay_background'] = 'classic';
+            $root_settings['background_overlay_color'] = '#000000';
+            $root_settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
+        }
+
+        $root_id = (string) ( $root['id'] ?? 'wpae-hero' );
+        $badge = wpae_llm_badge_widget( $root_id . '-hero-badge', 'hero' );
+        $text_color = $has_photo ? '#ffffff' : '#111827';
+        $widget = static function ( string $id, string $type, array $settings ): array {
+            return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
+        };
+        $shell_settings = [
+            '_css_classes' => 'wpae-generated-content-shell wpae-hero-content-shell',
+            'content_width' => 'full',
+            'flex_direction' => 'column',
+            'flex_direction_mobile' => 'column',
+            'flex_wrap' => 'nowrap',
+            'flex_justify_content' => 'center',
+            'flex_align_items' => 'flex-start',
+            'flex_align_items_mobile' => 'flex-start',
+            'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
+            'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+            'background_background' => 'classic',
+            'background_color' => 'transparent',
+            'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            '_element_width' => 'initial',
+            '_element_width_mobile' => 'initial',
+            '_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            'custom_css' => 'selector { width: min(100%, 54rem); max-width: 100%; align-self: flex-start; } @media (max-width: 767px) { selector { width: 100%; } }',
+        ];
+        $heading_settings = [
+            'title' => $title,
+            'header_size' => 'h1',
+            'align' => 'left',
+            'align_mobile' => 'left',
+            'title_color' => $text_color,
+            'typography_typography' => 'custom',
+            'typography_font_size' => [ 'unit' => 'rem', 'size' => 3.8 ],
+            'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 3.1 ],
+            'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 2.2 ],
+            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.05 ],
+            'typography_line_height_tablet' => [ 'unit' => 'em', 'size' => 1.08 ],
+            'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.1 ],
+            'typography_font_weight' => '700',
+            'custom_css' => 'selector .elementor-heading-title { text-wrap: balance; }',
+        ];
+        $shell_elements = [ $widget( $root_id . '-hero-heading', 'heading', $heading_settings ) ];
+        if ( ! empty( $body ) ) {
+            $shell_elements[] = $widget( $root_id . '-hero-copy', 'text-editor', [
+                'editor' => implode( ' ', $body ),
+                'align' => 'left',
+                'align_mobile' => 'left',
+                'text_color' => $text_color,
+                'typography_typography' => 'custom',
+                'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.15 ],
+                'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1 ],
+                'typography_line_height' => [ 'unit' => 'em', 'size' => 1.5 ],
+            ] );
+        }
+        if ( $cta !== '' ) {
+            $button_settings = [
+                'text' => $cta,
+                'align' => 'left',
+                'align_mobile' => 'left',
+                'link' => [ 'url' => '#contact' ],
+                'button_text_color' => '#ffffff',
+                'button_hover_text_color' => '#ffffff',
+                'background_color' => '#d65a3a',
+                'button_background_hover_color' => '#b7472e',
+            ];
+            wpae_llm_normalize_generated_button_settings( $button_settings );
+            $button_settings['button_text_color'] = '#ffffff';
+            $button_settings['button_hover_text_color'] = '#ffffff';
+            $shell_elements[] = $widget( $root_id . '-hero-cta', 'button', $button_settings );
+        }
+
+        $root['settings'] = $root_settings;
+        $root['elements'] = [
+            $badge,
+            [ 'id' => $root_id . '-hero-content-shell', 'elType' => 'container', 'settings' => $shell_settings, 'elements' => $shell_elements ],
+        ];
+        $changed++;
+        return $root;
+    };
+
     foreach ( $elements as $index => $root ) {
         if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
             continue;
+        }
+        if ( $clean_trusted_source && count( $content_units ) >= 2 ) {
+            $elements[ $index ] = $clean_hero( $root, $content_units, $changed );
+            $root = $elements[ $index ];
         }
         $root_children = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
         $content_shell_index = null;
@@ -5499,7 +5643,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $hero_composition_changed = 0;
         if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
-            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed );
+            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ) );
         }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {

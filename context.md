@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.80`
+- Plugin: `v02.10.81`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -21,6 +21,10 @@
 - v02.10.80: pending provider and Vision retries survive delayed Elementor
   boot because readiness is checked before clearing session state; retry state
   remains available for up to ten minutes.
+- v02.10.81: trusted Vocario hero adaptation keeps the source photo but
+  rebuilds the copy as a clean native Flex composition, removes descendant
+  decorative surfaces and fixed geometry, places the outlined badge above the
+  heading, and applies a black semi-transparent native photo overlay.
 
 ## Mandatory error journal workflow
 
