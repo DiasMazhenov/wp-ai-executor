@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.16`
+- Plugin: `v02.11.17`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -34,6 +34,11 @@
   block; real received quality failures remain blocking and still use bounded
   repair/rollback. This release requires a fresh live screenshot and separate
   Impeccable review.
+- v02.11.17: Pricing classification now runs before the team keyword rule, so
+  a tariff named «Команда» cannot route the whole request through the team
+  composition. This fixes mixed team/pricing fallback trees observed in live
+  Browser Use testing. The page currently contains historical test sections;
+  they must be treated as test contamination, not as the new root's design.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor

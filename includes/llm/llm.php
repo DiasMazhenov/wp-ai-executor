@@ -633,6 +633,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu', $message ) ) {
             return 'carousel';
         }
+        if ( preg_match( '/₸|\$|€|₽|\b(цена|стоимост|тариф|пакет|от\s+\d+)/iu', $message ) ) {
+            return 'pricing';
+        }
         if ( preg_match( '/(?:^|[.!?\n]\s*)(?:наша\s+)?команд\w*\b/iu', trim( $message ) ) ) {
             return 'team';
         }
@@ -657,9 +660,6 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         }
         if ( preg_match( '/\?|؟/u', $message ) ) {
             return 'faq';
-        }
-        if ( preg_match( '/₸|\$|€|₽|\b(цена|стоимост|тариф|пакет|от\s+\d+)/iu', $message ) ) {
-            return 'pricing';
         }
         if ( preg_match( '/\b(отзыв\w*|рекомендац\w*|понравил\w*|получил\w*)\b/iu', $normalized ) ) {
             return 'testimonials';

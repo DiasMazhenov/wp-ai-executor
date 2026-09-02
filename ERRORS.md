@@ -54,6 +54,20 @@ before making a new change to the plugin.
 - **Regression status:** Re-run the live pricing prompt and verify every tier
   title, price, description, native Flex card, and screenshot review.
 
+## EJ-054: Pricing request routed through team composition
+
+- **Observed:** A pricing brief containing the tier «Команда» produced a root
+  that mixed `КОМАНДА`, team copy, and pricing cards. The live page accumulated
+  several such roots during repair/testing.
+- **Root cause:** The content-only archetype detector checked sentence-start
+  matches for `команда` before checking currency and tariff markers. A tier
+  label after a period therefore won over the explicit pricing intent.
+- **Fix:** v02.11.17 checks pricing markers before the team rule and adds a
+  source-order regression assertion.
+- **Regression status:** Deploy, generate a clean pricing block, inspect its
+  scoped JSON/DOM and screenshot, then run Vision/Impeccable review. Existing
+  historical test roots are not evidence about the new root.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed
