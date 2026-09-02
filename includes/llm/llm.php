@@ -4450,8 +4450,9 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             $is_bento_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
             $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
-            if ( ! $inside_bento_grid && ( $node['elType'] ?? '' ) === 'widget' && $widget_type === 'heading' && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
-                $heading_key = $normalize_label( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) );
+            if ( ! $inside_bento_grid && ( $node['elType'] ?? '' ) === 'widget' && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
+                $text_key = $widget_type === 'heading' ? 'title' : 'editor';
+                $heading_key = $normalize_label( wp_strip_all_tags( (string) ( $settings[ $text_key ] ?? '' ) ) );
                 $heading_without_prefix = preg_replace( '/^(?:наша|наш|наше|наши|новая|новые|избранные|главное)\s+/u', '', $heading_key );
                 if ( $heading_key === $badge_key || $heading_without_prefix === $badge_key ) {
                     array_splice( $nodes, $index, 1 );

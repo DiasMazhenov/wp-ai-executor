@@ -10,10 +10,12 @@ before making a new change to the plugin.
   hierarchy and excess whitespace. The editor screenshot also dimmed adjacent
   cards while one container was selected.
 - **Root cause:** Visual grammar enforced the badge but did not remove a
-  semantically equivalent section heading. The dimming was Elementor's
-  selection scrim, not `background_overlay_color` written by the plugin.
-- **Fix:** v02.11.02 removes an equivalent heading outside repeatable bento
-  cards while preserving the required outlined badge and the card headings.
+  semantically equivalent section heading or paragraph. The dimming was
+  Elementor's selection scrim, not `background_overlay_color` written by the
+  plugin.
+- **Fix:** v02.11.03 removes an equivalent heading or paragraph outside
+  repeatable bento cards while preserving the required outlined badge and the
+  card headings.
 - **Regression status:** PHP lint, contract tests and a fresh Team Browser Use
   generation must pass; the live editor must remain available after the write.
 
