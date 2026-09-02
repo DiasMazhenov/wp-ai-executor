@@ -307,7 +307,12 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
 }
 
 function wpae_llm_is_action_request( string $message ): bool {
-    if ( preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message ) ) {
+    // Long content-only briefs may start with an interrogative word without
+    // being a question, for example "Что получают наши клиенты.".
+    if (
+        preg_match( '/^\s*(как|что|почему|зачем|объясни|подскажи)\b/ui', $message )
+        && ( preg_match( '/[?؟]\s*$/u', $message ) || strlen( trim( $message ) ) < 80 )
+    ) {
         return false;
     }
     return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|скругл\w*|закругл\w*|округл\w*|радиус\w*|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
@@ -5255,7 +5260,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $context = [
             'post_id' => absint( $context['post_id'] ?? 0 ),
-            'selection_scope' => 'selected_element_and_descendants',
+            'selection_scope' => ! empty( $selected_elements ) ? 'selected_element_and_descendants' : 'page',
             'selected_elements' => $selected_elements,
         ];
         $messages[0]['content'] .= "\nКонтекст редактора: " . wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );

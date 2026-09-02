@@ -3,6 +3,24 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-013: Content-only briefs could become advisory text and stale previews
+
+- **Observed:** The content-only prompt `Что получают наши клиенты...` was
+  returned as an explanatory plan instead of generating a block. Earlier
+  retries also left three repeated hero roots visible, with the rendered button
+  still green/blue while the generated JSON specified orange/white.
+- **Root cause:** The action detector treated any brief beginning with `Что`
+  as advisory, even without a question mark. The chat context always declared
+  a selected-element scope when no elements were selected. The retry path
+  called `window.location.reload()` and immediately submitted again, which can
+  be ignored by an embedded Elementor browser and preserve stale preview DOM.
+- **Fix:** v02.10.79 limits the advisory opener rule to actual questions or
+  short messages, reports page context for an empty selection, refreshes the
+  Elementor preview before a repair retry, and blocks overlapping requests.
+- **Regression status:** Local JS contract tests and PHP lint pass. Fresh live
+  10-iteration Browser Use validation with screenshot, scoped JSON/DOM, Vision,
+  and `design-taste-frontend` review is pending after deployment.
+
 ## EJ-012: Trusted Team and Image Box briefs lost source composition
 
 - **Observed:** Team content-only generation selected a competing trusted

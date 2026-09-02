@@ -309,7 +309,13 @@
         status.textContent = strings.sending;
         addMessage('user', pending.message);
         addMessage('assistant', 'Повторяю генерацию после полной перезагрузки Elementor.');
-        window.setTimeout(function () { request(pending.message, false, pending.options || {}); }, 0);
+        // Embedded editors may ignore window.location.reload(); refresh the
+        // preview first so rolled-back roots cannot survive into the repair.
+        window.setTimeout(function () {
+            refreshElementorPreview().catch(function () { return false; }).then(function () {
+                request(pending.message, false, pending.options || {});
+            });
+        }, 0);
     }
     function copyText(text) {
         var fallbackCopy = function () {
@@ -1048,7 +1054,10 @@
             return { ok: false, status: 0, error: error.message || 'Network error.' };
         });
     }
+    var requestInFlight = false;
     function request(message, retried, options) {
+        if (requestInFlight) return Promise.resolve(false);
+        requestInFlight = true;
         options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
         if (repairDepth === 0) liveGeneratedRootIds = [];
@@ -1227,7 +1236,8 @@
             addMessage('assistant', strings.error + ': ' + error.message);
             status.textContent = strings.error;
         }).finally(function () {
-            send.disabled = false;
+            requestInFlight = false;
+            send.disabled = Boolean(readProviderRetry() || readVisionRepair());
         });
     }
 
@@ -1252,6 +1262,10 @@
         if (!config.ready) {
             addMessage('assistant', strings.disabled);
             status.textContent = strings.disabled;
+            return;
+        }
+        if (readProviderRetry() || readVisionRepair()) {
+            addMessage('assistant', 'Ожидаю завершения автоматической проверки и перезагрузки Elementor.');
             return;
         }
         refreshSelectionHint();

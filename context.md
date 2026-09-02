@@ -2,12 +2,17 @@
 
 ## Current release
 
-- Plugin: `v02.10.78`
+- Plugin: `v02.10.79`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.10.79: content-only briefs beginning with `Что...` remain generation
+  requests unless they are short questions; empty selection uses page context;
+  Vision repair refreshes the preview before retry because embedded Elementor
+  can ignore `window.location.reload()`. Fresh live visual validation remains
+  mandatory after deployment.
 
 ## Mandatory error journal workflow
 
