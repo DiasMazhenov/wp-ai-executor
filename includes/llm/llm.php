@@ -4072,7 +4072,24 @@ function wpae_llm_remove_redundant_badge_label_content( array $elements, string 
 }
 
 function wpae_llm_promote_team_section_heading( array $elements, int &$changed = 0 ): array {
-    $walk = static function ( array &$nodes, bool $inside_bento_grid = false ) use ( &$walk, &$changed ): void {
+    $contains_team_heading = static function ( array $nodes ) use ( &$contains_team_heading ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            $text_key = $widget_type === 'heading' ? 'title' : ( $widget_type === 'text-editor' ? 'editor' : '' );
+            if ( ( $node['elType'] ?? '' ) === 'widget' && $text_key !== '' && wpae_llm_normalize_content_text( (string) ( $settings[ $text_key ] ?? '' ) ) === 'наша команда' ) {
+                return true;
+            }
+            if ( is_array( $node['elements'] ?? null ) && $contains_team_heading( $node['elements'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $walk = static function ( array &$nodes, bool $inside_bento_grid = false ) use ( &$walk, &$changed, $contains_team_heading ): void {
         foreach ( $nodes as &$node ) {
             if ( ! is_array( $node ) ) {
                 continue;
@@ -4107,6 +4124,16 @@ function wpae_llm_promote_team_section_heading( array $elements, int &$changed =
             }
             if ( is_array( $node['elements'] ?? null ) ) {
                 $walk( $node['elements'], $inside_bento_grid || $is_bento_grid );
+                if ( ! $inside_bento_grid && ( $node['elType'] ?? '' ) === 'container' && sanitize_key( (string) ( $settings['flex_direction'] ?? '' ) ) === 'row' && $contains_team_heading( $node['elements'] ) ) {
+                    foreach ( [ 'padding' => '24', 'padding_mobile' => '20' ] as $padding_key => $bottom ) {
+                        if ( ! is_array( $settings[ $padding_key ] ?? null ) || (string) ( $settings[ $padding_key ]['bottom'] ?? '' ) === $bottom ) {
+                            continue;
+                        }
+                        $settings[ $padding_key ]['bottom'] = $bottom;
+                        $changed++;
+                    }
+                    $node['settings'] = $settings;
+                }
             }
         }
         unset( $node );

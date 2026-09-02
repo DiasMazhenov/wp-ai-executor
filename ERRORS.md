@@ -35,6 +35,20 @@ before making a new change to the plugin.
   badge above H2, compact heading flow, Team side padding, no `icon-box`,
   preserved images, no overflow and a healthy Elementor iframe.
 
+## EJ-043: Team heading row kept excessive space before cards
+
+- **Observed:** v02.11.10 fixed the gap above the heading, but Vision still
+  scored the fresh Team result `68` and flagged the large gap between the H2
+  and the member cards.
+- **Root cause:** The trusted source heading row retained `padding-bottom: 70px`
+  on desktop and `50px` on mobile after heading promotion.
+- **Fix:** v02.11.11 detects the Team heading row and normalizes only its bottom
+  padding to `24px` desktop and `20px` mobile.
+- **Regression status:** Recheck with Browser Use using screenshot ->
+  Vision/design-taste -> prompt comparison -> scoped JSON and DOM. Require
+  compact badge/H2/card flow, parent side padding, no `icon-box`, preserved
+  images, no overflow and a healthy Elementor iframe.
+
 ## EJ-040: Preserved Team template lost parent side padding and heading tier
 
 - **Observed:** The live Team block rendered with `padding-left/right: 0px`,

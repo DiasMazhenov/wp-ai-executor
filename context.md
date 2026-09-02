@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.10`
+- Plugin: `v02.11.11`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -156,6 +156,10 @@
   padding, and the promoted section H2 uses the dark text token instead of the
   source's low-contrast gray. This keeps the outlined badge above a readable
   heading without changing the card composition.
+- v02.11.11: The Team heading row no longer keeps the source's excessive bottom
+  padding: a row containing the promoted section H2 uses `24px` desktop and
+  `20px` mobile before the card grid. Vision's remaining large heading-to-card
+  gap is therefore removed at the source container.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
