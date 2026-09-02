@@ -12,13 +12,18 @@ before making a new change to the plugin.
 - **Root cause:** v02.10.84-v02.10.87 compared the candidate only with the
   source root being normalized; the hero normalizer had no view of background
   URLs in the existing Elementor page.
-- **Fix:** v02.10.88 collects existing background URLs before hero
-  normalization and skips them while an unused relevant photo remains. When
-  the five-image pool is exhausted, normal rotation resumes. Existing saved
-  roots are intentionally left unchanged.
-- **Regression status:** Local contract tests and PHP lint pass. Fresh Browser
-  Use must show a new trusted hero using a photo not present in the existing
-  page pool when an unused candidate exists.
+- **Attempted fix:** v02.10.88 collected existing background URLs before hero
+  normalization and skipped them while an unused relevant photo remained. A
+  fresh Browser Use content-only generation then returned HTTP 500, so this
+  implementation was not accepted as a live fix.
+- **Fix:** v02.10.90 moves page-wide collection behind the existing
+  `wpae_get_elementor_data_for_post()` boundary, passes only a validated array
+  of background URLs to the hero normalizer, and skips used bundled photos while
+  an unused candidate remains. The v02.10.88 failure was caused by referencing
+  `$existing` from `wpae_llm_chat_request()`, where it was undefined.
+- **Regression status:** Contract tests, PHP lint, diff check, and a runtime
+  nested-tree rotation self-check pass. Fresh Browser Use generation remains
+  required before release acceptance.
 
 ## EJ-021: Booking CTA stayed as text in trusted hero generations
 

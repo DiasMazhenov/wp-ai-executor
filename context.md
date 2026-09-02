@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.88`
+- Plugin: `v02.10.90`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -53,11 +53,19 @@
   The live page showed varied new hero photos plus stale historical duplicate
   roots; those are separate saved test sections, not one image selected for all
   new generations.
-- v02.10.88: Trusted hero photo rotation now excludes every background URL
-  already present in the current Elementor page while unused images remain in
-  the relevant five-image pool. This prevents new hero generations from making
-  historical page duplicates look like one repeated photo; saved roots remain
-  untouched until explicitly removed.
+- v02.10.88: An attempted page-wide trusted-photo exclusion was delivered to
+  staging, but a fresh content-only hero request returned HTTP 500 after the
+  change. The current release removes that unverified traversal and restores
+  the previously working per-generation rotation; the page-wide uniqueness
+  improvement remains open until it has an isolated runtime test.
+- v02.10.89: Restored the known-good trusted hero rotation after the v02.10.88
+  live 500. Existing saved hero roots are still preserved and must not be
+  treated as evidence that the next generated root selected the same image.
+- v02.10.90: Trusted hero rotation now reads existing page data through a
+  type-safe shared background-URL collector and excludes those photos from the
+  next trusted hero while unused bundled candidates remain. The prior 500 was
+  caused by referencing `$existing` from `wpae_llm_chat_request()`, where it
+  was undefined. Runtime rotation self-check passes.
 
 ## Mandatory error journal workflow
 

@@ -1824,6 +1824,27 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
     return $elements;
 }
 
+function wpae_llm_collect_background_image_urls( array $nodes, array &$urls = [] ): array {
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+        foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
+            $image = $settings[ $key ] ?? null;
+            $url = is_array( $image ) ? trim( (string) ( $image['url'] ?? '' ) ) : trim( (string) $image );
+            if ( $url !== '' ) {
+                $urls[] = $url;
+            }
+        }
+        if ( is_array( $node['elements'] ?? null ) ) {
+            wpae_llm_collect_background_image_urls( $node['elements'], $urls );
+        }
+    }
+
+    return array_values( array_unique( $urls ) );
+}
+
 function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false, int $image_variant = -1, array $used_image_urls = [] ): array {
     $to_alignment = static function ( $value ): ?string {
         $value = strtolower( trim( (string) $value ) );
@@ -5695,24 +5716,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $hero_composition_changed = 0;
         if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
-            $existing_image_urls = [];
-            $collect_existing_image_urls = static function ( array $nodes ) use ( &$collect_existing_image_urls, &$existing_image_urls ): void {
-                foreach ( $nodes as $node ) {
-                    if ( ! is_array( $node ) ) {
-                        continue;
-                    }
-                    $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
-                    foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
-                        $image = $settings[ $key ] ?? null;
-                        $url = is_array( $image ) ? trim( (string) ( $image['url'] ?? '' ) ) : trim( (string) $image );
-                        if ( $url !== '' ) {
-                            $existing_image_urls[] = $url;
-                        }
-                    }
-                    $collect_existing_image_urls( (array) ( $node['elements'] ?? [] ) );
+            $existing_for_image_rotation = [];
+            if ( function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+                $saved_for_image_rotation = wpae_get_elementor_data_for_post( $post_id );
+                if ( is_array( $saved_for_image_rotation ) ) {
+                    $existing_for_image_rotation = $saved_for_image_rotation;
                 }
-            };
-            $collect_existing_image_urls( $existing );
+            }
+            $existing_image_urls = wpae_llm_collect_background_image_urls( $existing_for_image_rotation );
             $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1, $existing_image_urls );
         }
         $render_cache_changed = 0;
