@@ -529,3 +529,22 @@ before making a new change to the plugin.
   synchronizes all text-column alignment; the badge gets a white surface.
 - **Regression status:** Contract coverage added. Live verification is pending
   a fresh Browser Use generation after delivery.
+
+## EJ-033: Repeatable provider layout split into an empty side card
+
+- **Observed:** Fresh v02.10.99 benefits generation produced one large
+  heading-only card in the left branch and three dense cards in the right
+  branch. AI Vision scored it 68 and reported unbalanced whitespace; the
+  editor screenshot also showed the selected Elementor canvas dimming the
+  unselected cards.
+- **Root cause:** The bento normalizer only sized direct child containers. It
+  did not flatten a nested two-branch response when one branch contained a
+  single heading card and the other contained the actual repeatable cards.
+- **Fix:** v02.11.00 detects that sparse/dense branch shape for repeatable
+  archetypes, collects leaf card containers, removes a heading-only card that
+  duplicates the requested title, and rewrites the grid as one transparent
+  Flexbox container with responsive card widths.
+- **Regression status:** Local contract, PHP lint, and diff checks are
+  required. Fresh live benefits generation must prove the repair step and
+  pass screenshot, scoped JSON/DOM, Vision/design-taste, and Impeccable
+  review before the remaining block matrix is accepted.

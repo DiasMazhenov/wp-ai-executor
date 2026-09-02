@@ -3522,6 +3522,122 @@ function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$chang
     unset( $element );
 }
 
+function wpae_llm_repair_unbalanced_repeatable_layout( array $elements, string $message, string $archetype, int &$changed ): array {
+    if ( ! in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ], true ) ) {
+        return $elements;
+    }
+
+    $section_title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? '' ) );
+    $normalized_section_title = wpae_llm_normalize_content_text( $section_title );
+    $leaf_cards = static function ( array $nodes ) use ( &$leaf_cards ): array {
+        $cards = [];
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) || ( $node['elType'] ?? '' ) !== 'container' ) {
+                continue;
+            }
+            $children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
+            $child_containers = array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' );
+            if ( empty( $child_containers ) && ! empty( $children ) ) {
+                $has_card_widget = (bool) array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $child['widgetType'] ?? '' ) ), [ 'heading', 'text-editor', 'testimonial', 'image', 'icon' ], true ) );
+                if ( $has_card_widget ) {
+                    $cards[] = $node;
+                }
+                continue;
+            }
+            if ( ! empty( $child_containers ) ) {
+                $cards = array_merge( $cards, $leaf_cards( $children ) );
+            }
+        }
+        return $cards;
+    };
+    $card_widget_count = static function ( array $card ): int {
+        return count( array_filter( (array) ( $card['elements'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' ) );
+    };
+    $card_heading = static function ( array $card ): string {
+        foreach ( (array) ( $card['elements'] ?? [] ) as $child ) {
+            if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' && ( $child['widgetType'] ?? '' ) === 'heading' ) {
+                return wpae_llm_normalize_content_text( $child['settings']['title'] ?? '' );
+            }
+        }
+        return '';
+    };
+    $repair = static function ( array &$nodes ) use ( &$repair, $leaf_cards, $card_widget_count, $card_heading, $normalized_section_title, &$changed ): bool {
+        foreach ( $nodes as $index => &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( ( $element['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
+                $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+                $branches = array_values( array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) );
+                $branch_sizes = array_map( static fn( $branch ): int => count( $leaf_cards( [ $branch ] ) ), $branches );
+                $has_sparse_branch = count( $branch_sizes ) >= 2 && in_array( 1, $branch_sizes, true ) && max( $branch_sizes ) >= 3;
+                if ( $has_sparse_branch ) {
+                    $cards = $leaf_cards( $branches );
+                    $cards = array_values( array_filter( $cards, static fn( $card ): bool => ! ( $card_widget_count( $card ) === 1 && $normalized_section_title !== '' && $card_heading( $card ) === $normalized_section_title ) ) );
+                    if ( count( $cards ) >= 2 ) {
+                        $settings['container_type'] = 'flex';
+                        $settings['flex_direction'] = 'row';
+                        $settings['flex_wrap'] = 'wrap';
+                        $settings['flex_justify_content'] = 'space-between';
+                        $settings['flex_align_items'] = 'stretch';
+                        $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+                        $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                        $settings['background_background'] = 'classic';
+                        $settings['background_color'] = 'transparent';
+                        foreach ( wpae_llm_variant_card_widths( 0, count( $cards ) ) as $card_index => $width ) {
+                            $card_settings = is_array( $cards[ $card_index ]['settings'] ?? null ) ? $cards[ $card_index ]['settings'] : [];
+                            wpae_llm_set_flexible_bento_container_width( $card_settings, (float) $width );
+                            $cards[ $card_index ]['settings'] = $card_settings;
+                        }
+                        $element['settings'] = $settings;
+                        $element['elements'] = $cards;
+                        $nodes[ $index ] = $element;
+                        $changed++;
+                        return true;
+                    }
+                }
+            }
+            if ( is_array( $element['elements'] ?? null ) && $repair( $element['elements'] ) ) {
+                return true;
+            }
+        }
+        unset( $element );
+        return false;
+    };
+    $repair( $elements );
+
+    if ( $normalized_section_title !== '' ) {
+        $set_section_heading = static function ( array &$nodes ) use ( &$set_section_heading, $section_title, &$changed ): bool {
+            foreach ( $nodes as &$element ) {
+                if ( ! is_array( $element ) ) {
+                    continue;
+                }
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                if ( ( $element['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
+                    continue;
+                }
+                if ( ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'heading' && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
+                    $settings['title'] = $section_title;
+                    $element['settings'] = $settings;
+                    $changed++;
+                    return true;
+                }
+                if ( is_array( $element['elements'] ?? null ) && $set_section_heading( $element['elements'] ) ) {
+                    return true;
+                }
+            }
+            unset( $element );
+            return false;
+        };
+        $set_section_heading( $elements );
+    }
+
+    return $elements;
+}
+
 function wpae_llm_visual_signature( array $root ): string {
     $containers = [];
     $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$containers ): void {
@@ -5810,6 +5926,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $typography_changed = 0;
         $bento_changed = 0;
+        $composition_repair_changed = 0;
         $process_labels_changed = 0;
         $fallback_content_changed = 0;
         if ( $action_fallback ) {
@@ -5869,6 +5986,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
+            $action['elements'] = wpae_llm_repair_unbalanced_repeatable_layout( $action['elements'], $message, $action_archetype, $composition_repair_changed );
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
@@ -5964,6 +6082,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         if ( $bento_changed > 0 ) {
             $action_steps[] = [ 'id' => 'bento_layout', 'status' => 'ok', 'message' => 'Повторяющиеся native-контейнеры приведены к bento-сетке с переносом и responsive-размерами.', 'details' => [ 'archetype' => $action_archetype, 'max_items_per_row' => 4, 'containers_updated' => $bento_changed ] ];
+        }
+        if ( $composition_repair_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'composition_repair', 'status' => 'ok', 'message' => 'Несбалансированная повторяющаяся композиция упрощена до одной Flexbox-сетки без пустой боковой колонки.', 'details' => [ 'archetype' => $action_archetype, 'changes' => $composition_repair_changed ] ];
         }
         if ( $process_labels_changed > 0 ) {
             $action_steps[] = [ 'id' => 'process_labels', 'status' => 'ok', 'message' => 'Нумерация карточек процесса выровнена по порядку без изменения текста шагов.', 'details' => [ 'labels_updated' => $process_labels_changed ] ];

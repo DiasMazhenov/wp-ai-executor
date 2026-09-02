@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.99`
+- Plugin: `v02.11.00`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -104,6 +104,14 @@
   the live mismatch where a third benefits card retained source text after the
   requested content had been inserted. The all-block Browser Use matrix still
   requires a fresh screenshot, Vision/design-taste review and Impeccable gate.
+- v02.11.00: A repeatable provider response with one sparse side branch and a
+  dense card branch is repaired into one balanced Flexbox grid. The repair
+  removes the empty side shell, promotes the first requested content unit to
+  the section heading, and preserves the remaining card content. This closes
+  the live Vision finding for the benefits block: large empty left card,
+  dense right column, and isolated CTA. Fresh Browser Use screenshots plus
+  Vision/design-taste and Impeccable review remain mandatory for all block
+  types.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
