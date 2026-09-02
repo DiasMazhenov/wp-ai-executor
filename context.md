@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.11`
+- Plugin: `v02.11.12`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -160,6 +160,10 @@
   padding: a row containing the promoted section H2 uses `24px` desktop and
   `20px` mobile before the card grid. Vision's remaining large heading-to-card
   gap is therefore removed at the source container.
+- v02.11.12: Trusted Team content shells keep a deliberate compact top rhythm
+  of `1.5rem` desktop and `1.25rem` mobile after the source's excessive `3rem`
+  top padding is normalized. This prevents both disconnected whitespace and a
+  cramped badge at the upper edge.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

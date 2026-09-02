@@ -4255,11 +4255,11 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
         $content_shell['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( (array) ( $content_shell['elements'] ?? [] ), $changed );
         if ( $archetype === 'team' ) {
             $content_shell['settings'] = is_array( $content_shell['settings'] ?? null ) ? $content_shell['settings'] : [];
-            foreach ( [ 'padding', 'padding_mobile' ] as $padding_key ) {
+            foreach ( [ 'padding' => '1.5', 'padding_mobile' => '1.25' ] as $padding_key => $top ) {
                 if ( ! is_array( $content_shell['settings'][ $padding_key ] ?? null ) ) {
                     continue;
                 }
-                $content_shell['settings'][ $padding_key ]['top'] = '0';
+                $content_shell['settings'][ $padding_key ]['top'] = $top;
                 $changed++;
             }
             $content_shell['elements'] = wpae_llm_promote_team_section_heading( (array) ( $content_shell['elements'] ?? [] ), $changed );

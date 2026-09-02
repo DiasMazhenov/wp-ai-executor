@@ -49,6 +49,20 @@ before making a new change to the plugin.
   compact badge/H2/card flow, parent side padding, no `icon-box`, preserved
   images, no overflow and a healthy Elementor iframe.
 
+## EJ-044: Removing all Team shell top padding cramped the badge
+
+- **Observed:** v02.11.11 removed the source's `3rem` top padding, but Vision
+  scored the fresh Team result `68` and reported the badge and H2 were too close
+  to the upper viewport edge.
+- **Root cause:** The previous normalization treated the source's excessive
+  top padding as an all-or-nothing value and left no intentional top rhythm.
+- **Fix:** v02.11.12 uses compact Team shell top padding of `1.5rem` desktop and
+  `1.25rem` mobile while retaining the reduced heading-to-card spacing.
+- **Regression status:** Recheck with Browser Use using screenshot ->
+  Vision/design-taste -> prompt comparison -> scoped JSON and DOM. Require
+  balanced top rhythm, badge above H2, parent side padding, no `icon-box`,
+  preserved images, no overflow and a healthy Elementor iframe.
+
 ## EJ-040: Preserved Team template lost parent side padding and heading tier
 
 - **Observed:** The live Team block rendered with `padding-left/right: 0px`,
