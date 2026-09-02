@@ -1118,7 +1118,35 @@ function wpae_llm_extract_navigation_content( string $message ): array {
     return [ 'items' => array_slice( array_values( $items ), 0, 8 ), 'cta' => $cta ];
 }
 
+function wpae_llm_extract_pricing_content( string $message ): array {
+    if ( ! preg_match( '/₸|\$|€|₽|\b(тариф|стоимост|пакет|pricing)\b/iu', $message ) ) {
+        return [];
+    }
+    $pairs = [];
+    $lines = preg_split( '/\r?\n+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    foreach ( $lines as $line ) {
+        if ( ! preg_match( '/^\s*([^—–:\n]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?[^.\n]*)(?:\.\s*(.*?))?\s*$/u', trim( (string) $line ), $match ) ) {
+            continue;
+        }
+        $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+        $price = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+        $description = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+        if ( $label === '' || $price === '' ) {
+            continue;
+        }
+        $pairs[] = [
+            'label' => $label,
+            'content' => $price . ( $description !== '' ? '. ' . $description : '' ),
+        ];
+    }
+    return array_slice( $pairs, 0, 8 );
+}
+
 function wpae_llm_extract_labeled_content( string $message ): array {
+    $pricing_pairs = wpae_llm_extract_pricing_content( $message );
+    if ( count( $pricing_pairs ) >= 2 ) {
+        return $pricing_pairs;
+    }
     $content_message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
     if ( ! is_string( $content_message ) || $content_message === '' ) {
         $content_message = $message;
@@ -6920,7 +6948,7 @@ function wpae_get_llm_guide(): array {
         'visual_grammar' => 'Every generated root block receives one compact outlined rounded native badge. Icon-box is forbidden: card headings remain native heading widgets and any card icon is a separate native icon widget. Testimonial cards use a native heading for author/company plus a native text-editor for the quote, with icons decorative only. This is enforced after provider decoding and before Elementor preflight.',
         'preview_and_undo' => 'Every successful write returns operation_id, compact diff, rollback_snapshot_id, and rollback expiry. The editor chat exposes one-click undo through POST /wp-json/ai-executor/v1/llm/undo, scoped to the current post and authenticated editor.',
         'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, preview, native normalization, design-system mapping, page context, Elementor update, sync, Vision review, and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
-        'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief, bounded visible-text/DOM context, and a bounded generated Elementor JSON excerpt. Vision must check content_fidelity as well as visual quality. Full-block generations treat failed findings or an unavailable review as a blocking quality gate, roll back the write, and allow at most two repair passes; selected-tree patches remain advisory. Strict atomic rollback remains available through transaction_vision_review.',
+        'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief, bounded visible-text/DOM context, and a bounded generated Elementor JSON excerpt. Vision must check content_fidelity as well as visual quality. Full-block generations treat received quality failures as a blocking quality gate, roll back the write, and allow at most two repair passes; a temporarily unavailable review is retained for manual verification, while selected-tree patches remain advisory. Strict atomic rollback remains available through transaction_vision_review.',
         'content_fidelity' => 'Explicit content from the user request must survive into native Elementor widgets. The server extracts explicit quoted phrases, checks the action tree before write, repairs deterministic fallback content when possible, and rejects the write with a missing-content list when fidelity cannot be proven.',
         'provider_rate_limit' => [ 'calls' => WPAE_LLM_CALL_LIMIT, 'window_seconds' => WPAE_LLM_CALL_WINDOW, 'scope' => 'site-wide' ],
         'privacy' => 'Provider keys are encrypted in wp_options. Prompts, histories, and raw provider responses are not stored or logged.',

@@ -27,6 +27,8 @@
   A formally valid provider tree that collapses pricing, FAQ, portfolio,
   process, team, testimonials, or benefits content into one generic text zone
   is replaced by the deterministic archetype fallback before Flex normalization.
+  Pricing-aware extraction keeps each amount and its following description in
+  the same repeatable unit, including content-only prompts split across lines.
   Unrequested buttons are removed from content-only inserts. Temporary AI
   Vision/network unavailability no longer rolls back a successfully saved full
   block; real received quality failures remain blocking and still use bounded

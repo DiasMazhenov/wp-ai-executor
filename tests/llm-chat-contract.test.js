@@ -101,6 +101,7 @@ assert.match(llm, /\$is_repeatable_shell = in_array\( \$archetype, \$repeatable_
 assert.match(llm, /function wpae_llm_compact_cta_text/);
 assert.match(llm, /function wpae_llm_clear_unrequested_library_copy/);
 assert.match(llm, /function wpae_llm_remove_unrequested_buttons/);
+assert.match(llm, /function wpae_llm_extract_pricing_content/);
 assert.match(llm, /repeatable content units are not separated into distinct containers/);
 assert.match(llm, /FAQ questions and answers are not separated into distinct units/);
 assert.match(llm, /Decoded provider tree failed the semantic structure contract/);

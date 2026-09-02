@@ -40,6 +40,20 @@ before making a new change to the plugin.
   Use must verify that a successful write remains visible when Vision is
   unavailable, while a real failed Vision report still rolls back.
 
+## EJ-053: Pricing fallback split descriptions after the amount
+
+- **Observed:** A content-only pricing prompt reached deterministic fallback
+  with tier names and prices, but descriptions after the first period were
+  dropped from the cards.
+- **Root cause:** The generic dash parser split each line at sentence-ending
+  periods before it could bind the amount and following description to one
+  pricing tier.
+- **Fix:** v02.11.16 uses a pricing-aware line parser before generic labeled
+  content extraction, preserving the full amount-plus-description pair for
+  every tier.
+- **Regression status:** Re-run the live pricing prompt and verify every tier
+  title, price, description, native Flex card, and screenshot review.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed
