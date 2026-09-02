@@ -141,7 +141,9 @@
   section heading and the remaining units to card headings instead of filling
   every fallback widget sequentially. Unrequested fallback descriptions and
   CTAs are removed, so the rendered block cannot invent a disconnected button
-  or duplicate a requested phrase in a neighboring card.
+  or duplicate a requested phrase in a neighboring card. Browser Use
+  validation confirmed the new benefits root, exact requested copy, transparent
+  grid background, no horizontal overflow, and a live editor after generation.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

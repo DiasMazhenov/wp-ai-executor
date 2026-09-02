@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-039: Elementor editor emitted external console errors during a healthy write
+
+- **Observed:** After the v02.11.07 deployment, the fresh Elementor editor
+  logged `gtag is not defined`, a checklist `parentElement` null error, two
+  Elementor MCP 404 responses and `Angie is not available`. The iframe stayed
+  alive, the native write returned HTTP 200, and AI Vision completed with score
+  `82`, so these messages did not crash the plugin generation flow.
+- **Root cause:** The first error originates in the site's preview theme script;
+  the remaining errors originate in Elementor 4.1.1 checklist/MCP services.
+  They are outside WP AI Executor's source and are independent of the saved
+  Elementor JSON.
+- **Fix:** No plugin workaround is claimed. The Browser Use health check now
+  distinguishes these external editor warnings from a plugin fatal and records
+  them for site/Elementor maintenance.
+- **Regression status:** Plugin generation, preflight, write, preview refresh,
+  scoped JSON copy and editor iframe remain operational. Recheck after Elementor
+  or theme updates; do not treat these external messages as a successful visual
+  generation.
+
 ## EJ-038: Content-only fallback redistributed brief text across the wrong widgets
 
 - **Observed:** The live v02.11.06 benefits generation rendered a reasonable
