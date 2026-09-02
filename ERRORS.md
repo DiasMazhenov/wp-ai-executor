@@ -145,8 +145,9 @@ before making a new change to the plugin.
   returned `Поле message обязательно` and a `500 Internal Server Error` toast;
   no new image widget or block was written. A short «О студии» brief with one
   photo description triggered the provider-unavailable retry and then ended in
-  `HTTP 500`. Screenshots and DOM checks confirmed that the canvas stayed on
-  the previous section.
+  `HTTP 500`. A third testimonials brief with three photo-avatar descriptions
+  behaved identically after the retry. Screenshots and DOM checks confirmed
+  that the canvas stayed on the previous section.
 - **Root cause:** The live editor still runs `v02.11.16`, while the repository
   had already moved to `v02.11.18`; the live deployment therefore does not
   contain the current media/content contract. The chat handler also relied on

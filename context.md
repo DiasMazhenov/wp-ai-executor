@@ -65,12 +65,13 @@
   REST-404, and Angie errors; see `ERRORS.md` EJ-057/EJ-058.
 - 2026-09-03 live photo-content probe: portfolio with three different photo
   descriptions failed twice with `Поле message обязательно` plus HTTP 500;
-  short about-with-photo failed after provider retry with HTTP 500. No new
-  block or image was created. Screenshots and DOM checks were captured, and
-  the failure is recorded as `ERRORS.md` EJ-059. Do not continue adding photo
-  sections until `v02.11.19` is deployed; then rerun portfolio, about, FAQ,
-  testimonials, process, CTA, carousel, and mega-menu with photo-bearing
-  prompts and the mandatory screenshot -> Vision/Impeccable -> comparison loop.
+  short about-with-photo and testimonials-with-photo both failed after the
+  provider retry with HTTP 500. No new block or image was created. Screenshots
+  and DOM checks were captured, and the failure is recorded as `ERRORS.md`
+  EJ-059. Do not continue adding photo sections until `v02.11.19` is deployed;
+  then rerun portfolio, about, FAQ, testimonials, process, CTA, carousel, and
+  mega-menu with photo-bearing prompts and the mandatory screenshot ->
+  Vision/Impeccable -> comparison loop.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
