@@ -3,6 +3,21 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-045: Content-only Team brief inherited a detached CTA
+
+- **Observed:** The live v02.11.12 Team result showed an extra black button
+  containing the first member description beside the section H2, although the
+  brief requested only member names and descriptions.
+- **Root cause:** Shared CTA detection searched for action verbs anywhere in a
+  sentence, so `Помогает выбрать ясный курс развития` was treated as a CTA.
+  Library cleanup then preserved the source button because its text matched the
+  requested content.
+- **Fix:** v02.11.13 centralizes CTA-copy detection on explicit imperative
+  starts and removes preserved-library buttons when no explicit CTA exists.
+- **Regression status:** Contract test, PHP lint and diff checks pass. Fresh
+  Browser Use generation must show no button, a large native H2, Team side
+  padding, preserved portraits, no Icon Box widgets and a healthy iframe.
+
 ## EJ-041: Preserved Team cards leaked the forbidden Icon Box widget
 
 - **Observed:** The fresh Team generation had the requested parent padding and

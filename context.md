@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.12`
+- Plugin: `v02.11.13`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -164,6 +164,11 @@
   of `1.5rem` desktop and `1.25rem` mobile after the source's excessive `3rem`
   top padding is normalized. This prevents both disconnected whitespace and a
   cramped badge at the upper edge.
+- v02.11.13: Content-only Team briefs no longer turn a card description such as
+  `Помогает выбрать ясный курс развития` into a detached CTA. CTA detection is
+  anchored to explicit imperative copy, and preserved-library buttons are
+  removed when the brief contains no CTA. This keeps the Team composition
+  limited to badge, H2, portraits and member cards.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

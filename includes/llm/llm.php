@@ -287,6 +287,11 @@ function wpae_llm_content_units( string $message ): array {
     return $units;
 }
 
+function wpae_llm_is_cta_copy( string $value ): bool {
+    $value = trim( sanitize_text_field( $value ) );
+    return (bool) preg_match( '/^(?:(?:кнопка|cta|button)\s*[:\-]\s*)?(?:обсудить|обсудите|получить|получите|узнать|узнайте|заказать|закажите|оформить|оформите|купить|купите|начать|начните|выбрать|выберите|написать|напишите|связаться|свяжитесь|оставить\s+заявк\w*|оставьте\s+заявк\w*|смотреть|смотрите|записаться|запишитесь|забронировать|забронируйте|регистрац\w*)\b/iu', $value );
+}
+
 function wpae_llm_is_content_composition_request( string $message ): bool {
     $message = trim( $message );
     if ( strlen( $message ) < 40 || preg_match( '/[?؟]\s*$/u', $message ) ) {
@@ -298,7 +303,13 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
     }
 
     $sentences = wpae_llm_content_units( $message );
-    $has_cta = (bool) preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать)\b/iu', $message );
+    $has_cta = false;
+    foreach ( $sentences as $sentence ) {
+        if ( wpae_llm_is_cta_copy( $sentence ) ) {
+            $has_cta = true;
+            break;
+        }
+    }
     $has_content_signal = (bool) preg_match( '/[«»"]|₸|\$|€|₽|\b(дизайн|сайт|страниц|проект|бизнес|клиент|услуг|продукт|команд|запуск|результат|коллекц\w*|доставк\w*|специалист\w*|заказ\w*|выбор\w*|помощ\w*|стоим\w*|тариф\w*|отзыв\w*|этап\w*|шаг\w*)\b/iu', $message );
 
     // Content-only briefs can be neutral copy without domain keywords or labels.
@@ -778,7 +789,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
     }
     if ( ! empty( $structured_pairs ) ) {
         foreach ( wpae_llm_content_units( $message ) as $unit ) {
-            if ( preg_match( '/\\b(обсуд\\w*|получ\\w*|узна\\w*|заказ\\w*|оформ\\w*|куп\\w*|нач\\w*|выбр\\w*|напис\\w*|связ\\w*|остав\\w*\\s+заявк\\w*|смотр\\w*|запиш\\w*|заброн\\w*|регистрац\\w*)\\b/iu', $unit ) ) {
+            if ( wpae_llm_is_cta_copy( $unit ) ) {
                 $matches[] = function_exists( 'wpae_llm_compact_cta_text' ) ? wpae_llm_compact_cta_text( $unit ) : $unit;
             }
         }
@@ -1064,7 +1075,7 @@ function wpae_llm_clear_unrequested_library_copy( array &$elements, string $mess
     $title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? ( $requested[0] ?? '' ) ) );
     $cta = '';
     foreach ( $requested as $value ) {
-        if ( preg_match( '/\b(обсуд\w*|получ\w*|узна\w*|заказ\w*|оформ\w*|куп\w*|нач\w*|выбр\w*|напис\w*|связ\w*|остав\w*\s+заявк\w*|смотр\w*|запиш\w*|заброн\w*|регистрац\w*)\b/iu', $value ) ) {
+        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
             $cta = wpae_llm_compact_cta_text( $value );
             break;
         }
@@ -1119,6 +1130,9 @@ function wpae_llm_clear_unrequested_library_copy( array &$elements, string $mess
                     $cta_set = true;
                     $keep = true;
                     $changed++;
+                } elseif ( $widget_type === 'button' ) {
+                    // A card description can contain an action verb without being a CTA.
+                    $keep = false;
                 } elseif ( $widget_type === 'icon-list' ) {
                     $items = is_array( $settings['icon_list'] ?? null ) ? $settings['icon_list'] : [];
                     $items = array_values( array_filter( $items, static fn( $item ): bool => is_array( $item ) && $matches_request( $item['text'] ?? '' ) ) );
@@ -1395,7 +1409,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     $title = trim( (string) array_shift( $requested ) );
     $cta = '';
     for ( $index = count( $requested ) - 1; $index >= 0; $index-- ) {
-        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать|регистрац\w*)\b/iu', (string) $requested[ $index ] ) ) {
+        if ( wpae_llm_is_cta_copy( (string) $requested[ $index ] ) ) {
             $cta = trim( (string) $requested[ $index ] );
             array_splice( $requested, $index, 1 );
             break;
@@ -2243,7 +2257,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         $cta = '';
         $body = [];
         foreach ( $units as $unit ) {
-            if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать)\b/iu', $unit ) ) {
+            if ( wpae_llm_is_cta_copy( $unit ) ) {
                 $cta = $unit;
                 continue;
             }
@@ -3219,7 +3233,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
 function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed, bool $preserve_style = false ): array {
     $cta = '';
     foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-        if ( preg_match( '/\b(обсуд\w*|получ\w*|узна\w*|заказ\w*|оформ\w*|куп\w*|нач\w*|выбр\w*|напис\w*|связ\w*|остав\w*\s+заявк\w*|смотр\w*|запиш\w*|заброн\w*|регистрац\w*)\b/iu', $value ) ) {
+        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
             $cta = wpae_llm_compact_cta_text( (string) $value );
             break;
         }
@@ -4778,7 +4792,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     if ( $archetype === 'benefits' ) {
         $content_units = array_values( array_filter(
             wpae_llm_extract_requested_content( $message ),
-            static fn( $unit ): bool => ! preg_match( '/\b(обсуд\w*|получ\w*|узна\w*|заказ\w*|оформ\w*|куп\w*|нач\w*|выбр\w*|напис\w*|связ\w*|остав\w*\s+заявк\w*|смотр\w*|запиш\w*|заброн\w*|регистрац\w*)\b/iu', (string) $unit )
+            static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit )
         ) );
         if ( count( $content_units ) >= 3 ) {
             $section_title = array_shift( $content_units );
