@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.97`
+- Plugin: `v02.10.98`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -93,6 +93,10 @@
   the requested archetype. Benefits no longer treat Vocario `Courses` as a
   benefits template, preventing long content from being inserted into the
   source's narrow image-card column and falling through to native Flex cards.
+- v02.10.98: A successful Elementor write is no longer shown as a generic chat
+  `500` when the advisory Gemini Vision request times out. The chat now reports
+  Vision as unavailable and keeps the saved write available for the mandatory
+  screenshot plus Impeccable review.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

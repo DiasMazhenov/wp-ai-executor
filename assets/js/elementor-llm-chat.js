@@ -1262,12 +1262,17 @@
                     });
                 }).then(function () {
                     if (!options.skipVision && config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
-                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData);
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData).catch(function (error) {
+                            return { vision_unavailable: true, error: error && error.message ? error.message : 'Проверка Vision недоступна.' };
+                        });
                     }
                     return true;
                 });
             }
             return visionPromise.then(function (review) {
+                if (review && review.vision_unavailable) {
+                    addMessage('assistant', 'AI Vision временно недоступен; запись Elementor сохранена и требует ручной проверки: ' + review.error);
+                }
                 if (review && review.gate && review.gate.quality_failed && !review.gate.advisory) {
                     var targetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
                     addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю замечания Vision для повторной правки выбранного дерева.' : ' Передаю замечания Vision агенту для полной регенерации дизайна.'));

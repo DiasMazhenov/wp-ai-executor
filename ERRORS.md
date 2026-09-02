@@ -3,6 +3,22 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-031: Vision timeout was reported as a failed Elementor generation
+
+- **Observed:** A benefits generation was written to Elementor, but a Gemini
+  Vision cURL timeout made the chat display `Ошибка сервера (500 Internal
+  Server Error)`, obscuring the saved design and blocking the visual test
+  report.
+- **Root cause:** The client chained the advisory Vision promise directly into
+  the generation success path, so provider failures entered the generic request
+  error handler even though the Elementor write had already succeeded.
+- **Fix:** v02.10.98 catches Vision review failures separately, reports the
+  provider warning, keeps the write and undo control, and leaves screenshot plus
+  Impeccable review as the acceptance gate.
+- **Regression status:** Node contract check passes. Live Gemini Vision remains
+  network-dependent; a timeout is now a review warning rather than a false
+  generation failure.
+
 ## EJ-030: Courses kit root was used for a benefits request
 
 - **Observed:** The benefits brief was inserted into the Vocario `Courses`
