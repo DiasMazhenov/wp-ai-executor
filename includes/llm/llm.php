@@ -763,6 +763,15 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
             'content' => trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) ),
         ];
     }, wpae_llm_extract_labeled_content( $message ) ), 0, 8 );
+    $content_pairs = $pairs;
+    if ( $archetype === 'faq' && count( $content_pairs ) < 2 ) {
+        $content_pairs = array_slice( array_map( static function ( $pair ): array {
+            return [
+                'label' => trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) ),
+                'content' => trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) ),
+            ];
+        }, wpae_llm_extract_faq_content( $message ) ), 0, 8 );
+    }
     $ctas = [];
     foreach ( array_merge( $units, array_column( $pairs, 'content' ) ) as $value ) {
         if ( wpae_llm_is_cta_copy( (string) $value ) ) {
@@ -790,6 +799,8 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'title' => (string) ( $units[0] ?? '' ),
         'content_units' => array_slice( $units, 0, 8 ),
         'labeled_pairs' => $pairs,
+        'content_pairs' => $content_pairs,
+        'repeatable_units' => count( $content_pairs ) >= 2 ? count( $content_pairs ) : max( 0, count( $units ) - 1 ),
         'explicit_cta' => $ctas,
         'cta_required' => ! empty( $ctas ),
         'requires_media' => (bool) preg_match( '/\b(фото|изображен\w*|портрет\w*|картин\w*|медиа|image|photo|portrait|background)\b/iu', $message ),
@@ -801,6 +812,9 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
 function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     $counts = [];
     $button_texts = [];
+    $repeatable_container_count = 0;
+    $accordion_item_count = 0;
+    $repeatable_archetypes = [ 'benefits', 'pricing', 'testimonials', 'team', 'process', 'portfolio' ];
     $walk = static function ( array $nodes ) use ( &$walk, &$counts, &$button_texts ): void {
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
@@ -820,6 +834,45 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
         }
     };
     $walk( $elements );
+    $count_repeatable_containers = static function ( array $nodes, int $depth = 0 ) use ( &$count_repeatable_containers, &$repeatable_container_count, &$accordion_item_count ): void {
+        foreach ( $nodes as $element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+            if ( ( $element['elType'] ?? '' ) === 'container' && $depth > 0 ) {
+                $child_containers = array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' );
+                $meaningful_widgets = 0;
+                foreach ( $children as $child ) {
+                    if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
+                        continue;
+                    }
+                    $widget_type = sanitize_key( (string) ( $child['widgetType'] ?? '' ) );
+                    $settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+                    $has_copy = false;
+                    foreach ( [ 'title', 'title_text', 'editor', 'text', 'testimonial_name', 'testimonial_content', 'description_text' ] as $key ) {
+                        if ( trim( wp_strip_all_tags( (string) ( $settings[ $key ] ?? '' ) ) ) !== '' ) {
+                            $has_copy = true;
+                            break;
+                        }
+                    }
+                    if ( $has_copy || in_array( $widget_type, [ 'image', 'image-box', 'image-carousel', 'icon', 'icon-list', 'price-list', 'testimonial', 'accordion' ], true ) ) {
+                        $meaningful_widgets++;
+                    }
+                    if ( $widget_type === 'accordion' ) {
+                        $accordion_item_count += count( (array) ( $settings['tabs'] ?? [] ) );
+                    }
+                }
+                if ( empty( $child_containers ) && $meaningful_widgets > 0 ) {
+                    $repeatable_container_count++;
+                }
+            }
+            if ( ! empty( $children ) ) {
+                $count_repeatable_containers( $children, $depth + 1 );
+            }
+        }
+    };
+    $count_repeatable_containers( $elements );
     $forbidden_found = array_values( array_filter( (array) ( $plan['forbidden_widgets'] ?? [] ), static fn( $type ): bool => ! empty( $counts[ sanitize_key( (string) $type ) ] ) ) );
     $required_media = ! empty( $plan['requires_media'] );
     $media_count = (int) ( $counts['image'] ?? 0 ) + (int) ( $counts['image-carousel'] ?? 0 );
@@ -848,6 +901,20 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     if ( $unrequested_button_count > 0 ) {
         $failures[] = 'an unrequested CTA/button was added';
     }
+    $archetype = sanitize_key( (string) ( $plan['archetype'] ?? '' ) );
+    $repeatable_units = absint( $plan['repeatable_units'] ?? 0 );
+    if ( in_array( $archetype, $repeatable_archetypes, true ) && $repeatable_units >= 2 ) {
+        $required_repeatable_count = min( 8, max( 2, $repeatable_units ) );
+        if ( $repeatable_container_count < $required_repeatable_count ) {
+            $failures[] = 'repeatable content units are not separated into distinct containers';
+        }
+    }
+    if ( $archetype === 'faq' && $repeatable_units >= 2 ) {
+        $required_faq_count = min( 8, max( 2, $repeatable_units ) );
+        if ( max( $repeatable_container_count, $accordion_item_count ) < $required_faq_count ) {
+            $failures[] = 'FAQ questions and answers are not separated into distinct units';
+        }
+    }
     return [
         'ok' => empty( $failures ),
         'archetype' => (string) ( $plan['archetype'] ?? '' ),
@@ -860,6 +927,9 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
         'button_count' => count( $button_texts ),
         'matching_cta_count' => $matching_cta_count,
         'unrequested_button_count' => $unrequested_button_count,
+        'repeatable_container_count' => $repeatable_container_count,
+        'accordion_item_count' => $accordion_item_count,
+        'repeatable_units' => $repeatable_units,
         'failures' => array_values( array_unique( $failures ) ),
     ];
 }
@@ -1428,6 +1498,37 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         }
     }
     unset( $element );
+}
+
+function wpae_llm_remove_unrequested_buttons( array &$elements, string $message, int &$changed ): void {
+    $has_requested_cta = false;
+    foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
+        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
+            $has_requested_cta = true;
+            break;
+        }
+    }
+    if ( $has_requested_cta ) {
+        return;
+    }
+    $walk = static function ( array &$nodes ) use ( &$walk, &$changed ): void {
+        $kept = [];
+        foreach ( $nodes as $element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $element['widgetType'] ?? '' ) ) === 'button' ) {
+                $changed++;
+                continue;
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+            $kept[] = $element;
+        }
+        $nodes = $kept;
+    };
+    $walk( $elements );
 }
 
 function wpae_llm_apply_fallback_archetype_content( array &$elements, string $message, string $archetype, int &$changed ): void {
@@ -5266,6 +5367,33 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             ] ),
             $widget( 'llm-button', 'button', [ 'text' => 'Смотреть кейсы', 'link' => [ 'url' => '#cases' ] ] ),
         ];
+    } elseif ( $archetype === 'cta' ) {
+        $units = array_values( array_filter( wpae_llm_content_units( $message ), static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit ) ) );
+        $title = (string) ( $units[0] ?? 'Свяжитесь с нами' );
+        $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 4 );
+        $cta = '';
+        foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
+            if ( wpae_llm_is_cta_copy( (string) $value ) ) {
+                $cta = wpae_llm_compact_cta_text( (string) $value );
+                break;
+            }
+        }
+        $contact_elements = [];
+        foreach ( $pairs as $index => $pair ) {
+            $contact_elements[] = $card( 'llm-contact-' . (string) ( $index + 1 ), [
+                $widget( 'llm-contact-' . (string) ( $index + 1 ) . '-title', 'heading', [ 'title' => (string) $pair['label'], 'header_size' => 'h4' ] ),
+                $widget( 'llm-contact-' . (string) ( $index + 1 ) . '-copy', 'text-editor', [ 'editor' => (string) $pair['content'] ] ),
+            ] );
+        }
+        $elements = [ $widget( 'llm-heading', 'heading', [ 'title' => $title, 'header_size' => 'h2' ] ) ];
+        if ( count( $contact_elements ) >= 2 ) {
+            $elements[] = $grid( 'llm-contact-grid', $contact_elements );
+        } elseif ( count( $units ) > 1 ) {
+            $elements[] = $widget( 'llm-copy', 'text-editor', [ 'editor' => implode( ' ', array_slice( $units, 1, 3 ) ) ] );
+        }
+        if ( $cta !== '' ) {
+            $elements[] = $widget( 'llm-button', 'button', [ 'text' => $cta, 'link' => [ 'url' => '#contact' ] ] );
+        }
     }
     return [
         'action' => 'insert_elements',
@@ -6502,6 +6630,34 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 wpae_llm_apply_fallback_content( $action['elements'], $missing_content, $action_archetype, $fallback_content_changed );
             }
         }
+        if ( ! $targeted_edit ) {
+            wpae_llm_remove_unrequested_buttons( $action['elements'], $message, $fallback_content_changed );
+            $preflight_plan_audit = wpae_llm_content_plan_audit( $content_plan, (array) $action['elements'] );
+            if ( empty( $preflight_plan_audit['ok'] ) && ! $action_fallback ) {
+                $action = wpae_llm_build_fallback_action( $message, $post_id );
+                $action_fallback = true;
+                $fallback_content_changed = 0;
+                $action_diagnostics = [
+                    'response_type' => 'deterministic_fallback',
+                    'json_decoded' => true,
+                    'response_keys' => [ 'action', 'post_id', 'position', 'fallback_archetype', 'fallback_variant', 'elements' ],
+                    'fallback_archetype' => $action_archetype,
+                    'fallback_variant' => absint( $action['fallback_variant'] ?? 0 ),
+                    'fallback_reason' => 'Decoded provider tree failed the semantic structure contract before Elementor normalization.',
+                    'semantic_failures' => (array) ( $preflight_plan_audit['failures'] ?? [] ),
+                ];
+                wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
+                if ( $action_archetype === 'faq' ) {
+                    wpae_llm_apply_fallback_faq_content( $action['elements'], $message, $fallback_content_changed );
+                }
+                $fallback_fidelity = wpae_llm_content_fidelity( $message, (array) $action['elements'] );
+                $missing_content = (array) ( $fallback_fidelity['missing'] ?? [] );
+                if ( ! empty( $missing_content ) ) {
+                    wpae_llm_apply_fallback_content( $action['elements'], $missing_content, $action_archetype, $fallback_content_changed );
+                }
+                wpae_llm_remove_unrequested_buttons( $action['elements'], $message, $fallback_content_changed );
+            }
+        }
         $library_applied = false;
         $library_changed = 0;
         $library_layout_changed = 0;
@@ -6522,7 +6678,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 ];
                 $library_shape = wpae_llm_validate_action_shape( $library_action, $post_id );
                 $library_fidelity = wpae_llm_content_fidelity( $message, $library_elements );
-                if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) ) {
+                $library_plan_audit = wpae_llm_content_plan_audit( $content_plan, $library_elements );
+                if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) && ! empty( $library_plan_audit['ok'] ) ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
                     $action_fallback = false;
@@ -6542,7 +6699,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                         $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $library_layout_changed, $action_archetype );
                     }
                 } else {
-                    $library_skip_reason = 'Adapted library block failed the native shape or content-fidelity check.';
+                    $library_skip_reason = 'Adapted library block failed the native shape, content-fidelity, or semantic structure check.';
                 }
             } else {
                 $library_skip_reason = 'The selected library block has no repeatable content group that can be adapted.';

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.15`
+- Plugin: `v02.11.16`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -22,6 +22,16 @@
   direct Elementor paste workflows, while the original envelopes remain
   available for debugging and teaching. The action is client-side only and
   does not bypass server validation or Elementor write transactions.
+- v02.11.16: The semantic plan now records structured FAQ pairs and audits
+  repeatable units as separate populated containers before Elementor write.
+  A formally valid provider tree that collapses pricing, FAQ, portfolio,
+  process, team, testimonials, or benefits content into one generic text zone
+  is replaced by the deterministic archetype fallback before Flex normalization.
+  Unrequested buttons are removed from content-only inserts. Temporary AI
+  Vision/network unavailability no longer rolls back a successfully saved full
+  block; real received quality failures remain blocking and still use bounded
+  repair/rollback. This release requires a fresh live screenshot and separate
+  Impeccable review.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor

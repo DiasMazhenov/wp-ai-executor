@@ -3,6 +3,43 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-051: Quality-gate additions accepted generic sparse provider trees
+
+- **Observed:** After v02.11.14-v02.11.15, content-only pricing, FAQ, cases,
+  process, and contact requests could write a formally valid Elementor tree
+  while repeated content was collapsed into one text zone or a sparse shell.
+  Flex normalization then made the wrong structure responsive without making
+  it semantically correct.
+- **Root cause:** `wpae_llm_content_plan_audit()` checked widget count,
+  forbidden Icon Box, media, and CTA text, but did not require separate
+  populated repeatable units. Library acceptance used the same incomplete
+  audit, so a bad adapted composition could be selected before write.
+- **Fix:** v02.11.16 records FAQ pairs, counts populated leaf containers or
+  accordion tabs, rejects collapsed repeatable structures before normalization,
+  checks adapted library blocks with the same contract, and falls back to a
+  deterministic archetype builder. Content-only buttons are removed unless
+  explicitly requested.
+- **Regression status:** Local contracts and PHP lint must pass. Browser Use
+  must show distinct requested units, bounded whitespace, native Flex structure,
+  no invented CTA, and the screenshot -> AI Vision -> Impeccable/design-taste
+  -> prompt comparison loop.
+
+## EJ-052: Temporary Vision failure rolled back a successful generation
+
+- **Observed:** A full-block generation with a successful Elementor write was
+  rolled back when the advisory screenshot review returned `Failed to fetch`.
+  The user saw no result even though the write path had completed.
+- **Root cause:** The new client quality-gate branch treated `vision_unavailable`
+  as a blocking full-generation failure instead of distinguishing unavailable
+  review evidence from a received critical/major quality finding.
+- **Fix:** v02.11.16 preserves the saved generation and reports that Vision
+  review is unavailable and requires manual screenshot/Impeccable validation.
+  Received quality failures still trigger bounded repair and rollback after
+  the configured limit.
+- **Regression status:** Contract test covers the client branch. Live Browser
+  Use must verify that a successful write remains visible when Vision is
+  unavailable, while a real failed Vision report still rolls back.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed

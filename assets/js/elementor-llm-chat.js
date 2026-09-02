@@ -1328,18 +1328,7 @@
             return visionPromise.then(function (review) {
                 var reviewTargetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
                 if (review && review.vision_unavailable) {
-                    if (!reviewTargetedPatch) {
-                        return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
-                            if (!rollback.ok) throw new Error('AI Vision недоступен, а обязательный rollback не выполнен: ' + rollback.error);
-                            addMessage('assistant', 'AI Vision недоступен. Новая генерация отменена и восстановлено состояние до записи: ' + review.error);
-                            status.textContent = strings.error;
-                            return refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
-                                window.setTimeout(function () { window.location.reload(); }, 250);
-                                return true;
-                            });
-                        });
-                    }
-                    addMessage('assistant', 'AI Vision временно недоступен; точечная правка сохранена и требует ручной проверки: ' + review.error);
+                    addMessage('assistant', (reviewTargetedPatch ? 'AI Vision временно недоступен; точечная правка сохранена и требует ручной проверки: ' : 'AI Vision временно недоступен; новая генерация сохранена и требует ручной проверки: ') + review.error);
                 }
                 if (review && review.gate && review.gate.quality_failed && (reviewTargetedPatch ? !review.gate.advisory : true)) {
                     var targetedPatch = reviewTargetedPatch;
