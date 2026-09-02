@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.19`
+- Plugin: `v02.11.20`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -54,6 +54,21 @@
   on the hosting path. The live editor is still stale at `v02.11.16`; the
   release is not visually accepted until it is deployed and the photo matrix
   passes screenshot plus Vision/Impeccable review.
+- v02.11.20: Vision repair findings are now sent to the LLM as a separate,
+  bounded supplemental user prompt after the original brief, and the same
+  feedback is included in bounded JSON repair requests. Findings are accepted
+  for full regeneration and targeted repair, with an explicit
+  `vision_feedback_prompt` execution step. Command-only briefs are excluded
+  from content units, and `таймлайн`/`timeline` routes to the process
+  archetype instead of becoming generated heading text. Live acceptance is
+  pending deployment; the live editor remains stale until the new version is
+  confirmed.
+- 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
+  `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
+  correctly identified the missing component and sparse composition, but its
+  report was not an independent agent message. This is recorded as
+  `ERRORS.md` EJ-063; do not count the repair as successful without checking
+  the request trace, scoped JSON/DOM, screenshot, and Vision/Impeccable review.
 - 2026-09-03 live non-Hero matrix: FAQ, testimonials, process, portfolio, CTA,
   carousel, about, and mega-menu were tested with content-only prompts through
   Browser Use. Every result received a screenshot and visual review. FAQ,
@@ -68,7 +83,7 @@
   short about-with-photo and testimonials-with-photo both failed after the
   provider retry with HTTP 500. No new block or image was created. Screenshots
   and DOM checks were captured, and the failure is recorded as `ERRORS.md`
-  EJ-059. Do not continue adding photo sections until `v02.11.19` is deployed;
+  EJ-059. Do not continue adding photo sections until `v02.11.20` is deployed;
   then rerun portfolio, about, FAQ, testimonials, process, CTA, carousel, and
   mega-menu with photo-bearing prompts and the mandatory screenshot ->
   Vision/Impeccable -> comparison loop.
@@ -80,7 +95,7 @@
   configuration outage, not specifically our plugin or WP Pusher; exact cause
   requires server-side logs or Recovery Mode. The Elementor tab was preserved.
   This is recorded as `ERRORS.md` EJ-060; do not treat GitHub push as live
-  deploy. Live is still `v02.11.16`; repository is `v02.11.19`.
+  deploy. Live is still `v02.11.16`; repository is `v02.11.20`.
 - 2026-09-03 supplied server-log probes: the larger `mod_fcgid` excerpt has
   999 lines from 02:20:37 to 02:21:09 and repeats the same warnings across
   roughly 100 request cycles: duplicate debug constants in the site's

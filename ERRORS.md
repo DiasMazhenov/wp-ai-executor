@@ -3,6 +3,30 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-063: Vision findings were not sent as a separate agent prompt
+
+- **Observed:** Three live `сделай таймлайн` cycles wrote a badge and the
+  heading `СДЕЛАЙ ТАЙМЛАЙН` instead of a timeline. AI Vision correctly scored
+  the result 45/40/40 and reported the missing timeline and excessive empty
+  space, but the next repair request carried the findings only in the editor
+  context flag. The targeted repair path discarded the findings entirely.
+- **Root cause:** The LLM request contained the original user message but no
+  distinct supplemental user message containing the Vision report. The PHP
+  handler also read the findings only when `vision_regenerate` was true, while
+  the frontend sends them for both full regeneration and targeted repair.
+  Short imperative briefs were also treated as content units, so the
+  deterministic fallback could use the command as a heading.
+- **Fix:** v02.11.20 builds a bounded Vision feedback prompt, sends it as a
+  separate LLM user message after the original brief, includes it in bounded
+  JSON repair requests, and exposes a `vision_feedback_prompt` execution step.
+  It accepts findings for both repair modes, treats `таймлайн`/`timeline` as
+  the process archetype, and excludes command-only briefs from content units.
+- **Regression status:** Local contract tests and PHP lint pass. Live
+  acceptance is pending deployment of v02.11.20; the editor was still
+  reporting v02.11.16 during diagnosis. The next live test must confirm the
+  separate prompt step, timeline structure in scoped JSON/DOM, and a fresh
+  screenshot reviewed through Vision/Impeccable.
+
 ## EJ-051: Quality-gate additions accepted generic sparse provider trees
 
 - **Observed:** After v02.11.14-v02.11.15, content-only pricing, FAQ, cases,

@@ -1332,7 +1332,7 @@
                 }
                 if (review && review.gate && review.gate.quality_failed && (reviewTargetedPatch ? !review.gate.advisory : true)) {
                     var targetedPatch = reviewTargetedPatch;
-                    addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю замечания Vision для повторной правки выбранного дерева.' : ' Передаю замечания Vision агенту для полной регенерации дизайна.'));
+                    addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю анализ Vision агенту отдельным дополнительным промтом для повторной правки выбранного дерева.' : ' Передаю анализ Vision агенту отдельным дополнительным промтом для полной регенерации дизайна.'));
                     if (repairDepth >= 2) {
                         return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
                             if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);

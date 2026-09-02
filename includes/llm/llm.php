@@ -275,8 +275,20 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
     }
 }
 
+function wpae_llm_is_instruction_only_brief( string $message ): bool {
+	$message = trim( $message );
+	if ( $message === '' || preg_match( '/[«"\x{201c}\x{201d}:;]|\r?\n/u', $message ) ) {
+		return false;
+	}
+
+	return (bool) preg_match( '/^\s*(?:сделай|создай|добавь|собери|сверстай|сформируй|покажи|нарисуй)\b\s+.+$/iu', $message );
+}
+
 function wpae_llm_content_units( string $message ): array {
-    $segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+)/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+	if ( wpae_llm_is_instruction_only_brief( $message ) ) {
+		return [];
+	}
+	$segments = preg_split( '/(?:\r?\n+|(?<=[.!?])\s+)/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     $units = [];
     foreach ( $segments as $segment ) {
         $unit = trim( preg_replace( '/^[\s]+|[\s.!?]+$/u', '', sanitize_text_field( (string) $segment ) ) );
@@ -340,7 +352,20 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
     if ( $insert_signal ) {
         return false;
     }
-    return $selection_signal || $property_signal;
+	return $selection_signal || $property_signal;
+}
+
+function wpae_llm_build_vision_feedback_prompt( string $original_brief, string $findings, bool $regenerate = true ): string {
+	$original_brief = trim( sanitize_textarea_field( substr( $original_brief, 0, 4000 ) ) );
+	$findings = trim( sanitize_textarea_field( substr( $findings, 0, 3600 ) ) );
+	if ( $findings === '' ) {
+		return '';
+	}
+
+	$scope = $regenerate
+		? 'полностью пересобери один полноценный блок'
+		: 'исправь только выбранное дерево';
+	return "Дополнительный промт контроля качества от AI Vision. Это визуальный feedback к исходному заданию, а не новый пользовательский запрос и не контент для публикации. Исходное задание должно остаться главным: «{$original_brief}». Отчет Vision: {$findings}. {$scope}, сохрани смысл исходного задания, исправь каждое критическое и существенное замечание, проверь композицию, иерархию, отступы, переполнение, контраст и соответствие запрошенному типу блока. Не вставляй текст отчета Vision в дизайн и не расширяй область изменения.";
 }
 
 function wpae_llm_is_border_radius_request( string $message ): bool {
@@ -660,10 +685,10 @@ function wpae_llm_content_archetype_catalog(): array {
             'body' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?)\b/iu',
             'semantic' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?|почему\s+мы)\b/iu',
         ],
-        'process' => [
-            'headline' => '/\b(процесс\w*|этап\w*|шаг\w*|process|steps?)\b/iu',
-            'body' => '/\b(процесс\w*|этап\w*|шаг\w*|process|steps?|сначала|затем|проверяем|запускаем|переда[её]м)\b/iu',
-            'semantic' => '/\b(процесс\w*|этап\w*|шаг\w*|process|steps?)\b/iu',
+		'process' => [
+			'headline' => '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu',
+			'body' => '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline|сначала|затем|проверяем|запускаем|переда[её]м)\b/iu',
+			'semantic' => '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu',
         ],
         'about' => [
             'headline' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu',
@@ -782,7 +807,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/(?:^|[.!?\n]\s*)(?:преимуществ\w*|выгод\w*|почему\s+мы|features?|benefits?)\b/iu', trim( $message ) ) ) {
             return 'benefits';
         }
-        if ( preg_match( '/\b(шаг|этап|событи\w*|мероприяти\w*|мастер-класс|event\w*|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
+		if ( preg_match( '/\b(шаг|этап|таймлайн\w*|событи\w*|мероприяти\w*|мастер-класс|event\w*|timeline|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }
         if (
@@ -856,7 +881,7 @@ function wpae_llm_block_archetype_hint( string $message ): string {
         'about' => [ 'о компании/about', 'heading, image, icon-list и counter при необходимости' ],
         'testimonials' => [ 'отзывы/testimonials', 'heading, quote/proof widgets и повторяющиеся native items' ],
         'faq' => [ 'FAQ', 'heading и accordion с заполненными вопросами и ответами' ],
-        'process' => [ 'процесс/этапы', 'heading, icon-list или text-editor и divider' ],
+		'process' => [ 'процесс/этапы/таймлайн', 'heading, numbered Flex cards, icon-list или text-editor и divider' ],
         'cta' => [ 'CTA/контакт', 'heading, text-editor и button' ],
         'portfolio' => [ 'портфолио/кейсы', 'heading, image и text-editor или button' ],
     ];
@@ -6532,7 +6557,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $selected_element_count = is_array( $editor_context_input ) && is_array( $editor_context_input['selected_elements'] ?? null ) ? count( $editor_context_input['selected_elements'] ) : 0;
     $vision_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_repair'] );
     $vision_regenerate = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_regenerate'] );
-    $vision_findings = $vision_regenerate && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
+	$vision_findings = $vision_repair && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
+	$vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
     $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
     $content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
@@ -6572,14 +6598,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $system_prompt .= $targeted_edit
             ? ' Это точечное изменение выбранного Elementor элемента или контейнера вместе со всем его дочерним деревом. Контекст редактора содержит полный снимок выбранного объекта, его settings и содержимое descendants. Верни только JSON по схеме: {"action":"patch_elements","post_id":number,"patches":[{"element_id":"selected-id-or-descendant-id","path":"settings.native_property","op":"set","value":...}]}. Меняй только явно запрошенные native properties, не трогай HTML/CSS/WebGL и не пересобирай страницу. Для контейнера можешь менять native settings любого элемента внутри его дерева, но не выходи за пределы выбранного дерева и не выдумывай element_id. Для текста используй текущий settings.title, settings.editor или settings.text; для стиля сохраняй совместимую форму текущего native setting.'
             : ' Ограничения компактности action-JSON: ровно 1 корневой контейнер и 3–5 вложенных виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
-        if ( $vision_repair ) {
-            $system_prompt .= $vision_regenerate
-                ? ' Это автоматический repair-проход по замечаниям AI Vision. Перегенерируй один полноценный Elementor-блок заново по исходному запросу пользователя; не урезай композицию, не оставляй placeholder-тексты, исправь все findings и верни insert_elements. Не удаляй и не заменяй существующие блоки страницы: предыдущая неудачная версия уже откатена перед этой генерацией.'
-                : ' Это автоматический repair-проход по замечаниям AI Vision. Исправь только существующие выбранные элементы по findings; сохрани корректный контент, но замени placeholder или контент, который Vision отметил как несоответствующий исходному запросу пользователя. Не добавляй, не удаляй и не заменяй блоки, не меняй HTML/CSS/WebGL. Используй только native settings properties, необходимые для устранения замечаний, и верни patch_elements.';
-            if ( $vision_findings !== '' ) {
-                $system_prompt .= ' Замечания Vision: ' . $vision_findings;
-            }
-        }
+		if ( $vision_repair ) {
+			$system_prompt .= $vision_regenerate
+				? ' Это автоматический repair-проход по замечаниям AI Vision. Перегенерируй один полноценный Elementor-блок заново по исходному запросу пользователя; не урезай композицию, не оставляй placeholder-тексты, исправь все findings и верни insert_elements. Не удаляй и не заменяй существующие блоки страницы: предыдущая неудачная версия уже откатена перед этой генерацией.'
+				: ' Это автоматический repair-проход по замечаниям AI Vision. Исправь только существующие выбранные элементы по findings; сохрани корректный контент, но замени placeholder или контент, который Vision отметил как несоответствующий исходному запросу пользователя. Не добавляй, не удаляй и не заменяй блоки, не меняй HTML/CSS/WebGL. Используй только native settings properties, необходимые для устранения замечаний, и верни patch_elements.';
+			if ( $vision_feedback_prompt !== '' ) {
+				$system_prompt .= ' Отчет AI Vision будет передан ниже отдельным дополнительным промтом. Считай его визуальным feedback, а не заменой исходного задания и не публикуемым контентом.';
+			}
+		}
         $variation_seed = hexdec( substr( md5( $message . '|' . microtime( true ) ), 0, 6 ) ) % 100000;
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
         $system_prompt .= "\nСемантический план контента (контракт для адаптации, не текст для вывода): " . wp_json_encode( $content_plan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '. Не добавляй CTA, имена, цены или смысловые блоки, которых нет в плане; не меняй смысл пользовательского контента ради шаблона.';
@@ -6598,9 +6624,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     foreach ( wpae_llm_clean_history( $history_input ) as $item ) {
         $messages[] = $item;
     }
-    $messages[] = [ 'role' => 'user', 'content' => $message ];
+	$messages[] = [ 'role' => 'user', 'content' => $message ];
+	if ( $vision_feedback_prompt !== '' ) {
+		$messages[] = [ 'role' => 'user', 'content' => $vision_feedback_prompt ];
+	}
 
-    $context = $request->get_param( 'context' );
+	$context = array_key_exists( 'context', $body_params ) ? $body_params['context'] : $request->get_param( 'context' );
     if ( is_array( $context ) ) {
         $selected_elements = [];
         foreach ( array_slice( is_array( $context['selected_elements'] ?? null ) ? $context['selected_elements'] : [], 0, 8 ) as $element ) {
@@ -6712,10 +6741,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
         if ( empty( $decoded_shape['ok'] ) || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 || empty( $decoded_content_fidelity['ok'] ) ) {
             $repair_error = '';
-            $repair_messages = [
-                [ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . wpae_llm_generation_visual_grammar_hint() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
-                [ 'role' => 'user', 'content' => $message ],
-            ];
+			$repair_messages = [
+				[ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . wpae_llm_generation_visual_grammar_hint() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
+				[ 'role' => 'user', 'content' => $message ],
+			];
+			if ( $vision_feedback_prompt !== '' ) {
+				$repair_messages[] = [ 'role' => 'user', 'content' => $vision_feedback_prompt ];
+			}
             if ( isset( $variation_seed ) ) {
                 $repair_messages[0]['content'] .= ' Выбери новую композицию, не копируй прошлый блок; внутренний номер варианта: ' . (string) $variation_seed . '.';
             }
@@ -6926,9 +6958,17 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'message' => $action_archetype === 'hero' ? 'Hero выровнен единообразно: badge, текст, иконки и CTA используют одну ось.' : 'Hero-нормализация не требуется для этого типа блока.',
                 'details' => [ 'settings_updated' => $hero_composition_changed ],
             ],
-            [ 'id' => 'flex_contract', 'status' => 'ok', 'message' => 'Все layout-контейнеры приведены к native Flexbox с responsive-правилами.', 'details' => [ 'settings_updated' => $flex_contract_changed, 'container_type' => 'flex', 'legacy_layout_allowed' => false ] ],
-        ];
-        $library_trace = [
+			[ 'id' => 'flex_contract', 'status' => 'ok', 'message' => 'Все layout-контейнеры приведены к native Flexbox с responsive-правилами.', 'details' => [ 'settings_updated' => $flex_contract_changed, 'container_type' => 'flex', 'legacy_layout_allowed' => false ] ],
+		];
+		if ( $vision_feedback_prompt !== '' ) {
+			$action_steps[] = [
+				'id' => 'vision_feedback_prompt',
+				'status' => 'ok',
+				'message' => 'Отчет AI Vision передан агенту отдельным дополнительным промтом; исходное задание сохранено главным.',
+				'details' => [ 'regenerate' => $vision_regenerate, 'feedback_length' => strlen( $vision_feedback_prompt ) ],
+			];
+		}
+		$library_trace = [
             'status' => $library_applied ? 'applied' : (string) ( $library_retrieval['status'] ?? 'skipped' ),
             'reason' => $library_applied
                 ? 'Library composition was adapted to the user content and passed native checks.'
