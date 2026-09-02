@@ -13,6 +13,11 @@
   Vision repair refreshes the preview before retry because embedded Elementor
   can ignore `window.location.reload()`. Fresh live visual validation remains
   mandatory after deployment.
+- Design validation: Impeccable `3.9.1` is installed globally at
+  `~/.agents/skills/impeccable` and applies to every customer-facing Elementor
+  generation. Use its hierarchy, contrast, anti-slop, responsive, and live
+  review rules together with Elementor's official Flexbox guide
+  (`https://elementor.com/blog/flex-css/`).
 
 ## Mandatory error journal workflow
 
