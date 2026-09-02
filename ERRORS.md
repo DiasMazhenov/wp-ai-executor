@@ -3,6 +3,22 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-010: Trusted About kept empty placeholder layers and negative offset
+
+- **Observed:** The v02.10.75 About c70 generation loaded the replacement photo,
+  but still rendered empty gray placeholder boxes and a detached composition.
+  Scoped JSON showed an overlay container with `margin.top = -262` and two
+  empty nested containers; the final repair response also ended with HTTP 500.
+- **Root cause:** Trusted layout normalization preserved source decorative
+  containers even when they contained no widgets or media, and preserved
+  geometry only cleared negative horizontal margins. The source kit's empty
+  placeholder layer therefore survived into the generated Flex tree.
+- **Fix:** v02.10.76 skips nested containers with no widget/background media and
+  clears negative top/right/bottom/left margins in all responsive margin maps.
+- **Regression status:** Local contract/lint checks pending. Fresh Browser Use
+  About screenshot, scoped JSON/DOM, AI Vision and design-taste review required;
+  then rerun Team, Image Box and Testimonials.
+
 ## EJ-009: Natural About brief selected the Team template and repair duplicated roots
 
 - **Observed:** The v02.10.74 About prompt mentioning a studio and leaving the

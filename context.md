@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.75`
+- Plugin: `v02.10.76`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -61,6 +61,14 @@ studio/company language before the Team fallback, and retrieval no longer uses
 the generic `about` alias for Team. The live About, Team and Image Box blocks
 must be re-tested with scoped JSON, DOM, screenshot, AI Vision and
 `design-taste-frontend` review.
+
+Release v02.10.76 fixes the About c70 layout defect found in the live v02.10.75
+run. Trusted normalization now removes nested containers with no widgets or
+background media, while preserving meaningful content and images. Preserved
+library geometry also clears negative top/right/bottom/left margins, including
+the source `-262px` vertical offset that created detached empty placeholder
+layers. Fresh Browser Use validation is required for About and every remaining
+trusted block.
 
 The v02.10.74 package metadata is synchronized in both the WordPress plugin
 header and `WPAE_VERSION`, so the live Elementor chat can verify that WP Pusher

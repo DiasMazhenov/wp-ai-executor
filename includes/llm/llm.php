@@ -1978,13 +1978,13 @@ function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$c
         }
         return false;
     };
-    $clear_negative_horizontal_margin = static function ( array &$settings ): bool {
+    $clear_negative_margin = static function ( array &$settings ): bool {
         $changed_margin = false;
         foreach ( [ 'margin', 'margin_tablet', 'margin_mobile', '_margin', '_margin_tablet', '_margin_mobile' ] as $key ) {
             if ( ! is_array( $settings[ $key ] ?? null ) ) {
                 continue;
             }
-            foreach ( [ 'left', 'right' ] as $side ) {
+            foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
                 if ( is_numeric( $settings[ $key ][ $side ] ?? null ) && (float) $settings[ $key ][ $side ] < 0 ) {
                     $settings[ $key ][ $side ] = '0';
                     $changed_margin = true;
@@ -1993,13 +1993,13 @@ function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$c
         }
         return $changed_margin;
     };
-    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $read_percent_width, $has_gap, $clear_negative_horizontal_margin ): void {
+    $walk = static function ( array &$nodes ) use ( &$walk, &$changed, $read_percent_width, $has_gap, $clear_negative_margin ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
             }
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
-            if ( $clear_negative_horizontal_margin( $settings ) ) {
+            if ( $clear_negative_margin( $settings ) ) {
                 $changed++;
             }
             if ( ( $element['elType'] ?? '' ) === 'container' ) {
@@ -4138,9 +4138,29 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
         }
         return false;
     };
+    $has_meaningful_descendant = static function ( array $nodes ) use ( &$has_meaningful_descendant ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+                return true;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
+                if ( is_array( $settings[ $key ] ?? null ) && trim( (string) ( $settings[ $key ]['url'] ?? '' ) ) !== '' ) {
+                    return true;
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) && $has_meaningful_descendant( $node['elements'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
     $placeholder_heading_index = 0;
     $library_image_index = 0;
-    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, &$placeholder_heading_index, &$library_image_index, $is_library_image_placeholder, $next_library_image, $library_image_alt ): array {
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, $has_meaningful_descendant, &$placeholder_heading_index, &$library_image_index, $is_library_image_placeholder, $next_library_image, $library_image_alt ): array {
         $normalized_nodes = [];
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
@@ -4414,6 +4434,10 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
             $element['settings'] = $settings;
             if ( is_array( $element['elements'] ?? null ) ) {
                 $element['elements'] = $walk( $element['elements'], $depth + 1 );
+            }
+            if ( $element_type === 'container' && $depth > 0 && ! $has_meaningful_descendant( [ $element ] ) ) {
+                $changed++;
+                continue;
             }
             $normalized_nodes[] = $element;
         }
