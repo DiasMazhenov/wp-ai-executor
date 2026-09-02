@@ -204,6 +204,21 @@ before making a new change to the plugin.
   error entry for the same 500 request plus its request URL/stack. Then compare
   the REST route with the caller before changing plugin code.
 
+## EJ-062: Hosting quota reports zero free disk space
+
+- **Observed:** The supplied hosting-panel screenshot reports `Свободное
+  место, MB: 0`; it also shows 76 MB of logs, 111 MB of databases, and 965 MB
+  of sites.
+- **Root cause status:** Full disk is a high-confidence infrastructure cause
+  for generic WordPress/PHP 500 responses because PHP and WordPress may be
+  unable to write temporary files, sessions, cache, uploads, database data, or
+  logs. It can also make the preceding 500 evidence incomplete. It does not by
+  itself explain the malformed REST warnings or duplicate debug definitions.
+- **Next action:** Download the current logs first, free several hundred MB or
+  increase the hosting quota, then retest `/wp-admin/` and Elementor before
+  changing plugin code. Remove only identified old logs/cache/backups; do not
+  delete `wp-content/uploads` or plugin files blindly.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed

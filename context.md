@@ -91,6 +91,11 @@
   duplicate debug configuration as a site defect and collect access/error
   entries for one exact 500 before changing REST code; keep
   `WP_DEBUG_DISPLAY` disabled for JSON/AJAX responses.
+- 2026-09-03 hosting-panel screenshot reports `Свободное место, MB: 0`
+  (logs 76 MB, databases 111 MB, sites 965 MB). Treat the full disk quota as
+  the first infrastructure check for the admin 500: free space or increase
+  quota, then retest WordPress/Elementor before changing plugin code. Preserve
+  logs before cleanup and do not delete uploads or plugin files blindly.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
