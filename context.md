@@ -96,6 +96,15 @@
   requires server-side logs or Recovery Mode. The Elementor tab was preserved.
   This is recorded as `ERRORS.md` EJ-060; do not treat GitHub push as live
   deploy. Live is still `v02.11.16`; repository is `v02.11.20`.
+- 2026-09-03 WP Pusher recovery rule: if `WP AI Executor` is absent from the
+  WP Pusher plugin list, open `admin.php?page=wppusher-plugins-create` and
+  add GitHub repository `DiasMazhenov/wp-ai-executor`, branch `main`, with
+  `Push-to-Deploy` and `Link installed plugin` enabled. The automated attempt
+  returned `Загрузка не удалась`, then the user completed the update manually;
+  WP Pusher now lists the plugin and Elementor reports `v02.11.20`. The fresh
+  timeline test still failed Vision/Impeccable acceptance because the result
+  remained a 2x2 card grid; the supplemental prompt was observed twice and
+  the last failed version was rolled back.
 - 2026-09-03 supplied server-log probes: the larger `mod_fcgid` excerpt has
   999 lines from 02:20:37 to 02:21:09 and repeats the same warnings across
   roughly 100 request cycles: duplicate debug constants in the site's

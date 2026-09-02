@@ -27,6 +27,24 @@ before making a new change to the plugin.
   separate prompt step, timeline structure in scoped JSON/DOM, and a fresh
   screenshot reviewed through Vision/Impeccable.
 
+## EJ-064: WP Pusher could not add the repository for live deployment
+
+- **Observed:** Because `WP AI Executor` was absent from the WP Pusher plugin
+  list, the `Install New Plugin` form was opened with GitHub repository
+  `DiasMazhenov/wp-ai-executor`, branch `main`, `Push-to-Deploy`, and `Link
+  installed plugin` enabled. WP Pusher returned `Загрузка не удалась` and did
+  not add the repository.
+- **Likely causes:** The site has previously reported zero free disk space,
+  and the configured GitHub token may be invalid or unavailable to WP Pusher.
+  The public repository and branch are correct; the UI did not expose a more
+  specific error.
+- **Regression status:** The failed automated add was completed manually by
+  the user; WP Pusher now lists the plugin and live Elementor reports
+  v02.11.20. The fresh timeline test still failed visual acceptance: Vision
+  scored 82 and then 68, identified a 2x2 card grid instead of a connected
+  timeline, received the supplemental prompt twice, and rolled back after
+  two bounded repairs. Do not claim the timeline composition is fixed yet.
+
 ## EJ-051: Quality-gate additions accepted generic sparse provider trees
 
 - **Observed:** After v02.11.14-v02.11.15, content-only pricing, FAQ, cases,
