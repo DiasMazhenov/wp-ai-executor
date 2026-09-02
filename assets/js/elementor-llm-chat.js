@@ -526,18 +526,37 @@
         var body = doc.body;
         var target = findPreviewTarget(doc, targetElementIds);
         var scope = target || body || doc.documentElement;
-        var ids = Array.prototype.slice.call(scope.querySelectorAll('[data-id]')).filter(function (element) {
+        var isVisible = function (element) {
+            if (!element) return false;
             var style = doc.defaultView.getComputedStyle(element);
-            return style.display !== 'none' && style.visibility !== 'hidden';
+            return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0;
+        };
+        var ids = Array.prototype.slice.call(scope.querySelectorAll('[data-id]')).filter(function (element) {
+            return isVisible(element);
         }).slice(0, 40).map(function (element) { return element.getAttribute('data-id'); });
         if (target && target.getAttribute('data-id')) ids.unshift(target.getAttribute('data-id'));
         ids = Array.from(new Set(ids)).filter(function (id) { return !!id; });
+        var visibleMediaCount = 0;
+        if (isVisible(scope) && doc.defaultView.getComputedStyle(scope).backgroundImage !== 'none') visibleMediaCount += 1;
+        Array.prototype.slice.call(scope.querySelectorAll('img,video,picture')).forEach(function (element) {
+            if (isVisible(element)) visibleMediaCount += 1;
+        });
+        Array.prototype.slice.call(scope.querySelectorAll('[data-id]')).forEach(function (element) {
+            if (isVisible(element) && doc.defaultView.getComputedStyle(element).backgroundImage !== 'none') visibleMediaCount += 1;
+        });
+        var labeledCtaCount = Array.prototype.slice.call(scope.querySelectorAll('.elementor-button,a[href],button')).filter(function (element) {
+            return isVisible(element) && (element.innerText || '').replace(/\s+/g, ' ').trim() !== '';
+        }).length;
+        var headingCount = Array.prototype.slice.call(scope.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(isVisible).length;
         return {
             source: 'elementor_editor_preview',
             editor_chrome_excluded: true,
             review_scope: reviewScope || 'generated_block',
             target_found: !!target,
             widget_count: scope ? scope.querySelectorAll('.elementor-widget').length : 0,
+            visible_media_count: visibleMediaCount,
+            labeled_cta_count: labeledCtaCount,
+            heading_count: headingCount,
             text_length: scope ? (scope.innerText || '').trim().length : 0,
             text_excerpt: scope ? (scope.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 4000) : '',
             viewport_width: doc.documentElement.clientWidth || iframe.clientWidth || 0,

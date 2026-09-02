@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.84`
+- Plugin: `v02.10.85`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -38,6 +38,10 @@
   speaking/presentation photos using the per-generation variation seed instead
   of preserving one repeated source image; arbitrary user-owned hero media is
   unchanged.
+- v02.10.85: Vision render-context now reports visible media, headings, and
+  labeled CTA counts for the scoped Elementor target; findings that contradict
+  those facts no longer start repair loops, while real major/critical findings
+  remain blocking.
 
 ## Mandatory error journal workflow
 

@@ -16,6 +16,20 @@ before making a new change to the plugin.
   must show distinct trusted hero background URLs/screenshots across different
   prompts and one relevant background per hero.
 
+## EJ-019: Vision rejected a populated photo hero on false missing-media findings
+
+- **Observed:** v02.10.84 showed a populated hero with a relevant photo and a
+  labeled CTA, but Gemini Vision reported a flat gray background and an empty
+  button, starting unnecessary bounded repair passes.
+- **Root cause:** The Vision prompt had only text length/widget count and could
+  not distinguish a screenshot-capture limitation from absent media or CTA.
+- **Fix:** v02.10.85 sends scoped factual counts for visible media, headings,
+  and labeled CTAs; contradictory missing-media/empty-CTA findings are
+  discarded, while genuine major/critical layout findings remain blocking.
+- **Regression status:** Local tests and PHP lint must pass. Live Browser Use
+  must show a populated hero, distinct relevant background media, and no repair
+  loop caused solely by a contradicted missing-media or CTA finding.
+
 ## EJ-016: Dirty accent and stale preview state survived trusted hero repair
 
 - **Observed:** v02.10.81 used a muted terracotta CTA family, while the live

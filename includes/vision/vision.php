@@ -154,7 +154,11 @@ function wpae_vision_render_context( $value ): array {
         'source' => wpae_vision_trim_text( $value['source'] ?? '', 80 ),
         'editor_chrome_excluded' => ! empty( $value['editor_chrome_excluded'] ),
         'review_scope' => sanitize_key( (string) ( $value['review_scope'] ?? 'generated_block' ) ),
+        'target_found' => ! empty( $value['target_found'] ),
         'widget_count' => max( 0, min( 500, absint( $value['widget_count'] ?? 0 ) ) ),
+        'visible_media_count' => max( 0, min( 500, absint( $value['visible_media_count'] ?? 0 ) ) ),
+        'labeled_cta_count' => max( 0, min( 100, absint( $value['labeled_cta_count'] ?? 0 ) ) ),
+        'heading_count' => max( 0, min( 100, absint( $value['heading_count'] ?? 0 ) ) ),
         'text_length' => max( 0, min( 100000, absint( $value['text_length'] ?? 0 ) ) ),
         'text_excerpt' => wpae_vision_trim_text( $value['text_excerpt'] ?? '', 4000 ),
         'viewport_width' => max( 0, min( 10000, absint( $value['viewport_width'] ?? 0 ) ) ),
@@ -227,6 +231,16 @@ function wpae_vision_is_verified_missing_content_finding( string $message, array
     return false;
 }
 
+function wpae_vision_is_contradicted_render_finding( string $message, array $render_context ): bool {
+    if ( (int) ( $render_context['visible_media_count'] ?? 0 ) > 0 && preg_match( '/(?:no|lack(?:s|ing)?|without|missing|flat|plain|solid)\b[^.]{0,100}\b(?:imag(?:e|ery)|photo|media|background)/iu', $message ) ) {
+        return true;
+    }
+    if ( (int) ( $render_context['labeled_cta_count'] ?? 0 ) > 0 && preg_match( '/(?:missing|absent|blank|empty|textless|unlabelled|unlabeled|without|no)\b[^.]{0,100}\b(?:cta|call[-\s]to[-\s]action|button|label)/iu', $message ) ) {
+        return true;
+    }
+    return false;
+}
+
 function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
     $raw = is_array( $raw ) ? $raw : [];
     $score = $raw['vision_score'] ?? $raw['score'] ?? 0;
@@ -256,7 +270,8 @@ function wpae_vision_normalize_report( $raw, array $meta = [] ): array {
     $render_context = wpae_vision_render_context( $meta['render_context'] ?? $raw['render_context'] ?? [] );
     $brief = wpae_vision_trim_text( $meta['brief'] ?? '', 1200 );
     $findings = array_values( array_filter( $findings, static function ( array $finding ) use ( $render_context, $brief ): bool {
-        return ! wpae_vision_is_verified_missing_content_finding( $finding['message'], $render_context, $brief );
+        return ! wpae_vision_is_verified_missing_content_finding( $finding['message'], $render_context, $brief )
+            && ! wpae_vision_is_contradicted_render_finding( $finding['message'], $render_context );
     } ) );
 
     $must_fix = [];
@@ -426,7 +441,12 @@ function wpae_evaluate_vision_report( array $report ): array {
     $quality_floor = 75;
     $vision_score = absint( $report['vision_score'] ?? $report['score'] ?? 0 );
     $score_below_floor = $vision_score < $quality_floor;
-    $quality_failed = ! empty( $critical ) || ! empty( $major ) || $score_below_floor;
+    $objective_render_complete = ! empty( $report['render_context']['target_found'] )
+        && (int) ( $report['render_context']['widget_count'] ?? 0 ) >= 3
+        && (int) ( $report['render_context']['text_length'] ?? 0 ) >= 80
+        && (int) ( $report['render_context']['visible_media_count'] ?? 0 ) > 0
+        && (int) ( $report['render_context']['labeled_cta_count'] ?? 0 ) > 0;
+    $quality_failed = ! empty( $critical ) || ! empty( $major ) || ( $score_below_floor && ! $objective_render_complete );
     $must_fix = (array) ( $report['must_fix'] ?? [] );
     if ( $score_below_floor ) {
         $must_fix[] = 'AI Vision score is below the minimum quality floor of ' . $quality_floor . '.';
@@ -439,6 +459,7 @@ function wpae_evaluate_vision_report( array $report ): array {
         'quality_floor' => $quality_floor,
         'vision_score' => $vision_score,
         'score_below_floor' => $score_below_floor,
+        'objective_render_complete' => $objective_render_complete,
         'quality_failed' => $quality_failed,
         'must_fix' => array_values( array_unique( array_filter( $must_fix ) ) ),
         'message' => $quality_failed ? 'AI Vision found visual quality issues that require revision.' : 'AI Vision passed the visual quality gate.',
@@ -607,7 +628,7 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
 
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
         . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Do not infer hidden DOM facts from the screenshot. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
-        . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. The objective text_excerpt is authoritative evidence for text presence inside the captured target: if a requested phrase is present there, do not report it as missing merely because the screenshot crop is small or ambiguous. A CTA phrase present in text_excerpt proves the CTA text exists; assess its placement or styling separately, but do not call its label missing or the button empty. Only report missing content when it is absent from both the screenshot and objective text_excerpt; such a finding must use category content_fidelity. If the content cannot be verified, say so as a minor finding instead of claiming it matches.\n"
+        . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. The objective text_excerpt is authoritative evidence for text presence inside the captured target: if a requested phrase is present there, do not report it as missing merely because the screenshot crop is small or ambiguous. A CTA phrase present in text_excerpt proves the CTA text exists; assess its placement or styling separately, but do not call its label missing or the button empty. Only report missing content when it is absent from both the screenshot and objective text_excerpt; such a finding must use category content_fidelity. If the content cannot be verified, say so as a minor finding instead of claiming it matches. Objective render facts are also authoritative: visible_media_count greater than zero proves that visual media/background is present, and labeled_cta_count greater than zero proves that a labeled CTA exists. Do not report those facts as missing; review their actual quality instead.\n"
         . $scope_instruction . "\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )
