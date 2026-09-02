@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.87`
+- Plugin: `v02.10.88`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -53,6 +53,11 @@
   The live page showed varied new hero photos plus stale historical duplicate
   roots; those are separate saved test sections, not one image selected for all
   new generations.
+- v02.10.88: Trusted hero photo rotation now excludes every background URL
+  already present in the current Elementor page while unused images remain in
+  the relevant five-image pool. This prevents new hero generations from making
+  historical page duplicates look like one repeated photo; saved roots remain
+  untouched until explicitly removed.
 
 ## Mandatory error journal workflow
 

@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-022: New trusted heroes could repeat photos already used on the page
+
+- **Observed:** The current page contained several saved hero roots. New
+  generations rotated across the trusted image pool, but a page with existing
+  duplicates could still receive a photo already used elsewhere, making the
+  whole page look repetitive.
+- **Root cause:** v02.10.84-v02.10.87 compared the candidate only with the
+  source root being normalized; the hero normalizer had no view of background
+  URLs in the existing Elementor page.
+- **Fix:** v02.10.88 collects existing background URLs before hero
+  normalization and skips them while an unused relevant photo remains. When
+  the five-image pool is exhausted, normal rotation resumes. Existing saved
+  roots are intentionally left unchanged.
+- **Regression status:** Local contract tests and PHP lint pass. Fresh Browser
+  Use must show a new trusted hero using a photo not present in the existing
+  page pool when an unused candidate exists.
+
 ## EJ-021: Booking CTA stayed as text in trusted hero generations
 
 - **Observed:** A content-only presentation brief generated a relevant photo

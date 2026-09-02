@@ -1824,7 +1824,7 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
     return $elements;
 }
 
-function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false, int $image_variant = -1 ): array {
+function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false, int $image_variant = -1, array $used_image_urls = [] ): array {
     $to_alignment = static function ( $value ): ?string {
         $value = strtolower( trim( (string) $value ) );
         if ( in_array( $value, [ 'left', 'center', 'right' ], true ) ) {
@@ -2040,7 +2040,8 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/woman-speaking-at-event-with-audience-members-2026-03-26-22-59-42-utc.jpg',
         'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/confident-professional-woman-speaking-into-microph-2026-05-18-21-28-38-utc.jpg',
     ];
-    $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image, $clean_trusted_source, $trusted_hero_images, $image_variant, $message ): array {
+    $used_image_urls = array_values( array_unique( array_filter( array_map( 'trim', $used_image_urls ) ) ) );
+    $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image, $clean_trusted_source, $trusted_hero_images, $image_variant, $message, $used_image_urls ): array {
         if ( count( $units ) < 2 ) {
             return $root;
         }
@@ -2064,6 +2065,13 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
                 $current_image_url = trim( (string) ( $background_image['url'] ?? '' ) );
                 $image_index = abs( $image_variant >= 0 ? $image_variant : hexdec( substr( md5( $message ), 0, 6 ) ) ) % count( $trusted_hero_images );
                 $next_image_url = $trusted_hero_images[ $image_index ];
+                for ( $offset = 0; $offset < count( $trusted_hero_images ); $offset++ ) {
+                    $candidate_image_url = $trusted_hero_images[ ( $image_index + $offset ) % count( $trusted_hero_images ) ];
+                    if ( $candidate_image_url !== $current_image_url && ! in_array( $candidate_image_url, $used_image_urls, true ) ) {
+                        $next_image_url = $candidate_image_url;
+                        break;
+                    }
+                }
                 if ( $next_image_url === $current_image_url ) {
                     $next_image_url = $trusted_hero_images[ ( $image_index + 1 ) % count( $trusted_hero_images ) ];
                 }
@@ -5687,7 +5695,25 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $hero_composition_changed = 0;
         if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
-            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1 );
+            $existing_image_urls = [];
+            $collect_existing_image_urls = static function ( array $nodes ) use ( &$collect_existing_image_urls, &$existing_image_urls ): void {
+                foreach ( $nodes as $node ) {
+                    if ( ! is_array( $node ) ) {
+                        continue;
+                    }
+                    $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+                    foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
+                        $image = $settings[ $key ] ?? null;
+                        $url = is_array( $image ) ? trim( (string) ( $image['url'] ?? '' ) ) : trim( (string) $image );
+                        if ( $url !== '' ) {
+                            $existing_image_urls[] = $url;
+                        }
+                    }
+                    $collect_existing_image_urls( (array) ( $node['elements'] ?? [] ) );
+                }
+            };
+            $collect_existing_image_urls( $existing );
+            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1, $existing_image_urls );
         }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
