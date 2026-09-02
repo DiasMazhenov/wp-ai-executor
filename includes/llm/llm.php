@@ -5188,6 +5188,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     $library_preserve_design = ! empty( $selected_library['trusted_bundled'] ) && $action_archetype !== 'hero';
                     if ( $library_preserve_design ) {
                         unset( $action['fallback_variant'] );
+                        $placeholder_layout_changed = 0;
+                        $action['elements'] = wpae_llm_normalize_library_layout( $action['elements'], $placeholder_layout_changed, $action_archetype );
+                        $library_layout_changed += $placeholder_layout_changed;
                         $action['elements'] = wpae_llm_mark_preserved_library_design( $action['elements'] );
                         $action['elements'] = wpae_llm_materialize_preserved_library_colors( $action['elements'], $library_layout_changed );
                         $action['elements'] = wpae_llm_normalize_preserved_library_visual_state( $action['elements'], $library_layout_changed );

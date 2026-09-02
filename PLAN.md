@@ -1,5 +1,15 @@
 # План WP AI Executor
 
+## v02.10.73
+
+- Исправить trusted-ветку с несколькими content-парами: после подстановки
+  цитат/имен прогонять существующий library layout normalizer, чтобы убрать
+  `Sample Subtitle`, `New Block Title`, lorem ipsum и слабую геометрию карточек,
+  сохранив исходную композицию.
+- Доставить пакет через WP Pusher и повторить testimonials, затем проверить
+  остальные естественные промты блоков со screenshot, scoped JSON, DOM, AI
+  Vision и `design-taste-frontend`.
+
 ## v02.10.72
 
 - Исправить остаточный live-провал hero: бейдж должен быть внутри

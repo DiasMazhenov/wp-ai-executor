@@ -416,6 +416,7 @@ assert.match(llm, /function wpae_llm_normalize_hero_composition/);
 assert.match(llm, /Hero — самостоятельная композиция/);
 assert.match(llm, /count\( \$labeled_pairs \) < 2[\s\S]*запишитесь/iu);
 assert.match(llm, /\$library_preserve_design = ! empty\( \$selected_library\['trusted_bundled'\] \) && \$action_archetype !== 'hero'/);
+assert.match(llm, /wpae_llm_normalize_library_layout\( \$action\['elements'\], \$placeholder_layout_changed, \$action_archetype \)/);
 assert.match(llm, /if \( \$is_photo_container && \$has_text_content\( \$children \) \)/);
 assert.match(llm, /\$settings\['title_color'\] = '#ffffff'/);
 assert.match(llm, /\$settings\['button_hover_text_color'\] = '#ffffff'/);

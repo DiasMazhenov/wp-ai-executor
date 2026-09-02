@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-006: Trusted multi-pair blocks bypassed placeholder cleanup
+
+- **Observed:** The first live testimonials test on v02.10.72 mapped both
+  requested quotes and names, but the rendered block retained `Sample Subtitle`,
+  `New Block Title`, lorem ipsum copy, and weak separation between testimonial
+  cards. AI Vision scored it `58` and started a repair cycle that still left
+  placeholder content.
+- **Root cause:** `wpae_llm_apply_library_template()` uses a separate multi-pair
+  card adaptation path. That path never called the existing
+  `wpae_llm_normalize_library_layout()` placeholder/card normalizer, even when
+  the selected source was a trusted bundled template.
+- **Fix:** v02.10.73 runs the existing library layout normalizer in the trusted
+  branch after pair adaptation and before preservation-specific visual passes.
+- **Regression status:** Contract coverage added. Testimonials and remaining
+  block types require fresh Browser Use generation with screenshot, scoped JSON,
+  DOM, AI Vision, and design-taste review.
+
 ## EJ-005: Hero badge and content alignment remained visually detached
 
 - **Observed:** The v02.10.71 live screenshot still showed the outlined

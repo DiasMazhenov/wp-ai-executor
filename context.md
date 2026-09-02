@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.72`
+- Plugin: `v02.10.73`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -36,6 +36,16 @@ moves the badge inside the content shell immediately before the first heading,
 prioritizes alignment declared by text widgets over structural containers, and
 sets both normal and hover CTA text to white. Live Browser Use regression is
 required before this issue can be closed.
+
+Release v02.10.73 fixes the first non-hero live block regression found after
+v02.10.72. A trusted testimonials template accepted the requested quotes and
+names, but its multi-pair adaptation path bypassed the existing library
+placeholder cleanup, leaving `Sample Subtitle`, `New Block Title`, lorem copy,
+and weak card separation in the rendered block. Trusted templates now run the
+existing layout/content normalizer after pair adaptation and before the
+preservation pass, so source composition is retained while placeholder copy
+and known card geometry are corrected. Fresh Browser Use regression is still
+required for testimonials and the remaining block types.
 
 Release v02.10.68 fixes the deeper live-preview corruption found in the v67
 Browser Use run. The Elementor editor kept roots from earlier generation and
