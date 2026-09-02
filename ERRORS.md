@@ -180,6 +180,26 @@ before making a new change to the plugin.
   `v02.11.16`), then rerun photo generation and its screenshot ->
   Vision/design-taste/Impeccable validation loop.
 
+## EJ-061: Supplied server log shows duplicate debug constants and REST warnings
+
+- **Observed:** The supplied `mod_fcgid` excerpt from 2026-09-03 02:21:06-02:21:09
+  repeatedly reports `WP_DEBUG`, `WP_DEBUG_DISPLAY`, `WP_DEBUG_LOG`, and
+  `SCRIPT_DEBUG` already defined in the site's `wp-config.php` (lines 93, 96,
+  99, 103, 109-111). It also repeats `Undefined array key 2` and `Trying to
+  access array offset on null` from WordPress core
+  `wp-includes/rest-api/class-wp-rest-server.php` lines 1841 and 1853.
+- **Root cause status:** The duplicate-constant issue is a site configuration
+  defect, not a definition in this plugin. The REST messages indicate a
+  malformed or incompatible REST request, but the excerpt contains no request
+  route, stack trace, `Fatal error`, `Uncaught`, or `Parse error`; it ends
+  mid-line. It therefore cannot identify the 500 or attribute it to our plugin.
+  `WP_DEBUG_DISPLAY` being enabled may additionally corrupt REST/AJAX output,
+  but does not by itself explain a generic admin 500.
+- **Next action:** On the server, keep one guarded definition of each debug
+  constant, set `WP_DEBUG_DISPLAY` false, and collect the complete PHP/Apache
+  error entry for the same 500 request plus its request URL/stack. Then compare
+  the REST route with the caller before changing plugin code.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed

@@ -81,6 +81,15 @@
   requires server-side logs or Recovery Mode. The Elementor tab was preserved.
   This is recorded as `ERRORS.md` EJ-060; do not treat GitHub push as live
   deploy. Live is still `v02.11.16`; repository is `v02.11.19`.
+- 2026-09-03 supplied server-log probe: the `mod_fcgid` excerpt repeatedly
+  reports duplicate `WP_DEBUG`, `WP_DEBUG_DISPLAY`, `WP_DEBUG_LOG`, and
+  `SCRIPT_DEBUG` definitions in the site's `wp-config.php`, plus core REST
+  warnings (`Undefined array key 2` / null array offset) at
+  `class-wp-rest-server.php` lines 1841 and 1853. The excerpt has no fatal
+  stack, route, or complete 500 entry and ends mid-line, so it does not prove a
+  plugin fault. Treat duplicate debug configuration as a site defect and
+  collect the complete server entry before changing REST code; keep
+  `WP_DEBUG_DISPLAY` disabled for JSON/AJAX responses.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
