@@ -298,7 +298,7 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
     }
 
     $sentences = wpae_llm_content_units( $message );
-    $has_cta = (bool) preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть)\b/iu', $message );
+    $has_cta = (bool) preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать)\b/iu', $message );
     $has_content_signal = (bool) preg_match( '/[«»"]|₸|\$|€|₽|\b(дизайн|сайт|страниц|проект|бизнес|клиент|услуг|продукт|команд|запуск|результат|коллекц\w*|доставк\w*|специалист\w*|заказ\w*|выбор\w*|помощ\w*|стоим\w*|тариф\w*|отзыв\w*|этап\w*|шаг\w*)\b/iu', $message );
 
     // Content-only briefs can be neutral copy without domain keywords or labels.
@@ -771,7 +771,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
     }
     if ( ! empty( $structured_pairs ) ) {
         foreach ( wpae_llm_content_units( $message ) as $unit ) {
-            if ( preg_match( '/\\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\\s+заявк|смотреть)\\b/iu', $unit ) ) {
+            if ( preg_match( '/\\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\\s+заявк|смотреть|запишитесь|забронируйте|забронировать)\\b/iu', $unit ) ) {
                 $matches[] = $unit;
             }
         }
@@ -1262,7 +1262,7 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     $title = trim( (string) array_shift( $requested ) );
     $cta = '';
     for ( $index = count( $requested ) - 1; $index >= 0; $index-- ) {
-        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|регистрац\w*)\b/iu', (string) $requested[ $index ] ) ) {
+        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать|регистрац\w*)\b/iu', (string) $requested[ $index ] ) ) {
             $cta = trim( (string) $requested[ $index ] );
             array_splice( $requested, $index, 1 );
             break;
@@ -2049,7 +2049,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         $cta = '';
         $body = [];
         foreach ( $units as $unit ) {
-            if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь)\b/iu', $unit ) ) {
+            if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать)\b/iu', $unit ) ) {
                 $cta = $unit;
                 continue;
             }
@@ -3007,7 +3007,7 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
 function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed, bool $preserve_style = false ): array {
     $cta = '';
     foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|регистрац\w*)\b/iu', $value ) ) {
+        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать|регистрац\w*)\b/iu', $value ) ) {
             $cta = trim( (string) $value );
             break;
         }
@@ -3019,7 +3019,7 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
     $normalized_cta = wpae_llm_normalize_content_text( $cta );
     $button_found = false;
     $replaced_text = false;
-    $walk = static function ( array &$nodes ) use ( &$walk, $cta, $normalized_cta, &$button_found, &$replaced_text, &$changed ): void {
+    $walk = static function ( array &$nodes ) use ( &$walk, $cta, $normalized_cta, $preserve_style, &$button_found, &$replaced_text, &$changed ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
@@ -3112,7 +3112,7 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
         }
         unset( $root );
     }
-    if ( is_array( $target ) && ! $preserve_style ) {
+    if ( is_array( $target ) ) {
         wpae_llm_normalize_generated_button_settings( $button['settings'] );
         $target[] = $button;
         $changed++;

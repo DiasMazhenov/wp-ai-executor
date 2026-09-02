@@ -3,6 +3,26 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-021: Booking CTA stayed as text in trusted hero generations
+
+- **Observed:** A content-only presentation brief generated a relevant photo
+  hero, but `Забронируйте диагностическую встречу` was not rendered as a native
+  button. The page also retained older duplicate test roots, three of which
+  reused the original `side-view` photo and made the image rotation look broken.
+- **Root cause:** The hero content-unit parser and requested-CTA normalizer did
+  not recognize `забронируйте`/`забронировать`. Trusted preservation also
+  refused to append a CTA when the source template had no button. Historical
+  duplicate roots were already saved page content, not the current rotation
+  candidate; the current generated roots used three different photo URLs.
+- **Fix:** v02.10.87 adds booking verbs to all shared CTA detection paths,
+  captures `preserve_style` correctly in the recursive walker, and always
+  materializes a missing CTA button inside the content shell. Existing trusted
+  button styling remains unchanged.
+- **Regression status:** Local contract tests and PHP lint must pass. Fresh
+  Browser Use must show a labeled native CTA in the new hero and a background
+  URL distinct from the immediately preceding generated root where the five
+  image pool allows it.
+
 ## EJ-020: Content-only hero offer fell into the shared Vocario Hero root
 
 - **Observed:** A presentation-school brief with a booking CTA was classified

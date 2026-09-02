@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.85`
+- Plugin: `v02.10.87`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -46,6 +46,13 @@
   classified as hero even without the word hero; benefits retrieval recognizes
   the Vocario Why Choose Us section instead of defaulting to the first Hero
   root, preventing repeated use of the shared Vocario background photo.
+- v02.10.87: Booking CTAs such as `Забронируйте диагностическую встречу` are
+  recognized by every content extraction and hero normalization path. Trusted
+  library adaptation also materializes a native CTA button when the source has
+  no button, while preserving the source style when an existing button exists.
+  The live page showed varied new hero photos plus stale historical duplicate
+  roots; those are separate saved test sections, not one image selected for all
+  new generations.
 
 ## Mandatory error journal workflow
 
