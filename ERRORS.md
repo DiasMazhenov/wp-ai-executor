@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-012: Trusted Team and Image Box briefs lost source composition
+
+- **Observed:** Team content-only generation selected a competing trusted
+  fixture and left member information as one paragraph. Image Box generation
+  could fall back to ordinary generation because the source had only
+  `nested-carousel` and `icon-box` widgets, so the rendered result was sparse
+  and unrelated to the supplied template.
+- **Root cause:** Retrieval had no source preference when CopyElement and
+  Vocario matched the same archetype. The content parser did not understand
+  `name, role. description`, while narrative adaptation required ordinary
+  headings/text widgets and pruned the Image Box card widgets when that path
+  failed.
+- **Fix:** v02.10.78 prefers CopyElement for ordinary prompts, adds a Team
+  pair parser, and adds a dedicated Image Box nested-carousel adapter that
+  preserves populated image cards and removes unused slides.
+- **Regression status:** Local lint/contract checks required. Fresh Browser
+  Use Team, Image Box, Testimonials and About screenshot, scoped JSON/DOM,
+  AI Vision and `design-taste-frontend` review required.
+
 ## EJ-011: Explicit Team brief was routed to the Hero template
 
 - **Observed:** The v02.10.76 natural Team brief began with «Наша команда»,

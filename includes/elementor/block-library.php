@@ -659,6 +659,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
 
     $prompt_tokens = wpae_block_library_retrieval_tokens( $message );
     $aliases = wpae_block_library_retrieval_aliases( sanitize_key( $archetype ) );
+    $prompt_requests_vocario = (bool) preg_match( '/\b(?:vocario|template[\s-]*kit)\b/iu', $message );
     $posts = get_posts( [
         'post_type' => WPAE_BLOCK_LIBRARY_POST_TYPE,
         'post_status' => 'private',
@@ -734,6 +735,10 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             $score++;
             $matched_terms[] = 'bento';
         }
+        if ( ! $prompt_requests_vocario && (string) ( $record['source'] ?? '' ) === 'copyelement' ) {
+            $score += 6;
+            $matched_terms[] = 'preferred-copyelement';
+        }
         $matched_terms = array_values( array_unique( $matched_terms ) );
         if ( $score < 5 ) {
             continue;
@@ -750,7 +755,13 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     }
 
     usort( $ranked, static function ( array $left, array $right ): int {
-        return (int) $right['score'] <=> (int) $left['score'];
+        $score_order = (int) $right['score'] <=> (int) $left['score'];
+        if ( $score_order !== 0 ) {
+            return $score_order;
+        }
+        $left_summary = (array) ( $left['summary'] ?? [] );
+        $right_summary = (array) ( $right['summary'] ?? [] );
+        return strcasecmp( (string) ( $left_summary['title'] ?? '' ), (string) ( $right_summary['title'] ?? '' ) );
     } );
     $result['candidate_count'] = count( $ranked );
     foreach ( array_slice( $ranked, 0, 3 ) as $candidate ) {

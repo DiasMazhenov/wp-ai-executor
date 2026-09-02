@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.77`
+- Plugin: `v02.10.78`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -17,6 +17,17 @@
   this file; do not repeat a known failure mode.
 - A live generation is not successful until its scoped JSON, DOM, screenshot,
   AI Vision result, and `design-taste-frontend` review agree.
+
+Release v02.10.78 fixes three trusted-library adaptation gaps found while
+testing the remaining CopyElement blocks. Team briefs in the natural
+«name, role. description» format now map to separate source member cards.
+Image Box briefs now keep the source nested-carousel, populate its image cards,
+remove unused empty slides, and add the requested section heading instead of
+falling back to a sparse generic block. Ordinary prompts prefer the bundled
+CopyElement fixture over a competing Vocario fixture; an explicit `vocario` or
+`template kit` request keeps Vocario eligible. Preserved badges inherit the
+first heading/text alignment from the source content. Fresh Browser Use
+validation is required for Team, Image Box, Testimonials and About.
 
 Release v02.10.71 fixes the live hero classification failure found in the
 v02.10.70 Browser Use run. A natural course offer with a clear signup CTA was

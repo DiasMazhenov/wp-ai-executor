@@ -1435,6 +1435,152 @@ function wpae_llm_apply_library_narrative_content( array &$elements, array $requ
     return $title_set && ( $body === '' || $body_set ) && ( $cta === '' || $cta_set );
 }
 
+function wpae_llm_extract_team_content( string $message ): array {
+    $content_message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
+    if ( ! is_string( $content_message ) || $content_message === '' ) {
+        $content_message = $message;
+    }
+
+    $pairs = [];
+    $segments = preg_split( '/(?<=\.)\s+(?=[\p{Lu}][^,.;\n]{2,80},\s*[^.!?;,\n]{2,80}\.)/u', $content_message, -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+    foreach ( $segments as $segment ) {
+        if ( ! preg_match( '/^\s*(?!наша\s+команд\w*\b)([^,.;\n]{2,80}),\s*([^.!?;,\n]{2,80})\.\s*(.+?)\s*$/us', trim( (string) $segment ), $match ) ) {
+            continue;
+        }
+        $name = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+        $role = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+        $description = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+        if ( $name !== '' && $role !== '' && $description !== '' ) {
+            $pairs[] = [
+                'label' => $name . ', ' . $role,
+                'content' => $description,
+            ];
+        }
+    }
+
+    return $pairs;
+}
+
+function wpae_llm_apply_library_image_box_content( array &$elements, string $message, int &$changed ): bool {
+    $units = wpae_llm_content_units( $message );
+    if ( count( $units ) < 3 ) {
+        return false;
+    }
+    $heading = trim( sanitize_text_field( (string) array_shift( $units ) ) );
+    $cards = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), $units ) ) );
+    if ( $heading === '' || count( $cards ) < 2 ) {
+        return false;
+    }
+
+    $short_title = static function ( string $content ): string {
+        if ( preg_match( '/^(?:сайт|онлайн[- ]школа|приложение|платформа|сервис|магазин|мобильн\w+)[^,.!?]*/iu', $content, $match ) ) {
+            return trim( sanitize_text_field( (string) $match[0] ) );
+        }
+        $words = preg_split( '/\s+/u', $content, -1, PREG_SPLIT_NO_EMPTY ) ?: [];
+        return trim( implode( ' ', array_slice( $words, 0, 5 ) ) );
+    };
+    $set_card_content = static function ( array &$nodes, string $title, string $content ) use ( &$set_card_content, &$changed ): bool {
+        foreach ( $nodes as &$node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+                $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+                if ( $widget_type === 'icon-box' ) {
+                    if ( (string) ( $settings['title_text'] ?? '' ) !== $title ) {
+                        $settings['title_text'] = $title;
+                        $changed++;
+                    }
+                    if ( (string) ( $settings['description_text'] ?? '' ) !== $content ) {
+                        $settings['description_text'] = $content;
+                        $changed++;
+                    }
+                    $node['settings'] = $settings;
+                    return true;
+                }
+                if ( $widget_type === 'heading' && trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) ) !== '' ) {
+                    if ( (string) $settings['title'] !== $title ) {
+                        $settings['title'] = $title;
+                        $changed++;
+                    }
+                    $node['settings'] = $settings;
+                    return true;
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) && $set_card_content( $node['elements'], $title, $content ) ) {
+                return true;
+            }
+        }
+        unset( $node );
+        return false;
+    };
+    $make_intro_heading = static function ( string $title ): array {
+        return [
+            'id' => 'wpae-image-box-heading-' . substr( md5( $title ), 0, 7 ),
+            'elType' => 'widget',
+            'widgetType' => 'heading',
+            'settings' => [
+                'title' => $title,
+                'header_size' => 'h2',
+                'align' => 'center',
+                'typography_typography' => 'custom',
+                'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.5 ],
+                'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 2.1 ],
+                'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.75 ],
+                'typography_line_height' => [ 'unit' => 'em', 'size' => 1.1 ],
+                'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.15 ],
+            ],
+            'elements' => [],
+        ];
+    };
+    $adapt = static function ( array &$nodes ) use ( &$adapt, $cards, $short_title, $set_card_content, $make_intro_heading, $heading, &$changed ): bool {
+        foreach ( $nodes as &$node ) {
+            if ( ! is_array( $node ) || ! is_array( $node['elements'] ?? null ) ) {
+                continue;
+            }
+            foreach ( $node['elements'] as $child_index => $child ) {
+                if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' || ! in_array( sanitize_key( (string) ( $child['widgetType'] ?? '' ) ), [ 'nested-carousel', 'n-carousel' ], true ) ) {
+                    continue;
+                }
+                $slides = is_array( $child['elements'] ?? null ) ? $child['elements'] : [];
+                $slide_indexes = [];
+                foreach ( $slides as $slide_index => $slide ) {
+                    if ( is_array( $slide ) && ( $slide['elType'] ?? '' ) === 'container' ) {
+                        $slide_indexes[] = $slide_index;
+                    }
+                }
+                if ( count( $slide_indexes ) < 2 ) {
+                    continue;
+                }
+                $target_count = min( count( $slide_indexes ), count( $cards ) );
+                $next_slides = [];
+                foreach ( array_slice( $slide_indexes, 0, $target_count ) as $position => $slide_index ) {
+                    $slide = $slides[ $slide_index ];
+                    $card_content = $cards[ $position ];
+                    $set_card_content( $slide['elements'], $short_title( $card_content ), $card_content );
+                    $next_slides[] = $slide;
+                }
+                if ( count( $next_slides ) < count( $slide_indexes ) ) {
+                    $changed += count( $slide_indexes ) - count( $next_slides );
+                }
+                $child['elements'] = $next_slides;
+                $node['elements'][ $child_index ] = $child;
+                array_splice( $node['elements'], (int) $child_index, 0, [ $make_intro_heading( $heading ) ] );
+                $changed++;
+                return true;
+            }
+            if ( $adapt( $node['elements'] ) ) {
+                return true;
+            }
+        }
+        unset( $node );
+        return false;
+    };
+
+    return $adapt( $elements );
+}
+
 function wpae_llm_mark_preserved_library_design( array $elements ): array {
     foreach ( $elements as &$element ) {
         if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {
@@ -2299,7 +2445,16 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         $apply_navigation( $template_elements );
         return $template_elements;
     }
+    if ( in_array( $archetype, [ 'portfolio', 'image-box' ], true ) && wpae_llm_apply_library_image_box_content( $template_elements, $message, $changed ) ) {
+        return $template_elements;
+    }
     $pairs = wpae_llm_extract_labeled_content( $message );
+    if ( $archetype === 'team' && count( $pairs ) < 2 ) {
+        $team_pairs = wpae_llm_extract_team_content( $message );
+        if ( count( $team_pairs ) >= 2 ) {
+            $pairs = $team_pairs;
+        }
+    }
     if ( count( $pairs ) < 2 ) {
         $missing = wpae_llm_extract_requested_content( $message );
         if ( empty( $missing ) ) {
@@ -3327,10 +3482,41 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
             }
         }
 
+        $find_content_alignment = static function ( array $nodes ) use ( &$find_content_alignment ): string {
+            foreach ( $nodes as $node ) {
+                if ( ! is_array( $node ) ) {
+                    continue;
+                }
+                if ( ( $node['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $node['widgetType'] ?? '' ) ), [ 'heading', 'text-editor' ], true ) ) {
+                    $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+                    $alignment = sanitize_key( (string) ( $settings['align'] ?? '' ) );
+                    if ( in_array( $alignment, [ 'left', 'center', 'right' ], true ) ) {
+                        return $alignment;
+                    }
+                }
+                if ( is_array( $node['elements'] ?? null ) ) {
+                    $alignment = $find_content_alignment( $node['elements'] );
+                    if ( $alignment !== '' ) {
+                        return $alignment;
+                    }
+                }
+            }
+            return '';
+        };
         if ( $badge === null ) {
             $badge = wpae_llm_badge_widget( 'wpae-generated-badge', $archetype );
             $changed++;
         }
+        $alignment_nodes = $content_elements;
+        if ( is_array( $content_shell ) ) {
+            $alignment_nodes = array_merge( (array) ( $content_shell['elements'] ?? [] ), $alignment_nodes );
+        }
+        $content_alignment = $find_content_alignment( $alignment_nodes );
+        $badge_settings = is_array( $badge['settings'] ?? null ) ? $badge['settings'] : [];
+        $badge_alignment = $content_alignment === 'center' ? 'center' : ( $content_alignment === 'right' ? 'flex-end' : 'flex-start' );
+        $badge_settings['align_self'] = $badge_alignment;
+        $badge_settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: ' . $badge_alignment . '; flex: 0 0 auto; }';
+        $badge['settings'] = $badge_settings;
 
         if ( $content_shell === null ) {
             $shell_settings = $original_settings;
