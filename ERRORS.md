@@ -19,6 +19,22 @@ before making a new change to the plugin.
   Team parent side padding, visible `H2`, no `icon-box` widgets, preserved
   portraits, no overflow and a healthy Elementor iframe.
 
+## EJ-042: Team source spacing weakened the promoted heading
+
+- **Observed:** The v02.11.09 live Team JSON had the correct side padding,
+  `H2`, native card widgets and images, but the content shell retained
+  `padding-top: 3rem` and the H2 inherited source gray `#9F9F9F`. Vision
+  scored the result `70` and flagged excessive whitespace above the heading.
+- **Root cause:** The source template's vertical spacing and title color were
+  preserved after the badge pass promoted the heading, so the new semantic
+  heading still looked visually disconnected and weak.
+- **Fix:** v02.11.10 clears only the Team shell's top padding on desktop/mobile
+  and assigns the promoted section H2 the dark text token.
+- **Regression status:** Recheck with Browser Use using screenshot ->
+  Vision/design-taste -> prompt comparison -> scoped JSON and DOM. Require
+  badge above H2, compact heading flow, Team side padding, no `icon-box`,
+  preserved images, no overflow and a healthy Elementor iframe.
+
 ## EJ-040: Preserved Team template lost parent side padding and heading tier
 
 - **Observed:** The live Team block rendered with `padding-left/right: 0px`,

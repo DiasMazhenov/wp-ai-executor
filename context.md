@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.09`
+- Plugin: `v02.11.10`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -152,6 +152,10 @@
   to native `heading` plus `text-editor` widgets before the final write. Team
   portraits and copy remain intact while the forbidden Icon Box widget cannot
   leak back from trusted templates.
+- v02.11.10: Trusted Team shells no longer preserve the source's excessive top
+  padding, and the promoted section H2 uses the dark text token instead of the
+  source's low-contrast gray. This keeps the outlined badge above a readable
+  heading without changing the card composition.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

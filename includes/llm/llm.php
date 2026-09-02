@@ -4089,7 +4089,7 @@ function wpae_llm_promote_team_section_heading( array $elements, int &$changed =
                     $node['widgetType'] = 'heading';
                     $settings['title'] = $text !== '' ? $text : 'Наша команда';
                     $settings['header_size'] = 'h2';
-                    $settings['title_color'] = (string) ( $settings['title_color'] ?? '#111827' );
+                    $settings['title_color'] = '#111827';
                     $settings['typography_typography'] = 'custom';
                     $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 3.25 ];
                     $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 2.75 ];
@@ -4227,6 +4227,14 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
         $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => $archetype === 'team' ? '1.25' : '0', 'bottom' => '0', 'left' => $archetype === 'team' ? '1.25' : '0', 'isLinked' => false ];
         $content_shell['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( (array) ( $content_shell['elements'] ?? [] ), $changed );
         if ( $archetype === 'team' ) {
+            $content_shell['settings'] = is_array( $content_shell['settings'] ?? null ) ? $content_shell['settings'] : [];
+            foreach ( [ 'padding', 'padding_mobile' ] as $padding_key ) {
+                if ( ! is_array( $content_shell['settings'][ $padding_key ] ?? null ) ) {
+                    continue;
+                }
+                $content_shell['settings'][ $padding_key ]['top'] = '0';
+                $changed++;
+            }
             $content_shell['elements'] = wpae_llm_promote_team_section_heading( (array) ( $content_shell['elements'] ?? [] ), $changed );
         }
         $root['elements'] = [ $badge, $content_shell ];
