@@ -192,7 +192,7 @@
         }, null, 2);
     }
     var providerRetryKey = 'wpae_llm_provider_retry:' + String(config.postId || '0');
-    var providerRetryTtl = 120000;
+    var providerRetryTtl = 600000;
     function readProviderRetry() {
         try {
             var raw = window.sessionStorage.getItem(providerRetryKey);
@@ -249,8 +249,11 @@
     function retryProviderRequestAfterReload() {
         var pending = readProviderRetry();
         if (!pending) return;
+        if (!config.ready) {
+            window.setTimeout(retryProviderRequestAfterReload, 1000);
+            return;
+        }
         clearProviderRetry();
-        if (!config.ready) return;
         setOpen(true);
         status.textContent = strings.sending;
         addMessage('user', pending.message);
@@ -258,7 +261,7 @@
         window.setTimeout(function () { request(pending.message, true, pending.options || {}); }, 0);
     }
     var visionRepairKey = 'wpae_llm_vision_repair:' + String(config.postId || '0');
-    var visionRepairTtl = 120000;
+    var visionRepairTtl = 600000;
     function readVisionRepair() {
         try {
             var raw = window.sessionStorage.getItem(visionRepairKey);
@@ -303,8 +306,11 @@
     function retryVisionRepairAfterReload() {
         var pending = readVisionRepair();
         if (!pending) return;
+        if (!config.ready) {
+            window.setTimeout(retryVisionRepairAfterReload, 1000);
+            return;
+        }
         clearVisionRepair();
-        if (!config.ready) return;
         setOpen(true);
         status.textContent = strings.sending;
         addMessage('user', pending.message);

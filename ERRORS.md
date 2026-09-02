@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-014: Vision repair could be lost after Elementor reload
+
+- **Observed:** Iteration 1 received Vision score 60 with major layout defects,
+  rolled the write back, and reloaded Elementor. The next browser state showed
+  only the welcome message and no repair request, while the preview still had
+  the sparse hero composition.
+- **Root cause:** The retry functions cleared their session state before
+  checking `config.ready`; a delayed Elementor boot could therefore discard a
+  valid pending repair. The two-minute TTL was also shorter than a real
+  generation plus browser-side review and reconnect.
+- **Fix:** v02.10.80 keeps pending state until the chat is ready, retries the
+  readiness check after one second, and extends both pending retry TTLs to ten
+  minutes.
+- **Regression status:** Local contract tests and PHP lint pending. Fresh live
+  10-iteration Browser Use validation must confirm that every failed Vision
+  review either completes its bounded repair or reports a retained retry.
+
 ## EJ-013: Content-only briefs could become advisory text and stale previews
 
 - **Observed:** The content-only prompt `Что получают наши клиенты...` was

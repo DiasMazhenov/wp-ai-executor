@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.79`
+- Plugin: `v02.10.80`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -18,6 +18,9 @@
   generation. Use its hierarchy, contrast, anti-slop, responsive, and live
   review rules together with Elementor's official Flexbox guide
   (`https://elementor.com/blog/flex-css/`).
+- v02.10.80: pending provider and Vision retries survive delayed Elementor
+  boot because readiness is checked before clearing session state; retry state
+  remains available for up to ten minutes.
 
 ## Mandatory error journal workflow
 
