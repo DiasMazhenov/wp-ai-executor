@@ -3,6 +3,22 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-007: Known library image placeholders survived trusted adaptation
+
+- **Observed:** The v02.10.73 testimonials screenshot still showed a gray
+  image placeholder. The scoped JSON used a non-empty external URL ending in
+  `new-container-image-1.png` with `id: 0`, so the existing empty-image guard
+  did not remove or replace it.
+- **Root cause:** CopyElement's placeholder image URL looked like valid remote
+  media to the normalizer. The trusted path therefore preserved it even though
+  it was not relevant content.
+- **Fix:** v02.10.74 detects only known placeholder URL patterns in `image` and
+  `image-box` widgets and replaces them with archetype-specific network image
+  URLs plus alt text; real source images remain untouched.
+- **Regression status:** Contract coverage added. Must be confirmed by fresh
+  Browser Use screenshots and scoped JSON for testimonials, About, Team and
+  Image Box.
+
 ## EJ-006: Trusted multi-pair blocks bypassed placeholder cleanup
 
 - **Observed:** The first live testimonials test on v02.10.72 mapped both

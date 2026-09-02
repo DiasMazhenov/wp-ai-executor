@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.73`
+- Plugin: `v02.10.74`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -46,6 +46,14 @@ existing layout/content normalizer after pair adaptation and before the
 preservation pass, so source composition is retained while placeholder copy
 and known card geometry are corrected. Fresh Browser Use regression is still
 required for testimonials and the remaining block types.
+
+Release v02.10.74 fixes the next live testimonials defect found in the
+v02.10.73 screenshot. CopyElement image widgets could keep the source site's
+`new-container-image-*` gray placeholder because the URL was non-empty, so the
+normalizer treated it as real media. Trusted library adaptation now replaces
+only known placeholder URLs in image and image-box widgets with relevant
+network images for the selected block archetype, adds alt text, and preserves
+real source media. Remaining block types require fresh Browser Use validation.
 
 Release v02.10.68 fixes the deeper live-preview corruption found in the v67
 Browser Use run. The Elementor editor kept roots from earlier generation and

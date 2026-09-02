@@ -4057,6 +4057,50 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
         'image-box' => [ 'title' => 'Избранные проекты', 'description' => 'Показываем задачу, решение и результат без лишнего шума.', 'cta' => 'Смотреть проекты', 'card' => 'Проект' ],
     ];
     $copyelement_defaults = $defaults[ $archetype ] ?? $defaults['portfolio'];
+    $library_image_sets = [
+        'testimonials' => [
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80',
+        ],
+        'team' => [
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
+            'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=900&q=80',
+        ],
+        'about' => [
+            'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
+        ],
+        'portfolio' => [
+            'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
+        ],
+        'image-box' => [
+            'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1200&q=80',
+            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
+        ],
+    ];
+    $library_image_alt = [
+        'testimonials' => 'Портрет клиента',
+        'team' => 'Член команды',
+        'about' => 'Команда проекта',
+        'portfolio' => 'Избранный проект',
+        'image-box' => 'Избранный проект',
+    ];
+    $is_library_image_placeholder = static function ( string $url ): bool {
+        $normalized = strtolower( trim( $url ) );
+        return $normalized === ''
+            || strpos( $normalized, 'new-container-image-' ) !== false
+            || strpos( $normalized, 'image-placeholder' ) !== false
+            || strpos( $normalized, 'placeholder-image' ) !== false;
+    };
+    $next_library_image = static function ( int $index ) use ( $library_image_sets, $archetype ): string {
+        $images = $library_image_sets[ $archetype ] ?? $library_image_sets['portfolio'];
+        return (string) ( $images[ $index % count( $images ) ] ?? $images[0] );
+    };
     $is_placeholder = static function ( $value ): bool {
         $normalized = wpae_llm_normalize_content_text( $value );
         return $normalized === 'sample subtitle'
@@ -4092,7 +4136,8 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
         return false;
     };
     $placeholder_heading_index = 0;
-    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, &$placeholder_heading_index ): array {
+    $library_image_index = 0;
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, &$placeholder_heading_index, &$library_image_index, $is_library_image_placeholder, $next_library_image, $library_image_alt ): array {
         $normalized_nodes = [];
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
@@ -4103,13 +4148,17 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
             $element_type = (string) ( $element['elType'] ?? '' );
             if ( $element_type === 'widget' ) {
                 $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
-                if ( $archetype === 'testimonials' && $widget_type === 'image' ) {
+                if ( in_array( $widget_type, [ 'image', 'image-box' ], true ) ) {
                     $image = is_array( $settings['image'] ?? null ) ? $settings['image'] : [];
                     $image_url = trim( (string) ( $image['url'] ?? $settings['image_url'] ?? '' ) );
                     $image_id = absint( $image['id'] ?? $settings['image_id'] ?? 0 );
-                    if ( $image_url === '' && $image_id < 1 ) {
+                    if ( $is_library_image_placeholder( $image_url ) && $archetype !== '' ) {
+                        $image['url'] = $next_library_image( $library_image_index++ );
+                        $image['id'] = 0;
+                        $image['source'] = 'url';
+                        $image['alt'] = (string) ( $library_image_alt[ $archetype ] ?? 'Изображение блока' );
+                        $settings['image'] = $image;
                         $changed++;
-                        continue;
                     }
                     if ( $image_url !== '' && $image_id > 0 && function_exists( 'home_url' ) && function_exists( 'wp_parse_url' ) ) {
                         $site_host = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );

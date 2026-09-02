@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.74
+
+- Заменить известные CopyElement image/image-box placeholder-URL на
+  релевантные сетевые изображения по archetype, не затрагивая настоящие media.
+- Пройти lint/контрактные тесты, доставить пакет через WP Pusher, повторить
+  testimonials и затем проверить About, Team и Image Box через Browser Use с
+  screenshot, scoped JSON, DOM, AI Vision и design-taste review.
+
 ## v02.10.73
 
 - Исправить trusted-ветку с несколькими content-парами: после подстановки
