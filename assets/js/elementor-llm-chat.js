@@ -1268,7 +1268,7 @@
                 });
             }
             return visionPromise.then(function (review) {
-                if (review && review.gate && review.gate.quality_failed) {
+                if (review && review.gate && review.gate.quality_failed && !review.gate.advisory) {
                     var targetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
                     addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю замечания Vision для повторной правки выбранного дерева.' : ' Передаю замечания Vision агенту для полной регенерации дизайна.'));
                     if (repairDepth >= 2) {

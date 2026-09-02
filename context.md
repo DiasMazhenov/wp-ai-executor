@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.91`
+- Plugin: `v02.10.92`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -72,6 +72,11 @@
   contain. The trusted Vocario photo pool now includes additional relevant
   speaking, presentation, seminar, and business-event images instead of
   cycling through only five sources.
+- v02.10.92: Editor-chat Vision remains an advisory visual review. The client
+  no longer rolls back or regenerates a successful write solely because the
+  advisory response has `quality_failed`; the screenshot, scoped DOM/JSON, and
+  Impeccable review remain visible evidence for deciding whether a new repair
+  is actually needed.
 
 ## Mandatory error journal workflow
 

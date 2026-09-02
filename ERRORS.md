@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-023: Advisory editor Vision still rolled back valid writes
+
+- **Observed:** A live Hero screenshot showed a populated photo, readable
+  heading, labeled CTA, and native Flex layout, but the editor chat received a
+  low-confidence-looking quality report and started two repair generations.
+  The final canvas returned to an older sparse/duplicated section instead of
+  keeping the inspected write.
+- **Root cause:** `wpae_vision_editor_review()` returned an advisory gate, but
+  the JavaScript request handler treated every `gate.quality_failed` as a
+  blocking rollback condition.
+- **Fix:** v02.10.92 gates automatic repair/rollback on
+  `quality_failed && !gate.advisory`. Advisory Vision findings are still
+  displayed for screenshot/design review and do not erase a successful write.
+- **Regression status:** Local contract test, PHP lint, and diff check pending;
+  fresh Browser Use generation must show a written non-Hero block remaining in
+  the canvas after its advisory Vision review.
+
 ## EJ-022: New trusted heroes could repeat photos already used on the page
 
 - **Observed:** The current page contained several saved hero roots. New
