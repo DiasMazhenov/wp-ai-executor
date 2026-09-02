@@ -4006,6 +4006,45 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
     ];
 }
 
+function wpae_llm_remove_redundant_badge_label_content( array $elements, string $archetype, int &$changed = 0 ): array {
+    $normalize_label = static function ( string $value ): string {
+        $value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value, 'UTF-8' ) : strtolower( $value );
+        return trim( (string) preg_replace( '/[^\p{L}\p{N}]+/u', ' ', $value ) );
+    };
+    $badge_key = $normalize_label( wpae_llm_badge_label( $archetype ) );
+    $walk = static function ( array &$nodes, bool $inside_bento_grid = false ) use ( &$walk, $normalize_label, $badge_key, &$changed ): bool {
+        if ( $badge_key === '' ) {
+            return false;
+        }
+        foreach ( $nodes as $index => &$node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            $is_bento_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            if ( ! $inside_bento_grid && ( $node['elType'] ?? '' ) === 'widget' && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
+                $text_key = $widget_type === 'heading' ? 'title' : 'editor';
+                $text_key_value = $normalize_label( wp_strip_all_tags( (string) ( $settings[ $text_key ] ?? '' ) ) );
+                $text_without_prefix = preg_replace( '/^(?:наша|наш|наше|наши|новая|новые|избранные|главное)\s+/u', '', $text_key_value );
+                if ( $text_key_value === $badge_key || $text_without_prefix === $badge_key ) {
+                    array_splice( $nodes, $index, 1 );
+                    $changed++;
+                    return true;
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) && $walk( $node['elements'], $inside_bento_grid || $is_bento_grid ) ) {
+                return true;
+            }
+        }
+        unset( $node );
+        return false;
+    };
+    $walk( $elements );
+    return $elements;
+}
+
 function wpae_llm_enforce_preserved_library_badge( array $elements, string $archetype, int &$changed = 0 ): array {
     foreach ( $elements as $index => $root ) {
         if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
@@ -4117,6 +4156,7 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
         $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
         $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
         $root['elements'] = [ $badge, $content_shell ];
+        $root['elements'] = wpae_llm_remove_redundant_badge_label_content( $root['elements'], $archetype, $changed );
         $changed++;
         $elements[ $index ] = $root;
     }
@@ -4433,40 +4473,6 @@ function wpae_llm_normalize_card_heading_icons( array $elements, int $parent_dep
 }
 
 function wpae_llm_apply_generation_visual_grammar( array $elements, string $archetype, int &$changed = 0 ): array {
-    $normalize_label = static function ( string $value ): string {
-        $value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value, 'UTF-8' ) : strtolower( $value );
-        return trim( (string) preg_replace( '/[^\p{L}\p{N}]+/u', ' ', $value ) );
-    };
-    $remove_redundant_section_heading = static function ( array &$nodes, string $badge_label, bool $inside_bento_grid = false ) use ( &$remove_redundant_section_heading, $normalize_label, &$changed ): bool {
-        $badge_key = $normalize_label( $badge_label );
-        if ( $badge_key === '' ) {
-            return false;
-        }
-        foreach ( $nodes as $index => &$node ) {
-            if ( ! is_array( $node ) ) {
-                continue;
-            }
-            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
-            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-            $is_bento_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
-            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
-            if ( ! $inside_bento_grid && ( $node['elType'] ?? '' ) === 'widget' && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
-                $text_key = $widget_type === 'heading' ? 'title' : 'editor';
-                $heading_key = $normalize_label( wp_strip_all_tags( (string) ( $settings[ $text_key ] ?? '' ) ) );
-                $heading_without_prefix = preg_replace( '/^(?:наша|наш|наше|наши|новая|новые|избранные|главное)\s+/u', '', $heading_key );
-                if ( $heading_key === $badge_key || $heading_without_prefix === $badge_key ) {
-                    array_splice( $nodes, $index, 1 );
-                    $changed++;
-                    return true;
-                }
-            }
-            if ( is_array( $node['elements'] ?? null ) && $remove_redundant_section_heading( $node['elements'], $badge_label, $inside_bento_grid || $is_bento_grid ) ) {
-                return true;
-            }
-        }
-        unset( $node );
-        return false;
-    };
     foreach ( $elements as $index => $root ) {
         if ( ! is_array( $root ) || (string) ( $root['elType'] ?? '' ) !== 'container' ) {
             continue;
@@ -4631,7 +4637,7 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         $root['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
         $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
         $root['elements'] = [ $badge, $content_shell ];
-        $remove_redundant_section_heading( $root['elements'], wpae_llm_badge_label( $archetype ) );
+        $root['elements'] = wpae_llm_remove_redundant_badge_label_content( $root['elements'], $archetype, $changed );
         $changed++;
         $elements[ $index ] = $root;
     }

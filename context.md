@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.03`
+- Plugin: `v02.11.04`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -124,6 +124,9 @@
 - v02.11.03: The same duplicate-label guard also removes an exact matching
   `text-editor` paragraph outside repeatable cards, covering content-only team
   output that rendered `Наша команда` below the `КОМАНДА` badge.
+- v02.11.04: The duplicate-label guard is shared by ordinary generated blocks
+  and preserved library templates. Team blocks adapted from the library now
+  remove an exact `Наша команда` paragraph outside the bento cards as well.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

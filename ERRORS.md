@@ -13,7 +13,7 @@ before making a new change to the plugin.
   semantically equivalent section heading or paragraph. The dimming was
   Elementor's selection scrim, not `background_overlay_color` written by the
   plugin.
-- **Fix:** v02.11.03 removes an equivalent heading or paragraph outside
+- **Fix:** v02.11.04 removes an equivalent heading or paragraph outside
   repeatable bento cards while preserving the required outlined badge and the
   card headings.
 - **Regression status:** PHP lint, contract tests and a fresh Team Browser Use
