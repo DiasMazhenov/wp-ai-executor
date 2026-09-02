@@ -3459,6 +3459,10 @@ function wpae_llm_variant_card_widths( int $variant, int $count ): array {
         return array_fill( 0, $count, 31 );
     }
 
+    if ( $count === 4 ) {
+        return array_fill( 0, $count, 48 );
+    }
+
     // Keep rows balanced: five or six cards use three columns, while seven
     // or more use no more than four columns without leaving a narrow orphan.
     if ( in_array( $layout, [ 1, 3, 5 ], true ) && $count <= 4 ) {
@@ -3508,6 +3512,12 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
             continue;
         }
         $card_settings = is_array( $children[ $grid_index ]['settings'] ?? null ) ? $children[ $grid_index ]['settings'] : [];
+        $card_settings['container_type'] = 'flex';
+        $card_settings['flex_direction'] = 'column';
+        $card_settings['flex_direction_mobile'] = 'column';
+        $card_settings['flex_wrap'] = 'nowrap';
+        $card_settings['flex_align_items'] = 'flex-start';
+        $card_settings['flex_align_items_mobile'] = 'flex-start';
         wpae_llm_set_flexible_bento_container_width( $card_settings, (float) $width );
         $children[ $grid_index ]['settings'] = $card_settings;
     }
@@ -5273,7 +5283,8 @@ function wpae_llm_normalize_generated_typography( array $elements, string $arche
         $before = wp_json_encode( $settings );
 
         if ( $widget_type === 'heading' && ( ! is_array( $element_classes ) || ! in_array( 'wpae-generated-badge-label', $element_classes, true ) ) ) {
-            $is_card_heading = $next_inside_bento_grid;
+            $is_marked_card_heading = is_array( $element_classes ) && in_array( 'wpae-card-heading', $element_classes, true );
+            $is_card_heading = $is_marked_card_heading || $next_inside_bento_grid;
             $settings['header_size'] = $is_card_heading ? 'h4' : 'h2';
             $settings['typography_typography'] = 'custom';
             $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.25 : 2.5 ];

@@ -3,6 +3,24 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-037: Four-card fallback composition overflowed and used giant headings
+
+- **Observed:** The live content-only benefits generation rendered each card as
+  a wide row with oversized headings, clipped descriptions and horizontal
+  overflow. AI Vision scored the result `42` and identified clipping,
+  overlapping borders and broken hierarchy.
+- **Root cause:** The fallback selected four `31%` cards even though the Flexbox
+  gap made four columns exceed the row width. Marked card headings could also
+  bypass the bento-depth check and retain the provider's `3.5rem` typography;
+  one card retained `row` direction while the others used `column`.
+- **Fix:** v02.11.06 selects `48%` widths for four cards, forces bento card
+  containers to a shared vertical Flexbox direction, and treats the
+  `wpae-card-heading` class as a card-heading marker for compact typography.
+- **Regression status:** Local contract tests, PHP lint and diff checks pass.
+  Fresh Browser Use generation must produce a balanced 2x2 grid without
+  horizontal overflow, then pass screenshot, Vision/design-taste and
+  Impeccable review.
+
 ## EJ-036: Native photo overlay settings could remain stale
 
 - **Observed:** The reported gray/black dimming appeared around cards in the

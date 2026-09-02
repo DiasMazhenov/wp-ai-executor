@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.05`
+- Plugin: `v02.11.06`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -133,6 +133,10 @@
   non-photo or dark-text containers. Elementor selection dimming remains editor
   chrome, not generated design. Fresh Browser Use screenshot and editor-health
   validation are required after deployment.
+- v02.11.06: Four-card generated bento grids use a balanced two-column Flexbox
+  composition at `48%` widths instead of four incompatible `31%` widths. Card
+  containers are normalized to the same vertical direction and marked card
+  headings are clamped to compact semantic typography before the write.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
