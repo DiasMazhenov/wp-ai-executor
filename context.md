@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.04`
+- Plugin: `v02.11.05`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -127,6 +127,12 @@
 - v02.11.04: The duplicate-label guard is shared by ordinary generated blocks
   and preserved library templates. Team blocks adapted from the library now
   remove an exact `Наша команда` paragraph outside the bento cards as well.
+- v02.11.05: Native photo overlay settings are synchronized through one shared
+  helper. The black overlay is applied only when a container has a photo and
+  light text; stale overlay color and gradient settings are removed from
+  non-photo or dark-text containers. Elementor selection dimming remains editor
+  chrome, not generated design. Fresh Browser Use screenshot and editor-health
+  validation are required after deployment.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

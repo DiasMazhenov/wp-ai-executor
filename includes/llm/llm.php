@@ -1873,6 +1873,29 @@ function wpae_llm_normalize_preserved_library_typography( array $elements, int &
     return $elements;
 }
 
+function wpae_llm_sync_native_photo_overlay_settings( array &$settings, bool $has_background_image, bool $has_light_text ): bool {
+    $before = wp_json_encode( $settings );
+    if ( $has_background_image && $has_light_text ) {
+        $settings['background_overlay_background'] = 'classic';
+        $settings['background_overlay_color'] = '#000000';
+        $settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
+    } else {
+        foreach ( [
+            'background_overlay_background', 'background_overlay_color', 'background_overlay_color_stop',
+            'background_overlay_color_stop_tablet', 'background_overlay_color_stop_mobile',
+            'background_overlay_color_b', 'background_overlay_color_b_stop',
+            'background_overlay_color_b_stop_tablet', 'background_overlay_color_b_stop_mobile',
+            'background_overlay_gradient_type', 'background_overlay_gradient_angle',
+            'background_overlay_gradient_angle_tablet', 'background_overlay_gradient_angle_mobile',
+            'background_overlay_position', 'background_overlay_position_tablet',
+            'background_overlay_position_mobile', 'background_overlay_opacity', 'background_overlay_opacity_b',
+        ] as $overlay_key ) {
+            unset( $settings[ $overlay_key ] );
+        }
+    }
+    return $before !== wp_json_encode( $settings );
+}
+
 function wpae_llm_normalize_preserved_library_visual_state( array $elements, int &$changed = 0 ): array {
     $has_background_image = static function ( array $settings ): bool {
         foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
@@ -1937,11 +1960,7 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
                 if ( $color !== '' && $is_white( $color ) && ( $has_background_image( $settings ) || ! $has_card_surface( $settings ) ) ) {
                     $settings['background_color'] = 'transparent';
                 }
-                if ( $has_background_image( $settings ) && $has_light_text( (array) ( $element['elements'] ?? [] ) ) ) {
-                    $settings['background_overlay_background'] = 'classic';
-                    $settings['background_overlay_color'] = '#000000';
-                    $settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
-                }
+                wpae_llm_sync_native_photo_overlay_settings( $settings, $has_background_image( $settings ), $has_light_text( (array) ( $element['elements'] ?? [] ) ) );
             }
             if ( $before !== wp_json_encode( $settings ) ) {
                 $changed++;
@@ -2129,7 +2148,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         }
         return null;
     };
-    $apply = static function ( array &$nodes, string $alignment, bool $inside_content = false, bool $photo_backed = false ) use ( &$apply, $to_flex_alignment, $has_text_content, $has_media, $has_background_image ): void {
+    $apply = static function ( array &$nodes, string $alignment, bool $inside_content = false, bool $photo_backed = false ) use ( &$apply, $to_flex_alignment, $has_text_content, $has_media, $has_background_image, $has_light_text ): void {
         $flex_alignment = $to_flex_alignment( $alignment );
         $align_self = $alignment === 'center' ? 'center' : ( $alignment === 'right' ? 'flex-end' : 'flex-start' );
         foreach ( $nodes as &$node ) {
@@ -2146,11 +2165,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
             if ( $element_type === 'container' && ! $is_badge ) {
                 $children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
                 $is_photo_container = $has_background_image( $settings );
-                if ( $is_photo_container && $has_text_content( $children ) ) {
-                    $settings['background_overlay_background'] = 'classic';
-                    $settings['background_overlay_color'] = '#000000';
-                    $settings['background_overlay_opacity'] = [ 'unit' => 'px', 'size' => 0.42, 'sizes' => [] ];
-                }
+                wpae_llm_sync_native_photo_overlay_settings( $settings, $is_photo_container, $has_light_text( $children ) );
                 $child_containers = count( array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) );
                 $split_layout = ! $inside_content && $has_text_content( $children ) && $child_containers >= 2 && $has_media( $children );
                 if ( ! $inside_content && ! $split_layout && $has_text_content( $children ) ) {

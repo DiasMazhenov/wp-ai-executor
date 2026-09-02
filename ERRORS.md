@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-036: Native photo overlay settings could remain stale
+
+- **Observed:** The reported gray/black dimming appeared around cards in the
+  Elementor editor. Live DOM inspection showed it was Elementor's selection
+  scrim, not a generated black overlay. Separately, generated containers could
+  retain native overlay color/gradient settings after a photo was removed or
+  text became dark.
+- **Root cause:** The visual normalizers only wrote the black overlay for the
+  positive photo case and did not clear stale native overlay color/gradient
+  keys on the other branch.
+- **Fix:** v02.11.05 routes preserved-library and hero normalization through
+  `wpae_llm_sync_native_photo_overlay_settings()`, which keeps a black native
+  overlay only for photo containers with light text and removes stale overlay
+  color/gradient settings otherwise.
+- **Regression status:** Local contract tests, PHP lint and diff checks must
+  pass. Fresh Browser Use generation must show no black overlay on a non-photo
+  block, keep the editor iframe alive, and provide screenshot plus visual
+  review evidence.
+
 ## EJ-035: Generated section duplicated its badge label
 
 - **Observed:** The live Team block rendered the `КОМАНДА` badge immediately
