@@ -3109,7 +3109,7 @@ function wpae_llm_visual_variant_count(): int {
 function wpae_llm_fallback_theme( int $variant ): array {
     $themes = [
         [ 'root' => '#f7f7f5', 'cards' => [ '#ffffff' ], 'border' => '#d1d5db', 'radius' => 0.75, 'gap' => '1.5', 'padding' => [ 'top' => '2.5', 'right' => '1.5', 'bottom' => '2.5', 'left' => '1.5' ] ],
-        [ 'root' => '#fff7ed', 'cards' => [ '#fffbf5' ], 'border' => '#c2410c', 'radius' => 1.25, 'gap' => '1.25', 'padding' => [ 'top' => '3', 'right' => '1.75', 'bottom' => '3', 'left' => '1.75' ] ],
+        [ 'root' => '#f4f7ff', 'cards' => [ '#ffffff' ], 'border' => '#4460EC', 'radius' => 1.25, 'gap' => '1.25', 'padding' => [ 'top' => '3', 'right' => '1.75', 'bottom' => '3', 'left' => '1.75' ] ],
         [ 'root' => '#ecfeff', 'cards' => [ '#f5fffe' ], 'border' => '#0f766e', 'radius' => 0.5, 'gap' => '1.75', 'padding' => [ 'top' => '2', 'right' => '2', 'bottom' => '2', 'left' => '2' ] ],
         [ 'root' => '#f8fafc', 'cards' => [ '#ffffff' ], 'border' => '#64748b', 'radius' => 1.5, 'gap' => '1', 'padding' => [ 'top' => '3.5', 'right' => '1.25', 'bottom' => '3.5', 'left' => '1.25' ] ],
         [ 'root' => '#fef2f2', 'cards' => [ '#fff8f9' ], 'border' => '#be123c', 'radius' => 0.25, 'gap' => '1.5', 'padding' => [ 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5' ] ],

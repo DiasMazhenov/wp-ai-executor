@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.82`
+- Plugin: `v02.10.83`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -30,6 +30,10 @@
   black overlay are protected from generic token remapping, CTA background
   comes from the active accent token, and saved-preview reload bypasses the
   stale editor model during Vision rollback/retry.
+- v02.10.83: fallback themes no longer select the dirty terracotta variant;
+  design prohibitions reject muddy accent colors, and Vision repair/rollback
+  waits for native Elementor runtime before clearing editor roots so failed
+  generations cannot leave duplicate sections behind.
 
 ## Mandatory error journal workflow
 

@@ -24,6 +24,24 @@ before making a new change to the plugin.
   screenshot -> Vision/design-taste -> prompt comparison before continuing
   the 10-iteration run.
 
+## EJ-017: Editor runtime was not ready for repair root reconciliation
+
+- **Observed:** v02.10.82 produced a visually coherent photo hero with a
+  cobalt CTA, but after Vision rejected the run and rollback completed, the
+  Elementor canvas still showed two repeated hero roots. Preview iframe
+  inspection was also intermittently unavailable while the editor was
+  reloading.
+- **Root cause:** The retry gate used the chat readiness flag, which can turn
+  true before Elementor exposes `$e` and its preview container. Root cleanup
+  then returned early, and iframe reload alone retained the stale editor
+  model.
+- **Fix:** v02.10.83 waits for the native Elementor runtime before repair
+  insertion, explicitly reconciles all current roots to the saved empty state
+  before retry and final rollback, then refreshes the iframe.
+- **Regression status:** Local contract tests and PHP lint must pass. Fresh
+  Browser Use must prove one root after a successful generation and zero roots
+  after a failed bounded Vision rollback.
+
 ## EJ-015: Trusted hero source preserved decorative geometry after adaptation
 
 - **Observed:** v02.10.80 generated a native Flex hero from the Vocario source,

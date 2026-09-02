@@ -58,6 +58,7 @@ function wpae_project_design_token_defaults(): array {
             'No legacy Elementor sections or columns.',
             'No HTML widget as main layout or content container.',
             'No CSS-only critical backgrounds, contrast, spacing, or borders.',
+            'No dirty terracotta, brown, or muddy accent colors such as #C75B3B; use a clean project accent token instead.',
         ],
     ];
 }

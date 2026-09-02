@@ -319,6 +319,8 @@
         // preview first so rolled-back roots cannot survive into the repair.
         window.setTimeout(function () {
             refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
+                return clearEditorRoots();
+            }).then(function () {
                 request(pending.message, false, pending.options || {});
             });
         }, 0);
@@ -599,6 +601,27 @@
     function refreshSavedElementorPreview() {
         return reloadPreviewIframe();
     }
+    function waitForEditorRuntime() {
+        return new Promise(function (resolve) {
+            var deadline = Date.now() + 6000;
+            var check = function () {
+                var ready = window.$e && typeof window.$e.run === 'function' && window.elementor && typeof window.elementor.getPreviewContainer === 'function';
+                if (ready || Date.now() >= deadline) {
+                    resolve(Boolean(ready));
+                    return;
+                }
+                window.setTimeout(check, 150);
+            };
+            check();
+        });
+    }
+    function clearEditorRoots() {
+        return waitForEditorRuntime().then(function (ready) {
+            if (!ready) return false;
+            liveGeneratedRootIds = [];
+            return reconcileEditorRoots([]);
+        });
+    }
     var liveGeneratedRootIds = [];
 
     function getEditorModelId(model) {
@@ -676,6 +699,11 @@
     }
     function syncEditorElements(editorSync, repairDepth) {
         if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
+        if (Number(repairDepth) > 0 && (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function')) {
+            return waitForEditorRuntime().then(function (ready) {
+                return ready ? syncEditorElements(editorSync, repairDepth) : false;
+            });
+        }
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
         var container = window.elementor.getPreviewContainer();
         if (!container) return Promise.resolve(false);
@@ -1214,7 +1242,9 @@
                             if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);
                             addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; перезагружаю Elementor из сохраненного состояния.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; перезагружаю Elementor из сохраненного состояния.');
                             status.textContent = strings.error;
-                            return refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
+                            return clearEditorRoots().then(function () {
+                                return refreshSavedElementorPreview();
+                            }).catch(function () { return false; }).then(function () {
                                 window.setTimeout(function () { window.location.reload(); }, 250);
                                 return true;
                             });
