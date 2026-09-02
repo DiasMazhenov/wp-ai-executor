@@ -40,8 +40,8 @@ const blockLibrary = read('includes/elementor/block-library.php');
 assert.match(llm, /'openai'/);
 assert.match(llm, /'deepseek'/);
 assert.match(llm, /'openrouter'/);
-assert.match(bootstrap, /Version:\s+v02\.10\.98/);
-assert.match(bootstrap, /const WPAE_VERSION = 'v02\.10\.98'/);
+assert.match(bootstrap, /Version:\s+v02\.10\.99/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.10\.99'/);
 assert.match(llm, /'model' => 'openrouter\/free'/);
 assert.match(llm, /'gemini'/);
 assert.match(llm, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
@@ -101,6 +101,7 @@ assert.match(llm, /\$is_repeatable_shell = in_array\( \$archetype, \$repeatable_
 assert.match(llm, /function wpae_llm_compact_cta_text/);
 assert.match(llm, /function wpae_llm_clear_unrequested_library_copy/);
 assert.match(llm, /wpae_llm_clear_unrequested_library_copy\( \$template_elements, \$message, \$changed \)/);
+assert.match(llm, /wpae_llm_apply_library_narrative_content\( \$template_elements, \$missing, \$changed, true \)/);
 assert.match(llm, /\(\?:кнопка\|cta\)\\s\*:/);
 assert.match(llm, /settings\.title/);
 assert.match(llm, /settings\.editor/);

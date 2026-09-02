@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.98`
+- Plugin: `v02.10.99`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -97,6 +97,13 @@
   `500` when the advisory Gemini Vision request times out. The chat now reports
   Vision as unavailable and keeps the saved write available for the mandatory
   screenshot plus Impeccable review.
+- v02.10.99: Library copy cleanup now runs for every adapted library template,
+  including approved imports and non-trusted custom records. Narrative, pair,
+  image-box and mega-menu paths remove source copy that is absent from the
+  content-only brief while preserving the imported composition. This closes
+  the live mismatch where a third benefits card retained source text after the
+  requested content had been inserted. The all-block Browser Use matrix still
+  requires a fresh screenshot, Vision/design-taste review and Impeccable gate.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

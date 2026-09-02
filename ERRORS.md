@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-032: Approved library adaptation retained source copy
+
+- **Observed:** A fresh benefits generation contained the requested card
+  headings and body text, but the last card still rendered source-library copy
+  (`Компоненты и адаптивная сетка не рассыпаются на мобильных устройствах.`).
+  The screenshot looked structurally valid, yet it did not match the
+  content-only brief.
+- **Root cause:** `wpae_llm_clear_unrequested_library_copy()` was gated by
+  `trusted_bundled`. Approved/imported library records therefore skipped the
+  source-copy scrub after pair adaptation; content fidelity only checked for
+  requested text and could not reject extra text.
+- **Fix:** v02.10.99 applies the existing scrub to every adapted library path,
+  including pair, narrative, image-box and mega-menu branches. Imported layout
+  geometry remains intact while unrequested copy is removed before the final
+  fidelity check.
+- **Regression status:** Node contract, PHP lint and diff checks must pass.
+  Every supported block type still requires live screenshot, scoped JSON/DOM,
+  Vision/design-taste review and Impeccable validation.
+
 ## EJ-031: Vision timeout was reported as a failed Elementor generation
 
 - **Observed:** A benefits generation was written to Elementor, but a Gemini

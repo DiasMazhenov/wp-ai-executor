@@ -2826,9 +2826,11 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
             unset( $element );
         };
         $apply_navigation( $template_elements );
+        wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
         return $template_elements;
     }
     if ( in_array( $archetype, [ 'portfolio', 'image-box' ], true ) && wpae_llm_apply_library_image_box_content( $template_elements, $message, $changed ) ) {
+        wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
         return $template_elements;
     }
     $pairs = wpae_llm_extract_labeled_content( $message );
@@ -2843,14 +2845,12 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         if ( empty( $missing ) ) {
             return [];
         }
-        if ( wpae_llm_apply_library_narrative_content( $template_elements, $missing, $changed, $clear_unrequested_copy ) ) {
-            if ( $clear_unrequested_copy ) {
-                wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
-            }
+        if ( wpae_llm_apply_library_narrative_content( $template_elements, $missing, $changed, true ) ) {
+            wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
             return $template_elements;
         }
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
-        if ( empty( $missing ) && $clear_unrequested_copy ) {
+        if ( empty( $missing ) ) {
             wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
         }
         return empty( $missing ) ? $template_elements : [];
@@ -3004,9 +3004,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     if ( ! empty( $missing ) ) {
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
     }
-    if ( $clear_unrequested_copy ) {
-        wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
-    }
+    wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
     if ( $archetype === 'process' ) {
         $process_heading_count = 0;
         $process_media_count = 0;
