@@ -3,6 +3,21 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-009: Natural About brief selected the Team template and repair duplicated roots
+
+- **Observed:** The v02.10.74 About prompt mentioning a studio and leaving the
+  site to the team selected the Team fixture `c1429`. The canvas contained
+  duplicate roots with a `КОМАНДА` badge, oversized placeholder heading layers,
+  and the repair request ended with HTTP 500.
+- **Root cause:** About detection only recognized explicit `о компании`/`о нас`
+  phrases; the later Team rule matched `команде`. Retrieval also treated
+  `about` as a Team alias, making the wrong fixture easier to select.
+- **Fix:** v02.10.75 recognizes `студия` in company/about briefs before Team
+  matching and removes the generic Team `about` alias.
+- **Regression status:** Contract coverage added. Fresh Browser Use About,
+  Team and Image Box generation with scoped JSON, DOM, screenshot, AI Vision,
+  and design-taste review is required.
+
 ## EJ-008: Release metadata was not bumped with the fix
 
 - **Observed:** WP Pusher reported a successful update after the image fix,

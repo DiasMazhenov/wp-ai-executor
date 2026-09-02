@@ -35,12 +35,13 @@ for (const match of copyElementManifest.matchAll(/'file' => '([^']+)'[\s\S]*?'sh
 }
 const blockLibraryUi = read('assets/js/elementor-block-library-ui.js');
 const blockLibraryCss = read('assets/css/elementor-block-library.css');
+const blockLibrary = read('includes/elementor/block-library.php');
 
 assert.match(llm, /'openai'/);
 assert.match(llm, /'deepseek'/);
 assert.match(llm, /'openrouter'/);
-assert.match(bootstrap, /Version:\s+v02\.10\.74/);
-assert.match(bootstrap, /const WPAE_VERSION = 'v02\.10\.74'/);
+assert.match(bootstrap, /Version:\s+v02\.10\.75/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.10\.75'/);
 assert.match(llm, /'model' => 'openrouter\/free'/);
 assert.match(llm, /'gemini'/);
 assert.match(llm, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
@@ -345,6 +346,9 @@ assert.match(llm, /'mega_menu' => \[ 'мега меню\/навигация'/);
 assert.match(llm, /\$archetype === 'mega_menu'/);
 assert.ok(llm.indexOf("'process'" ) < llm.indexOf("'team' => \[ 'команда"), 'process intent must take precedence over the word команда in a process brief');
 assert.ok(llm.indexOf("'/\\b(о\\s+компани") < llm.indexOf("'/\\b(команд"), 'about intent must take precedence over team words in an about brief');
+assert.match(llm, /о\\s\+\(\?:нашей\\s\+\)\?студи/);
+assert.match(blockLibrary, /'about' => \[ 'about', 'company', 'компан', 'студи'/);
+assert.doesNotMatch(blockLibrary, /'team' => \[ 'team', 'команд', 'сотрудник', 'специалист', 'коллег', 'about'/);
 assert.match(llm, /PREG_SET_ORDER/);
 assert.match(llm, /wpae_block_library_retrieve_for_prompt\( \$message, \$action_archetype \)/);
 assert.match(llm, /id' => 'library_retrieval'/);
@@ -637,7 +641,6 @@ assert.match(manifest, /'\/elementor\/templates\/{id}' => \[ 'GET' \]/);
 assert.match(capabilities, /'templates' => 'GET \/wp-json\/ai-executor\/v1\/elementor\/templates'/);
 assert.match(capabilities, /'\/elementor\/templates' => true/);
 assert.match(guide, /native_template_policy/);
-const blockLibrary = read('includes/elementor/block-library.php');
 assert.match(blockLibrary, /\$payload\['elements'\]/);
 assert.match(blockLibrary, /\$source_mode = 'elementor_export'/);
 assert.match(blockLibrary, /WPAE_BLOCK_LIBRARY_MAX_BYTES = 4194304/);

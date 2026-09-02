@@ -1,5 +1,13 @@
 # План WP AI Executor
 
+## v02.10.75
+
+- Исправить маршрутизацию естественного brief про студию в About, чтобы слово
+  «команде» не выбирало Team, и убрать конфликтующий Team-алиас `about`.
+- Пройти lint/контрактные тесты, доставить пакет через WP Pusher и повторить
+  About, Team и Image Box через Browser Use со screenshot, scoped JSON, DOM,
+  AI Vision и `design-taste-frontend`.
+
 ## v02.10.74
 
 - Заменить известные CopyElement image/image-box placeholder-URL на

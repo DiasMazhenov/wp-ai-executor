@@ -645,7 +645,10 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/\b(шаг|этап|событи\w*|мероприяти\w*|мастер-класс|event\w*|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }
-        if ( preg_match( '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu', $normalized ) ) {
+        if (
+            preg_match( '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about|о\s+(?:нашей\s+)?студи\w*)\b/iu', $normalized )
+            || ( preg_match( '/\bстуди\w*\b/iu', $normalized ) && preg_match( '/\b(услуг\w*|компани\w*|простым\s+язык\w*|довер\w*|прозрач\w*)\b/iu', $normalized ) )
+        ) {
             return 'about';
         }
         if ( preg_match( '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)\b/iu', $normalized ) ) {
@@ -681,7 +684,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         'hero' => '/\b(hero|хиро|первый экран|обложк|главн\w*|home)\b|школ\w*\s+публичн\w*\s+выступлен\w*/iu',
         'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
-        'about' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)/iu',
+        'about' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about|о\s+(?:нашей\s+)?студи\w*)/iu',
         'team' => '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)/iu',
         'testimonials' => '/\b(отзыв|testimonial|клиентск|рекомендац)/iu',
         'faq' => '/\b(faq|вопрос|ответ|аккордеон)/iu',

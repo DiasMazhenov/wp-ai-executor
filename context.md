@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.74`
+- Plugin: `v02.10.75`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -54,6 +54,13 @@ normalizer treated it as real media. Trusted library adaptation now replaces
 only known placeholder URLs in image and image-box widgets with relevant
 network images for the selected block archetype, adds alt text, and preserves
 real source media. Remaining block types require fresh Browser Use validation.
+
+Release v02.10.75 fixes natural About briefs being misclassified as Team when
+the copy mentions leaving a site to the team. About detection now recognizes
+studio/company language before the Team fallback, and retrieval no longer uses
+the generic `about` alias for Team. The live About, Team and Image Box blocks
+must be re-tested with scoped JSON, DOM, screenshot, AI Vision and
+`design-taste-frontend` review.
 
 The v02.10.74 package metadata is synchronized in both the WordPress plugin
 header and `WPAE_VERSION`, so the live Elementor chat can verify that WP Pusher
