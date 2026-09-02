@@ -68,6 +68,41 @@ before making a new change to the plugin.
   scoped JSON/DOM and screenshot, then run Vision/Impeccable review. Existing
   historical test roots are not evidence about the new root.
 
+## EJ-055: Vision accepted a mixed root after seeing valid pricing cards
+
+- **Observed:** The latest pricing root contained `КОМАНДА`, `Наша команда`,
+  and team-specialist copy around valid pricing cards. Vision scored the
+  scoped pricing area 85 even though the full generated root was semantically
+  wrong.
+- **Root cause:** Content fidelity required requested phrases to be present,
+  but did not reject unrelated template copy. The rendered review therefore
+  had valid prices as evidence while the wrong team composition remained.
+- **Fix:** v02.11.18 replaces order-dependent archetype priority with one
+  weighted catalog of headline/body signals and removes repeatable labels from
+  those signals. The same catalog provides strong semantic markers to both
+  preflight and final audits, which reject cross-archetype copy before Flex
+  normalization and Elementor write. The plan now exposes bounded archetype
+  scores for diagnostics.
+- **Regression status:** Local contract, lint, classification, and semantic
+  audit smoke checks pass. Live acceptance is blocked until v02.11.18 is
+  actually deployed; the current editor is still v02.11.16.
+
+## EJ-056: WP Pusher did not deploy the architecture fix
+
+- **Observed:** After pushing the repository, WP Pusher showed no `WP AI
+  Executor` package row and displayed `Could not find plugin.` The supplied
+  push hook returned HTTP 400 with an empty body; Elementor still reported
+  v02.11.16.
+- **Root cause:** The live WP Pusher package/connection is not registered or
+  is pointing at a missing plugin package, so repository `main` and the live
+  WordPress plugin are different releases.
+- **Fix:** No blind browser or filesystem replacement was performed. The
+  release is committed and pushed, while deployment remains explicitly
+  pending re-registering the WP Pusher package.
+- **Regression status:** Do not call live generation, screenshot, Vision, or
+  Impeccable acceptance successful until the editor reports v02.11.18 and a
+  fresh generation is inspected in its scoped JSON/DOM and screenshot.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed

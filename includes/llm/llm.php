@@ -622,10 +622,122 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
     ];
 }
 
+// Single registry keeps classification and post-write semantic checks in sync.
+function wpae_llm_content_archetype_catalog(): array {
+    return [
+        'mega_menu' => [
+            'headline' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
+            'body' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
+            'semantic' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
+        ],
+        'carousel' => [
+            'headline' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu',
+            'body' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*|партн[её]р\w*)\b/iu',
+            'semantic' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu',
+        ],
+        'hero' => [
+            'headline' => '/\b(первый\s+экран|hero|хиро|обложк\w*|главн\w*|home)\b/iu',
+            'body' => '/\b(первый\s+экран|hero|хиро|обложк\w*|главн\w*|home)\b/iu',
+            'semantic' => '/\b(первый\s+экран|hero|хиро|обложк\w*)\b/iu',
+        ],
+        'faq' => [
+            'headline' => '/\b(faq|вопрос\w*|ответ\w*|аккордеон)\b/iu',
+            'body' => '/\b(faq|аккордеон)\b|\?/u',
+            'semantic' => '/\b(faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu',
+        ],
+        'pricing' => [
+            'headline' => '/\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|pricing)\b/iu',
+            'body' => '/₸|\$|€|₽|\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|pricing)\b/iu',
+            'semantic' => '/\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|pricing)\b/iu',
+        ],
+        'testimonials' => [
+            'headline' => '/\b(отзыв\w*|рекомендац\w*|testimonial\w*)\b/iu',
+            'body' => '/\b(отзыв\w*|рекомендац\w*|testimonial\w*)\b|[«"]/u',
+            'semantic' => '/\b(отзыв\w*|рекомендац\w*|testimonial\w*|мнение\w*\s+клиент\w*)\b/iu',
+        ],
+        'benefits' => [
+            'headline' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?)\b/iu',
+            'body' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?)\b/iu',
+            'semantic' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?|почему\s+мы)\b/iu',
+        ],
+        'process' => [
+            'headline' => '/\b(процесс\w*|этап\w*|шаг\w*|process|steps?)\b/iu',
+            'body' => '/\b(процесс\w*|этап\w*|шаг\w*|process|steps?|сначала|затем|проверяем|запускаем|переда[её]м)\b/iu',
+            'semantic' => '/\b(процесс\w*|этап\w*|шаг\w*|process|steps?)\b/iu',
+        ],
+        'about' => [
+            'headline' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu',
+            'body' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu',
+            'semantic' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about)\b/iu',
+        ],
+        'team' => [
+            'headline' => '/^\s*(?:наша\s+)?команд\w*\b/iu',
+            'body' => '/\b(наша\s+команд\w*|сотрудник\w*|специалист\w*\s*,?\s+котор\w*|коллег\w*)\b/iu',
+            'semantic' => '/\b(наша\s+команд\w*|сотрудник\w*|специалист\w*\s*,?\s+котор\w*|коллег\w*)\b/iu',
+        ],
+        'portfolio' => [
+            'headline' => '/\b(портфолио|кейс\w*|работ\w*|portfolio|project)\b/iu',
+            'body' => '/\b(портфолио|кейс\w*|работ\w*|portfolio|project)\b/iu',
+            'semantic' => '/\b(портфолио|кейс\w*|наши\s+проект\w*|portfolio|case\s+stud(?:y|ies))\b/iu',
+        ],
+        'cta' => [
+            'headline' => '/\b(cta|заявк\w*|контакт\w*|призыв)\b/iu',
+            'body' => '/\b(cta|заявк\w*|связ\w*|контакт\w*|обсудить|призыв)\b/iu',
+            'semantic' => '',
+        ],
+    ];
+}
+
+function wpae_llm_content_archetype_markers(): array {
+    $markers = [];
+    foreach ( wpae_llm_content_archetype_catalog() as $archetype => $definition ) {
+        if ( ! empty( $definition['semantic'] ) ) {
+            $markers[ $archetype ] = $definition['semantic'];
+        }
+    }
+    return $markers;
+}
+
+function wpae_llm_content_archetype_scores( string $message, array $labeled_pairs = [] ): array {
+    $message = trim( $message );
+    $headline = trim( (string) ( preg_split( '/\r?\n+|(?<=[.!?])\s+/u', $message, -1, PREG_SPLIT_NO_EMPTY )[0] ?? '' ) );
+    $signal_text = wpae_llm_normalize_content_text( $message );
+    foreach ( $labeled_pairs as $pair ) {
+        $label = wpae_llm_normalize_content_text( (string) ( $pair['label'] ?? '' ) );
+        if ( $label !== '' ) {
+            $signal_text = trim( (string) preg_replace( '/' . preg_quote( $label, '/' ) . '/iu', ' ', $signal_text ) );
+        }
+    }
+    $headline = wpae_llm_normalize_content_text( $headline );
+    $catalog = wpae_llm_content_archetype_catalog();
+    $scores = array_fill_keys( array_keys( $catalog ), 0 );
+    foreach ( $catalog as $archetype => $definition ) {
+        if ( preg_match( $definition['headline'], $headline ) ) {
+            $scores[ $archetype ] += 100;
+        }
+        if ( preg_match( $definition['body'], $signal_text ) ) {
+            $scores[ $archetype ] += 20;
+        }
+    }
+    return $scores;
+}
+
 function wpae_llm_detect_block_archetype( string $message ): string {
+    $labeled_pairs = wpae_llm_extract_labeled_content( $message );
+    $scores = wpae_llm_content_archetype_scores( $message, $labeled_pairs );
+    $scored_archetype = '';
+    $scored_value = 0;
+    foreach ( $scores as $archetype => $score ) {
+        if ( $score > $scored_value ) {
+            $scored_archetype = $archetype;
+            $scored_value = $score;
+        }
+    }
+    if ( $scored_archetype !== '' && $scored_value > 0 ) {
+        return $scored_archetype;
+    }
     if ( wpae_llm_is_content_composition_request( $message ) ) {
         $normalized = wpae_llm_normalize_content_text( $message );
-        $labeled_pairs = wpae_llm_extract_labeled_content( $message );
         $labeled_text = wpae_llm_normalize_content_text( implode( ' ', array_map( static fn( $pair ): string => (string) ( $pair['label'] ?? '' ), $labeled_pairs ) ) );
         if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
             return 'mega_menu';
@@ -764,6 +876,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         ];
     }, wpae_llm_extract_labeled_content( $message ) ), 0, 8 );
     $content_pairs = $pairs;
+    $archetype_scores = wpae_llm_content_archetype_scores( $message, $pairs );
     if ( $archetype === 'faq' && count( $content_pairs ) < 2 ) {
         $content_pairs = array_slice( array_map( static function ( $pair ): array {
             return [
@@ -796,6 +909,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
     return [
         'schema' => 'wpae-content-plan-v1',
         'archetype' => $archetype,
+        'archetype_scores' => $archetype_scores,
         'title' => (string) ( $units[0] ?? '' ),
         'content_units' => array_slice( $units, 0, 8 ),
         'labeled_pairs' => $pairs,
@@ -915,6 +1029,16 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
             $failures[] = 'FAQ questions and answers are not separated into distinct units';
         }
     }
+    $semantic_conflicts = [];
+    $plan_copy = wpae_llm_normalize_content_text( implode( ' ', array_merge( (array) ( $plan['content_units'] ?? [] ), array_map( static fn( $pair ): string => implode( ' ', (array) $pair ), (array) ( $plan['content_pairs'] ?? [] ) ) ) ) );
+    $tree_copy = wpae_llm_normalize_content_text( wpae_llm_collect_action_content( $elements ) );
+    foreach ( wpae_llm_content_archetype_markers() as $candidate_archetype => $marker ) {
+        $plan_has_marker = (bool) preg_match( $marker, $plan_copy );
+        if ( ! $plan_has_marker && preg_match( $marker, $tree_copy ) && $candidate_archetype !== $archetype ) {
+            $semantic_conflicts[] = 'unrequested ' . $candidate_archetype . ' semantics appear in ' . $archetype . ' composition';
+            $failures[] = $archetype . ' composition contains unrelated ' . $candidate_archetype . ' semantics';
+        }
+    }
     return [
         'ok' => empty( $failures ),
         'archetype' => (string) ( $plan['archetype'] ?? '' ),
@@ -930,6 +1054,7 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
         'repeatable_container_count' => $repeatable_container_count,
         'accordion_item_count' => $accordion_item_count,
         'repeatable_units' => $repeatable_units,
+        'semantic_conflicts' => $semantic_conflicts,
         'failures' => array_values( array_unique( $failures ) ),
     ];
 }

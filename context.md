@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.17`
+- Plugin: `v02.11.18`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -39,6 +39,15 @@
   composition. This fixes mixed team/pricing fallback trees observed in live
   Browser Use testing. The page currently contains historical test sections;
   they must be treated as test contamination, not as the new root's design.
+- v02.11.18: Archetype classification now uses one central catalog of weighted
+  headline/body signals instead of order-dependent regex priority. Repeatable
+  labels are removed from classification signals, so a pricing tier named
+  «Команда» cannot change the requested block type. The same catalog exposes
+  strong semantic markers to the preflight and final audits; cross-archetype
+  copy is rejected before normalization and Elementor write, closing the gap
+  where Vision could approve a valid crop around a mixed root. The current
+  live editor remains on v02.11.16 because WP Pusher has no WP AI Executor
+  package row and the supplied hook currently returns HTTP 400.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor
