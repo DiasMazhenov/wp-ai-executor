@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.18`
+- Plugin: `v02.11.19`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -48,6 +48,12 @@
   where Vision could approve a valid crop around a mixed root. The current
   live editor remains on v02.11.16 because WP Pusher has no WP AI Executor
   package row and the supplied hook currently returns HTTP 400.
+- v02.11.19: The LLM chat REST handler now reads JSON request bodies through
+  `get_json_params()` and keeps the existing `get_param()` fallback. This
+  closes the false `message required` failure seen during photo-content tests
+  on the hosting path. The live editor is still stale at `v02.11.16`; the
+  release is not visually accepted until it is deployed and the photo matrix
+  passes screenshot plus Vision/Impeccable review.
 - 2026-09-03 live non-Hero matrix: FAQ, testimonials, process, portfolio, CTA,
   carousel, about, and mega-menu were tested with content-only prompts through
   Browser Use. Every result received a screenshot and visual review. FAQ,
@@ -57,6 +63,14 @@
   tier. Treat all results as stale-runtime diagnostics until live reports
   v02.11.18. Console also reports external `gtag`, Elementor checklist,
   REST-404, and Angie errors; see `ERRORS.md` EJ-057/EJ-058.
+- 2026-09-03 live photo-content probe: portfolio with three different photo
+  descriptions failed twice with `Поле message обязательно` plus HTTP 500;
+  short about-with-photo failed after provider retry with HTTP 500. No new
+  block or image was created. Screenshots and DOM checks were captured, and
+  the failure is recorded as `ERRORS.md` EJ-059. Do not continue adding photo
+  sections until `v02.11.19` is deployed; then rerun portfolio, about, FAQ,
+  testimonials, process, CTA, carousel, and mega-menu with photo-bearing
+  prompts and the mandatory screenshot -> Vision/Impeccable -> comparison loop.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor

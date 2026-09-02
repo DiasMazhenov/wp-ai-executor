@@ -6513,7 +6513,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( is_wp_error( $runtime ) ) {
         return $runtime;
     }
-    $message = sanitize_textarea_field( (string) $request->get_param( 'message' ) );
+    $body_params = $request->get_json_params();
+    $body_params = is_array( $body_params ) ? $body_params : [];
+    $message_input = array_key_exists( 'message', $body_params ) ? $body_params['message'] : $request->get_param( 'message' );
+    $message = sanitize_textarea_field( (string) $message_input );
     if ( $message === '' ) {
         return new WP_Error( 'wpae_llm_message_required', 'Поле message обязательно.', [ 'status' => 400 ] );
     }
@@ -6522,7 +6525,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     }
 
     $action_request = wpae_llm_is_action_request( $message );
-    $editor_context_input = $request->get_param( 'context' );
+    $editor_context_input = array_key_exists( 'context', $body_params ) ? $body_params['context'] : $request->get_param( 'context' );
     $live_background_image_urls = is_array( $editor_context_input )
         ? wpae_llm_sanitize_background_image_urls( $editor_context_input['background_image_urls'] ?? [] )
         : [];
@@ -6591,7 +6594,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         'role' => 'system',
         'content' => $system_prompt,
     ] ];
-    foreach ( wpae_llm_clean_history( $request->get_param( 'history' ) ) as $item ) {
+    $history_input = array_key_exists( 'history', $body_params ) ? $body_params['history'] : $request->get_param( 'history' );
+    foreach ( wpae_llm_clean_history( $history_input ) as $item ) {
         $messages[] = $item;
     }
     $messages[] = [ 'role' => 'user', 'content' => $message ];

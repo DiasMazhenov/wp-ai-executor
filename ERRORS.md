@@ -138,6 +138,29 @@ before making a new change to the plugin.
   refresh, screenshot, and rollback; fix them at their owning integration if
   they affect chat or canvas.
 
+## EJ-059: Photo-content requests fail before media generation on stale live runtime
+
+- **Observed:** A long portfolio brief with three distinct photo descriptions
+  was sent twice through Browser Use. Both attempts displayed the prompt but
+  returned `Поле message обязательно` and a `500 Internal Server Error` toast;
+  no new image widget or block was written. A short «О студии» brief with one
+  photo description triggered the provider-unavailable retry and then ended in
+  `HTTP 500`. Screenshots and DOM checks confirmed that the canvas stayed on
+  the previous section.
+- **Root cause:** The live editor still runs `v02.11.16`, while the repository
+  had already moved to `v02.11.18`; the live deployment therefore does not
+  contain the current media/content contract. The chat handler also relied on
+  `WP_REST_Request::get_param()` for a JSON request body, which is fragile on
+  this hosting path and can produce the exact false `message required` result.
+- **Fix:** `v02.11.19` reads `message`, `history`, and `context` from
+  `get_json_params()` with a backward-compatible parameter fallback. This is
+  an input-contract fix, not a visual workaround.
+- **Regression status:** Open until the live editor reports `v02.11.19` and
+  the photo matrix is rerun. Each block must produce a new image-bearing
+  Elementor tree, a screenshot, and the screenshot -> Vision/design-taste /
+  Impeccable -> prompt comparison loop. Do not accept `HTTP 500`, stale-canvas
+  screenshots, or provider-only success as generation success.
+
 ## EJ-047: Live runtime was behind the paste-ready JSON release
 
 - **Observed:** On an earlier live check the Elementor editor showed
