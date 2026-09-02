@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-030: Courses kit root was used for a benefits request
+
+- **Observed:** The benefits brief was inserted into the Vocario `Courses`
+  root. Its source layout kept a 25% text column beside a 75% image column,
+  so the requested copy rendered as a compressed, overlapping text block even
+  though every container had native Flex classes.
+- **Root cause:** Retrieval allowed the `courses` category for benefits and
+  root scoring treated `Courses` as a benefits-compatible root. Content
+  fidelity passed because the requested words were present, but composition
+  type was wrong.
+- **Fix:** v02.10.97 limits the canonical benefits category to `benefits` and
+  rejects multi-root kits unless a root title matches the requested archetype.
+  The type-specific native Flex fallback now handles unmatched benefits
+  requests instead of inheriting incompatible source geometry.
+- **Regression status:** Node contract test, PHP lint and diff check pass.
+  Fresh Browser Use generation must show a benefits grid with readable copy,
+  then the remaining block types must be checked through screenshot,
+  Vision/design-taste and Impeccable review.
+
 ## EJ-027: Incidental process wording changed an explicit benefits block
 
 - **Observed:** A content-only benefits brief began with `Преимущества`, but

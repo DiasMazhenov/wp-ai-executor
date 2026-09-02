@@ -662,7 +662,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     $aliases = wpae_block_library_retrieval_aliases( $archetype );
     $category_aliases = [
         'hero' => [ 'hero', 'home' ],
-        'benefits' => [ 'benefits', 'courses' ],
+        'benefits' => [ 'benefits' ],
         'pricing' => [ 'pricing' ],
         'testimonials' => [ 'testimonials', 'reviews' ],
         'team' => [ 'team' ],

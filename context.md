@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.96`
+- Plugin: `v02.10.97`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -89,6 +89,10 @@
   taking the first `Hero` root. The plugin header and `WPAE_VERSION` are
   synchronized to this release. Fresh Browser Use visual matrix validation
   remains required for every supported block type.
+- v02.10.97: Multi-section library kits are rejected when no root is named for
+  the requested archetype. Benefits no longer treat Vocario `Courses` as a
+  benefits template, preventing long content from being inserted into the
+  source's narrow image-card column and falling through to native Flex cards.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed
