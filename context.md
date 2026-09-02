@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.81`
+- Plugin: `v02.10.82`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -25,6 +25,11 @@
   rebuilds the copy as a clean native Flex composition, removes descendant
   decorative surfaces and fixed geometry, places the outlined badge above the
   heading, and applies a black semi-transparent native photo overlay.
+- v02.10.82: dirty terracotta accents are removed from defaults and legacy
+  stored accents are migrated to clean cobalt `#4460EC`; photo hero text and
+  black overlay are protected from generic token remapping, CTA background
+  comes from the active accent token, and saved-preview reload bypasses the
+  stale editor model during Vision rollback/retry.
 
 ## Mandatory error journal workflow
 

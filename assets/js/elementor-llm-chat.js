@@ -318,7 +318,7 @@
         // Embedded editors may ignore window.location.reload(); refresh the
         // preview first so rolled-back roots cannot survive into the repair.
         window.setTimeout(function () {
-            refreshElementorPreview().catch(function () { return false; }).then(function () {
+            refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
                 request(pending.message, false, pending.options || {});
             });
         }, 0);
@@ -595,6 +595,9 @@
                 reloadPreviewIframe().then(function (reloaded) { resolve(officialRefresh || reloaded); });
             }, officialRefresh ? 250 : 0);
         });
+    }
+    function refreshSavedElementorPreview() {
+        return reloadPreviewIframe();
     }
     var liveGeneratedRootIds = [];
 
@@ -1211,8 +1214,10 @@
                             if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);
                             addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; перезагружаю Elementor из сохраненного состояния.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; перезагружаю Elementor из сохраненного состояния.');
                             status.textContent = strings.error;
-                            window.setTimeout(function () { window.location.reload(); }, 250);
-                            return true;
+                            return refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
+                                window.setTimeout(function () { window.location.reload(); }, 250);
+                                return true;
+                            });
                         });
                     }
                     addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');

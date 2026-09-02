@@ -3,6 +3,27 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-016: Dirty accent and stale preview state survived trusted hero repair
+
+- **Observed:** v02.10.81 used a muted terracotta CTA family, while the live
+  screenshot after the Vision chain still showed three identical hero roots
+  and low-contrast body text on the photo. Vision scored the attempts `60`,
+  `58`, and `60`; Impeccable rejected the low contrast, internal-looking
+  badge, and run-on copy.
+- **Root cause:** The project default accent was `#C75B3B` and the clean hero
+  hardcoded another terracotta color. Photo text markers were absent, so the
+  token map changed white text to ink. Rollback refreshed through the embedded
+  Elementor editor model, which retained stale iframe roots.
+- **Fix:** v02.10.82 migrates the legacy accent to `#4460EC`, removes hero
+  color hardcodes, protects photo text and the black overlay during token
+  mapping, uses the content badge `ПРЕДЛОЖЕНИЕ`, and reloads the saved iframe
+  directly before retry and after rollback.
+- **Regression status:** Local contract tests and PHP lint must pass. Fresh
+  live Browser Use validation must show one root, readable white photo text,
+  a cobalt token CTA, a semantic outlined badge, and a passing
+  screenshot -> Vision/design-taste -> prompt comparison before continuing
+  the 10-iteration run.
+
 ## EJ-015: Trusted hero source preserved decorative geometry after adaptation
 
 - **Observed:** v02.10.80 generated a native Flex hero from the Vocario source,

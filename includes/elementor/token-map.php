@@ -145,6 +145,8 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
         $is_bento_grid = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
         $is_generated_content_shell = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );
         $is_generated_cta_row = $el_type === 'container' && is_array( $classes ) && in_array( 'wpae-generated-cta-row', $classes, true );
+        $is_photo_hero_root = $el_type === 'container' && $depth === 0 && is_array( $classes ) && in_array( 'wpae-photo-hero', $classes, true );
+        $is_photo_hero_text = $el_type === 'widget' && is_array( $classes ) && in_array( 'wpae-photo-hero-text', $classes, true );
         $preserve_transparent_background = $is_generated_badge || $is_bento_grid || $is_generated_content_shell || $is_generated_cta_row
             || ( $el_type === 'container' && $depth === 0 && (string) ( $settings['background_color'] ?? '' ) === 'transparent' );
 
@@ -164,6 +166,9 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
                 'button_background_color' => 'accent',
                 'button_text_color' => 'surface',
             ] as $key => $role ) {
+                if ( $is_photo_hero_text && $key === 'button_text_color' ) {
+                    continue;
+                }
                 $target = (string) ( $palette[ $role ] ?? '' );
                 if ( $target !== '' ) {
                     wpae_token_map_set( $settings, $key, $target, $element_id, 'palette.' . $role, $report );
@@ -173,6 +178,12 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
 
         foreach ( array_keys( $settings ) as $key ) {
             if ( $preserve_transparent_background && in_array( (string) $key, [ 'background_color', 'background_color_b' ], true ) ) {
+                continue;
+            }
+            if ( $is_photo_hero_root && (string) $key === 'background_overlay_color' ) {
+                continue;
+            }
+            if ( $is_photo_hero_text && in_array( (string) $key, [ 'title_color', 'text_color', 'description_color', 'icon_color', 'button_text_color' ], true ) ) {
                 continue;
             }
             $role = wpae_token_map_color_role( (string) $key, $el_type, $widget_type, $depth );

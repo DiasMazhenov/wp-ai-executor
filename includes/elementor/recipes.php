@@ -76,7 +76,7 @@ function wpae_elementor_recipe_definitions(): array {
                     'gap' => wpae_el_gap( 32 ),
                     'padding' => wpae_el_spacing( 72, 40, 72, 40 ),
                 ], [
-                    wpae_el_widget( 'heroa02', 'heading', [ 'title' => '{{eyebrow}}', 'header_size' => 'h6', 'title_color' => '#c75b3b' ] ),
+                    wpae_el_widget( 'heroa02', 'heading', [ 'title' => '{{eyebrow}}', 'header_size' => 'h6', 'title_color' => '#4460EC' ] ),
                     wpae_el_container( 'heroa03', [
                         'flex_direction' => 'row',
                         'gap' => wpae_el_gap( 40 ),
@@ -344,4 +344,3 @@ function wpae_elementor_recipe( WP_REST_Request $request ): WP_REST_Response {
         'next_steps' => [ 'POST /elementor/compose', 'POST /elementor/normalize', 'POST /elementor/validate' ],
     ], 200 );
 }
-

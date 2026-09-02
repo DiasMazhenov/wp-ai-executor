@@ -8,7 +8,7 @@ function wpae_project_design_token_defaults(): array {
             'ink' => '#111827',
             'paper' => '#f6f0e6',
             'surface' => '#ffffff',
-            'accent' => '#c75b3b',
+            'accent' => '#4460EC',
             'support' => '#2563eb',
             'muted' => '#6b7280',
         ],
@@ -76,6 +76,9 @@ function wpae_sanitize_design_tokens( array $input ): array {
         $incoming = is_array( $input[ $group ] ?? null ) ? $input[ $group ] : [];
         foreach ( $defaults[ $group ] as $key => $default ) {
             $value = $incoming[ $key ] ?? $default;
+            if ( $group === 'palette' && $key === 'accent' && strtolower( trim( (string) $value ) ) === '#c75b3b' ) {
+                $value = $defaults[ $group ][ $key ];
+            }
             $tokens[ $group ][ $key ] = wpae_sanitize_design_token_text( $value, $group === 'palette' ? 32 : 180 );
         }
     }

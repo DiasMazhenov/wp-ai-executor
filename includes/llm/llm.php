@@ -2045,6 +2045,11 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
 
         $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $has_photo = $has_background_image( $root_settings );
+        if ( $has_photo ) {
+            $root_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+                ? wpae_append_css_classes( $root_settings['_css_classes'] ?? '', [ 'wpae-photo-hero' ] )
+                : trim( (string) ( $root_settings['_css_classes'] ?? '' ) . ' wpae-photo-hero' );
+        }
         foreach ( [
             'width', 'width_tablet', 'width_mobile', '_element_width', '_element_width_tablet',
             '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet',
@@ -2127,10 +2132,17 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
             'typography_font_weight' => '700',
             'custom_css' => 'selector .elementor-heading-title { text-wrap: balance; }',
         ];
+        if ( $has_photo ) {
+            $heading_settings['_css_classes'] = 'wpae-photo-hero-text';
+        }
         $shell_elements = [ $widget( $root_id . '-hero-heading', 'heading', $heading_settings ) ];
         if ( ! empty( $body ) ) {
+            $body_text = implode( '. ', $body );
+            if ( $body_text !== '' && ! preg_match( '/[.!?]$/u', $body_text ) ) {
+                $body_text .= '.';
+            }
             $shell_elements[] = $widget( $root_id . '-hero-copy', 'text-editor', [
-                'editor' => implode( ' ', $body ),
+                'editor' => $body_text,
                 'align' => 'left',
                 'align_mobile' => 'left',
                 'text_color' => $text_color,
@@ -2139,6 +2151,9 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
                 'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1 ],
                 'typography_line_height' => [ 'unit' => 'em', 'size' => 1.5 ],
             ] );
+            if ( $has_photo ) {
+                $shell_elements[ count( $shell_elements ) - 1 ]['settings']['_css_classes'] = 'wpae-photo-hero-text';
+            }
         }
         if ( $cta !== '' ) {
             $button_settings = [
@@ -2148,13 +2163,15 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
                 'link' => [ 'url' => '#contact' ],
                 'button_text_color' => '#ffffff',
                 'button_hover_text_color' => '#ffffff',
-                'background_color' => '#d65a3a',
-                'button_background_hover_color' => '#b7472e',
+                'background_color' => '',
             ];
             wpae_llm_normalize_generated_button_settings( $button_settings );
             $button_settings['button_text_color'] = '#ffffff';
             $button_settings['button_hover_text_color'] = '#ffffff';
             $shell_elements[] = $widget( $root_id . '-hero-cta', 'button', $button_settings );
+            if ( $has_photo ) {
+                $shell_elements[ count( $shell_elements ) - 1 ]['settings']['_css_classes'] = 'wpae-photo-hero-text';
+            }
         }
 
         $root['settings'] = $root_settings;
@@ -3527,7 +3544,7 @@ function wpae_llm_apply_fallback_variant( array $elements, string $archetype, in
 function wpae_llm_badge_label( string $archetype ): string {
     $labels = [
         'mega_menu' => 'МЕГА МЕНЮ',
-        'hero' => 'ПЕРВЫЙ ЭКРАН',
+        'hero' => 'ПРЕДЛОЖЕНИЕ',
         'benefits' => 'ПРЕИМУЩЕСТВА',
         'pricing' => 'ФОРМАТЫ',
         'testimonials' => 'ОТЗЫВЫ',

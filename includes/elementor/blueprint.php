@@ -43,7 +43,7 @@ function wpae_blueprint_palette_for_style( string $style ): array {
             'ink' => '#111827',
             'paper' => '#f6f0e6',
             'surface' => '#ffffff',
-            'accent' => '#c75b3b',
+            'accent' => '#4460EC',
             'muted' => '#6b7280',
             'line' => '#d8cfc2',
         ];
@@ -64,7 +64,7 @@ function wpae_blueprint_palette_for_style( string $style ): array {
         'ink' => '#111827',
         'paper' => '#f7f2ea',
         'surface' => '#ffffff',
-        'accent' => '#d97706',
+        'accent' => '#4460EC',
         'support' => '#2563eb',
         'muted' => '#4b5563',
     ];
