@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.07`
+- Plugin: `v02.11.08`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -144,6 +144,10 @@
   or duplicate a requested phrase in a neighboring card. Browser Use
   validation confirmed the new benefits root, exact requested copy, transparent
   grid background, no horizontal overflow, and a live editor after generation.
+- v02.11.08: Preserved Team templates keep horizontal parent padding at
+  `1.5rem` desktop and `1.25rem` mobile. An outside `Наша команда` source
+  widget is promoted to a native `h2` heading instead of rendering as a small
+  paragraph, and Team headings are exempt from badge-label deduplication.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

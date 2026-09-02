@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-040: Preserved Team template lost parent side padding and heading tier
+
+- **Observed:** The live Team block rendered with `padding-left/right: 0px`,
+  while `НАША КОМАНДА` was a heading widget configured with `header_size: p`,
+  so Elementor displayed it as small body text.
+- **Root cause:** The preserved-library badge pass reset the root container's
+  padding to zero and the source heading semantics were not promoted after
+  template adaptation. The shared badge deduplicator could also treat the
+  Team section title as redundant with the `КОМАНДА` badge.
+- **Fix:** v02.11.08 adds responsive horizontal padding for Team roots,
+  promotes the outside section title to a native `h2`, and preserves that
+  title during badge deduplication.
+- **Regression status:** Recheck with Browser Use using screenshot ->
+  Vision/design-taste -> prompt comparison -> scoped JSON and DOM. Require a
+  visible large heading, nonzero parent side padding, preserved card images,
+  no overflow and a healthy Elementor iframe.
+
 ## EJ-039: Elementor editor emitted external console errors during a healthy write
 
 - **Observed:** After the v02.11.07 deployment, the fresh Elementor editor

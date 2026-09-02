@@ -4037,7 +4037,7 @@ function wpae_llm_remove_redundant_badge_label_content( array $elements, string 
         return trim( (string) preg_replace( '/[^\p{L}\p{N}]+/u', ' ', $value ) );
     };
     $badge_key = $normalize_label( wpae_llm_badge_label( $archetype ) );
-    $walk = static function ( array &$nodes, bool $inside_bento_grid = false ) use ( &$walk, $normalize_label, $badge_key, &$changed ): bool {
+    $walk = static function ( array &$nodes, bool $inside_bento_grid = false ) use ( &$walk, $normalize_label, $badge_key, $archetype, &$changed ): bool {
         if ( $badge_key === '' ) {
             return false;
         }
@@ -4053,7 +4053,8 @@ function wpae_llm_remove_redundant_badge_label_content( array $elements, string 
                 $text_key = $widget_type === 'heading' ? 'title' : 'editor';
                 $text_key_value = $normalize_label( wp_strip_all_tags( (string) ( $settings[ $text_key ] ?? '' ) ) );
                 $text_without_prefix = preg_replace( '/^(?:наша|наш|наше|наши|новая|новые|избранные|главное)\s+/u', '', $text_key_value );
-                if ( $text_key_value === $badge_key || $text_without_prefix === $badge_key ) {
+                $is_team_section_heading = $archetype === 'team' && $text_key_value === 'наша команда';
+                if ( ! $is_team_section_heading && ( $text_key_value === $badge_key || $text_without_prefix === $badge_key ) ) {
                     array_splice( $nodes, $index, 1 );
                     $changed++;
                     return true;
@@ -4065,6 +4066,50 @@ function wpae_llm_remove_redundant_badge_label_content( array $elements, string 
         }
         unset( $node );
         return false;
+    };
+    $walk( $elements );
+    return $elements;
+}
+
+function wpae_llm_promote_team_section_heading( array $elements, int &$changed = 0 ): array {
+    $walk = static function ( array &$nodes, bool $inside_bento_grid = false ) use ( &$walk, &$changed ): void {
+        foreach ( $nodes as &$node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            $is_bento_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            if ( ! $inside_bento_grid && ( $node['elType'] ?? '' ) === 'widget' && in_array( $widget_type, [ 'heading', 'text-editor' ], true ) ) {
+                $text_key = $widget_type === 'heading' ? 'title' : 'editor';
+                $text = trim( wp_strip_all_tags( (string) ( $settings[ $text_key ] ?? '' ) ) );
+                if ( wpae_llm_normalize_content_text( $text ) === 'наша команда' ) {
+                    $before = wp_json_encode( $node );
+                    $node['widgetType'] = 'heading';
+                    $settings['title'] = $text !== '' ? $text : 'Наша команда';
+                    $settings['header_size'] = 'h2';
+                    $settings['title_color'] = (string) ( $settings['title_color'] ?? '#111827' );
+                    $settings['typography_typography'] = 'custom';
+                    $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 3.25 ];
+                    $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 2.75 ];
+                    $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 2.15 ];
+                    $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.08 ];
+                    $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => 1.1 ];
+                    $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.12 ];
+                    $settings['typography_font_weight'] = '700';
+                    unset( $settings['editor'], $settings['text_color'], $settings['title_text'], $settings['description_text'] );
+                    $node['settings'] = $settings;
+                    if ( $before !== wp_json_encode( $node ) ) {
+                        $changed++;
+                    }
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $walk( $node['elements'], $inside_bento_grid || $is_bento_grid );
+            }
+        }
+        unset( $node );
     };
     $walk( $elements );
     return $elements;
@@ -4178,8 +4223,11 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
         $root['settings']['flex_align_items'] = 'stretch';
         $root['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
         $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
-        $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
-        $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+        $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => $archetype === 'team' ? '1.5' : '0', 'bottom' => '0', 'left' => $archetype === 'team' ? '1.5' : '0', 'isLinked' => false ];
+        $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => $archetype === 'team' ? '1.25' : '0', 'bottom' => '0', 'left' => $archetype === 'team' ? '1.25' : '0', 'isLinked' => false ];
+        if ( $archetype === 'team' ) {
+            $content_shell['elements'] = wpae_llm_promote_team_section_heading( (array) ( $content_shell['elements'] ?? [] ), $changed );
+        }
         $root['elements'] = [ $badge, $content_shell ];
         $root['elements'] = wpae_llm_remove_redundant_badge_label_content( $root['elements'], $archetype, $changed );
         $changed++;
@@ -4654,6 +4702,9 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
             $root['settings']['_css_classes'] = trim( implode( ' ', $root_classes ) );
         }
         $content_shell['elements'] = wpae_llm_wrap_generation_cta( is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [], $changed );
+        if ( $archetype === 'team' ) {
+            $content_shell['elements'] = wpae_llm_promote_team_section_heading( $content_shell['elements'], $changed );
+        }
         $root['settings']['flex_direction'] = 'column';
         $root['settings']['flex_direction_mobile'] = 'column';
         $root['settings']['flex_wrap'] = 'nowrap';
