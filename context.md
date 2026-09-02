@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.01`
+- Plugin: `v02.11.02`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -116,6 +116,11 @@
   heading equal to the section heading. A duplicate card heading is replaced
   with its requested copy and the next requested unit remains in the card
   body, without adding technical instructions to the user prompt.
+- v02.11.02: Visual grammar removes a redundant section heading when it repeats
+  the generated badge label, including harmless prefixes such as `наша` or
+  `новая`. This keeps the required outlined badge above the content without a
+  duplicated title. The Elementor editor selection scrim remains an editor UI
+  layer and must not be interpreted as a generated background overlay.
 - v02.10.94: Library retrieval now enforces the requested block archetype
   against the stored category. A content-only benefits brief could otherwise
   select a Team fixture because shared words and source preference outweighed

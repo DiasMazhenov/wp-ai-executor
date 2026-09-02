@@ -3,6 +3,20 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-035: Generated section duplicated its badge label
+
+- **Observed:** The live Team block rendered the `КОМАНДА` badge immediately
+  above a second `НАША КОМАНДА` heading, which Vision scored as redundant
+  hierarchy and excess whitespace. The editor screenshot also dimmed adjacent
+  cards while one container was selected.
+- **Root cause:** Visual grammar enforced the badge but did not remove a
+  semantically equivalent section heading. The dimming was Elementor's
+  selection scrim, not `background_overlay_color` written by the plugin.
+- **Fix:** v02.11.02 removes an equivalent heading outside repeatable bento
+  cards while preserving the required outlined badge and the card headings.
+- **Regression status:** PHP lint, contract tests and a fresh Team Browser Use
+  generation must pass; the live editor must remain available after the write.
+
 ## EJ-032: Approved library adaptation retained source copy
 
 - **Observed:** A fresh benefits generation contained the requested card
