@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.10.83`
+- Plugin: `v02.10.84`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -34,6 +34,10 @@
   design prohibitions reject muddy accent colors, and Vision repair/rollback
   waits for native Elementor runtime before clearing editor roots so failed
   generations cannot leave duplicate sections behind.
+- v02.10.84: trusted Vocario hero backgrounds rotate through relevant bundled
+  speaking/presentation photos using the per-generation variation seed instead
+  of preserving one repeated source image; arbitrary user-owned hero media is
+  unchanged.
 
 ## Mandatory error journal workflow
 

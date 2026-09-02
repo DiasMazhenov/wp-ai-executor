@@ -3,6 +3,19 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-018: Trusted hero reused the same background image across generations
+
+- **Observed:** v02.10.83 produced a visually coherent trusted Vocario hero,
+  but repeated content-only generations reused the same speaker photo.
+- **Root cause:** The trusted hero normalizer preserved the library root
+  `background_image` while retrieval selected the same Vocario source template.
+- **Fix:** v02.10.84 rotates a relevant photo from the bundled Vocario image
+  set using the per-generation variation seed, while preserving arbitrary
+  user-owned media.
+- **Regression status:** Local tests and PHP lint must pass. Fresh Browser Use
+  must show distinct trusted hero background URLs/screenshots across different
+  prompts and one relevant background per hero.
+
 ## EJ-016: Dirty accent and stale preview state survived trusted hero repair
 
 - **Observed:** v02.10.81 used a muted terracotta CTA family, while the live

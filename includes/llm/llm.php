@@ -1818,7 +1818,7 @@ function wpae_llm_normalize_preserved_library_visual_state( array $elements, int
     return $elements;
 }
 
-function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false ): array {
+function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0, string $message = '', bool $clean_trusted_source = false, int $image_variant = -1 ): array {
     $to_alignment = static function ( $value ): ?string {
         $value = strtolower( trim( (string) $value ) );
         if ( in_array( $value, [ 'left', 'center', 'right' ], true ) ) {
@@ -2027,7 +2027,14 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
     };
 
     $content_units = wpae_llm_content_units( $message );
-    $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image ): array {
+    $trusted_hero_images = [
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/side-view-of-caucasian-businessman-standing-and-gi-2026-03-25-05-35-12-utc2.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/business-executive-giving-a-speech-at-conference-c-2026-03-26-11-49-31-utc-200kb.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/man-giving-presentation-to-an-audience-indoors-2026-03-10-03-17-22-utc-1.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/woman-speaking-at-event-with-audience-members-2026-03-26-22-59-42-utc.jpg',
+        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/confident-professional-woman-speaking-into-microph-2026-05-18-21-28-38-utc.jpg',
+    ];
+    $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image, $clean_trusted_source, $trusted_hero_images, $image_variant, $message ): array {
         if ( count( $units ) < 2 ) {
             return $root;
         }
@@ -2046,6 +2053,20 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $has_photo = $has_background_image( $root_settings );
         if ( $has_photo ) {
+            if ( $clean_trusted_source && count( $trusted_hero_images ) > 1 ) {
+                $background_image = is_array( $root_settings['background_image'] ?? null ) ? $root_settings['background_image'] : [];
+                $current_image_url = trim( (string) ( $background_image['url'] ?? '' ) );
+                $image_index = abs( $image_variant >= 0 ? $image_variant : hexdec( substr( md5( $message ), 0, 6 ) ) ) % count( $trusted_hero_images );
+                $next_image_url = $trusted_hero_images[ $image_index ];
+                if ( $next_image_url === $current_image_url ) {
+                    $next_image_url = $trusted_hero_images[ ( $image_index + 1 ) % count( $trusted_hero_images ) ];
+                }
+                $background_image['url'] = $next_image_url;
+                $background_image['id'] = 0;
+                $background_image['source'] = 'url';
+                $root_settings['background_image'] = $background_image;
+                $changed++;
+            }
             $root_settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
                 ? wpae_append_css_classes( $root_settings['_css_classes'] ?? '', [ 'wpae-photo-hero' ] )
                 : trim( (string) ( $root_settings['_css_classes'] ?? '' ) . ' wpae-photo-hero' );
@@ -5660,7 +5681,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $hero_composition_changed = 0;
         if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
-            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ) );
+            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1 );
         }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
