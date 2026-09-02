@@ -18,6 +18,18 @@
 - A live generation is not successful until its scoped JSON, DOM, screenshot,
   AI Vision result, and `design-taste-frontend` review agree.
 
+## Mandatory visual validation sequence
+
+- After every design generation, follow this exact sequence:
+  `screenshot -> Vision/design-taste -> compare with prompt -> fix`.
+- The screenshot must scope the newly generated or selected object, not an
+  unrelated page area. Compare the rendered composition with the requested
+  content and the source template, including hierarchy, alignment, spacing,
+  typography, colors, media, badges, icons, and responsive geometry.
+- Any failed comparison requires tracing and fixing the actual pipeline cause
+  before another generation is accepted. A structurally valid JSON or a
+  provider response alone is never a successful visual result.
+
 Release v02.10.78 fixes three trusted-library adaptation gaps found while
 testing the remaining CopyElement blocks. Team briefs in the natural
 «name, role. description» format now map to separate source member cards.
