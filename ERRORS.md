@@ -3,6 +3,35 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-027: Incidental process wording changed an explicit benefits block
+
+- **Observed:** A content-only benefits brief began with `Преимущества`, but
+  also contained `на каждом этапе`. The live generation produced a sparse,
+  mismatched composition and the editor still showed the unrelated Hero/КЕЙСЫ
+  visual state instead of a benefits card layout.
+- **Root cause:** The classifier checked the generic process vocabulary before
+  recognizing an explicit benefits section heading, so `этап` could override
+  the user's declared block type.
+- **Fix:** v02.10.96 recognizes explicit benefits/features headings before the
+  generic process branch. The local classifier-order contract now protects the
+  priority.
+- **Regression status:** Node contract test, PHP lint, and diff check pass.
+  Browser Use must confirm the fresh benefits root uses the benefits category,
+  contains its requested copy, and passes the screenshot/Impeccable review.
+
+## EJ-028: AI Vision provider timed out after a successful write
+
+- **Observed:** The live Gemini Vision review returned cURL error 28 after 45
+  seconds with zero response bytes. The Elementor write remained in the canvas,
+  while the chat reported that the preview could not be checked.
+- **Root cause:** Provider/network timeout during the external Vision request;
+  this is separate from the classifier and does not prove visual quality.
+- **Fix:** No code fix is claimed. The write is retained as designed, and the
+  screenshot is reviewed manually with the Impeccable rubric when Vision is
+  unavailable. Provider health remains an open deployment check.
+- **Regression status:** Must be tracked separately from visual acceptance;
+  a generation is not accepted without screenshot plus Impeccable review.
+
 ## EJ-025: Content fidelity accepted a library block of the wrong type
 
 - **Observed:** A content-only benefits generation selected `Team c1429` and

@@ -656,6 +656,9 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/[«"]/u', $message ) ) {
             return 'testimonials';
         }
+        if ( preg_match( '/(?:^|[.!?\n]\s*)(?:преимуществ\w*|выгод\w*|почему\s+мы|features?|benefits?)\b/iu', trim( $message ) ) ) {
+            return 'benefits';
+        }
         if ( preg_match( '/\b(шаг|этап|событи\w*|мероприяти\w*|мастер-класс|event\w*|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
             return 'process';
         }

@@ -149,6 +149,8 @@ assert.match(llm, /wpae_llm_extract_faq_content\( \$message \)/);
 const quotedTestimonialPriority = llm.indexOf("return 'testimonials';", llm.indexOf("preg_match( '/[«\"]"));
 const processPriority = llm.indexOf('(шаг|этап|событи\\w*|мероприяти\\w*|мастер-класс');
 assert.ok(quotedTestimonialPriority >= 0 && processPriority >= 0 && quotedTestimonialPriority < processPriority);
+const explicitBenefitsPriority = llm.indexOf('(?:преимуществ\\w*|выгод\\w*|почему\\s+мы|features?|benefits?)');
+assert.ok(explicitBenefitsPriority >= 0 && explicitBenefitsPriority < processPriority);
 const teamPriority = llm.indexOf("return 'team';", llm.indexOf("function wpae_llm_detect_block_archetype"));
 const benefitsPriority = llm.indexOf("return 'benefits';", teamPriority);
 assert.ok(teamPriority >= 0 && benefitsPriority >= 0 && teamPriority < benefitsPriority);
