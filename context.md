@@ -77,6 +77,12 @@
   advisory response has `quality_failed`; the screenshot, scoped DOM/JSON, and
   Impeccable review remain visible evidence for deciding whether a new repair
   is actually needed.
+- v02.10.93: Trusted pair-based library adaptation now removes stale source
+  copy after mapping requested content, and long CTA sentences are compacted
+  to readable button labels. This prevents English template titles, prices,
+  counters, and oversized source buttons from leaking into content-only
+  generations. Local regression checks pass; live Browser Use still needs the
+  site to receive v02.10.93 before the all-block visual matrix is accepted.
 
 ## Mandatory error journal workflow
 

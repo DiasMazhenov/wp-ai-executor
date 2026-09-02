@@ -20,6 +20,20 @@ before making a new change to the plugin.
   fresh Browser Use generation must show a written non-Hero block remaining in
   the canvas after its advisory Vision review.
 
+## EJ-024: Trusted pair adaptation left source copy visible
+
+- **Observed:** A live pricing generation mapped the requested prices into
+  cards, but retained English source headings, stale counters, and an
+  oversized source CTA, so the rendered block did not match the prompt.
+- **Root cause:** The trusted pair path adapted matching widgets but skipped
+  the source-copy cleanup used by narrative templates; the CTA normalizer also
+  copied a full request sentence into a button.
+- **Fix:** v02.10.93 runs trusted cleanup after pair adaptation and compacts
+  long CTA sentences in both extraction and normalization paths.
+- **Regression status:** Local contract and PHP checks pending; Browser Use
+  must confirm pricing and the remaining non-Hero archetypes contain only
+  requested copy with no clipping or stale source widgets.
+
 ## EJ-022: New trusted heroes could repeat photos already used on the page
 
 - **Observed:** The current page contained several saved hero roots. New

@@ -771,8 +771,8 @@ function wpae_llm_extract_requested_content( string $message ): array {
     }
     if ( ! empty( $structured_pairs ) ) {
         foreach ( wpae_llm_content_units( $message ) as $unit ) {
-            if ( preg_match( '/\\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\\s+заявк|смотреть|запишитесь|забронируйте|забронировать)\\b/iu', $unit ) ) {
-                $matches[] = $unit;
+            if ( preg_match( '/\\b(обсуд\\w*|получ\\w*|узна\\w*|заказ\\w*|оформ\\w*|куп\\w*|нач\\w*|выбр\\w*|напис\\w*|связ\\w*|остав\\w*\\s+заявк\\w*|смотр\\w*|запиш\\w*|заброн\\w*|регистрац\\w*)\\b/iu', $unit ) ) {
+                $matches[] = function_exists( 'wpae_llm_compact_cta_text' ) ? wpae_llm_compact_cta_text( $unit ) : $unit;
             }
         }
     }
@@ -1012,6 +1012,132 @@ function wpae_llm_content_fidelity( string $message, array $elements ): array {
         'missing' => array_slice( $missing, 0, 12 ),
         'ok' => empty( $missing ),
     ];
+}
+
+function wpae_llm_compact_cta_text( string $value ): string {
+    $value = trim( sanitize_text_field( $value ) );
+    $length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
+    if ( $length <= 64 ) {
+        return $value;
+    }
+
+    $labels = [
+        'обсуд' => 'Обсудить проект',
+        'получ' => 'Получить расчёт',
+        'узна' => 'Узнать больше',
+        'заказ' => 'Заказать',
+        'оформ' => 'Оформить заказ',
+        'куп' => 'Купить',
+        'нач' => 'Начать',
+        'выбр' => 'Выбрать формат',
+        'напис' => 'Написать нам',
+        'связ' => 'Связаться',
+        'остав' => 'Оставить заявку',
+        'смотр' => 'Смотреть кейсы',
+        'запиш' => 'Записаться',
+        'заброн' => 'Забронировать',
+        'регистрац' => 'Регистрация',
+    ];
+    foreach ( $labels as $needle => $label ) {
+        if ( preg_match( '/\b' . preg_quote( $needle, '/' ) . '/iu', $value ) ) {
+            return $label;
+        }
+    }
+
+    return $value;
+}
+
+function wpae_llm_clear_unrequested_library_copy( array &$elements, string $message, int &$changed ): void {
+    $requested = array_values( array_unique( array_merge( wpae_llm_extract_requested_content( $message ), wpae_llm_content_units( $message ) ) ) );
+    if ( empty( $requested ) ) {
+        return;
+    }
+
+    $requested_text = wpae_llm_normalize_content_text( implode( ' ', $requested ) );
+    $title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? ( $requested[0] ?? '' ) ) );
+    $cta = '';
+    foreach ( $requested as $value ) {
+        if ( preg_match( '/\b(обсуд\w*|получ\w*|узна\w*|заказ\w*|оформ\w*|куп\w*|нач\w*|выбр\w*|напис\w*|связ\w*|остав\w*\s+заявк\w*|смотр\w*|запиш\w*|заброн\w*|регистрац\w*)\b/iu', $value ) ) {
+            $cta = wpae_llm_compact_cta_text( $value );
+            break;
+        }
+    }
+    $title_set = false;
+    $cta_set = false;
+    $matches_request = static function ( $value ) use ( $requested_text ): bool {
+        $value = trim( wp_strip_all_tags( (string) $value ) );
+        $normalized = wpae_llm_normalize_content_text( $value );
+        return $normalized !== '' && strpos( $requested_text, $normalized ) !== false;
+    };
+    $widget_has_requested_copy = static function ( array $settings, string $widget_type ) use ( $matches_request ): bool {
+        $keys = [
+            'heading' => [ 'title' ],
+            'text-editor' => [ 'editor' ],
+            'button' => [ 'text' ],
+            'icon-box' => [ 'title_text', 'description_text' ],
+            'testimonial' => [ 'testimonial_name', 'testimonial_content', 'description_text' ],
+            'counter' => [ 'ending_number', 'title' ],
+            'call-to-action' => [ 'title', 'description', 'button_text' ],
+        ];
+        foreach ( $keys[ $widget_type ] ?? [] as $key ) {
+            if ( $matches_request( $settings[ $key ] ?? '' ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    $copy_widgets = [ 'heading', 'text-editor', 'button', 'icon-box', 'image-box', 'testimonial', 'counter', 'icon-list', 'call-to-action' ];
+    $walk = static function ( array &$nodes ) use ( &$walk, $title, $cta, &$title_set, &$cta_set, $matches_request, $widget_has_requested_copy, $copy_widgets, &$changed ): void {
+        $kept = [];
+        foreach ( $nodes as $element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+            if ( ( $element['elType'] ?? '' ) === 'widget' && in_array( $widget_type, $copy_widgets, true ) ) {
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $keep = false;
+                if ( $widget_type === 'heading' ) {
+                    $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                    if ( ! $title_set && $title !== '' && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
+                        $settings['title'] = $title;
+                        $title_set = true;
+                        $keep = true;
+                        $changed++;
+                    } else {
+                        $keep = $widget_has_requested_copy( $settings, $widget_type );
+                    }
+                } elseif ( $widget_type === 'button' && $cta !== '' && ! $cta_set ) {
+                    $settings['text'] = $cta;
+                    $cta_set = true;
+                    $keep = true;
+                    $changed++;
+                } elseif ( $widget_type === 'icon-list' ) {
+                    $items = is_array( $settings['icon_list'] ?? null ) ? $settings['icon_list'] : [];
+                    $items = array_values( array_filter( $items, static fn( $item ): bool => is_array( $item ) && $matches_request( $item['text'] ?? '' ) ) );
+                    if ( ! empty( $items ) ) {
+                        $settings['icon_list'] = $items;
+                        $keep = true;
+                    }
+                } else {
+                    $keep = $widget_has_requested_copy( $settings, $widget_type );
+                }
+                if ( $keep ) {
+                    $element['settings'] = $settings;
+                    $kept[] = $element;
+                } else {
+                    $changed++;
+                }
+                continue;
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+            $kept[] = $element;
+        }
+        $nodes = $kept;
+    };
+    $walk( $elements );
 }
 
 function wpae_llm_apply_fallback_content( array &$elements, array &$missing, string $archetype, int &$changed, int $depth = 0 ): void {
@@ -2707,9 +2833,15 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
             return [];
         }
         if ( wpae_llm_apply_library_narrative_content( $template_elements, $missing, $changed, $clear_unrequested_copy ) ) {
+            if ( $clear_unrequested_copy ) {
+                wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
+            }
             return $template_elements;
         }
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
+        if ( empty( $missing ) && $clear_unrequested_copy ) {
+            wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
+        }
         return empty( $missing ) ? $template_elements : [];
     }
     $walk = static function ( array &$elements ) use ( &$walk, &$pairs, &$applied, &$changed, &$has_content_widget, $archetype, $clone_with_ids ): void {
@@ -2860,6 +2992,9 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     $missing = (array) ( wpae_llm_content_fidelity( $message, $template_elements )['missing'] ?? [] );
     if ( ! empty( $missing ) ) {
         wpae_llm_apply_fallback_content( $template_elements, $missing, $archetype, $changed );
+    }
+    if ( $clear_unrequested_copy ) {
+        wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
     }
     if ( $archetype === 'process' ) {
         $process_heading_count = 0;
@@ -3060,8 +3195,8 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
 function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed, bool $preserve_style = false ): array {
     $cta = '';
     foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-        if ( preg_match( '/\b(обсудить|получить|узнать|заказать|оформить|купить|начать|выбрать|написать|связаться|оставить\s+заявк|смотреть|запишитесь|забронируйте|забронировать|регистрац\w*)\b/iu', $value ) ) {
-            $cta = trim( (string) $value );
+        if ( preg_match( '/\b(обсуд\w*|получ\w*|узна\w*|заказ\w*|оформ\w*|куп\w*|нач\w*|выбр\w*|напис\w*|связ\w*|остав\w*\s+заявк\w*|смотр\w*|запиш\w*|заброн\w*|регистрац\w*)\b/iu', $value ) ) {
+            $cta = wpae_llm_compact_cta_text( (string) $value );
             break;
         }
     }
