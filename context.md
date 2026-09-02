@@ -2,12 +2,20 @@
 
 ## Current release
 
-- Plugin: `v02.11.13`
+- Plugin: `v02.11.14`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.14: Generation now builds a bounded semantic content plan, audits
+  explicit and invented CTAs, fingerprints the selected/adapted library
+  composition before final normalization, rejects fidelity loss or forbidden
+  Icon Box widgets before writing, and runs one final native Flexbox contract
+  across generated and trusted-library trees. Full-block editor generations
+  treat AI Vision as a bounded quality gate: screenshot plus scoped JSON/DOM
+  review can trigger at most two repair passes, then rollback; targeted patches
+  stay advisory. Read `ERRORS.md` before every change.
 - v02.10.79: content-only briefs beginning with `Что...` remain generation
   requests unless they are short questions; empty selection uses page context;
   Vision repair refreshes the preview before retry because embedded Elementor

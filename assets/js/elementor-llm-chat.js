@@ -989,6 +989,14 @@
     function visionReviewScope(editorSync) {
         return editorSync && editorSync.mode === 'patch' ? 'selected_patch' : 'generated_block';
     }
+    function getVisionGeneratedJson(editorSync) {
+        if (!editorSync || !Array.isArray(editorSync.elements)) return '';
+        try {
+            return JSON.stringify({ mode: editorSync.mode || 'insert', elements: editorSync.elements.slice(0, 8) }).slice(0, 12000);
+        } catch (error) {
+            return '';
+        }
+    }
     function requestVisionReview(snapshotId, captureError, brief, editorSync) {
         var reviewScope = visionReviewScope(editorSync);
         return postVisionReview({
@@ -996,7 +1004,8 @@
             rollback_snapshot_id: snapshotId,
             vision_capture_error: captureError,
             brief: brief || '',
-            render_context: getPreviewRenderContext(getVisionSyncIds(editorSync), reviewScope)
+            render_context: getPreviewRenderContext(getVisionSyncIds(editorSync), reviewScope),
+            generated_json: getVisionGeneratedJson(editorSync)
         });
     }
     function postVisionReview(payload) {
@@ -1051,7 +1060,8 @@
                     mime_type: capture.mime_type,
                     viewport: capture.viewport,
                     brief: brief || '',
-                    render_context: capture.render_context
+                    render_context: capture.render_context,
+                    generated_json: getVisionGeneratedJson(editorSync)
                 });
             }, function (error) {
                 return requestVisionReview(snapshotId, error.message, brief, editorSync);
@@ -1270,11 +1280,23 @@
                 });
             }
             return visionPromise.then(function (review) {
+                var reviewTargetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
                 if (review && review.vision_unavailable) {
-                    addMessage('assistant', 'AI Vision временно недоступен; запись Elementor сохранена и требует ручной проверки: ' + review.error);
+                    if (!reviewTargetedPatch) {
+                        return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
+                            if (!rollback.ok) throw new Error('AI Vision недоступен, а обязательный rollback не выполнен: ' + rollback.error);
+                            addMessage('assistant', 'AI Vision недоступен. Новая генерация отменена и восстановлено состояние до записи: ' + review.error);
+                            status.textContent = strings.error;
+                            return refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
+                                window.setTimeout(function () { window.location.reload(); }, 250);
+                                return true;
+                            });
+                        });
+                    }
+                    addMessage('assistant', 'AI Vision временно недоступен; точечная правка сохранена и требует ручной проверки: ' + review.error);
                 }
-                if (review && review.gate && review.gate.quality_failed && !review.gate.advisory) {
-                    var targetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
+                if (review && review.gate && review.gate.quality_failed && (reviewTargetedPatch ? !review.gate.advisory : true)) {
+                    var targetedPatch = reviewTargetedPatch;
                     addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю замечания Vision для повторной правки выбранного дерева.' : ' Передаю замечания Vision агенту для полной регенерации дизайна.'));
                     if (repairDepth >= 2) {
                         return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {

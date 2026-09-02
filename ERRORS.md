@@ -3,6 +3,24 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-046: Generation quality checks were disconnected
+
+- **Observed:** Provider output could drift from a selected library composition,
+  use a forbidden Icon Box, or be written while editor Vision was still only
+  advisory. A valid Elementor JSON response was therefore not enough to prove
+  a usable design.
+- **Root cause:** Retrieval, semantic content constraints, Flex normalization,
+  and screenshot review did not share a single pre-write/final quality contract;
+  the editor client explicitly ignored advisory Vision failures.
+- **Fix:** v02.11.14 adds a semantic plan audit for explicit and invented CTAs,
+  selected/adapted template fingerprints, a final native Flexbox contract,
+  JSON/DOM context in Vision, and bounded rollback/repair for full-block
+  generations.
+- **Regression status:** Local contract, PHP lint and diff checks are required.
+  Fresh Browser Use generation must prove one scoped root, preserved template
+  anchors, native Flex containers, no Icon Box/overflow, and a passing
+  screenshot -> Vision/design-taste -> prompt comparison review.
+
 ## EJ-045: Content-only Team brief inherited a detached CTA
 
 - **Observed:** The live v02.11.12 Team result showed an extra black button

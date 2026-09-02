@@ -754,6 +754,221 @@ function wpae_llm_block_archetype_hint( string $message ): string {
     return ' Сначала определи тип блока по смыслу запроса и выбери подходящие native widgets из доступных Elementor. Не своди каждый блок к одному и тому же hero/benefits-шаблону; содержание и композиция должны соответствовать задаче пользователя.';
 }
 
+function wpae_llm_content_plan( string $message, string $archetype = '' ): array {
+    $archetype = $archetype !== '' ? sanitize_key( $archetype ) : wpae_llm_detect_block_archetype( $message );
+    $units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_content_units( $message ) ) ) );
+    $pairs = array_slice( array_map( static function ( $pair ): array {
+        return [
+            'label' => trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) ),
+            'content' => trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) ),
+        ];
+    }, wpae_llm_extract_labeled_content( $message ) ), 0, 8 );
+    $ctas = [];
+    foreach ( array_merge( $units, array_column( $pairs, 'content' ) ) as $value ) {
+        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
+            $ctas[] = wpae_llm_compact_cta_text( (string) $value );
+        }
+    }
+    $ctas = array_values( array_unique( array_filter( $ctas ) ) );
+    $allowed_widgets = [
+        'hero' => [ 'heading', 'text-editor', 'button', 'image' ],
+        'benefits' => [ 'heading', 'text-editor', 'icon-list', 'icon' ],
+        'pricing' => [ 'heading', 'text-editor', 'price-list', 'button' ],
+        'testimonials' => [ 'heading', 'text-editor', 'image', 'testimonial' ],
+        'team' => [ 'heading', 'text-editor', 'image', 'icon' ],
+        'about' => [ 'heading', 'text-editor', 'image', 'icon-list', 'counter' ],
+        'faq' => [ 'heading', 'accordion', 'text-editor' ],
+        'process' => [ 'heading', 'text-editor', 'icon-list', 'divider' ],
+        'portfolio' => [ 'heading', 'text-editor', 'image', 'button' ],
+        'carousel' => [ 'heading', 'text-editor', 'image-carousel' ],
+        'mega_menu' => [ 'image', 'mega-menu', 'button' ],
+        'cta' => [ 'heading', 'text-editor', 'button' ],
+    ];
+    return [
+        'schema' => 'wpae-content-plan-v1',
+        'archetype' => $archetype,
+        'title' => (string) ( $units[0] ?? '' ),
+        'content_units' => array_slice( $units, 0, 8 ),
+        'labeled_pairs' => $pairs,
+        'explicit_cta' => $ctas,
+        'cta_required' => ! empty( $ctas ),
+        'requires_media' => (bool) preg_match( '/\b(фото|изображен\w*|портрет\w*|картин\w*|медиа|image|photo|portrait|background)\b/iu', $message ),
+        'allowed_widgets' => $allowed_widgets[ $archetype ] ?? [ 'heading', 'text-editor', 'image', 'button' ],
+        'forbidden_widgets' => [ 'icon-box' ],
+    ];
+}
+
+function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
+    $counts = [];
+    $button_texts = [];
+    $walk = static function ( array $nodes ) use ( &$walk, &$counts, &$button_texts ): void {
+        foreach ( $nodes as $element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'widget' ) {
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                $counts[ $widget_type ] = (int) ( $counts[ $widget_type ] ?? 0 ) + 1;
+                if ( $widget_type === 'button' ) {
+                    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                    $button_texts[] = trim( sanitize_text_field( (string) ( $settings['text'] ?? '' ) ) );
+                }
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+    };
+    $walk( $elements );
+    $forbidden_found = array_values( array_filter( (array) ( $plan['forbidden_widgets'] ?? [] ), static fn( $type ): bool => ! empty( $counts[ sanitize_key( (string) $type ) ] ) ) );
+    $required_media = ! empty( $plan['requires_media'] );
+    $media_count = (int) ( $counts['image'] ?? 0 ) + (int) ( $counts['image-carousel'] ?? 0 );
+    $explicit_ctas = array_values( array_filter( array_map( 'strval', (array) ( $plan['explicit_cta'] ?? [] ) ) ) );
+    $matching_cta_count = 0;
+    foreach ( $button_texts as $button_text ) {
+        $normalized_button = wpae_llm_normalize_content_text( $button_text );
+        foreach ( $explicit_ctas as $explicit_cta ) {
+            $normalized_cta = wpae_llm_normalize_content_text( $explicit_cta );
+            if ( $normalized_cta !== '' && ( $normalized_button === $normalized_cta || strpos( $normalized_button, $normalized_cta ) !== false || strpos( $normalized_cta, $normalized_button ) !== false ) ) {
+                $matching_cta_count++;
+                break;
+            }
+        }
+    }
+    $cta_required = ! empty( $plan['cta_required'] );
+    $cta_failure = $cta_required && $matching_cta_count < 1;
+    $unrequested_button_count = ! $cta_required ? count( array_filter( $button_texts ) ) : 0;
+    $failures = $forbidden_found;
+    if ( $required_media && $media_count < 1 ) {
+        $failures[] = 'requested media is missing';
+    }
+    if ( $cta_failure ) {
+        $failures[] = 'explicit CTA is missing from a native button';
+    }
+    if ( $unrequested_button_count > 0 ) {
+        $failures[] = 'an unrequested CTA/button was added';
+    }
+    return [
+        'ok' => empty( $failures ),
+        'archetype' => (string) ( $plan['archetype'] ?? '' ),
+        'widget_counts' => $counts,
+        'forbidden_widgets' => $forbidden_found,
+        'media_required' => $required_media,
+        'media_count' => $media_count,
+        'cta_required' => $cta_required,
+        'explicit_cta_count' => count( (array) ( $plan['explicit_cta'] ?? [] ) ),
+        'button_count' => count( $button_texts ),
+        'matching_cta_count' => $matching_cta_count,
+        'unrequested_button_count' => $unrequested_button_count,
+        'failures' => array_values( array_unique( $failures ) ),
+    ];
+}
+
+function wpae_llm_template_fingerprint( array $elements ): array {
+    $stats = [
+        'root_count' => 0,
+        'container_count' => 0,
+        'flex_container_count' => 0,
+        'widget_count' => 0,
+        'legacy_count' => 0,
+        'max_depth' => 0,
+        'widget_types' => [],
+        'directions' => [],
+        'has_heading' => false,
+        'has_image' => false,
+        'has_badge' => false,
+        'has_bento_grid' => false,
+    ];
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$stats ): void {
+        foreach ( $nodes as $element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $element_type = (string) ( $element['elType'] ?? '' );
+            $stats['max_depth'] = max( $stats['max_depth'], $depth );
+            if ( in_array( $element_type, [ 'section', 'column' ], true ) ) {
+                $stats['legacy_count']++;
+            }
+            if ( $element_type === 'container' ) {
+                $stats['container_count']++;
+                if ( sanitize_key( (string) ( $element['settings']['container_type'] ?? '' ) ) === 'flex' ) {
+                    $stats['flex_container_count']++;
+                }
+                $direction = sanitize_key( (string) ( $element['settings']['flex_direction'] ?? '' ) );
+                if ( $direction !== '' ) {
+                    $stats['directions'][ $direction ] = (int) ( $stats['directions'][ $direction ] ?? 0 ) + 1;
+                }
+                $classes = preg_split( '/\s+/', trim( (string) ( $element['settings']['_css_classes'] ?? '' ) ) );
+                if ( is_array( $classes ) ) {
+                    $stats['has_badge'] = $stats['has_badge'] || in_array( 'wpae-generated-badge', $classes, true ) || in_array( 'wpae-generated-badge-label', $classes, true );
+                    $stats['has_bento_grid'] = $stats['has_bento_grid'] || in_array( 'wpae-bento-grid', $classes, true );
+                }
+            } elseif ( $element_type === 'widget' ) {
+                $stats['widget_count']++;
+                $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                $stats['widget_types'][ $widget_type ] = (int) ( $stats['widget_types'][ $widget_type ] ?? 0 ) + 1;
+                $stats['has_heading'] = $stats['has_heading'] || $widget_type === 'heading';
+                $stats['has_image'] = $stats['has_image'] || in_array( $widget_type, [ 'image', 'image-box', 'image-carousel' ], true );
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'], $depth + 1 );
+            }
+        }
+    };
+    $stats['root_count'] = count( array_filter( $elements, static fn( $element ): bool => is_array( $element ) && ( $element['elType'] ?? '' ) === 'container' ) );
+    $walk( $elements );
+    ksort( $stats['widget_types'] );
+    ksort( $stats['directions'] );
+    $stats['schema'] = 'wpae-template-fingerprint-v1';
+    $stats['signature'] = implode( '|', [
+        $stats['root_count'],
+        $stats['container_count'],
+        $stats['widget_count'],
+        $stats['legacy_count'],
+        $stats['max_depth'],
+        $stats['has_heading'] ? 'heading' : 'no-heading',
+        $stats['has_image'] ? 'media' : 'no-media',
+        $stats['has_bento_grid'] ? 'bento' : 'single',
+    ] );
+    return $stats;
+}
+
+function wpae_llm_compare_template_fingerprint( array $expected, array $actual, string $archetype = '' ): array {
+    $failures = [];
+    if ( (int) ( $actual['root_count'] ?? 0 ) !== 1 ) {
+        $failures[] = 'result must contain exactly one root container';
+    }
+    if ( (int) ( $actual['legacy_count'] ?? 0 ) > 0 ) {
+        $failures[] = 'legacy section/column nodes remain';
+    }
+    if ( (int) ( $actual['flex_container_count'] ?? 0 ) < 1 ) {
+        $failures[] = 'result has no native Flexbox container';
+    }
+    if ( ! empty( $expected['has_heading'] ) && empty( $actual['has_heading'] ) ) {
+        $failures[] = 'source heading structure was lost';
+    }
+    if ( ! empty( $expected['has_image'] ) && empty( $actual['has_image'] ) ) {
+        $failures[] = 'source media structure was lost';
+    }
+    if ( ! empty( $expected['has_bento_grid'] ) && empty( $actual['has_bento_grid'] ) ) {
+        $failures[] = 'source repeatable grid structure was lost';
+    }
+    if ( empty( $actual['has_badge'] ) ) {
+        $failures[] = 'required generated badge is missing';
+    }
+    if ( $archetype === 'team' && ! empty( $actual['widget_types']['icon-box'] ) ) {
+        $failures[] = 'team result contains forbidden icon-box widgets';
+    }
+    return [
+        'ok' => empty( $failures ),
+        'schema' => 'wpae-template-fidelity-v1',
+        'archetype' => $archetype,
+        'failures' => $failures,
+        'expected_signature' => (string) ( $expected['signature'] ?? '' ),
+        'actual_signature' => (string) ( $actual['signature'] ?? '' ),
+    ];
+}
+
 function wpae_llm_normalize_content_text( $value ): string {
     $value = wp_strip_all_tags( html_entity_decode( (string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
     $value = function_exists( 'mb_strtolower' ) ? mb_strtolower( $value ) : strtolower( $value );
@@ -3561,6 +3776,106 @@ function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$chang
     unset( $element );
 }
 
+function wpae_llm_enforce_flex_layout_contract( array $elements, string $archetype, int &$changed = 0 ): array {
+    $repeatable = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio', 'team' ];
+    $clear_negative_margins = static function ( array &$settings ): bool {
+        $did_change = false;
+        foreach ( [ 'margin', 'margin_tablet', 'margin_mobile', '_margin', '_margin_tablet', '_margin_mobile' ] as $key ) {
+            if ( ! is_array( $settings[ $key ] ?? null ) ) {
+                continue;
+            }
+            foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+                if ( is_numeric( $settings[ $key ][ $side ] ?? null ) && (float) $settings[ $key ][ $side ] < 0 ) {
+                    $settings[ $key ][ $side ] = '0';
+                    $did_change = true;
+                }
+            }
+        }
+        return $did_change;
+    };
+    $walk = static function ( array &$nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $repeatable, $clear_negative_margins ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'container' ) {
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
+                $before = wp_json_encode( [ $settings, $children ] );
+                $settings['container_type'] = 'flex';
+                foreach ( [ 'height', 'height_tablet', 'height_mobile', 'min_height', 'min_height_tablet', 'min_height_mobile', 'max_height', 'max_height_tablet', 'max_height_mobile', 'flex_basis', 'flex_basis_tablet', 'flex_basis_mobile' ] as $key ) {
+                    unset( $settings[ $key ] );
+                }
+                $clear_negative_margins( $settings );
+                $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                $classes = is_array( $classes ) ? array_values( array_filter( $classes ) ) : [];
+                $is_bento = in_array( 'wpae-bento-grid', $classes, true );
+                $child_containers = [];
+                foreach ( $children as $child_index => $child ) {
+                    if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+                        $child_containers[] = $child_index;
+                    }
+                }
+                $is_repeatable_group = in_array( $archetype, $repeatable, true ) && count( $child_containers ) >= 2 && $depth > 0;
+                if ( $is_bento || $is_repeatable_group ) {
+                    $settings['flex_direction'] = 'row';
+                    $settings['flex_direction_mobile'] = 'column';
+                    $settings['flex_wrap'] = 'wrap';
+                    $settings['flex_wrap_mobile'] = 'wrap';
+                    $settings['flex_justify_content'] = 'space-between';
+                    $settings['flex_align_items'] = 'stretch';
+                    $settings['flex_align_items_mobile'] = 'stretch';
+                    $settings['flex_gap'] = [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ];
+                    $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = 'transparent';
+                    if ( ! $is_bento ) {
+                        $classes[] = 'wpae-bento-grid';
+                    }
+                    foreach ( wpae_llm_variant_card_widths( 0, count( $child_containers ) ) as $width_index => $width ) {
+                        $child_index = $child_containers[ $width_index ] ?? null;
+                        if ( $child_index === null ) {
+                            continue;
+                        }
+                        $child_settings = is_array( $children[ $child_index ]['settings'] ?? null ) ? $children[ $child_index ]['settings'] : [];
+                        $child_settings['container_type'] = 'flex';
+                        $child_settings['flex_direction'] = 'column';
+                        $child_settings['flex_direction_mobile'] = 'column';
+                        $child_settings['flex_wrap'] = 'nowrap';
+                        $child_settings['flex_align_items'] = 'stretch';
+                        $child_settings['flex_align_items_mobile'] = 'stretch';
+                        wpae_llm_set_flexible_bento_container_width( $child_settings, (float) $width );
+                        $children[ $child_index ]['settings'] = $child_settings;
+                    }
+                } elseif ( empty( $settings['flex_direction'] ) ) {
+                    $settings['flex_direction'] = 'column';
+                    $settings['flex_direction_mobile'] = 'column';
+                    $settings['flex_wrap'] = 'nowrap';
+                }
+                if ( $depth === 0 ) {
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = 'transparent';
+                }
+                $settings['_css_classes'] = implode( ' ', array_values( array_unique( $classes ) ) );
+                $element['settings'] = $settings;
+                $element['elements'] = $children;
+                if ( $before !== wp_json_encode( [ $settings, $children ] ) ) {
+                    $changed++;
+                }
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'], $depth + 1 );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+    if ( $archetype === 'team' ) {
+        $elements = wpae_llm_convert_icon_boxes_to_native_widgets( $elements, $changed );
+    }
+    return $elements;
+}
+
 function wpae_llm_repair_unbalanced_repeatable_layout( array $elements, string $message, string $archetype, int &$changed ): array {
     if ( ! in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ], true ) ) {
         return $elements;
@@ -5936,6 +6251,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $vision_findings = $vision_regenerate && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
     $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
+    $content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
     $library_retrieval = [
         'status' => 'skipped',
         'reason' => $targeted_edit
@@ -5982,6 +6298,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $variation_seed = hexdec( substr( md5( $message . '|' . microtime( true ) ), 0, 6 ) ) % 100000;
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
+        $system_prompt .= "\nСемантический план контента (контракт для адаптации, не текст для вывода): " . wp_json_encode( $content_plan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '. Не добавляй CTA, имена, цены или смысловые блоки, которых нет в плане; не меняй смысл пользовательского контента ради шаблона.';
         $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; внешний контейнер и контейнер bento-сетки оставляй прозрачными, а фон и обводку используй у самих карточек; обеспечь контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder.' . wpae_llm_generation_visual_grammar_hint() . ' Не удаляй и не заменяй существующие элементы.';
         if ( ! $targeted_edit ) {
             $system_prompt .= ' Выбери для этого запуска новую композицию и не копируй предыдущие блоки: меняй ритм, соотношение зон, плотность и акцентную иерархию, сохраняя смысл и весь пользовательский контент. Внутренний номер варианта: ' . (string) $variation_seed . '.';
@@ -6190,10 +6507,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $library_layout_changed = 0;
         $library_skip_reason = '';
         $library_preserve_design = false;
+        $template_source_fingerprint = [];
+        $template_fidelity = [ 'ok' => true, 'schema' => 'wpae-template-fidelity-v1', 'status' => 'not_applicable', 'failures' => [] ];
         $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
         if ( ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
             $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
             if ( ! empty( $library_elements ) ) {
+                $template_source_fingerprint = wpae_llm_template_fingerprint( $library_elements );
                 $library_action = [
                     'action' => 'insert_elements',
                     'post_id' => $post_id,
@@ -6249,6 +6569,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $cta_changed = 0;
             $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed, true );
         }
+        $flex_contract_changed = 0;
+        if ( is_array( $action['elements'] ?? null ) ) {
+            $action['elements'] = wpae_llm_enforce_flex_layout_contract( $action['elements'], $action_archetype, $flex_contract_changed );
+        }
         $hero_composition_changed = 0;
         if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
             $existing_for_image_rotation = [];
@@ -6266,8 +6590,15 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( is_array( $action['elements'] ?? null ) ) {
             wpae_llm_invalidate_render_cache( $action['elements'], $render_cache_changed );
         }
+        $content_plan_audit = is_array( $action['elements'] ?? null )
+            ? wpae_llm_content_plan_audit( $content_plan, $action['elements'] )
+            : [ 'ok' => false, 'error' => 'No action elements were produced.' ];
+        if ( $library_applied ) {
+            $template_fidelity = wpae_llm_compare_template_fingerprint( $template_source_fingerprint, wpae_llm_template_fingerprint( (array) $action['elements'] ), $action_archetype );
+        }
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
+            [ 'id' => 'semantic_plan', 'status' => ! empty( $content_plan_audit['ok'] ) ? 'ok' : 'failed', 'message' => ! empty( $content_plan_audit['ok'] ) ? 'Смысловой план контента подтвержден до записи.' : 'Композиция нарушает смысловой план контента.', 'details' => [ 'plan' => $content_plan, 'audit' => $content_plan_audit ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
             [
                 'id' => 'command_decode',
@@ -6281,6 +6612,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'message' => $action_archetype === 'hero' ? 'Hero выровнен единообразно: badge, текст, иконки и CTA используют одну ось.' : 'Hero-нормализация не требуется для этого типа блока.',
                 'details' => [ 'settings_updated' => $hero_composition_changed ],
             ],
+            [ 'id' => 'flex_contract', 'status' => 'ok', 'message' => 'Все layout-контейнеры приведены к native Flexbox с responsive-правилами.', 'details' => [ 'settings_updated' => $flex_contract_changed, 'container_type' => 'flex', 'legacy_layout_allowed' => false ] ],
         ];
         $library_trace = [
             'status' => $library_applied ? 'applied' : (string) ( $library_retrieval['status'] ?? 'skipped' ),
@@ -6291,6 +6623,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ),
             'candidates' => (array) ( $library_retrieval['candidates'] ?? [] ),
             'selected' => ! empty( $selected_library ) ? array_intersect_key( $selected_library, array_flip( [ 'id', 'title', 'category', 'source', 'status', 'trusted_bundled', 'score', 'matched_terms' ] ) ) : null,
+            'source_fingerprint' => $template_source_fingerprint,
+            'fidelity' => $template_fidelity,
             'content_changes' => $library_changed,
             'layout_changes' => $library_layout_changed,
             'design_preserved' => $library_preserve_design,
@@ -6302,6 +6636,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'message' => $library_applied ? 'Шаблон найден, адаптирован под контент и подготовлен к вставке.' : 'Подходящий шаблон не применен; использована обычная генерация.',
             'details' => $library_trace,
         ];
+        if ( $library_applied ) {
+            $action_steps[] = [
+                'id' => 'template_fidelity',
+                'status' => ! empty( $template_fidelity['ok'] ) ? 'ok' : 'failed',
+                'message' => ! empty( $template_fidelity['ok'] ) ? 'Структурный отпечаток библиотечного шаблона сохранен после адаптации.' : 'Адаптированный шаблон не прошел структурную проверку и отклонен до записи.',
+                'details' => $template_fidelity,
+            ];
+        }
         if ( $library_layout_changed > 0 ) {
             $action_steps[] = [ 'id' => 'library_layout', 'status' => 'ok', 'message' => 'Исходная геометрия библиотечного шаблона нормализована под native Flexbox и адаптивную bento-сетку.', 'details' => [ 'changes' => $library_layout_changed, 'container_type' => 'flex', 'max_items_per_row' => 4 ] ];
         }
@@ -6314,6 +6656,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         ];
         if ( empty( $content_fidelity['ok'] ) ) {
             return new WP_Error( 'wpae_llm_content_mismatch', 'LLM-команда отклонена: сгенерированный контент не соответствует запросу.', [ 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'action' => $action_diagnostics ] ] );
+        }
+        if ( empty( $content_plan_audit['ok'] ) ) {
+            return new WP_Error( 'wpae_llm_content_plan_failed', 'LLM-команда отклонена: нарушен семантический план или использован запрещенный вид виджета.', [ 'status' => 422, 'details' => [ 'content_plan' => $content_plan, 'audit' => $content_plan_audit, 'steps' => $action_steps ] ] );
+        }
+        if ( $library_applied && empty( $template_fidelity['ok'] ) ) {
+            return new WP_Error( 'wpae_llm_template_fidelity_failed', 'Библиотечный шаблон отклонен: после адаптации нарушена его структура.', [ 'status' => 422, 'details' => [ 'fidelity' => $template_fidelity, 'source_fingerprint' => $template_source_fingerprint, 'steps' => $action_steps ] ] );
         }
         if ( $action_fallback ) {
             $action_steps[] = [ 'id' => 'action_fallback', 'status' => 'ok', 'message' => 'Провайдер не вернул пригодное дерево; создан тематический native Elementor fallback с контентом запроса.', 'details' => array_merge( $action_diagnostics, [ 'content_changed' => $fallback_content_changed ] ) ];
@@ -6409,10 +6757,13 @@ function wpae_get_llm_guide(): array {
         'guided_editor_mode' => 'The floating Elementor editor chat injects the current guide, enabled custom skills, capabilities, and project design system into action requests. It uses the same internal Elementor validation/update pipeline without exposing the site API key to browser JavaScript.',
         'editor_preview_sync' => 'After a successful insert, the floating chat synchronizes new models through the open Elementor editor API. After a selected patch, it applies native settings to the selected model tree and refreshes the preview only when the canvas cannot confirm the change. The response reports the sync mode and changed ids; it does not claim realtime success without a canvas check.',
         'action_content_gate' => 'An explicit insert action is rejected unless it contains exactly one populated root container with at least one native Elementor widget. A targeted patch is rejected unless it has a current post_id, bounded patches, existing selected element ids, and native editable paths.',
+        'semantic_content_plan' => 'Before decoding an insert, the server derives a bounded content plan from the user brief: block archetype, content units, explicit CTA, media requirement, allowed native widget families, and forbidden Icon Box. The post-write tree is audited against that plan, including rejection of invented buttons when no CTA was requested.',
+        'template_fidelity' => 'When a private library block is selected, the adapted one-root composition receives a structural fingerprint before final normalization. The write is rejected if the heading/media/grid anchors are lost, legacy layout remains, or the required native Flexbox/badge contract is missing.',
+        'flex_contract' => 'Before Elementor preflight, every container is normalized to native Flexbox, fixed height/flex-basis and negative margins are cleared, repeatable groups become responsive wrapping grids, and grid shells remain transparent while cards carry their own surfaces.',
         'visual_grammar' => 'Every generated root block receives one compact outlined rounded native badge. Icon-box is forbidden: card headings remain native heading widgets and any card icon is a separate native icon widget. Testimonial cards use a native heading for author/company plus a native text-editor for the quote, with icons decorative only. This is enforced after provider decoding and before Elementor preflight.',
         'preview_and_undo' => 'Every successful write returns operation_id, compact diff, rollback_snapshot_id, and rollback expiry. The editor chat exposes one-click undo through POST /wp-json/ai-executor/v1/llm/undo, scoped to the current post and authenticated editor.',
         'execution_trace' => 'Action and advisory responses include a safe operational steps array for the chat UI and JSON log: provider response, command decoding, validation, preview, native normalization, design-system mapping, page context, Elementor update, sync, Vision review, and final status. It never contains hidden reasoning, credentials, prompts, raw page payloads or raw provider responses.',
-        'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief and a bounded visible-text excerpt. Vision must check content_fidelity as well as visual quality. The editor-chat review is advisory and never rolls back a successful write from subjective screenshot findings; strict rollback remains available through transaction_vision_review. Screenshot or provider failures are reported without undoing the editor write.',
+        'editor_vision_review' => 'When ai_vision is enabled and configured, the floating Elementor chat captures the refreshed preview and sends it to /llm/vision-review together with the original user brief, bounded visible-text/DOM context, and a bounded generated Elementor JSON excerpt. Vision must check content_fidelity as well as visual quality. Full-block generations treat failed findings or an unavailable review as a blocking quality gate, roll back the write, and allow at most two repair passes; selected-tree patches remain advisory. Strict atomic rollback remains available through transaction_vision_review.',
         'content_fidelity' => 'Explicit content from the user request must survive into native Elementor widgets. The server extracts explicit quoted phrases, checks the action tree before write, repairs deterministic fallback content when possible, and rejects the write with a missing-content list when fidelity cannot be proven.',
         'provider_rate_limit' => [ 'calls' => WPAE_LLM_CALL_LIMIT, 'window_seconds' => WPAE_LLM_CALL_WINDOW, 'scope' => 'site-wide' ],
         'privacy' => 'Provider keys are encrypted in wp_options. Prompts, histories, and raw provider responses are not stored or logged.',
