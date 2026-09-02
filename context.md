@@ -42,6 +42,10 @@
   labeled CTA counts for the scoped Elementor target; findings that contradict
   those facts no longer start repair loops, while real major/critical findings
   remain blocking.
+- v02.10.86: Content-only course/presentation offers with a booking CTA are
+  classified as hero even without the word hero; benefits retrieval recognizes
+  the Vocario Why Choose Us section instead of defaulting to the first Hero
+  root, preventing repeated use of the shared Vocario background photo.
 
 ## Mandatory error journal workflow
 

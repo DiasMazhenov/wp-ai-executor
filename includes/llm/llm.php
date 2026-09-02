@@ -629,8 +629,14 @@ function wpae_llm_detect_block_archetype( string $message ): string {
             return 'hero';
         }
         if (
+            preg_match( '/\b(запишитесь|записаться|оставьте\s+заявк\w*|начните|попробуйте|забронируйте|забронировать)\b/iu', $message )
+            && preg_match( '/\b(школ\w*|курс\w*|обучен\w*|заняти\w*|практик\w*|тренер\w*|презентац\w*|выступлен\w*|руководител\w*|топ[- ]менеджер\w*)\b/iu', $normalized )
+        ) {
+            return 'hero';
+        }
+        if (
             count( $labeled_pairs ) < 2
-            && preg_match( '/\b(запишитесь|записаться|оставьте\s+заявк\w*|начните|попробуйте)\b/iu', $message )
+            && preg_match( '/\b(запишитесь|записаться|оставьте\s+заявк\w*|начните|попробуйте|забронируйте|забронировать)\b/iu', $message )
             && preg_match( '/\b(для\s+\p{L}+|школ\w*|курс\w*|обучен\w*|заняти\w*|практик\w*|тренер\w*|результат\w*)\b/iu', $message )
         ) {
             return 'hero';
@@ -2559,7 +2565,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     if ( count( $template_elements ) > 1 ) {
         $root_patterns = [
             'hero' => '/hero|banner|header|первый|обложк/iu',
-            'benefits' => '/benefit|feature|why\s+choose|преимуществ|выгод/iu',
+            'benefits' => '/benefit|feature|why\s+choose(?:\s+us)?|почему|опор|преимуществ|выгод/iu',
             'pricing' => '/pricing|price|тариф|стоимост|пакет/iu',
             'testimonials' => '/testimonial|review|отзыв|клиент/iu',
             'team' => '/team|команд|сотрудник|специалист/iu',

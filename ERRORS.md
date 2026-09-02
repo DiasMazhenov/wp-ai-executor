@@ -3,6 +3,19 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-020: Content-only hero offer fell into the shared Vocario Hero root
+
+- **Observed:** A presentation-school brief with a booking CTA was classified
+  as benefits, so the library path could select a Vocario Hero root with the
+  same default speaker photo and skip hero normalization.
+- **Root cause:** Hero intent required an explicit hero phrase or a narrow CTA
+  phrase list; `забронируйте` and presentation/leadership context were missing.
+- **Fix:** v02.10.86 recognizes content-only course/presentation offers with
+  booking CTAs as hero and makes benefits root matching select `Why Choose Us`.
+- **Regression status:** Local contract tests and PHP lint pass. Fresh Browser
+  Use must show the new prompt using hero normalization and a background URL
+  different from the prior hero where the trusted photo set allows it.
+
 ## EJ-018: Trusted hero reused the same background image across generations
 
 - **Observed:** v02.10.83 produced a visually coherent trusted Vocario hero,
