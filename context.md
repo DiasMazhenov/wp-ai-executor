@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.22`
+- Plugin: `v02.11.23`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -84,6 +84,11 @@
   scoped JSON/DOM inspection, screenshot, Vision/Impeccable review, and prompt
   comparison. Keep historical page sections; they are not evidence of the
   newly generated root.
+- v02.11.23: The shared process builder now accepts a nullable layout at the
+  normalization boundary and coerces null/unknown values to the safe left
+  family before building. This fixes the live central-layout retry crash where
+  PHP received `null` for the layout argument. Local checks pass; live
+  alternating/horizontal screenshot review remains pending deployment.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

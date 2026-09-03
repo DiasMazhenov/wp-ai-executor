@@ -3721,7 +3721,7 @@ function wpae_llm_process_timeline_layout( string $message ): string {
 	return 'left';
 }
 
-function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-process-timeline', string $layout = 'left' ): array {
+function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-process-timeline', ?string $layout = 'left' ): array {
 	$layout = in_array( $layout, [ 'left', 'alternating', 'horizontal' ], true ) ? $layout : 'left';
     $widget = static function ( string $widget_id, string $type, array $settings = [] ): array {
         return [ 'id' => $widget_id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];

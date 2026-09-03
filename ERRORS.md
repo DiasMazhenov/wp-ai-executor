@@ -3,6 +3,21 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-067: Timeline layout selector crashed on a null live value
+
+- **Observed:** The live `сделай центральный чередующийся таймлайн` retry
+  failed before writing with `wpae_llm_build_process_timeline(): Argument #3
+  ($layout) must be of type string, null given`.
+- **Root cause:** The shared timeline builder accepted a nullable value from
+  the live normalization path but declared a non-nullable parameter, so its
+  internal fallback to `left` could never run.
+- **Fix:** v02.11.23 makes the builder boundary nullable and keeps the existing
+  allow-list coercion to `left` for null or unknown layouts. This protects all
+  timeline callers, including stale or partially deployed PHP paths.
+- **Regression status:** Local PHP lint, contract tests, and diff checks pass.
+  Re-run alternating and horizontal live generations after WP Pusher confirms
+  v02.11.23, then perform screenshot -> Vision/Impeccable -> prompt review.
+
 ## EJ-066: Process fallback exposed only one timeline composition
 
 - **Observed:** The dedicated v02.11.21 fallback prevented the old bento-grid
