@@ -20,6 +20,23 @@ before making a new change to the plugin.
   still require scoped JSON/DOM, screenshot, Vision/Impeccable review, and
   prompt comparison after WP Pusher reports v02.11.32.
 
+## EJ-075: Horizontal timeline badge shared the cards row
+
+- **Observed:** Live horizontal generation was rolled back after Vision found
+  a large empty region beside the `ПРОЦЕСС` badge and the step cards started
+  too far to the right. The generated trace claimed a horizontal Flex timeline,
+  but the rendered composition was unbalanced.
+- **Root cause:** The horizontal builder changed the timeline root to a row
+  while the generated badge was merged as another root child. The badge became
+  a narrow first column instead of a full-width heading above the cards.
+- **Fix:** v02.11.33 keeps the timeline root as a column and wraps horizontal
+  steps in one full-width `wpae-process-track` row. Mobile uses the same track
+  as a single column; extraction reads the wrapper instead of treating it as a
+  step.
+- **Regression status:** Local checks pass after the patch. A fresh deployed
+  horizontal generation still requires scoped JSON/DOM, screenshot,
+  Vision/Impeccable review, prompt comparison, and no rollback.
+
 ## EJ-072: Process intent leaked from content into unrelated blocks
 
 - **Observed:** The live screenshot audit of the generated page found six

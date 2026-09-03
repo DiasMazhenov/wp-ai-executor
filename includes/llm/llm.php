@@ -4018,11 +4018,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		}
 		unset( $step );
 	} elseif ( $layout === 'horizontal' ) {
-		$timeline['settings']['flex_direction'] = 'row';
+		$timeline['settings']['flex_direction'] = 'column';
 		$timeline['settings']['flex_direction_mobile'] = 'column';
-		$timeline['settings']['flex_wrap'] = 'wrap';
+		$timeline['settings']['flex_wrap'] = 'nowrap';
 		$timeline['settings']['flex_wrap_mobile'] = 'nowrap';
-		$timeline['settings']['flex_justify_content'] = 'space-between';
+		$timeline['settings']['flex_justify_content'] = 'flex-start';
 		$timeline['settings']['flex_align_items'] = 'stretch';
 		$timeline['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
@@ -4069,6 +4069,30 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 			unset( $child );
 		}
 		unset( $step );
+		$timeline['elements'] = [
+			[
+				'id' => $id . '-track',
+				'elType' => 'container',
+				'settings' => [
+					'_css_classes' => 'wpae-process-track wpae-process-track-horizontal',
+					'container_type' => 'flex',
+					'content_width' => 'full',
+					'flex_direction' => 'row',
+					'flex_direction_mobile' => 'column',
+					'flex_wrap' => 'nowrap',
+					'flex_wrap_mobile' => 'nowrap',
+					'flex_justify_content' => 'space-between',
+					'flex_align_items' => 'stretch',
+					'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+					'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+					'_element_width' => 'initial',
+					'_flex_size' => 'grow',
+					'_flex_grow' => 1,
+					'_flex_shrink' => 1,
+				],
+				'elements' => $timeline['elements'],
+			],
+		];
 	}
 
 	return $timeline;
@@ -4110,14 +4134,26 @@ function wpae_llm_process_timeline_steps_from_elements( array $elements ): array
             $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             $is_generated_shell = is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );
-            if ( ( $node['elType'] ?? '' ) === 'container' && ! $is_generated_shell && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
-                foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
-                    if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
-                        $child_classes = preg_split( '/\s+/', trim( (string) ( $child['settings']['_css_classes'] ?? '' ) ) );
-                        if ( is_array( $child_classes ) && array_intersect( [ 'wpae-generated-badge', 'wpae-generated-content-shell' ], $child_classes ) ) {
-                            continue;
-                        }
-                        $step = $read_step( $child );
+			if ( ( $node['elType'] ?? '' ) === 'container' && ! $is_generated_shell && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
+				foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+					if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+						$child_classes = preg_split( '/\s+/', trim( (string) ( $child['settings']['_css_classes'] ?? '' ) ) );
+						if ( is_array( $child_classes ) && array_intersect( [ 'wpae-generated-badge', 'wpae-generated-content-shell' ], $child_classes ) ) {
+							continue;
+						}
+						if ( is_array( $child_classes ) && in_array( 'wpae-process-track', $child_classes, true ) ) {
+							foreach ( (array) ( $child['elements'] ?? [] ) as $track_step ) {
+								if ( ! is_array( $track_step ) || ( $track_step['elType'] ?? '' ) !== 'container' ) {
+									continue;
+								}
+								$track_step_data = $read_step( $track_step );
+								if ( $track_step_data['label'] !== '' || $track_step_data['content'] !== '' ) {
+									$found[] = $track_step_data;
+								}
+							}
+							continue;
+						}
+						$step = $read_step( $child );
                         if ( $step['label'] !== '' || $step['content'] !== '' ) {
                             $found[] = $step;
                         }

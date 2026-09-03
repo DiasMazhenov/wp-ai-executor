@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.32`
+- Plugin: `v02.11.33`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -143,6 +143,14 @@
   layout is reordered. Local checks pass; re-deploy and repeat screenshot ->
   Vision/design-taste -> Impeccable -> prompt comparison for alternating,
   horizontal, left, and non-process blocks.
+- v02.11.33: Live horizontal testing exposed a sibling-layout fault: the
+  process badge and horizontal step cards shared one root row, so the badge
+  occupied the first column and produced a large empty area. Horizontal output
+  now uses a column root with the badge above a full-width native Flex track;
+  the track owns the horizontal step row and collapses to a mobile column.
+  The element reader also understands the track wrapper. Live horizontal
+  validation must repeat screenshot -> Vision/design-taste -> Impeccable ->
+  prompt comparison and confirm no rollback.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
