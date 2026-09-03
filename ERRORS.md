@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-077: Pricing pairs still entered a fragmented library composition
+
+- **Observed:** The v02.11.34 live pricing probe parsed the three tiers, but the
+  rendered result still promoted the first tier into a large heading and placed
+  the other tiers in a separate right-side stack. A provider timeout also made
+  that route depend on the generic fallback path.
+- **Root cause:** Parsing pairs was not enough: the library adapter still chose
+  its existing content zones rather than a pricing-specific composition boundary.
+  The fallback post-processor could also remap a canonical pricing grid as a
+  generic card group.
+- **Fix:** v02.11.35 uses one shared `wpae-pricing-composition` native Flex root
+  with an explicit `wpae-pricing-grid` and one `wpae-pricing-card` per parsed
+  tier. Amounts use `wpae-pricing-price`; the generic fallback mapper skips
+  canonical pricing cards, so both provider and fallback routes preserve the
+  same card geometry.
+- **Regression status:** Local lint, contract tests and diff checks are next.
+  Fresh v02.11.35 deployment still requires scoped JSON/DOM, screenshot,
+  Vision/design-taste, Impeccable review, prompt comparison and no rollback.
+
 ## EJ-076: Single-line pricing briefs collapsed into one heading
 
 - **Observed:** A live pricing request with three tiers was written as a

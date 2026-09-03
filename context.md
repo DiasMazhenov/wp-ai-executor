@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.34`
+- Plugin: `v02.11.35`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -161,14 +161,27 @@
   contract test and diff checks pass; fresh deployed pricing validation still
   requires scoped JSON/DOM, screenshot, Vision/design-taste, Impeccable,
   prompt comparison and no rollback.
+- v02.11.35: The v02.11.34 pricing probe showed that pair extraction alone did
+  not prevent the library adapter from promoting the first tier to a heading
+  and stacking the remaining tiers in a side zone. Pricing now has one shared
+  canonical `wpae-pricing-composition` Flex root with a full-width heading,
+  explicit pricing grid, one card per parsed tier, and a dedicated price
+  heading class. The same builder is used by library and deterministic
+  fallback paths; generic fallback card mapping skips canonical pricing cards.
+  Local checks must pass before deployment, then fresh live pricing requires
+  scoped JSON/DOM, screenshot -> Vision/design-taste -> Impeccable -> prompt
+  comparison and no rollback.
 - 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
   Vision at 88 with no major/critical finding; scoped metrics showed three
   balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision
   at 85 with all three requested steps visible; scoped metrics showed one
   full-width track, three cards and no overflow. Raven Impeccable layout/Talon
   audits found no orphan-stretch or horizontal-overflow violations for either
-  accepted process variant. v02.11.34 pricing must be redeployed and rerun
-  after the parser fix; the previous score-68 pricing result is rejected.
+  accepted process variant. v02.11.34 pricing was rejected: scoped DOM still
+  showed one oversized tier heading and a fragmented two-zone layout despite
+  successful pair extraction. v02.11.35 must be deployed and rerun through the
+  full screenshot -> Vision/design-taste -> Impeccable -> prompt comparison
+  loop before pricing is accepted.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

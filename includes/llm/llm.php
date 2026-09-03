@@ -1810,6 +1810,15 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
             if ( count( $cards ) < 2 ) {
                 continue;
             }
+            if ( $archetype === 'pricing' && ! empty( array_filter(
+                $cards,
+                static function ( $card ): bool {
+                    $classes = preg_split( '/\s+/', trim( (string) ( $card['settings']['_css_classes'] ?? '' ) ) );
+                    return is_array( $classes ) && in_array( 'wpae-pricing-card', $classes, true );
+                }
+            ) ) ) {
+                continue;
+            }
             $target_card_count = min( 12, max( 2, count( $pairs ) ) );
             while ( count( $cards ) < $target_card_count ) {
                 $template = $cards[ count( $cards ) - 1 ];
@@ -3179,6 +3188,85 @@ function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$c
     return $elements;
 }
 
+function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pairs, int &$changed ): array {
+    if ( count( $pairs ) < 2 ) {
+        return [];
+    }
+
+    $root = null;
+    foreach ( $template_elements as $element ) {
+        if ( is_array( $element ) && ( $element['elType'] ?? '' ) === 'container' ) {
+            $root = $element;
+            break;
+        }
+    }
+    if ( ! is_array( $root ) ) {
+        $root = [ 'id' => 'wpae-pricing-root', 'elType' => 'container', 'settings' => [], 'elements' => [] ];
+    }
+
+    $widget = static function ( string $id, string $type, array $settings = [] ): array {
+        return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
+    };
+    $cards = [];
+    foreach ( array_slice( $pairs, 0, 8 ) as $index => $pair ) {
+        $label = trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) );
+        $content = trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) );
+        if ( $label === '' || $content === '' ) {
+            continue;
+        }
+        $price = $content;
+        $description = '';
+        if ( preg_match( '/^\s*(\d[\d\s]*(?:₸|\$|€|₽)?)\s*(?:[,.;:]\s*(.*))?$/u', $content, $match ) ) {
+            $price = trim( (string) ( $match[1] ?? $content ) );
+            $description = trim( (string) ( $match[2] ?? '' ) );
+        }
+        $card_id = 'wpae-pricing-card-' . (string) ( $index + 1 );
+        $card_elements = [
+            $widget( $card_id . '-label', 'heading', [
+                'title' => $label,
+                'header_size' => 'h4',
+                '_css_classes' => 'wpae-pricing-tier-label',
+            ] ),
+            $widget( $card_id . '-price', 'heading', [
+                'title' => $price,
+                'header_size' => 'h3',
+                '_css_classes' => 'wpae-pricing-price',
+            ] ),
+        ];
+        if ( $description !== '' ) {
+            $card_elements[] = $widget( $card_id . '-description', 'text-editor', [ 'editor' => $description ] );
+        }
+        $card = wpae_llm_bento_card( $card_id, $card_elements );
+        $card['settings']['_css_classes'] = 'wpae-pricing-card';
+        wpae_llm_set_flexible_bento_container_width( $card['settings'], 31 );
+        $cards[] = $card;
+    }
+    if ( count( $cards ) < 2 ) {
+        return [];
+    }
+
+    $settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+    $settings['container_type'] = 'flex';
+    $settings['content_width'] = 'full';
+    $settings['flex_direction'] = 'column';
+    $settings['flex_wrap'] = 'nowrap';
+    $settings['flex_justify_content'] = 'flex-start';
+    $settings['flex_align_items'] = 'stretch';
+    $settings['flex_gap'] = [ 'column' => '1.5', 'row' => '1.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.5' ];
+    $settings['flex_gap_mobile'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
+    $settings['padding'] = [ 'unit' => 'rem', 'top' => '2', 'right' => '1.5', 'bottom' => '2', 'left' => '1.5', 'isLinked' => false ];
+    $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1', 'bottom' => '1.5', 'left' => '1', 'isLinked' => false ];
+    $settings['_css_classes'] = trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-pricing-composition' );
+    $root['settings'] = $settings;
+    $root['elements'] = [
+        wpae_llm_badge_widget( 'wpae-pricing-badge', 'pricing' ),
+        $widget( 'wpae-pricing-heading', 'heading', [ 'title' => 'Тарифы', 'header_size' => 'h2' ] ),
+        wpae_llm_bento_grid( 'wpae-pricing-grid', $cards ),
+    ];
+    $changed++;
+    return [ $root ];
+}
+
 function wpae_llm_apply_library_template( array $template_elements, string $message, string $archetype, int &$changed, bool $clear_unrequested_copy = false ): array {
     $applied = false;
     $has_content_widget = static function ( array $elements ) use ( &$has_content_widget ): bool {
@@ -3424,6 +3512,12 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         return $template_elements;
     }
     $pairs = wpae_llm_extract_labeled_content( $message );
+    if ( $archetype === 'pricing' && count( $pairs ) >= 2 ) {
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pairs, $changed );
+        if ( ! empty( $pricing_layout ) ) {
+            return $pricing_layout;
+        }
+    }
     if ( $archetype === 'team' && count( $pairs ) < 2 ) {
         $team_pairs = wpae_llm_extract_team_content( $message );
         if ( count( $team_pairs ) >= 2 ) {
@@ -6117,15 +6211,22 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             $widget( 'llm-button', 'button', [ 'text' => 'Начать проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'pricing' ) {
-        $elements = [
-            $widget( 'llm-heading', 'heading', [ 'title' => 'Выберите формат работы', 'header_size' => 'h2' ] ),
-            $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Соберите нужный объем работ и начните с понятного следующего шага.' ] ),
-            $grid( 'llm-pricing-grid', [
-                $card( 'llm-pricing-1', [ $widget( 'llm-pricing-1-title', 'heading', [ 'title' => 'Лендинг', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-1-copy', 'text-editor', [ 'editor' => '<strong>Быстрый запуск</strong><br>Один экран или страница услуги с ясным оффером, структурой и CTA.' ] ), $widget( 'llm-pricing-1-button', 'button', [ 'text' => 'Обсудить формат', 'link' => [ 'url' => '#contact' ] ] ) ] ),
-                $card( 'llm-pricing-2', [ $widget( 'llm-pricing-2-title', 'heading', [ 'title' => 'Система страниц', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-2-copy', 'text-editor', [ 'editor' => '<strong>Масштабируемая структура</strong><br>Несколько связанных страниц, единая дизайн-система и путь клиента.' ] ), $widget( 'llm-pricing-2-button', 'button', [ 'text' => 'Получить расчет', 'link' => [ 'url' => '#contact' ] ] ) ] ),
-                $card( 'llm-pricing-3', [ $widget( 'llm-pricing-3-title', 'heading', [ 'title' => 'Поддержка', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-3-copy', 'text-editor', [ 'editor' => '<strong>Развитие проекта</strong><br>Точечные улучшения, новые блоки и контроль качества после запуска.' ] ), $widget( 'llm-pricing-3-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ) ] ),
-            ] ),
-        ];
+        $pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
+        $pricing_layout_changed = 0;
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_pairs, $pricing_layout_changed );
+        if ( ! empty( $pricing_layout[0]['elements'] ) ) {
+            $elements = $pricing_layout[0]['elements'];
+        } else {
+            $elements = [
+                $widget( 'llm-heading', 'heading', [ 'title' => 'Выберите формат работы', 'header_size' => 'h2' ] ),
+                $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Соберите нужный объем работ и начните с понятного следующего шага.' ] ),
+                $grid( 'llm-pricing-grid', [
+                    $card( 'llm-pricing-1', [ $widget( 'llm-pricing-1-title', 'heading', [ 'title' => 'Лендинг', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-1-copy', 'text-editor', [ 'editor' => '<strong>Быстрый запуск</strong><br>Один экран или страница услуги с ясным оффером, структурой и CTA.' ] ), $widget( 'llm-pricing-1-button', 'button', [ 'text' => 'Обсудить формат', 'link' => [ 'url' => '#contact' ] ] ) ] ),
+                    $card( 'llm-pricing-2', [ $widget( 'llm-pricing-2-title', 'heading', [ 'title' => 'Система страниц', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-2-copy', 'text-editor', [ 'editor' => '<strong>Масштабируемая структура</strong><br>Несколько связанных страниц, единая дизайн-система и путь клиента.' ] ), $widget( 'llm-pricing-2-button', 'button', [ 'text' => 'Получить расчет', 'link' => [ 'url' => '#contact' ] ] ) ] ),
+                    $card( 'llm-pricing-3', [ $widget( 'llm-pricing-3-title', 'heading', [ 'title' => 'Поддержка', 'header_size' => 'h4' ] ), $widget( 'llm-pricing-3-copy', 'text-editor', [ 'editor' => '<strong>Развитие проекта</strong><br>Точечные улучшения, новые блоки и контроль качества после запуска.' ] ), $widget( 'llm-pricing-3-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ) ] ),
+                ] ),
+            ];
+        }
     } elseif ( $archetype === 'team' ) {
         $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 4 );
         if ( count( $pairs ) < 2 ) {
@@ -6683,20 +6784,24 @@ function wpae_llm_normalize_generated_typography( array $elements, string $arche
             && $element_type === 'widget'
             && in_array( $widget_type, [ 'nested-carousel', 'n-carousel' ], true );
         $next_inside_bento_grid = $inside_bento_grid || $is_bento_grid || $is_testimonial_carousel;
+        $is_pricing_price = $archetype === 'pricing'
+            && $widget_type === 'heading'
+            && is_array( $element_classes )
+            && in_array( 'wpae-pricing-price', $element_classes, true );
         $before = wp_json_encode( $settings );
 
         if ( $widget_type === 'heading' && ( ! is_array( $element_classes ) || ! in_array( 'wpae-generated-badge-label', $element_classes, true ) ) ) {
             $is_marked_card_heading = is_array( $element_classes ) && in_array( 'wpae-card-heading', $element_classes, true );
             $is_card_heading = $is_marked_card_heading || $next_inside_bento_grid;
-            $settings['header_size'] = $is_card_heading ? 'h4' : 'h2';
+            $settings['header_size'] = $is_pricing_price ? 'h3' : ( $is_card_heading ? 'h4' : 'h2' );
             $settings['typography_typography'] = 'custom';
-            $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.25 : 2.5 ];
-            $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.15 : 2.1 ];
-            $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => $is_card_heading ? 1.05 : 1.75 ];
-            $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => $is_card_heading ? 1.2 : 1.1 ];
-            $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => $is_card_heading ? 1.2 : 1.15 ];
-            $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => 1.15 ];
-            $settings['typography_font_weight'] = '700';
+            $settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => $is_pricing_price ? 2.25 : ( $is_card_heading ? 1.25 : 2.5 ) ];
+            $settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => $is_pricing_price ? 2 : ( $is_card_heading ? 1.15 : 2.1 ) ];
+            $settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => $is_pricing_price ? 1.75 : ( $is_card_heading ? 1.05 : 1.75 ) ];
+            $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => $is_pricing_price ? 1.05 : ( $is_card_heading ? 1.2 : 1.1 ) ];
+            $settings['typography_line_height_tablet'] = [ 'unit' => 'em', 'size' => $is_pricing_price ? 1.05 : ( $is_card_heading ? 1.2 : 1.15 ) ];
+            $settings['typography_line_height_mobile'] = [ 'unit' => 'em', 'size' => $is_pricing_price ? 1.1 : 1.15 ];
+            $settings['typography_font_weight'] = $is_pricing_price ? '800' : '700';
         } elseif ( $widget_type === 'icon-box' && $next_inside_bento_grid ) {
             $settings['title_typography_typography'] = 'custom';
             $settings['title_typography_font_size'] = [ 'unit' => 'rem', 'size' => $archetype === 'testimonials' ? 1.05 : 1.1 ];
