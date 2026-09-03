@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.28`
+- Plugin: `v02.11.29`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -116,6 +116,11 @@
   process-safe branch. The v02.11.27 live central test still showed the old
   bento result and no `process_timeline_final` step, so v02.11.28 requires a
   fresh deploy/runtime check before any timeline family is accepted.
+- v02.11.29: The final timeline rebuild now preserves the active design-system
+  marker classes and ID on the replacement root while removing stale bento or
+  system markers. v02.11.28 reached `process_timeline_final` but preview was
+  rejected by the design-system contract because the rebuilt root lost those
+  markers; re-run live central, horizontal, and left tests after deployment.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

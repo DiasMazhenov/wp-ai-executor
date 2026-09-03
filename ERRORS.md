@@ -29,6 +29,9 @@ before making a new change to the plugin.
   boundary, detects process requests from that brief as a second guard, and
   re-applies the process contract after variation immediately before final
   normalization and the Elementor write.
+- **Follow-up:** v02.11.29 preserves the current design-system marker classes
+  and ID when that final contract rebuilds the timeline root, while removing
+  stale bento/system markers that would invalidate the replacement root.
 - **Regression status:** Local checks pending. Re-test left, alternating, and
   horizontal variants with scoped JSON, screenshot, Impeccable review, and
   prompt comparison before acceptance.

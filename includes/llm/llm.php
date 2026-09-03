@@ -4223,6 +4223,21 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, string $me
         if ( $badge !== null ) {
             $timeline['elements'] = array_merge( [ $badge ], $timeline['elements'] );
         }
+        $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+        $root_classes = preg_split( '/\s+/', trim( (string) ( $root_settings['_css_classes'] ?? '' ) ) );
+        $root_classes = is_array( $root_classes ) ? $root_classes : [];
+        $root_classes = array_values( array_filter( $root_classes, static function ( $class ): bool {
+            return $class !== 'wpae-bento-grid' && strpos( (string) $class, 'wpae-system-' ) !== 0 && $class !== 'wpae-ds';
+        } ) );
+        $required_classes = function_exists( 'wpae_get_design_system_required_classes' ) ? wpae_get_design_system_required_classes() : [ 'wpae-ds' ];
+        $timeline_classes = preg_split( '/\s+/', trim( (string) ( $timeline['settings']['_css_classes'] ?? '' ) ) );
+        $timeline['settings'] = array_merge( $root_settings, $timeline['settings'] );
+        $timeline['settings']['_css_classes'] = implode( ' ', array_values( array_unique( array_merge( $root_classes, $required_classes, [ 'wpae-block' ], is_array( $timeline_classes ) ? $timeline_classes : [] ) ) ) );
+        if ( isset( $root_settings['_wpae_design_system_id'] ) ) {
+            $timeline['settings']['_wpae_design_system_id'] = $root_settings['_wpae_design_system_id'];
+        } elseif ( function_exists( 'wpae_get_design_system_id' ) ) {
+            $timeline['settings']['_wpae_design_system_id'] = wpae_get_design_system_id();
+        }
         $elements[ $index ] = $timeline;
         $changed++;
     }
