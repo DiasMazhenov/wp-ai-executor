@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.31`
+- Plugin: `v02.11.32`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -135,6 +135,14 @@
   The process builder now uses stretch/grow sizing without conflicting width
   fields and adds controlled parent inner padding. Recheck rendered DOM
   overflow after every process generation.
+- v02.11.32: Live alternating inspection exposed an ordering bug in the shared
+  process builder: odd steps selected marker and content children by position,
+  so the marker rail received content sizing and the content column collapsed
+  to a narrow rail. Alternating children are now identified by their semantic
+  `wpae-process-marker-column` and `wpae-process-content` classes before the
+  layout is reordered. Local checks pass; re-deploy and repeat screenshot ->
+  Vision/design-taste -> Impeccable -> prompt comparison for alternating,
+  horizontal, left, and non-process blocks.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

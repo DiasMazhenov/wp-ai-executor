@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-074: Alternating timeline selected marker and content by position
+
+- **Observed:** Live alternating output rendered the first and third cards on
+  the right, but the middle step's content column collapsed to about 79px and
+  the opposite side showed an empty 408px spacer. The screenshot looked sparse
+  and disconnected even after the generic repair pass reported success.
+- **Root cause:** `wpae_llm_build_process_timeline()` selected children with
+  `content_index`/`rail_index`. The base step order is `[rail, content]`, so
+  odd-step reordering selected the rail as content and the content as rail.
+- **Fix:** v02.11.32 finds the two children by their semantic CSS classes before
+  applying widths and alternating order. Indexes remain only as a defensive
+  fallback for malformed provider trees.
+- **Regression status:** Local PHP lint, contract tests, and diff checks are
+  required. Live alternating, left, horizontal, and non-process generations
+  still require scoped JSON/DOM, screenshot, Vision/Impeccable review, and
+  prompt comparison after WP Pusher reports v02.11.32.
+
 ## EJ-072: Process intent leaked from content into unrelated blocks
 
 - **Observed:** The live screenshot audit of the generated page found six

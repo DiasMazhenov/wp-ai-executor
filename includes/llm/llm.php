@@ -3984,15 +3984,28 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 			$step_settings['flex_gap'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
 			$step_settings['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 			$step['settings'] = $step_settings;
-			$content_index = (int) ( $index % 2 === 0 ? 1 : 0 );
-			$content = is_array( $step['elements'][ $content_index ] ?? null ) ? $step['elements'][ $content_index ] : [];
+			$rail = [];
+			$content = [];
+			foreach ( is_array( $step['elements'] ?? null ) ? $step['elements'] : [] as $step_child ) {
+				$child_settings = is_array( $step_child['settings'] ?? null ) ? $step_child['settings'] : [];
+				$child_classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+				if ( is_array( $child_classes ) && in_array( 'wpae-process-marker-column', $child_classes, true ) ) {
+					$rail = $step_child;
+				} elseif ( is_array( $child_classes ) && in_array( 'wpae-process-content', $child_classes, true ) ) {
+					$content = $step_child;
+				}
+			}
+			if ( ! $rail && is_array( $step['elements'][0] ?? null ) ) {
+				$rail = $step['elements'][0];
+			}
+			if ( ! $content && is_array( $step['elements'][1] ?? null ) ) {
+				$content = $step['elements'][1];
+			}
 			$content_settings = is_array( $content['settings'] ?? null ) ? $content['settings'] : [];
 			wpae_llm_set_variant_container_width( $content_settings, 44 );
 			$content_settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 			$content_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 			$content['settings'] = $content_settings;
-			$rail_index = 1 - $content_index;
-			$rail = is_array( $step['elements'][ $rail_index ] ?? null ) ? $step['elements'][ $rail_index ] : [];
 			$rail_settings = is_array( $rail['settings'] ?? null ) ? $rail['settings'] : [];
 			$rail_settings['width'] = [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ];
 			$rail_settings['width_mobile'] = [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ];
