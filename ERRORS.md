@@ -22,6 +22,13 @@ before making a new change to the plugin.
   prompt comparison, and deployment-version confirmation. Existing page roots
   remain historical test contamination and are not deleted by this fix.
 
+## EJ-073: Flex timeline content overflowed its row
+
+- **Observed:** Live Impeccable/Talon inspection found process content extending past the 1010px canvas. The content container had `width: 100%` together with Flex-grow while sharing a row with the fixed marker rail.
+- **Root cause:** The process builder encoded a fixed percentage width for a growable sibling, so the width was calculated before the rail and gap were accounted for.
+- **Fix:** v02.11.31 removes explicit width fields from stretch/grow timeline shells and gives the parent timeline controlled inner padding. Recheck rendered DOM overflow after every process generation.
+- **Regression status:** Source and local contract checks pass; live left, alternating, and horizontal variants still require screenshot plus Impeccable review.
+
 ## EJ-070: Horizontal timeline steps wrapped into a second row
 
 - **Observed:** The live horizontal timeline screenshot showed steps 01-03 on

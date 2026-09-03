@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.30`
+- Plugin: `v02.11.31`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -130,6 +130,11 @@
   final process contract runs after the generic Flex contract. Local lint,
   contract tests and diff checks pass; live acceptance requires a fresh deploy
   plus screenshot -> Vision/design-taste -> Impeccable -> prompt comparison.
+- v02.11.31: Live Impeccable/Talon inspection found Flex timeline content
+  overflowing its row because a growable content sibling also had `width:100%`.
+  The process builder now uses stretch/grow sizing without conflicting width
+  fields and adds controlled parent inner padding. Recheck rendered DOM
+  overflow after every process generation.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
