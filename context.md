@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.36`
+- Plugin: `v02.11.37`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -181,6 +181,17 @@
   generic wrappers from entering the persisted tree. Local checks must pass;
   fresh pricing validation requires scoped JSON/DOM, screenshot ->
   Vision/design-taste -> Impeccable -> prompt comparison and no rollback.
+- v02.11.37: Fresh v02.11.36 alternating timeline screenshot was rejected:
+  every step row was rendered as one large bordered surface and its unused
+  alternating side was an empty Elementor spacer container. The connector was
+  therefore perceived as detached editor scaffolding rather than one timeline.
+  The shared builder now keeps step rows transparent, puts the surface only on
+  the populated content container, and fills the opposite alternating side with
+  a small stage label. Horizontal steps explicitly restore their own card
+  surface. All three families remain native Flex and collapse to a readable
+  mobile stack. Fresh deployed left, alternating, and horizontal runs must
+  pass screenshot -> Vision/design-taste -> Impeccable -> prompt comparison;
+  none is accepted from the trace alone.
 - 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
   Vision at 88 with no major/critical finding; scoped metrics showed three
   balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision

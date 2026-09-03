@@ -4017,13 +4017,10 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
                 'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
                 'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
                 'background_background' => 'classic',
-                'background_color' => '#ffffff',
-                'border_border' => 'solid',
-                'border_color' => '#dbe3f0',
-                'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
-                'border_radius' => [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ],
-                'padding' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.25', 'left' => '1.25', 'isLinked' => true ],
-                'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ],
+                'background_color' => 'transparent',
+                'border_border' => 'none',
+                'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '1.25', 'left' => '0', 'isLinked' => false ],
+                'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '1', 'left' => '0', 'isLinked' => false ],
 				'_flex_size' => 'custom',
                 '_flex_grow' => 0,
                 '_flex_shrink' => 0,
@@ -4063,6 +4060,14 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
                         'flex_align_items' => 'stretch',
                         'flex_gap' => [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ],
                         'flex_gap_mobile' => [ 'column' => '0.4', 'row' => '0.4', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.4' ],
+                        'background_background' => 'classic',
+                        'background_color' => '#ffffff',
+                        'border_border' => 'solid',
+                        'border_color' => '#dbe3f0',
+                        'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+                        'border_radius' => [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ],
+                        'padding' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.25', 'left' => '1.25', 'isLinked' => true ],
+                        'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ],
 						'_element_width' => 'initial',
 						'_flex_size' => 'grow',
                         '_flex_grow' => 1,
@@ -4111,8 +4116,8 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
             'flex_wrap' => 'nowrap',
             'flex_wrap_mobile' => 'nowrap',
             'flex_align_items' => 'stretch',
-            'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
-            'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+            'flex_gap' => [ 'column' => '0', 'row' => '0', 'isLinked' => true, 'unit' => 'rem', 'size' => '0' ],
+            'flex_gap_mobile' => [ 'column' => '0', 'row' => '0', 'isLinked' => true, 'unit' => 'rem', 'size' => '0' ],
             'background_background' => 'classic',
             'background_color' => 'transparent',
 			'padding' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => false ],
@@ -4125,7 +4130,7 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
     ];
 
 	if ( $layout === 'alternating' ) {
-		$spacer = static function ( string $spacer_id ): array {
+		$spacer = static function ( string $spacer_id, string $label, string $align ) use ( $widget ): array {
 			return [
 				'id' => $spacer_id,
 				'elType' => 'container',
@@ -4147,14 +4152,30 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 					'_flex_grow_mobile' => 0,
 					'_flex_shrink_mobile' => 0,
 				],
-				'elements' => [],
+				'elements' => [
+					$widget( $spacer_id . '-label', 'heading', [
+						'title' => $label,
+						'header_size' => 'h6',
+						'title_color' => '#8290a6',
+						'align' => $align,
+						'typography_typography' => 'custom',
+						'typography_font_size' => [ 'unit' => 'rem', 'size' => 0.8 ],
+						'typography_font_weight' => '700',
+						'typography_letter_spacing' => [ 'unit' => 'px', 'size' => 1.2 ],
+						'margin' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ],
+					] ),
+				],
 			];
 		};
 		foreach ( $timeline['elements'] as $index => &$step ) {
 			$step_settings = is_array( $step['settings'] ?? null ) ? $step['settings'] : [];
 			$step_settings['flex_justify_content'] = 'center';
-			$step_settings['flex_gap'] = [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ];
-			$step_settings['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+			$step_settings['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+			$step_settings['flex_gap_mobile'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
+			$step_settings['border_border'] = 'none';
+			$step_settings['background_color'] = 'transparent';
+			$step_settings['padding'] = [ 'unit' => 'rem', 'top' => '0.75', 'right' => '0', 'bottom' => '1.25', 'left' => '0', 'isLinked' => false ];
+			$step_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0.5', 'right' => '0', 'bottom' => '1', 'left' => '0', 'isLinked' => false ];
 			$step['settings'] = $step_settings;
 			$rail = [];
 			$content = [];
@@ -4184,9 +4205,10 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 			$rail_settings['_element_custom_width'] = [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ];
 			$rail_settings['_element_custom_width_mobile'] = [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ];
 			$rail['settings'] = $rail_settings;
+			$step_label = sprintf( 'ЭТАП %02d', $index + 1 );
 			$step['elements'] = $index % 2 === 0
-				? [ $spacer( $id . '-spacer-' . (string) ( $index + 1 ) ), $rail, $content ]
-				: [ $content, $rail, $spacer( $id . '-spacer-' . (string) ( $index + 1 ) ) ];
+				? [ $spacer( $id . '-spacer-' . (string) ( $index + 1 ), $step_label, 'right' ), $rail, $content ]
+				: [ $content, $rail, $spacer( $id . '-spacer-' . (string) ( $index + 1 ), $step_label, 'left' ) ];
 		}
 		unset( $step );
 	} elseif ( $layout === 'horizontal' ) {
@@ -4202,6 +4224,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 			$step_settings = is_array( $step['settings'] ?? null ) ? $step['settings'] : [];
 			$step_settings['flex_direction'] = 'column';
 			$step_settings['flex_direction_mobile'] = 'column';
+			$step_settings['background_color'] = '#ffffff';
+			$step_settings['border_border'] = 'solid';
+			$step_settings['border_color'] = '#dbe3f0';
+			$step_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+			$step_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ];
 			$step_settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
 			$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
 			wpae_llm_set_variant_container_width( $step_settings, $step_width );
@@ -4235,6 +4262,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 						$rail_child['settings'] = $rail_child_settings;
 					}
 					unset( $rail_child );
+				} elseif ( is_array( $child_classes ) && in_array( 'wpae-process-content', $child_classes, true ) ) {
+					$child_settings['background_color'] = 'transparent';
+					$child_settings['border_border'] = 'none';
+					$child_settings['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+					$child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
 				}
 				$child['settings'] = $child_settings;
 			}

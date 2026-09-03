@@ -3,6 +3,31 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-079: Timeline rows were empty editor scaffolding instead of a timeline
+
+- **Observed:** The fresh v02.11.36 alternating screenshot showed large empty
+  spacer containers on alternating sides, a border around the entire row, and
+  short connector pills separated from the content. The chat trace called it
+  an alternating timeline, but the rendered editor composition looked like
+  unfinished empty columns. The user rejected all timeline variants.
+- **Root cause:** The shared builder used three children for alternating rows
+  (`spacer -> rail -> content`) while applying the card surface to the parent
+  step. The spacer was a real empty Elementor container, so Elementor exposed
+  it as an insertion zone and the row border visually disconnected the rail
+  from the actual step content. The same parent-card assumption also made the
+  horizontal family dependent on a surface that was not semantically owned by
+  its content.
+- **Fix:** v02.11.37 makes every step row a transparent Flex layout and moves
+  the bordered surface to the populated content container. Alternating side
+  containers now contain a subtle `ЭТАП NN` metadata heading instead of being
+  empty. Horizontal steps explicitly restore their own card surface while
+  their inner content stays transparent. This keeps the marker rail and
+  content hierarchy consistent across all families without Icon Box widgets.
+- **Regression status:** Local lint, contract tests and diff checks pass.
+  Fresh deployed left, alternating, and horizontal generations still require
+  scoped JSON/DOM, screenshot, Vision/design-taste, Impeccable, prompt
+  comparison, responsive check and no rollback.
+
 ## EJ-078: Pricing visual grammar reintroduced placeholder shells
 
 - **Observed:** The fresh v02.11.35 pricing screenshot still showed large
