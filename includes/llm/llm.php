@@ -6987,7 +6987,8 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $fallback_variant_applied = true;
         $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
     }
-    if ( $archetype === 'process' && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
+    $process_request = $archetype === 'process' || ( $message !== '' && preg_match( '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu', $message ) );
+    if ( $process_request && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
         $final_process_changed = 0;
         $elements = wpae_llm_enforce_process_timeline_contract( $elements, $message, $final_process_changed );
         if ( $final_process_changed > 0 ) {
@@ -6996,7 +6997,7 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     }
     if ( function_exists( 'wpae_llm_normalize_bento_grids_recursive' ) ) {
         $final_bento_changed = 0;
-        wpae_llm_normalize_bento_grids_recursive( $elements, $final_bento_changed, $archetype );
+        wpae_llm_normalize_bento_grids_recursive( $elements, $final_bento_changed, $process_request ? 'process' : $archetype );
         if ( $final_bento_changed > 0 ) {
             $steps[] = [ 'id' => 'bento_layout_final', 'status' => 'ok', 'message' => 'Финальная проверка выровняла bento-карточки после всех Elementor-нормализаторов.', 'details' => [ 'containers_updated' => $final_bento_changed, 'max_items_per_row' => 4 ] ];
         }

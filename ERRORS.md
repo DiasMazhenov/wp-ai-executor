@@ -25,9 +25,10 @@ before making a new change to the plugin.
 - **Root cause:** The process contract ran before `wpae_llm_execute_action()`;
   the later visual-variation pass could add `wpae-bento-grid` back to the
   process root and its steps before preview/write.
-- **Fix:** v02.11.27 passes the original brief into the shared execution
-  boundary and re-applies the process contract after variation, immediately
-  before the final normalization and Elementor write.
+- **Fix:** v02.11.28 passes the original brief into the shared execution
+  boundary, detects process requests from that brief as a second guard, and
+  re-applies the process contract after variation immediately before final
+  normalization and the Elementor write.
 - **Regression status:** Local checks pending. Re-test left, alternating, and
   horizontal variants with scoped JSON, screenshot, Impeccable review, and
   prompt comparison before acceptance.

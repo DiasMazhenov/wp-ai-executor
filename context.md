@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.27`
+- Plugin: `v02.11.28`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -111,6 +111,11 @@
   the last pass from reintroducing bento classes into left, alternating, or
   horizontal Flex timelines. Local checks pass; live validation remains
   required with screenshot -> Impeccable -> prompt comparison for all three.
+- v02.11.28: The final boundary also detects process/timeline terms directly
+  from the original brief and forces the final bento normalizer into its
+  process-safe branch. The v02.11.27 live central test still showed the old
+  bento result and no `process_timeline_final` step, so v02.11.28 requires a
+  fresh deploy/runtime check before any timeline family is accepted.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
