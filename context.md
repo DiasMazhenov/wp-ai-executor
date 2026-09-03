@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.23`
+- Plugin: `v02.11.24`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -89,6 +89,12 @@
   family before building. This fixes the live central-layout retry crash where
   PHP received `null` for the layout argument. Local checks pass; live
   alternating/horizontal screenshot review remains pending deployment.
+- v02.11.24: Semantic-plan auditing now distinguishes explicit user content
+  from instruction-only briefs. Empty content plans validate structure, native
+  widgets, media, CTA policy, and repeatable units without misclassifying the
+  built-in copy of the selected fallback scaffold as unrelated semantics.
+  Local checks pass; deploy v02.11.24 and run screenshot -> Impeccable -> prompt
+  comparison for left, alternating, and horizontal process timelines.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

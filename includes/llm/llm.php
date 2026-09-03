@@ -1057,11 +1057,15 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     $semantic_conflicts = [];
     $plan_copy = wpae_llm_normalize_content_text( implode( ' ', array_merge( (array) ( $plan['content_units'] ?? [] ), array_map( static fn( $pair ): string => implode( ' ', (array) $pair ), (array) ( $plan['content_pairs'] ?? [] ) ) ) ) );
     $tree_copy = wpae_llm_normalize_content_text( wpae_llm_collect_action_content( $elements ) );
-    foreach ( wpae_llm_content_archetype_markers() as $candidate_archetype => $marker ) {
-        $plan_has_marker = (bool) preg_match( $marker, $plan_copy );
-        if ( ! $plan_has_marker && preg_match( $marker, $tree_copy ) && $candidate_archetype !== $archetype ) {
-            $semantic_conflicts[] = 'unrequested ' . $candidate_archetype . ' semantics appear in ' . $archetype . ' composition';
-            $failures[] = $archetype . ' composition contains unrelated ' . $candidate_archetype . ' semantics';
+    // Instruction-only briefs authorize the selected scaffold; audit explicit copy only.
+    $semantic_scope = $plan_copy !== '' ? 'explicit_content' : 'scaffold_only';
+    if ( $semantic_scope === 'explicit_content' ) {
+        foreach ( wpae_llm_content_archetype_markers() as $candidate_archetype => $marker ) {
+            $plan_has_marker = (bool) preg_match( $marker, $plan_copy );
+            if ( ! $plan_has_marker && preg_match( $marker, $tree_copy ) && $candidate_archetype !== $archetype ) {
+                $semantic_conflicts[] = 'unrequested ' . $candidate_archetype . ' semantics appear in ' . $archetype . ' composition';
+                $failures[] = $archetype . ' composition contains unrelated ' . $candidate_archetype . ' semantics';
+            }
         }
     }
     return [
@@ -1079,6 +1083,7 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
         'repeatable_container_count' => $repeatable_container_count,
         'accordion_item_count' => $accordion_item_count,
         'repeatable_units' => $repeatable_units,
+        'semantic_scope' => $semantic_scope,
         'semantic_conflicts' => $semantic_conflicts,
         'failures' => array_values( array_unique( $failures ) ),
     ];

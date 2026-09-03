@@ -3,6 +3,22 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-068: Instruction-only timeline fallback was rejected by semantic audit
+
+- **Observed:** The live `сделай центральный чередующийся таймлайн` request fell
+  back to a deterministic process tree, then was rejected as a semantic-plan
+  failure before writing. The brief contained a layout instruction but no
+  user-supplied content.
+- **Root cause:** The final semantic audit compared built-in scaffold copy with
+  an empty content plan and treated any matching archetype terms as invented
+  user meaning.
+- **Fix:** v02.11.24 scopes semantic-conflict checks to explicit content. An
+  instruction-only brief still validates native widgets, media, CTA policy,
+  and repeatable structure, while its selected fallback scaffold is allowed.
+- **Regression status:** Local PHP lint, contract tests, and diff checks pass.
+  Live validation is required for left, alternating, and horizontal timeline
+  requests with screenshot -> Impeccable -> prompt comparison.
+
 ## EJ-067: Timeline layout selector crashed on a null live value
 
 - **Observed:** The live `сделай центральный чередующийся таймлайн` retry
