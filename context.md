@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.20`
+- Plugin: `v02.11.21`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -63,6 +63,12 @@
   archetype instead of becoming generated heading text. Live acceptance is
   pending deployment; the live editor remains stale until the new version is
   confirmed.
+- v02.11.21: Process/timeline fallback now uses one dedicated native Flex
+  column with numbered marker rails, connector containers, and ordinary
+  heading/text-editor widgets for each step. Process is excluded from bento
+  layout, repeatable-layout repair, and visual-variant conversions, so it
+  cannot regress into a 2x2 card grid. Local PHP lint and contract tests pass;
+  live deployment and screenshot -> Vision/Impeccable acceptance are pending.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

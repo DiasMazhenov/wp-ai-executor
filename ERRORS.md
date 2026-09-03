@@ -3,6 +3,26 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-065: Process fallback was converted into a bento grid
+
+- **Observed:** The live `сделай таймлайн` result rendered a 2x2 card grid
+  instead of a connected vertical timeline. Vision correctly reported that
+  the requested process structure was missing; bounded repairs kept the wrong
+  composition and the result was rolled back.
+- **Root cause:** The `process` archetype reused the generic bento fallback,
+  then shared repeatable-layout and visual-variant normalizers were allowed to
+  rewrite its children. The pipeline had no native timeline grammar or
+  structural invariant for markers and connectors.
+- **Fix:** v02.11.21 builds a dedicated native Flex timeline with one column
+  root, one row step per item, a numbered marker rail, connector containers,
+  and ordinary heading/text-editor content. Process is excluded from bento,
+  repeatable-layout repair, and visual-variant conversion. The final trace
+  records the timeline rebuild and confirms that Icon Box is not used.
+- **Regression status:** Local PHP lint and contract tests pass. Live
+  deployment is pending; acceptance requires scoped JSON/DOM, a fresh
+  screenshot, Vision/Impeccable review, and comparison with the timeline
+  prompt.
+
 ## EJ-063: Vision findings were not sent as a separate agent prompt
 
 - **Observed:** Three live `сделай таймлайн` cycles wrote a badge and the

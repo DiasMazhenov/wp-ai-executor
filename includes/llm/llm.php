@@ -1713,6 +1713,30 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
     if ( ! in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ], true ) ) {
         return;
     }
+    if ( $archetype === 'process' ) {
+        $heading = '';
+        if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+            $heading = trim( sanitize_text_field( (string) $match[1] ) );
+        }
+        if ( $heading !== '' ) {
+            foreach ( $elements as &$root ) {
+                if ( ! is_array( $root ) || ! is_array( $root['elements'] ?? null ) ) {
+                    continue;
+                }
+                foreach ( $root['elements'] as &$child ) {
+                    if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' && ( $child['widgetType'] ?? '' ) === 'heading' ) {
+                        $child['settings'] = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+                        $child['settings']['title'] = $heading;
+                        $changed++;
+                        break 2;
+                    }
+                }
+                unset( $child );
+            }
+            unset( $root );
+        }
+        return;
+    }
     $pairs = wpae_llm_extract_labeled_content( $message );
     if ( count( $pairs ) < 2 ) {
         return;
@@ -3673,6 +3697,358 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
     ];
 }
 
+function wpae_llm_process_timeline_steps( string $message ): array {
+    $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
+    if ( count( $pairs ) >= 2 ) {
+        return $pairs;
+    }
+
+    return [
+        [ 'label' => 'Бриф', 'content' => 'Фиксируем цель, аудиторию и главное действие страницы.' ],
+        [ 'label' => 'Структура', 'content' => 'Собираем смысловой маршрут и расставляем доказательства.' ],
+        [ 'label' => 'Сборка', 'content' => 'Создаем блоки из native Elementor-элементов и задаем адаптив.' ],
+        [ 'label' => 'Проверка', 'content' => 'Проверяем визуальный результат, редактируемость и следующий шаг.' ],
+    ];
+}
+
+function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-process-timeline' ): array {
+    $widget = static function ( string $widget_id, string $type, array $settings = [] ): array {
+        return [ 'id' => $widget_id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
+    };
+    $timeline_steps = [];
+    $step_count = count( $steps );
+    foreach ( array_values( $steps ) as $index => $step ) {
+        $step_number = $index + 1;
+        $step_label = trim( sanitize_text_field( (string) ( $step['label'] ?? '' ) ) );
+        $step_copy = trim( sanitize_text_field( (string) ( $step['content'] ?? '' ) ) );
+        if ( $step_label === '' ) {
+            $step_label = 'Шаг ' . (string) $step_number;
+        }
+        if ( $step_copy === '' ) {
+            $step_copy = 'Понятный следующий шаг без лишней сложности.';
+        }
+
+        $marker_elements = [
+            [
+                'id' => $id . '-marker-' . (string) $step_number,
+                'elType' => 'container',
+                'settings' => [
+                    '_css_classes' => 'wpae-process-marker',
+                    'container_type' => 'flex',
+                    'content_width' => 'full',
+                    'flex_direction' => 'row',
+                    'flex_wrap' => 'nowrap',
+                    'flex_justify_content' => 'center',
+                    'flex_align_items' => 'center',
+                    'background_background' => 'classic',
+                    'background_color' => '#4460EC',
+                    'border_radius' => [ 'unit' => 'px', 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'size' => 999, 'isLinked' => true ],
+                    'width' => [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ],
+                    'width_mobile' => [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ],
+                    'min_height' => [ 'unit' => 'rem', 'size' => 3 ],
+                    'min_height_mobile' => [ 'unit' => 'rem', 'size' => 2.5 ],
+                    '_element_width' => 'initial',
+                    '_element_custom_width' => [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ],
+                    '_element_custom_width_mobile' => [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ],
+                    '_flex_size' => 'custom',
+                    '_flex_grow' => 0,
+                    '_flex_shrink' => 0,
+                ],
+                'elements' => [
+                    $widget( $id . '-marker-' . (string) $step_number . '-label', 'heading', [
+                        'title' => sprintf( '%02d', $step_number ),
+                        'header_size' => 'h5',
+                        '_css_classes' => 'wpae-process-marker-label',
+                        'title_color' => '#ffffff',
+                        'align' => 'center',
+                        'typography_typography' => 'custom',
+                        'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                        'typography_font_weight' => '700',
+                        'typography_line_height' => [ 'unit' => 'em', 'size' => 1 ],
+                        'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                    ] ),
+                ],
+            ],
+        ];
+        if ( $step_number < $step_count ) {
+            $marker_elements[] = [
+                'id' => $id . '-connector-' . (string) $step_number,
+                'elType' => 'container',
+                'settings' => [
+                    '_css_classes' => 'wpae-process-connector',
+                    'container_type' => 'flex',
+                    'content_width' => 'full',
+                    'flex_direction' => 'column',
+                    'flex_wrap' => 'nowrap',
+                    'background_background' => 'classic',
+                    'background_color' => '#b9c5e8',
+                    'border_radius' => [ 'unit' => 'px', 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'size' => 999, 'isLinked' => true ],
+                    'width' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
+                    'width_mobile' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
+                    'min_height' => [ 'unit' => 'rem', 'size' => 2.5 ],
+                    '_element_width' => 'initial',
+                    '_element_custom_width' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
+                    '_element_custom_width_mobile' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
+                    '_flex_size' => 'grow',
+                    '_flex_grow' => 1,
+                    '_flex_shrink' => 0,
+                ],
+                'elements' => [],
+            ];
+        }
+
+        $timeline_steps[] = [
+            'id' => $id . '-step-' . (string) $step_number,
+            'elType' => 'container',
+            'settings' => [
+                '_css_classes' => 'wpae-process-step',
+                'container_type' => 'flex',
+                'content_width' => 'full',
+                'flex_direction' => 'row',
+                'flex_direction_mobile' => 'row',
+                'flex_wrap' => 'nowrap',
+                'flex_wrap_mobile' => 'nowrap',
+                'flex_align_items' => 'stretch',
+                'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
+                'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+                'background_background' => 'classic',
+                'background_color' => '#ffffff',
+                'border_border' => 'solid',
+                'border_color' => '#dbe3f0',
+                'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+                'border_radius' => [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ],
+                'padding' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.25', 'left' => '1.25', 'isLinked' => true ],
+                'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ],
+                'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                '_element_width' => 'initial',
+                '_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                '_flex_size' => 'custom',
+                '_flex_grow' => 0,
+                '_flex_shrink' => 0,
+            ],
+            'elements' => [
+                [
+                    'id' => $id . '-rail-' . (string) $step_number,
+                    'elType' => 'container',
+                    'settings' => [
+                        '_css_classes' => 'wpae-process-marker-column',
+                        'container_type' => 'flex',
+                        'content_width' => 'full',
+                        'flex_direction' => 'column',
+                        'flex_wrap' => 'nowrap',
+                        'flex_align_items' => 'center',
+                        'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+                        'width' => [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ],
+                        'width_mobile' => [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ],
+                        '_element_width' => 'initial',
+                        '_element_custom_width' => [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ],
+                        '_element_custom_width_mobile' => [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ],
+                        '_flex_size' => 'custom',
+                        '_flex_grow' => 0,
+                        '_flex_shrink' => 0,
+                    ],
+                    'elements' => $marker_elements,
+                ],
+                [
+                    'id' => $id . '-content-' . (string) $step_number,
+                    'elType' => 'container',
+                    'settings' => [
+                        '_css_classes' => 'wpae-process-content',
+                        'container_type' => 'flex',
+                        'content_width' => 'full',
+                        'flex_direction' => 'column',
+                        'flex_wrap' => 'nowrap',
+                        'flex_align_items' => 'stretch',
+                        'flex_gap' => [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ],
+                        'flex_gap_mobile' => [ 'column' => '0.4', 'row' => '0.4', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.4' ],
+                        'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        '_element_width' => 'initial',
+                        '_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        '_flex_size' => 'grow',
+                        '_flex_grow' => 1,
+                        '_flex_shrink' => 1,
+                    ],
+                    'elements' => [
+                        $widget( $id . '-title-' . (string) $step_number, 'heading', [
+                            'title' => $step_label,
+                            'header_size' => 'h3',
+                            'title_color' => '#111827',
+                            'align' => 'left',
+                            'typography_typography' => 'custom',
+                            'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.35 ],
+                            'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.1 ],
+                            'typography_font_weight' => '700',
+                            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+                            'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.25 ],
+                            'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                        ] ),
+                        $widget( $id . '-copy-' . (string) $step_number, 'text-editor', [
+                            'editor' => $step_copy,
+                            'text_color' => '#667085',
+                            'align' => 'left',
+                            'typography_typography' => 'custom',
+                            'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                            'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
+                            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.5 ],
+                            'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.45 ],
+                            'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+                        ] ),
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    return [
+        'id' => $id,
+        'elType' => 'container',
+        'settings' => [
+            '_css_classes' => 'wpae-process-timeline',
+            'container_type' => 'flex',
+            'content_width' => 'full',
+            'flex_direction' => 'column',
+            'flex_direction_mobile' => 'column',
+            'flex_wrap' => 'nowrap',
+            'flex_wrap_mobile' => 'nowrap',
+            'flex_align_items' => 'stretch',
+            'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+            'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+            'background_background' => 'classic',
+            'background_color' => 'transparent',
+            'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+            'padding_mobile' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+            'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            '_element_width' => 'initial',
+            '_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+            '_flex_size' => 'custom',
+            '_flex_grow' => 0,
+            '_flex_shrink' => 0,
+        ],
+        'elements' => $timeline_steps,
+    ];
+}
+
+function wpae_llm_process_timeline_steps_from_elements( array $elements ): array {
+    $read_step = static function ( array $step ) use ( &$read_step ): array {
+        $title = '';
+        $copy = '';
+        $walk = static function ( array $nodes ) use ( &$walk, &$title, &$copy ): void {
+            foreach ( $nodes as $node ) {
+                if ( ! is_array( $node ) ) {
+                    continue;
+                }
+                $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+                $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+                if ( is_array( $classes ) && array_intersect( [ 'wpae-process-marker', 'wpae-process-connector', 'wpae-process-marker-column' ], $classes ) ) {
+                    continue;
+                }
+                if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' && $title === '' ) {
+                    $title = trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) );
+                } elseif ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'text-editor' && $copy === '' ) {
+                    $copy = trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) );
+                }
+                if ( is_array( $node['elements'] ?? null ) && ( $title === '' || $copy === '' ) ) {
+                    $walk( $node['elements'] );
+                }
+            }
+        };
+        $walk( [ $step ] );
+        return [ 'label' => $title, 'content' => $copy ];
+    };
+    $found = [];
+    $walk = static function ( array $nodes ) use ( &$walk, &$found, $read_step ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( ( $node['elType'] ?? '' ) === 'container' && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
+                foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+                    if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+                        $step = $read_step( $child );
+                        if ( $step['label'] !== '' || $step['content'] !== '' ) {
+                            $found[] = $step;
+                        }
+                    }
+                }
+                if ( count( $found ) >= 2 ) {
+                    return;
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $walk( $node['elements'] );
+                if ( count( $found ) >= 2 ) {
+                    return;
+                }
+            }
+        }
+    };
+    $walk( $elements );
+    return array_slice( $found, 0, 6 );
+}
+
+function wpae_llm_normalize_process_timeline( array $elements, string $message, int &$changed = 0 ): array {
+    $message_steps = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
+    $replace = static function ( array &$nodes ) use ( &$replace, $message_steps, &$changed ): bool {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( ( $element['elType'] ?? '' ) === 'container' && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
+                $steps = count( $message_steps ) >= 2 ? $message_steps : wpae_llm_process_timeline_steps_from_elements( [ $element ] );
+                if ( count( $steps ) < 2 ) {
+                    $steps = wpae_llm_process_timeline_steps( $message );
+                }
+                $element = wpae_llm_build_process_timeline( $steps, (string) ( $element['id'] ?? 'wpae-process-timeline' ) );
+                $changed++;
+                return true;
+            }
+            if ( is_array( $element['elements'] ?? null ) && $replace( $element['elements'] ) ) {
+                return true;
+            }
+        }
+        unset( $element );
+        return false;
+    };
+    if ( $replace( $elements ) ) {
+        return $elements;
+    }
+
+    $steps = count( $message_steps ) >= 2 ? $message_steps : wpae_llm_process_timeline_steps( $message );
+    $timeline = wpae_llm_build_process_timeline( $steps );
+    foreach ( $elements as &$root ) {
+        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+        $insert_at = array_key_last( $root['elements'] );
+        foreach ( $root['elements'] as $index => $child ) {
+            if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' && ( $child['widgetType'] ?? '' ) === 'button' ) {
+                $insert_at = $index;
+                break;
+            }
+        }
+        if ( $insert_at === null ) {
+            $root['elements'][] = $timeline;
+        } else {
+            array_splice( $root['elements'], (int) $insert_at, 0, [ $timeline ] );
+        }
+        $changed++;
+        break;
+    }
+    unset( $root );
+    return $elements;
+}
+
 function wpae_llm_normalize_generated_button_settings( array &$settings ): bool {
     $before = wp_json_encode( $settings );
     foreach ( [ 'width', 'width_tablet', 'width_mobile', 'min_width', 'max_width', '_element_width', '_element_width_tablet', '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
@@ -3842,7 +4218,7 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
 }
 
 function wpae_llm_generation_visual_grammar_hint(): string {
-    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Icon-box запрещен: заголовок карточки всегда остается обычным native heading, а иконка при необходимости выводится отдельным native icon. В testimonial-карточке имя/компания выводятся native heading, цитата — native text-editor, а quote/icon-иконка допускается только как декоративный маркер. В testimonial-карточке цитата является текстом и не должна превращаться в иконку. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Hero — самостоятельная композиция; trusted-preservation применяется только к явно доверенному источнику. Внутри каждой текстовой колонки выбери одно выравнивание и примени его одновременно к badge, заголовку, тексту, иконкам и CTA; если выбран center, все элементы центрированы, если left, все элементы прижаты к left. Для hero с фото и светлым текстом используй черный полупрозрачный native Background Overlay. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
+    return ' По умолчанию каждый новый блок обязан начинаться с одного компактного outlined native badge-контейнера с закругленным pill-радиусом и native heading-label внутри. Icon-box запрещен: заголовок карточки всегда остается обычным native heading, а иконка при необходимости выводится отдельным native icon. В testimonial-карточке имя/компания выводятся native heading, цитата — native text-editor, а quote/icon-иконка допускается только как декоративный маркер. В testimonial-карточке цитата является текстом и не должна превращаться в иконку. Контейнер bento-сетки карточек должен оставаться прозрачным, а фон разрешен только у самих карточек. Для process/timeline используй вертикальную последовательность шагов: один общий column-контейнер, отдельный номер-маркер, connector между шагами и обычные heading/text-editor в каждом шаге; не превращай timeline в bento-сетку или 2x2-карточки. Hero — самостоятельная композиция; trusted-preservation применяется только к явно доверенному источнику. Внутри каждой текстовой колонки выбери одно выравнивание и примени его одновременно к badge, заголовку, тексту, иконкам и CTA; если выбран center, все элементы центрированы, если left, все элементы прижаты к left. Для hero с фото и светлым текстом используй черный полупрозрачный native Background Overlay. Это правило задается плагином и не требует технических указаний в пользовательском промте.';
 }
 
 function wpae_llm_fallback_variant( string $message ): int {
@@ -4089,13 +4465,21 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
                 $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
                 $classes = is_array( $classes ) ? array_values( array_filter( $classes ) ) : [];
                 $is_bento = in_array( 'wpae-bento-grid', $classes, true );
+                $is_process_marker = $archetype === 'process' && in_array( 'wpae-process-marker', $classes, true );
+                $is_process_connector = $archetype === 'process' && in_array( 'wpae-process-connector', $classes, true );
+                if ( $is_process_marker ) {
+                    $settings['min_height'] = [ 'unit' => 'rem', 'size' => 3 ];
+                    $settings['min_height_mobile'] = [ 'unit' => 'rem', 'size' => 2.5 ];
+                } elseif ( $is_process_connector ) {
+                    $settings['min_height'] = [ 'unit' => 'rem', 'size' => 2.5 ];
+                }
                 $child_containers = [];
                 foreach ( $children as $child_index => $child ) {
                     if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
                         $child_containers[] = $child_index;
                     }
                 }
-                $is_repeatable_group = in_array( $archetype, $repeatable, true ) && count( $child_containers ) >= 2 && $depth > 0;
+                $is_repeatable_group = in_array( $archetype, $repeatable, true ) && $archetype !== 'process' && count( $child_containers ) >= 2 && $depth > 0;
                 if ( $is_bento || $is_repeatable_group ) {
                     $settings['flex_direction'] = 'row';
                     $settings['flex_direction_mobile'] = 'column';
@@ -4156,7 +4540,7 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
 }
 
 function wpae_llm_repair_unbalanced_repeatable_layout( array $elements, string $message, string $archetype, int &$changed ): array {
-    if ( ! in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ], true ) ) {
+    if ( ! in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ], true ) || $archetype === 'process' ) {
         return $elements;
     }
 
@@ -4471,6 +4855,7 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+            $is_process_visual = $archetype === 'process' && is_array( $classes ) && (bool) array_intersect( [ 'wpae-process-marker', 'wpae-process-marker-column', 'wpae-process-connector', 'wpae-process-content' ], $classes );
             $has_content_shell = false;
             if ( $depth === 0 ) {
                 foreach ( $element['elements'] ?? [] as $top_level_child ) {
@@ -4495,11 +4880,11 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                 $settings['_css_classes'] = trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-fallback-variant-' . (string) $variant );
                 $settings['_wpae_visual_variant'] = $variant;
                 $settings['_wpae_visual_layout'] = $layout;
-                $settings['flex_direction'] = $has_content_shell ? 'column' : ( in_array( $layout, [ 1, 5 ], true ) ? 'row' : 'column' );
-                $settings['flex_wrap'] = $has_content_shell ? 'nowrap' : ( in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap' );
-                $settings['flex_justify_content'] = $has_content_shell ? 'flex-start' : ( $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' ) );
-                $settings['flex_align_items'] = $has_content_shell ? 'stretch' : ( $layout === 1 ? 'stretch' : 'flex-start' );
-                if ( $has_content_shell || in_array( $layout, [ 1, 5 ], true ) ) {
+                $settings['flex_direction'] = $archetype === 'process' || $has_content_shell ? 'column' : ( in_array( $layout, [ 1, 5 ], true ) ? 'row' : 'column' );
+                $settings['flex_wrap'] = $archetype === 'process' || $has_content_shell ? 'nowrap' : ( in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap' );
+                $settings['flex_justify_content'] = $archetype === 'process' || $has_content_shell ? 'flex-start' : ( $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' ) );
+                $settings['flex_align_items'] = $archetype === 'process' || $has_content_shell ? 'stretch' : ( $layout === 1 ? 'stretch' : 'flex-start' );
+                if ( $archetype === 'process' || $has_content_shell || in_array( $layout, [ 1, 5 ], true ) ) {
                     foreach ( $element['elements'] as &$top_child ) {
                         if ( ! is_array( $top_child ) ) {
                             continue;
@@ -4507,7 +4892,9 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                         $top_child_settings = is_array( $top_child['settings'] ?? null ) ? $top_child['settings'] : [];
                         $top_child_classes = preg_split( '/\s+/', trim( (string) ( $top_child_settings['_css_classes'] ?? '' ) ) );
                         $top_child_type = (string) ( $top_child['widgetType'] ?? '' );
-                        if ( is_array( $top_child_classes ) && in_array( 'wpae-generated-badge', $top_child_classes, true ) ) {
+                        if ( $archetype === 'process' ) {
+                            wpae_llm_set_variant_container_width( $top_child_settings, 100 );
+                        } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-generated-badge', $top_child_classes, true ) ) {
                             wpae_llm_set_variant_container_width( $top_child_settings, 100 );
                         } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-generated-content-shell', $top_child_classes, true ) ) {
                             wpae_llm_set_variant_container_width( $top_child_settings, 100 );
@@ -4524,7 +4911,7 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                     }
                     unset( $top_child );
                 }
-            } elseif ( in_array( $archetype, $repeatable, true ) && $depth >= 2 && ! $is_grid ) {
+            } elseif ( in_array( $archetype, $repeatable, true ) && $depth >= 2 && ! $is_grid && ! $is_process_visual ) {
                 $card_index++;
                 $settings['background_background'] = 'classic';
                 $settings['background_color'] = $theme['cards'][ ( $card_index - 1 ) % count( $theme['cards'] ) ];
@@ -5449,12 +5836,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Как проходит работа', 'header_size' => 'h2' ] ),
             $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Понятный маршрут от первой задачи до готовой страницы.' ] ),
-            $grid( 'llm-process-grid', [
-                $card( 'llm-process-1', [ $widget( 'llm-process-1-title', 'heading', [ 'title' => '01 / Бриф', 'header_size' => 'h4' ] ), $widget( 'llm-process-1-copy', 'text-editor', [ 'editor' => 'Фиксируем цель, аудиторию и главное действие страницы.' ] ) ] ),
-                $card( 'llm-process-2', [ $widget( 'llm-process-2-title', 'heading', [ 'title' => '02 / Структура', 'header_size' => 'h4' ] ), $widget( 'llm-process-2-copy', 'text-editor', [ 'editor' => 'Собираем смысловой маршрут и расставляем доказательства.' ] ) ] ),
-                $card( 'llm-process-3', [ $widget( 'llm-process-3-title', 'heading', [ 'title' => '03 / Сборка', 'header_size' => 'h4' ] ), $widget( 'llm-process-3-copy', 'text-editor', [ 'editor' => 'Создаем блоки из native Elementor-элементов и задаем адаптив.' ] ) ] ),
-                $card( 'llm-process-4', [ $widget( 'llm-process-4-title', 'heading', [ 'title' => '04 / Проверка', 'header_size' => 'h4' ] ), $widget( 'llm-process-4-copy', 'text-editor', [ 'editor' => 'Проверяем визуальный результат, редактируемость и CTA.' ] ) ] ),
-            ] ),
+            wpae_llm_build_process_timeline( wpae_llm_process_timeline_steps( $message ) ),
             $widget( 'llm-button', 'button', [ 'text' => 'Начать проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'pricing' ) {
@@ -6074,7 +6456,7 @@ function wpae_llm_normalize_generated_typography( array $elements, string $arche
 
 function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$changed ): array {
     $repeatable = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
-    if ( ! in_array( $archetype, $repeatable, true ) ) {
+    if ( ! in_array( $archetype, $repeatable, true ) || $archetype === 'process' ) {
         return $elements;
     }
 
@@ -6807,6 +7189,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $bento_changed = 0;
         $composition_repair_changed = 0;
         $process_labels_changed = 0;
+        $process_timeline_changed = 0;
         $fallback_content_changed = 0;
         if ( $action_fallback ) {
             wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
@@ -6898,6 +7281,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
             $action['elements'] = wpae_llm_repair_unbalanced_repeatable_layout( $action['elements'], $message, $action_archetype, $composition_repair_changed );
+            $action['elements'] = wpae_llm_normalize_process_timeline( $action['elements'], $message, $process_timeline_changed );
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
@@ -7035,6 +7419,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         if ( $process_labels_changed > 0 ) {
             $action_steps[] = [ 'id' => 'process_labels', 'status' => 'ok', 'message' => 'Нумерация карточек процесса выровнена по порядку без изменения текста шагов.', 'details' => [ 'labels_updated' => $process_labels_changed ] ];
+        }
+        if ( $process_timeline_changed > 0 ) {
+            $action_steps[] = [ 'id' => 'process_timeline', 'status' => 'ok', 'message' => 'Процессный блок собран как вертикальный native Flex timeline с отдельными маркерами и connector-линией.', 'details' => [ 'containers_rebuilt' => $process_timeline_changed, 'mobile_direction' => 'row-step / column-stack', 'icon_box_used' => false ] ];
         }
         if ( $visual_grammar_changed > 0 ) {
             $action_steps[] = [ 'id' => 'visual_grammar', 'status' => 'ok', 'message' => 'Для блока применено правило визуальной грамматики: outlined badge, отдельные native icon и семантические карточки.', 'details' => [ 'badge_or_card_icon_updates' => $visual_grammar_changed, 'badge_class' => 'wpae-generated-badge', 'card_widget' => 'heading + icon + text-editor', 'icon_position' => 'separate-native-widget' ] ];
