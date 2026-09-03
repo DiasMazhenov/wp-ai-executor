@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.26`
+- Plugin: `v02.11.27`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -106,6 +106,11 @@
   now use a count-aware width budget and can shrink, keeping the timeline on
   one row on desktop while retaining the mobile stack. Re-run all three
   timeline families with screenshot -> Impeccable -> prompt comparison.
+- v02.11.27: The final execution boundary now receives the original brief and
+  re-applies the process-timeline contract after visual variation, preventing
+  the last pass from reintroducing bento classes into left, alternating, or
+  horizontal Flex timelines. Local checks pass; live validation remains
+  required with screenshot -> Impeccable -> prompt comparison for all three.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

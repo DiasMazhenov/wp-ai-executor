@@ -6887,7 +6887,7 @@ function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     return $decoded;
 }
 
-function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1 ): array {
+function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1, string $message = '' ): array {
     $operation_id = wpae_llm_new_operation_id();
     $received_action = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
     $received_post_id = absint( $action['post_id'] ?? 0 );
@@ -6986,6 +6986,13 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $elements = wpae_llm_apply_fallback_variant( $elements, $variation_archetype, $fallback_variant );
         $fallback_variant_applied = true;
         $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
+    }
+    if ( $archetype === 'process' && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
+        $final_process_changed = 0;
+        $elements = wpae_llm_enforce_process_timeline_contract( $elements, $message, $final_process_changed );
+        if ( $final_process_changed > 0 ) {
+            $steps[] = [ 'id' => 'process_timeline_final', 'status' => 'ok', 'message' => 'Финальная граница записи восстановила канонический native Flex timeline после вариаций.', 'details' => [ 'containers_rebuilt' => $final_process_changed, 'layout' => wpae_llm_process_timeline_layout( $message ) ] ];
+        }
     }
     if ( function_exists( 'wpae_llm_normalize_bento_grids_recursive' ) ) {
         $final_bento_changed = 0;
@@ -7625,7 +7632,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action_steps[] = [ 'id' => 'render_cache', 'status' => 'ok', 'message' => 'Устаревший Elementor render cache очищен перед записью обновленного контента.', 'details' => [ 'nodes_cleared' => $render_cache_changed ] ];
         }
         $execution_variation_seed = $library_applied ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed );
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );

@@ -17,6 +17,21 @@ before making a new change to the plugin.
   and left variants with scoped JSON, screenshot, Impeccable review, and prompt
   comparison before acceptance.
 
+## EJ-071: Final variation pass reintroduced bento classes into timelines
+
+- **Observed:** After v02.11.26, the live central timeline still ended as a
+  bento-like grid even though the earlier process contract reported an
+  alternating timeline.
+- **Root cause:** The process contract ran before `wpae_llm_execute_action()`;
+  the later visual-variation pass could add `wpae-bento-grid` back to the
+  process root and its steps before preview/write.
+- **Fix:** v02.11.27 passes the original brief into the shared execution
+  boundary and re-applies the process contract after variation, immediately
+  before the final normalization and Elementor write.
+- **Regression status:** Local checks pending. Re-test left, alternating, and
+  horizontal variants with scoped JSON, screenshot, Impeccable review, and
+  prompt comparison before acceptance.
+
 ## EJ-069: Post-processing rebuilt a timeline as a bento grid
 
 - **Observed:** The live central-timeline run reported an alternating timeline,
