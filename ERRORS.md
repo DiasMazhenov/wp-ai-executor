@@ -18,10 +18,12 @@ before making a new change to the plugin.
   and ordinary heading/text-editor content. Process is excluded from bento,
   repeatable-layout repair, and visual-variant conversion. The final trace
   records the timeline rebuild and confirms that Icon Box is not used.
-- **Regression status:** Local PHP lint and contract tests pass. Live
-  deployment is pending; acceptance requires scoped JSON/DOM, a fresh
-  screenshot, Vision/Impeccable review, and comparison with the timeline
-  prompt.
+- **Regression status:** Fixed in `v02.11.21`. WP Pusher and the installed
+  plugin report the new version. Browser Use verified the process trace,
+  native Flex structure, scoped generated JSON, fresh screenshot, and final
+  AI Vision score 82 without critical or major findings. Impeccable review
+  found only a minor editor-mode multi-border impression; no 2x2 bento grid
+  or Icon Box was present in the generated timeline.
 
 ## EJ-063: Vision findings were not sent as a separate agent prompt
 

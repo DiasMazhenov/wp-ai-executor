@@ -67,8 +67,12 @@
   column with numbered marker rails, connector containers, and ordinary
   heading/text-editor widgets for each step. Process is excluded from bento
   layout, repeatable-layout repair, and visual-variant conversions, so it
-  cannot regress into a 2x2 card grid. Local PHP lint and contract tests pass;
-  live deployment and screenshot -> Vision/Impeccable acceptance are pending.
+  cannot regress into a 2x2 card grid. Local PHP lint and contract tests pass.
+  Live WP Pusher and installed-plugin checks confirmed `v02.11.21`; a fresh
+  Browser Use generation completed with the process trace, scoped generated
+  JSON, screenshot, and final AI Vision score 82 without critical or major
+  findings. Impeccable review found only a minor editor-mode multi-border
+  impression; the public composition remains a single vertical timeline.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
