@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.25`
+- Plugin: `v02.11.26`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -101,6 +101,11 @@
   prevents the generic final bento pass from mutating process trees. Local
   checks pass; live acceptance must inspect scoped JSON, screenshot, and
   Impeccable/prompt comparison for left, alternating, and horizontal variants.
+- v02.11.26: Live horizontal testing exposed a fourth-card wrap caused by fixed
+  24% step widths plus padding/gaps and zero shrink. Horizontal process steps
+  now use a count-aware width budget and can shrink, keeping the timeline on
+  one row on desktop while retaining the mobile stack. Re-run all three
+  timeline families with screenshot -> Impeccable -> prompt comparison.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

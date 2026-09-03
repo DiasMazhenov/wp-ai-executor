@@ -3,6 +3,20 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-070: Horizontal timeline steps wrapped into a second row
+
+- **Observed:** The live horizontal timeline screenshot showed steps 01-03 on
+  the first row and step 04 wrapped below. The rail was no longer perceived as
+  one continuous horizontal timeline.
+- **Root cause:** Every desktop step used a fixed 24% width while also adding
+  card padding and flex gaps; `_flex_shrink` was zero, so the browser wrapped
+  the final card instead of resolving the small width overrun.
+- **Fix:** v02.11.26 derives a width budget from the number of steps and allows
+  horizontal cards to shrink. Mobile remains a single vertical stack.
+- **Regression status:** Local checks pending. Re-test horizontal, alternating,
+  and left variants with scoped JSON, screenshot, Impeccable review, and prompt
+  comparison before acceptance.
+
 ## EJ-069: Post-processing rebuilt a timeline as a bento grid
 
 - **Observed:** The live central-timeline run reported an alternating timeline,

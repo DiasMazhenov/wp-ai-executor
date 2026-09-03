@@ -4015,7 +4015,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 			$step_settings['flex_direction'] = 'column';
 			$step_settings['flex_direction_mobile'] = 'column';
 			$step_settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
-			wpae_llm_set_variant_container_width( $step_settings, 24 );
+			$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
+			wpae_llm_set_variant_container_width( $step_settings, $step_width );
+			$step_settings['_flex_shrink'] = 1;
+			$step_settings['_flex_shrink_tablet'] = 1;
+			$step_settings['_flex_shrink_mobile'] = 1;
 			$step['settings'] = $step_settings;
 			foreach ( $step['elements'] as &$child ) {
 				$child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
