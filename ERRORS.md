@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-072: Process intent leaked from content into unrelated blocks
+
+- **Observed:** The live screenshot audit of the generated page found six
+  historical roots where formats blocks contained process rows, empty marker
+  containers, duplicated shells, and concatenated card copy. The block request
+  boundary allowed a body-only word such as «этап» to select the process
+  archetype.
+- **Root cause:** Archetype scoring treated any process vocabulary in the full
+  brief as sufficient, and the execution path repeated a broad process regex.
+  There was no shared intent-head boundary and «форматы» was not a catalog
+  alias for the pricing/formats fallback.
+- **Fix:** v02.11.30 centralizes process intent detection to the command head,
+  adds «формат»/«вариант» to the formats catalog, suppresses process body-only
+  scores, and reapplies the process contract after the generic Flex contract.
+- **Regression status:** Local checks pass. Fresh live process and formats
+  generations still require scoped JSON/DOM, screenshot, Impeccable review,
+  prompt comparison, and deployment-version confirmation. Existing page roots
+  remain historical test contamination and are not deleted by this fix.
+
 ## EJ-070: Horizontal timeline steps wrapped into a second row
 
 - **Observed:** The live horizontal timeline screenshot showed steps 01-03 on

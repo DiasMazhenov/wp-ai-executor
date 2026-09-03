@@ -284,6 +284,20 @@ function wpae_llm_is_instruction_only_brief( string $message ): bool {
 	return (bool) preg_match( '/^\s*(?:сделай|создай|добавь|собери|сверстай|сформируй|покажи|нарисуй)\b\s+.+$/iu', $message );
 }
 
+function wpae_llm_request_intent_head( string $message ): string {
+	$parts = preg_split( '/\r?\n+|:|(?<=[.!?])\s+|(?=\s+[—-]\s+)/u', trim( $message ), 2, PREG_SPLIT_NO_EMPTY );
+	return trim( (string) ( $parts[0] ?? '' ) );
+}
+
+function wpae_llm_is_process_request( string $message, string $archetype = '' ): bool {
+	$intent_head = wpae_llm_request_intent_head( $message );
+	if ( $intent_head === '' ) {
+		return $archetype === 'process';
+	}
+
+	return (bool) preg_match( '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu', $intent_head );
+}
+
 function wpae_llm_content_units( string $message ): array {
 	if ( wpae_llm_is_instruction_only_brief( $message ) ) {
 		return [];
@@ -671,9 +685,9 @@ function wpae_llm_content_archetype_catalog(): array {
             'semantic' => '/\b(faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu',
         ],
         'pricing' => [
-            'headline' => '/\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|pricing)\b/iu',
-            'body' => '/₸|\$|€|₽|\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|pricing)\b/iu',
-            'semantic' => '/\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|pricing)\b/iu',
+            'headline' => '/\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|формат\w*|вариант\w*|pricing)\b/iu',
+            'body' => '/₸|\$|€|₽|\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|формат\w*|вариант\w*|pricing)\b/iu',
+            'semantic' => '/\b(тариф\w*|цен\w*|стоимост\w*|пакет\w*|формат\w*|вариант\w*|pricing)\b/iu',
         ],
         'testimonials' => [
             'headline' => '/\b(отзыв\w*|рекомендац\w*|testimonial\w*)\b/iu',
@@ -750,6 +764,9 @@ function wpae_llm_content_archetype_scores( string $message, array $labeled_pair
 function wpae_llm_detect_block_archetype( string $message ): string {
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
     $scores = wpae_llm_content_archetype_scores( $message, $labeled_pairs );
+    if ( ! wpae_llm_is_process_request( $message ) ) {
+        $scores['process'] = 0;
+    }
     $scored_archetype = '';
     $scored_value = 0;
     foreach ( $scores as $archetype => $score ) {
@@ -807,7 +824,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/(?:^|[.!?\n]\s*)(?:преимуществ\w*|выгод\w*|почему\s+мы|features?|benefits?)\b/iu', trim( $message ) ) ) {
             return 'benefits';
         }
-		if ( preg_match( '/\b(шаг|этап|таймлайн\w*|событи\w*|мероприяти\w*|мастер-класс|event\w*|timeline|сначала|затем|после этого|проверяем|запускаем|переда[её]м)\b/iu', $normalized ) ) {
+		if ( wpae_llm_is_process_request( $message ) ) {
             return 'process';
         }
         if (
@@ -7002,7 +7019,7 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $fallback_variant_applied = true;
         $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
     }
-    $process_request = $archetype === 'process' || ( $message !== '' && preg_match( '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu', $message ) );
+	$process_request = wpae_llm_is_process_request( $message, $archetype );
     if ( $process_request && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
         $final_process_changed = 0;
         $elements = wpae_llm_enforce_process_timeline_contract( $elements, $message, $final_process_changed );
@@ -7517,9 +7534,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $process_timeline_changed += $process_contract_changed;
         }
         $flex_contract_changed = 0;
-        if ( is_array( $action['elements'] ?? null ) ) {
-            $action['elements'] = wpae_llm_enforce_flex_layout_contract( $action['elements'], $action_archetype, $flex_contract_changed );
-        }
+		if ( is_array( $action['elements'] ?? null ) ) {
+			$action['elements'] = wpae_llm_enforce_flex_layout_contract( $action['elements'], $action_archetype, $flex_contract_changed );
+		}
+		if ( wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
+			$final_process_changed = 0;
+			$action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $final_process_changed );
+			$process_timeline_changed += $final_process_changed;
+		}
         $hero_composition_changed = 0;
         if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
             $existing_for_image_rotation = [];

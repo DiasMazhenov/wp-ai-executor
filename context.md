@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.29`
+- Plugin: `v02.11.30`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -121,6 +121,15 @@
   system markers. v02.11.28 reached `process_timeline_final` but preview was
   rejected by the design-system contract because the rebuilt root lost those
   markers; re-run live central, horizontal, and left tests after deployment.
+- v02.11.30: Live screenshot review exposed a shared classification fault:
+  process vocabulary found only in body content could route formats or other
+  blocks into the process pipeline, while the page showed mixed process/bento
+  roots, empty marker containers and duplicated shells. A central intent-head
+  helper now gates process behavior, formats/variants map to the existing
+  pricing-style formats fallback, process body-only scores are ignored, and a
+  final process contract runs after the generic Flex contract. Local lint,
+  contract tests and diff checks pass; live acceptance requires a fresh deploy
+  plus screenshot -> Vision/design-taste -> Impeccable -> prompt comparison.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
