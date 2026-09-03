@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-076: Single-line pricing briefs collapsed into one heading
+
+- **Observed:** A live pricing request with three tiers was written as a
+  fragmented library layout. The first sentence became a long heading, while
+  the tier cards were not populated as parallel pricing units. Vision scored
+  the result 68 and found a major pricing-composition failure; bounded repair
+  then exhausted its retry path.
+- **Root cause:** `wpae_llm_extract_pricing_content()` only parsed newline-
+  separated `label — amount` records. A normal one-paragraph brief with
+  sentence-separated tiers produced fewer than two pairs and incorrectly
+  entered the generic narrative library adapter.
+- **Fix:** v02.11.34 parses repeated label/amount boundaries across one
+  paragraph before the legacy line parser. The existing library adapter can
+  therefore bind each tier to its own card instead of assigning the whole
+  brief to the first heading.
+- **Regression status:** Local lint, contract tests and diff checks pass. A
+  fresh deployed pricing generation still requires scoped JSON/DOM, screenshot,
+  Vision/Impeccable review, prompt comparison and no rollback.
+
 ## EJ-074: Alternating timeline selected marker and content by position
 
 - **Observed:** Live alternating output rendered the first and third cards on

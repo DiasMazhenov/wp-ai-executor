@@ -1295,21 +1295,42 @@ function wpae_llm_extract_pricing_content( string $message ): array {
         return [];
     }
     $pairs = [];
-    $lines = preg_split( '/\r?\n+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
-    foreach ( $lines as $line ) {
-        if ( ! preg_match( '/^\s*([^—–:\n]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?[^.\n]*)(?:\.\s*(.*?))?\s*$/u', trim( (string) $line ), $match ) ) {
-            continue;
+    // Content-only briefs often put all tiers into one paragraph; parse each
+    // label/amount boundary before the generic sentence splitter sees it.
+    $pricing_pattern = '/(?:^|[.!?;\n]\s*|:\s+)([^—–:\n.;]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?)(?:\s*[,;:]\s*([^.!?\n;]+?))?(?=(?:[.!?;]\s+|$)[^—–:\n.;]{2,80}?\s*[—–-]\s*\d|[.!?;]\s*$|$)/u';
+    if ( preg_match_all( $pricing_pattern, trim( $message ), $matches, PREG_SET_ORDER ) ) {
+        foreach ( $matches as $match ) {
+            $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+            $price = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+            $description = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+            if ( $label === '' || $price === '' ) {
+                continue;
+            }
+            $pairs[] = [
+                'label' => $label,
+                'content' => $price . ( $description !== '' ? ', ' . $description : '' ),
+            ];
         }
-        $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
-        $price = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
-        $description = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
-        if ( $label === '' || $price === '' ) {
-            continue;
+    }
+
+    // Keep line-based support for legacy prompts with a bare amount and no
+    // punctuation after the label.
+    if ( count( $pairs ) < 2 ) {
+        foreach ( preg_split( '/\r?\n+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $line ) {
+            if ( ! preg_match( '/^\s*([^—–:\n]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?[^.\n]*)(?:\.\s*(.*?))?\s*$/u', trim( (string) $line ), $match ) ) {
+                continue;
+            }
+            $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+            $price = trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) );
+            $description = trim( sanitize_text_field( (string) ( $match[3] ?? '' ) ) );
+            if ( $label === '' || $price === '' ) {
+                continue;
+            }
+            $pairs[] = [
+                'label' => $label,
+                'content' => $price . ( $description !== '' ? '. ' . $description : '' ),
+            ];
         }
-        $pairs[] = [
-            'label' => $label,
-            'content' => $price . ( $description !== '' ? '. ' . $description : '' ),
-        ];
     }
     return array_slice( $pairs, 0, 8 );
 }

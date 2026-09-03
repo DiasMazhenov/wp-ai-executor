@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.33`
+- Plugin: `v02.11.34`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -151,6 +151,24 @@
   The element reader also understands the track wrapper. Live horizontal
   validation must repeat screenshot -> Vision/design-taste -> Impeccable ->
   prompt comparison and confirm no rollback.
+- v02.11.34: Live pricing testing exposed a content-boundary fault in the
+  shared pricing extractor. One-paragraph briefs with repeated
+  `label — amount, description` tiers were not recognized as pairs, so the
+  library narrative adapter promoted the first tier sentence to a section
+  heading and produced a fragmented pricing layout. The extractor now parses
+  sentence-separated tiers before the legacy line parser, preserving each
+  label, amount and description for one pricing card. Local PHP lint, the
+  contract test and diff checks pass; fresh deployed pricing validation still
+  requires scoped JSON/DOM, screenshot, Vision/design-taste, Impeccable,
+  prompt comparison and no rollback.
+- 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
+  Vision at 88 with no major/critical finding; scoped metrics showed three
+  balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision
+  at 85 with all three requested steps visible; scoped metrics showed one
+  full-width track, three cards and no overflow. Raven Impeccable layout/Talon
+  audits found no orphan-stretch or horizontal-overflow violations for either
+  accepted process variant. v02.11.34 pricing must be redeployed and rerun
+  after the parser fix; the previous score-68 pricing result is rejected.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
