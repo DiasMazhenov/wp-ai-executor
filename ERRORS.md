@@ -3,6 +3,24 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-066: Process fallback exposed only one timeline composition
+
+- **Observed:** The dedicated v02.11.21 fallback prevented the old bento-grid
+  regression, but every process request still rendered the same left-sided
+  vertical timeline. The original timeline reference contains multiple layout
+  families, so there was no way to test or select the other compositions.
+- **Root cause:** `wpae_llm_build_process_timeline()` had no layout contract;
+  process normalization always rebuilt a column root, and the visual-variant
+  pass hardcoded process children to 100% width and a column direction.
+- **Fix:** v02.11.22 adds one layout selector and extends the shared builder for
+  left vertical, centered alternating vertical, and horizontal Flex timelines.
+  The selector is driven by explicit natural-language layout terms, the
+  horizontal root uses responsive wrapping, alternating steps use a protected
+  spacer rail, and the final variant pass preserves the selected family.
+- **Regression status:** Local checks pass. Live testing is pending deployment
+  of v02.11.22 and requires one screenshot plus Vision/Impeccable review for
+  each family. A variant is not accepted from JSON or trace alone.
+
 ## EJ-065: Process fallback was converted into a bento grid
 
 - **Observed:** The live `сделай таймлайн` result rendered a 2x2 card grid

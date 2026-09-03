@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.21`
+- Plugin: `v02.11.22`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -73,6 +73,17 @@
   JSON, screenshot, and final AI Vision score 82 without critical or major
   findings. Impeccable review found only a minor editor-mode multi-border
   impression; the public composition remains a single vertical timeline.
+- v02.11.22: Process/timeline now has one shared native Flex builder with
+  three explicit layout families: left-sided vertical, centered alternating
+  vertical, and horizontal. The layout is inferred from the natural-language
+  request, mobile settings collapse every family to one readable stack, and
+  the existing process protection also covers alternating spacers. The generic
+  fallback-variant pass preserves the requested timeline direction and width.
+  Local PHP lint, contract tests, and diff checks pass. Live acceptance is
+  pending WP Pusher deployment; test each family with a fresh generation,
+  scoped JSON/DOM inspection, screenshot, Vision/Impeccable review, and prompt
+  comparison. Keep historical page sections; they are not evidence of the
+  newly generated root.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
