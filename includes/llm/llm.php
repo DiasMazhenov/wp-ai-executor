@@ -4089,9 +4089,14 @@ function wpae_llm_process_timeline_steps_from_elements( array $elements ): array
             }
             $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-            if ( ( $node['elType'] ?? '' ) === 'container' && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
+            $is_generated_shell = is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );
+            if ( ( $node['elType'] ?? '' ) === 'container' && ! $is_generated_shell && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
                 foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
                     if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+                        $child_classes = preg_split( '/\s+/', trim( (string) ( $child['settings']['_css_classes'] ?? '' ) ) );
+                        if ( is_array( $child_classes ) && array_intersect( [ 'wpae-generated-badge', 'wpae-generated-content-shell' ], $child_classes ) ) {
+                            continue;
+                        }
                         $step = $read_step( $child );
                         if ( $step['label'] !== '' || $step['content'] !== '' ) {
                             $found[] = $step;
@@ -4167,6 +4172,56 @@ function wpae_llm_normalize_process_timeline( array $elements, string $message, 
         break;
     }
     unset( $root );
+    return $elements;
+}
+
+function wpae_llm_enforce_process_timeline_contract( array $elements, string $message, int &$changed = 0 ): array {
+    $layout = wpae_llm_process_timeline_layout( $message );
+    $contains_process = static function ( array $nodes ) use ( &$contains_process ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && array_intersect( [ 'wpae-process-timeline', 'wpae-process-step', 'wpae-process-marker', 'wpae-process-content' ], $classes ) ) {
+                return true;
+            }
+            if ( is_array( $node['elements'] ?? null ) && $contains_process( $node['elements'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    foreach ( $elements as $index => $root ) {
+        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' || ! $contains_process( [ $root ] ) ) {
+            continue;
+        }
+        $steps = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
+        if ( count( $steps ) < 2 ) {
+            $steps = wpae_llm_process_timeline_steps_from_elements( [ $root ] );
+        }
+        if ( count( $steps ) < 2 ) {
+            $steps = wpae_llm_process_timeline_steps( $message );
+        }
+        $timeline = wpae_llm_build_process_timeline( $steps, (string) ( $root['id'] ?? 'wpae-process-timeline' ), $layout );
+        $badge = null;
+        foreach ( (array) ( $root['elements'] ?? [] ) as $child ) {
+            if ( ! is_array( $child ) ) {
+                continue;
+            }
+            $child_classes = preg_split( '/\s+/', trim( (string) ( $child['settings']['_css_classes'] ?? '' ) ) );
+            if ( is_array( $child_classes ) && in_array( 'wpae-generated-badge', $child_classes, true ) ) {
+                $badge = $child;
+                break;
+            }
+        }
+        if ( $badge !== null ) {
+            $timeline['elements'] = array_merge( [ $badge ], $timeline['elements'] );
+        }
+        $elements[ $index ] = $timeline;
+        $changed++;
+    }
     return $elements;
 }
 
@@ -4534,6 +4589,9 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
 }
 
 function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$changed, string $archetype = '' ): void {
+    if ( $archetype === 'process' ) {
+        return;
+    }
     foreach ( $elements as &$element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -7425,6 +7483,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         } elseif ( is_array( $action['elements'] ?? null ) ) {
             $cta_changed = 0;
             $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed, true );
+        }
+        if ( $action_archetype === 'process' && is_array( $action['elements'] ?? null ) ) {
+            $process_contract_changed = 0;
+            $action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $process_contract_changed );
+            $process_timeline_changed += $process_contract_changed;
         }
         $flex_contract_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {

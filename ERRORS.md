@@ -3,6 +3,23 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-069: Post-processing rebuilt a timeline as a bento grid
+
+- **Observed:** The live central-timeline run reported an alternating timeline,
+  but its final scoped JSON contained a left timeline root, a generated shell
+  with `wpae-bento-grid`, and process steps carrying the same grid class. AI
+  Vision correctly rejected the rendered three-card format grid.
+- **Root cause:** Provider repair output could contain mixed process and bento
+  trees. The final visual-grammar and bento passes did not enforce one canonical
+  process root after those transformations.
+- **Fix:** v02.11.25 adds a final process-timeline contract boundary that
+  rebuilds the complete process root in the requested layout, preserves the
+  generated badge, skips generated wrappers while extracting steps, and stops
+  the generic bento pass from mutating process trees.
+- **Regression status:** Local PHP lint, contract tests, and diff checks pass.
+  Re-run all three timeline families with screenshot -> Impeccable -> prompt
+  comparison before acceptance.
+
 ## EJ-068: Instruction-only timeline fallback was rejected by semantic audit
 
 - **Observed:** The live `сделай центральный чередующийся таймлайн` request fell

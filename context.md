@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.24`
+- Plugin: `v02.11.25`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -95,6 +95,12 @@
   built-in copy of the selected fallback scaffold as unrelated semantics.
   Local checks pass; deploy v02.11.24 and run screenshot -> Impeccable -> prompt
   comparison for left, alternating, and horizontal process timelines.
+- v02.11.25: A final process-timeline contract boundary rebuilds mixed provider
+  process/bento output into one requested native Flex timeline, preserves the
+  generated badge, ignores generated wrappers during step extraction, and
+  prevents the generic final bento pass from mutating process trees. Local
+  checks pass; live acceptance must inspect scoped JSON, screenshot, and
+  Impeccable/prompt comparison for left, alternating, and horizontal variants.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its
