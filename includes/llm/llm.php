@@ -3226,18 +3226,63 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
                 'title' => $label,
                 'header_size' => 'h4',
                 '_css_classes' => 'wpae-pricing-tier-label',
+                'typography_typography' => 'custom',
+                'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.25 ],
+                'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 1.15 ],
+                'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.05 ],
+                'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+                'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.15 ],
+                'typography_font_weight' => '700',
             ] ),
             $widget( $card_id . '-price', 'heading', [
                 'title' => $price,
                 'header_size' => 'h3',
                 '_css_classes' => 'wpae-pricing-price',
+                'typography_typography' => 'custom',
+                'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.25 ],
+                'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 2 ],
+                'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.75 ],
+                'typography_line_height' => [ 'unit' => 'em', 'size' => 1.05 ],
+                'typography_line_height_tablet' => [ 'unit' => 'em', 'size' => 1.05 ],
+                'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.1 ],
+                'typography_font_weight' => '800',
             ] ),
         ];
         if ( $description !== '' ) {
-            $card_elements[] = $widget( $card_id . '-description', 'text-editor', [ 'editor' => $description ] );
+            $card_elements[] = $widget( $card_id . '-description', 'text-editor', [
+                'editor' => $description,
+                'typography_typography' => 'custom',
+                'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+                'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 1 ],
+                'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
+                'typography_line_height' => [ 'unit' => 'em', 'size' => 1.45 ],
+                'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.4 ],
+                'text_color' => '#667085',
+            ] );
         }
-        $card = wpae_llm_bento_card( $card_id, $card_elements );
-        $card['settings']['_css_classes'] = 'wpae-pricing-card';
+        $card = [
+            'id' => $card_id,
+            'elType' => 'container',
+            'settings' => [
+                '_css_classes' => 'wpae-pricing-card',
+                'container_type' => 'flex',
+                'content_width' => 'full',
+                'flex_direction' => 'column',
+                'flex_wrap' => 'nowrap',
+                'flex_align_items' => 'flex-start',
+                'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+                'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+                'background_background' => 'classic',
+                'background_color' => '#ffffff',
+                'border_border' => 'solid',
+                'border_color' => '#e5e7eb',
+                'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+                'border_radius' => [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ],
+                'padding' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ],
+                'padding_mobile' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ],
+            ],
+            'elements' => $card_elements,
+        ];
         wpae_llm_set_flexible_bento_container_width( $card['settings'], 31 );
         $cards[] = $card;
     }
@@ -3258,10 +3303,22 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
     $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1', 'bottom' => '1.5', 'left' => '1', 'isLinked' => false ];
     $settings['_css_classes'] = trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-pricing-composition' );
     $root['settings'] = $settings;
+    $grid = wpae_llm_bento_grid( 'wpae-pricing-grid', $cards );
+    $grid['settings']['container_type'] = 'flex';
     $root['elements'] = [
         wpae_llm_badge_widget( 'wpae-pricing-badge', 'pricing' ),
-        $widget( 'wpae-pricing-heading', 'heading', [ 'title' => 'Тарифы', 'header_size' => 'h2' ] ),
-        wpae_llm_bento_grid( 'wpae-pricing-grid', $cards ),
+        $widget( 'wpae-pricing-heading', 'heading', [
+            'title' => 'Тарифы',
+            'header_size' => 'h2',
+            'typography_typography' => 'custom',
+            'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.5 ],
+            'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 2.1 ],
+            'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.75 ],
+            'typography_line_height' => [ 'unit' => 'em', 'size' => 1.1 ],
+            'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.15 ],
+            'typography_font_weight' => '700',
+        ] ),
+        $grid,
     ];
     $changed++;
     return [ $root ];
@@ -7698,6 +7755,16 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		if ( is_array( $action['elements'] ?? null ) ) {
 			$action['elements'] = wpae_llm_enforce_flex_layout_contract( $action['elements'], $action_archetype, $flex_contract_changed );
 		}
+		$pricing_contract_changed = 0;
+		if ( $action_archetype === 'pricing' && is_array( $action['elements'] ?? null ) ) {
+			$pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
+			if ( count( $pricing_pairs ) >= 2 ) {
+				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed );
+				if ( ! empty( $pricing_layout ) ) {
+					$action['elements'] = $pricing_layout;
+				}
+			}
+		}
 		if ( wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
 			$final_process_changed = 0;
 			$action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $final_process_changed );
@@ -7744,6 +7811,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             ],
 			[ 'id' => 'flex_contract', 'status' => 'ok', 'message' => 'Все layout-контейнеры приведены к native Flexbox с responsive-правилами.', 'details' => [ 'settings_updated' => $flex_contract_changed, 'container_type' => 'flex', 'legacy_layout_allowed' => false ] ],
 		];
+		if ( $pricing_contract_changed > 0 ) {
+			$action_steps[] = [ 'id' => 'pricing_contract', 'status' => 'ok', 'message' => 'Тарифный блок пересобран на финальной границе в одну чистую native Flex-композицию без generic placeholder-оболочек.', 'details' => [ 'cards_rebuilt' => true, 'card_count' => count( $pricing_pairs ?? [] ), 'container_type' => 'flex', 'generic_visual_wrappers_allowed' => false ] ];
+		}
 		if ( $vision_feedback_prompt !== '' ) {
 			$action_steps[] = [
 				'id' => 'vision_feedback_prompt',

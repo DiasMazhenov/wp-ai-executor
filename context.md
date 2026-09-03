@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.35`
+- Plugin: `v02.11.36`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -171,6 +171,16 @@
   Local checks must pass before deployment, then fresh live pricing requires
   scoped JSON/DOM, screenshot -> Vision/design-taste -> Impeccable -> prompt
   comparison and no rollback.
+- v02.11.36: Fresh v02.11.35 pricing output showed that rebuilding the pricing
+  root before the shared visual-grammar passes was not a sufficient boundary:
+  generic bento logic reintroduced numbered placeholder shells around the
+  real tier cards. The pricing builder now creates direct native Flex cards,
+  defines explicit responsive typography, and runs again after every generic
+  normalizer at the final pre-write boundary. This keeps the composition as
+  `root -> badge/heading/grid -> card -> label/price/description` and forbids
+  generic wrappers from entering the persisted tree. Local checks must pass;
+  fresh pricing validation requires scoped JSON/DOM, screenshot ->
+  Vision/design-taste -> Impeccable -> prompt comparison and no rollback.
 - 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
   Vision at 88 with no major/critical finding; scoped metrics showed three
   balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision
@@ -181,7 +191,7 @@
   showed one oversized tier heading and a fragmented two-zone layout despite
   successful pair extraction. v02.11.35 must be deployed and rerun through the
   full screenshot -> Vision/design-taste -> Impeccable -> prompt comparison
-  loop before pricing is accepted.
+  loop before pricing is accepted; v02.11.36 is the next deployed candidate.
 - 2026-09-03 timeline diagnosis: the live screenshot and chat log showed only
   `НОВЫЙ БЛОК` plus `СДЕЛАЙ ТАЙМЛАЙН`, with no timeline cards or steps. Vision
   correctly identified the missing component and sparse composition, but its

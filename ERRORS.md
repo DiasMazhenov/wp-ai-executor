@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-078: Pricing visual grammar reintroduced placeholder shells
+
+- **Observed:** The fresh v02.11.35 pricing screenshot still showed large
+  empty media-style areas and `01`/`02`/`03` number shells above the actual
+  tariff content. Vision scored it 85, but the manual composition review
+  rejected the result because the cards looked like incomplete media cards.
+- **Root cause:** The v02.11.35 pricing builder ran before the shared bento and
+  visual-grammar passes. Those generic passes interpreted the new pricing grid
+  as a repeatable card group and wrapped its direct cards with the generic
+  placeholder/number variation.
+- **Fix:** v02.11.36 rebuilds pricing at the final pre-write boundary after all
+  shared normalizers. It uses direct native Flex pricing cards and explicit
+  responsive typography, so pricing has no generic wrapper or placeholder
+  insertion point.
+- **Regression status:** Local lint, contract tests and diff checks are
+  required. Fresh deployed pricing validation must prove the direct
+  `root -> grid -> 3 cards` DOM hierarchy with screenshot, Vision/design-taste,
+  Impeccable, prompt comparison and no rollback.
+
 ## EJ-077: Pricing pairs still entered a fragmented library composition
 
 - **Observed:** The v02.11.34 live pricing probe parsed the three tiers, but the
