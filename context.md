@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.37`
+- Plugin: `v02.11.38`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -192,6 +192,14 @@
   mobile stack. Fresh deployed left, alternating, and horizontal runs must
   pass screenshot -> Vision/design-taste -> Impeccable -> prompt comparison;
   none is accepted from the trace alone.
+- v02.11.38: The fresh v02.11.37 left screenshot still exposed the empty
+  connector container as an Elementor `+`/pill editor artifact. The shared
+  builder now gives each connector a real HTML line widget and switches that
+  line to a 2px horizontal rule inside the horizontal marker rail. This keeps
+  every process family populated with real children and avoids cross-family
+  connector geometry. Local checks pass; live left, alternating, and
+  horizontal screenshots plus Vision/design-taste, Impeccable and prompt
+  comparison are required before accepting the timelines.
 - 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
   Vision at 88 with no major/critical finding; scoped metrics showed three
   balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision

@@ -28,6 +28,25 @@ before making a new change to the plugin.
   scoped JSON/DOM, screenshot, Vision/design-taste, Impeccable, prompt
   comparison, responsive check and no rollback.
 
+## EJ-080: Empty connector containers rendered as editor artifacts
+
+- **Observed:** After the v02.11.37 row-surface fix, the fresh left timeline
+  screenshot still showed each connector as a rounded pill with an Elementor
+  `+` overlay. The timeline content was present, but its connecting line still
+  looked like an empty editor drop zone rather than a deliberate rail.
+- **Root cause:** The connector remained a container with no child widget. Its
+  background was therefore exposed through Elementor's empty-container editing
+  chrome, and the same vertical connector geometry was reused by horizontal
+  timelines.
+- **Fix:** v02.11.38 puts a visible native HTML line inside every connector
+  container. The horizontal builder rewrites that child into a 2px horizontal
+  rule while vertical families keep the vertical line. No connector container
+  is empty, and all families still use native Flex containers.
+- **Regression status:** Local lint, contract tests and diff checks are
+  required. Fresh deployed left, alternating, and horizontal generations must
+  be checked with scoped JSON/DOM, screenshots, Vision/design-taste,
+  Impeccable, prompt comparison and no rollback.
+
 ## EJ-078: Pricing visual grammar reintroduced placeholder shells
 
 - **Observed:** The fresh v02.11.35 pricing screenshot still showed large

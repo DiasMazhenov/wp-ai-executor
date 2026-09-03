@@ -3986,11 +3986,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
                     'flex_direction' => 'column',
                     'flex_wrap' => 'nowrap',
                     'background_background' => 'classic',
-                    'background_color' => '#b9c5e8',
+                    'background_color' => 'transparent',
                     'border_radius' => [ 'unit' => 'px', 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'size' => 999, 'isLinked' => true ],
                     'width' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
                     'width_mobile' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
-                    'min_height' => [ 'unit' => 'rem', 'size' => 2.5 ],
+                    'min_height' => [ 'unit' => 'rem', 'size' => 3.5 ],
                     '_element_width' => 'initial',
                     '_element_custom_width' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
                     '_element_custom_width_mobile' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
@@ -3998,7 +3998,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
                     '_flex_grow' => 1,
                     '_flex_shrink' => 0,
                 ],
-                'elements' => [],
+                'elements' => [
+                    $widget( $id . '-connector-line-' . (string) $step_number, 'html', [
+                        'html' => '<span aria-hidden="true" style="display:block;width:2px;min-height:3.5rem;background:#b9c5e8;margin:0 auto;"></span>',
+                    ] ),
+                ],
             ];
         }
 
@@ -4258,6 +4262,15 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 							$rail_child_settings['_flex_size'] = 'grow';
 							$rail_child_settings['_flex_grow'] = 1;
 							$rail_child_settings['_flex_shrink'] = 1;
+							foreach ( $rail_child['elements'] as &$connector_element ) {
+								if ( ! is_array( $connector_element ) || ( $connector_element['widgetType'] ?? '' ) !== 'html' ) {
+									continue;
+								}
+								$connector_settings = is_array( $connector_element['settings'] ?? null ) ? $connector_element['settings'] : [];
+								$connector_settings['html'] = '<span aria-hidden="true" style="display:block;width:100%;height:2px;min-height:0;background:#b9c5e8;margin:auto 0;"></span>';
+								$connector_element['settings'] = $connector_settings;
+							}
+							unset( $connector_element );
 						}
 						$rail_child['settings'] = $rail_child_settings;
 					}
