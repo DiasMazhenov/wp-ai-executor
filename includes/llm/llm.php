@@ -154,6 +154,10 @@ function wpae_update_llm_settings( array $input ) {
     $stored['provider'] = $provider;
     $stored['base_url'] = $base_url;
     $stored['model'] = $model;
+    // Optional opt-in fallback model: used once when the primary model's pool
+    // answers with a rate-limit refusal, so a crowded shared free pool cannot
+    // block a whole test or content session.
+    $stored['fallback_model'] = substr( sanitize_text_field( (string) ( $input['fallback_model'] ?? '' ) ), 0, 120 );
     $stored['updated_at'] = gmdate( 'c' );
     update_option( WPAE_LLM_SETTINGS_OPTION, $stored, false );
     return true;
@@ -7590,14 +7594,38 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $status = wp_remote_retrieve_response_code( $response );
     $raw = wp_remote_retrieve_body( $response );
     $body = json_decode( $raw, true );
+    $used_fallback_model = '';
     if ( $status < 200 || $status >= 300 ) {
         $provider_error = wpae_llm_provider_error_message( is_array( $body ) ? $body : [] ) ?: ( is_array( $body ) ? 'Провайдер вернул ошибку.' : 'Провайдер вернул некорректный ответ.' );
         if ( wpae_llm_provider_is_rate_limited( is_array( $body ) ? $body : [] ) ) {
             // Shared free pools ask for a delayed retry; expose a distinct code
             // and bounded retry_after so the client can wait instead of burning
-            // both attempts and reloading the whole editor.
+            // both attempts and reloading the whole editor. Before giving up,
+            // one opt-in fallback model gets a single immediate attempt.
+            $fallback_model = trim( (string) ( wpae_llm_get_stored_settings()['fallback_model'] ?? '' ) );
+            if ( $fallback_model !== '' && $fallback_model !== $runtime['model'] ) {
+                $fallback_request_body = $request_body;
+                $fallback_request_body['model'] = $fallback_model;
+                $fallback_response = wpae_llm_provider_request( $url, $remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
+                if ( ! is_wp_error( $fallback_response ) ) {
+                    $fallback_status = wp_remote_retrieve_response_code( $fallback_response );
+                    if ( $fallback_status >= 200 && $fallback_status < 300 ) {
+                        $response = $fallback_response;
+                        $status = $fallback_status;
+                        $raw = wp_remote_retrieve_body( $fallback_response );
+                        $body = json_decode( $raw, true );
+                        $used_fallback_model = $fallback_model;
+                        $runtime['model'] = $fallback_model;
+                    }
+                }
+            }
+        }
+    }
+    if ( $status < 200 || $status >= 300 ) {
+        $provider_error = wpae_llm_provider_error_message( is_array( $body ) ? $body : [] ) ?: ( is_array( $body ) ? 'Провайдер вернул ошибку.' : 'Провайдер вернул некорректный ответ.' );
+        if ( wpae_llm_provider_is_rate_limited( is_array( $body ) ? $body : [] ) ) {
             $retry_after = (int) wp_remote_retrieve_header( $response, 'retry-after' );
-            return new WP_Error( 'wpae_llm_provider_rate_limited', 'LLM-провайдер временно ограничен по лимиту (rate limit).', [ 'status' => 429, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'retry_after' => max( 15, min( 60, $retry_after > 0 ? $retry_after : 30 ) ), 'provider' => $runtime['provider'] ] );
+            return new WP_Error( 'wpae_llm_provider_rate_limited', 'LLM-провайдер временно ограничен по лимиту (rate limit).', [ 'status' => 429, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'retry_after' => max( 15, min( 60, $retry_after > 0 ? $retry_after : 30 ) ), 'provider' => $runtime['provider'], 'fallback_model' => $used_fallback_model ] );
         }
         return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [ 'status' => 502, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'provider' => $runtime['provider'] ] );
     }

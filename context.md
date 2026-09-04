@@ -2,12 +2,18 @@
 
 ## Current release
 
-- Plugin: `v02.11.41`
+- Plugin: `v02.11.42`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.42: Optional opt-in model fallback. The dashboard LLM tab accepts a
+  `fallback_model` id; when the primary model's pool returns a rate-limit
+  refusal, the server makes exactly one immediate attempt with the fallback
+  before the delayed in-place client retry. Success responses report the
+  fallback model, so chat logs prove which model produced the block. Empty
+  by default; behavior without the setting is unchanged.
 - v02.11.39: OpenRouter requests now map the OpenAI-only
   `max_completion_tokens` field to schema-valid `max_tokens` inside
   `wpae_llm_prepare_provider_request_body()`, addressing the uniform

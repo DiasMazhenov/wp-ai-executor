@@ -956,6 +956,11 @@ function wpae_settings_page() {
                         <span class="wpae-section-note">Для собственного шлюза укажите URL до версии API, например <code>https://provider.example/v1</code>. Endpoint <code>/chat/completions</code> добавляется автоматически.</span>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-llm-fallback-model">Резервная модель (fallback)</label>
+                        <input class="wpae-input" id="wpae-llm-fallback-model" name="wpae_llm[fallback_model]" type="text" value="<?php echo esc_attr( (string) ( $llm_settings['fallback_model'] ?? '' ) ); ?>" placeholder="например, inclusionai/ling-3.0-flash-fin:free" autocomplete="off" />
+                        <span class="wpae-section-note">Необязательно. Используется один раз, если основной пул вернёт rate limit. Оставьте пустым, чтобы отключить.</span>
+                    </div>
+                    <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-api-key">API-ключ провайдера</label>
                         <input class="wpae-input" id="wpae-llm-api-key" name="wpae_llm[api_key]" type="password" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( ! empty( $llm_settings['has_api_key'] ) ? '••••••••••••' : 'Введите API-ключ провайдера' ); ?>" />
                         <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Промпты и ответы в плагине не сохраняются.</span>
