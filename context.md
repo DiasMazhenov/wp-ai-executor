@@ -200,6 +200,17 @@
   connector geometry. Local checks pass; live left, alternating, and
   horizontal screenshots plus Vision/design-taste, Impeccable and prompt
   comparison are required before accepting the timelines.
+- 2026-09-04 live editor-chat probe (post=4556): the editor header confirms
+  v02.11.38 is deployed, closing the pending deployment check. The first live
+  left-timeline validation could not start: three chat sends (two content-only
+  timeline briefs plus one advisory question) each failed twice with a uniform
+  sanitized provider error, before any generation or write. The reload-retry
+  and fail-closed paths behaved correctly (no JSON, no partial write). The
+  failure is provider/model-level, not action-pipeline-level; the configured
+  LLM model `gemini-3.5-flash-lite` matches the AI Vision default and is
+  suspected invalid for the LLM endpoint or quota-limited. Recorded as
+  `ERRORS.md` EJ-081; verify the LLM provider settings and server-side failure
+  log before retesting the timeline matrix.
 - 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
   Vision at 88 with no major/critical finding; scoped metrics showed three
   balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision

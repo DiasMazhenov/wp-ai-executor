@@ -3,6 +3,34 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-081: Every editor-chat LLM request failed with a uniform provider error
+
+- **Observed (2026-09-04, live editor `post=4556`, plugin v02.11.38):** Three
+  separate chat sends — two content-only left-timeline briefs and one simple
+  advisory question — each failed twice (initial request plus the forced-reload
+  retry) with the sanitized message `LLM-провайдер вернул ошибку.: Провайдер
+  вернул ошибку.`. No structured JSON was produced, no Elementor write
+  happened, and the fail-closed behavior was correct on every attempt. The
+  page reload between attempts was observed (preview `ver` changed), so the
+  transport retry path itself worked as designed.
+- **Root cause (suspected, not confirmed):** The failure is not
+  request-specific — even an ordinary advisory question failed identically —
+  so the generation/action pipeline is not the cause. The chat header reports
+  the LLM model as `gemini-3.5-flash-lite`, which is the documented AI Vision
+  default; if this model is not valid for the LLM provider endpoint, or the
+  Gemini key/quota is exhausted, every request would fail uniformly exactly as
+  observed. The raw provider response is sanitized by design and was not
+  visible in the editor console.
+- **Fix:** Pending. Next diagnostics: open Settings -> AI Executor -> LLM tab,
+  verify the configured provider/model against the curated Gemini model
+  selector, send one bounded test request, and read the server-side
+  provider-failure log entry (file/line are logged since v02.10.56) before
+  changing any transport code. Do not retest generation until the provider
+  answers at least one request.
+- **Regression status:** Live transport behavior confirmed correct (one
+  reload retry, sanitized error, no silent success, no partial write). The
+  provider/model configuration itself remains unverified.
+
 ## EJ-079: Timeline rows were empty editor scaffolding instead of a timeline
 
 - **Observed:** The fresh v02.11.36 alternating screenshot showed large empty
