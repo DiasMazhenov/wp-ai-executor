@@ -2,12 +2,19 @@
 
 ## Current release
 
-- Plugin: `v02.11.43`
+- Plugin: `v02.11.44`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.44: The opt-in fallback model now also covers transport-level
+  timeouts, not only rate-limit refusals. When the primary model's route
+  hangs (the recurring `openrouter/free` wildcard 45s abort), the server
+  makes one bounded 30-second attempt with the fallback before the chat
+  falls back to its reload-retry path. Both fallback branches share
+  `wpae_llm_fallback_model()`. This keeps the user-chosen `/free` primary
+  usable while the shared route is saturated.
 - v02.11.43: Horizontal timelines now use one shared marker rail row above
   one row of content cards inside the track. Numbered markers with growing
   connector lines live outside the card surfaces, so lines read as a

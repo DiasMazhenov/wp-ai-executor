@@ -214,6 +214,11 @@ function wpae_llm_extract_response_text( $body ): string {
     return trim( implode( "\n", $parts ) );
 }
 
+function wpae_llm_fallback_model( string $current_model ): string {
+    $fallback_model = trim( (string) ( wpae_llm_get_stored_settings()['fallback_model'] ?? '' ) );
+    return $fallback_model !== '' && $fallback_model !== $current_model ? $fallback_model : '';
+}
+
 function wpae_llm_provider_is_rate_limited( $body ): bool {
     if ( ! is_array( $body ) ) {
         return false;
@@ -7677,6 +7682,23 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     ];
     $response = wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'] );
     if ( is_wp_error( $response ) ) {
+        // Transport-level failure (timeout or HTTP layer). One opt-in fallback
+        // model attempt keeps slow shared wildcard routes usable without the
+        // heavy editor reload cycle.
+        $fallback_model = wpae_llm_fallback_model( $runtime['model'] );
+        if ( $fallback_model !== '' ) {
+            $fallback_request_body = $request_body;
+            $fallback_request_body['model'] = $fallback_model;
+            $fallback_remote_args = $remote_args;
+            $fallback_remote_args['timeout'] = 30;
+            $fallback_response = wpae_llm_provider_request( $url, $fallback_remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
+            if ( ! is_wp_error( $fallback_response ) ) {
+                $response = $fallback_response;
+                $runtime['model'] = $fallback_model;
+            }
+        }
+    }
+    if ( is_wp_error( $response ) ) {
         return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'] ] );
     }
 
@@ -7691,8 +7713,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             // and bounded retry_after so the client can wait instead of burning
             // both attempts and reloading the whole editor. Before giving up,
             // one opt-in fallback model gets a single immediate attempt.
-            $fallback_model = trim( (string) ( wpae_llm_get_stored_settings()['fallback_model'] ?? '' ) );
-            if ( $fallback_model !== '' && $fallback_model !== $runtime['model'] ) {
+            $fallback_model = wpae_llm_fallback_model( $runtime['model'] );
+            if ( $fallback_model !== '' ) {
                 $fallback_request_body = $request_body;
                 $fallback_request_body['model'] = $fallback_model;
                 $fallback_response = wpae_llm_provider_request( $url, $remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
