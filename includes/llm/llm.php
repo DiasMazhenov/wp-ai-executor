@@ -7358,7 +7358,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
     }
     $remote_args = [
-        'timeout' => 45,
+        // When a fallback model exists the primary attempt must leave room for
+        // the bounded 30-second fallback inside the editor's 55-second abort,
+        // otherwise the fallback window is never reached on hanging routes.
+        'timeout' => wpae_llm_fallback_model( $runtime['model'] ) !== '' ? 20 : 45,
         'redirection' => 2,
         'limit_response_size' => WPAE_LLM_MAX_RESPONSE_BYTES,
         'headers' => $headers,

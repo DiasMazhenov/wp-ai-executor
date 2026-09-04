@@ -2,12 +2,18 @@
 
 ## Current release
 
-- Plugin: `v02.11.46`
+- Plugin: `v02.11.47`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.47: When a fallback model is configured, the primary provider
+  attempt runs with a bounded 20-second timeout instead of 45, so the
+  30-second fallback attempt fits inside the editor's 55-second client abort.
+  Live testing showed the v02.11.44 fallback never received a response
+  window: the hanging `openrouter/free` wildcard consumed 45 of the 55
+  client seconds before the fallback even started.
 - v02.11.46: The dashboard fallback-model field now persists its saved value
   (the settings reader omitted `fallback_model`, so the field rendered empty
   after every save — EJ-084) and becomes a combo dropdown fed by a bounded

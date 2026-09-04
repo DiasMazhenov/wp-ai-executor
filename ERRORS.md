@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-085: The fallback model never received a response window on hanging routes
+
+- **Observed (2026-09-04, live editor, plugin v02.11.46):** With the
+  fallback model configured (`google/gemma-4-31b-it:free`), two horizontal
+  timeline sends still ended in the client transport timeout. The
+  v02.11.44 server-side fallback attempt never produced a usable response.
+- **Root cause:** The server spent up to 45 seconds waiting for the hanging
+  `openrouter/free` wildcard before starting the 30-second fallback attempt,
+  a 75-second worst case that exceeds the editor's 55-second client abort.
+  The fallback attempt was therefore still in flight when the client gave
+  up, and its result never reached the chat.
+- **Fix:** v02.11.47 bounds the primary attempt to 20 seconds whenever a
+  fallback model is configured, so 20 + 30 fits inside the 55-second client
+  abort. Without a fallback the 45-second primary timeout is unchanged.
+- **Regression status:** Local lint and contract tests pass. Live
+  acceptance: a hanging primary route must visibly reach the fallback
+  attempt and either succeed or return a real provider error within the
+  client window.
+
 ## EJ-084: Dashboard fallback-model field rendered empty after every save
 
 - **Observed (2026-09-04, live dashboard, plugin v02.11.45):** The site owner
