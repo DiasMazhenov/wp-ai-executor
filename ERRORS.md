@@ -20,10 +20,18 @@ before making a new change to the plugin.
   The extraction feeds the chat error line, the structured-route retry
   detection, and the response diagnostics, so the next failure shows the real
   upstream reason without exposing credentials or raw payloads.
-- **Regression status:** Local PHP lint and contract tests must pass before
-  deployment. Live acceptance: one fresh editor-chat send must expose the
-  concrete upstream reason; resolving the underlying provider failure then
-  unblocks the timeline/pricing matrix.
+- **Live confirmation (2026-09-04, v02.11.40):** The next editor-chat send
+  exposed the concrete upstream reason in the chat:
+  `Provider returned error [Google AI Studio: google/gemma-4-31b-it:free is
+  temporarily rate-limited upstream. Please retry shortly, or add your own
+  key to accumulate your rate limits]`. The root cause of the whole EJ-081
+  failure family is shared-free-pool upstream rate limiting, not the plugin
+  configuration, the stored keys, or the action pipeline. Both EJ-081/EJ-082
+  symptom reports and this diagnostic close with that conclusion. Resolving
+  the blocker is an account/model choice: retry when the shared free pool
+  recovers, attach an own provider key via OpenRouter integrations, or use a
+  paid model id such as `z-ai/glm-5.3-flash`. The timeline/pricing live
+  matrix remains blocked on provider availability only.
 
 ## EJ-082: OpenRouter requests carried the OpenAI-only max_completion_tokens field
 

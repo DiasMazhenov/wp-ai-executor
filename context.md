@@ -17,9 +17,12 @@
 - v02.11.40: Provider error messages now surface a bounded sanitized excerpt
   of OpenRouter's `error.metadata.raw` plus the upstream provider name, so
   the editor chat shows the real reason behind uniform `Provider returned
-  error` failures (EJ-083). v02.11.39's schema-valid `max_tokens` mapping
-  deployed but did not clear the failure; the next live send is expected to
-  expose the concrete upstream reason and steer the final fix.
+  error` failures (EJ-083). Live confirmation: the upstream reason was
+  `temporarily rate-limited upstream` on the shared Google AI Studio free
+  pool — closing the EJ-081 failure family as shared-free-pool rate limiting,
+  not a plugin fault. The timeline/pricing live matrix remains blocked on
+  provider availability only; options are free-pool retry timing, an own
+  provider key via OpenRouter integrations, or the paid `z-ai/glm-5.3-flash`.
 - v02.11.14: Generation now builds a bounded semantic content plan, audits
   explicit and invented CTAs, fingerprints the selected/adapted library
   composition before final normalization, rejects fidelity loss or forbidden
