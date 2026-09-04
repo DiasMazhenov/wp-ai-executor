@@ -15,6 +15,39 @@ function wpae_clear_elementor_cache( int $post_id ): array {
     delete_post_meta( $post_id, '_elementor_css' );
     $report['post_css_meta_deleted'] = get_post_meta( $post_id, '_elementor_css', true ) === '';
 
+    // Meta deletion alone leaves the generated per-page CSS file on disk, so
+    // Elementor keeps serving the stale stylesheet on the public page. Delete
+    // the file itself, the asset-iteration cache, and any Elementor 4 atomic
+    // style cache entries before regenerating lazily on the next request.
+    if ( class_exists( '\Elementor\Core\Files\CSS\Post' ) ) {
+        try {
+            \Elementor\Core\Files\CSS\Post::create( $post_id )->delete();
+            $report['post_css_file_deleted'] = true;
+        } catch ( Throwable $e ) {
+            $report['post_css_file_deleted'] = false;
+            $report['errors'][] = [
+                'scope' => 'elementor_post_css_file',
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    if ( class_exists( '\Elementor\Core\Elements\Iteration_Actions\Assets' ) ) {
+        try {
+            $assets_meta_key = constant( '\Elementor\Core\Elements\Iteration_Actions\Assets::ASSETS_META_KEY' );
+            if ( is_string( $assets_meta_key ) && $assets_meta_key !== '' ) {
+                delete_post_meta( $post_id, $assets_meta_key );
+                $report['assets_meta_deleted'] = true;
+            }
+        } catch ( Throwable $e ) {
+            $report['assets_meta_deleted'] = false;
+        }
+    }
+
+    // Elementor 4 atomic widget style cache, scoped to this post. On Elementor 3
+    // nothing listens to this action and the call is a safe no-op.
+    do_action( 'elementor/atomic-widgets/styles/clear', [ 'local', $post_id ] );
+
     delete_option( '_elementor_global_css' );
     $report['global_css_option_deleted'] = get_option( '_elementor_global_css', null ) === null;
 

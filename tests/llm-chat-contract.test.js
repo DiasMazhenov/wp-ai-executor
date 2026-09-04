@@ -18,6 +18,8 @@ const elementorData = read('includes/elementor/data.php');
 const templates = read('includes/elementor/templates.php');
 const normalizer = read('includes/elementor/normalize.php');
 const manifest = read('includes/skills/manifest.php');
+const transactions = read('includes/elementor/transactions.php');
+const visualAudit = read('includes/elementor/visual-audit.php');
 const capabilities = read('includes/security/capabilities.php');
 const guide = read('includes/guide/guide.php');
 const copyElementManifest = read('includes/elementor/copyelement/manifest.php');
@@ -41,8 +43,8 @@ const blockLibrary = read('includes/elementor/block-library.php');
 assert.match(transport, /'openai'/);
 assert.match(transport, /'deepseek'/);
 assert.match(transport, /'openrouter'/);
-assert.match(bootstrap, /Version:\s+v02\.11\.51/);
-assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.51'/);
+assert.match(bootstrap, /Version:\s+v02\.11\.52/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.52'/);
 assert.match(transport, /'model' => 'openrouter\/free'/);
 assert.match(transport, /'gemini'/);
 assert.match(transport, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
@@ -940,4 +942,20 @@ assert.match(llm, /\$settings\['typography_font_size'\] = \[ 'unit' => 'rem', 's
 assert.match(llm, /if \( \$count === 4 \) \{\s*return array_fill\( 0, \$count, 48 \)/);
 assert.match(llm, /\$card_settings\['flex_direction'\] = 'column'/);
 assert.match(llm, /\$is_marked_card_heading = .*wpae-card-heading/);
+// v02.11.52: full Elementor cache invalidation after server-side writes
+// (borrowed from EMCP Tools regenerate-css) — per-page CSS file, asset
+// iteration meta, and Elementor 4 atomic style cache.
+assert.match(transactions, /Elementor\\Core\\Files\\CSS\\Post::create\( \$post_id \)->delete\(\)/);
+assert.match(transactions, /ASSETS_META_KEY/);
+assert.match(transactions, /elementor\/atomic-widgets\/styles\/clear/);
+// GET /elementor/rendered-html: server-side rendered-HTML verification for
+// acceptance checks without a browser (EJ-086 process correction).
+assert.match(routes, /'\/elementor\/rendered-html'/);
+assert.match(visualAudit, /function wpae_fetch_public_rendered_html/);
+assert.match(visualAudit, /function wpae_elementor_rendered_html/);
+assert.match(visualAudit, /needle_checks/);
+// Generation prompt enforces the completeness contract from the blueprint
+// pattern: never scaffold empty containers to fill later.
+assert.match(llm, /Контракт полноты: собери блок полностью заполненным с первого раза/);
+assert.match(llm, /никаких пустых контейнеров-заготовок на потом/);
 console.log('llm chat contract: OK');

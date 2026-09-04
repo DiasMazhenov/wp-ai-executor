@@ -411,3 +411,93 @@ function wpae_build_public_html_visual_audit( string $html, array $context = [] 
         ],
     ];
 }
+
+/**
+ * Fetch the public rendered HTML of a post's permalink for DOM-level
+ * verification (acceptance checks, class/content presence) without a browser.
+ * Borrowed pattern: EMCP Tools Frontend_Page_Fetcher, adapted to our
+ * visual-audit URL guard. Same-origin fetch, bounded response, optional
+ * substring needle checks evaluated server-side.
+ */
+function wpae_fetch_public_rendered_html( int $post_id, int $max_bytes = 524288, array $needles = [] ): array {
+    $url = get_permalink( $post_id );
+    if ( ! is_string( $url ) || $url === '' || ! wpae_is_safe_visual_audit_url( $url ) ) {
+        return [ 'ok' => false, 'error' => 'Unsafe or empty permalink.', 'post_id' => $post_id ];
+    }
+
+    $response = wp_remote_get( $url, [
+        'timeout'     => 10,
+        'redirection' => 3,
+        'user-agent'  => 'WP AI Executor Rendered HTML/' . WPAE_VERSION,
+    ] );
+    if ( is_wp_error( $response ) ) {
+        return [ 'ok' => false, 'error' => $response->get_error_message(), 'post_id' => $post_id, 'url' => $url ];
+    }
+
+    $status_code = (int) wp_remote_retrieve_response_code( $response );
+    $html        = (string) wp_remote_retrieve_body( $response );
+
+    $needle_checks = [];
+    foreach ( $needles as $needle ) {
+        $needle = (string) $needle;
+        if ( $needle === '' ) {
+            continue;
+        }
+        $needle_checks[ $needle ] = strpos( $html, $needle ) !== false;
+    }
+
+    $truncated = strlen( $html ) > $max_bytes;
+
+    return [
+        'ok'           => $status_code >= 200 && $status_code < 400 && $html !== '',
+        'post_id'      => $post_id,
+        'url'          => $url,
+        'http_status'  => $status_code,
+        'html_bytes'   => strlen( $html ),
+        'sha1'         => sha1( $html ),
+        'truncated'    => $truncated,
+        'html'         => $truncated ? substr( $html, 0, $max_bytes ) : $html,
+        'needle_checks'=> $needle_checks,
+    ];
+}
+
+/**
+ * REST callback for GET /elementor/rendered-html: bounded rendered HTML plus
+ * optional server-side needle checks for acceptance verification.
+ */
+function wpae_elementor_rendered_html( WP_REST_Request $request ) {
+    $post_id = absint( $request->get_param( 'post_id' ) );
+    if ( $post_id <= 0 || get_post( $post_id ) === null ) {
+        return new WP_Error( 'wpae_invalid_post_id', 'A valid post_id is required.', [ 'status' => 400 ] );
+    }
+
+    $needles = [];
+    $raw_needles = (string) $request->get_param( 'needles' );
+    if ( $raw_needles !== '' ) {
+        foreach ( explode( ',', $raw_needles ) as $needle ) {
+            $needle = sanitize_text_field( trim( $needle ) );
+            if ( $needle !== '' && strlen( $needle ) <= 200 ) {
+                $needles[] = $needle;
+            }
+            if ( count( $needles ) >= 20 ) {
+                break;
+            }
+        }
+    }
+
+    $max_bytes = absint( $request->get_param( 'max_bytes' ) );
+    if ( $max_bytes <= 0 || $max_bytes > 1048576 ) {
+        $max_bytes = 524288;
+    }
+
+    $result = wpae_fetch_public_rendered_html( $post_id, $max_bytes, $needles );
+    if ( empty( $result['ok'] ) ) {
+        return new WP_Error(
+            'wpae_rendered_html_failed',
+            (string) ( $result['error'] ?? 'Rendered HTML fetch failed.' ),
+            [ 'status' => 422, 'details' => $result ]
+        );
+    }
+
+    return rest_ensure_response( $result );
+}

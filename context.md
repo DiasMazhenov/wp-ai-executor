@@ -2,12 +2,27 @@
 
 ## Current release
 
-- Plugin: `v02.11.51`
+- Plugin: `v02.11.52`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.52: Three borrows from EMCP Tools (msrbuilds/elementor-mcp) close the
+  stale-render and acceptance-verification gaps. (1) `wpae_clear_elementor_cache`
+  now deletes the per-page CSS file (`Post::create($post_id)->delete()`), the
+  asset-iteration meta (`Assets::ASSETS_META_KEY`), and fires
+  `elementor/atomic-widgets/styles/clear` scoped to the post — the public page
+  no longer renders stale styles after REST writes. (2) New
+  `GET /elementor/rendered-html?post_id=X&needles=a,b` returns the fetched
+  public page (same-origin guard, bounded 512KB default, sha1) plus server-side
+  needle booleans — DOM-level acceptance verification without a browser or
+  screenshots (the EJ-086 correction mechanism). (3) The generation and repair
+  prompts enforce the blueprint completeness contract: a block is fully
+  populated on the first pass, no scaffolded empty containers "to fill later",
+  and the design system is stated as constraints (palette/typography/contrast),
+  not a fixed layout. Remaining borrows are queued in `Plan.md` (conflict
+  guard for undo, page snapshot digest, stock images, schema coercion, MCP).
 - v02.11.51: The regenerate button now survives page reloads. The most recent
   user brief is persisted in `sessionStorage` (`wpae_llm_last_brief:<post_id>`,
   bounded 4000 chars) at the start of every original request, and the

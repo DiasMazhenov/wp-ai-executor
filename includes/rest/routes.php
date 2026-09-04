@@ -119,6 +119,17 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => fn( WP_REST_Request $request ) => wpae_auth_with_capability( $request, 'elementor_writes' ),
     ] );
 
+    register_rest_route( 'ai-executor/v1', '/elementor/rendered-html', [
+        'methods'             => 'GET',
+        'callback'            => 'wpae_elementor_rendered_html',
+        'permission_callback' => 'wpae_auth',
+        'args'                => [
+            'post_id'   => [ 'required' => false, 'type' => 'integer', 'sanitize_callback' => 'absint' ],
+            'needles'   => [ 'required' => false, 'type' => 'string', 'sanitize_callback' => 'sanitize_text_field' ],
+            'max_bytes' => [ 'required' => false, 'type' => 'integer', 'sanitize_callback' => 'absint' ],
+        ],
+    ] );
+
     register_rest_route( 'ai-executor/v1', '/elementor/validate', [
         'methods'             => 'POST',
         'callback'            => 'wpae_elementor_validate',
