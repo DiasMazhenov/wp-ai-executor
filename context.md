@@ -19,7 +19,12 @@
   syntax pass; live generation remains blocked by the evening free-pool
   outage (three consecutive cURL 28 failures at the 20s primary timeout with
   the fallback exhausted, fail-closed, no writes; EJ-086 records the retracted
-  false acceptances).
+  false acceptances). Deployed via WP Pusher (header confirms v02.11.51);
+  live verification: after a full editor reload the regenerate button replayed
+  the stored brief instead of reporting "Нет предыдущего запроса" — the
+  reload-proof persistence works in production. A fourth generation attempt
+  on v02.11.51 also failed with the same cURL 28 timeout; the horizontal
+  timeline still needs one real generation when the provider pool recovers.
 - v02.11.50: The editor chat header gains a regenerate icon button
   (`eicon-sync`). It replays the most recent user brief through the normal
   request path — server gates, fallback chain, and Vision review stay
