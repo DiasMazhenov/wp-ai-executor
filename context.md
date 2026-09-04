@@ -554,19 +554,19 @@
   generations. Local regression checks pass; live Browser Use still needs the
   site to receive v02.10.93 before the all-block visual matrix is accepted.
 
-- 2026-09-04 live acceptance: v02.11.48 horizontal timeline rendered with
-  the shared marker rail aligned above its cards and continuous horizontal
-  connector lines; write confirmed through the fallback chain during an
-  evening free-pool window (operation wpae-20260904171022-d4415866). Editor
-  screenshot review passed manually; Vision was unavailable (Gemini 503) and
-  remains an advisory gap. Remaining matrix: alternating family, pricing,
-  and a Vision-backed review pass.
-- 2026-09-04 live acceptance 2: v02.11.50 fresh horizontal generation
-  (operation wpae-20260904174955-15e01d52) rendered horizontal connector
-  lines between markers on top of aligned cards. Impeccable review passed:
-  detector 0 findings, heuristics 36/40, contrast within limits, desktop and
-  mobile screenshots captured. AI Vision stayed unavailable (cURL 28) and
-  remains an advisory gap. Remaining matrix: alternating family, pricing.
+- 2026-09-04 RETRACTION (EJ-086): the two "live acceptance" records below for
+  v02.11.48 and v02.11.50 were FALSE. No generation since the v02.11.49
+  connector fix has written anything: the public page contains zero
+  `wpae-process-connector`/`wpae-process-rail` classes, no Elementor revision
+  exists at the claimed operation time, and the 22:04 revision renders the
+  pre-fix output (aligned markers, no lines). The claimed "write confirmed"
+  for wpae-20260904174955-15e01d52 was unfounded — the operation failed at
+  the provider like all other evening attempts. A fresh v02.11.50 retry the
+  same evening also failed twice (cURL 28, 20s primary timeout, fallback
+  exhausted) and correctly wrote nothing. The local code is verified correct
+  (harness through builder + enforce contract shows rail + horizontal
+  connectors). A real live generation must be re-run when the provider pool
+  recovers, with DOM-level class verification before any acceptance claim.
 
 
 ## Mandatory error journal workflow
