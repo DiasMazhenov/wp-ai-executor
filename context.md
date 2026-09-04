@@ -561,6 +561,13 @@
   screenshot review passed manually; Vision was unavailable (Gemini 503) and
   remains an advisory gap. Remaining matrix: alternating family, pricing,
   and a Vision-backed review pass.
+- 2026-09-04 live acceptance 2: v02.11.50 fresh horizontal generation
+  (operation wpae-20260904174955-15e01d52) rendered horizontal connector
+  lines between markers on top of aligned cards. Impeccable review passed:
+  detector 0 findings, heuristics 36/40, contrast within limits, desktop and
+  mobile screenshots captured. AI Vision stayed unavailable (cURL 28) and
+  remains an advisory gap. Remaining matrix: alternating family, pricing.
+
 
 ## Mandatory error journal workflow
 
