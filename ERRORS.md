@@ -13,23 +13,32 @@ before making a new change to the plugin.
   happened, and the fail-closed behavior was correct on every attempt. The
   page reload between attempts was observed (preview `ver` changed), so the
   transport retry path itself worked as designed.
-- **Root cause (suspected, not confirmed):** The failure is not
-  request-specific — even an ordinary advisory question failed identically —
-  so the generation/action pipeline is not the cause. The chat header reports
-  the LLM model as `gemini-3.5-flash-lite`, which is the documented AI Vision
-  default; if this model is not valid for the LLM provider endpoint, or the
-  Gemini key/quota is exhausted, every request would fail uniformly exactly as
-  observed. The raw provider response is sanitized by design and was not
-  visible in the editor console.
-- **Fix:** Pending. Next diagnostics: open Settings -> AI Executor -> LLM tab,
-  verify the configured provider/model against the curated Gemini model
-  selector, send one bounded test request, and read the server-side
-  provider-failure log entry (file/line are logged since v02.10.56) before
-  changing any transport code. Do not retest generation until the provider
-  answers at least one request.
-- **Regression status:** Live transport behavior confirmed correct (one
-  reload retry, sanitized error, no silent success, no partial write). The
-  provider/model configuration itself remains unverified.
+- **Update (2026-09-04, after switching the LLM provider to OpenRouter
+  `openrouter/free`):** Two content-only left-timeline sends each failed twice
+  again, but with a different failure mode:
+  `LLM-провайдер недоступен: превышено время ожидания ответа.` — the bounded
+  55-second transport abort (v02.10.52) on both the initial request and the
+  reload retry. The dynamic `openrouter/free` wildcard route is too slow for
+  the large structured action prompt, consistent with the historical cURL
+  error 28 timeouts on OpenRouter routes (v02.09.42) and the route's known
+  structured-parameter rejections (v02.09.06). Fail-closed and retry behavior
+  stayed correct; no write happened.
+- **Root cause (confirmed direction):** The failure follows the provider
+  configuration, not the request content. Gemini `gemini-3.5-flash-lite`
+  fails fast with a uniform sanitized provider error on every request type,
+  while OpenRouter `openrouter/free` fails slow with a transport timeout on
+  the large action prompt. The generation/action pipeline itself was never
+  reached in either configuration.
+- **Fix:** Pending. Configure one concrete valid model id for the LLM
+  endpoint — the curated Gemini model selector or a specific OpenRouter
+  model, not the dynamic `/free` wildcard — then send one bounded test
+  request. Read the server-side provider-failure log (file/line are logged
+  since v02.10.56) before changing any transport code. Do not retest
+  generation until the provider answers at least one request.
+- **Regression status:** Live transport behavior confirmed correct across
+  both providers (one reload retry, sanitized errors, no silent success, no
+  partial write). The provider/model configuration itself remains the open
+  blocker for the live timeline/pricing matrix.
 
 ## EJ-079: Timeline rows were empty editor scaffolding instead of a timeline
 

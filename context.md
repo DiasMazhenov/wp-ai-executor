@@ -211,6 +211,17 @@
   suspected invalid for the LLM endpoint or quota-limited. Recorded as
   `ERRORS.md` EJ-081; verify the LLM provider settings and server-side failure
   log before retesting the timeline matrix.
+- 2026-09-04 second live probe (post=4556): after switching the LLM provider
+  to OpenRouter `openrouter/free`, two left-timeline sends each failed twice
+  with a transport timeout (`превышено время ожидания ответа`) on the bounded
+  55-second abort, on both the initial request and the reload retry. The
+  dynamic `/free` wildcard route is too slow for the large action prompt
+  (matches the historical OpenRouter cURL 28 failures). Combined with the
+  earlier uniform Gemini `gemini-3.5-flash-lite` provider errors, the failure
+  is confirmed to follow the provider configuration, not the request content.
+  A concrete valid LLM model id must be configured before the live
+  timeline/pricing matrix can run; plugin retry/fail-closed behavior remained
+  correct in every attempt (EJ-081 updated).
 - 2026-09-03 live acceptance evidence: v02.11.32 alternating timeline passed
   Vision at 88 with no major/critical finding; scoped metrics showed three
   balanced rows and no overflow. v02.11.33 horizontal timeline passed Vision
