@@ -2,12 +2,24 @@
 
 ## Current release
 
-- Plugin: `v02.11.44`
+- Plugin: `v02.11.45`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.45: Optimization pass. (1) The transport layer — provider settings,
+  request preparation, transport, diagnostics, and provider-error helpers —
+  is extracted into `includes/llm/transport.php` (328 lines), shrinking
+  `llm.php` from 8174 to ~7890 lines; both are lint-clean and the contract
+  test now pins the moved functions against the new module. (2) Advisory
+  chat completion budget drops from 1200 to 400 tokens. (3) Transport
+  failures now retry once in place after 10 seconds instead of reloading
+  the whole Elementor editor, because nothing was written. (4) Prompt
+  caching: provider-side caching gives nothing on the free OpenRouter pool
+  (no cache support), so no speculative cache-control code was added;
+  prompts already order static content first, and the stored guided context
+  is documented as cache-ready when a paid provider is selected.
 - v02.11.44: The opt-in fallback model now also covers transport-level
   timeouts, not only rate-limit refusals. When the primary model's route
   hangs (the recurring `openrouter/free` wildcard 45s abort), the server

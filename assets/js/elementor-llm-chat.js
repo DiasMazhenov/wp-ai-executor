@@ -258,15 +258,15 @@
         } catch (error) {
             return false;
         }
-        addMessage('assistant', 'LLM-провайдер недоступен. Перезагружаю страницу и повторю запрос один раз.');
-        status.textContent = 'Перезагрузка страницы…';
+        addMessage('assistant', 'LLM-провайдер недоступен. Повторяю запрос один раз через 10 секунд без перезагрузки.');
+        status.textContent = 'Ожидание провайдера…';
+        // Transport failures write nothing, so the editor state stays healthy:
+        // retry in place instead of reloading the whole Elementor editor.
         window.setTimeout(function () {
-            window.location.reload();
-            // ponytail: embedded browsers may ignore reload; retry locally once instead of looping.
-            window.setTimeout(function () {
-                if (readProviderRetry()) retryProviderRequestAfterReload();
-            }, 1800);
-        }, 250);
+            clearProviderRetry();
+            status.textContent = strings.sending;
+            request(message, true, options || {});
+        }, 10000);
         return true;
     }
     function retryProviderRequestAfterReload() {
