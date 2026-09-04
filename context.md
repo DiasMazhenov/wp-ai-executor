@@ -2,12 +2,20 @@
 
 ## Current release
 
-- Plugin: `v02.11.52`
+- Plugin: `v02.11.53`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.53: Fixes the root cause of EJ-086 — container `_css_classes` not
+  rendering. Elementor's Container element skips `_css_classes` processing in
+  its render path (Widget_Base handles it via `get_render_attribute_string`,
+  Container does not). Added `elementor/frontend/before_render` hook that forces
+  `_css_classes` from settings onto the `_wrapper` render attribute for container
+  elements only. Widget elements are unaffected. Verified: all `wpae-process-*`
+  container classes now appear in rendered HTML (timeline, rail, marker,
+  marker-column, content, connector, cards).
 - v02.11.52: Three borrows from EMCP Tools (msrbuilds/elementor-mcp) close the
   stale-render and acceptance-verification gaps. (1) `wpae_clear_elementor_cache`
   now deletes the per-page CSS file (`Post::create($post_id)->delete()`), the

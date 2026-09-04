@@ -20,11 +20,12 @@ function wpae_llm_request_intent_head( string $message ): string {
 
 function wpae_llm_is_process_request( string $message, string $archetype = '' ): bool {
 	$intent_head = wpae_llm_request_intent_head( $message );
-	if ( $intent_head === '' ) {
+	$check_text = $intent_head !== '' ? $intent_head . ' ' . $message : $message;
+	if ( $check_text === '' ) {
 		return $archetype === 'process';
 	}
 
-	return (bool) preg_match( '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu', $intent_head );
+	return (bool) preg_match( '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu', $check_text );
 }
 
 function wpae_llm_content_units( string $message ): array {
@@ -3624,6 +3625,20 @@ function wpae_llm_process_timeline_steps( string $message ): array {
     $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
     if ( count( $pairs ) >= 2 ) {
         return $pairs;
+    }
+
+    // Parse comma-separated step names: "Замысел, Съёмка, Монтаж, Публикация"
+    $step_names = [];
+    $content_message = preg_replace( '/^\s*(?:создай|сделай|добавь|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
+    if ( preg_match_all( '/\b([А-ЯЁа-яё]{3,40})(?:\s*[,\n]\s*|\s+(?:и|а|—|–|—)\s+)/u', $content_message, $matches ) ) {
+        $step_names = array_unique( array_map( 'trim', $matches[1] ) );
+    }
+    if ( count( $step_names ) >= 2 ) {
+        $result = [];
+        foreach ( array_slice( $step_names, 0, 6 ) as $index => $name ) {
+            $result[] = [ 'label' => $name, 'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ) ];
+        }
+        return $result;
     }
 
     return [
