@@ -4256,6 +4256,9 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		}
 		unset( $step );
 	} elseif ( $layout === 'horizontal' ) {
+		// Horizontal family: one shared marker rail above one row of content
+		// cards, so connector lines run between the numbers outside the card
+		// surfaces instead of stopping at every card padding edge.
 		$timeline['settings']['flex_direction'] = 'column';
 		$timeline['settings']['flex_direction_mobile'] = 'column';
 		$timeline['settings']['flex_wrap'] = 'nowrap';
@@ -4264,68 +4267,140 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		$timeline['settings']['flex_align_items'] = 'stretch';
 		$timeline['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
-		foreach ( $timeline['elements'] as &$step ) {
-			$step_settings = is_array( $step['settings'] ?? null ) ? $step['settings'] : [];
-			$step_settings['flex_direction'] = 'column';
-			$step_settings['flex_direction_mobile'] = 'column';
-			$step_settings['background_color'] = '#ffffff';
-			$step_settings['border_border'] = 'solid';
-			$step_settings['border_color'] = '#dbe3f0';
-			$step_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-			$step_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ];
-			$step_settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
-			$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
-			wpae_llm_set_variant_container_width( $step_settings, $step_width );
-			$step_settings['_flex_shrink'] = 1;
-			$step_settings['_flex_shrink_tablet'] = 1;
-			$step_settings['_flex_shrink_mobile'] = 1;
-			$step['settings'] = $step_settings;
-			foreach ( $step['elements'] as &$child ) {
-				$child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+		$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
+		$track_gap = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+		$rail_cells = [];
+		$card_cells = [];
+		foreach ( $timeline['elements'] as $step ) {
+			if ( ! is_array( $step ) ) {
+				continue;
+			}
+			$rail_cell = null;
+			$card_cell = null;
+			foreach ( (array) ( $step['elements'] ?? [] ) as $step_child ) {
+				if ( ! is_array( $step_child ) ) {
+					continue;
+				}
+				$child_settings = is_array( $step_child['settings'] ?? null ) ? $step_child['settings'] : [];
 				$child_classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
 				if ( is_array( $child_classes ) && in_array( 'wpae-process-marker-column', $child_classes, true ) ) {
-					$child_settings['flex_direction'] = 'row';
-					$child_settings['flex_direction_mobile'] = 'row';
-					$child_settings['flex_align_items'] = 'center';
-					$child_settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-					$child_settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-					$child_settings['_element_custom_width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-					$child_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-					foreach ( $child['elements'] as &$rail_child ) {
-						$rail_child_settings = is_array( $rail_child['settings'] ?? null ) ? $rail_child['settings'] : [];
-						$rail_child_classes = preg_split( '/\s+/', trim( (string) ( $rail_child_settings['_css_classes'] ?? '' ) ) );
-						if ( is_array( $rail_child_classes ) && in_array( 'wpae-process-connector', $rail_child_classes, true ) ) {
-							$rail_child_settings['flex_direction'] = 'row';
-							$rail_child_settings['flex_direction_mobile'] = 'row';
-							$rail_child_settings['min_height'] = [ 'unit' => 'px', 'size' => 2 ];
-							$rail_child_settings['min_height_mobile'] = [ 'unit' => 'px', 'size' => 2 ];
-							$rail_child_settings['_flex_size'] = 'grow';
-							$rail_child_settings['_flex_grow'] = 1;
-							$rail_child_settings['_flex_shrink'] = 1;
-							foreach ( $rail_child['elements'] as &$connector_element ) {
-								if ( ! is_array( $connector_element ) || ( $connector_element['widgetType'] ?? '' ) !== 'html' ) {
-									continue;
-								}
-								$connector_settings = is_array( $connector_element['settings'] ?? null ) ? $connector_element['settings'] : [];
-								$connector_settings['html'] = '<span aria-hidden="true" style="display:block;width:100%;height:2px;min-height:0;background:#b9c5e8;margin:auto 0;"></span>';
-								$connector_element['settings'] = $connector_settings;
-							}
-							unset( $connector_element );
-						}
-						$rail_child['settings'] = $rail_child_settings;
-					}
-					unset( $rail_child );
+					$rail_cell = $step_child;
 				} elseif ( is_array( $child_classes ) && in_array( 'wpae-process-content', $child_classes, true ) ) {
-					$child_settings['background_color'] = 'transparent';
-					$child_settings['border_border'] = 'none';
-					$child_settings['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
-					$child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+					$card_cell = $step_child;
 				}
-				$child['settings'] = $child_settings;
 			}
-			unset( $child );
+			if ( $rail_cell === null && is_array( $step['elements'][0] ?? null ) ) {
+				$rail_cell = $step['elements'][0];
+			}
+			if ( $card_cell === null && is_array( $step['elements'][1] ?? null ) ) {
+				$card_cell = $step['elements'][1];
+			}
+			if ( is_array( $rail_cell ) ) {
+				$rail_settings = is_array( $rail_cell['settings'] ?? null ) ? $rail_cell['settings'] : [];
+				$rail_settings['flex_direction'] = 'row';
+				$rail_settings['flex_direction_mobile'] = 'row';
+				$rail_settings['flex_wrap'] = 'nowrap';
+				$rail_settings['flex_wrap_mobile'] = 'nowrap';
+				$rail_settings['flex_align_items'] = 'center';
+				foreach ( [ 'width', 'width_mobile', '_element_custom_width', '_element_custom_width_mobile' ] as $width_key ) {
+					unset( $rail_settings[ $width_key ] );
+				}
+				$rail_settings['_element_width'] = 'initial';
+				$rail_settings['_flex_size'] = 'grow';
+				$rail_settings['_flex_grow'] = 1;
+				$rail_settings['_flex_shrink'] = 1;
+				foreach ( (array) ( $rail_cell['elements'] ?? [] ) as &$rail_child ) {
+					if ( ! is_array( $rail_child ) ) {
+						continue;
+					}
+					$rail_child_settings = is_array( $rail_child['settings'] ?? null ) ? $rail_child['settings'] : [];
+					$rail_child_classes = preg_split( '/\s+/', trim( (string) ( $rail_child_settings['_css_classes'] ?? '' ) ) );
+					if ( is_array( $rail_child_classes ) && in_array( 'wpae-process-connector', $rail_child_classes, true ) ) {
+						$rail_child_settings['flex_direction'] = 'row';
+						$rail_child_settings['flex_direction_mobile'] = 'row';
+						$rail_child_settings['min_height'] = [ 'unit' => 'px', 'size' => 2 ];
+						$rail_child_settings['min_height_mobile'] = [ 'unit' => 'px', 'size' => 2 ];
+						$rail_child_settings['_flex_size'] = 'grow';
+						$rail_child_settings['_flex_grow'] = 1;
+						$rail_child_settings['_flex_shrink'] = 1;
+						foreach ( (array) ( $rail_child['elements'] ?? [] ) as &$connector_element ) {
+							if ( ! is_array( $connector_element ) || ( $connector_element['widgetType'] ?? '' ) !== 'html' ) {
+								continue;
+							}
+							$connector_settings = is_array( $connector_element['settings'] ?? null ) ? $connector_element['settings'] : [];
+							$connector_settings['html'] = '<span aria-hidden="true" style="display:block;width:100%;height:2px;min-height:0;background:#b9c5e8;margin:auto 0;"></span>';
+							$connector_element['settings'] = $connector_settings;
+						}
+						unset( $connector_element );
+					}
+					$rail_child['settings'] = $rail_child_settings;
+				}
+				unset( $rail_child );
+				$rail_cell['settings'] = $rail_settings;
+				$rail_cells[] = $rail_cell;
+			}
+			if ( is_array( $card_cell ) ) {
+				$card_settings = is_array( $card_cell['settings'] ?? null ) ? $card_cell['settings'] : [];
+				$card_settings['background_background'] = 'classic';
+				$card_settings['background_color'] = '#ffffff';
+				$card_settings['border_border'] = 'solid';
+				$card_settings['border_color'] = '#dbe3f0';
+				$card_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+				$card_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ];
+				$card_settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
+				wpae_llm_set_variant_container_width( $card_settings, $step_width );
+				$card_settings['_flex_size'] = 'grow';
+				$card_settings['_flex_grow'] = 1;
+				$card_settings['_flex_shrink'] = 1;
+				$card_settings['_flex_shrink_mobile'] = 1;
+				$card_cell['settings'] = $card_settings;
+				$card_cells[] = $card_cell;
+			}
 		}
-		unset( $step );
+		$rail_row = [
+			'id' => $id . '-rail',
+			'elType' => 'container',
+			'settings' => [
+				'_css_classes' => 'wpae-process-rail',
+				'container_type' => 'flex',
+				'content_width' => 'full',
+				'flex_direction' => 'row',
+				'flex_direction_mobile' => 'row',
+				'flex_wrap' => 'nowrap',
+				'flex_wrap_mobile' => 'nowrap',
+				'flex_justify_content' => 'flex-start',
+				'flex_align_items' => 'center',
+				'flex_gap' => $track_gap,
+				'flex_gap_mobile' => $track_gap,
+				'_element_width' => 'initial',
+				'_flex_size' => 'grow',
+				'_flex_grow' => 1,
+				'_flex_shrink' => 1,
+			],
+			'elements' => $rail_cells,
+		];
+		$cards_row = [
+			'id' => $id . '-cards',
+			'elType' => 'container',
+			'settings' => [
+				'_css_classes' => 'wpae-process-cards',
+				'container_type' => 'flex',
+				'content_width' => 'full',
+				'flex_direction' => 'row',
+				'flex_direction_mobile' => 'column',
+				'flex_wrap' => 'nowrap',
+				'flex_wrap_mobile' => 'nowrap',
+				'flex_justify_content' => 'flex-start',
+				'flex_align_items' => 'stretch',
+				'flex_gap' => $track_gap,
+				'flex_gap_mobile' => $track_gap,
+				'_element_width' => 'initial',
+				'_flex_size' => 'grow',
+				'_flex_grow' => 1,
+				'_flex_shrink' => 1,
+			],
+			'elements' => $card_cells,
+		];
 		$timeline['elements'] = [
 			[
 				'id' => $id . '-track',
@@ -4334,20 +4409,20 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 					'_css_classes' => 'wpae-process-track wpae-process-track-horizontal',
 					'container_type' => 'flex',
 					'content_width' => 'full',
-					'flex_direction' => 'row',
+					'flex_direction' => 'column',
 					'flex_direction_mobile' => 'column',
 					'flex_wrap' => 'nowrap',
 					'flex_wrap_mobile' => 'nowrap',
-					'flex_justify_content' => 'space-between',
+					'flex_justify_content' => 'flex-start',
 					'flex_align_items' => 'stretch',
-					'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
-					'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+					'flex_gap' => $track_gap,
+					'flex_gap_mobile' => $track_gap,
 					'_element_width' => 'initial',
 					'_flex_size' => 'grow',
 					'_flex_grow' => 1,
 					'_flex_shrink' => 1,
 				],
-				'elements' => $timeline['elements'],
+				'elements' => [ $rail_row, $cards_row ],
 			],
 		];
 	}
@@ -4399,13 +4474,27 @@ function wpae_llm_process_timeline_steps_from_elements( array $elements ): array
 							continue;
 						}
 						if ( is_array( $child_classes ) && in_array( 'wpae-process-track', $child_classes, true ) ) {
-							foreach ( (array) ( $child['elements'] ?? [] ) as $track_step ) {
-								if ( ! is_array( $track_step ) || ( $track_step['elType'] ?? '' ) !== 'container' ) {
+							// Horizontal tracks own a marker rail row plus a
+							// cards row; vertical tracks own steps directly.
+							foreach ( (array) ( $child['elements'] ?? [] ) as $track_child ) {
+								if ( ! is_array( $track_child ) || ( $track_child['elType'] ?? '' ) !== 'container' ) {
 									continue;
 								}
-								$track_step_data = $read_step( $track_step );
-								if ( $track_step_data['label'] !== '' || $track_step_data['content'] !== '' ) {
-									$found[] = $track_step_data;
+								$track_child_classes = preg_split( '/\s+/', trim( (string) ( $track_child['settings']['_css_classes'] ?? '' ) ) );
+								if ( is_array( $track_child_classes ) && array_intersect( [ 'wpae-process-rail' ], $track_child_classes ) ) {
+									continue;
+								}
+								$step_containers = is_array( $track_child_classes ) && in_array( 'wpae-process-cards', $track_child_classes, true )
+									? (array) ( $track_child['elements'] ?? [] )
+									: [ $track_child ];
+								foreach ( $step_containers as $track_step ) {
+									if ( ! is_array( $track_step ) || ( $track_step['elType'] ?? '' ) !== 'container' ) {
+										continue;
+									}
+									$track_step_data = $read_step( $track_step );
+									if ( $track_step_data['label'] !== '' || $track_step_data['content'] !== '' ) {
+										$found[] = $track_step_data;
+									}
 								}
 							}
 							continue;

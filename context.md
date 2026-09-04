@@ -2,12 +2,21 @@
 
 ## Current release
 
-- Plugin: `v02.11.42`
+- Plugin: `v02.11.43`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.43: Horizontal timelines now use one shared marker rail row above
+  one row of content cards inside the track. Numbered markers with growing
+  connector lines live outside the card surfaces, so lines read as a
+  continuous rail between steps instead of short dashes inside padded cards.
+  Rail cells and cards share identical grow ratios for marker-to-card
+  alignment; mobile keeps the card stack with the rail above it. Step
+  extraction understands the new `wpae-process-cards` row and skips the
+  `wpae-process-rail`. Live screenshot plus Vision/Impeccable review of the
+  fresh horizontal generation remains required after deployment.
 - v02.11.42: Optional opt-in model fallback. The dashboard LLM tab accepts a
   `fallback_model` id; when the primary model's pool returns a rate-limit
   refusal, the server makes exactly one immediate attempt with the fallback
