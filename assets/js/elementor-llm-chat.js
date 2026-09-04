@@ -70,12 +70,25 @@
     regenerate.className = 'wpae-llm-icon-button wpae-llm-regenerate';
     regenerate.type = 'button';
     addIcon(regenerate, 'eicon-sync', strings.regenerate || 'Перегенерировать последний запрос');
+    // The last brief also survives page reloads: after a final provider failure
+    // the chat history is gone, and that is exactly when regeneration is needed.
+    var lastBriefKey = 'wpae_llm_last_brief:' + String(config.postId || '0');
+    var readLastBrief = function () {
+        try {
+            var raw = window.sessionStorage.getItem(lastBriefKey);
+            if (!raw) { return ''; }
+            var parsed = JSON.parse(raw);
+            var value = parsed && parsed.message ? String(parsed.message) : '';
+            return value.trim();
+        } catch (error) { return ''; }
+    };
     regenerate.addEventListener('click', function () {
         // Regeneration replays the most recent user brief through the normal
         // request path, so server gates and Vision review stay identical.
         if (send.disabled) { addMessage('assistant', strings.regenerateBusy || 'Дождитесь завершения текущего запроса.'); return; }
         var userMessages = messages.querySelectorAll('.wpae-llm-message--user');
         var last = userMessages.length ? String(userMessages[userMessages.length - 1].textContent || '').trim() : '';
+        if (!last) { last = readLastBrief(); }
         if (!last) {
             addMessage('assistant', strings.regenerateEmpty || 'Нет предыдущего запроса для перегенерации.');
             return;
@@ -1221,7 +1234,14 @@
         requestInFlight = true;
         options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
-        if (repairDepth === 0) liveGeneratedRootIds = [];
+        if (repairDepth === 0) {
+            liveGeneratedRootIds = [];
+            // Remember the original brief so the regenerate button can replay
+            // it even after a full editor reload cleared the chat history.
+            try {
+                window.sessionStorage.setItem(lastBriefKey, JSON.stringify({ message: String(message).slice(0, 4000), createdAt: Date.now() }));
+            } catch (error) {}
+        }
         var originalBrief = options.originalBrief || message;
         var beforeWidgetCount = getPreviewWidgetCount();
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {

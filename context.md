@@ -2,12 +2,24 @@
 
 ## Current release
 
-- Plugin: `v02.11.50`
+- Plugin: `v02.11.51`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.51: The regenerate button now survives page reloads. The most recent
+  user brief is persisted in `sessionStorage` (`wpae_llm_last_brief:<post_id>`,
+  bounded 4000 chars) at the start of every original request, and the
+  regenerate handler falls back to that stored brief when the in-memory chat
+  history is gone. Live v02.11.50 testing showed the exact failure this fixes:
+  after a final provider-unavailable error the editor reloaded, the chat
+  history was wiped, and the button answered "Нет предыдущего запроса" in the
+  one scenario it was built for. Local contract checks, PHP lint, and JS
+  syntax pass; live generation remains blocked by the evening free-pool
+  outage (three consecutive cURL 28 failures at the 20s primary timeout with
+  the fallback exhausted, fail-closed, no writes; EJ-086 records the retracted
+  false acceptances).
 - v02.11.50: The editor chat header gains a regenerate icon button
   (`eicon-sync`). It replays the most recent user brief through the normal
   request path — server gates, fallback chain, and Vision review stay
