@@ -3991,12 +3991,13 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				$rail_settings['flex_wrap'] = 'nowrap';
 				$rail_settings['flex_wrap_mobile'] = 'nowrap';
 				$rail_settings['flex_align_items'] = 'center';
-				foreach ( [ 'width', 'width_mobile', '_element_custom_width', '_element_custom_width_mobile' ] as $width_key ) {
-					unset( $rail_settings[ $width_key ] );
-				}
-				$rail_settings['_element_width'] = 'initial';
-				$rail_settings['_flex_size'] = 'grow';
-				$rail_settings['_flex_grow'] = 1;
+				$rail_settings['flex_justify_content'] = 'flex-start';
+				// Rail cells must share the cards' exact width budget so every
+				// marker sits on top of its card instead of drifting across
+				// the row; grow sizing broke that alignment (live feedback).
+				wpae_llm_set_variant_container_width( $rail_settings, $step_width );
+				$rail_settings['_flex_size'] = 'custom';
+				$rail_settings['_flex_grow'] = 0;
 				$rail_settings['_flex_shrink'] = 1;
 				foreach ( (array) ( $rail_cell['elements'] ?? [] ) as &$rail_child ) {
 					if ( ! is_array( $rail_child ) ) {
@@ -4005,13 +4006,19 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 					$rail_child_settings = is_array( $rail_child['settings'] ?? null ) ? $rail_child['settings'] : [];
 					$rail_child_classes = preg_split( '/\s+/', trim( (string) ( $rail_child_settings['_css_classes'] ?? '' ) ) );
 					if ( is_array( $rail_child_classes ) && in_array( 'wpae-process-connector', $rail_child_classes, true ) ) {
-						$rail_child_settings['flex_direction'] = 'row';
-						$rail_child_settings['flex_direction_mobile'] = 'row';
+						// Strip the inherited vertical 2px width so the
+						// horizontal line can actually stretch between markers.
+						foreach ( [ 'width', 'width_mobile', '_element_custom_width', '_element_custom_width_mobile' ] as $connector_width_key ) {
+							unset( $rail_child_settings[ $connector_width_key ] );
+						}
 						$rail_child_settings['min_height'] = [ 'unit' => 'px', 'size' => 2 ];
 						$rail_child_settings['min_height_mobile'] = [ 'unit' => 'px', 'size' => 2 ];
 						$rail_child_settings['_flex_size'] = 'grow';
 						$rail_child_settings['_flex_grow'] = 1;
 						$rail_child_settings['_flex_shrink'] = 1;
+						$rail_child_settings['flex_direction'] = 'row';
+						$rail_child_settings['flex_direction_mobile'] = 'row';
+						$rail_child_settings['flex_align_items'] = 'center';
 						foreach ( (array) ( $rail_child['elements'] ?? [] ) as &$connector_element ) {
 							if ( ! is_array( $connector_element ) || ( $connector_element['widgetType'] ?? '' ) !== 'html' ) {
 								continue;
@@ -4021,8 +4028,8 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 							$connector_element['settings'] = $connector_settings;
 						}
 						unset( $connector_element );
+						$rail_child['settings'] = $rail_child_settings;
 					}
-					$rail_child['settings'] = $rail_child_settings;
 				}
 				unset( $rail_child );
 				$rail_cell['settings'] = $rail_settings;
@@ -4038,8 +4045,10 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				$card_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 0.75, 'isLinked' => true ];
 				$card_settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
 				wpae_llm_set_variant_container_width( $card_settings, $step_width );
-				$card_settings['_flex_size'] = 'grow';
-				$card_settings['_flex_grow'] = 1;
+				// Same width budget as rail cells; no grow, so rows stay
+				// geometrically identical and markers align to cards.
+				$card_settings['_flex_size'] = 'custom';
+				$card_settings['_flex_grow'] = 0;
 				$card_settings['_flex_shrink'] = 1;
 				$card_settings['_flex_shrink_mobile'] = 1;
 				$card_cell['settings'] = $card_settings;

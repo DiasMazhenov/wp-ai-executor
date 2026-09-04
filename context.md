@@ -2,12 +2,18 @@
 
 ## Current release
 
-- Plugin: `v02.11.47`
+- Plugin: `v02.11.48`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.48: Horizontal rail alignment fix from live feedback: the first
+  rail-and-cards render showed markers drifting across the row and a
+  vertical connector remnant. Rail cells and cards now share one fixed
+  width budget (no grow on either row), and the connector strips its
+  inherited vertical 2px width so the horizontal line stretches between
+  markers. Markers sit on top of their own cards.
 - v02.11.47: When a fallback model is configured, the primary provider
   attempt runs with a bounded 20-second timeout instead of 45, so the
   30-second fallback attempt fits inside the editor's 55-second client abort.
