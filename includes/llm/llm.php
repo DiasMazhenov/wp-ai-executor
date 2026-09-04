@@ -210,6 +210,19 @@ function wpae_llm_extract_response_text( $body ): string {
     return trim( implode( "\n", $parts ) );
 }
 
+function wpae_llm_provider_is_rate_limited( $body ): bool {
+    if ( ! is_array( $body ) ) {
+        return false;
+    }
+    if ( (int) ( $body['error']['code'] ?? 0 ) === 429 ) {
+        return true;
+    }
+    $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
+    $haystack = strtolower( (string) ( $body['error']['message'] ?? '' ) . ' ' . (string) ( $body['error']['metadata']['raw'] ?? '' ) . ' ' . (string) ( $choice['error']['message'] ?? '' ) );
+
+    return strpos( $haystack, 'rate-limited' ) !== false || strpos( $haystack, 'rate limit' ) !== false;
+}
+
 function wpae_llm_provider_error_message( $body ): string {
     $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
     $message = is_array( $choice['error'] ?? null ) ? ( $choice['error']['message'] ?? '' ) : '';
@@ -7579,6 +7592,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $body = json_decode( $raw, true );
     if ( $status < 200 || $status >= 300 ) {
         $provider_error = wpae_llm_provider_error_message( is_array( $body ) ? $body : [] ) ?: ( is_array( $body ) ? 'Провайдер вернул ошибку.' : 'Провайдер вернул некорректный ответ.' );
+        if ( wpae_llm_provider_is_rate_limited( is_array( $body ) ? $body : [] ) ) {
+            // Shared free pools ask for a delayed retry; expose a distinct code
+            // and bounded retry_after so the client can wait instead of burning
+            // both attempts and reloading the whole editor.
+            $retry_after = (int) wp_remote_retrieve_header( $response, 'retry-after' );
+            return new WP_Error( 'wpae_llm_provider_rate_limited', 'LLM-провайдер временно ограничен по лимиту (rate limit).', [ 'status' => 429, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'retry_after' => max( 15, min( 60, $retry_after > 0 ? $retry_after : 30 ) ), 'provider' => $runtime['provider'] ] );
+        }
         return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [ 'status' => 502, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'provider' => $runtime['provider'] ] );
     }
 

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.39`
+- Plugin: `v02.11.41`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -14,6 +14,15 @@
   `Provider returned error` failure observed on z-ai and Google free OpenRouter
   upstreams (EJ-082). The bounded structured-parameter retry inherits the
   schema-clean body.
+- v02.11.41: Provider rate limiting is now a distinct chat state. The server
+  detects shared-pool `rate-limited`/429 responses via
+  `wpae_llm_provider_is_rate_limited()` and returns
+  `wpae_llm_provider_rate_limited` with a bounded `retry_after` (15-60s,
+  Retry-After aware). The editor chat reacts with one delayed in-place retry
+  after the requested delay instead of the heavy full-editor reload cycle,
+  because nothing was written and the editor state is healthy. A second
+  failure remains a visible final error. This mitigates the confirmed
+  EJ-083 free-pool rate-limit family without changing fail-closed behavior.
 - v02.11.40: Provider error messages now surface a bounded sanitized excerpt
   of OpenRouter's `error.metadata.raw` plus the upstream provider name, so
   the editor chat shows the real reason behind uniform `Provider returned

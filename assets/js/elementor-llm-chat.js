@@ -224,6 +224,24 @@
         if (providerStatus === 408 || providerStatus === 425 || providerStatus === 429 || providerStatus >= 500) return true;
         return error.wpaeCode === 'wpae_llm_provider_error' && String(error.message || '').indexOf('finish_reason: error') !== -1;
     }
+    function isProviderRateLimited(error) {
+        if (!error) return false;
+        if (error.wpaeCode === 'wpae_llm_provider_rate_limited') return true;
+        var message = String(error.message || '').toLowerCase();
+        return Number(error.providerStatus || 0) === 429 && (message.indexOf('rate limit') !== -1 || message.indexOf('rate-limited') !== -1 || message.indexOf('ограничен по лимиту') !== -1);
+    }
+    function scheduleRateLimitedRetry(message, options, retryAfter) {
+        // A shared free pool asked for a delayed retry. Nothing was written and
+        // the editor state is healthy, so wait once and retry in place instead
+        // of reloading the whole Elementor editor.
+        var delay = Number(retryAfter) > 0 ? Math.max(15000, Math.min(60000, Number(retryAfter) * 1000)) : 30000;
+        addMessage('assistant', 'Пул модели временно ограничен по лимиту (rate limit). Повторяю запрос один раз через ' + Math.round(delay / 1000) + ' секунд без перезагрузки.');
+        status.textContent = 'Ожидание сброса лимита…';
+        window.setTimeout(function () {
+            status.textContent = strings.sending;
+            request(message, true, options || {});
+        }, delay);
+    }
     function scheduleProviderRetry(message, options) {
         if (readProviderRetry()) return false;
         try {
@@ -1264,6 +1282,7 @@
                     requestError.wpaeCode = errorCode;
                     requestError.httpStatus = response.status;
                     requestError.providerStatus = Number(errorData.provider_status || diagnostics.provider_status || errorData.status || diagnostics.status || 0);
+                    requestError.retryAfter = Number(errorData.retry_after || diagnostics.retry_after || 0);
                     throw requestError;
                 }
                 return body;
@@ -1368,6 +1387,7 @@
         }).catch(function (error) {
             window.clearInterval(progressTimer);
             if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
+            if (!retried && isProviderRateLimited(error)) { scheduleRateLimitedRetry(message, options, error.retryAfter); return; }
             if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message, options)) return;
             clearProviderRetry();
             addMessage('assistant', strings.error + ': ' + error.message);

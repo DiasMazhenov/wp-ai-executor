@@ -32,6 +32,11 @@ before making a new change to the plugin.
   recovers, attach an own provider key via OpenRouter integrations, or use a
   paid model id such as `z-ai/glm-5.3-flash`. The timeline/pricing live
   matrix remains blocked on provider availability only.
+- **Mitigation (v02.11.41):** Rate limiting is now a distinct chat state:
+  `wpae_llm_provider_rate_limited` carries a bounded `retry_after`, and the
+  editor chat performs one delayed in-place retry without the full-editor
+  reload instead of burning both attempts immediately. Fail-closed behavior
+  is unchanged; a second failure stays a visible final error.
 
 ## EJ-082: OpenRouter requests carried the OpenAI-only max_completion_tokens field
 
