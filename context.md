@@ -539,6 +539,14 @@
   generations. Local regression checks pass; live Browser Use still needs the
   site to receive v02.10.93 before the all-block visual matrix is accepted.
 
+- 2026-09-04 live acceptance: v02.11.48 horizontal timeline rendered with
+  the shared marker rail aligned above its cards and continuous horizontal
+  connector lines; write confirmed through the fallback chain during an
+  evening free-pool window (operation wpae-20260904171022-d4415866). Editor
+  screenshot review passed manually; Vision was unavailable (Gemini 503) and
+  remains an advisory gap. Remaining matrix: alternating family, pricing,
+  and a Vision-backed review pass.
+
 ## Mandatory error journal workflow
 
 - Every confirmed live or code error must be recorded in `ERRORS.md` with its

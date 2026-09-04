@@ -3,6 +3,16 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+- **Live acceptance (2026-09-04, v02.11.48):** A fresh horizontal timeline
+  generation wrote successfully through the fallback chain (primary wildcard
+  timed out twice; the bounded 20s primary plus 30s fallback window reached
+  the fallback pool). The rendered rail now shows numbered markers aligned
+  above their own cards with continuous horizontal connector lines between
+  them; the vertical connector remnant is gone. Screenshot captured in the
+  editor; AI Vision review was unavailable (Gemini 503) and remains an
+  advisory gap. The horizontal family is visually accepted in the editor
+  canvas.
+
 ## EJ-085: The fallback model never received a response window on hanging routes
 
 - **Observed (2026-09-04, live editor, plugin v02.11.46):** With the
