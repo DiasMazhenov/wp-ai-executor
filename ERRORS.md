@@ -3,6 +3,33 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-082: OpenRouter requests carried the OpenAI-only max_completion_tokens field
+
+- **Observed (2026-09-04, live editor `post=4556`, plugin v02.11.38):** After
+  configuring OpenRouter with concrete model ids, every editor-chat request —
+  including a tiny plain message — failed on both the initial attempt and the
+  v02.10.22 retry with the sanitized message `Provider returned error`. The
+  same uniform failure appeared on two independent free upstreams
+  (`z-ai/glm-5.2:free`, `google/gemma-4-31b-it:free`), while the dashboard
+  confirmed the key was stored and decryption worked.
+- **Root cause:** The action/chat request body was built with the
+  OpenAI-named field `max_completion_tokens` (llm.php request builder). The
+  OpenRouter request schema uses `max_tokens`; `max_completion_tokens` is
+  outside that schema. The bounded provider retry stripped
+  `response_format` and `provider` but kept `max_completion_tokens`, so both
+  attempts stayed schema-invalid for OpenRouter routes. Gemini-direct requests
+  did not hit this path because the Gemini branch already removed the field.
+- **Fix:** v02.11.39 extends `wpae_llm_prepare_provider_request_body()` with an
+  OpenRouter branch that maps `max_completion_tokens` to schema-valid
+  `max_tokens` before transport; the conversion applies to the initial request
+  and to the structured-parameter retry because preparation runs first. The
+  Gemini branch is unchanged, and the contract test now asserts the OpenRouter
+  mapping.
+- **Regression status:** Local PHP lint and the LLM chat contract test must
+  pass before deployment. Live acceptance requires a fresh editor-chat send on
+  an OpenRouter model that completes without the provider error, then the full
+  left/alternating/horizontal timeline and pricing validation loop.
+
 ## EJ-081: Every editor-chat LLM request failed with a uniform provider error
 
 - **Observed (2026-09-04, live editor `post=4556`, plugin v02.11.38):** Three

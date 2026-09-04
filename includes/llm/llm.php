@@ -234,6 +234,16 @@ function wpae_llm_response_diagnostics( $body ): array {
 }
 
 function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider ): array {
+    if ( $provider === 'openrouter' ) {
+        // OpenRouter's schema uses max_tokens; the OpenAI-only max_completion_tokens
+        // field is outside that schema and is ignored or rejected by upstream routes.
+        if ( isset( $request_body['max_completion_tokens'] ) ) {
+            $request_body['max_tokens'] = (int) $request_body['max_completion_tokens'];
+            unset( $request_body['max_completion_tokens'] );
+        }
+        return $request_body;
+    }
+
     if ( $provider !== 'gemini' ) {
         return $request_body;
     }

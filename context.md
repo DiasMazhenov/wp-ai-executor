@@ -2,12 +2,19 @@
 
 ## Current release
 
-- Plugin: `v02.11.38`
+- Plugin: `v02.11.39`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.39: OpenRouter requests now map the OpenAI-only
+  `max_completion_tokens` field to schema-valid `max_tokens` inside
+  `wpae_llm_prepare_provider_request_body()`, closing the uniform
+  `Provider returned error` failure observed on z-ai and Google free OpenRouter
+  upstreams (EJ-082). The bounded structured-parameter retry inherits the
+  schema-clean body. Live editor-chat verification and the timeline/pricing
+  matrix remain required after deployment.
 - v02.11.14: Generation now builds a bounded semantic content plan, audits
   explicit and invented CTAs, fingerprints the selected/adapted library
   composition before final normalization, rejects fidelity loss or forbidden
