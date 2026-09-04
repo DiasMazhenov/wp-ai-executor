@@ -52,6 +52,24 @@ function wpae_migrate_design_system_css_classes( $existing, array $required_clas
     ];
 }
 
+/**
+ * Force Elementor Container elements to apply _css_classes from settings.
+ *
+ * Elementor's Widget_Base processes _css_classes through get_render_attribute_string('_wrapper'),
+ * but Container's own render path skips this step. This hook catches containers before
+ * render and ensures _css_classes is added to the _wrapper render attribute.
+ */
+add_action( 'elementor/frontend/before_render', static function ( $element ) {
+    if ( $element->get_type() !== 'container' ) {
+        return;
+    }
+    $css_classes = $element->get_settings( '_css_classes' );
+    if ( empty( $css_classes ) ) {
+        return;
+    }
+    $element->add_render_attribute( '_wrapper', 'class', $css_classes );
+});
+
 function wpae_elementor_default_id( string $path, array $element ): string {
     return substr( md5( $path . '|' . wp_json_encode( $element ) ), 0, 7 );
 }
