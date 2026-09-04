@@ -3999,7 +3999,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				$rail_settings['_flex_size'] = 'custom';
 				$rail_settings['_flex_grow'] = 0;
 				$rail_settings['_flex_shrink'] = 1;
-				foreach ( (array) ( $rail_cell['elements'] ?? [] ) as &$rail_child ) {
+				$rail_children = is_array( $rail_cell['elements'] ?? null ) ? $rail_cell['elements'] : [];
+				// (array)(...) yields a temporary copy; a by-reference
+				// foreach would write into the copy and lose every rewrite.
+				$rail_children = is_array( $rail_cell['elements'] ?? null ) ? $rail_cell['elements'] : [];
+				foreach ( $rail_children as $ri => $rail_child ) {
 					if ( ! is_array( $rail_child ) ) {
 						continue;
 					}
@@ -4019,19 +4023,25 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 						$rail_child_settings['flex_direction'] = 'row';
 						$rail_child_settings['flex_direction_mobile'] = 'row';
 						$rail_child_settings['flex_align_items'] = 'center';
-						foreach ( (array) ( $rail_child['elements'] ?? [] ) as &$connector_element ) {
+						// (array)(...) creates a temporary copy, so a
+						// by-reference foreach would modify the copy and lose
+						// the horizontal line; collect, rewrite, reassign.
+						$connector_children = is_array( $rail_child['elements'] ?? null ) ? $rail_child['elements'] : [];
+						foreach ( $connector_children as $ci => $connector_element ) {
 							if ( ! is_array( $connector_element ) || ( $connector_element['widgetType'] ?? '' ) !== 'html' ) {
 								continue;
 							}
 							$connector_settings = is_array( $connector_element['settings'] ?? null ) ? $connector_element['settings'] : [];
 							$connector_settings['html'] = '<span aria-hidden="true" style="display:block;width:100%;height:2px;min-height:0;background:#b9c5e8;margin:auto 0;"></span>';
 							$connector_element['settings'] = $connector_settings;
+							$connector_children[ $ci ] = $connector_element;
 						}
-						unset( $connector_element );
+						$rail_child['elements'] = $connector_children;
 						$rail_child['settings'] = $rail_child_settings;
 					}
+					$rail_children[ $ri ] = $rail_child;
 				}
-				unset( $rail_child );
+				$rail_cell['elements'] = $rail_children;
 				$rail_cell['settings'] = $rail_settings;
 				$rail_cells[] = $rail_cell;
 			}

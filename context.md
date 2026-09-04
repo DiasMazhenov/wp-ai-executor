@@ -2,12 +2,21 @@
 
 ## Current release
 
-- Plugin: `v02.11.48`
+- Plugin: `v02.11.49`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.49: Horizontal connector lines actually reach the rendered tree now.
+  The v02.11.43/48 rewrites iterated `foreach ( (array) ( $elements ?? [] ) as
+  &$item )` over a temporary expression, so every by-reference change to the
+  connector HTML and geometry was written into the temporary copy and lost;
+  live renders kept vertical 2px connector remnants while rail and card
+  widths (applied directly on the cell settings) aligned correctly. The
+  horizontal branch now collects, rewrites, and reassigns child arrays
+  explicitly. Verified by a local PHP harness that dumps the built timeline
+  JSON.
 - v02.11.48: Horizontal rail alignment fix from live feedback: the first
   rail-and-cards render showed markers drifting across the row and a
   vertical connector remnant. Rail cells and cards now share one fixed
