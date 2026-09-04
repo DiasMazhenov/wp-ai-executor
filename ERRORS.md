@@ -3,6 +3,28 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-083: Provider returned error persisted after the OpenRouter schema fix; upstream reason was hidden
+
+- **Observed (2026-09-04, live editor `post=4556`, plugin v02.11.39):** After
+  EJ-082 deployed, a fresh content-only left-timeline send still failed on
+  both the initial attempt and the reload retry with `Provider returned
+  error` on `google/gemma-4-31b-it:free`. The schema-valid `max_tokens` body
+  was therefore not the only blocker, and the chat could not show why the
+  upstream refused the request.
+- **Root cause:** OpenRouter reports the upstream failure reason in
+  `error.metadata.raw` (plus `provider_name`), but
+  `wpae_llm_provider_error_message()` returned only `error.message`, so the
+  actionable part of the failure was discarded before the chat displayed it.
+- **Fix:** v02.11.40 surfaces a bounded (300-char), sanitized excerpt of
+  `error.metadata.raw` with the provider name in the provider error message.
+  The extraction feeds the chat error line, the structured-route retry
+  detection, and the response diagnostics, so the next failure shows the real
+  upstream reason without exposing credentials or raw payloads.
+- **Regression status:** Local PHP lint and contract tests must pass before
+  deployment. Live acceptance: one fresh editor-chat send must expose the
+  concrete upstream reason; resolving the underlying provider failure then
+  unblocks the timeline/pricing matrix.
+
 ## EJ-082: OpenRouter requests carried the OpenAI-only max_completion_tokens field
 
 - **Observed (2026-09-04, live editor `post=4556`, plugin v02.11.38):** After

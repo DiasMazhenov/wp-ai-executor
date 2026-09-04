@@ -214,7 +214,20 @@ function wpae_llm_provider_error_message( $body ): string {
     $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
     $message = is_array( $choice['error'] ?? null ) ? ( $choice['error']['message'] ?? '' ) : '';
     $message = $message ?: ( $body['error']['message'] ?? $body['message'] ?? '' );
-    return is_scalar( $message ) ? sanitize_text_field( (string) $message ) : '';
+    $message = is_scalar( $message ) ? sanitize_text_field( (string) $message ) : '';
+
+    // OpenRouter hides the upstream reason inside error.metadata; surface a
+    // bounded sanitized excerpt so provider failures are diagnosable in the
+    // editor chat without exposing credentials or raw payloads.
+    $metadata = is_array( $body['error']['metadata'] ?? null ) ? $body['error']['metadata'] : [];
+    $raw = trim( (string) ( $metadata['raw'] ?? '' ) );
+    if ( $raw !== '' ) {
+        $provider_name = sanitize_text_field( (string) ( $metadata['provider_name'] ?? '' ) );
+        $excerpt = substr( sanitize_text_field( $raw ), 0, 300 );
+        $message = trim( $message . ' [' . ( $provider_name !== '' ? $provider_name . ': ' : '' ) . $excerpt . ']' );
+    }
+
+    return $message;
 }
 
 function wpae_llm_response_diagnostics( $body ): array {
