@@ -2,12 +2,17 @@
 
 ## Current release
 
-- Plugin: `v02.11.45`
+- Plugin: `v02.11.46`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.46: The dashboard fallback-model field now persists its saved value
+  (the settings reader omitted `fallback_model`, so the field rendered empty
+  after every save — EJ-084) and becomes a combo dropdown fed by a bounded
+  (10-entry) `fallback_model_history` list maintained on each save. Both
+  picking a previously entered model and typing a new id work in one field.
 - v02.11.45: Optimization pass. (1) The transport layer — provider settings,
   request preparation, transport, diagnostics, and provider-error helpers —
   is extracted into `includes/llm/transport.php` (328 lines), shrinking

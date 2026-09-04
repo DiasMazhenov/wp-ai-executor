@@ -22,7 +22,7 @@
     "assets/previews/vocario-our-team.jpg": "29a62af188927f1543720579b0e7bae1851fdb9a6c431393a885f3eabc9579c2",
     "assets/previews/vocario-pricing.jpg": "2ac304a9e7e0d410e48a0a6b445720c3c92838cad00cc6a76213f643a3e72c95",
     "assets/previews/vocario-upcoming-event.jpg": "9303a6e4575b2a0a1d1b3680609e5d9e552c0565ea8a225312558fb908716265",
-    "includes/admin/dashboard.php": "132aa08c8d77fbb8105bd1a237309c9408a7d1a220854c219d283075969a6117",
+    "includes/admin/dashboard.php": "52ed2ec20ac3f3d709e20a721459615b4c1c0e63d6be109545c607af3c0e01af",
     "includes/design/system.php": "a9bd3eba468e2d5f1507ef5a07defd9f730f80897517744c6547f2c718fbccde",
     "includes/elementor/block-library.php": "2575c71e45245bba7acdd40fbc0a4a9146f22b0ddc2b9ad2c5a9a2b8588487f5",
     "includes/elementor/blueprint.php": "957e6b7c81a7dcaa53fa391f7ae96177536a489795f09f3d001e90f635ae5a99",
@@ -79,7 +79,7 @@
     "includes/updates/package-updater.php": "bc77e52c63c504525bf388e84a387f412c03fa07d3eebb353a5e88501ace7b1e",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "545d85fa455b1f967f3a5a56252d11318a56448e2778db8b59e9a8408cddbac5",
-    "wp-ai-executor.php": "d91bf9a2b42fa4db0c552132c550cfca0678a45babc488e85fdaf0d6483f3f75",
-    "includes/llm/transport.php": "c119d8c3928a9a8ec99dd6b1bcf7f09537ea8a0575d55727cb11e3bd8490eb73"
+    "wp-ai-executor.php": "261b93af33bf8b895fa5d2eabe20dd1ed9df30825926a9e87ac1f076b864906f",
+    "includes/llm/transport.php": "f520197c62a6e93a18015039d07d46d4047c22bc04dcd93833a36bc700c14272"
   }
 }

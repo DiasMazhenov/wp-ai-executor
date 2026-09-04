@@ -3,6 +3,25 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+## EJ-084: Dashboard fallback-model field rendered empty after every save
+
+- **Observed (2026-09-04, live dashboard, plugin v02.11.45):** The site owner
+  entered a fallback model id and saved, but after the settings reload the
+  field rendered empty again, so the opt-in fallback could not be visibly
+  confirmed or switched.
+- **Root cause:** `wpae_update_llm_settings()` stored `fallback_model`
+  correctly, but `wpae_llm_get_settings()` — the array the dashboard renders
+  from — did not include the key, so the input always received an empty
+  value attribute.
+- **Fix:** v02.11.46 returns `fallback_model` plus a bounded
+  `fallback_model_history` (10 entries, current first) from
+  `wpae_llm_get_settings()`, maintains the history on each save, and renders
+  the field as a combo input with a `datalist`, so previously entered models
+  are selectable while new ids remain typeable.
+- **Regression status:** Local lint and contract tests pass. Live check: the
+  saved value must survive a settings page reload, and the datalist must
+  offer previously entered ids.
+
 ## EJ-083: Provider returned error persisted after the OpenRouter schema fix; upstream reason was hidden
 
 - **Observed (2026-09-04, live editor `post=4556`, plugin v02.11.39):** After

@@ -957,8 +957,9 @@ function wpae_settings_page() {
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-fallback-model">Резервная модель (fallback)</label>
-                        <input class="wpae-input" id="wpae-llm-fallback-model" name="wpae_llm[fallback_model]" type="text" value="<?php echo esc_attr( (string) ( $llm_settings['fallback_model'] ?? '' ) ); ?>" placeholder="например, inclusionai/ling-3.0-flash-fin:free" autocomplete="off" />
-                        <span class="wpae-section-note">Необязательно. Используется один раз, если основной пул вернёт rate limit. Оставьте пустым, чтобы отключить.</span>
+                        <input class="wpae-input" id="wpae-llm-fallback-model" name="wpae_llm[fallback_model]" type="text" list="wpae-llm-fallback-model-history" value="<?php echo esc_attr( (string) ( $llm_settings['fallback_model'] ?? '' ) ); ?>" placeholder="например, google/gemma-4-31b-it:free" autocomplete="off" />
+                        <datalist id="wpae-llm-fallback-model-history"><?php foreach ( (array) ( $llm_settings['fallback_model_history'] ?? [] ) as $history_model ) : ?><option value="<?php echo esc_attr( (string) $history_model ); ?>"></option><?php endforeach; ?></datalist>
+                        <span class="wpae-section-note">Необязательно. Используется один раз, если основной пул вернёт rate limit или зависнет. Выберите ранее введённую модель из списка или впишите новую. Оставьте пустым, чтобы отключить.</span>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-api-key">API-ключ провайдера</label>

@@ -96,10 +96,27 @@ function wpae_llm_get_settings(): array {
         'provider_label' => $providers[ $provider ]['label'],
         'base_url' => $base_url,
         'model' => $model,
+        'fallback_model' => sanitize_text_field( (string) ( $stored['fallback_model'] ?? '' ) ),
+        'fallback_model_history' => wpae_llm_fallback_model_history( $stored ),
         'has_api_key' => $api_key !== '',
         'api_key_hint' => $api_key !== '' ? 'Ключ сохранен' : 'Ключ не задан',
         'updated_at' => sanitize_text_field( (string) ( $stored['updated_at'] ?? '' ) ),
     ];
+}
+
+function wpae_llm_fallback_model_history( array $stored ): array {
+    $history = [];
+    $current = trim( (string) ( $stored['fallback_model'] ?? '' ) );
+    if ( $current !== '' ) {
+        $history[] = $current;
+    }
+    foreach ( is_array( $stored['fallback_model_history'] ?? null ) ? $stored['fallback_model_history'] : [] as $entry ) {
+        $entry = trim( sanitize_text_field( (string) $entry ) );
+        if ( $entry !== '' && ! in_array( $entry, $history, true ) ) {
+            $history[] = $entry;
+        }
+    }
+    return array_slice( $history, 0, 10 );
 }
 
 function wpae_llm_get_runtime_settings() {
@@ -163,8 +180,15 @@ function wpae_update_llm_settings( array $input ) {
     $stored['model'] = $model;
     // Optional opt-in fallback model: used once when the primary model's pool
     // answers with a rate-limit refusal, so a crowded shared free pool cannot
-    // block a whole test or content session.
-    $stored['fallback_model'] = substr( sanitize_text_field( (string) ( $input['fallback_model'] ?? '' ) ), 0, 120 );
+    // block a whole test or content session. Previously entered ids stay
+    // available in the dashboard dropdown for quick switching.
+    $fallback_model = substr( sanitize_text_field( (string) ( $input['fallback_model'] ?? '' ) ), 0, 120 );
+    $stored['fallback_model'] = $fallback_model;
+    $history = is_array( $stored['fallback_model_history'] ?? null ) ? $stored['fallback_model_history'] : [];
+    if ( $fallback_model !== '' && ! in_array( $fallback_model, $history, true ) ) {
+        array_unshift( $history, $fallback_model );
+        $stored['fallback_model_history'] = array_slice( $history, 0, 10 );
+    }
     $stored['updated_at'] = gmdate( 'c' );
     update_option( WPAE_LLM_SETTINGS_OPTION, $stored, false );
     return true;
