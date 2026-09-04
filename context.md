@@ -2,12 +2,18 @@
 
 ## Current release
 
-- Plugin: `v02.11.49`
+- Plugin: `v02.11.50`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.50: The editor chat header gains a regenerate icon button
+  (`eicon-sync`). It replays the most recent user brief through the normal
+  request path — server gates, fallback chain, and Vision review stay
+  identical — and explains when there is nothing to replay or a request is
+  already running. One click replaces the manual copy/paste of a previous
+  brief after provider failures.
 - v02.11.49: Horizontal connector lines actually reach the rendered tree now.
   The v02.11.43/48 rewrites iterated `foreach ( (array) ( $elements ?? [] ) as
   &$item )` over a temporary expression, so every by-reference change to the

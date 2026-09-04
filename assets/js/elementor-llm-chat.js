@@ -66,11 +66,28 @@
     copySelectionPasteReady.className = 'wpae-llm-icon-button wpae-llm-copy-selection-paste-ready';
     copySelectionPasteReady.type = 'button';
     addIcon(copySelectionPasteReady, 'eicon-library-open', strings.copyPasteReady);
+    var regenerate = document.createElement('button');
+    regenerate.className = 'wpae-llm-icon-button wpae-llm-regenerate';
+    regenerate.type = 'button';
+    addIcon(regenerate, 'eicon-sync', strings.regenerate || 'Перегенерировать последний запрос');
+    regenerate.addEventListener('click', function () {
+        // Regeneration replays the most recent user brief through the normal
+        // request path, so server gates and Vision review stay identical.
+        if (send.disabled) { addMessage('assistant', strings.regenerateBusy || 'Дождитесь завершения текущего запроса.'); return; }
+        var userMessages = messages.querySelectorAll('.wpae-llm-message--user');
+        var last = userMessages.length ? String(userMessages[userMessages.length - 1].textContent || '').trim() : '';
+        if (!last) {
+            addMessage('assistant', strings.regenerateEmpty || 'Нет предыдущего запроса для перегенерации.');
+            return;
+        }
+        request(last, false, {});
+    });
     var headActions = document.createElement('div');
     headActions.className = 'wpae-llm-head-actions';
     headActions.appendChild(copy);
     headActions.appendChild(copySelection);
     headActions.appendChild(copySelectionPasteReady);
+    headActions.appendChild(regenerate);
     headActions.appendChild(close);
     head.appendChild(heading);
     head.appendChild(headActions);
