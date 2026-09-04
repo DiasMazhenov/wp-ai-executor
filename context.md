@@ -610,6 +610,35 @@
   before another generation is accepted. A structurally valid JSON or a
   provider response alone is never a successful visual result.
 
+## Mandatory token-economy workflow
+
+Adopted 2026-09-04 after a session where browser snapshots and repeated
+dead provider cycles dominated the token spend.
+
+- Browser snapshots: always pass a scoped selector (`#wpae-llm-chat-root`,
+  `.elementor-panel`), never snapshot the whole document. One snapshot per
+  wait cycle after the sleep, no polling loops. Intermediate request states
+  are not snapshotted at all; only the final outcome is.
+- Screenshots (`browser.capture`) only at acceptance time. Intermediate
+  verification uses DOM/class checks (grep of served HTML, scoped inspect),
+  not image capture plus vision reads.
+- Shell commands with potentially large output (harnesses, dumps, contract
+  tests, git logs) run through `rtk` when available.
+- Before broad greps or multi-window reads of `includes/llm/llm.php`, query
+  `graphify-out/graph.json` (`graphify query "<question>" --budget 1200`) and
+  then read only the exact line windows the graph points to.
+- Provider outage discipline: after two identical provider-failure cycles in
+  one session, stop retrying and wait for an explicit user instruction or an
+  off-peak window. Each dead cycle costs a submit, two waits, and two
+  snapshots for zero writes.
+- Heavy code exploration (pipeline maps, multi-function traces, cross-file
+  comparisons) is delegated to an `explore` subagent so the main context
+  stays lean; only targeted single greps and short reads run inline.
+- ERRORS.md is the single detailed source of truth for every incident;
+  context.md references the EJ id instead of repeating the full record.
+- Routine documentation, manifest revisions, and test drafting may run in a
+  separate low-cost OpenChamber session under the user's control.
+
 ## Latest live test matrix
 
 - 2026-09-03: Content-only `Отзывы клиентов` rendered with a Vision score of
