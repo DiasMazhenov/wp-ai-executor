@@ -2,12 +2,37 @@
 
 ## Current release
 
-- Plugin: `v02.11.53`
+- Plugin: `v02.11.54`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.54: EJ-087. Replaces the defective step-parser and process-detector
+  shipped in commit `64f5750`. (1) `wpae_llm_process_timeline_steps` now
+  recognises an explicit step list by STRUCTURE, not keywords: numbered list
+  (`^\s*\d+[\.\)]`), bullet list (`^\s*[-—*]`), colon-introduced enumeration,
+  or em-dash tail with a list separator. Plain prose never becomes a list;
+  the hardcoded default (Бриф → Структура → Сборка → Проверка) is the safe
+  fallback. Helper `wpae_llm_normalize_timeline_step_label()` enforces an
+  ASCII-only `trim` mask (PHP `trim` is byte-based; a multibyte mask clipped
+  the last byte of UTF-8 chars in the previous version) and uses anchored
+  `\p{L}[\p{L}\s-]{1,39}` because Cyrillic `\b` without `(*UCP)` is
+  unreliable. (2) `wpae_llm_is_process_request` now matches process words
+  against `intent_head + spec_segment` (the tail after the first em/en-dash,
+  colon, or sentence end), not the full message, plus an explicit
+  non-process-marker whitelist (преимуществ, отзыв, кейс, портфолио, тариф,
+  услуг, о компании/нас/нашей студии, about, контакт, hero, хиро, обложка,
+  первый экран, faq, карусель, слайдер, партнёр, мега-меню, шапка, header)
+  that returns false up-front, preserving the v02.11.30 rule that process
+  vocabulary in body prose must not hijack other archetypes. `проект\w*` is
+  intentionally NOT in the whitelist ("таймлайн проекта" is a process, not a
+  portfolio). Verified locally with 14 positive step-parser cases and 6
+  negative prose cases; 17 positive/negative cases for process detection.
+  Live horizontal-timeline acceptance on post 4556 still pending — must
+  reproduce badge "ПРОЦЕСС", steps "Замысел, Съёмка, Монтаж, Публикация",
+  and the `wpae-process-*` classes via `/elementor/rendered-html` before
+  any claim is recorded (lesson from EJ-086).
 - v02.11.53: Fixes the root cause of EJ-086 — container `_css_classes` not
   rendering. Elementor's Container element skips `_css_classes` processing in
   its render path (Widget_Base handles it via `get_render_attribute_string`,

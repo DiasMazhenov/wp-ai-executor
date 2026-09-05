@@ -7,6 +7,71 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-087: v02.11.54 commit `64f5750` shipped two defective process-timeline fixes
+
+- **Observed (2026-09-05, local pre-deploy check):** The fix commit for the
+  horizontal-timeline badge and step regression shipped two defects that
+  would have re-introduced or perpetuated the very bugs they tried to fix.
+  Both were caught by `php -r` harness before WP Pusher could deploy the
+  package, so they never reached the live site.
+- **Root cause (Fix A — step parser):**
+  `wpae_llm_process_timeline_steps` used
+  `preg_match_all( '/\b([А-ЯЁа-яё]{3,40})(?:\s*[,\n]\s*|\s+(?:и|а|—|–|—)\s+)/u' )`
+  which (1) requires a separator AFTER the word, silently dropping the last
+  item of any comma list ("Замысел, Съёмка, Монтаж, Публикация" lost
+  "Публикация") and (2) was triggered by plain prose ("начинаем с брифинга
+  и анализа, затем съёмка и монтаж" produced "брифинга/анализа/съёмка/
+  монтаж" as fake steps). Both classes of failure passed the local
+  end-to-end check on a single brief and were not exercised against
+  negative or alternative shapes.
+- **Root cause (Fix B — process detection):**
+  `wpae_llm_is_process_request` was widened from intent-head-only to
+  full-message matching, which re-introduced the v02.11.30 regression
+  (process vocabulary in body prose re-routes benefits/отзывы/about/hero/
+  pricing/etc. into the process pipeline, producing mixed process/bento
+  roots). The "process vocabulary only in body must be ignored" rule from
+  v02.11.30 (CONTEXT.md) was not re-read before the fix.
+- **Auxiliary defects:** the fix commit did not bump `WPAE_VERSION` /
+  `wp-ai-executor.php` from v02.11.53, so WP Pusher would have deployed the
+  change under the old version (deployed release not verifiable from the
+  editor chat header). The contract test
+  `tests/llm-chat-contract.test.js` was still pinned to v02.11.52 — it had
+  been failing since v02.11.53 and was not run. `PLAN.md` was also rewritten
+  (1318 lines of version-by-version plans replaced by a 54-line EMCP
+  roadmap) inside the "fix(llm)" commit without mentioning the swap in the
+  commit message.
+- **Fix (v02.11.54):**
+  - `wpae_llm_process_timeline_steps` now recognises an explicit step list
+    by STRUCTURE, not keywords: numbered list (`^\s*\d+[\.\)]`), bullet
+    list (`^\s*[-—*]`), colon-introduced enumeration, or em-dash tail with
+    a list separator. Plain prose without one of these shapes always
+    returns the hardcoded default. Helper
+    `wpae_llm_normalize_timeline_step_label()` enforces an ASCII-only
+    `trim` mask (PHP `trim` is byte-based; a multibyte mask like `«»`
+    clipped the last byte of UTF-8 characters in the previous version) and
+    uses anchored `\p{L}[\p{L}\s-]{1,39}` because Cyrillic `\b` without
+    `(*UCP)` is unreliable.
+  - `wpae_llm_is_process_request` matches process words against
+    `intent_head + spec_segment` (the tail after the first em/en-dash,
+    colon, or sentence end), not the full message. A whitelist of explicit
+    non-process intent markers (преимуществ, отзыв, кейс, портфолио,
+    тариф, услуг, о компании/о нас/о нашей студии, about, контакт, hero,
+    хиро, обложка, первый экран, faq, карусель, слайдер, партнёр,
+    мега-меню, шапка, header) returns false up-front, preserving the
+    v02.11.30 rule. `проект\w*` is intentionally NOT in the whitelist
+    because "таймлайн проекта" is a process, not a portfolio.
+  - `WPAE_VERSION` and the plugin header bump to `v02.11.54`; the contract
+    test is updated to match.
+- **Regression status:** Verified locally with 14 positive step-parser
+  cases (colon, em-dash, arrow, numbered, bullet, English, large lists)
+  and 6 negative prose cases (no false lists); 17 positive/negative
+  cases for process detection. `php -l` clean. `php -r` harness covers
+  both functions. Live verification still pending — a real horizontal
+  timeline on post 4556 must reproduce the badge "ПРОЦЕСС", steps
+  "Замысел, Съёмка, Монтаж, Публикация", and the connector classes via
+  `/elementor/rendered-html` before any acceptance is recorded (lesson
+  from EJ-086).
+
 ## EJ-086: False live acceptance — horizontal connector fix was never live-verified
 
 - **Observed (2026-09-04, evening):** The user's screenshot showed the

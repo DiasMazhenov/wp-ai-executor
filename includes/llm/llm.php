@@ -20,11 +20,39 @@ function wpae_llm_request_intent_head( string $message ): string {
 
 function wpae_llm_is_process_request( string $message, string $archetype = '' ): bool {
 	$intent_head = wpae_llm_request_intent_head( $message );
-	$check_text = $intent_head !== '' ? $intent_head . ' ' . $message : $message;
-	if ( $check_text === '' ) {
+	if ( $intent_head === '' ) {
 		return $archetype === 'process';
 	}
 
+	// v02.11.30 protection: an explicit non-process block name in the intent
+	// head must never be re-routed to the process pipeline, even if the body
+	// prose mentions "этап" or "процесс". See CONTEXT.md v02.11.30.
+	// "проект" is intentionally NOT in this list: "таймлайн проекта" is a
+	// process, not a portfolio. Process words elsewhere in the check_text
+	// remain the tie-breaker.
+	$non_process_markers = '/(?:преимуществ|выгод|почему\s+мы|отзыв\w*|рекомендац\w*|кейс\w*|портфолио|тариф\w*|пакет\w*|цен\w*|стоимост\w*|услуг\w*|о\s+(?:нас|нашей\s+)?компани\w*|о\s+(?:нас|нашей\s+)?студи\w*|о\s+нас|about|контакт\w*|hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран|faq|част\w*\s+вопрос\w*|карусел\w*|слайдер\w*|партн[её]р\w*|мега[\s-]*меню|шапк\w*|header)\b/iu';
+	if ( preg_match( $non_process_markers, $intent_head ) ) {
+		return false;
+	}
+
+	// Specification segment: the "what kind of block" tail after the first
+	// em/en/regular-dash separator, truncated at the first sentence boundary.
+	// Body prose (sentences 2+) is excluded so process vocabulary in
+	// descriptions cannot hijack the archetype (v02.11.30 rule).
+	$spec_segment = '';
+	if ( preg_match( '/\s+[—–-]\s+(.+?)(?=[.!?\n]|$)/su', $message, $m ) ) {
+		$spec_segment = trim( $m[1] );
+	} else {
+		$parts = preg_split( '/\s+[—–-]\s+|(?<=[.!?])\s+|:|\r?\n+/u', trim( $message ), 2, PREG_SPLIT_NO_EMPTY );
+		if ( isset( $parts[1] ) ) {
+			$spec_segment = trim( preg_split( '/[.!?\n]/u', $parts[1], 2 )[0] ?? '' );
+		}
+	}
+
+	$check_text = trim( $intent_head . ' ' . $spec_segment );
+	if ( $check_text === '' ) {
+		return $archetype === 'process';
+	}
 	return (bool) preg_match( '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu', $check_text );
 }
 
@@ -3627,26 +3655,122 @@ function wpae_llm_process_timeline_steps( string $message ): array {
         return $pairs;
     }
 
-    // Parse comma-separated step names: "Замысел, Съёмка, Монтаж, Публикация"
-    $step_names = [];
-    $content_message = preg_replace( '/^\s*(?:создай|сделай|добавь|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
-    if ( preg_match_all( '/\b([А-ЯЁа-яё]{3,40})(?:\s*[,\n]\s*|\s+(?:и|а|—|–|—)\s+)/u', $content_message, $matches ) ) {
-        $step_names = array_unique( array_map( 'trim', $matches[1] ) );
-    }
-    if ( count( $step_names ) >= 2 ) {
-        $result = [];
-        foreach ( array_slice( $step_names, 0, 6 ) as $index => $name ) {
-            $result[] = [ 'label' => $name, 'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ) ];
+    // Recognise an explicit step list by structure, not by keyword: a numbered
+    // list, a markdown-style bullet list, a "label: a, b, c" tail, or a tail
+    // after an em-dash that contains a list separator. Plain prose never
+    // becomes a list — body description is not a plan.
+    $items = array();
+
+    // 1) Numbered list: "1) ... 2) ... 3) ..." or "1. ... 2. ... 3. ...".
+    if ( preg_match_all( '/^\s*\d+[\.\)]\s*(.+?)\s*$/um', $message, $nm ) ) {
+        foreach ( $nm[1] as $line ) {
+            $clean = wpae_llm_normalize_timeline_step_label( $line );
+            if ( $clean !== '' ) {
+                $items[] = $clean;
+            }
         }
-        return $result;
     }
 
-    return [
-        [ 'label' => 'Бриф', 'content' => 'Фиксируем цель, аудиторию и главное действие страницы.' ],
-        [ 'label' => 'Структура', 'content' => 'Собираем смысловой маршрут и расставляем доказательства.' ],
-        [ 'label' => 'Сборка', 'content' => 'Создаем блоки из native Elementor-элементов и задаем адаптив.' ],
-        [ 'label' => 'Проверка', 'content' => 'Проверяем визуальный результат, редактируемость и следующий шаг.' ],
-    ];
+    // 2) Markdown-style bullet list: lines starting with "- ", "— ", "* ".
+    if ( empty( $items ) && preg_match_all( '/^\s*[-—*]\s+(.+?)\s*$/um', $message, $bm ) ) {
+        foreach ( $bm[1] as $line ) {
+            $clean = wpae_llm_normalize_timeline_step_label( $line );
+            if ( $clean !== '' ) {
+                $items[] = $clean;
+            }
+        }
+    }
+
+    // 3) Colon-introduced enumeration. The text after the LAST ":" in a
+    //    sentence is split on list separators. This catches "Шаги: a, b, c",
+    //    "4 карточки в ряд: A, B, C, D", "Этапы: подготовка → съёмка".
+    if ( empty( $items ) ) {
+        $segments = preg_split( '/[.!?\n]+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY );
+        if ( is_array( $segments ) ) {
+            foreach ( $segments as $segment ) {
+                $seg = trim( (string) $segment );
+                if ( $seg === '' || strpos( $seg, ':' ) === false ) {
+                    continue;
+                }
+                $tail = trim( substr( $seg, strrpos( $seg, ':' ) + 1 ) );
+                if ( $tail === '' ) {
+                    continue;
+                }
+                $candidates = preg_split( '/[,\n]|→|\s+и\s+|\s+затем\s+|\s+потом\s+|\s+а\s+|\s+после\s+этого\s+/u', $tail, -1, PREG_SPLIT_NO_EMPTY );
+                if ( ! is_array( $candidates ) ) {
+                    continue;
+                }
+                foreach ( $candidates as $cand ) {
+                    $clean = wpae_llm_normalize_timeline_step_label( $cand );
+                    if ( $clean !== '' ) {
+                        $items[] = $clean;
+                    }
+                }
+            }
+        }
+    }
+
+    // 4) Em-dash tail: "блок — A, B, C, D" or "блок — A → B → C".
+    if ( empty( $items ) && preg_match_all( '/\s+[—–-]\s+([^.!?\n]+)/u', $message, $dm ) ) {
+        foreach ( $dm[1] as $tail ) {
+            $tail = trim( (string) $tail );
+            if ( $tail === '' || ! preg_match( '/[,\n]|→/u', $tail ) ) {
+                continue;
+            }
+            $candidates = preg_split( '/[,\n]|→|\s+и\s+|\s+затем\s+|\s+потом\s+|\s+а\s+/u', $tail, -1, PREG_SPLIT_NO_EMPTY );
+            if ( ! is_array( $candidates ) ) {
+                continue;
+            }
+            foreach ( $candidates as $cand ) {
+                $clean = wpae_llm_normalize_timeline_step_label( $cand );
+                if ( $clean !== '' ) {
+                    $items[] = $clean;
+                }
+            }
+            if ( count( $items ) >= 2 ) {
+                break;
+            }
+        }
+    }
+
+    $items = array_values( array_unique( $items ) );
+
+    // Need at least two distinct labels to claim "this is a list". Anything
+    // shorter, or no recognised structure, falls back to the safe default.
+    if ( count( $items ) < 2 ) {
+        return wpae_llm_process_timeline_default_steps();
+    }
+
+    $result = array();
+    foreach ( array_slice( $items, 0, 6 ) as $index => $name ) {
+        $result[] = array(
+            'label'   => $name,
+            'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ),
+        );
+    }
+    return $result;
+}
+
+function wpae_llm_normalize_timeline_step_label( string $raw ): string {
+    $clean = trim( $raw );
+    // ASCII-only trim mask: PHP trim is byte-based, and a multibyte mask
+    // (e.g. «») can clip the last byte of a valid UTF-8 char.
+    $clean = trim( $clean, " .,;:!?\"'" );
+    // Anchored at element boundaries because Cyrillic \b in PCRE without
+    // (*UCP) is unreliable; allow letters, internal spaces, internal hyphens.
+    if ( preg_match( '/^\p{L}[\p{L}\s-]{1,39}$/u', $clean ) ) {
+        return $clean;
+    }
+    return '';
+}
+
+function wpae_llm_process_timeline_default_steps(): array {
+    return array(
+        array( 'label' => 'Бриф',      'content' => 'Фиксируем цель, аудиторию и главное действие страницы.' ),
+        array( 'label' => 'Структура', 'content' => 'Собираем смысловой маршрут и расставляем доказательства.' ),
+        array( 'label' => 'Сборка',    'content' => 'Создаем блоки из native Elementor-элементов и задаем адаптив.' ),
+        array( 'label' => 'Проверка',  'content' => 'Проверяем визуальный результат, редактируемость и следующий шаг.' ),
+    );
 }
 
 function wpae_llm_process_timeline_layout( string $message ): string {
