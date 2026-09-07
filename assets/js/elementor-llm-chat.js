@@ -644,7 +644,7 @@
         return ids;
     }
     function getVisionSyncIds(editorSync) {
-        if (editorSync && editorSync.mode === 'patch' && Array.isArray(editorSync.selected_scope_ids) && editorSync.selected_scope_ids.length) {
+        if (editorSync && ['patch', 'replace'].indexOf(editorSync.mode) !== -1 && Array.isArray(editorSync.selected_scope_ids) && editorSync.selected_scope_ids.length) {
             return editorSync.selected_scope_ids.map(function (id) { return String(id || ''); }).filter(Boolean).slice(0, 8);
         }
         return getEditorSyncIds(editorSync);
@@ -900,6 +900,26 @@
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
         var container = window.elementor.getPreviewContainer();
         if (!container) return Promise.resolve(false);
+        if (editorSync.mode === 'replace') {
+            var replaceId = String(editorSync.replace_element_id || editorSync.elements[0].id || '');
+            var rootModels = getEditorModelChildren(container);
+            var target = rootModels.find(function (model) { return getEditorModelId(model) === replaceId; });
+            if (!target || !replaceId) return Promise.resolve(false);
+            var targetIndex = rootModels.indexOf(target);
+            try {
+                return Promise.resolve(window.$e.run('document/elements/delete', { container: target })).then(function () {
+                    return window.$e.run('document/elements/create', {
+                        container: container,
+                        model: editorSync.elements[0],
+                        options: { at: targetIndex >= 0 ? targetIndex : null, clone: false }
+                    });
+                }).then(function () {
+                    return waitForPreviewPaint().then(function () { return refreshElementorPreview(); });
+                }, function () { return false; });
+            } catch (error) {
+                return Promise.resolve(false);
+            }
+        }
         var elements = editorSync.elements.slice();
         var position = editorSync.position === 'start' ? 'start' : 'end';
         if (position === 'start') elements.reverse();
@@ -1147,7 +1167,10 @@
         });
     }
     function visionReviewScope(editorSync) {
-        return editorSync && editorSync.mode === 'patch' ? 'selected_patch' : 'generated_block';
+        return editorSync && ['patch', 'replace'].indexOf(editorSync.mode) !== -1 ? 'selected_patch' : 'generated_block';
+    }
+    function isTargetedEditorSync(editorSync) {
+        return Boolean(editorSync && ['patch', 'replace'].indexOf(editorSync.mode) !== -1);
     }
     function getVisionGeneratedJson(editorSync) {
         if (!editorSync || !Array.isArray(editorSync.elements)) return '';
@@ -1428,10 +1451,10 @@
                 visionPromise = Promise.resolve(editorSyncPromise).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
                     if (editorSynced) {
-                        var syncMessage = editorSyncData && editorSyncData.mode === 'patch'
+                        var syncMessage = isTargetedEditorSync(editorSyncData)
                             ? 'Выбранный элемент обновлен в открытом Elementor без перезагрузки редактора.'
                             : 'Новые элементы добавлены в открытом Elementor без перезагрузки редактора.';
-                        var paintPromise = editorSyncData && editorSyncData.mode === 'patch'
+                        var paintPromise = isTargetedEditorSync(editorSyncData)
                             ? waitForPreviewPaint()
                             : waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount);
                         return paintPromise.then(function () { return focusEditorSync(editorSyncData); }).then(function () {
@@ -1439,13 +1462,13 @@
                             return true;
                         }).catch(function () {
                             return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
-                                addMessage('assistant', editorSyncData && editorSyncData.mode === 'patch' ? 'Canvas не подтвердил realtime-правку, preview обновлен из сохраненных данных.' : 'Canvas не подтвердил realtime-вставку, preview обновлен из сохраненных данных.');
+                                addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Canvas не подтвердил realtime-правку, preview обновлен из сохраненных данных.' : 'Canvas не подтвердил realtime-вставку, preview обновлен из сохраненных данных.');
                                 return false;
                             });
                         });
                     }
                     return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
-                        addMessage('assistant', editorSyncData && editorSyncData.mode === 'patch' ? 'Предпросмотр измененного элемента обновлен из сохраненных данных.' : 'Предпросмотр Elementor обновлен из сохраненных данных.');
+                        addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Предпросмотр измененного элемента обновлен из сохраненных данных.' : 'Предпросмотр Elementor обновлен из сохраненных данных.');
                         return false;
                     }).catch(function (error) {
                         addMessage('assistant', 'Данные сохранены, но preview Elementor не обновился: ' + error.message);
@@ -1461,7 +1484,7 @@
                 });
             }
             return visionPromise.then(function (review) {
-                var reviewTargetedPatch = editorSyncDataForReview && editorSyncDataForReview.mode === 'patch';
+                var reviewTargetedPatch = isTargetedEditorSync(editorSyncDataForReview);
                 if (review && review.vision_unavailable) {
                     addMessage('assistant', (reviewTargetedPatch ? 'AI Vision временно недоступен; точечная правка сохранена и требует ручной проверки: ' : 'AI Vision временно недоступен; новая генерация сохранена и требует ручной проверки: ') + review.error);
                 }

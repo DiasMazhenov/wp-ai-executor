@@ -418,7 +418,6 @@ function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id
         $steps[] = [ 'id' => 'elementor_update', 'status' => 'failed', 'message' => 'Responsive-таймлайн не сохранён; Elementor остановил запись.', 'details' => [ 'http_status' => $status, 'error' => sanitize_text_field( (string) ( $data['error'] ?? '' ) ) ] ];
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Responsive-таймлайн не сохранён.', 'status' => $status, 'details' => $data, 'steps' => $steps ];
     }
-    $editor_patch = [ [ 'element_id' => $root_id, 'path' => 'settings._css_classes', 'op' => 'set', 'value' => (string) ( $next[ $selected_index ]['settings']['_css_classes'] ?? '' ) ] ];
     $steps[] = [ 'id' => 'elementor_update', 'status' => 'ok', 'message' => 'Responsive-таймлайн сохранён через Elementor update.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'selected_root_id' => $root_id ] ];
     $steps[] = [ 'id' => 'complete', 'status' => 'ok', 'message' => 'Нативные разделители и мобильная адаптация подтверждены preflight и записаны.' ];
     return [
@@ -431,8 +430,12 @@ function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id
         'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
         'rollback_expires_at' => $data['rollback_expires_at'] ?? null,
         'editor_sync' => [
-            'mode' => 'patch',
-            'patches' => $editor_patch,
+            // A structural rebuild cannot be synchronized through settings.*
+            // patches: the editor must replace the selected root model so its
+            // Navigator/JSON reflects the saved native widget tree.
+            'mode' => 'replace',
+            'elements' => [ $next[ $selected_index ] ],
+            'replace_element_id' => $root_id,
             'changed_ids' => [ $root_id ],
             'target_element_ids' => [ $root_id ],
             'selected_scope_ids' => array_values( array_unique( $scope_ids ) ),

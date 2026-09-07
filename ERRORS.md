@@ -79,6 +79,23 @@ before making a new change to the plugin.
   `deterministic_process_route`, then complete the live JSON/DOM/rendered HTML
   and desktop/mobile screenshot checks.
 
+## EJ-096: Structural repair left the editor JSON stale
+
+- **Observed (2026-09-07, live Elementor post 4556):** The deterministic
+  v02.11.65 repair returned HTTP 200 and the public rendered HTML contained
+  three native Divider widgets, but the open editor Navigator and copied
+  selection JSON still showed one Divider plus two HTML connector widgets.
+- **Root cause:** The repair response advertised `editor_sync.mode=patch` and
+  sent a harmless `settings._css_classes` patch. Elementor's patch path cannot
+  replace child/widget structure, so it refreshed the preview without replacing
+  the selected root model.
+- **Fix (v02.11.66):** Return the rebuilt root as `editor_sync.mode=replace`
+  with `replace_element_id`; the chat client deletes that root model and creates
+  the canonical model at the same top-level position before refreshing preview.
+- **Regression status:** Deploy v02.11.66 and confirm the selected JSON,
+  Navigator, public DOM, rendered HTML, desktop screenshot, and mobile
+  no-overflow screenshot all describe the same native Divider tree.
+
 ## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
 
 - **Observed (2026-09-07, live Elementor post 4556):** With settings showing

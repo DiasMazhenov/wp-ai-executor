@@ -33,6 +33,13 @@
 - v02.11.65: Adds `обнови` to the action-intent classifier. The responsive
   prompt uses that verb; without it, the selected process root was incorrectly
   treated as a normal chat request and never reached the local repair route.
+- v02.11.66: Structural process repairs now return an editor-sync `replace`
+  operation with the rebuilt root model instead of a settings-only `patch`.
+  The Elementor editor deletes and recreates the selected root at the same
+  position, so Navigator and copied selection JSON contain the native Divider
+  children rather than the stale `1 Divider + 2 HTML` model. Live post 4556
+  must repeat selected JSON, public DOM, rendered HTML, and desktop/mobile
+  screenshot checks after deployment.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,
