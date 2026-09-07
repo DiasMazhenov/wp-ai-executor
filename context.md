@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.64`
+- Plugin: `v02.11.65`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -30,6 +30,9 @@
   is unavailable or times out; ordinary selected property edits still use the
   provider patch path. Live post 4556 must confirm the saved native Divider
   tree after this route and then repeat desktop/mobile rendered checks.
+- v02.11.65: Adds `обнови` to the action-intent classifier. The responsive
+  prompt uses that verb; without it, the selected process root was incorrectly
+  treated as a normal chat request and never reached the local repair route.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,

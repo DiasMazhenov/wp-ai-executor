@@ -110,7 +110,7 @@ function wpae_llm_is_action_request( string $message ): bool {
     ) {
         return false;
     }
-    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|скругл\w*|закругл\w*|округл\w*|радиус\w*|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
+    return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|обнови|скругл\w*|закругл\w*|округл\w*|радиус\w*|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
 }
 
 function wpae_llm_is_targeted_edit_request( string $message ): bool {

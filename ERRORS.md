@@ -65,6 +65,20 @@ before making a new change to the plugin.
   deterministic route, then verify saved JSON, native Divider DOM, rendered
   HTML geometry, desktop screenshot, and mobile no-overflow screenshot.
 
+## EJ-095: Responsive repair verb was not classified as an action
+
+- **Observed (2026-09-07, live Elementor post 4556):** The selected-root
+  prompt began with `Обнови`, but v02.11.64 still sent it to OpenRouter and
+  ended in provider timeout instead of entering the local structural repair.
+- **Root cause:** `wpae_llm_is_targeted_edit_request()` recognized `обнови`,
+  while `wpae_llm_is_action_request()` did not, so the later deterministic
+  guard was unreachable.
+- **Fix (v02.11.65):** Classify `обнови` as an action verb and keep the
+  selected process-root route before the provider call.
+- **Regression status:** Deploy v02.11.65, verify the chat trace contains
+  `deterministic_process_route`, then complete the live JSON/DOM/rendered HTML
+  and desktop/mobile screenshot checks.
+
 ## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
 
 - **Observed (2026-09-07, live Elementor post 4556):** With settings showing
