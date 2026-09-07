@@ -87,7 +87,7 @@
         // request path, so server gates and Vision review stay identical.
         if (send.disabled) { addMessage('assistant', strings.regenerateBusy || 'Дождитесь завершения текущего запроса.'); return; }
         var userMessages = messages.querySelectorAll('.wpae-llm-message--user');
-        var last = userMessages.length ? String(userMessages[userMessages.length - 1].textContent || '').trim() : '';
+        var last = userMessages.length ? messageContent(userMessages[userMessages.length - 1]).trim() : '';
         if (!last) { last = readLastBrief(); }
         if (!last) {
             addMessage('assistant', strings.regenerateEmpty || 'Нет предыдущего запроса для перегенерации.');
@@ -149,10 +149,39 @@
         button.setAttribute('aria-label', label);
         button.setAttribute('title', label);
     }
+    function messageContent(item) {
+        if (!item) return '';
+        if (item.dataset && item.dataset.message !== undefined) return String(item.dataset.message);
+        return String(item.textContent || '');
+    }
     function addMessage(role, text) {
+        var content = String(text || '');
         var item = document.createElement('div');
         item.className = 'wpae-llm-message wpae-llm-message--' + role;
-        item.textContent = text;
+        item.dataset.message = content;
+        if (role === 'user') {
+            var messageText = document.createElement('span');
+            messageText.className = 'wpae-llm-message__text';
+            messageText.textContent = content;
+            var copyPrompt = document.createElement('button');
+            copyPrompt.type = 'button';
+            copyPrompt.className = 'wpae-llm-icon-button wpae-llm-copy-prompt';
+            addIcon(copyPrompt, 'eicon-copy', strings.copyPrompt || 'Копировать промт');
+            copyPrompt.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                copyText(content).then(function () {
+                    setButtonLabel(copyPrompt, strings.promptCopied || 'Промт скопирован');
+                    window.setTimeout(function () { setButtonLabel(copyPrompt, strings.copyPrompt || 'Копировать промт'); }, 1600);
+                }).catch(function () {
+                    setButtonLabel(copyPrompt, strings.copyError || 'Не удалось скопировать текст.');
+                });
+            });
+            item.appendChild(messageText);
+            item.appendChild(copyPrompt);
+        } else {
+            item.textContent = content;
+        }
         messages.appendChild(item);
         messages.scrollTop = messages.scrollHeight;
     }
@@ -221,7 +250,7 @@
             messages: Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).map(function (item) {
                 return {
                     role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant',
-                    content: item.textContent
+                    content: messageContent(item)
                 };
             })
         }, null, 2);
@@ -1245,7 +1274,7 @@
         var originalBrief = options.originalBrief || message;
         var beforeWidgetCount = getPreviewWidgetCount();
         var history = Array.prototype.slice.call(messages.querySelectorAll('.wpae-llm-message')).slice(-12).map(function (item) {
-            return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: item.textContent };
+            return { role: item.classList.contains('wpae-llm-message--user') ? 'user' : 'assistant', content: messageContent(item) };
         });
         status.textContent = strings.sending;
         send.disabled = true;

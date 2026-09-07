@@ -51,6 +51,8 @@ function wpae_enqueue_elementor_llm_chat(): void {
             'meta' => 'Модель: {model} · Версия: {version}',
             'send' => 'Отправить',
             'copyLog' => 'Копировать JSON',
+            'copyPrompt' => 'Копировать промт',
+            'promptCopied' => 'Промт скопирован',
             'copied' => 'JSON-лог скопирован',
             'copySelection' => 'Копировать JSON выделенного',
             'selectionCopied' => 'JSON выделенного скопирован',

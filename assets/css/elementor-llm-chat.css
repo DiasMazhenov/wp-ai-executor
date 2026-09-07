@@ -90,7 +90,10 @@
 .wpae-llm-messages { display: grid; gap: 8px; max-height: 280px; padding: 14px; overflow: auto; }
 .wpae-llm-message { max-width: 92%; padding: 9px 11px; border-radius: 9px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .wpae-llm-message--assistant { justify-self: start; background: #2d333d; color: #e2e8f0; }
-.wpae-llm-message--user { justify-self: end; background: #2563eb; color: #fff; }
+.wpae-llm-message--user { display: flex; align-items: flex-start; justify-self: end; gap: 8px; background: #2563eb; color: #fff; }
+.wpae-llm-message__text { min-width: 0; flex: 1; }
+.wpae-llm-copy-prompt { width: 24px; height: 24px; flex: 0 0 24px; padding: 0; border: 1px solid rgba(255,255,255,.55); border-radius: 5px; background: transparent; color: #fff; cursor: pointer; font-size: 12px; }
+.wpae-llm-copy-prompt:hover { border-color: #fff; background: rgba(255,255,255,.12); }
 .wpae-llm-json-spoiler { max-width: 100%; border: 1px solid #475569; border-radius: 8px; background: #171b21; color: #cbd5e1; font-size: 11px; }
 .wpae-llm-json-spoiler summary { padding: 9px 11px; cursor: pointer; font-weight: 600; }
 .wpae-llm-json-content { padding: 0 10px 10px; }
