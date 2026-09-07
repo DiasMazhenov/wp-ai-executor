@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.59`
+- Plugin: `v02.11.60`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -25,6 +25,12 @@
   names instead of a generic message. Local contract, PHP lint, JS syntax,
   diff, and runtime parser checks pass; live deployment and one bounded exact
   prompt test remain required.
+- v02.11.60: Extends the same parser to numeric top-level lists returned by
+  the live Gemini route, including scalar entries and common `code`, `status`,
+  and `title` fields, by traversing the response root when named fields are
+  absent. The first v02.11.59 live retry exposed `HTTP 400` with only list
+  field `0`; v02.11.60 is required to surface the nested provider message
+  instead of that shape-only diagnostic.
 - v02.11.56: Adds provider-aware model selection in the LLM settings. DeepSeek
   now defaults to `deepseek-v4-flash` and exposes `deepseek-v4-pro`,
   `deepseek-v4-flash`, and `deepseek-v4-flash-vision-exp` in a native dropdown;

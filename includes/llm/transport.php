@@ -304,7 +304,7 @@ function wpae_llm_provider_error_message( $body ): string {
         if ( ! is_array( $value ) ) {
             return '';
         }
-        foreach ( [ 'message', 'detail', 'description', 'reason', 'error', 'errors' ] as $key ) {
+        foreach ( [ 'message', 'detail', 'description', 'reason', 'error', 'errors', 'code', 'status', 'title' ] as $key ) {
             if ( array_key_exists( $key, $value ) ) {
                 $candidate = $extract( $value[ $key ], $depth + 1 );
                 if ( $candidate !== '' ) {
@@ -312,8 +312,13 @@ function wpae_llm_provider_error_message( $body ): string {
                 }
             }
         }
-        foreach ( $value as $nested ) {
+        foreach ( $value as $nested_key => $nested ) {
             if ( is_array( $nested ) ) {
+                $candidate = $extract( $nested, $depth + 1 );
+                if ( $candidate !== '' ) {
+                    return $candidate;
+                }
+            } elseif ( is_scalar( $nested ) && is_int( $nested_key ) ) {
                 $candidate = $extract( $nested, $depth + 1 );
                 if ( $candidate !== '' ) {
                     return $candidate;
@@ -328,6 +333,7 @@ function wpae_llm_provider_error_message( $body ): string {
     $message = $message ?: $extract( $body['error'] ?? null );
     $message = $message ?: $extract( $body['message'] ?? null );
     $message = $message ?: $extract( $body['detail'] ?? $body['details'] ?? null );
+    $message = $message ?: $extract( $body );
 
     // OpenRouter hides the upstream reason inside error.metadata; surface a
     // bounded sanitized excerpt so provider failures are diagnosable in the

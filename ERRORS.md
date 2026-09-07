@@ -29,11 +29,17 @@ before making a new change to the plugin.
 - **Fix (v02.11.59):** Parse nested error arrays and replace the last generic
   fallback with a safe `HTTP status + sanitized top-level field names`
   diagnostic when the provider returns no recognized message.
+- **Live finding after v02.11.59:** The exact prompt reached Gemini, which
+  returned HTTP 400 decoded as a numeric top-level list; the UI showed only
+  `поля: 0`. This proved the remaining parser gap was scalar entries inside a
+  numeric list, not an Elementor write or DOM failure.
+- **Fix (v02.11.60):** Parse numeric-list scalar entries and common provider
+  fields `code`, `status`, and `title` so the actual upstream 400 diagnostic
+  is shown.
 - **Regression status:** Local contract test, PHP lint, JS syntax,
-  `git diff --check`, and runtime parser checks pass. Deploy v02.11.59,
-  reproduce the exact prompt once, capture the now-actionable upstream
-  diagnostic, and continue the JSON/DOM/rendered-HTML/screenshot acceptance
-  loop.
+  `git diff --check`, and runtime parser checks pass. Deploy v02.11.60,
+  reproduce the exact prompt once, capture the provider message, and continue
+  the JSON/DOM/rendered-HTML/screenshot acceptance loop.
 
 ## EJ-089: v02.11.55 settings allowed unsupported DeepSeek model IDs
 
