@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.62`
+- Plugin: `v02.11.63`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -16,6 +16,14 @@
   use 25% widths and zero rail gap so all four markers stay in the viewport
   while cards stack at 100%. The release requires live desktop/mobile DOM
   geometry and screenshot verification on post 4556.
+- v02.11.63: Makes the responsive process repair deterministic for an
+  already-existing selected timeline. The targeted LLM patch path cannot
+  change widget types or child structure, so a selected `wpae-process-timeline`
+  root is rebuilt through the existing canonical contract and saved through
+  the Elementor update transaction. The editor receives a scoped native
+  settings sync plus a saved-preview refresh; live post 4556 must confirm
+  native Divider DOM, non-zero connector geometry, four visible mobile markers,
+  and single-column cards without horizontal overflow.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,

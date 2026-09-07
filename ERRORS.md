@@ -29,6 +29,25 @@ before making a new change to the plugin.
   must render non-zero horizontal widths and the mobile marker rail must not
   overflow.
 
+## EJ-093: Targeted patch could not repair an existing timeline structure
+
+- **Observed (2026-09-07, live Elementor post 4556):** Selecting the timeline
+  root and asking for the responsive Divider repair produced six provider patch
+  operations, then HTTP 422 `Elementor patch failed before validation.`. The
+  targeted patch contract accepts native `settings.*` paths only, so it cannot
+  replace legacy HTML connector widgets or rebuild child structure.
+- **Root cause:** The LLM patch executor validated and forwarded a structural
+  timeline request to the property-only patch endpoint. The endpoint correctly
+  rejected the unsupported child/widget changes before writing, leaving the
+  old non-responsive tree in place.
+- **Fix (v02.11.63):** When the selected root is an explicit process timeline,
+  bypass provider-supplied structural patches, rebuild that root through the
+  canonical process contract, run the existing Elementor update dry-run and
+  transaction, then refresh the saved preview in the scoped editor selection.
+- **Regression status:** Local contract/lint checks and live post-4556
+  JSON/DOM/rendered-HTML/screenshot verification are required. A heading-only
+  selection must continue using the ordinary property patch path.
+
 ## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
 
 - **Observed (2026-09-07, live Elementor post 4556):** With settings showing

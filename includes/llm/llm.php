@@ -362,7 +362,88 @@ function wpae_llm_action_diff( array $before, array $inserted, array $after ): a
     ];
 }
 
-function wpae_llm_execute_patch_action( array $action, int $post_id, array $selected_ids = [] ): array {
+function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id, array $selected_ids, string $message, string $operation_id ): array {
+    $selected_lookup = array_fill_keys( array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) ), true );
+    $selected_index = null;
+    foreach ( $existing as $index => $element ) {
+        if ( ! is_array( $element ) || ! isset( $selected_lookup[ sanitize_key( (string) ( $element['id'] ?? '' ) ) ] ) ) {
+            continue;
+        }
+        $classes = preg_split( '/\s+/', trim( (string) ( $element['settings']['_css_classes'] ?? '' ) ) );
+        if ( is_array( $classes ) && in_array( 'wpae-process-timeline', $classes, true ) ) {
+            $selected_index = $index;
+            break;
+        }
+    }
+    if ( $selected_index === null || ! function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
+        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Выбранный процессный таймлайн не найден.' ];
+    }
+
+    $changed = 0;
+    $rebuilt = wpae_llm_enforce_process_timeline_contract( [ $existing[ $selected_index ] ], $message, $changed );
+    if ( $changed < 1 || empty( $rebuilt[0] ) || ! is_array( $rebuilt[0] ) ) {
+        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Канонический процессный таймлайн не удалось пересобрать.' ];
+    }
+    $next = $existing;
+    $next[ $selected_index ] = $rebuilt[0];
+    $root_id = sanitize_key( (string) ( $next[ $selected_index ]['id'] ?? '' ) );
+    $scope_ids = wpae_llm_collect_selected_scope_ids( $existing, $selected_ids );
+    $steps = [ [
+        'id' => 'process_timeline_repair',
+        'status' => 'ok',
+        'message' => 'Выбранный таймлайн пересобран детерминированно: линии используют нативный Elementor-разделитель, а мобильная рельса — responsive-ширины.',
+        'details' => [ 'selected_root_id' => $root_id, 'layout' => wpae_llm_process_timeline_layout( $message ), 'selected_scope_count' => count( $scope_ids ) ],
+    ] ];
+    $build_request = static function ( bool $dry_run ) use ( $post_id, $next ): WP_REST_Request {
+        $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
+        $request->set_param( 'post_id', $post_id );
+        $request->set_param( 'elementor_data', $next );
+        $request->set_param( 'template', 'elementor_canvas' );
+        $request->set_param( 'transaction_visual_regression', true );
+        $request->set_param( 'dry_run', $dry_run );
+        return $request;
+    };
+    $preview = wpae_elementor_update( $build_request( true ) );
+    $preview_data = $preview instanceof WP_REST_Response ? $preview->get_data() : [];
+    $preview_status = $preview instanceof WP_REST_Response ? $preview->get_status() : 500;
+    if ( $preview_status < 200 || $preview_status >= 300 || empty( $preview_data['ok'] ) ) {
+        $steps[] = [ 'id' => 'preview', 'status' => 'failed', 'message' => 'Предпросмотр responsive-таймлайна отклонён до записи.', 'details' => [ 'http_status' => $preview_status, 'error' => sanitize_text_field( (string) ( $preview_data['error'] ?? '' ) ), 'details' => $preview_data ] ];
+        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Предпросмотр таймлайна отклонён до записи.', 'status' => $preview_status, 'details' => $preview_data, 'steps' => $steps ];
+    }
+    $steps[] = [ 'id' => 'preview', 'status' => 'ok', 'message' => 'Responsive-структура и Elementor preflight прошли до записи.', 'details' => [ 'http_status' => $preview_status ] ];
+    $result = wpae_elementor_update( $build_request( false ) );
+    $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
+    $status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
+    if ( $status < 200 || $status >= 300 || empty( $data['ok'] ) ) {
+        $steps[] = [ 'id' => 'elementor_update', 'status' => 'failed', 'message' => 'Responsive-таймлайн не сохранён; Elementor остановил запись.', 'details' => [ 'http_status' => $status, 'error' => sanitize_text_field( (string) ( $data['error'] ?? '' ) ) ] ];
+        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Responsive-таймлайн не сохранён.', 'status' => $status, 'details' => $data, 'steps' => $steps ];
+    }
+    $editor_patch = [ [ 'element_id' => $root_id, 'path' => 'settings._css_classes', 'op' => 'set', 'value' => (string) ( $next[ $selected_index ]['settings']['_css_classes'] ?? '' ) ] ];
+    $steps[] = [ 'id' => 'elementor_update', 'status' => 'ok', 'message' => 'Responsive-таймлайн сохранён через Elementor update.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'selected_root_id' => $root_id ] ];
+    $steps[] = [ 'id' => 'complete', 'status' => 'ok', 'message' => 'Нативные разделители и мобильная адаптация подтверждены preflight и записаны.' ];
+    return [
+        'ok' => true,
+        'operation_id' => $operation_id,
+        'action' => 'patch_elements',
+        'post_id' => $post_id,
+        'changed_count' => 1,
+        'repair_report' => [ 'type' => 'process_timeline_rebuild', 'element_id' => $root_id, 'layout' => wpae_llm_process_timeline_layout( $message ) ],
+        'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
+        'rollback_expires_at' => $data['rollback_expires_at'] ?? null,
+        'editor_sync' => [
+            'mode' => 'patch',
+            'patches' => $editor_patch,
+            'changed_ids' => [ $root_id ],
+            'target_element_ids' => [ $root_id ],
+            'selected_scope_ids' => array_values( array_unique( $scope_ids ) ),
+            'selected_scope_count' => count( $scope_ids ),
+        ],
+        'details' => $data,
+        'steps' => $steps,
+    ];
+}
+
+function wpae_llm_execute_patch_action( array $action, int $post_id, array $selected_ids = [], string $message = '' ): array {
     $operation_id = wpae_llm_new_operation_id();
     $patches = is_array( $action['patches'] ?? null ) ? array_slice( $action['patches'], 0, 12 ) : [];
     $selected_ids = array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) );
@@ -370,6 +451,12 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
     $existing = wpae_get_elementor_data_for_post( $post_id );
     if ( is_wp_error( $existing ) ) {
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Не удалось прочитать текущую структуру Elementor для точечной правки.', 'status' => 422, 'details' => [ 'error' => $existing->get_error_message() ] ];
+    }
+    if ( (string) ( $action['action'] ?? '' ) === 'patch_elements' && absint( $action['post_id'] ?? 0 ) === $post_id && ! empty( $selected_ids ) && wpae_llm_is_process_request( $message, 'process' ) ) {
+        $process_repair = wpae_llm_execute_process_timeline_repair( $existing, $post_id, $selected_ids, $message, $operation_id );
+        if ( ! empty( $process_repair['ok'] ) || ( $process_repair['error'] ?? '' ) !== 'Выбранный процессный таймлайн не найден.' ) {
+            return $process_repair;
+        }
     }
     $scope_ids = wpae_llm_collect_selected_scope_ids( $existing, $selected_ids );
     $out_of_scope_ids = array_values( array_diff( $patch_ids, $scope_ids ) );
@@ -7693,7 +7780,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
             $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
             $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
-            $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids );
+            $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids, $message );
             $patch_execution['steps'] = array_merge(
                 [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и полное дерево выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ] ],
                 [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) || ! empty( $action_diagnostics['deterministic_border_radius_patch'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) || ! empty( $action_diagnostics['deterministic_border_radius_patch'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],
