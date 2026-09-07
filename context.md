@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.11.68`
-- Guide: `v02.05.95`
+- Plugin: `v02.11.69`
+- Guide: `v02.05.96`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
@@ -45,12 +45,15 @@
   including structural root replacement and generated-root cleanup. The live
   post 4556 test had a canonical public tree but a stale Navigator because the
   previous command received a model instead of the required Container.
-- v02.11.68: Records the supplied post-4556 card as the process/timeline visual
-  reference: white native card, 1px `#dbe3f0` border, 20px radius, reference
-  padding, 22% desktop width, and 100% mobile width. Horizontal marker rails
-  and connectors remain outside card surfaces, and every connector is enforced
-  as a native Elementor Divider rather than HTML. Guide version `v02.05.95`
-  now exposes this rule to future guided generations.
+- v02.11.68: Records the supplied post-4556 card as the horizontal process/timeline
+  visual reference: white native card, 1px `#dbe3f0` border, 20px radius,
+  reference padding, 22% desktop width, and 100% mobile width. Horizontal
+  marker rails and connectors remain outside card surfaces, and every connector
+  is enforced as a native Elementor Divider rather than HTML.
+- v02.11.69: Narrows the reference-card rule to the horizontal layout only and
+  restores the previous vertical left/alternating card settings. The editor test
+  must exercise the selected horizontal timeline without rewriting vertical
+  timelines.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,
