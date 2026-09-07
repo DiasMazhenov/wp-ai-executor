@@ -317,8 +317,20 @@ function wpae_settings_page() {
     $vision_providers    = wpae_vision_provider_options();
     $llm_settings        = wpae_llm_get_settings();
     $llm_providers        = wpae_llm_provider_options();
-    $llm_gemini_models    = wpae_llm_provider_model_options( 'gemini' );
-    $llm_is_gemini        = $llm_settings['provider'] === 'gemini';
+    $llm_model_options = [];
+    foreach ( array_keys( $llm_providers ) as $provider_id ) {
+        $provider_models = wpae_llm_provider_model_options( $provider_id );
+        if ( ! empty( $provider_models ) ) {
+            $llm_model_options[ $provider_id ] = $provider_models;
+        }
+    }
+    $llm_has_model_options = ! empty( $llm_model_options[ $llm_settings['provider'] ] ?? [] );
+    $llm_fallback_model_options = [];
+    foreach ( $llm_model_options as $provider_models ) {
+        foreach ( $provider_models as $model_id => $model_label ) {
+            $llm_fallback_model_options[ $model_id ] = $model_label;
+        }
+    }
     ?>
     <style>
         .wpae-dashboard {
@@ -945,9 +957,9 @@ function wpae_settings_page() {
                             <select class="wpae-input" id="wpae-llm-provider" name="wpae_llm[provider]"><?php foreach ( $llm_providers as $provider_id => $provider ) : ?><option value="<?php echo esc_attr( $provider_id ); ?>" data-base-url="<?php echo esc_attr( (string) $provider['base_url'] ); ?>" data-model="<?php echo esc_attr( (string) $provider['model'] ); ?>" <?php selected( $llm_settings['provider'], $provider_id ); ?>><?php echo esc_html( $provider['label'] ); ?></option><?php endforeach; ?></select>
                         </div>
                         <div class="wpae-form-field">
-                            <label for="wpae-llm-model">Модель</label>
-                            <select class="wpae-input" id="wpae-llm-gemini-model" name="wpae_llm[model]" <?php disabled( ! $llm_is_gemini ); ?> <?php echo $llm_is_gemini ? '' : 'hidden'; ?>><?php foreach ( $llm_gemini_models as $model_id => $model_label ) : ?><option value="<?php echo esc_attr( $model_id ); ?>" <?php selected( $llm_settings['model'], $model_id ); ?>><?php echo esc_html( $model_label ); ?></option><?php endforeach; ?></select>
-                            <input class="wpae-input" id="wpae-llm-model" name="wpae_llm[model]" type="text" value="<?php echo esc_attr( (string) $llm_settings['model'] ); ?>" autocomplete="off" <?php disabled( $llm_is_gemini ); ?> <?php echo $llm_is_gemini ? 'hidden' : ''; ?> />
+                            <label id="wpae-llm-model-label">Модель</label>
+                            <select class="wpae-input" id="wpae-llm-model-select" name="wpae_llm[model]" aria-labelledby="wpae-llm-model-label" <?php disabled( ! $llm_has_model_options ); ?> <?php echo $llm_has_model_options ? '' : 'hidden'; ?>><?php foreach ( $llm_model_options as $model_provider => $provider_models ) : ?><?php foreach ( $provider_models as $model_id => $model_label ) : ?><option value="<?php echo esc_attr( $model_id ); ?>" data-wpae-model-provider="<?php echo esc_attr( $model_provider ); ?>" <?php selected( $llm_settings['provider'] === $model_provider ? $llm_settings['model'] : '', $model_id ); ?>><?php echo esc_html( $model_label ); ?></option><?php endforeach; ?><?php endforeach; ?></select>
+                            <input class="wpae-input" id="wpae-llm-model" name="wpae_llm[model]" type="text" value="<?php echo esc_attr( (string) $llm_settings['model'] ); ?>" aria-labelledby="wpae-llm-model-label" autocomplete="off" <?php disabled( $llm_has_model_options ); ?> <?php echo $llm_has_model_options ? 'hidden' : ''; ?> />
                         </div>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
@@ -958,7 +970,7 @@ function wpae_settings_page() {
                     <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-fallback-model">Резервная модель (fallback)</label>
                         <input class="wpae-input" id="wpae-llm-fallback-model" name="wpae_llm[fallback_model]" type="text" list="wpae-llm-fallback-model-history" value="<?php echo esc_attr( (string) ( $llm_settings['fallback_model'] ?? '' ) ); ?>" placeholder="например, google/gemma-4-31b-it:free" autocomplete="off" />
-                        <datalist id="wpae-llm-fallback-model-history"><?php foreach ( (array) ( $llm_settings['fallback_model_history'] ?? [] ) as $history_model ) : ?><option value="<?php echo esc_attr( (string) $history_model ); ?>"></option><?php endforeach; ?></datalist>
+                        <datalist id="wpae-llm-fallback-model-history"><?php foreach ( $llm_fallback_model_options as $model_id => $model_label ) : ?><option value="<?php echo esc_attr( (string) $model_id ); ?>"><?php echo esc_html( $model_label ); ?></option><?php endforeach; ?><?php foreach ( (array) ( $llm_settings['fallback_model_history'] ?? [] ) as $history_model ) : ?><option value="<?php echo esc_attr( (string) $history_model ); ?>"></option><?php endforeach; ?></datalist>
                         <span class="wpae-section-note">Необязательно. Используется один раз, если основной пул вернёт rate limit или зависнет. Выберите ранее введённую модель из списка или впишите новую. Оставьте пустым, чтобы отключить.</span>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
@@ -1674,32 +1686,39 @@ print(result["return_value"])'
         var llmProvider = document.getElementById('wpae-llm-provider');
         var llmBaseUrl = document.getElementById('wpae-llm-base-url');
         var llmModel = document.getElementById('wpae-llm-model');
-        var llmGeminiModel = document.getElementById('wpae-llm-gemini-model');
+        var llmModelSelect = document.getElementById('wpae-llm-model-select');
         if (llmProvider && llmBaseUrl && llmModel) {
             var syncLlmProvider = function (resetModel) {
                 var option = llmProvider.options[llmProvider.selectedIndex];
                 var custom = llmProvider.value === 'custom';
-                var gemini = llmProvider.value === 'gemini';
                 llmBaseUrl.value = option.getAttribute('data-base-url') || '';
                 llmBaseUrl.readOnly = !custom;
                 llmBaseUrl.setAttribute('aria-readonly', custom ? 'false' : 'true');
-                if (llmGeminiModel) {
-                    if (gemini) {
-                        var hasGeminiModel = Array.prototype.some.call(llmGeminiModel.options, function (item) { return item.value === llmModel.value; });
-                        if (resetModel || !hasGeminiModel) llmGeminiModel.value = option.getAttribute('data-model') || llmGeminiModel.options[0].value;
-                        llmGeminiModel.disabled = false;
-                        llmGeminiModel.hidden = false;
-                        llmModel.disabled = true;
-                        llmModel.hidden = true;
-                    } else {
-                        llmGeminiModel.disabled = true;
-                        llmGeminiModel.hidden = true;
-                        llmModel.disabled = false;
-                        llmModel.hidden = false;
-                        if (resetModel) llmModel.value = option.getAttribute('data-model') || '';
+                var providerModelOptions = llmModelSelect ? Array.prototype.filter.call(llmModelSelect.options, function (item) {
+                    return item.getAttribute('data-wpae-model-provider') === llmProvider.value;
+                }) : [];
+                if (llmModelSelect && providerModelOptions.length) {
+                    providerModelOptions.forEach(function (item) { item.hidden = false; item.disabled = false; });
+                    Array.prototype.forEach.call(llmModelSelect.options, function (item) {
+                        if (providerModelOptions.indexOf(item) === -1) {
+                            item.hidden = true;
+                            item.disabled = true;
+                        }
+                    });
+                    var hasProviderModel = providerModelOptions.some(function (item) { return item.value === llmModelSelect.value; });
+                    if (resetModel || !hasProviderModel) llmModelSelect.value = option.getAttribute('data-model') || providerModelOptions[0].value;
+                    llmModelSelect.disabled = false;
+                    llmModelSelect.hidden = false;
+                    llmModel.disabled = true;
+                    llmModel.hidden = true;
+                } else {
+                    if (llmModelSelect) {
+                        llmModelSelect.disabled = true;
+                        llmModelSelect.hidden = true;
                     }
-                } else if (resetModel) {
-                    llmModel.value = option.getAttribute('data-model') || '';
+                    llmModel.disabled = false;
+                    llmModel.hidden = false;
+                    if (resetModel) llmModel.value = option.getAttribute('data-model') || '';
                 }
             };
             syncLlmProvider(false);

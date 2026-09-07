@@ -2,12 +2,19 @@
 
 ## Current release
 
-- Plugin: `v02.11.55`
+- Plugin: `v02.11.56`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.56: Adds provider-aware model selection in the LLM settings. DeepSeek
+  now defaults to `deepseek-v4-flash` and exposes `deepseek-v4-pro`,
+  `deepseek-v4-flash`, and `deepseek-v4-flash-vision-exp` in a native dropdown;
+  invalid stored DeepSeek values normalize to the supported default. The same
+  model IDs are offered in fallback suggestions, while OpenAI-compatible custom
+  providers retain free-text model input. This addresses the live v02.11.55
+  configuration trap where an unsupported fallback ID was manually entered.
 - v02.11.55: EJ-088. Live generation on post 4556 with v02.11.54 exposed a
   false content-fidelity rejection: `wpae_llm_process_timeline_steps` correctly
   parsed `Замысел, Съёмка, Монтаж, Публикация`, but

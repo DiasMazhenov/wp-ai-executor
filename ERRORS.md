@@ -7,6 +7,23 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-089: v02.11.55 settings allowed unsupported DeepSeek model IDs
+
+- **Observed (2026-09-07, live Elementor post 4556):** After the fidelity fix
+  deployed, the first bounded retry used the manually stored fallback ID
+  `nvidia/nemotron-3.5-lightning:free`; the DeepSeek endpoint rejected it and
+  listed its supported model names. Replacing primary/fallback with supported
+  DeepSeek V4 IDs reached the provider but both bounded attempts then timed out.
+  No Elementor write occurred.
+- **Fix (v02.11.56):** DeepSeek settings now expose the three supported model
+  IDs in a dropdown, default to `deepseek-v4-flash`, normalize invalid stored
+  primary IDs, and offer the same IDs in fallback suggestions. Custom and other
+  OpenAI-compatible providers still accept free-text models.
+- **Regression status:** Local contract test and PHP lint must pass. Live
+  generation remains blocked until the configured DeepSeek endpoint answers
+  within the existing request timeout; the dropdown does not bypass provider
+  availability.
+
 ## EJ-088: v02.11.54 rejected a valid explicit process step list before write
 
 - **Observed (2026-09-07, live Elementor post 4556):** The editor reported

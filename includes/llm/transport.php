@@ -27,7 +27,7 @@ function wpae_llm_provider_options(): array {
         'deepseek' => [
             'label' => 'DeepSeek',
             'base_url' => 'https://api.deepseek.com/v1',
-            'model' => 'deepseek-chat',
+            'model' => 'deepseek-v4-flash',
         ],
         'openrouter' => [
             'label' => 'OpenRouter',
@@ -48,6 +48,14 @@ function wpae_llm_provider_options(): array {
 }
 
 function wpae_llm_provider_model_options( string $provider ): array {
+    if ( $provider === 'deepseek' ) {
+        return [
+            'deepseek-v4-pro' => 'DeepSeek V4 Pro — сложные агентские задачи',
+            'deepseek-v4-flash' => 'DeepSeek V4 Flash — быстрый универсальный режим',
+            'deepseek-v4-flash-vision-exp' => 'DeepSeek V4 Flash Vision Exp — vision-задачи',
+        ];
+    }
+
     if ( $provider !== 'gemini' ) {
         return [];
     }
@@ -86,7 +94,8 @@ function wpae_llm_get_settings(): array {
     if ( $model === '' ) {
         $model = $providers[ $provider ]['model'];
     }
-    if ( $provider === 'gemini' && ! isset( wpae_llm_provider_model_options( 'gemini' )[ $model ] ) ) {
+    $model_options = wpae_llm_provider_model_options( $provider );
+    if ( ! empty( $model_options ) && ! isset( $model_options[ $model ] ) ) {
         $model = $providers[ $provider ]['model'];
     }
 
@@ -160,7 +169,8 @@ function wpae_update_llm_settings( array $input ) {
 
     $model = sanitize_text_field( (string) ( $input['model'] ?? '' ) );
     $model = substr( $model !== '' ? $model : $providers[ $provider ]['model'], 0, 120 );
-    if ( $provider === 'gemini' && ! isset( wpae_llm_provider_model_options( 'gemini' )[ $model ] ) ) {
+    $model_options = wpae_llm_provider_model_options( $provider );
+    if ( ! empty( $model_options ) && ! isset( $model_options[ $model ] ) ) {
         $model = $providers[ $provider ]['model'];
     }
     $stored = wpae_llm_get_stored_settings();
