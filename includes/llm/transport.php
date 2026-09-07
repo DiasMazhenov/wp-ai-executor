@@ -99,13 +99,18 @@ function wpae_llm_get_settings(): array {
         $model = $providers[ $provider ]['model'];
     }
 
+    $fallback_model = sanitize_text_field( (string) ( $stored['fallback_model'] ?? '' ) );
+    if ( ! empty( $model_options ) && $fallback_model !== '' && ! isset( $model_options[ $fallback_model ] ) ) {
+        $fallback_model = '';
+    }
+
     $api_key = wpae_vision_decrypt_api_key( (string) ( $stored['api_key_encrypted'] ?? '' ) );
     return [
         'provider' => $provider,
         'provider_label' => $providers[ $provider ]['label'],
         'base_url' => $base_url,
         'model' => $model,
-        'fallback_model' => sanitize_text_field( (string) ( $stored['fallback_model'] ?? '' ) ),
+        'fallback_model' => $fallback_model,
         'fallback_model_history' => wpae_llm_fallback_model_history( $stored ),
         'has_api_key' => $api_key !== '',
         'api_key_hint' => $api_key !== '' ? 'Ключ сохранен' : 'Ключ не задан',
@@ -193,6 +198,9 @@ function wpae_update_llm_settings( array $input ) {
     // block a whole test or content session. Previously entered ids stay
     // available in the dashboard dropdown for quick switching.
     $fallback_model = substr( sanitize_text_field( (string) ( $input['fallback_model'] ?? '' ) ), 0, 120 );
+    if ( ! empty( $model_options ) && $fallback_model !== '' && ! isset( $model_options[ $fallback_model ] ) ) {
+        $fallback_model = '';
+    }
     $stored['fallback_model'] = $fallback_model;
     $history = is_array( $stored['fallback_model_history'] ?? null ) ? $stored['fallback_model_history'] : [];
     if ( $fallback_model !== '' && ! in_array( $fallback_model, $history, true ) ) {
@@ -256,7 +264,7 @@ function wpae_llm_extract_response_text( $body ): string {
 }
 
 function wpae_llm_fallback_model( string $current_model ): string {
-    $fallback_model = trim( (string) ( wpae_llm_get_stored_settings()['fallback_model'] ?? '' ) );
+    $fallback_model = trim( (string) ( wpae_llm_get_settings()['fallback_model'] ?? '' ) );
     return $fallback_model !== '' && $fallback_model !== $current_model ? $fallback_model : '';
 }
 
@@ -274,10 +282,44 @@ function wpae_llm_provider_is_rate_limited( $body ): bool {
 }
 
 function wpae_llm_provider_error_message( $body ): string {
+    if ( is_string( $body ) ) {
+        $decoded = json_decode( $body, true );
+        if ( is_array( $decoded ) ) {
+            $body = $decoded;
+        } else {
+            return substr( sanitize_text_field( $body ), 0, 300 );
+        }
+    }
+    if ( ! is_array( $body ) ) {
+        return '';
+    }
+
+    $extract = static function ( $value, int $depth = 0 ) use ( &$extract ): string {
+        if ( $depth > 3 ) {
+            return '';
+        }
+        if ( is_scalar( $value ) ) {
+            return substr( sanitize_text_field( (string) $value ), 0, 300 );
+        }
+        if ( ! is_array( $value ) ) {
+            return '';
+        }
+        foreach ( [ 'message', 'detail', 'description', 'reason', 'error' ] as $key ) {
+            if ( array_key_exists( $key, $value ) ) {
+                $candidate = $extract( $value[ $key ], $depth + 1 );
+                if ( $candidate !== '' ) {
+                    return $candidate;
+                }
+            }
+        }
+        return '';
+    };
+
     $choice = is_array( $body['choices'][0] ?? null ) ? $body['choices'][0] : [];
-    $message = is_array( $choice['error'] ?? null ) ? ( $choice['error']['message'] ?? '' ) : '';
-    $message = $message ?: ( $body['error']['message'] ?? $body['message'] ?? '' );
-    $message = is_scalar( $message ) ? sanitize_text_field( (string) $message ) : '';
+    $message = $extract( $choice['error'] ?? null );
+    $message = $message ?: $extract( $body['error'] ?? null );
+    $message = $message ?: $extract( $body['message'] ?? null );
+    $message = $message ?: $extract( $body['detail'] ?? $body['details'] ?? null );
 
     // OpenRouter hides the upstream reason inside error.metadata; surface a
     // bounded sanitized excerpt so provider failures are diagnosable in the
@@ -286,8 +328,12 @@ function wpae_llm_provider_error_message( $body ): string {
     $raw = trim( (string) ( $metadata['raw'] ?? '' ) );
     if ( $raw !== '' ) {
         $provider_name = sanitize_text_field( (string) ( $metadata['provider_name'] ?? '' ) );
-        $excerpt = substr( sanitize_text_field( $raw ), 0, 300 );
-        $message = trim( $message . ' [' . ( $provider_name !== '' ? $provider_name . ': ' : '' ) . $excerpt . ']' );
+        $raw_body = json_decode( $raw, true );
+        $excerpt = is_array( $raw_body ) ? $extract( $raw_body ) : '';
+        $excerpt = $excerpt !== '' ? $excerpt : substr( sanitize_text_field( $raw ), 0, 300 );
+        if ( $excerpt !== '' && strpos( $message, $excerpt ) === false ) {
+            $message = trim( $message . ' [' . ( $provider_name !== '' ? $provider_name . ': ' : '' ) . $excerpt . ']' );
+        }
     }
 
     return $message;

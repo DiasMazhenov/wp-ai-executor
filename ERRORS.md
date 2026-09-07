@@ -7,6 +7,30 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-090: Live Gemini failure hid the upstream provider error
+
+- **Observed (2026-09-07, live Elementor post 4556):** The saved Gemini
+  configuration used primary model `gemini-3.5-flash` plus the stale fallback
+  ID `deepseek-v4-pro`. A bounded retry first reported provider unavailability
+  and then rendered only `Провайдер вернул ошибку.`. Clearing the fallback in
+  live settings did not remove the generic final error, and no Elementor write
+  occurred.
+- **Root cause:** Fixed-provider model validation covered only the primary
+  model. Runtime fallback selection read arbitrary stored text, so a model from
+  another provider could be sent to the current provider endpoint. Separately,
+  `wpae_llm_provider_error_message()` accepted only array-shaped `message`
+  fields, so scalar/nested or non-JSON upstream responses were discarded and
+  replaced by the generic text.
+- **Fix (v02.11.58):** Validate fixed-provider fallback IDs when settings are
+  saved, when runtime settings are read, and before fallback selection; limit
+  the dashboard suggestions to the active provider. Parse bounded scalar,
+  nested, and non-JSON provider error messages without logging credentials or
+  raw request payloads. Live fallback was cleared before the next test.
+- **Regression status:** Local contract test, PHP lint, JS syntax, and
+  `git diff --check` pass. Deploy v02.11.58, reproduce the exact prompt once,
+  then capture the upstream diagnostic and continue the JSON/DOM/rendered-HTML/
+  screenshot acceptance loop.
+
 ## EJ-089: v02.11.55 settings allowed unsupported DeepSeek model IDs
 
 - **Observed (2026-09-07, live Elementor post 4556):** After the fidelity fix

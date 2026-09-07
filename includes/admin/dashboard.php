@@ -325,12 +325,11 @@ function wpae_settings_page() {
         }
     }
     $llm_has_model_options = ! empty( $llm_model_options[ $llm_settings['provider'] ] ?? [] );
-    $llm_fallback_model_options = [];
-    foreach ( $llm_model_options as $provider_models ) {
-        foreach ( $provider_models as $model_id => $model_label ) {
-            $llm_fallback_model_options[ $model_id ] = $model_label;
-        }
-    }
+    $llm_fallback_model_options = $llm_model_options[ $llm_settings['provider'] ] ?? [];
+    $llm_fallback_model_history = array_filter(
+        (array) ( $llm_settings['fallback_model_history'] ?? [] ),
+        static fn( $model_id ): bool => empty( $llm_fallback_model_options ) || isset( $llm_fallback_model_options[ (string) $model_id ] )
+    );
     ?>
     <style>
         .wpae-dashboard {
@@ -970,7 +969,7 @@ function wpae_settings_page() {
                     <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-fallback-model">Резервная модель (fallback)</label>
                         <input class="wpae-input" id="wpae-llm-fallback-model" name="wpae_llm[fallback_model]" type="text" list="wpae-llm-fallback-model-history" value="<?php echo esc_attr( (string) ( $llm_settings['fallback_model'] ?? '' ) ); ?>" placeholder="например, google/gemma-4-31b-it:free" autocomplete="off" />
-                        <datalist id="wpae-llm-fallback-model-history"><?php foreach ( $llm_fallback_model_options as $model_id => $model_label ) : ?><option value="<?php echo esc_attr( (string) $model_id ); ?>"><?php echo esc_html( $model_label ); ?></option><?php endforeach; ?><?php foreach ( (array) ( $llm_settings['fallback_model_history'] ?? [] ) as $history_model ) : ?><option value="<?php echo esc_attr( (string) $history_model ); ?>"></option><?php endforeach; ?></datalist>
+                        <datalist id="wpae-llm-fallback-model-history"><?php foreach ( $llm_fallback_model_options as $model_id => $model_label ) : ?><option value="<?php echo esc_attr( (string) $model_id ); ?>"><?php echo esc_html( $model_label ); ?></option><?php endforeach; ?><?php foreach ( $llm_fallback_model_history as $history_model ) : ?><option value="<?php echo esc_attr( (string) $history_model ); ?>"></option><?php endforeach; ?></datalist>
                         <span class="wpae-section-note">Необязательно. Используется один раз, если основной пул вернёт rate limit или зависнет. Выберите ранее введённую модель из списка или впишите новую. Оставьте пустым, чтобы отключить.</span>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.57`
+- Plugin: `v02.11.58`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -12,6 +12,13 @@
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,
   and keeps the control keyboard-accessible through an aria label and title.
+- v02.11.58: Fixes the live LLM failure chain found on Elementor post 4556.
+  Provider-specific model lists now validate and hide cross-provider fallback
+  IDs at save time, in runtime selection, and in the settings datalist. The
+  provider error parser now accepts scalar/nested error shapes and bounded
+  non-JSON bodies, so upstream status messages are not replaced with the
+  generic `Провайдер вернул ошибку.`. Local contract, PHP lint, JS syntax, and
+  diff checks pass; live Gemini retry after deployment is still required.
 - v02.11.56: Adds provider-aware model selection in the LLM settings. DeepSeek
   now defaults to `deepseek-v4-flash` and exposes `deepseek-v4-pro`,
   `deepseek-v4-flash`, and `deepseek-v4-flash-vision-exp` in a native dropdown;
