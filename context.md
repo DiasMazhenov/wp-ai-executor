@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.58`
+- Plugin: `v02.11.59`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -19,6 +19,12 @@
   non-JSON bodies, so upstream status messages are not replaced with the
   generic `Провайдер вернул ошибку.`. Local contract, PHP lint, JS syntax, and
   diff checks pass; live Gemini retry after deployment is still required.
+- v02.11.59: Completes provider diagnostics for post 4556. Nested error lists
+  such as `error[0].message` are parsed, and an otherwise empty/unknown
+  provider response now reports its HTTP status plus sanitized top-level field
+  names instead of a generic message. Local contract, PHP lint, JS syntax,
+  diff, and runtime parser checks pass; live deployment and one bounded exact
+  prompt test remain required.
 - v02.11.56: Adds provider-aware model selection in the LLM settings. DeepSeek
   now defaults to `deepseek-v4-flash` and exposes `deepseek-v4-pro`,
   `deepseek-v4-flash`, and `deepseek-v4-flash-vision-exp` in a native dropdown;

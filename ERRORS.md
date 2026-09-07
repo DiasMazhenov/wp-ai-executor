@@ -26,10 +26,14 @@ before making a new change to the plugin.
   the dashboard suggestions to the active provider. Parse bounded scalar,
   nested, and non-JSON provider error messages without logging credentials or
   raw request payloads. Live fallback was cleared before the next test.
-- **Regression status:** Local contract test, PHP lint, JS syntax, and
-  `git diff --check` pass. Deploy v02.11.58, reproduce the exact prompt once,
-  then capture the upstream diagnostic and continue the JSON/DOM/rendered-HTML/
-  screenshot acceptance loop.
+- **Fix (v02.11.59):** Parse nested error arrays and replace the last generic
+  fallback with a safe `HTTP status + sanitized top-level field names`
+  diagnostic when the provider returns no recognized message.
+- **Regression status:** Local contract test, PHP lint, JS syntax,
+  `git diff --check`, and runtime parser checks pass. Deploy v02.11.59,
+  reproduce the exact prompt once, capture the now-actionable upstream
+  diagnostic, and continue the JSON/DOM/rendered-HTML/screenshot acceptance
+  loop.
 
 ## EJ-089: v02.11.55 settings allowed unsupported DeepSeek model IDs
 

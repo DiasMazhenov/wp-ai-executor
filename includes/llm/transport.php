@@ -304,9 +304,17 @@ function wpae_llm_provider_error_message( $body ): string {
         if ( ! is_array( $value ) ) {
             return '';
         }
-        foreach ( [ 'message', 'detail', 'description', 'reason', 'error' ] as $key ) {
+        foreach ( [ 'message', 'detail', 'description', 'reason', 'error', 'errors' ] as $key ) {
             if ( array_key_exists( $key, $value ) ) {
                 $candidate = $extract( $value[ $key ], $depth + 1 );
+                if ( $candidate !== '' ) {
+                    return $candidate;
+                }
+            }
+        }
+        foreach ( $value as $nested ) {
+            if ( is_array( $nested ) ) {
+                $candidate = $extract( $nested, $depth + 1 );
                 if ( $candidate !== '' ) {
                     return $candidate;
                 }
@@ -337,6 +345,20 @@ function wpae_llm_provider_error_message( $body ): string {
     }
 
     return $message;
+}
+
+function wpae_llm_provider_error_fallback( $body, int $status ): string {
+    if ( ! is_array( $body ) ) {
+        return 'HTTP ' . $status . '; провайдер не вернул JSON-объект с диагностикой.';
+    }
+    $keys = [];
+    foreach ( array_slice( array_keys( $body ), 0, 8 ) as $key ) {
+        $key = sanitize_key( (string) $key );
+        if ( $key !== '' ) {
+            $keys[] = $key;
+        }
+    }
+    return 'HTTP ' . $status . '; провайдер не передал понятного сообщения' . ( ! empty( $keys ) ? ' (поля: ' . implode( ', ', $keys ) . ')' : '' ) . '.';
 }
 
 function wpae_llm_response_diagnostics( $body ): array {

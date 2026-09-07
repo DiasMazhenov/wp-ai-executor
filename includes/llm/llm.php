@@ -7566,7 +7566,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $body = json_decode( $raw, true );
     $used_fallback_model = '';
     if ( $status < 200 || $status >= 300 ) {
-        $provider_error = wpae_llm_provider_error_message( $body ) ?: ( is_array( $body ) ? 'Провайдер вернул ошибку.' : 'Провайдер вернул некорректный ответ.' );
+        $provider_error = wpae_llm_provider_error_message( $body ) ?: wpae_llm_provider_error_fallback( $body, $status );
         if ( wpae_llm_provider_is_rate_limited( is_array( $body ) ? $body : [] ) ) {
             // Shared free pools ask for a delayed retry; expose a distinct code
             // and bounded retry_after so the client can wait instead of burning
@@ -7592,7 +7592,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
     }
     if ( $status < 200 || $status >= 300 ) {
-        $provider_error = wpae_llm_provider_error_message( $body ) ?: ( is_array( $body ) ? 'Провайдер вернул ошибку.' : 'Провайдер вернул некорректный ответ.' );
+        $provider_error = wpae_llm_provider_error_message( $body ) ?: wpae_llm_provider_error_fallback( $body, $status );
         if ( wpae_llm_provider_is_rate_limited( is_array( $body ) ? $body : [] ) ) {
             $retry_after = (int) wp_remote_retrieve_header( $response, 'retry-after' );
             return new WP_Error( 'wpae_llm_provider_rate_limited', 'LLM-провайдер временно ограничен по лимиту (rate limit).', [ 'status' => 429, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'retry_after' => max( 15, min( 60, $retry_after > 0 ? $retry_after : 30 ) ), 'provider' => $runtime['provider'], 'fallback_model' => $used_fallback_model ] );
