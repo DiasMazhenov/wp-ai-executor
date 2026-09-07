@@ -96,6 +96,22 @@ before making a new change to the plugin.
   Navigator, public DOM, rendered HTML, desktop screenshot, and mobile
   no-overflow screenshot all describe the same native Divider tree.
 
+## EJ-097: Elementor 4 structural replace fell back to stale Navigator data
+
+- **Observed:** v02.11.66 saved the responsive timeline and public HTML had
+  three native Divider widgets, but the open editor still showed one Divider
+  and two HTML widgets after the replace sync.
+- **Root cause:** `getEditorModelChildren()` returns Backbone child models;
+  Elementor 4.1.1 `document/elements/delete` requires the corresponding
+  `elementor.Container` instance. Passing the model rejected the command and
+  triggered the saved-preview fallback, leaving the in-memory Navigator stale.
+- **Fix:** v02.11.67 resolves each model through `elementor.getContainer()` or
+  the document component's `findContainerById()` before delete/reconcile/replace,
+  and verifies that the replacement root is present before refreshing preview.
+- **Regression status:** Deploy v02.11.67, repeat the selected JSON/Navigator
+  check, then confirm public DOM, rendered HTML, desktop screenshot, and the
+  mobile four-marker/single-column layout.
+
 ## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
 
 - **Observed (2026-09-07, live Elementor post 4556):** With settings showing

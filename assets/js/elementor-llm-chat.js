@@ -827,6 +827,24 @@
         if (model.attributes && model.attributes.id) return String(model.attributes.id);
         return '';
     }
+    function getEditorContainerById(elementId) {
+        if (!elementId) return null;
+        if (window.elementor && typeof window.elementor.getContainer === 'function') {
+            try {
+                var legacyContainer = window.elementor.getContainer(String(elementId));
+                if (legacyContainer) return legacyContainer;
+            } catch (error) {}
+        }
+        try {
+            var documentComponent = window.$e && window.$e.components && typeof window.$e.components.get === 'function'
+                ? window.$e.components.get('document')
+                : null;
+            var findContainerById = documentComponent && documentComponent.utils && documentComponent.utils.findContainerById;
+            return typeof findContainerById === 'function' ? findContainerById(String(elementId)) : null;
+        } catch (error) {
+            return null;
+        }
+    }
     function findLiveGeneratedRoots() {
         if (!liveGeneratedRootIds.length || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return [];
         var container = window.elementor.getPreviewContainer();
@@ -844,8 +862,10 @@
         }
         if (!window.$e || typeof window.$e.run !== 'function') return Promise.resolve(false);
         function deleteModel(model, attempt) {
+            var modelContainer = getEditorContainerById(getEditorModelId(model));
+            if (!modelContainer) return Promise.resolve(false);
             try {
-                return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () {
+                return Promise.resolve(window.$e.run('document/elements/delete', { container: modelContainer })).then(function () {
                     if (getEditorModelChildren(window.elementor.getPreviewContainer()).indexOf(model) === -1) return true;
                     if (attempt >= 2) return false;
                     return new Promise(function (resolve) { window.setTimeout(resolve, 160); }).then(function () { return deleteModel(model, attempt + 1); });
@@ -873,8 +893,10 @@
         var stale = roots.filter(function (model) { return expected.indexOf(getEditorModelId(model)) === -1; });
         if (!stale.length) return Promise.resolve(true);
         function deleteStaleModel(model, attempt) {
+            var modelContainer = getEditorContainerById(getEditorModelId(model));
+            if (!modelContainer) return Promise.resolve(false);
             try {
-                return Promise.resolve(window.$e.run('document/elements/delete', { container: model })).then(function () {
+                return Promise.resolve(window.$e.run('document/elements/delete', { container: modelContainer })).then(function () {
                     if (getEditorModelChildren(container).indexOf(model) === -1) return true;
                     if (attempt >= 2) return false;
                     return new Promise(function (resolve) { window.setTimeout(resolve, 160); }).then(function () { return deleteStaleModel(model, attempt + 1); });
@@ -904,16 +926,21 @@
             var replaceId = String(editorSync.replace_element_id || editorSync.elements[0].id || '');
             var rootModels = getEditorModelChildren(container);
             var target = rootModels.find(function (model) { return getEditorModelId(model) === replaceId; });
-            if (!target || !replaceId) return Promise.resolve(false);
+            var targetContainer = getEditorContainerById(replaceId);
+            if (!target || !targetContainer || !replaceId) return Promise.resolve(false);
             var targetIndex = rootModels.indexOf(target);
             try {
-                return Promise.resolve(window.$e.run('document/elements/delete', { container: target })).then(function () {
+                return Promise.resolve(window.$e.run('document/elements/delete', { container: targetContainer })).then(function () {
                     return window.$e.run('document/elements/create', {
                         container: container,
                         model: editorSync.elements[0],
                         options: { at: targetIndex >= 0 ? targetIndex : null, clone: false }
                     });
                 }).then(function () {
+                    var created = getEditorModelChildren(container).some(function (model) {
+                        return getEditorModelId(model) === replaceId;
+                    });
+                    if (!created) return false;
                     return waitForPreviewPaint().then(function () { return refreshElementorPreview(); });
                 }, function () { return false; });
             } catch (error) {

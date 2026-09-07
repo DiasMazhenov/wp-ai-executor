@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.65`
+- Plugin: `v02.11.67`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -40,6 +40,11 @@
   children rather than the stale `1 Divider + 2 HTML` model. Live post 4556
   must repeat selected JSON, public DOM, rendered HTML, and desktop/mobile
   screenshot checks after deployment.
+- v02.11.67: Fixes the Elementor 4 editor sync boundary. Backbone child models
+  are now resolved to native Container instances before `document/elements/delete`,
+  including structural root replacement and generated-root cleanup. The live
+  post 4556 test had a canonical public tree but a stale Navigator because the
+  previous command received a model instead of the required Container.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,
