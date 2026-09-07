@@ -7539,8 +7539,17 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         'headers' => $headers,
         'body' => wp_json_encode( $request_body ),
     ];
+    $provider_attempts = [];
+    $provider_diagnostics = [
+        'schema' => 'wpae-llm-provider-diagnostics-v1',
+        'provider' => sanitize_key( (string) $runtime['provider'] ),
+        'model' => sanitize_text_field( (string) $runtime['model'] ),
+        'attempt_count' => 0,
+        'attempts' => [],
+    ];
     $response = wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'] );
     if ( is_wp_error( $response ) ) {
+        $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_transport', $action_request, 0, '', null, $response );
         // Transport-level failure (timeout or HTTP layer). One opt-in fallback
         // model attempt keeps slow shared wildcard routes usable without the
         // heavy editor reload cycle.
@@ -7551,19 +7560,25 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $fallback_remote_args = $remote_args;
             $fallback_remote_args['timeout'] = 30;
             $fallback_response = wpae_llm_provider_request( $url, $fallback_remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
-            if ( ! is_wp_error( $fallback_response ) ) {
+            if ( is_wp_error( $fallback_response ) ) {
+                $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $fallback_remote_args, $fallback_request_body, $runtime['provider'], $fallback_model, 'fallback_transport', $action_request, 0, '', null, $fallback_response );
+            } else {
                 $response = $fallback_response;
                 $runtime['model'] = $fallback_model;
             }
         }
     }
     if ( is_wp_error( $response ) ) {
-        return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'] ] );
+        $provider_diagnostics['model'] = sanitize_text_field( (string) $runtime['model'] );
+        $provider_diagnostics['attempt_count'] = count( $provider_attempts );
+        $provider_diagnostics['attempts'] = $provider_attempts;
+        return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'], 'diagnostics' => $provider_diagnostics ] );
     }
 
     $status = wp_remote_retrieve_response_code( $response );
     $raw = wp_remote_retrieve_body( $response );
     $body = json_decode( $raw, true );
+    $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_response', $action_request, $status, $raw, $body );
     $used_fallback_model = '';
     if ( $status < 200 || $status >= 300 ) {
         $provider_error = wpae_llm_provider_error_message( $body ) ?: wpae_llm_provider_error_fallback( $body, $status );
@@ -7577,13 +7592,18 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $fallback_request_body = $request_body;
                 $fallback_request_body['model'] = $fallback_model;
                 $fallback_response = wpae_llm_provider_request( $url, $remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
-                if ( ! is_wp_error( $fallback_response ) ) {
+                if ( is_wp_error( $fallback_response ) ) {
+                    $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $fallback_request_body, $runtime['provider'], $fallback_model, 'fallback_transport', $action_request, 0, '', null, $fallback_response );
+                } else {
                     $fallback_status = wp_remote_retrieve_response_code( $fallback_response );
+                    $fallback_raw = wp_remote_retrieve_body( $fallback_response );
+                    $fallback_body = json_decode( $fallback_raw, true );
+                    $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $fallback_request_body, $runtime['provider'], $fallback_model, 'fallback_response', $action_request, $fallback_status, $fallback_raw, $fallback_body );
                     if ( $fallback_status >= 200 && $fallback_status < 300 ) {
                         $response = $fallback_response;
                         $status = $fallback_status;
-                        $raw = wp_remote_retrieve_body( $fallback_response );
-                        $body = json_decode( $raw, true );
+                        $raw = $fallback_raw;
+                        $body = $fallback_body;
                         $used_fallback_model = $fallback_model;
                         $runtime['model'] = $fallback_model;
                     }
@@ -7593,11 +7613,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     }
     if ( $status < 200 || $status >= 300 ) {
         $provider_error = wpae_llm_provider_error_message( $body ) ?: wpae_llm_provider_error_fallback( $body, $status );
+        $provider_diagnostics['model'] = sanitize_text_field( (string) $runtime['model'] );
+        $provider_diagnostics['attempt_count'] = count( $provider_attempts );
+        $provider_diagnostics['attempts'] = $provider_attempts;
         if ( wpae_llm_provider_is_rate_limited( is_array( $body ) ? $body : [] ) ) {
             $retry_after = (int) wp_remote_retrieve_header( $response, 'retry-after' );
-            return new WP_Error( 'wpae_llm_provider_rate_limited', 'LLM-провайдер временно ограничен по лимиту (rate limit).', [ 'status' => 429, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'retry_after' => max( 15, min( 60, $retry_after > 0 ? $retry_after : 30 ) ), 'provider' => $runtime['provider'], 'fallback_model' => $used_fallback_model ] );
+            return new WP_Error( 'wpae_llm_provider_rate_limited', 'LLM-провайдер временно ограничен по лимиту (rate limit).', [ 'status' => 429, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'retry_after' => max( 15, min( 60, $retry_after > 0 ? $retry_after : 30 ) ), 'provider' => $runtime['provider'], 'fallback_model' => $used_fallback_model, 'diagnostics' => $provider_diagnostics ] );
         }
-        return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [ 'status' => 502, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'provider' => $runtime['provider'] ] );
+        return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [ 'status' => 502, 'provider_status' => $status, 'provider_message' => sanitize_text_field( (string) $provider_error ), 'provider' => $runtime['provider'], 'diagnostics' => $provider_diagnostics ] );
     }
 
     $reply = wpae_llm_extract_response_text( is_array( $body ) ? $body : [] );
@@ -7605,6 +7628,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $diagnostics = wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] );
         $provider_message = $diagnostics['provider_message'] ?: ( $diagnostics['finish_reason'] === 'error' ? 'Провайдер завершил генерацию с ошибкой без дополнительного сообщения.' : '' );
         if ( $provider_message !== '' || $diagnostics['finish_reason'] === 'error' ) {
+            $provider_diagnostics['model'] = sanitize_text_field( (string) $runtime['model'] );
+            $provider_diagnostics['attempt_count'] = count( $provider_attempts );
+            $provider_diagnostics['attempts'] = $provider_attempts;
             return new WP_Error( 'wpae_llm_provider_error', 'LLM-провайдер вернул ошибку.', [
                 'status' => 502,
                 'provider_status' => $status,
@@ -7613,12 +7639,17 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'finish_reason' => $diagnostics['finish_reason'],
                 'provider' => $runtime['provider'],
                 'details' => $diagnostics,
+                'diagnostics' => $provider_diagnostics,
             ] );
         }
+        $provider_diagnostics['model'] = sanitize_text_field( (string) $runtime['model'] );
+        $provider_diagnostics['attempt_count'] = count( $provider_attempts );
+        $provider_diagnostics['attempts'] = $provider_attempts;
         return new WP_Error( 'wpae_llm_empty_response', 'LLM-провайдер вернул пустой ответ. Проверьте модель и лимит токенов.', [
             'status' => 502,
             'provider' => $runtime['provider'],
             'details' => $diagnostics,
+            'diagnostics' => $provider_diagnostics,
         ] );
     }
     if ( $action_request ) {

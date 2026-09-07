@@ -383,6 +383,106 @@ function wpae_llm_response_diagnostics( $body ): array {
     ];
 }
 
+function wpae_llm_diagnostic_text( $value, int $limit = 300 ): string {
+    $text = sanitize_text_field( (string) $value );
+    $redacted = preg_replace( '/Bearer\s+[^\s]+/i', 'Bearer [redacted]', $text );
+    $text = is_string( $redacted ) ? $redacted : $text;
+    $redacted = preg_replace( '/\bsk-[A-Za-z0-9._-]{8,}\b/i', '[redacted-key]', $text );
+    $text = is_string( $redacted ) ? $redacted : $text;
+    return substr( $text, 0, $limit );
+}
+
+function wpae_llm_diagnostic_endpoint( string $url ): string {
+    $parts = wp_parse_url( $url );
+    if ( ! is_array( $parts ) || empty( $parts['host'] ) ) {
+        return 'invalid-endpoint';
+    }
+    $scheme = sanitize_key( (string) ( $parts['scheme'] ?? '' ) );
+    $host = sanitize_text_field( (string) $parts['host'] );
+    $path = preg_replace( '/[^A-Za-z0-9._~\/-]/', '', (string) ( $parts['path'] ?? '/' ) );
+    return ( $scheme !== '' ? $scheme . '://' : '' ) . $host . ( is_string( $path ) && $path !== '' ? $path : '/' );
+}
+
+function wpae_llm_build_request_diagnostics( string $url, array $remote_args, array $request_body, string $provider, string $model, string $attempt, bool $action_request, int $status = 0, $raw = '', $body = null, $transport_error = null ): array {
+    $request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider );
+    $headers = [];
+    foreach ( (array) ( $remote_args['headers'] ?? [] ) as $name => $value ) {
+        $headers[ strtolower( (string) $name ) ] = trim( (string) $value );
+    }
+    $body_keys = [];
+    foreach ( array_slice( array_keys( $request_body ), 0, 16 ) as $key ) {
+        $key = sanitize_key( (string) $key );
+        if ( $key !== '' ) {
+            $body_keys[] = $key;
+        }
+    }
+
+    $raw = (string) $raw;
+    if ( ! is_array( $body ) && trim( $raw ) !== '' ) {
+        $decoded = json_decode( $raw, true );
+        if ( is_array( $decoded ) ) {
+            $body = $decoded;
+        }
+    }
+    $top_level_keys = [];
+    $body_type = trim( $raw ) === '' ? 'empty' : 'text';
+    if ( is_array( $body ) ) {
+        $body_type = count( $body ) === 0 || array_keys( $body ) === range( 0, count( $body ) - 1 ) ? 'json_list' : 'json_object';
+        foreach ( array_slice( array_keys( $body ), 0, 16 ) as $key ) {
+            $key = sanitize_key( (string) $key );
+            if ( $key !== '' ) {
+                $top_level_keys[] = $key;
+            }
+        }
+    }
+
+    $response = [
+        'http_status' => max( 0, $status ),
+        'body_type' => $body_type,
+        'body_bytes' => strlen( $raw ),
+        'top_level_keys' => $top_level_keys,
+    ];
+    if ( is_array( $body ) ) {
+        $response_details = wpae_llm_response_diagnostics( $body );
+        $response['choices_count'] = (int) ( $response_details['choices_count'] ?? 0 );
+        $response['finish_reason'] = wpae_llm_diagnostic_text( $response_details['finish_reason'] ?? '' );
+        $response['provider_error_code'] = wpae_llm_diagnostic_text( $response_details['provider_error_code'] ?? '' );
+        $response['provider_message'] = wpae_llm_diagnostic_text( $response_details['provider_message'] ?? '' );
+    }
+
+    $diagnostics = [
+        'schema' => 'wpae-llm-provider-diagnostics-v1',
+        'attempt' => sanitize_key( $attempt ),
+        'provider' => sanitize_key( $provider ),
+        'model' => wpae_llm_diagnostic_text( $model, 120 ),
+        'endpoint' => wpae_llm_diagnostic_endpoint( $url ),
+        'timeout_seconds' => max( 0, (int) ( $remote_args['timeout'] ?? 0 ) ),
+        'request' => [
+            'body_keys' => $body_keys,
+            'message_count' => is_array( $request_body['messages'] ?? null ) ? count( $request_body['messages'] ) : 0,
+            'has_response_format' => array_key_exists( 'response_format', $request_body ),
+            'has_provider_parameters' => array_key_exists( 'provider', $request_body ),
+            'max_tokens' => isset( $request_body['max_tokens'] ) ? (int) $request_body['max_tokens'] : ( isset( $request_body['max_completion_tokens'] ) ? (int) $request_body['max_completion_tokens'] : 0 ),
+            'headers' => [
+                'authorization_header_present' => array_key_exists( 'authorization', $headers ),
+                'authorization_value_nonempty' => ! empty( $headers['authorization'] ),
+                'content_type_present' => array_key_exists( 'content-type', $headers ),
+                'http_referer_present' => array_key_exists( 'http-referer', $headers ),
+                'x_title_present' => array_key_exists( 'x-title', $headers ),
+            ],
+            'openrouter_schema_retry_possible' => $provider === 'openrouter' && $action_request,
+        ],
+        'response' => $response,
+    ];
+    if ( is_wp_error( $transport_error ) ) {
+        $diagnostics['transport'] = [
+            'error_code' => sanitize_key( (string) $transport_error->get_error_code() ),
+            'error_message' => wpae_llm_diagnostic_text( $transport_error->get_error_message() ),
+        ];
+    }
+    return $diagnostics;
+}
+
 function wpae_llm_prepare_provider_request_body( array $request_body, bool $action_request, string $provider ): array {
     if ( $provider === 'openrouter' ) {
         // OpenRouter's schema uses max_tokens; the OpenAI-only max_completion_tokens

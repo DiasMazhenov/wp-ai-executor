@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.60`
+- Plugin: `v02.11.61`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -31,6 +31,17 @@
   absent. The first v02.11.59 live retry exposed `HTTP 400` with only list
   field `0`; v02.11.60 is required to surface the nested provider message
   instead of that shape-only diagnostic.
+- v02.11.61: Adds redacted provider diagnostics to every provider-error
+  response and renders them as collapsible JSON in the Elementor chat log. The
+  diagnostic records provider/model, endpoint host/path, attempt and timeout,
+  request body shape, message count, header presence/non-emptiness without the
+  Authorization value, response status/body shape/top-level keys, and bounded
+  sanitized transport/provider messages. The live OpenRouter `openrouter/free`
+  test on post 4556 ended in a bounded transport timeout; an older captured
+  log reported `Missing Authentication header`. Settings showed an encrypted
+  key is stored, but the save form does not validate key ownership or provider
+  reachability, so v02.11.61 is needed to distinguish auth, routing, and
+  availability failures without exposing credentials.
 - v02.11.56: Adds provider-aware model selection in the LLM settings. DeepSeek
   now defaults to `deepseek-v4-flash` and exposes `deepseek-v4-pro`,
   `deepseek-v4-flash`, and `deepseek-v4-flash-vision-exp` in a native dropdown;

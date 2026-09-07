@@ -7,6 +7,29 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
+
+- **Observed (2026-09-07, live Elementor post 4556):** With settings showing
+  provider `openrouter`, model `openrouter/free`, and a saved encrypted key, a
+  fresh exact-prompt run ended after the bounded retry with
+  `LLM-провайдер недоступен: превышено время ожидания ответа.`. An older log
+  from the same workflow ended with `Missing Authentication header`.
+- **Root cause:** The server already preserved a bounded provider message in
+  `WP_Error.data`, but the chat only flattened selected fields into one text
+  line. It did not expose the actual endpoint, attempt, request schema,
+  header presence, response shape, or transport error in the copied chat JSON.
+  The stored-key marker proves persistence only; it does not validate the key
+  against OpenRouter or prove current free-pool availability.
+- **Fix (v02.11.61):** Add a redacted `wpae-llm-provider-diagnostics-v1`
+  payload for transport, HTTP, rate-limit, and empty-response failures. Show it
+  as a collapsible, copyable JSON message in the Elementor chat and include it
+  in the `wpae-llm-chat-log-v1` export. Authorization values, prompts, and raw
+  provider bodies remain excluded.
+- **Regression status:** Local contract, PHP lint, JS syntax, and diff checks
+  are required. Deploy v02.11.61, run one exact prompt, and verify the JSON
+  block identifies whether the next failure is auth, HTTP/provider routing, or
+  transport availability before continuing timeline acceptance.
+
 ## EJ-090: Live Gemini failure hid the upstream provider error
 
 - **Observed (2026-09-07, live Elementor post 4556):** The saved Gemini

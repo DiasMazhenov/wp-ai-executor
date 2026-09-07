@@ -490,6 +490,43 @@
         messages.appendChild(spoiler);
         messages.scrollTop = messages.scrollHeight;
     }
+    function addDiagnosticJsonMessage(diagnostics) {
+        if (!diagnostics || typeof diagnostics !== 'object') return;
+        var json;
+        try { json = JSON.stringify(diagnostics, null, 2); } catch (error) { return; }
+        var item = document.createElement('div');
+        item.className = 'wpae-llm-message wpae-llm-message--assistant wpae-llm-message--diagnostic';
+        item.dataset.message = 'JSON диагностики LLM:\n' + json;
+        var spoiler = document.createElement('details');
+        spoiler.className = 'wpae-llm-json-spoiler';
+        var summary = document.createElement('summary');
+        summary.textContent = 'JSON диагностики LLM';
+        var content = document.createElement('div');
+        content.className = 'wpae-llm-json-content';
+        var code = document.createElement('pre');
+        code.textContent = json;
+        var copyButton = document.createElement('button');
+        copyButton.type = 'button';
+        copyButton.className = 'wpae-llm-icon-button wpae-llm-copy-generated';
+        addIcon(copyButton, 'eicon-copy', 'Копировать JSON диагностики');
+        copyButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            copyText(json).then(function () {
+                setButtonLabel(copyButton, 'JSON диагностики скопирован');
+                window.setTimeout(function () { setButtonLabel(copyButton, 'Копировать JSON диагностики'); }, 1600);
+            }).catch(function () {
+                setButtonLabel(copyButton, strings.copyError || 'Ошибка копирования');
+            });
+        });
+        content.appendChild(code);
+        content.appendChild(copyButton);
+        spoiler.appendChild(summary);
+        spoiler.appendChild(content);
+        item.appendChild(spoiler);
+        messages.appendChild(item);
+        messages.scrollTop = messages.scrollHeight;
+    }
     var selectedModelCache = [];
     function liveSelectedModels() {
         var editor = window.elementor;
@@ -1318,6 +1355,7 @@
                     var errorData = body.data || {};
                     var errorCode = body.code || errorData.code || '';
                     var diagnostics = body.details || errorData.details || {};
+                    var providerDiagnostics = errorData.diagnostics || body.diagnostics || (diagnostics && typeof diagnostics === 'object' ? diagnostics.diagnostics : null);
                     if (typeof errorData.details === 'string' && errorData.details !== detail) detail += ': ' + errorData.details;
                     if (typeof diagnostics === 'string' && diagnostics !== detail && diagnostics !== errorData.details) detail += ': ' + diagnostics;
                     if (body.details && body.details.error) detail += ': ' + body.details.error;
@@ -1336,6 +1374,7 @@
                         stepError.wpaeCode = errorCode;
                         stepError.httpStatus = response.status;
                         stepError.steps = diagnostics.steps;
+                        stepError.diagnostics = providerDiagnostics;
                         throw stepError;
                     }
                     if (errorData.provider_message) detail += ': ' + errorData.provider_message;
@@ -1349,6 +1388,7 @@
                     requestError.httpStatus = response.status;
                     requestError.providerStatus = Number(errorData.provider_status || diagnostics.provider_status || errorData.status || diagnostics.status || 0);
                     requestError.retryAfter = Number(errorData.retry_after || diagnostics.retry_after || 0);
+                    requestError.diagnostics = providerDiagnostics;
                     throw requestError;
                 }
                 return body;
@@ -1359,6 +1399,16 @@
                 var timeoutError = new Error('LLM-провайдер недоступен: превышено время ожидания ответа.');
                 timeoutError.wpaeCode = 'wpae_llm_provider_request_failed';
                 timeoutError.httpStatus = 504;
+                timeoutError.diagnostics = {
+                    schema: 'wpae-llm-provider-diagnostics-v1',
+                    source: 'browser',
+                    attempt: retried ? 'retry' : 'primary',
+                    provider: String(config.providerLabel || ''),
+                    model: String(config.model || ''),
+                    endpoint: 'ai-executor/v1/llm/chat',
+                    response: { http_status: 0, body_type: 'none', top_level_keys: [] },
+                    transport: { error_code: 'browser_timeout', error_message: timeoutError.message }
+                };
                 throw timeoutError;
             }
             throw error;
@@ -1453,6 +1503,7 @@
         }).catch(function (error) {
             window.clearInterval(progressTimer);
             if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
+            if (error.diagnostics) addDiagnosticJsonMessage(error.diagnostics);
             if (!retried && isProviderRateLimited(error)) { scheduleRateLimitedRetry(message, options, error.retryAfter); return; }
             if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message, options)) return;
             clearProviderRetry();
