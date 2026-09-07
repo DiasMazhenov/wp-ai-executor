@@ -48,6 +48,23 @@ before making a new change to the plugin.
   JSON/DOM/rendered-HTML/screenshot verification are required. A heading-only
   selection must continue using the ordinary property patch path.
 
+## EJ-094: Provider timeout blocked deterministic timeline repair
+
+- **Observed (2026-09-07, live Elementor post 4556):** After v02.11.63 was
+  deployed, the exact responsive prompt still stopped before action decoding
+  with `cURL error 28: Resolving timed out after 10520 milliseconds` from the
+  configured OpenRouter route. The selected root was valid, but the repair
+  branch lived after provider action decoding, so no Elementor write occurred.
+- **Root cause:** A structural repair that is fully specified by the selected
+  process root and the canonical contract was unnecessarily gated on an
+  external LLM response.
+- **Fix (v02.11.64):** Route explicit selected process-timeline repairs through
+  the local canonical rebuild and existing Elementor dry-run/transaction before
+  the provider request. Provider-based property patches remain unchanged.
+- **Regression status:** Deploy v02.11.64 and confirm the chat reports the
+  deterministic route, then verify saved JSON, native Divider DOM, rendered
+  HTML geometry, desktop screenshot, and mobile no-overflow screenshot.
+
 ## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
 
 - **Observed (2026-09-07, live Elementor post 4556):** With settings showing

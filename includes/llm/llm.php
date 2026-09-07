@@ -7538,6 +7538,35 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	$vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
     $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
+    $selected_element_ids = is_array( $editor_context_input )
+        ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )
+        : [];
+    $selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
+    if ( $targeted_edit && ! $vision_repair && $selected_post_id > 0 && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_process_timeline_repair' ) ) {
+        $selected_existing = wpae_get_elementor_data_for_post( $selected_post_id );
+        if ( ! is_wp_error( $selected_existing ) ) {
+            $deterministic_process_repair = wpae_llm_execute_process_timeline_repair( $selected_existing, $selected_post_id, $selected_element_ids, $message, wpae_llm_new_operation_id() );
+            if ( ! empty( $deterministic_process_repair['ok'] ) ) {
+                $deterministic_process_repair['steps'] = array_merge(
+                    [ [ 'id' => 'deterministic_process_route', 'status' => 'ok', 'message' => 'Структурный responsive-ремонт выбранного таймлайна выполнен локальным canonical-пайплайном без зависимости от LLM-провайдера.', 'details' => [ 'provider' => sanitize_key( (string) ( $runtime['provider'] ?? '' ) ), 'model' => sanitize_text_field( (string) ( $runtime['model'] ?? '' ) ) ] ] ],
+                    (array) ( $deterministic_process_repair['steps'] ?? [] )
+                );
+                return new WP_REST_Response( [
+                    'ok' => true,
+                    'message' => 'Responsive-таймлайн обновлён локальным Elementor-пайплайном. Изменён корневой process-блок.',
+                    'operation_id' => $deterministic_process_repair['operation_id'] ?? null,
+                    'action' => 'patch_elements',
+                    'write' => $deterministic_process_repair,
+                    'steps' => $deterministic_process_repair['steps'],
+                    'provider' => $runtime['provider'],
+                    'model' => $runtime['model'],
+                ], 200 );
+            }
+            if ( ( $deterministic_process_repair['error'] ?? '' ) !== 'Выбранный процессный таймлайн не найден.' ) {
+                return new WP_Error( 'wpae_llm_action_failed', 'Не удалось выполнить локальный responsive-ремонт таймлайна.', [ 'status' => 422, 'details' => $deterministic_process_repair ] );
+            }
+        }
+    }
     $content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
     $library_retrieval = [
         'status' => 'skipped',
@@ -7774,7 +7803,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
         $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
         if ( $targeted_edit ) {
-            $selected_element_ids = array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) );
             $action = wpae_llm_ensure_targeted_border_radius_patch( $action, $message, $post_id, (array) ( $editor_context_input['selected_elements'] ?? [] ) );
             $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : $action_diagnostics;
             $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );

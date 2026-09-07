@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.63`
+- Plugin: `v02.11.64`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
@@ -24,6 +24,12 @@
   settings sync plus a saved-preview refresh; live post 4556 must confirm
   native Divider DOM, non-zero connector geometry, four visible mobile markers,
   and single-column cards without horizontal overflow.
+- v02.11.64: Routes an explicit selected process-timeline repair through the
+  local canonical Elementor pipeline before contacting the configured LLM.
+  This keeps structural responsive repairs executable when `openrouter/free`
+  is unavailable or times out; ordinary selected property edits still use the
+  provider patch path. Live post 4556 must confirm the saved native Divider
+  tree after this route and then repeat desktop/mobile rendered checks.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,
