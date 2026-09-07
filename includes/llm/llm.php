@@ -3881,8 +3881,13 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
                     '_flex_shrink' => 0,
                 ],
                 'elements' => [
-                    $widget( $id . '-connector-line-' . (string) $step_number, 'html', [
-                        'html' => '<span aria-hidden="true" style="display:block;width:2px;min-height:3.5rem;background:#b9c5e8;margin:0 auto;"></span>',
+                    $widget( $id . '-connector-line-' . (string) $step_number, 'divider', [
+                        'style' => 'solid',
+                        'weight' => [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ],
+                        'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        'align' => 'center',
+                        'color' => '#b9c5e8',
+                        'gap' => [ 'unit' => 'px', 'size' => 0, 'sizes' => [] ],
                     ] ),
                 ],
             ];
@@ -4149,6 +4154,15 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				// marker sits on top of its card instead of drifting across
 				// the row; grow sizing broke that alignment (live feedback).
 				wpae_llm_set_variant_container_width( $rail_settings, $step_width );
+				// Keep the marker rail inside the mobile viewport. Cards stack
+				// below it; the four marker cells remain a compact row.
+				$rail_settings['width_mobile'] = [ 'unit' => '%', 'size' => 25, 'sizes' => [] ];
+				$rail_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 25, 'sizes' => [] ];
+				$rail_settings['_flex_size_mobile'] = 'custom';
+				$rail_settings['_flex_grow_mobile'] = 0;
+				$rail_settings['_flex_shrink_mobile'] = 1;
+				$rail_settings['flex_grow_mobile'] = 0;
+				$rail_settings['flex_shrink_mobile'] = 1;
 				$rail_settings['_flex_size'] = 'custom';
 				$rail_settings['_flex_grow'] = 0;
 				$rail_settings['_flex_shrink'] = 1;
@@ -4173,19 +4187,29 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 						$rail_child_settings['_flex_size'] = 'grow';
 						$rail_child_settings['_flex_grow'] = 1;
 						$rail_child_settings['_flex_shrink'] = 1;
-						$rail_child_settings['flex_direction'] = 'row';
-						$rail_child_settings['flex_direction_mobile'] = 'row';
-						$rail_child_settings['flex_align_items'] = 'center';
+						// Keep the native Divider on the cross-axis so
+						// Elementor stretches it to the full connector width.
+						$rail_child_settings['flex_direction'] = 'column';
+						$rail_child_settings['flex_direction_mobile'] = 'column';
+						$rail_child_settings['flex_align_items'] = 'stretch';
+						$rail_child_settings['flex_align_items_mobile'] = 'stretch';
 						// (array)(...) creates a temporary copy, so a
 						// by-reference foreach would modify the copy and lose
 						// the horizontal line; collect, rewrite, reassign.
 						$connector_children = is_array( $rail_child['elements'] ?? null ) ? $rail_child['elements'] : [];
 						foreach ( $connector_children as $ci => $connector_element ) {
-							if ( ! is_array( $connector_element ) || ( $connector_element['widgetType'] ?? '' ) !== 'html' ) {
+							if ( ! is_array( $connector_element ) || ! in_array( $connector_element['widgetType'] ?? '', [ 'divider', 'html' ], true ) ) {
 								continue;
 							}
 							$connector_settings = is_array( $connector_element['settings'] ?? null ) ? $connector_element['settings'] : [];
-							$connector_settings['html'] = '<span aria-hidden="true" style="display:block;width:100%;height:2px;min-height:0;background:#b9c5e8;margin:auto 0;"></span>';
+							$connector_element['widgetType'] = 'divider';
+							unset( $connector_settings['html'] );
+							$connector_settings['style'] = 'solid';
+							$connector_settings['weight'] = [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ];
+							$connector_settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+							$connector_settings['align'] = 'center';
+							$connector_settings['color'] = '#b9c5e8';
+							$connector_settings['gap'] = [ 'unit' => 'px', 'size' => 0, 'sizes' => [] ];
 							$connector_element['settings'] = $connector_settings;
 							$connector_children[ $ci ] = $connector_element;
 						}
@@ -4232,7 +4256,9 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				'flex_justify_content' => 'flex-start',
 				'flex_align_items' => 'center',
 				'flex_gap' => $track_gap,
-				'flex_gap_mobile' => $track_gap,
+				// Four 25% cells already consume the full mobile row; a gap would
+				// add extra width and reintroduce horizontal overflow.
+				'flex_gap_mobile' => [ 'column' => '0', 'row' => '0', 'isLinked' => true, 'unit' => 'rem', 'size' => '0' ],
 				'_element_width' => 'initial',
 				'_flex_size' => 'grow',
 				'_flex_grow' => 1,

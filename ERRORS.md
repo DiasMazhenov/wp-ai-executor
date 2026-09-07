@@ -7,6 +7,28 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-092: Horizontal connector span collapsed to zero width
+
+- **Observed (2026-09-07, live Elementor post 4556):** The user's screenshot
+  correctly showed markers `01` and `02` without the expected connecting line.
+  Public rendered HTML contained three `wpae-process-connector` containers;
+  each container was 244px wide and visible, but its nested HTML widget and
+  `width:100%` span both measured 0px wide.
+- **Root cause:** The horizontal normalization changed each connector
+  container to `flex-direction: row`. Its only HTML widget then became a
+  shrink-to-content main-axis item; the percentage-width span had no intrinsic
+  width and collapsed. The line was present in HTML but invisible in the
+  rendered screenshot. The shared mobile width helper also set every rail cell
+  to 100%, pushing the marker row beyond the phone viewport.
+- **Fix (v02.11.62):** Replace connector HTML widgets with native Elementor
+  Divider widgets, keep their containers column-oriented with stretch settings,
+  and set mobile rail cells to 25% with zero gap while cards stack at
+  100% width.
+- **Regression status:** Local contract/lint checks and live post-4556 public
+  desktop/mobile DOM geometry plus screenshots are required; Divider elements
+  must render non-zero horizontal widths and the mobile marker rail must not
+  overflow.
+
 ## EJ-091: OpenRouter/free failures lacked request/response JSON diagnostics
 
 - **Observed (2026-09-07, live Elementor post 4556):** With settings showing

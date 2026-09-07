@@ -2,12 +2,20 @@
 
 ## Current release
 
-- Plugin: `v02.11.61`
+- Plugin: `v02.11.62`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.62: Fixes the live horizontal process connector and mobile layout.
+  The public HTML had three connector containers with the expected 244px
+  width, but Elementor's horizontal connector flex direction made each nested
+  HTML widget collapse to 0px, so the 2px span was invisible. Connectors now
+  use the native Divider widget with column/stretch settings; mobile rail cells
+  use 25% widths and zero rail gap so all four markers stay in the viewport
+  while cards stack at 100%. The release requires live desktop/mobile DOM
+  geometry and screenshot verification on post 4556.
 - v02.11.57: Adds an icon-only copy control to every user prompt bubble in the
   Elementor LLM chat. It reuses the existing clipboard fallback, stores the
   exact prompt separately from the button markup for history/log/regenerate,
