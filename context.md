@@ -2,12 +2,23 @@
 
 ## Current release
 
-- Plugin: `v02.11.54`
+- Plugin: `v02.11.55`
 - Guide: `v02.05.94`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.
+- v02.11.55: EJ-088. Live generation on post 4556 with v02.11.54 exposed a
+  false content-fidelity rejection: `wpae_llm_process_timeline_steps` correctly
+  parsed `Замысел, Съёмка, Монтаж, Публикация`, but
+  `wpae_llm_extract_requested_content` treated the whole instruction as one
+  required phrase, so the valid process tree was rejected before Elementor
+  write. Process extraction now reuses the structural parser in explicit-only
+  mode and checks only explicit step labels; plain process prose remains
+  content-free. Version/header and the contract assertion are v02.11.55.
+  Local PHP lint, contract test, and exact four-step fidelity harness pass.
+  Live deployment and the required JSON/DOM/rendered-HTML/screenshot loop are
+  still pending; the failed v02.11.54 request wrote nothing.
 - v02.11.54: EJ-087. Replaces the defective step-parser and process-detector
   shipped in commit `64f5750`. (1) `wpae_llm_process_timeline_steps` now
   recognises an explicit step list by STRUCTURE, not keywords: numbered list

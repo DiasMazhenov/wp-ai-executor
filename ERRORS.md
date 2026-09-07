@@ -7,6 +7,31 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-088: v02.11.54 rejected a valid explicit process step list before write
+
+- **Observed (2026-09-07, live Elementor post 4556):** The editor reported
+  `LLM-команда отклонена: сгенерированный контент не соответствует запросу`
+  for `Создай горизонтальный таймлайн: Замысел, Съёмка, Монтаж, Публикация`.
+  The process parser itself returned all four requested labels, but the
+  operation failed closed and no Elementor revision or page write was made.
+- **Root cause:** `wpae_llm_extract_requested_content()` had no process-specific
+  branch for a colon-separated enumeration. Because `extract_labeled_content()`
+  found no label/content dash pairs, the generic `content_units()` fallback
+  treated the whole instruction as one required content string. The generated
+  native timeline contained the four labels but could not contain the command
+  prose verbatim, so content fidelity rejected it.
+- **Fix (v02.11.55):** Process requests now reuse
+  `wpae_llm_process_timeline_steps( $message, false )` and add only structurally
+  explicit step labels to the fidelity set. When no explicit list exists, the
+  generic instruction fallback is suppressed; the default timeline remains
+  available to the normal builder. The plugin header/constant and contract
+  test are bumped to v02.11.55.
+- **Regression status:** PHP lint, `tests/llm-chat-contract.test.js`, and a
+  PHP harness covering the exact four labels plus a negative plain-prose case
+  pass. Deploy v02.11.55, rerun the natural-language generation, then require
+  the real revision, copied/scoped JSON, DOM, `/elementor/rendered-html`
+  needles, screenshot, and honest visual review before acceptance.
+
 ## EJ-087: v02.11.54 commit `64f5750` shipped two defective process-timeline fixes
 
 - **Observed (2026-09-05, local pre-deploy check):** The fix commit for the

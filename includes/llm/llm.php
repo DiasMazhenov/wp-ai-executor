@@ -978,6 +978,8 @@ function wpae_llm_normalize_content_text( $value ): string {
 function wpae_llm_extract_requested_content( string $message ): array {
     $matches = [];
     $navigation_request = false;
+    $process_request = wpae_llm_is_process_request( $message );
+    $process_steps = [];
     foreach ( [ '/«([^»]{2,240})»/u', '/"([^"\\n]{2,240})"/u' ] as $pattern ) {
         if ( preg_match_all( $pattern, $message, $found ) ) {
             $matches = array_merge( $matches, $found[1] );
@@ -985,6 +987,18 @@ function wpae_llm_extract_requested_content( string $message ): array {
     }
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
     $structured_pairs = $labeled_pairs;
+    if ( $process_request ) {
+        // Process labels are explicit content; the surrounding instruction is
+        // not. Keep the parser's structural gate so plain process prose does
+        // not become a fabricated list or a false fidelity requirement.
+        $process_steps = wpae_llm_process_timeline_steps( $message, false );
+        foreach ( $process_steps as $step ) {
+            $label = trim( (string) ( $step['label'] ?? '' ) );
+            if ( $label !== '' ) {
+                $matches[] = $label;
+            }
+        }
+    }
     if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
         $navigation_request = true;
         $navigation = wpae_llm_extract_navigation_content( $message );
@@ -1009,7 +1023,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
             }
         }
     }
-    if ( empty( $matches ) && ! $navigation_request ) {
+    if ( empty( $matches ) && ! $navigation_request && ( ! $process_request || ! empty( $process_steps ) ) ) {
         $matches = wpae_llm_content_units( $message );
     }
     $content = [];
@@ -3649,7 +3663,7 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
     ];
 }
 
-function wpae_llm_process_timeline_steps( string $message ): array {
+function wpae_llm_process_timeline_steps( string $message, bool $allow_default = true ): array {
     $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
     if ( count( $pairs ) >= 2 ) {
         return $pairs;
@@ -3738,7 +3752,7 @@ function wpae_llm_process_timeline_steps( string $message ): array {
     // Need at least two distinct labels to claim "this is a list". Anything
     // shorter, or no recognised structure, falls back to the safe default.
     if ( count( $items ) < 2 ) {
-        return wpae_llm_process_timeline_default_steps();
+        return $allow_default ? wpae_llm_process_timeline_default_steps() : [];
     }
 
     $result = array();
