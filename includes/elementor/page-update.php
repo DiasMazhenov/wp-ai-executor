@@ -48,7 +48,8 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
-    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    $design_system_context = [ 'allow_unchanged_legacy_top_level' => $existing_data ];
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data, $design_system_context );
     if ( ! $design_system_contract['ok'] ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -61,6 +62,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         'post_id' => $post_id,
         'template' => $template,
         'operation' => 'update',
+        'allow_unchanged_legacy_top_level' => $existing_data,
     ] );
     if ( ! $preflight['ok'] ) {
         return new WP_REST_Response( [
@@ -196,7 +198,8 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ], 422 );
     }
 
-    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    $design_system_context = [ 'allow_unchanged_legacy_top_level' => $existing_data ];
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data, $design_system_context );
     if ( ! $design_system_contract['ok'] ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -211,6 +214,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         'template' => $template,
         'operation' => 'patch',
         'patch_count' => count( $patch_report['changes'] ),
+        'allow_unchanged_legacy_top_level' => $existing_data,
     ] );
     if ( ! $preflight['ok'] ) {
         return new WP_REST_Response( [

@@ -221,7 +221,7 @@ function wpae_repeated_agent_error_add_check( array &$checks, string $code, stri
     $checks[] = $check;
 }
 
-function wpae_build_repeated_agent_error_audit( array $elementor_data, array $validation_errors = [], array $stats = [] ): array {
+function wpae_build_repeated_agent_error_audit( array $elementor_data, array $validation_errors = [], array $stats = [], array $context = [] ): array {
     if ( empty( $stats ) ) {
         $stats = wpae_default_elementor_audit_stats();
         wpae_collect_elementor_audit_stats( $elementor_data, $stats );
@@ -233,7 +233,9 @@ function wpae_build_repeated_agent_error_audit( array $elementor_data, array $va
         $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
     }
 
-    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data, [
+        'allow_unchanged_legacy_top_level' => (array) ( $context['allow_unchanged_legacy_top_level'] ?? [] ),
+    ] );
     $error_counts = wpae_count_elementor_validation_errors_by_type( $validation_errors );
     $checks = [];
 
@@ -345,9 +347,11 @@ function wpae_build_elementor_visual_audit( array $elementor_data, array $contex
     wpae_finalize_elementor_audit_stats( $stats );
 
     $validation_errors = wpae_validate_elementor_data_array( $elementor_data );
-    $design_system_contract = wpae_validate_design_system_contract( $elementor_data );
+    $design_system_contract = wpae_validate_design_system_contract( $elementor_data, [
+        'allow_unchanged_legacy_top_level' => (array) ( $context['allow_unchanged_legacy_top_level'] ?? [] ),
+    ] );
     $error_counts = wpae_count_elementor_validation_errors_by_type( $validation_errors );
-    $repeated_agent_error_audit = wpae_build_repeated_agent_error_audit( $elementor_data, $validation_errors, $stats );
+    $repeated_agent_error_audit = wpae_build_repeated_agent_error_audit( $elementor_data, $validation_errors, $stats, $context );
     $checks = [];
     $container_count = (int) ( $stats['containers'] ?? 0 );
     $widget_count = (int) ( $stats['widgets'] ?? 0 );
@@ -642,7 +646,9 @@ function wpae_build_elementor_preflight( array $elementor_data, WP_REST_Request 
         'Run /elementor/normalize and /elementor/validate before writing.'
     );
 
-    $design_system = wpae_validate_design_system_contract( $elementor_data );
+    $design_system = wpae_validate_design_system_contract( $elementor_data, [
+        'allow_unchanged_legacy_top_level' => (array) ( $context['allow_unchanged_legacy_top_level'] ?? [] ),
+    ] );
     wpae_preflight_add_check(
         $checks,
         'design_system_contract',

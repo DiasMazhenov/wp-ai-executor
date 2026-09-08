@@ -336,6 +336,41 @@ function wpae_llm_validate_action_shape( array $action, int $post_id ): array {
     return [ 'ok' => empty( $errors ), 'errors' => $errors ];
 }
 
+function wpae_llm_build_action_validation_diagnostics( array $action, int $post_id, string $message ): array {
+    $elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
+    $shape = wpae_llm_validate_action_shape( $action, $post_id );
+    $widget_count = wpae_llm_count_widgets( $elements );
+    $design_complete = WPAE_LLM_Design::is_complete( $elements );
+    $content_fidelity = wpae_llm_content_fidelity( $message, $elements );
+    $checks = [
+        'shape' => ! empty( $shape['ok'] ),
+        'native_widgets' => $widget_count > 0,
+        'design_complete' => $design_complete,
+        'content_fidelity' => ! empty( $content_fidelity['ok'] ),
+    ];
+    $failed_checks = [];
+    foreach ( $checks as $check => $passed ) {
+        if ( ! $passed ) {
+            $failed_checks[] = $check;
+        }
+    }
+
+    return [
+        'schema' => 'wpae-llm-action-validation-v1',
+        'ok' => empty( $failed_checks ),
+        'action' => sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) ),
+        'post_id' => absint( $action['post_id'] ?? 0 ),
+        'expected_post_id' => $post_id,
+        'element_count' => count( $elements ),
+        'widget_count' => $widget_count,
+        'design_complete' => $design_complete,
+        'shape' => $shape,
+        'content_fidelity' => $content_fidelity,
+        'failed_checks' => $failed_checks,
+        'decode' => is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [],
+    ];
+}
+
 function wpae_llm_action_diff( array $before, array $inserted, array $after ): array {
     $ids = [];
     $top_level_ids = static function ( array $elements ): array {
@@ -7834,7 +7869,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
         $decoded_shape = wpae_llm_validate_action_shape( $action, $post_id );
         $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
-        $action_valid = ! empty( $decoded_shape['ok'] ) && $decoded_widget_count > 0 && WPAE_LLM_Design::is_complete( $decoded_elements ) && ! empty( $decoded_content_fidelity['ok'] );
+        $initial_validation = wpae_llm_build_action_validation_diagnostics( $action, $post_id, $message );
+        $action_diagnostics['validation'] = $initial_validation;
+        $repair_attempts = [];
+        $action_valid = ! empty( $initial_validation['ok'] );
         if ( ! $action_valid ) {
             $repair_error = '';
 			$repair_messages = [
@@ -7853,17 +7891,36 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'], $provider_deadline );
                 if ( is_wp_error( $repair_response ) ) {
                     $repair_error = wpae_llm_diagnostic_text( $repair_response->get_error_message() );
+                    $repair_data = $repair_response->get_error_data();
+                    $repair_attempts[] = [
+                        'attempt' => $repair_attempt,
+                        'status' => 'transport_error',
+                        'error' => $repair_error,
+                        'provider_diagnostics' => is_array( $repair_data ) && is_array( $repair_data['diagnostics'] ?? null ) ? $repair_data['diagnostics'] : [],
+                    ];
                     break;
                 }
                 $repair_status = wp_remote_retrieve_response_code( $repair_response );
                 $repair_payload = json_decode( wp_remote_retrieve_body( $repair_response ), true );
                 if ( $repair_status < 200 || $repair_status >= 300 ) {
                     $repair_error = 'Repair HTTP ' . $repair_status . '.';
+                    $repair_attempts[] = [
+                        'attempt' => $repair_attempt,
+                        'status' => 'http_error',
+                        'http_status' => $repair_status,
+                        'response' => wpae_llm_response_diagnostics( is_array( $repair_payload ) ? $repair_payload : [] ),
+                    ];
                     continue;
                 }
                 $repair_reply = wpae_llm_extract_response_text( is_array( $repair_payload ) ? $repair_payload : [] );
                 if ( $repair_reply === '' ) {
                     $repair_error = 'Repair-проход вернул пустой ответ.';
+                    $repair_attempts[] = [
+                        'attempt' => $repair_attempt,
+                        'status' => 'empty_response',
+                        'http_status' => $repair_status,
+                        'response' => wpae_llm_response_diagnostics( is_array( $repair_payload ) ? $repair_payload : [] ),
+                    ];
                     continue;
                 }
                 $candidate = wpae_llm_decode_action( $repair_reply, $post_id );
@@ -7873,7 +7930,16 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $candidate_widget_count = wpae_llm_count_widgets( $candidate_elements );
                 $candidate_shape = wpae_llm_validate_action_shape( $candidate, $post_id );
                 $candidate_content_fidelity = wpae_llm_content_fidelity( $message, $candidate_elements );
-                if ( empty( $candidate_shape['ok'] ) || $candidate_action !== 'insert_elements' || $candidate_post_id !== $post_id || count( $candidate_elements ) > 12 || $candidate_widget_count < 1 || ! WPAE_LLM_Design::is_complete( $candidate_elements ) || empty( $candidate_content_fidelity['ok'] ) ) {
+                $candidate_validation = wpae_llm_build_action_validation_diagnostics( $candidate, $post_id, $message );
+                $candidate_valid = ! empty( $candidate_validation['ok'] ) && $candidate_action === 'insert_elements' && $candidate_post_id === $post_id && count( $candidate_elements ) <= 12;
+                $repair_attempts[] = [
+                    'attempt' => $repair_attempt,
+                    'status' => $candidate_valid ? 'accepted' : 'rejected',
+                    'http_status' => $repair_status,
+                    'response' => wpae_llm_response_diagnostics( is_array( $repair_payload ) ? $repair_payload : [] ),
+                    'validation' => $candidate_validation,
+                ];
+                if ( ! $candidate_valid ) {
                     $repair_error = 'Repair-проход вернул неподдерживаемую или пустую Elementor-команду.';
                     continue;
                 }
@@ -7884,6 +7950,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $action_diagnostics['decoded_action'] = sanitize_key( $candidate_action );
                 $action_diagnostics['decoded_post_id'] = $candidate_post_id;
                 $action_diagnostics['decoded_element_count'] = count( $candidate_elements );
+                $action_diagnostics['validation'] = $candidate_validation;
+                $action_diagnostics['initial_validation'] = $initial_validation;
+                $action_diagnostics['repair_attempts'] = $repair_attempts;
                 $action_repair = true;
                 $action_valid = true;
             }
@@ -7897,6 +7966,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'fallback_archetype' => wpae_llm_detect_block_archetype( $message ),
                 'fallback_variant' => absint( $action['fallback_variant'] ?? 0 ),
                 'fallback_reason' => 'Provider and bounded repair response did not contain a usable native widget tree.',
+                'initial_validation' => $initial_validation,
+                'repair_attempts' => $repair_attempts,
             ];
             $action_fallback = true;
         }
@@ -7907,6 +7978,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $process_timeline_changed = 0;
         $fallback_content_changed = 0;
         if ( $action_fallback ) {
+            wpae_llm_remove_unrequested_buttons( $action['elements'], $message, $fallback_content_changed );
             wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
             if ( $action_archetype === 'faq' ) {
                 wpae_llm_apply_fallback_faq_content( $action['elements'], $message, $fallback_content_changed );
@@ -7932,6 +8004,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     'fallback_variant' => absint( $action['fallback_variant'] ?? 0 ),
                     'fallback_reason' => 'Decoded provider tree failed the semantic structure contract before Elementor normalization.',
                     'semantic_failures' => (array) ( $preflight_plan_audit['failures'] ?? [] ),
+                    'initial_validation' => $initial_validation,
+                    'repair_attempts' => $repair_attempts,
                 ];
                 wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $fallback_content_changed );
                 if ( $action_archetype === 'faq' ) {
@@ -8001,7 +8075,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
             $action['elements'] = wpae_llm_repair_unbalanced_repeatable_layout( $action['elements'], $message, $action_archetype, $composition_repair_changed );
-            $action['elements'] = wpae_llm_normalize_process_timeline( $action['elements'], $message, $process_timeline_changed );
+            if ( wpae_llm_is_process_request( $message, $action_archetype ) ) {
+                $action['elements'] = wpae_llm_normalize_process_timeline( $action['elements'], $message, $process_timeline_changed );
+            }
             $action['elements'] = wpae_llm_normalize_process_step_labels( $action['elements'], $action_archetype, $process_labels_changed );
         }
         $visual_grammar_changed = 0;
@@ -8149,7 +8225,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         } elseif ( $action_repair ) {
             $action_steps[] = [ 'id' => 'action_repair', 'status' => 'ok', 'message' => 'Нарушенная JSON-команда была повторно запрошена и разобрана после repair-прохода.' ];
         } elseif ( isset( $repair_error ) && $repair_error !== '' ) {
-            $action_steps[] = [ 'id' => 'action_repair', 'status' => 'failed', 'message' => 'Repair-проход не вернул пригодную Elementor-команду.', 'details' => [ 'attempts' => 2, 'error' => $repair_error ] ];
+            $action_steps[] = [ 'id' => 'action_repair', 'status' => 'failed', 'message' => 'Repair-проход не вернул пригодную Elementor-команду.', 'details' => [ 'attempts' => count( $repair_attempts ), 'error' => $repair_error, 'attempts_detail' => $repair_attempts ] ];
         }
         if ( $typography_changed > 0 ) {
             $action_steps[] = [ 'id' => 'typography_guard', 'status' => 'ok', 'message' => 'Семантическая типографика повторяющегося блока нормализована через native Elementor settings.', 'details' => [ 'archetype' => $action_archetype, 'author_headings_to_h5' => $typography_changed ] ];
@@ -8175,12 +8251,35 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $execution_variation_seed = $library_applied || $provider_design ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
         $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.', 'details' => [ 'source' => $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ] ];
+        $generation_diagnostics = [
+            'schema' => 'wpae-llm-generation-diagnostics-v1',
+            'archetype' => $action_archetype,
+            'action_path' => $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ),
+            'provider_response' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
+            'command' => $action_diagnostics,
+            'initial_validation' => $initial_validation,
+            'repair_attempts' => $repair_attempts,
+            'final_validation' => [
+                'content_fidelity' => $content_fidelity,
+                'semantic_plan' => $content_plan_audit,
+                'provider_design' => $provider_design,
+                'library_applied' => $library_applied,
+            ],
+        ];
         $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
+        $generation_diagnostics['execution'] = [
+            'ok' => ! empty( $execution['ok'] ),
+            'status' => (int) ( $execution['status'] ?? 0 ),
+            'update_error' => sanitize_text_field( (string) ( $execution['update_error'] ?? '' ) ),
+            'blocking_errors' => array_values( array_filter( array_map( 'sanitize_text_field', (array) ( $execution['blocking_errors'] ?? [] ) ) ) ),
+            'failed_checks' => array_values( array_filter( array_map( 'sanitize_key', (array) ( $execution['failed_checks'] ?? [] ) ) ) ),
+        ];
+        $execution['diagnostics'] = $generation_diagnostics;
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );
         }
-        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'operation_id' => $execution['operation_id'] ?? null, 'action' => $execution['action'], 'write' => $execution, 'steps' => $execution['steps'], 'library' => $library_trace, 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
+        return new WP_REST_Response( [ 'ok' => true, 'message' => 'Задача выполнена через Elementor. Вставлено элементов: ' . (int) $execution['inserted_count'] . '.', 'operation_id' => $execution['operation_id'] ?? null, 'action' => $execution['action'], 'write' => $execution, 'steps' => $execution['steps'], 'diagnostics' => $generation_diagnostics, 'library' => $library_trace, 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
     }
     return new WP_REST_Response( [
         'ok' => true,

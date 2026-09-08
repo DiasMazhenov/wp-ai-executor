@@ -2,9 +2,18 @@
 
 ## Current release
 
-- Plugin: `v02.11.70`
+- Plugin: `v02.11.71`
 - Guide: `v02.05.96`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.71: Keeps unchanged legacy top-level Elementor roots intact during
+  append generation while requiring current design-system markers on every
+  new or modified root. Generation responses now expose bounded provider,
+  decode, repair, semantic-plan and execution diagnostics in the editor chat.
+  Fallback generation no longer injects a process timeline into non-process
+  requests; the hero fallback therefore cannot fail its own semantic audit.
+  The legacy-root append, fallback-with-two-repairs and provider-design
+  regressions pass together with 73 PHP runtime checks. Live deployment and
+  fresh post-4556 visual acceptance remain pending.
 - v02.11.70: Accepts a valid first LLM composition and preserves its native
   layout, custom palette and display typography through the write boundary.
   The new `includes/llm/design.php` owns composition completeness and missing

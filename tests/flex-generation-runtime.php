@@ -54,8 +54,9 @@ function wpae_get_design_system_required_classes() { return [ 'wpae-system-test'
 function wpae_get_design_system_id() { return 'test'; }
 function wpae_get_elementor_data_for_post( $id ) { return $GLOBALS['page_data']; }
 function wpae_block_library_retrieve_for_prompt( ...$args ) { return $GLOBALS['library']; }
+function wpae_count_elementor_validation_errors_by_type( array $errors ) { return []; }
 function wpae_elementor_update( $request ) {
-    $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ) );
+    $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ) ] );
     if ( ! $contract['ok'] ) {
         throw new RuntimeException( 'Real write contract failed: ' . wp_json_encode( $contract['errors'] ) );
     }
@@ -84,6 +85,7 @@ function get_post_meta( $id, $key = '', $single = false ) {
 require __DIR__ . '/../includes/llm/llm.php';
 require __DIR__ . '/../includes/elementor/normalize.php';
 require __DIR__ . '/../includes/elementor/design-contract.php';
+require __DIR__ . '/../includes/elementor/validation.php';
 require __DIR__ . '/../includes/rollback/rollback.php';
 
 function check( $condition, $message ) {
@@ -139,6 +141,69 @@ foreach ( [ 'primary', 'repaired' ] as $scenario ) {
     check( count( $saved['elements'] ) === 2, $scenario . ': structural wrappers inserted' );
     check( strpos( $GLOBALS['http_calls'][0]['body']['messages'][0]['content'], '3–5' ) === false, 'Prompt still caps composition to 3-5 widgets' );
 }
+
+$legacy_badge = container_node( 'legacy-badge', [
+    '_css_classes' => 'wpae-generated-badge',
+    'background_background' => 'classic',
+    'background_color' => '#ffffff',
+    'border_border' => 'solid',
+    'border_color' => '#1f2937',
+], [ widget( 'legacy-badge-label', 'heading', [ 'title' => 'ПРОЦЕСС' ] ) ] );
+$legacy_page = [ $existing[0], $legacy_badge ];
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['library'] = [ 'status' => 'skipped', 'selected' => [] ];
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $action ) ) ];
+$legacy_request = new WP_REST_Request();
+$legacy_request->set_param( 'message', $message );
+$legacy_request->set_param( 'context', [ 'post_id' => 42 ] );
+$legacy_response = wpae_llm_chat_request( $legacy_request );
+check( $legacy_response instanceof WP_REST_Response && ! empty( $legacy_response->get_data()['ok'] ), 'Unchanged legacy root blocked append generation' );
+check( count( $GLOBALS['writes'] ) === 1, 'Legacy-root append did not write exactly once' );
+check( $GLOBALS['page_data'][0] === $legacy_page[0] && $GLOBALS['page_data'][1] === $legacy_page[1], 'Unchanged legacy roots were rewritten' );
+$legacy_saved = $GLOBALS['page_data'][2];
+check( strpos( (string) ( $legacy_saved['settings']['_css_classes'] ?? '' ), 'wpae-system-test' ) !== false, 'New append root missed current design-system marker' );
+$legacy_contract = wpae_validate_design_system_contract( array_merge( $legacy_page, [ $legacy_saved ] ), [ 'allow_unchanged_legacy_top_level' => $legacy_page ] );
+check( $legacy_contract['ok'] && (int) $legacy_contract['stats']['unchanged_legacy_top_level_containers'] === 1, 'Unchanged legacy root allowance was not reported' );
+$legacy_audit = wpae_build_repeated_agent_error_audit( array_merge( $legacy_page, [ $legacy_saved ] ), [ 'validated' ], [ 'html_widget_layout_risks' => 0 ], [ 'allow_unchanged_legacy_top_level' => $legacy_page ] );
+check( $legacy_audit['ok'], 'Repeated preflight audit rejected the unchanged legacy root' );
+$strict_legacy_audit = wpae_build_repeated_agent_error_audit( array_merge( $legacy_page, [ $legacy_saved ] ), [ 'validated' ], [ 'html_widget_layout_risks' => 0 ] );
+check( ! $strict_legacy_audit['ok'], 'Strict audit accepted the unmarked legacy root without append context' );
+$changed_legacy = $legacy_page;
+$changed_legacy[1]['settings']['padding'] = [ 'unit' => 'rem', 'top' => '3' ];
+check( ! wpae_validate_design_system_contract( array_merge( $changed_legacy, [ $legacy_saved ] ), [ 'allow_unchanged_legacy_top_level' => $legacy_page ] )['ok'], 'Changed unmarked legacy root bypassed contract' );
+
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( 'not JSON' ), provider_reply( 'still not JSON' ), provider_reply( 'still not JSON' ) ];
+$fallback_request = new WP_REST_Request();
+$fallback_request->set_param( 'message', 'Создай hero. Заголовок: «Пространство для жизни». Текст: «Светлые интерьеры». Надпись: «Архитектура повседневности».' );
+$fallback_request->set_param( 'context', [ 'post_id' => 42 ] );
+$fallback_response = wpae_llm_chat_request( $fallback_request );
+check( $fallback_response instanceof WP_REST_Response && ! empty( $fallback_response->get_data()['ok'] ), 'Deterministic fallback was blocked by the append contract' );
+$fallback_data = $fallback_response->get_data();
+check( ( $fallback_data['diagnostics']['action_path'] ?? '' ) === 'fallback', 'Fallback diagnostics lost action path' );
+check( ! empty( $fallback_data['diagnostics']['initial_validation']['failed_checks'] ), 'Fallback diagnostics lost initial validation failures' );
+check( count( (array) ( $fallback_data['diagnostics']['repair_attempts'] ?? [] ) ) === 2, 'Fallback diagnostics lost both bounded repair attempts' );
+check( count( $GLOBALS['http_calls'] ) === 3, 'Fallback test did not use one primary plus two repair calls' );
+$fallback_widget_types = [];
+$collect_fallback_widget_types = static function ( array $nodes ) use ( &$collect_fallback_widget_types, &$fallback_widget_types ): void {
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+            $type = (string) ( $node['widgetType'] ?? '' );
+            $fallback_widget_types[ $type ] = (int) ( $fallback_widget_types[ $type ] ?? 0 ) + 1;
+        }
+        if ( is_array( $node['elements'] ?? null ) ) {
+            $collect_fallback_widget_types( $node['elements'] );
+        }
+    }
+};
+$collect_fallback_widget_types( [ $GLOBALS['page_data'][2] ?? [] ] );
+check( empty( $fallback_widget_types['divider'] ), 'Hero fallback inherited an unrelated process Divider' );
+check( strpos( (string) wp_json_encode( $GLOBALS['page_data'][2] ?? [] ), 'wpae-process-' ) === false, 'Hero fallback inherited unrelated process semantics' );
 
 $with_overrides = $hero;
 check( WPAE_LLM_Design::is_complete( [ $hero ] ), 'Populated native composition rejected' );

@@ -7,6 +7,45 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-101: Fallback hero was polluted by an unrelated process timeline
+
+- **Confirmed (2026-09-08, local runtime regression):** When the provider and
+  both bounded repair attempts returned unusable JSON, the deterministic hero
+  fallback received three Divider widgets and process semantics, then failed
+  its own semantic-plan audit with HTTP 422 before the Elementor write.
+- **Root cause:** The non-provider generation pipeline called
+  `wpae_llm_normalize_process_timeline()` unconditionally for every fallback or
+  library composition. The normalizer appends a process timeline when it does
+  not find one, even when the requested archetype is `hero`.
+- **Fix (v02.11.71):** Run process-timeline normalization only when
+  `wpae_llm_is_process_request()` confirms a process request. Added a runtime
+  regression asserting that a hero fallback contains no Divider or
+  `wpae-process-*` nodes.
+- **Regression:** The provider-design, legacy-root append, and fallback with
+  two rejected repairs now pass; fallback remains bounded at one primary plus
+  two repair calls.
+
+## EJ-102: Existing legacy top-level root blocked safe append
+
+- **Confirmed (2026-09-08, live post 4556 JSON and local contract):** A page
+  containing the existing horizontal timeline and its separate generated badge
+  root failed the strict design-system contract during append. The timeline
+  root had current markers, while the unchanged badge root was a valid legacy
+  root with only `wpae-generated-badge`; the full-page update returned HTTP 422
+  before writing the new block.
+- **Root cause:** The contract required every top-level root to carry the
+  current marker, without distinguishing an unchanged legacy root from a new
+  or modified root.
+- **Fix (v02.11.71):** Update and preflight paths may preserve an unchanged
+  unmarked legacy root only when its id and full fingerprint match the saved
+  page snapshot. Any changed legacy root, new root, or direct page-creation
+  request remains strict. Safe bounded diagnostics now retain provider finish
+  reason, decode failures, repair attempts, semantic audit and execution
+  errors without logging credentials or raw response bodies.
+- **Regression:** Append preserves the two existing roots byte-for-byte, marks
+  the new root, reports the preserved legacy count, and rejects a modified
+  legacy root.
+
 ## EJ-098: Accepted provider designs were replaced by deterministic fallbacks
 
 - **Confirmed (2026-09-08, runtime regression):** A valid first response never

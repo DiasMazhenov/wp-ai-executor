@@ -1465,6 +1465,7 @@
         }).then(function (body) {
             window.clearInterval(progressTimer);
             if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
+            if (body.diagnostics && typeof body.diagnostics === 'object') addDiagnosticJsonMessage(body.diagnostics);
             var visionPromise = Promise.resolve(null);
                 if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
                 var expectedWidgetCount = beforeWidgetCount + Number(body.write.inserted_widget_count || body.write.inserted_count || 0);
