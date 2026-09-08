@@ -17,7 +17,12 @@
   markers, stacks cards, and has no horizontal overflow. The exact hero
   retest reached `openrouter/free`, but its single automatic retry ended with
   sanitized cURL 28 / HTTP 0 transport diagnostics while auth headers were
-  present and non-empty; no hero write was accepted.
+  present and non-empty; no hero write was accepted. A fresh editor check then
+  found the saved horizontal card surfaces had an empty `border_radius` despite
+  the supplied selection JSON requiring 20px. Native editor controls applied
+  that reference to all four horizontal cards; after save and a new editor
+  load, all four retained 20px radius, white background, 1px `#dbe3f0`
+  border, reference padding, and responsive no-overflow behavior.
 - v02.11.71: Keeps unchanged legacy top-level Elementor roots intact during
   append generation while requiring current design-system markers on every
   new or modified root. Generation responses now expose bounded provider,

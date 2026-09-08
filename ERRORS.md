@@ -23,6 +23,23 @@ before making a new change to the plugin.
   until a usable native Elementor response or a deterministic fallback is
   written and then verified in the live editor.
 
+## EJ-105: Supplied horizontal card reference was missing on the saved tree
+
+- **Confirmed (2026-09-08, live post 4556):** The supplied selection JSON
+  required a white native Flexbox card with `1px #dbe3f0` border, 20px radius,
+  reference padding, 22% desktop width, and 100% mobile width. The saved
+  horizontal timeline already matched the width, surface, border, padding,
+  native Divider rail, and responsive structure, but all four card
+  `border-radius` values were empty; the editor rendered square cards.
+- **Root cause:** The existing post-4556 tree predated the reference-card
+  normalization. The failed LLM patch could not be used because its preview
+  returned HTTP 422 under the design-system contract.
+- **Fix and regression:** Applied the reference radius through native
+  Elementor Style controls to all four horizontal cards, saved the post, opened
+  a new editor load, and verified 20px radius, exact surface/border/padding,
+  native Divider geometry, and desktop/mobile overflow. Vertical variants were
+  not selected or changed.
+
 ## EJ-103: Explicit labeled CTA disappeared from fallback semantic validation
 
 - **Confirmed (2026-09-08, live post 4556):** The hero brief contained
