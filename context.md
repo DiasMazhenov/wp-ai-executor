@@ -2,9 +2,16 @@
 
 ## Current release
 
-- Plugin: `v02.11.71`
+- Plugin: `v02.11.72`
 - Guide: `v02.05.96`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.72: Treats quoted labeled CTA copy such as `Кнопка: «Обсудить
+  проект», ссылка #contact` as an explicit semantic-plan requirement, so
+  fallback normalization preserves the native button instead of removing it
+  as unrequested. Failed dry-run/update diagnostics now expose bounded
+  design-system contract errors, warnings and counters in the editor chat
+  without returning the raw Elementor tree or provider payload. The runtime
+  suite passes 76 checks. Live post-4556 retest remains required.
 - v02.11.71: Keeps unchanged legacy top-level Elementor roots intact during
   append generation while requiring current design-system markers on every
   new or modified root. Generation responses now expose bounded provider,
@@ -12,8 +19,7 @@
   Fallback generation no longer injects a process timeline into non-process
   requests; the hero fallback therefore cannot fail its own semantic audit.
   The legacy-root append, fallback-with-two-repairs and provider-design
-  regressions pass together with 73 PHP runtime checks. Live deployment and
-  fresh post-4556 visual acceptance remain pending.
+  regressions pass together with 73 PHP runtime checks.
 - v02.11.70: Accepts a valid first LLM composition and preserves its native
   layout, custom palette and display typography through the write boundary.
   The new `includes/llm/design.php` owns composition completeness and missing

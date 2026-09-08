@@ -7,6 +7,22 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-103: Explicit labeled CTA disappeared from fallback semantic validation
+
+- **Confirmed (2026-09-08, live post 4556):** The hero brief contained
+  `Кнопка: «Обсудить проект», ссылка #contact`, but the final fallback audit
+  reported `cta_required: false` and could remove the native button as an
+  unrequested control.
+- **Root cause:** The content-plan CTA collector inspected sentence units and
+  dash/labeled-pair content only; quoted content extracted from a labeled
+  sentence was not part of that collector.
+- **Fix (v02.11.72):** Include bounded requested-content values in CTA-plan
+  candidates and preserve the matching native button. Failure diagnostics now
+  retain the bounded design-contract errors and stats that were previously
+  hidden behind a generic HTTP 422.
+- **Regression:** The exact labeled Russian hero CTA is present in the plan;
+  diagnostics preserve contract errors without raw page/provider payloads.
+
 ## EJ-101: Fallback hero was polluted by an unrelated process timeline
 
 - **Confirmed (2026-09-08, local runtime regression):** When the provider and

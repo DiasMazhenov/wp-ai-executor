@@ -812,7 +812,11 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         }, wpae_llm_extract_faq_content( $message ) ), 0, 8 );
     }
     $ctas = [];
-    foreach ( array_merge( $units, array_column( $pairs, 'content' ) ) as $value ) {
+    // Quoted CTA copy is explicit content even when the brief uses a labeled
+    // sentence such as "Кнопка: «Обсудить проект», ссылка #contact." and the
+    // generic labeled-pair parser has no dash-separated pair to return.
+    $cta_candidates = array_merge( $units, array_column( $pairs, 'content' ), wpae_llm_extract_requested_content( $message ) );
+    foreach ( $cta_candidates as $value ) {
         if ( wpae_llm_is_cta_copy( (string) $value ) ) {
             $ctas[] = wpae_llm_compact_cta_text( (string) $value );
         }
@@ -7547,6 +7551,66 @@ function wpae_llm_chat( WP_REST_Request $request ) {
     }
 }
 
+function wpae_llm_execution_failure_diagnostics( array $execution ): array {
+    $details = is_array( $execution['details'] ?? null ) ? $execution['details'] : [];
+    $contract = is_array( $details['details'] ?? null ) ? $details['details'] : [];
+    $contract_stats = is_array( $contract['stats'] ?? null ) ? $contract['stats'] : [];
+    $preflight = is_array( $details['preflight'] ?? null ) ? $details['preflight'] : [];
+    $preflight_stats = is_array( $preflight['stats'] ?? null ) ? $preflight['stats'] : [];
+    $string_list = static function ( $values ): array {
+        $result = [];
+        foreach ( (array) $values as $value ) {
+            if ( is_scalar( $value ) && trim( (string) $value ) !== '' ) {
+                $result[] = sanitize_text_field( (string) $value );
+            }
+        }
+        return array_values( array_unique( $result ) );
+    };
+    $stats = [];
+    foreach ( [
+        'top_level_containers',
+        'design_system_marked_top_level_containers',
+        'mismatched_design_system_top_level_containers',
+        'token_color_hits',
+        'native_color_hits',
+        'off_palette_color_count',
+        'unchanged_legacy_top_level_containers',
+    ] as $key ) {
+        if ( array_key_exists( $key, $contract_stats ) ) {
+            $stats[ $key ] = is_numeric( $contract_stats[ $key ] ) ? (int) $contract_stats[ $key ] : $contract_stats[ $key ];
+        }
+    }
+    $preflight_summary = [];
+    foreach ( [ 'element_count', 'widget_count', 'container_count', 'html_widget_count', 'html_widget_layout_risks' ] as $key ) {
+        if ( array_key_exists( $key, $preflight_stats ) ) {
+            $preflight_summary[ $key ] = is_numeric( $preflight_stats[ $key ] ) ? (int) $preflight_stats[ $key ] : $preflight_stats[ $key ];
+        }
+    }
+
+    return [
+        'source_error' => sanitize_text_field( (string) ( $details['error'] ?? $execution['update_error'] ?? $execution['error'] ?? '' ) ),
+        'http_status' => (int) ( $details['status'] ?? $execution['status'] ?? 0 ),
+        'contract' => [
+            'ok' => ! empty( $contract['ok'] ),
+            'errors' => $string_list( $contract['errors'] ?? [] ),
+            'warnings' => $string_list( $contract['warnings'] ?? [] ),
+            'stats' => $stats,
+            'mismatched_classes' => $string_list( $contract_stats['mismatched_design_system_classes'] ?? [] ),
+        ],
+        'preflight' => [
+            'ok' => ! empty( $preflight['ok'] ),
+            'blocking_errors' => $string_list( $preflight['blocking_errors'] ?? [] ),
+            'failed_checks' => $string_list( $preflight['failed_checks'] ?? [] ),
+            'stats' => $preflight_summary,
+        ],
+        'transaction' => [
+            'failed_checks' => $string_list( $execution['failed_checks'] ?? [] ),
+            'blocking_errors' => $string_list( $execution['blocking_errors'] ?? [] ),
+            'failure_details' => is_array( $execution['failure_details'] ?? null ) ? array_values( array_slice( $execution['failure_details'], 0, 12 ) ) : [],
+        ],
+    ];
+}
+
 function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( ! wpae_llm_rate_limit_check() ) {
         return new WP_Error( 'wpae_llm_rate_limited', 'Лимит LLM-запросов исчерпан. Повторите позже.', [ 'status' => 429, 'window_seconds' => WPAE_LLM_CALL_WINDOW ] );
@@ -8275,6 +8339,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'blocking_errors' => array_values( array_filter( array_map( 'sanitize_text_field', (array) ( $execution['blocking_errors'] ?? [] ) ) ) ),
             'failed_checks' => array_values( array_filter( array_map( 'sanitize_key', (array) ( $execution['failed_checks'] ?? [] ) ) ) ),
         ];
+        if ( empty( $execution['ok'] ) ) {
+            // Keep the failure useful in the editor chat without exposing the
+            // complete Elementor tree or provider payload. In particular,
+            // surface design-contract errors that used to be hidden behind a
+            // generic HTTP 422 message.
+            $generation_diagnostics['execution']['failure_details'] = wpae_llm_execution_failure_diagnostics( $execution );
+        }
         $execution['diagnostics'] = $generation_diagnostics;
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );

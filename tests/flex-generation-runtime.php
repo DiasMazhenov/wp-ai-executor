@@ -106,6 +106,25 @@ $hero = container_node( 'provider-hero', [ 'container_type' => 'flex', 'flex_dir
     ] ),
 ] );
 $message = 'Создай hero. Заголовок: «Пространство для жизни». Текст: «Светлые интерьеры». Надпись: «Архитектура повседневности».';
+$explicit_cta_message = 'Создай новый hero для архитектурной студии «Тихая форма». Заголовок: «Пространство для вашей жизни». Текст: «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Кнопка: «Обсудить проект», ссылка #contact. Выразительная асимметричная композиция из native Flexbox-контейнеров, крупная типографика, тёплый светлый фон и терракотовый акцент. Справа отдельный визуальный блок с надписью «Архитектура повседневности». Адаптируй для телефона.';
+$explicit_cta_plan = wpae_llm_content_plan( $explicit_cta_message, 'hero' );
+check( ! empty( $explicit_cta_plan['cta_required'] ) && in_array( 'Обсудить проект', (array) ( $explicit_cta_plan['explicit_cta'] ?? [] ), true ), 'Labeled quoted CTA was not added to the semantic content plan' );
+$failure_diagnostics = wpae_llm_execution_failure_diagnostics( [
+    'status' => 422,
+    'update_error' => 'Elementor data failed design-system contract.',
+    'details' => [
+        'error' => 'Elementor data failed design-system contract.',
+        'status' => 422,
+        'details' => [
+            'ok' => false,
+            'errors' => [ 'Every new page/block top-level container must include design-system classes.' ],
+            'warnings' => [ 'The composition uses a custom native palette.' ],
+            'stats' => [ 'top_level_containers' => 2, 'design_system_marked_top_level_containers' => 1, 'native_color_hits' => 0, 'token_color_hits' => 0, 'mismatched_design_system_classes' => [ 'wpae-system-old' ] ],
+        ],
+    ],
+] );
+check( $failure_diagnostics['contract']['errors'][0] === 'Every new page/block top-level container must include design-system classes.', 'Design-system contract errors were not preserved in failure diagnostics' );
+check( (int) ( $failure_diagnostics['contract']['stats']['top_level_containers'] ?? 0 ) === 2, 'Design-system contract stats were not preserved in failure diagnostics' );
 $action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'elements' => [ $hero ] ];
 $existing = [ container_node( 'existing', [ 'container_type' => 'flex', '_css_classes' => 'wpae-system-test', 'padding' => [ 'unit' => 'px', 'top' => '7' ] ], [ widget( 'old-title', 'heading', [ 'title' => 'Existing content' ] ) ] ) ];
 $GLOBALS['options'] = [ WPAE_LLM_SETTINGS_OPTION => [ 'provider' => 'openrouter', 'model' => 'openrouter/free' ] ];
