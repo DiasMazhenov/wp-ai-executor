@@ -7,6 +7,22 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-104: Live hero retest was blocked by provider transport timeout
+
+- **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero
+  prompt reached `openrouter/free`; after the plugin's one bounded retry, the
+  provider returned `cURL error 28: Operation timed out after 90000
+  milliseconds`, with HTTP status `0` and an empty response body.
+- **Evidence:** The sanitized diagnostic reported
+  `authorization_header_present: true`,
+  `authorization_value_nonempty: true`, content type, referer, and title
+  headers present. This is a provider transport timeout, not a missing API
+  authentication header. The existing timeline stayed saved and no hero
+  write was accepted.
+- **Status:** External provider blocker. Do not claim hero visual acceptance
+  until a usable native Elementor response or a deterministic fallback is
+  written and then verified in the live editor.
+
 ## EJ-103: Explicit labeled CTA disappeared from fallback semantic validation
 
 - **Confirmed (2026-09-08, live post 4556):** The hero brief contained

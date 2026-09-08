@@ -11,7 +11,13 @@
   as unrequested. Failed dry-run/update diagnostics now expose bounded
   design-system contract errors, warnings and counters in the editor chat
   without returning the raw Elementor tree or provider payload. The runtime
-  suite passes 76 checks. Live post-4556 retest remains required.
+  suite passes 76 checks. Live post-4556 verification preserved the saved
+  horizontal timeline: desktop has three native Divider connectors with
+  96.27x2px geometry and no horizontal overflow; mobile keeps four visible
+  markers, stacks cards, and has no horizontal overflow. The exact hero
+  retest reached `openrouter/free`, but its single automatic retry ended with
+  sanitized cURL 28 / HTTP 0 transport diagnostics while auth headers were
+  present and non-empty; no hero write was accepted.
 - v02.11.71: Keeps unchanged legacy top-level Elementor roots intact during
   append generation while requiring current design-system markers on every
   new or modified root. Generation responses now expose bounded provider,
