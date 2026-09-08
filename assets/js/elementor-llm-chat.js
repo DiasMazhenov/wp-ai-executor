@@ -1301,7 +1301,7 @@
                     if (!response.ok || !body.ok) throw new Error(body.error || ('HTTP ' + response.status));
                     addMessage('assistant', 'Последнее изменение отменено.');
                     row.remove();
-                    return refreshElementorPreview();
+                    window.location.reload();
                 });
             }).catch(function (error) {
                 undo.disabled = false;
@@ -1389,7 +1389,7 @@
         var requestController = typeof window.AbortController === 'function' ? new window.AbortController() : null;
         var requestTimer = requestController ? window.setTimeout(function () {
             requestController.abort();
-        }, 55000) : null;
+        }, Number(config.requestTimeoutMs) || 180000) : null;
         var requestOptions = {
             method: 'POST',
             credentials: 'same-origin',
@@ -1446,8 +1446,8 @@
         }, function (error) {
             if (requestTimer) window.clearTimeout(requestTimer);
             if (error && error.name === 'AbortError') {
-                var timeoutError = new Error('LLM-провайдер недоступен: превышено время ожидания ответа.');
-                timeoutError.wpaeCode = 'wpae_llm_provider_request_failed';
+                var timeoutError = new Error('Время ожидания ответа сервера истекло. Результат операции пока неизвестен. Обновите редактор, чтобы проверить сохранённую страницу перед новым запросом.');
+                timeoutError.wpaeCode = 'wpae_llm_request_status_unknown';
                 timeoutError.httpStatus = 504;
                 timeoutError.diagnostics = {
                     schema: 'wpae-llm-provider-diagnostics-v1',

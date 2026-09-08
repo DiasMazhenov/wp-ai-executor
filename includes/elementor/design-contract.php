@@ -13,6 +13,7 @@ function wpae_collect_design_system_stats( array $elements, array &$stats, int $
         $stats['mismatched_design_system_classes'] = [];
         $stats['top_level_containers'] = 0;
         $stats['token_color_hits'] = 0;
+        $stats['native_color_hits'] = 0;
         $stats['off_palette_color_count'] = 0;
         $stats['off_palette_colors'] = [];
     }
@@ -48,11 +49,14 @@ function wpae_collect_design_system_stats( array $elements, array &$stats, int $
             }
         }
 
-        foreach ( $settings as $setting_value ) {
+        foreach ( $settings as $setting_key => $setting_value ) {
             if ( ! is_string( $setting_value ) ) {
                 continue;
             }
             if ( preg_match_all( '/#[0-9a-f]{3,8}\b/i', $setting_value, $matches ) ) {
+                if ( preg_match( '/(?:^|_)color(?:_|$)/', (string) $setting_key ) ) {
+                    $stats['native_color_hits'] += count( $matches[0] );
+                }
                 foreach ( $matches[0] as $color ) {
                     $color = strtolower( $color );
                     if ( in_array( $color, $palette, true ) ) {
@@ -103,13 +107,15 @@ function wpae_validate_design_system_contract( array $elementor_data ): array {
         }
     }
 
-    if ( (int) ( $stats['token_color_hits'] ?? 0 ) <= 0 ) {
-        $errors[] = 'Design system contract requires using project palette tokens in native Elementor color/background settings.';
+    if ( (int) ( $stats['token_color_hits'] ?? 0 ) <= 0 && (int) ( $stats['native_color_hits'] ?? 0 ) <= 0 ) {
+        $errors[] = 'Design system contract requires explicit native Elementor color/background settings; start with project palette tokens or use the requested custom palette.';
     }
 
     return [
         'ok' => empty( $errors ),
         'errors' => $errors,
+        'warnings' => (int) ( $stats['token_color_hits'] ?? 0 ) <= 0 && (int) ( $stats['native_color_hits'] ?? 0 ) > 0
+            ? [ 'The composition uses a custom native palette; verify its contrast in the rendered design.' ] : [],
         'stats' => $stats,
         'design_system' => wpae_build_project_design_system(),
     ];

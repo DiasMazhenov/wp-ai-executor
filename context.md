@@ -2,9 +2,18 @@
 
 ## Current release
 
-- Plugin: `v02.11.69`
+- Plugin: `v02.11.70`
 - Guide: `v02.05.96`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.70: Accepts a valid first LLM composition and preserves its native
+  layout, custom palette and display typography through the write boundary.
+  The new `includes/llm/design.php` owns composition completeness and missing
+  responsive defaults; deterministic templates run only after provider failure.
+  Nested containers no longer accumulate boxed widths/padding. Provider calls
+  share a 120-second generation budget; browser timeout does not retry an
+  uncertain write. Undo rejects later edits and reloads the editor after success.
+  58 PHP runtime checks and both existing contract suites pass. Live rendered
+  desktop/mobile acceptance is pending deployment and a working provider.
 - Canonical API header: `X-AI-Key`
 - Elementor writes: native Flexbox Containers only; legacy sections/columns may
   be imported for inspection but must be normalized before structured writes.

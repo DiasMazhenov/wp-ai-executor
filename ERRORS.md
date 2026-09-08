@@ -7,6 +7,34 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-098: Accepted provider designs were replaced by deterministic fallbacks
+
+- **Confirmed (2026-09-08, runtime regression):** A valid first response never
+  set `action_repair`; `if (!action_repair)` replaced it with fallback. Later
+  library, typography, palette and bento passes also erased accepted layouts.
+- **Fix (v02.11.70):** Track action validity independently of repair. Preserve
+  provider composition through normalization and execution; use templates only
+  after validation/repair failure. Complete native typography groups and mobile
+  overrides without overwriting explicit styles. Allow custom native palettes.
+- **Regression:** Primary and repaired asymmetric hero retain colors, h1 size,
+  column widths, content and existing page data. Empty/oversized trees reject;
+  real design contract accepts custom colors and still enforces root markers.
+- **Live status:** Before this release, openrouter/free timed out twice after
+  45 seconds. New release requires fresh generation, JSON/DOM and screenshots.
+
+## EJ-099: Retry and undo could overwrite newer editor state
+
+- **Confirmed (2026-09-08):** Browser AbortError was classified as a provider
+  failure and could retry while a server write had already completed. Undo
+  restored an entire snapshot without comparing later edits and refreshed
+  only the canvas, leaving the editor model stale.
+- **Fix (v02.11.70):** Shared provider deadline, explicit unknown-write browser
+  status, after-state fingerprint checked by chat undo, full editor reload on
+  successful undo. Read errors cannot initialize a corrupt page as empty.
+- **Regression:** Expired budget makes no HTTP call, schema retry shares the
+  deadline, render cache changes allow undo, later content changes return 409.
+  Editor authorization validates context.post_id before contacting a provider.
+
 ## EJ-092: Horizontal connector span collapsed to zero width
 
 - **Observed (2026-09-07, live Elementor post 4556):** The user's screenshot

@@ -267,7 +267,7 @@ function wpae_agent_guide(): array {
                 'package_v2' => 'Read package.manifest, package.agent_document, and package.semantic_tokens. Use post_id on the read endpoint to verify whether the page matches the current design system.',
                 'update_rule' => 'Only change the project design system when explicitly requested. Call the update endpoint with dry_run=true first; a real write returns rollback_snapshot_id and requires the elementor_writes capability plus a valid guide token.',
                 'rule' => 'Before creating a page or adding any new page block, create/read the design system and reuse it as the single visual source of truth.',
-                'write_enforcement' => 'POST /elementor/page and POST /elementor/update reject Elementor data whose top-level containers miss required_root_classes or do not use project palette tokens.',
+                'write_enforcement' => 'POST /elementor/page and POST /elementor/update require required_root_classes and explicit native colors. Project palette tokens are defaults; requested custom native palettes are allowed and require a rendered contrast check.',
                 'required_marker' => 'Every top-level page/block container must include required_root_classes in settings._css_classes.',
                 'block_rule' => 'A later block must inherit the same system_id, palette, typography roles, spacing, radii, button style, tone, and component grammar as the existing page.',
             'normalize_support' => 'POST /elementor/normalize adds the required design-system marker classes to top-level containers when missing.',

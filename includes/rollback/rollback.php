@@ -11,6 +11,24 @@ function wpae_update_rollback_snapshots( array $snapshots ): void {
     update_option( 'wp_ai_executor_rollback_snapshots', $snapshots, false );
 }
 
+function wpae_rollback_post_fingerprint( int $post_id ): string {
+    $post = get_post( $post_id, ARRAY_A );
+    $meta = wpae_filter_managed_post_meta_snapshot( get_post_meta( $post_id ) );
+    // Render caches may change simply by viewing a page.
+    unset( $meta['_elementor_css'], $meta['_wpae_quality_summary'] );
+    ksort( $meta );
+    return hash( 'sha256', wp_json_encode( [ 'post' => $post, 'meta' => $meta ] ) );
+}
+
+function wpae_seal_rollback_snapshot( string $snapshot_id, int $post_id ): void {
+    $snapshots = wpae_get_rollback_snapshots();
+    if ( ! isset( $snapshots[ $snapshot_id ]['posts'][ $post_id ] ) ) {
+        return;
+    }
+    $snapshots[ $snapshot_id ]['after_hashes'][ $post_id ] = wpae_rollback_post_fingerprint( $post_id );
+    wpae_update_rollback_snapshots( $snapshots );
+}
+
 function wpae_prune_rollback_snapshots( array $snapshots ): array {
     $now = time();
     foreach ( $snapshots as $id => $snapshot ) {

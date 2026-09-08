@@ -471,6 +471,9 @@ function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?
         );
     }
 
+    if ( ! empty( $rollback_snapshot['id'] ) ) {
+        wpae_seal_rollback_snapshot( (string) $rollback_snapshot['id'], $post_id );
+    }
     return [
         'transaction' => $transaction,
         'quality_summary' => $verification['quality_summary'],

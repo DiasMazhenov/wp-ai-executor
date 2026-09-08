@@ -32,6 +32,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
         'endpoint' => get_rest_url( null, 'ai-executor/v1/llm/chat' ),
         'undoEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/undo' ),
         'pluginVersion' => defined( 'WPAE_VERSION' ) ? WPAE_VERSION : '',
+        'requestTimeoutMs' => ( WPAE_LLM_ACTION_TIMEOUT_SECONDS + 60 ) * 1000,
         'providerLabel' => (string) ( $settings['provider_label'] ?? '' ),
         'model' => (string) ( $settings['model'] ?? '' ),
         'vision' => [

@@ -14,6 +14,7 @@ const WPAE_LLM_RATE_LIMIT_OPTION = 'wp_ai_executor_llm_rate_window';
 const WPAE_LLM_CALL_LIMIT = 30;
 const WPAE_LLM_CALL_WINDOW = 600;
 const WPAE_LLM_MAX_MESSAGE_LENGTH = 4000;
+const WPAE_LLM_ACTION_TIMEOUT_SECONDS = 120;
 const WPAE_LLM_MAX_HISTORY_ITEMS = 12;
 const WPAE_LLM_MAX_RESPONSE_BYTES = 262144;
 
@@ -507,8 +508,14 @@ function wpae_llm_prepare_provider_request_body( array $request_body, bool $acti
     return $request_body;
 }
 
-function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider ) {
+function wpae_llm_provider_request( string $url, array $remote_args, array $request_body, bool $action_request, string $provider, float $deadline = 0.0 ) {
     try {
+        $deadline = $deadline > 0 ? $deadline : microtime( true ) + (float) ( $remote_args['timeout'] ?? 45 );
+        $remaining = $deadline - microtime( true );
+        if ( $remaining < 1 ) {
+            return new WP_Error( 'wpae_llm_provider_budget_exhausted', 'Общее время ожидания LLM исчерпано.' );
+        }
+        $remote_args['timeout'] = min( (float) ( $remote_args['timeout'] ?? 45 ), $remaining );
         $request_body = wpae_llm_prepare_provider_request_body( $request_body, $action_request, $provider );
         $remote_args['body'] = wp_json_encode( $request_body );
         $response = wp_safe_remote_post( $url, $remote_args );
@@ -520,6 +527,11 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
             $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
             $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && ( $initial_diagnostics['finish_reason'] ?? '' ) === 'error';
             if ( $structured_route_rejected || $structured_response_failed ) {
+                $remaining = $deadline - microtime( true );
+                if ( $remaining < 1 ) {
+                    return new WP_Error( 'wpae_llm_provider_budget_exhausted', 'Общее время ожидания LLM исчерпано.' );
+                }
+                $remote_args['timeout'] = min( (float) $remote_args['timeout'], $remaining );
                 unset( $request_body['response_format'], $request_body['provider'] );
                 $remote_args['body'] = wp_json_encode( $request_body );
                 $response = wp_safe_remote_post( $url, $remote_args );
@@ -527,8 +539,10 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
         }
         return $response;
     } catch ( Throwable $error ) {
-        error_log( sprintf( '[WP AI Executor] Provider request failed for %s: %s in %s:%d', $provider, $error->getMessage(), $error->getFile(), $error->getLine() ) );
-        return new WP_Error( 'wpae_llm_provider_request_failed', $error->getMessage(), [
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( sprintf( '[WP AI Executor] Provider request failed for %s: %s', $provider, wpae_llm_diagnostic_text( $error->getMessage() ) ) );
+        }
+        return new WP_Error( 'wpae_llm_provider_request_failed', wpae_llm_diagnostic_text( $error->getMessage() ), [
             'provider' => $provider,
             'exception_type' => get_class( $error ),
         ] );

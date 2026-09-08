@@ -217,6 +217,34 @@ function wpae_normalize_known_third_party_widget( array &$element, array &$repor
     );
 }
 
+function wpae_elementor_normalize_dimensions( array &$settings, array &$report, string $element_path ): void {
+    foreach ( $settings as $key => $value ) {
+        if ( ! preg_match( '/^_?(?:padding|margin|border_width|border_radius)(?:_(?:tablet|mobile|widescreen|laptop|tablet_extra|mobile_extra))?$/', (string) $key ) || ! is_array( $value ) ) {
+            continue;
+        }
+        $filled = $value;
+        $linked_value = '';
+        if ( ! empty( $value['isLinked'] ) ) {
+            foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+                if ( isset( $value[ $side ] ) && is_scalar( $value[ $side ] ) && $value[ $side ] !== '' ) {
+                    $linked_value = (string) $value[ $side ];
+                    break;
+                }
+            }
+        }
+        foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+            if ( ! array_key_exists( $side, $filled ) ) {
+                $filled[ $side ] = $linked_value;
+            }
+        }
+        $filled += [ 'unit' => 'px', 'isLinked' => false ];
+        if ( $filled !== $value ) {
+            $settings[ $key ] = $filled;
+            wpae_elementor_normalize_add_change( $report, 'completed_dimensions', $element_path, 'Completed native dimension sides without changing explicit values.', [ 'setting' => $key ] );
+        }
+    }
+}
+
 function wpae_elementor_normalize_flex_settings( array &$settings, array &$report, string $element_path ): void {
     $container_type = sanitize_key( (string) ( $settings['container_type'] ?? '' ) );
     $was_grid = $container_type === 'grid';
@@ -274,7 +302,7 @@ function wpae_elementor_normalize_flex_settings( array &$settings, array &$repor
         }
     }
     foreach ( [ 'mobile' => $grid_gaps_mobile, 'tablet' => $grid_gaps_tablet ] as $device => $grid_gap ) {
-        if ( empty( $grid_gap ) ) {
+        if ( ! $was_grid || empty( $grid_gap ) ) {
             continue;
         }
         $mapped_gap = $map_grid_gap( $grid_gap );
@@ -305,7 +333,7 @@ function wpae_elementor_normalize_flex_settings( array &$settings, array &$repor
         }
     }
 
-    foreach ( [ 'gap' => 'flex_gap', 'gap_mobile' => 'flex_gap_mobile' ] as $legacy_key => $modern_key ) {
+    foreach ( [ 'gap' => 'flex_gap', 'gap_tablet' => 'flex_gap_tablet', 'gap_mobile' => 'flex_gap_mobile' ] as $legacy_key => $modern_key ) {
         if ( array_key_exists( $modern_key, $settings ) || ! is_array( $settings[ $legacy_key ] ?? null ) ) {
             continue;
         }
@@ -331,6 +359,18 @@ function wpae_elementor_normalize_flex_settings( array &$settings, array &$repor
             'Migrated a legacy container gap setting to the current Elementor Flexbox control.',
             [ 'from' => $legacy_key, 'to' => $modern_key ]
         );
+    }
+
+    foreach ( [ 'flex_gap', 'flex_gap_tablet', 'flex_gap_mobile' ] as $key ) {
+        $gap = $settings[ $key ] ?? null;
+        if ( ! is_array( $gap ) || ! is_numeric( $gap['size'] ?? null ) ) {
+            continue;
+        }
+        $filled = $gap + [ 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'unit' => 'px', 'isLinked' => true ];
+        if ( $filled !== $gap ) {
+            $settings[ $key ] = $filled;
+            wpae_elementor_normalize_add_change( $report, 'completed_flex_gap', $element_path, 'Filled native row and column gap values.', [ 'setting' => $key ] );
+        }
     }
 
     foreach ( array_keys( $settings ) as $setting_key ) {
@@ -372,6 +412,7 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
             wpae_elementor_normalize_add_change( $report, 'filled_settings', $element_path, 'Filled missing settings array.' );
         }
 
+        wpae_elementor_normalize_dimensions( $element['settings'], $report, $element_path );
         $el_type = (string) ( $element['elType'] ?? '' );
         if ( $el_type === 'section' || $el_type === 'column' ) {
             $legacy_el_type = $el_type;
@@ -462,7 +503,7 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
 
             foreach ( [
                 'container_type' => 'flex',
-                'content_width' => 'boxed',
+                'content_width' => $path === 'root' ? 'boxed' : 'full',
                 'flex_direction' => 'column',
                 'background_background' => 'classic',
                 'background_color' => 'transparent',
@@ -474,21 +515,23 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
             }
 
             if ( ! isset( $element['settings']['gap'] ) && ! isset( $element['settings']['flex_gap'] ) ) {
-                $element['settings']['gap'] = [
+                $element['settings']['flex_gap'] = [
                     'unit' => 'rem',
-                    'size' => 1.5,
-                    'sizes' => [],
+                    'size' => '1.5',
+                    'column' => '1.5',
+                    'row' => '1.5',
+                    'isLinked' => true,
                 ];
-                wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container gap.', [ 'setting' => 'gap' ] );
+                wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container gap.', [ 'setting' => 'flex_gap' ] );
             }
 
             if ( ! isset( $element['settings']['padding'] ) ) {
                 $element['settings']['padding'] = [
                     'unit' => 'rem',
-                    'top' => '1.5',
-                    'right' => '1.5',
-                    'bottom' => '1.5',
-                    'left' => '1.5',
+                    'top' => $path === 'root' ? '1.5' : '0',
+                    'right' => $path === 'root' ? '1.5' : '0',
+                    'bottom' => $path === 'root' ? '1.5' : '0',
+                    'left' => $path === 'root' ? '1.5' : '0',
                     'isLinked' => true,
                 ];
                 wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container padding.', [ 'setting' => 'padding' ] );

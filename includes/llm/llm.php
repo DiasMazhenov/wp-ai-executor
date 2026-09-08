@@ -3,6 +3,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/transport.php';
+require_once __DIR__ . '/design.php';
 
 function wpae_llm_is_instruction_only_brief( string $message ): bool {
 	$message = trim( $message );
@@ -7288,7 +7289,7 @@ function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     return $decoded;
 }
 
-function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1, string $message = '' ): array {
+function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1, string $message = '', bool $preserve_provider_design = false ): array {
     $operation_id = wpae_llm_new_operation_id();
     $received_action = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
     $received_post_id = absint( $action['post_id'] ?? 0 );
@@ -7362,24 +7363,24 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
             break;
         }
     }
-    $design_mapped = function_exists( 'wpae_apply_design_token_map' );
+    $design_mapped = ! $preserve_provider_design && function_exists( 'wpae_apply_design_token_map' );
     if ( $design_mapped ) {
         $elements = wpae_apply_design_token_map( $elements, $preserved_library_design )['data'];
     }
-    $steps[] = [ 'id' => 'design_system', 'status' => $design_mapped ? 'ok' : 'skipped', 'message' => $design_mapped ? 'Применены совместимые native-токены активной дизайн-системы.' : 'Маппинг дизайн-системы недоступен и пропущен.', 'details' => [ 'element_count' => count( $elements ) ] ];
+    $steps[] = [ 'id' => 'design_system', 'status' => $design_mapped ? 'ok' : 'skipped', 'message' => $design_mapped ? 'Применены совместимые native-токены активной дизайн-системы.' : ( $preserve_provider_design ? 'Сохранены явные цвета и типографика авторской композиции.' : 'Маппинг дизайн-системы недоступен и пропущен.' ), 'details' => [ 'element_count' => count( $elements ) ] ];
     $existing = wpae_get_elementor_data_for_post( $post_id );
     $initial_page = false;
-    if ( is_wp_error( $existing ) ) {
+    if ( is_wp_error( $existing ) && $existing->get_error_code() === 'wpae_missing_saved_elementor_data' ) {
         $existing = [];
         $initial_page = true;
     }
-    if ( ! empty( $existing ) && function_exists( 'wpae_elementor_normalize_data' ) ) {
-        $existing = wpae_elementor_normalize_data( $existing )['data'];
+    if ( is_wp_error( $existing ) ) {
+        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => $existing->get_error_message(), 'steps' => $steps ];
     }
     $steps[] = [ 'id' => 'page_context', 'status' => 'ok', 'message' => $initial_page ? 'Страница пустая: разрешена безопасная инициализация Elementor.' : 'Текущая структура страницы прочитана.', 'details' => [ 'existing_element_count' => count( $existing ) ] ];
     $fallback_variant_applied = false;
     $fallback_variant = null;
-    $variation_requested = ! $preserved_library_design && ( isset( $action['fallback_variant'] ) || $variation_seed >= 0 );
+    $variation_requested = ! $preserve_provider_design && ! $preserved_library_design && ( isset( $action['fallback_variant'] ) || $variation_seed >= 0 );
     if ( $variation_requested && function_exists( 'wpae_llm_apply_fallback_variant' ) ) {
         $variation_source = isset( $action['fallback_variant'] ) ? absint( $action['fallback_variant'] ) : $variation_seed;
         $variation_archetype = sanitize_key( (string) ( $action['fallback_archetype'] ?? $archetype ) );
@@ -7389,14 +7390,14 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
     }
 	$process_request = wpae_llm_is_process_request( $message, $archetype );
-    if ( $process_request && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
+    if ( ! $preserve_provider_design && $process_request && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
         $final_process_changed = 0;
         $elements = wpae_llm_enforce_process_timeline_contract( $elements, $message, $final_process_changed );
         if ( $final_process_changed > 0 ) {
             $steps[] = [ 'id' => 'process_timeline_final', 'status' => 'ok', 'message' => 'Финальная граница записи восстановила канонический native Flex timeline после вариаций.', 'details' => [ 'containers_rebuilt' => $final_process_changed, 'layout' => wpae_llm_process_timeline_layout( $message ) ] ];
         }
     }
-    if ( function_exists( 'wpae_llm_normalize_bento_grids_recursive' ) ) {
+    if ( ! $preserve_provider_design && function_exists( 'wpae_llm_normalize_bento_grids_recursive' ) ) {
         $final_bento_changed = 0;
         wpae_llm_normalize_bento_grids_recursive( $elements, $final_bento_changed, $process_request ? 'process' : $archetype );
         if ( $final_bento_changed > 0 ) {
@@ -7497,12 +7498,14 @@ function wpae_llm_chat( WP_REST_Request $request ) {
         return wpae_llm_chat_request( $request );
     } catch ( Throwable $error ) {
         $provider = sanitize_key( (string) ( wpae_llm_get_stored_settings()['provider'] ?? 'unknown' ) );
-        error_log( sprintf( '[WP AI Executor] LLM chat failed for provider %s: %s in %s:%d', $provider, $error->getMessage(), $error->getFile(), $error->getLine() ) );
+        if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            error_log( sprintf( '[WP AI Executor] LLM chat failed for provider %s: %s', $provider, wpae_llm_diagnostic_text( $error->getMessage() ) ) );
+        }
         return new WP_Error( 'wpae_llm_internal_error', 'Внутренняя ошибка LLM-запроса. Подробности записаны в журнал WordPress.', [
             'status' => 500,
             'provider' => $provider,
             'details' => [
-                'exception' => sanitize_text_field( $error->getMessage() ),
+                'exception' => wpae_llm_diagnostic_text( $error->getMessage() ),
                 'exception_type' => sanitize_text_field( get_class( $error ) ),
             ],
         ] );
@@ -7600,13 +7603,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $system_prompt .= "\nЭто guided-режим WP AI Executor. Перед выполнением обязательно применяй agent_rules, все custom_skills и capabilities из следующего контекста. Правила WP AI Executor имеют приоритет при конфликте:\n" . wp_json_encode( $guided_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         if ( $library_retrieval['status'] === 'matched' && is_array( $library_retrieval['selected'] ?? null ) ) {
             $library_label = ! empty( $library_retrieval['selected']['trusted_bundled'] ) ? 'проверенный bundled-шаблон' : 'одобренный шаблон';
-            $system_prompt .= "\nДля этого нового блока найден " . $library_label . " из private block library: «" . sanitize_text_field( (string) ( $library_retrieval['selected']['title'] ?? '' ) ) . '». Сервер адаптирует его композицию и применит только после проверки native-структуры и точного пользовательского контента. Не возвращай служебные инструкции или JSON библиотеки; сгенерируй контент по запросу пользователя.';
+            $system_prompt .= "\nДля этого нового блока найден " . $library_label . " из private block library: «" . sanitize_text_field( (string) ( $library_retrieval['selected']['title'] ?? '' ) ) . '». Сервер может применить его как запасную композицию, если твой дизайн не пройдет проверки native-структуры и контента. Не возвращай служебные инструкции или JSON библиотеки; сгенерируй контент по запросу пользователя.';
         }
     }
     if ( $action_request ) {
         $system_prompt .= $targeted_edit
             ? ' Это точечное изменение выбранного Elementor элемента или контейнера вместе со всем его дочерним деревом. Контекст редактора содержит полный снимок выбранного объекта, его settings и содержимое descendants. Верни только JSON по схеме: {"action":"patch_elements","post_id":number,"patches":[{"element_id":"selected-id-or-descendant-id","path":"settings.native_property","op":"set","value":...}]}. Меняй только явно запрошенные native properties, не трогай HTML/CSS/WebGL и не пересобирай страницу. Для контейнера можешь менять native settings любого элемента внутри его дерева, но не выходи за пределы выбранного дерева и не выдумывай element_id. Для текста используй текущий settings.title, settings.editor или settings.text; для стиля сохраняй совместимую форму текущего native setting.'
-            : ' Ограничения компактности action-JSON: ровно 1 корневой контейнер и 3–5 вложенных виджетов; не дублируй значения Elementor по умолчанию и не добавляй необязательные настройки.';
+            : WPAE_LLM_Design::prompt();
 		if ( $vision_repair ) {
 			$system_prompt .= $vision_regenerate
 				? ' Это автоматический repair-проход по замечаниям AI Vision. Перегенерируй один полноценный Elementor-блок заново по исходному запросу пользователя; не урезай композицию, не оставляй placeholder-тексты, исправь все findings и верни insert_elements. Не удаляй и не заменяй существующие блоки страницы: предыдущая неудачная версия уже откатена перед этой генерацией.'
@@ -7618,7 +7621,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $variation_seed = hexdec( substr( md5( $message . '|' . microtime( true ) ), 0, 6 ) ) % 100000;
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
         $system_prompt .= "\nСемантический план контента (контракт для адаптации, не текст для вывода): " . wp_json_encode( $content_plan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '. Не добавляй CTA, имена, цены или смысловые блоки, которых нет в плане; не меняй смысл пользовательского контента ради шаблона.';
-        $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй 3–5 заполненных native widgets, выбранных по типу блока; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; внешний контейнер и контейнер bento-сетки оставляй прозрачными, а фон и обводку используй у самих карточек; обеспечь контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Контракт полноты: собери блок полностью заполненным с первого раза — никогда не оставляй пустые контейнеры-заготовки, чтобы «заполнить потом». Стиль из дизайн-системы — это ограничения (палитра, типографика, контраст), а не готовая вёрстка: композицию выбирай по содержанию запроса.' . wpae_llm_generation_visual_grammar_hint() . ' Не удаляй и не заменяй существующие элементы.';
+        $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй столько заполненных native widgets, сколько требуется для полноценной композиции; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; фон, обводку и акценты выбирай по заданному визуальному направлению; обеспечь контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Контракт полноты: собери блок полностью заполненным с первого раза — никогда не оставляй пустые контейнеры-заготовки, чтобы «заполнить потом». Стиль из дизайн-системы — это ограничения (палитра, типографика, контраст), а не готовая вёрстка: композицию выбирай по содержанию запроса.' . ' Не удаляй и не заменяй существующие элементы.';
         if ( ! $targeted_edit ) {
             $system_prompt .= ' Выбери для этого запуска новую композицию и не копируй предыдущие блоки: меняй ритм, соотношение зон, плотность и акцентную иерархию, сохраняя смысл и весь пользовательский контент. Внутренний номер варианта: ' . (string) $variation_seed . '.';
         }
@@ -7656,6 +7659,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $messages[0]['content'] .= "\nКонтекст редактора: " . wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     }
 
+    $provider_deadline = microtime( true ) + ( $action_request ? WPAE_LLM_ACTION_TIMEOUT_SECONDS : 45 );
     $url = untrailingslashit( $runtime['base_url'] ) . '/chat/completions';
     $headers = [ 'Content-Type' => 'application/json', 'Authorization' => 'Bearer ' . $runtime['api_key'] ];
     if ( $runtime['provider'] === 'openrouter' ) {
@@ -7675,10 +7679,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
     }
     $remote_args = [
-        // When a fallback model exists the primary attempt must leave room for
-        // the bounded 30-second fallback inside the editor's 55-second abort,
-        // otherwise the fallback window is never reached on hanging routes.
-        'timeout' => wpae_llm_fallback_model( $runtime['model'] ) !== '' ? 20 : 45,
+        // Rich native JSON needs more time than a short chat answer. All
+        // primary, fallback, schema and repair calls share one deadline.
+        'timeout' => $action_request
+            ? ( wpae_llm_fallback_model( $runtime['model'] ) !== '' ? 75 : 90 )
+            : ( wpae_llm_fallback_model( $runtime['model'] ) !== '' ? 20 : 45 ),
         'redirection' => 2,
         'limit_response_size' => WPAE_LLM_MAX_RESPONSE_BYTES,
         'headers' => $headers,
@@ -7692,7 +7697,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         'attempt_count' => 0,
         'attempts' => [],
     ];
-    $response = wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'] );
+    $response = wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'], $provider_deadline );
     if ( is_wp_error( $response ) ) {
         $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_transport', $action_request, 0, '', null, $response );
         // Transport-level failure (timeout or HTTP layer). One opt-in fallback
@@ -7704,7 +7709,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $fallback_request_body['model'] = $fallback_model;
             $fallback_remote_args = $remote_args;
             $fallback_remote_args['timeout'] = 30;
-            $fallback_response = wpae_llm_provider_request( $url, $fallback_remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
+            $fallback_response = wpae_llm_provider_request( $url, $fallback_remote_args, $fallback_request_body, $action_request, $runtime['provider'], $provider_deadline );
             if ( is_wp_error( $fallback_response ) ) {
                 $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $fallback_remote_args, $fallback_request_body, $runtime['provider'], $fallback_model, 'fallback_transport', $action_request, 0, '', null, $fallback_response );
             } else {
@@ -7736,7 +7741,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             if ( $fallback_model !== '' ) {
                 $fallback_request_body = $request_body;
                 $fallback_request_body['model'] = $fallback_model;
-                $fallback_response = wpae_llm_provider_request( $url, $remote_args, $fallback_request_body, $action_request, $runtime['provider'] );
+                $fallback_response = wpae_llm_provider_request( $url, $remote_args, $fallback_request_body, $action_request, $runtime['provider'], $provider_deadline );
                 if ( is_wp_error( $fallback_response ) ) {
                     $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $fallback_request_body, $runtime['provider'], $fallback_model, 'fallback_transport', $action_request, 0, '', null, $fallback_response );
                 } else {
@@ -7829,10 +7834,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
         $decoded_shape = wpae_llm_validate_action_shape( $action, $post_id );
         $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
-        if ( empty( $decoded_shape['ok'] ) || count( $decoded_elements ) > 12 || $decoded_widget_count < 1 || empty( $decoded_content_fidelity['ok'] ) ) {
+        $action_valid = ! empty( $decoded_shape['ok'] ) && $decoded_widget_count > 0 && WPAE_LLM_Design::is_complete( $decoded_elements ) && ! empty( $decoded_content_fidelity['ok'] );
+        if ( ! $action_valid ) {
             $repair_error = '';
 			$repair_messages = [
-				[ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с 3–5 заполненными native widget descendants. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . wpae_llm_generation_visual_grammar_hint() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Блок собирается полностью заполненным сразу: никаких пустых контейнеров-заготовок на потом. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
+				[ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с полностью заполненными native widget descendants по содержанию запроса. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . WPAE_LLM_Design::prompt() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Блок собирается полностью заполненным сразу: никаких пустых контейнеров-заготовок на потом. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
 				[ 'role' => 'user', 'content' => $message ],
 			];
 			if ( $vision_feedback_prompt !== '' ) {
@@ -7844,10 +7850,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             for ( $repair_attempt = 1; $repair_attempt <= 2 && ! $action_repair; $repair_attempt++ ) {
                 $repair_body = $request_body;
                 $repair_body['messages'] = $repair_messages;
-                $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'] );
+                $repair_response = wpae_llm_provider_request( $url, $remote_args, $repair_body, true, $runtime['provider'], $provider_deadline );
                 if ( is_wp_error( $repair_response ) ) {
-                    $repair_error = sanitize_text_field( $repair_response->get_error_message() );
-                    continue;
+                    $repair_error = wpae_llm_diagnostic_text( $repair_response->get_error_message() );
+                    break;
                 }
                 $repair_status = wp_remote_retrieve_response_code( $repair_response );
                 $repair_payload = json_decode( wp_remote_retrieve_body( $repair_response ), true );
@@ -7867,7 +7873,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $candidate_widget_count = wpae_llm_count_widgets( $candidate_elements );
                 $candidate_shape = wpae_llm_validate_action_shape( $candidate, $post_id );
                 $candidate_content_fidelity = wpae_llm_content_fidelity( $message, $candidate_elements );
-                if ( empty( $candidate_shape['ok'] ) || $candidate_action !== 'insert_elements' || $candidate_post_id !== $post_id || count( $candidate_elements ) > 12 || $candidate_widget_count < 1 || empty( $candidate_content_fidelity['ok'] ) ) {
+                if ( empty( $candidate_shape['ok'] ) || $candidate_action !== 'insert_elements' || $candidate_post_id !== $post_id || count( $candidate_elements ) > 12 || $candidate_widget_count < 1 || ! WPAE_LLM_Design::is_complete( $candidate_elements ) || empty( $candidate_content_fidelity['ok'] ) ) {
                     $repair_error = 'Repair-проход вернул неподдерживаемую или пустую Elementor-команду.';
                     continue;
                 }
@@ -7879,9 +7885,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $action_diagnostics['decoded_post_id'] = $candidate_post_id;
                 $action_diagnostics['decoded_element_count'] = count( $candidate_elements );
                 $action_repair = true;
+                $action_valid = true;
             }
         }
-        if ( ! $action_repair ) {
+        if ( ! $action_valid ) {
             $action = wpae_llm_build_fallback_action( $message, $post_id );
             $action_diagnostics = [
                 'response_type' => 'deterministic_fallback',
@@ -7946,7 +7953,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $template_source_fingerprint = [];
         $template_fidelity = [ 'ok' => true, 'schema' => 'wpae-template-fidelity-v1', 'status' => 'not_applicable', 'failures' => [] ];
         $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
-        if ( ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
+        if ( $action_fallback && ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
             $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
             if ( ! empty( $library_elements ) ) {
                 $template_source_fingerprint = wpae_llm_template_fingerprint( $library_elements );
@@ -7985,7 +7992,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $library_skip_reason = 'The selected library block has no repeatable content group that can be adapted.';
             }
         }
-        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design ) {
+        $provider_design = ! $action_fallback && ! $library_applied;
+        $provider_design_changed = 0;
+        if ( $provider_design ) {
+            $action['elements'] = WPAE_LLM_Design::normalize( $action['elements'], $provider_design_changed );
+        }
+        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design && ! $provider_design ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
             $action['elements'] = wpae_llm_repair_unbalanced_repeatable_layout( $action['elements'], $message, $action_archetype, $composition_repair_changed );
@@ -7996,7 +8008,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( is_array( $action['elements'] ?? null ) && $library_preserve_design ) {
             $action['elements'] = wpae_llm_enforce_preserved_library_badge( $action['elements'], $action_archetype, $visual_grammar_changed );
         }
-        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design ) {
+        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design && ! $provider_design ) {
             $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
             $final_bento_changed = 0;
             wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed, $action_archetype );
@@ -8007,17 +8019,17 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $cta_changed = 0;
             $action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $cta_changed, true );
         }
-        if ( $action_archetype === 'process' && is_array( $action['elements'] ?? null ) ) {
+        if ( ! $provider_design && $action_archetype === 'process' && is_array( $action['elements'] ?? null ) ) {
             $process_contract_changed = 0;
             $action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $process_contract_changed );
             $process_timeline_changed += $process_contract_changed;
         }
-        $flex_contract_changed = 0;
-		if ( is_array( $action['elements'] ?? null ) ) {
+        $flex_contract_changed = $provider_design_changed;
+		if ( ! $provider_design && is_array( $action['elements'] ?? null ) ) {
 			$action['elements'] = wpae_llm_enforce_flex_layout_contract( $action['elements'], $action_archetype, $flex_contract_changed );
 		}
 		$pricing_contract_changed = 0;
-		if ( $action_archetype === 'pricing' && is_array( $action['elements'] ?? null ) ) {
+		if ( ! $provider_design && $action_archetype === 'pricing' && is_array( $action['elements'] ?? null ) ) {
 			$pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
 			if ( count( $pricing_pairs ) >= 2 ) {
 				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed );
@@ -8026,13 +8038,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				}
 			}
 		}
-		if ( wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
+		if ( ! $provider_design && wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
 			$final_process_changed = 0;
 			$action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $final_process_changed );
 			$process_timeline_changed += $final_process_changed;
 		}
         $hero_composition_changed = 0;
-        if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
+        if ( ! $provider_design && $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
             $existing_for_image_rotation = [];
             if ( function_exists( 'wpae_get_elementor_data_for_post' ) ) {
                 $saved_for_image_rotation = wpae_get_elementor_data_for_post( $post_id );
@@ -8066,8 +8078,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             ],
             [
                 'id' => 'hero_composition',
-                'status' => $action_archetype === 'hero' ? 'ok' : 'skipped',
-                'message' => $action_archetype === 'hero' ? 'Hero выровнен единообразно: badge, текст, иконки и CTA используют одну ось.' : 'Hero-нормализация не требуется для этого типа блока.',
+                'status' => $action_archetype === 'hero' && ! $provider_design ? 'ok' : 'skipped',
+                'message' => $action_archetype === 'hero' && ! $provider_design ? 'Hero выровнен единообразно: badge, текст, иконки и CTA используют одну ось.' : 'Hero-нормализация не требуется для этого типа блока.',
                 'details' => [ 'settings_updated' => $hero_composition_changed ],
             ],
 			[ 'id' => 'flex_contract', 'status' => 'ok', 'message' => 'Все layout-контейнеры приведены к native Flexbox с responsive-правилами.', 'details' => [ 'settings_updated' => $flex_contract_changed, 'container_type' => 'flex', 'legacy_layout_allowed' => false ] ],
@@ -8161,8 +8173,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( $render_cache_changed > 0 ) {
             $action_steps[] = [ 'id' => 'render_cache', 'status' => 'ok', 'message' => 'Устаревший Elementor render cache очищен перед записью обновленного контента.', 'details' => [ 'nodes_cleared' => $render_cache_changed ] ];
         }
-        $execution_variation_seed = $library_applied ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message );
+        $execution_variation_seed = $library_applied || $provider_design ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
+        $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.', 'details' => [ 'source' => $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ] ];
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         if ( empty( $execution['ok'] ) ) {
             return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor.', [ 'status' => 422, 'details' => $execution ] );
@@ -8189,9 +8202,15 @@ function wpae_llm_chat_permission( WP_REST_Request $request ) {
     if ( ! wpae_capability_enabled( 'llm_chat' ) || ! current_user_can( 'edit_posts' ) ) {
         return new WP_Error( 'wpae_llm_editor_forbidden', 'LLM-чат доступен только авторизованному редактору при включенном разрешении.', [ 'status' => 403, 'capability' => 'llm_chat' ] );
     }
-    $post_id = absint( $request->get_param( 'post_id' ) );
-    if ( $post_id > 0 && ! current_user_can( 'edit_post', $post_id ) ) {
-        return new WP_Error( 'wpae_llm_post_forbidden', 'Нет разрешения на редактирование этой страницы.', [ 'status' => 403, 'post_id' => $post_id ] );
+    $context = $request->get_param( 'context' );
+    $post_ids = [ absint( $request->get_param( 'post_id' ) ) ];
+    if ( is_array( $context ) ) {
+        $post_ids[] = absint( $context['post_id'] ?? 0 );
+    }
+    foreach ( array_unique( $post_ids ) as $post_id ) {
+        if ( $post_id > 0 && ! current_user_can( 'edit_post', $post_id ) ) {
+            return new WP_Error( 'wpae_llm_post_forbidden', 'Нет разрешения на редактирование этой страницы.', [ 'status' => 403, 'post_id' => $post_id ] );
+        }
     }
     return true;
 }
@@ -8207,6 +8226,10 @@ function wpae_llm_undo( WP_REST_Request $request ): WP_REST_Response {
     $snapshot_posts = array_map( 'absint', array_keys( (array) ( $snapshot['posts'] ?? [] ) ) );
     if ( $snapshot === null || ! in_array( $post_id, $snapshot_posts, true ) || count( $snapshot_posts ) !== 1 ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'Снимок отмены не найден или не относится к этой странице.', 'code' => 'wpae_undo_scope_mismatch' ], 404 );
+    }
+    $after_hash = (string) ( $snapshot['after_hashes'][ $post_id ] ?? '' );
+    if ( $after_hash === '' || ! hash_equals( $after_hash, wpae_rollback_post_fingerprint( $post_id ) ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'После этой операции страница была изменена или снимок создан старой версией плагина. Отмена остановлена, чтобы сохранить свежие правки.', 'code' => 'wpae_undo_conflict' ], 409 );
     }
     $rollback = wpae_restore_rollback_snapshot_by_id( $snapshot_id, true );
     return new WP_REST_Response( [ 'ok' => ! empty( $rollback['ok'] ), 'operation_id' => wpae_llm_new_operation_id(), 'rollback' => $rollback ], (int) ( $rollback['status'] ?? 422 ) );
