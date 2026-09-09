@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.77`
+- Plugin: `v02.11.78`
 - Guide: `v02.05.98`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -22,6 +22,10 @@
   request says `обнови ... добавь` native children such as the badge, heading,
   or Dividers. The targeted-edit classifier no longer mistakes those embedded
   additions for a request to create a new top-level block.
+- v02.11.78: Recognises saved horizontal roots whose marker class was dropped
+  but whose direct children are the reference `wpae-process-content` cards or
+  the responsive `wpae-process-items` row, so selected repairs cannot fall
+  through to provider generation.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural

@@ -274,6 +274,13 @@ $legacy_horizontal_root = container_node( 'legacy-horizontal-root', [ 'container
     ] ),
 ] );
 check( wpae_llm_is_process_timeline_root( $legacy_horizontal_root ), 'Legacy horizontal root without its marker class was not recognised' );
+$legacy_direct_root = $reference_timeline;
+$legacy_direct_root['id'] = 'legacy-direct-root';
+$legacy_direct_root['settings']['_css_classes'] = '';
+$legacy_direct_root['settings']['flex_direction'] = 'row';
+$legacy_direct_root['settings']['flex_direction_mobile'] = 'column';
+$legacy_direct_root['elements'] = (array) ( $reference_timeline['elements'][2]['elements'] ?? [] );
+check( wpae_llm_is_process_timeline_root( $legacy_direct_root ), 'Legacy horizontal root with direct process-content cards was not recognised' );
 $detailed_process_message = 'Обнови выбранный горизонтальный таймлайн строго по эталонной карточке: повтори структуру для «Замысел», «Съёмка», «Монтаж», «Публикация».';
 $detailed_steps = wpae_llm_process_timeline_steps( $detailed_process_message );
 check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted labels in a detailed reference prompt were not preserved' );

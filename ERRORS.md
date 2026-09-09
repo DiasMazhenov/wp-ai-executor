@@ -82,6 +82,18 @@ before making a new change to the plugin.
   v02.11.77 repair and full JSON/DOM/rendered-html/desktop/mobile acceptance
   remain required.
 
+## EJ-110: Direct horizontal cards were not recognised as a selected root
+
+- **Confirmed (2026-09-10, live post 4556):** The saved root `11d360f` had
+  the four horizontal reference cards as direct children, but its own process
+  marker class had been dropped. The selected repair therefore could not find
+  the process root and fell through to provider generation again.
+- **Fix (v02.11.78):** The root detector now accepts direct horizontal
+  `wpae-process-content` cards and the canonical `wpae-process-items` row in
+  addition to the existing root and legacy track signatures.
+- **Status:** Local legacy-root regression coverage added. Live v02.11.78
+  deterministic repair and full visual acceptance remain required.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero

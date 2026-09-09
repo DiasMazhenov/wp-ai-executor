@@ -318,9 +318,9 @@ function wpae_llm_is_process_timeline_root( array $element ): bool {
         if ( ! is_array( $child_classes ) ) {
             $child_classes = [];
         }
-        if ( array_intersect( [ 'wpae-process-track', 'wpae-process-rail', 'wpae-process-cards' ], $child_classes ) ) {
-            return true;
-        }
+		if ( array_intersect( [ 'wpae-process-track', 'wpae-process-rail', 'wpae-process-cards', 'wpae-process-items', 'wpae-process-content' ], $child_classes ) ) {
+			return true;
+		}
     }
 
     return false;
