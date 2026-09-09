@@ -510,6 +510,7 @@ function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id
             'mode' => 'replace',
             'elements' => [ $next[ $selected_index ] ],
             'replace_element_id' => $root_id,
+            'after_top_level_ids' => array_values( array_unique( array_filter( array_map( static fn( $element ) => is_array( $element ) ? sanitize_key( (string) ( $element['id'] ?? '' ) ) : '', $next ) ) ) ),
             'changed_ids' => [ $root_id ],
             'target_element_ids' => [ $root_id ],
             'selected_scope_ids' => array_values( array_unique( $scope_ids ) ),

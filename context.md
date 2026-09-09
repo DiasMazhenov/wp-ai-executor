@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.78`
+- Plugin: `v02.11.79`
 - Guide: `v02.05.98`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -26,6 +26,11 @@
   but whose direct children are the reference `wpae-process-content` cards or
   the responsive `wpae-process-items` row, so selected repairs cannot fall
   through to provider generation.
+- v02.11.79: Reconciles the live Elementor editor's top-level models after a
+  structural process-root replacement. The editor now removes stale local
+  prompt-generated roots according to the saved top-level ID list, so the
+  selected root's badge, section heading, cards, and native Dividers are
+  visible in the editor as well as in rendered HTML.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural

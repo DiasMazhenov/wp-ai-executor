@@ -292,6 +292,16 @@ $contract_changed = 0;
 $contract_timeline = wpae_llm_enforce_process_timeline_contract( [ $reference_timeline ], $detailed_process_message, $contract_changed )[0] ?? [];
 $contract_json = wp_json_encode( $contract_timeline );
 check( substr_count( (string) $contract_json, '"wpae-generated-badge"' ) === 1 && substr_count( (string) $contract_json, '"wpae-process-heading"' ) === 1, 'Process contract duplicated or dropped the horizontal badge/heading shell' );
+$repair_root = $reference_timeline;
+$repair_root['id'] = 'repair-root';
+$repair_root['settings']['_css_classes'] = 'wpae-system-test';
+$GLOBALS['page_data'] = [ $repair_root ];
+$GLOBALS['writes'] = [];
+$repair_result = wpae_llm_execute_process_timeline_repair( $GLOBALS['page_data'], 42, [ 'repair-root' ], $detailed_process_message, 'repair-operation' );
+check( ! empty( $repair_result['ok'] ), 'Process timeline repair did not complete for a direct horizontal root' );
+check( ( $repair_result['editor_sync']['after_top_level_ids'] ?? [] ) === [ 'repair-root' ], 'Process repair did not expose the saved top-level IDs for editor reconciliation' );
+check( substr_count( (string) wp_json_encode( $repair_result['editor_sync']['elements'][0] ?? [] ), '"wpae-generated-badge"' ) === 1, 'Process repair editor sync lost the native badge' );
+check( substr_count( (string) wp_json_encode( $repair_result['editor_sync']['elements'][0] ?? [] ), '"wpae-process-heading"' ) === 1, 'Process repair editor sync lost the section heading' );
 $vertical_timeline = wpae_llm_build_process_timeline(
     [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
     'vertical-process',

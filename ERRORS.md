@@ -94,6 +94,23 @@ before making a new change to the plugin.
 - **Status:** Local legacy-root regression coverage added. Live v02.11.78
   deterministic repair and full visual acceptance remain required.
 
+## EJ-111: Editor preview retained stale prompt-generated roots after a saved repair
+
+- **Confirmed (2026-09-10, live post 4556):** The server-side Elementor update
+  saved the repaired root `11d360f`; public rendered HTML contained the native
+  `ПРОЦЕСС` badge, `Как мы работаем`, four cards, and three Dividers. The open
+  editor canvas still retained local roots `6e2401f` and `f4e2516` from earlier
+  provider failures, so the screenshot showed raw prompt text and the selected
+  original root without its shell.
+- **Root cause:** A `mode=replace` editor sync deleted/recreated only the
+  selected root and then refreshed the iframe from the stale in-memory model;
+  it had no saved top-level ID set with which to reconcile extra local roots.
+- **Fix (v02.11.79):** Process repair now returns `after_top_level_ids`, and the
+  editor sync reconciles root models after replacement before refreshing the
+  preview. This removes stale local roots without changing vertical variants.
+- **Status:** Local reconciliation/runtime coverage passes. Live v02.11.79
+  editor screenshot and mobile acceptance must be re-run after deployment.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero

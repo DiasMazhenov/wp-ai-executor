@@ -927,6 +927,7 @@
             var rootModels = getEditorModelChildren(container);
             var target = rootModels.find(function (model) { return getEditorModelId(model) === replaceId; });
             var targetContainer = getEditorContainerById(replaceId);
+            var expectedRootIds = Array.isArray(editorSync.after_top_level_ids) ? editorSync.after_top_level_ids : null;
             if (!target || !targetContainer || !replaceId) return Promise.resolve(false);
             var targetIndex = rootModels.indexOf(target);
             try {
@@ -941,7 +942,11 @@
                         return getEditorModelId(model) === replaceId;
                     });
                     if (!created) return false;
-                    return waitForPreviewPaint().then(function () { return refreshElementorPreview(); });
+                    var reconcile = expectedRootIds ? reconcileEditorRoots(expectedRootIds) : Promise.resolve(true);
+                    return reconcile.then(function (reconciled) {
+                        if (!reconciled) return false;
+                        return waitForPreviewPaint().then(function () { return refreshElementorPreview(); });
+                    });
                 }, function () { return false; });
             } catch (error) {
                 return Promise.resolve(false);
