@@ -4504,8 +4504,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		$timeline['settings']['flex_align_items'] = 'stretch';
 		$timeline['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
-		$timeline['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
-		$timeline['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+		// Keep the section shell padded after adding the horizontal badge,
+		// heading, and items row. The selected reference JSON defines the card
+		// interior; these responsive values belong to the main timeline wrapper.
+		$timeline['settings']['padding'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => false ];
+		$timeline['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.875', 'bottom' => '1.25', 'left' => '0.875', 'isLinked' => false ];
 		$timeline['elements'] = [
 			wpae_llm_badge_widget( $id . '-badge', 'process' ),
 			$widget( $id . '-heading', 'heading', [

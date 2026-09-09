@@ -253,6 +253,8 @@ $reference_timeline = wpae_llm_build_process_timeline(
 $reference_settings = $reference_timeline['settings'];
 check( $reference_settings['flex_direction'] === 'column' && $reference_settings['flex_direction_mobile'] === 'column', 'Horizontal reference timeline header shell is not responsive column layout' );
 check( $reference_settings['flex_wrap'] === 'nowrap' && $reference_settings['flex_wrap_mobile'] === 'nowrap', 'Horizontal reference timeline can wrap unexpectedly' );
+check( $reference_settings['padding']['unit'] === 'rem' && $reference_settings['padding']['top'] === '1.25' && $reference_settings['padding']['right'] === '1.25' && $reference_settings['padding']['bottom'] === '1.5' && $reference_settings['padding']['left'] === '1.25', 'Horizontal main container lost the reference inner padding' );
+check( $reference_settings['padding_mobile']['unit'] === 'rem' && $reference_settings['padding_mobile']['top'] === '1' && $reference_settings['padding_mobile']['right'] === '0.875' && $reference_settings['padding_mobile']['bottom'] === '1.25' && $reference_settings['padding_mobile']['left'] === '0.875', 'Horizontal main container lost responsive mobile inner padding' );
 $reference_badge = $reference_timeline['elements'][0] ?? [];
 $reference_heading = $reference_timeline['elements'][1] ?? [];
 $reference_items = $reference_timeline['elements'][2] ?? [];

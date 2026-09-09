@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.80`
+- Plugin: `v02.11.81`
 - Guide: `v02.05.98`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -35,6 +35,10 @@
   successful structured write. WordPress otherwise bootstraps that autosave in
   the editor and can hide newer saved `_elementor_data` behind old prompt roots;
   the public page and the live editor now use the same saved source after reload.
+- v02.11.81: Restores the responsive inner padding of the main horizontal
+  timeline container after the badge/heading shell is assembled. The supplied
+  reference card padding remains unchanged, and vertical timeline variants keep
+  their existing settings.
 - Live acceptance (2026-09-10, post 4556, v02.11.80): Fresh editor JSON has
   one root `11d360f` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.
