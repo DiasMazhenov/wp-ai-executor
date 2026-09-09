@@ -119,12 +119,19 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
         return false;
     }
 
-    $property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус\w*|скругл\w*|угл\w*|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
-    $selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран\w*|выделен\w*|текущ\w*|внутри|содержим|дочерн\w*)/iu', $message );
-    $insert_signal = (bool) preg_match( '/\b(добавь|создай|собери|вставь|новый|новую|новое)\b/iu', $message );
-    if ( $insert_signal ) {
-        return false;
-    }
+	$property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус\w*|скругл\w*|угл\w*|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
+	$selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран\w*|выделен\w*|текущ\w*|внутри|содержим|дочерн\w*)/iu', $message );
+	$insert_signal = (bool) preg_match( '/\b(добавь|создай|собери|вставь|новый|новую|новое)\b/iu', $message );
+	// A selected process timeline may need native children added inside its
+	// existing root (for example the standard badge, section heading, or
+	// Divider connectors). Treat that as a targeted structural edit instead of
+	// routing the whole request to the provider and appending a new block.
+	$embedded_process_addition = $selection_signal
+		&& wpae_llm_is_process_request( $message )
+		&& (bool) preg_match( '/\b(бейдж\w*|заголов\w*|разделител\w*|divider|коннектор\w*|карточ\w*|этап\w*)\b/iu', $message );
+	if ( $insert_signal && ! $embedded_process_addition ) {
+		return false;
+	}
 	return $selection_signal || $property_signal;
 }
 

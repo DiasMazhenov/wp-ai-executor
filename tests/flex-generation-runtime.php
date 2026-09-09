@@ -277,6 +277,8 @@ check( wpae_llm_is_process_timeline_root( $legacy_horizontal_root ), 'Legacy hor
 $detailed_process_message = 'Обнови выбранный горизонтальный таймлайн строго по эталонной карточке: повтори структуру для «Замысел», «Съёмка», «Монтаж», «Публикация».';
 $detailed_steps = wpae_llm_process_timeline_steps( $detailed_process_message );
 check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted labels in a detailed reference prompt were not preserved' );
+check( wpae_llm_is_targeted_edit_request( 'Обнови выбранный горизонтальный таймлайн: добавь стандартный нативный бейдж «ПРОЦЕСС» и секционный заголовок.' ), 'Selected process shell addition was misclassified as a new block' );
+check( ! wpae_llm_is_targeted_edit_request( 'Создай новый горизонтальный таймлайн: Замысел, Съёмка, Монтаж, Публикация.' ), 'New process generation was incorrectly classified as a targeted edit' );
 $rebuilt_steps = wpae_llm_process_timeline_steps_from_elements( [ $reference_timeline ] );
 check( array_column( $rebuilt_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Process step reader did not ignore the horizontal badge/heading shell' );
 $contract_changed = 0;

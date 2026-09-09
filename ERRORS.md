@@ -64,6 +64,24 @@ before making a new change to the plugin.
   saved JSON/DOM/rendered HTML and desktop/mobile screenshot verification are
   required before acceptance is re-recorded.
 
+## EJ-109: Selected shell repair was routed back to the provider
+
+- **Confirmed (2026-09-10, live post 4556 on v02.11.76):** A selected repair
+  prompt that said `обнови выбранный горизонтальный таймлайн: добавь ...
+  бейдж ... и секционный заголовок` was classified as a new-block request
+  because the targeted-edit guard rejected every message containing `добавь`.
+  It therefore reached `openrouter/free`, appended an invalid prompt-text
+  block, and still did not provide the required section shell.
+- **Root cause:** The classifier treated adding native children inside a
+  selected process root as equivalent to creating a new top-level block.
+- **Fix (v02.11.77):** Allow `добавь` for a selected process/timeline request
+  when the requested additions are embedded native badge, heading, Divider,
+  connector, card, or step elements; unrelated new-block requests retain the
+  old provider-generation route.
+- **Status:** Local targeted-classifier regression coverage passes. Live
+  v02.11.77 repair and full JSON/DOM/rendered-html/desktop/mobile acceptance
+  remain required.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero
