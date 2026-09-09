@@ -287,6 +287,38 @@ function wpae_llm_collect_selected_scope_ids( array $elements, array $selected_i
     return array_keys( $allowed );
 }
 
+/**
+ * Recognise a process timeline root even when an older Elementor save dropped
+ * the root marker class but retained the canonical legacy track wrappers.
+ */
+function wpae_llm_is_process_timeline_root( array $element ): bool {
+    if ( ( $element['elType'] ?? '' ) !== 'container' ) {
+        return false;
+    }
+
+    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+    $classes  = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+    if ( is_array( $classes ) && in_array( 'wpae-process-timeline', $classes, true ) ) {
+        return true;
+    }
+
+    foreach ( (array) ( $element['elements'] ?? [] ) as $child ) {
+        if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+        $child_classes  = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+        if ( ! is_array( $child_classes ) ) {
+            $child_classes = [];
+        }
+        if ( array_intersect( [ 'wpae-process-track', 'wpae-process-rail', 'wpae-process-cards' ], $child_classes ) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function wpae_llm_is_list( array $value ): bool {
     $index = 0;
     foreach ( array_keys( $value ) as $key ) {
@@ -405,8 +437,7 @@ function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id
         if ( ! is_array( $element ) || ! isset( $selected_lookup[ sanitize_key( (string) ( $element['id'] ?? '' ) ) ] ) ) {
             continue;
         }
-        $classes = preg_split( '/\s+/', trim( (string) ( $element['settings']['_css_classes'] ?? '' ) ) );
-        if ( is_array( $classes ) && in_array( 'wpae-process-timeline', $classes, true ) ) {
+        if ( wpae_llm_is_process_timeline_root( $element ) ) {
             $selected_index = $index;
             break;
         }
@@ -4554,7 +4585,7 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, string $me
             }
             $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-            if ( is_array( $classes ) && array_intersect( [ 'wpae-process-timeline', 'wpae-process-step', 'wpae-process-marker', 'wpae-process-content' ], $classes ) ) {
+            if ( wpae_llm_is_process_timeline_root( $node ) || ( is_array( $classes ) && array_intersect( [ 'wpae-process-step', 'wpae-process-marker', 'wpae-process-content' ], $classes ) ) ) {
                 return true;
             }
             if ( is_array( $node['elements'] ?? null ) && $contains_process( $node['elements'] ) ) {

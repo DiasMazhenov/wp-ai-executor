@@ -261,6 +261,13 @@ foreach ( $reference_timeline['elements'] as $reference_index => $reference_card
     }
 }
 check( $reference_dividers === 3, 'Horizontal reference timeline must have three native connectors' );
+$legacy_horizontal_root = container_node( 'legacy-horizontal-root', [ 'container_type' => 'flex' ], [
+    container_node( 'legacy-horizontal-track', [ '_css_classes' => 'wpae-process-track' ], [
+        container_node( 'legacy-horizontal-rail', [ '_css_classes' => 'wpae-process-rail' ], [] ),
+        container_node( 'legacy-horizontal-cards', [ '_css_classes' => 'wpae-process-cards' ], [] ),
+    ] ),
+] );
+check( wpae_llm_is_process_timeline_root( $legacy_horizontal_root ), 'Legacy horizontal root without its marker class was not recognised' );
 $vertical_timeline = wpae_llm_build_process_timeline(
     [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
     'vertical-process',

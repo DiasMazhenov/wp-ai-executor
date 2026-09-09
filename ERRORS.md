@@ -20,6 +20,13 @@ before making a new change to the plugin.
   card structure; keep the old track reader for backward-compatible parsing of
   already-saved legacy timelines. The guide now explicitly requires the
   reference card structure and forbids a shared rail/cards row.
+- **Additional root cause (2026-09-10):** The live legacy root had no
+  `wpae-process-timeline` class, although its direct child still had the
+  `wpae-process-track` → `wpae-process-rail` / `wpae-process-cards` signature.
+  The selected repair therefore missed the root and incorrectly fell through
+  to `openrouter/free`, where the response ended with `finish_reason: length`.
+- **Fix (v02.11.74):** Recognise that legacy child signature as a process root
+  and keep the selected repair on the local canonical rebuild path.
 - **Status:** Local runtime and contract regressions pass. Live post-4556
   editor write, saved revision, DOM/rendered HTML, and desktop/mobile screenshot
   verification are still required.
