@@ -2,9 +2,17 @@
 
 ## Current release
 
-- Plugin: `v02.11.72`
-- Guide: `v02.05.96`
+- Plugin: `v02.11.73`
+- Guide: `v02.05.97`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.73: Aligns horizontal process/timeline generation with the supplied
+  reference JSON instead of the previous shared rail/cards-row composition.
+  Each horizontal step is now a direct `wpae-process-content` native Flexbox
+  card containing a marker row, a native Divider for steps 1–3, a heading, and
+  a text-editor; cards use the reference 20px radius, surface, padding, 22%
+  desktop width, and 100% mobile width. The vertical left/alternating
+  structures remain separate and unchanged. Local runtime coverage is 118
+  checks; live post-4556 editor acceptance is required before release claim.
 - v02.11.72: Treats quoted labeled CTA copy such as `Кнопка: «Обсудить
   проект», ссылка #contact` as an explicit semantic-plan requirement, so
   fallback normalization preserves the native button instead of removing it

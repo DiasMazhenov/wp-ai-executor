@@ -7,6 +7,23 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-106: Horizontal generator did not follow the supplied reference structure
+
+- **Confirmed (2026-09-10, local generation contract):** The horizontal
+  builder emitted one shared `wpae-process-track` with separate rail and cards
+  rows, while the supplied selection JSON described one direct card per step
+  with its marker row, native Divider, heading, and text-editor inside the
+  card.
+- **Root cause:** The previous horizontal branch optimized connector geometry
+  around a shared rail and treated the reference as surface styling only.
+- **Fix (v02.11.73):** Rebuild only the horizontal branch from the reference
+  card structure; keep the old track reader for backward-compatible parsing of
+  already-saved legacy timelines. The guide now explicitly requires the
+  reference card structure and forbids a shared rail/cards row.
+- **Status:** Local runtime and contract regressions pass. Live post-4556
+  editor write, saved revision, DOM/rendered HTML, and desktop/mobile screenshot
+  verification are still required.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero

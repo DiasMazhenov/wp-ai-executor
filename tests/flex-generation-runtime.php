@@ -224,6 +224,52 @@ $collect_fallback_widget_types( [ $GLOBALS['page_data'][2] ?? [] ] );
 check( empty( $fallback_widget_types['divider'] ), 'Hero fallback inherited an unrelated process Divider' );
 check( strpos( (string) wp_json_encode( $GLOBALS['page_data'][2] ?? [] ), 'wpae-process-' ) === false, 'Hero fallback inherited unrelated process semantics' );
 
+$reference_timeline = wpae_llm_build_process_timeline(
+    [
+        [ 'label' => 'Замысел', 'content' => 'Этап 1: Замысел.' ],
+        [ 'label' => 'Съёмка', 'content' => 'Этап 2: Съёмка.' ],
+        [ 'label' => 'Монтаж', 'content' => 'Этап 3: Монтаж.' ],
+        [ 'label' => 'Публикация', 'content' => 'Этап 4: Публикация.' ],
+    ],
+    'reference-process',
+    'horizontal'
+);
+$reference_settings = $reference_timeline['settings'];
+check( $reference_settings['flex_direction'] === 'row' && $reference_settings['flex_direction_mobile'] === 'column', 'Horizontal reference timeline did not get responsive row/stack layout' );
+check( $reference_settings['flex_wrap'] === 'nowrap' && $reference_settings['flex_wrap_mobile'] === 'nowrap', 'Horizontal reference timeline can wrap unexpectedly' );
+check( count( $reference_timeline['elements'] ) === 4, 'Horizontal reference timeline does not have four direct cards' );
+check( strpos( (string) wp_json_encode( $reference_timeline ), 'wpae-process-track' ) === false, 'Horizontal reference timeline retained the shared track wrapper' );
+check( strpos( (string) wp_json_encode( $reference_timeline ), 'wpae-process-rail' ) === false, 'Horizontal reference timeline retained the shared rail wrapper' );
+check( strpos( (string) wp_json_encode( $reference_timeline ), 'wpae-process-cards' ) === false, 'Horizontal reference timeline retained the shared cards wrapper' );
+$reference_dividers = 0;
+foreach ( $reference_timeline['elements'] as $reference_index => $reference_card ) {
+    $card_settings = $reference_card['settings'];
+    $card_classes = preg_split( '/\s+/', trim( (string) ( $card_settings['_css_classes'] ?? '' ) ) );
+    check( in_array( 'wpae-process-content', $card_classes, true ), 'Reference timeline child is not a process-content card' );
+    check( $card_settings['border_radius']['unit'] === 'px' && $card_settings['border_radius']['top'] === '20' && $card_settings['border_radius']['right'] === '20' && $card_settings['border_radius']['bottom'] === '20' && $card_settings['border_radius']['left'] === '20', 'Reference card radius does not match the supplied JSON' );
+    check( (float) $card_settings['width']['size'] === 22.0 && (float) $card_settings['width_mobile']['size'] === 100.0, 'Reference card width is not 22% desktop / 100% mobile' );
+    check( count( $reference_card['elements'] ) === 3, 'Reference card child order/count does not match marker-row, heading, copy' );
+    $marker_row = $reference_card['elements'][0];
+    check( $marker_row['elType'] === 'container' && $marker_row['settings']['flex_direction'] === 'row' && ( $marker_row['settings']['padding']['top'] ?? null ) === '0', 'Reference marker row is not a native zero-padding Flex row' );
+    check( ( $reference_card['elements'][1]['widgetType'] ?? '' ) === 'heading' && ( $reference_card['elements'][2]['widgetType'] ?? '' ) === 'text-editor', 'Reference card heading/text-editor order changed' );
+    if ( $reference_index < 3 ) {
+        $divider = $marker_row['elements'][1] ?? [];
+        check( ( $divider['widgetType'] ?? '' ) === 'divider', 'Reference connector is not a native Divider widget' );
+        check( ( $divider['settings']['weight']['size'] ?? null ) === 1 && ( $divider['settings']['gap']['size'] ?? null ) === 15, 'Reference Divider geometry does not match the supplied JSON' );
+        check( ( $divider['settings']['color'] ?? '' ) === '#000' && ( $divider['settings']['width']['size'] ?? null ) === 100, 'Reference Divider styling/width does not match the supplied JSON' );
+        $reference_dividers++;
+    }
+}
+check( $reference_dividers === 3, 'Horizontal reference timeline must have three native connectors' );
+$vertical_timeline = wpae_llm_build_process_timeline(
+    [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
+    'vertical-process',
+    'left'
+);
+$vertical_first_classes = preg_split( '/\s+/', trim( (string) ( $vertical_timeline['elements'][0]['elements'][0]['settings']['_css_classes'] ?? '' ) ) );
+check( in_array( 'wpae-process-marker-column', $vertical_first_classes, true ), 'Vertical timeline marker-column variant was changed by horizontal reference work' );
+check( in_array( 'wpae-process-content', preg_split( '/\s+/', trim( (string) ( $vertical_timeline['elements'][0]['elements'][1]['settings']['_css_classes'] ?? '' ) ) ), true ), 'Vertical timeline content card was changed by horizontal reference work' );
+
 $with_overrides = $hero;
 check( WPAE_LLM_Design::is_complete( [ $hero ] ), 'Populated native composition rejected' );
 check( ! WPAE_LLM_Design::is_complete( [ container_node( 'empty', [], [] ) ] ), 'Empty container accepted' );

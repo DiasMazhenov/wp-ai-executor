@@ -4233,215 +4233,166 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		}
 		unset( $step );
 	} elseif ( $layout === 'horizontal' ) {
-		// Horizontal family: one shared marker rail above one row of content
-		// cards, so connector lines run between the numbers outside the card
-		// surfaces instead of stopping at every card padding edge.
-		$timeline['settings']['flex_direction'] = 'column';
+		// Horizontal cards follow the supplied reference JSON: each step is a
+		// native card containing its marker row, native Divider connector,
+		// heading, and text editor. The vertical families keep their existing
+		// marker-column and shared connector structure.
+		$timeline['settings']['flex_direction'] = 'row';
 		$timeline['settings']['flex_direction_mobile'] = 'column';
 		$timeline['settings']['flex_wrap'] = 'nowrap';
 		$timeline['settings']['flex_wrap_mobile'] = 'nowrap';
 		$timeline['settings']['flex_justify_content'] = 'flex-start';
 		$timeline['settings']['flex_align_items'] = 'stretch';
-		$timeline['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+		$timeline['settings']['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 		$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
-		$track_gap = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
-		$rail_cells = [];
-		$card_cells = [];
-		foreach ( $timeline['elements'] as $step ) {
-			if ( ! is_array( $step ) ) {
-				continue;
+		$timeline['elements'] = [];
+
+		foreach ( $timeline_steps as $index => $source_step ) {
+			$step_number = $index + 1;
+			$source_elements = is_array( $source_step['elements'] ?? null ) ? $source_step['elements'] : [];
+			$source_content = is_array( $source_elements[1] ?? null ) ? $source_elements[1] : [];
+			$source_content_elements = is_array( $source_content['elements'] ?? null ) ? $source_content['elements'] : [];
+			$source_title = is_array( $source_content_elements[0] ?? null ) ? $source_content_elements[0] : [];
+			$source_copy = is_array( $source_content_elements[1] ?? null ) ? $source_content_elements[1] : [];
+			$title_settings = is_array( $source_title['settings'] ?? null ) ? $source_title['settings'] : [];
+			$copy_settings = is_array( $source_copy['settings'] ?? null ) ? $source_copy['settings'] : [];
+			$step_label = trim( (string) ( $title_settings['title'] ?? '' ) );
+			$step_copy = trim( (string) ( $copy_settings['editor'] ?? '' ) );
+			if ( $step_label === '' ) {
+				$step_label = 'Шаг ' . (string) $step_number;
 			}
-			$rail_cell = null;
-			$card_cell = null;
-			foreach ( (array) ( $step['elements'] ?? [] ) as $step_child ) {
-				if ( ! is_array( $step_child ) ) {
-					continue;
-				}
-				$child_settings = is_array( $step_child['settings'] ?? null ) ? $step_child['settings'] : [];
-				$child_classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
-				if ( is_array( $child_classes ) && in_array( 'wpae-process-marker-column', $child_classes, true ) ) {
-					$rail_cell = $step_child;
-				} elseif ( is_array( $child_classes ) && in_array( 'wpae-process-content', $child_classes, true ) ) {
-					$card_cell = $step_child;
-				}
+			if ( $step_copy === '' ) {
+				$step_copy = 'Понятный следующий шаг без лишней сложности.';
 			}
-			if ( $rail_cell === null && is_array( $step['elements'][0] ?? null ) ) {
-				$rail_cell = $step['elements'][0];
-			}
-			if ( $card_cell === null && is_array( $step['elements'][1] ?? null ) ) {
-				$card_cell = $step['elements'][1];
-			}
-			if ( is_array( $rail_cell ) ) {
-				$rail_settings = is_array( $rail_cell['settings'] ?? null ) ? $rail_cell['settings'] : [];
-				$rail_settings['flex_direction'] = 'row';
-				$rail_settings['flex_direction_mobile'] = 'row';
-				$rail_settings['flex_wrap'] = 'nowrap';
-				$rail_settings['flex_wrap_mobile'] = 'nowrap';
-				$rail_settings['flex_align_items'] = 'center';
-				$rail_settings['flex_justify_content'] = 'flex-start';
-				// Rail cells must share the cards' exact width budget so every
-				// marker sits on top of its card instead of drifting across
-				// the row; grow sizing broke that alignment (live feedback).
-				wpae_llm_set_variant_container_width( $rail_settings, $step_width );
-				// Keep the marker rail inside the mobile viewport. Cards stack
-				// below it; the four marker cells remain a compact row.
-				$rail_settings['width_mobile'] = [ 'unit' => '%', 'size' => 25, 'sizes' => [] ];
-				$rail_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 25, 'sizes' => [] ];
-				$rail_settings['_flex_size_mobile'] = 'custom';
-				$rail_settings['_flex_grow_mobile'] = 0;
-				$rail_settings['_flex_shrink_mobile'] = 1;
-				$rail_settings['flex_grow_mobile'] = 0;
-				$rail_settings['flex_shrink_mobile'] = 1;
-				$rail_settings['_flex_size'] = 'custom';
-				$rail_settings['_flex_grow'] = 0;
-				$rail_settings['_flex_shrink'] = 1;
-				$rail_children = is_array( $rail_cell['elements'] ?? null ) ? $rail_cell['elements'] : [];
-				// (array)(...) yields a temporary copy; a by-reference
-				// foreach would write into the copy and lose every rewrite.
-				$rail_children = is_array( $rail_cell['elements'] ?? null ) ? $rail_cell['elements'] : [];
-				foreach ( $rail_children as $ri => $rail_child ) {
-					if ( ! is_array( $rail_child ) ) {
-						continue;
-					}
-					$rail_child_settings = is_array( $rail_child['settings'] ?? null ) ? $rail_child['settings'] : [];
-					$rail_child_classes = preg_split( '/\s+/', trim( (string) ( $rail_child_settings['_css_classes'] ?? '' ) ) );
-					if ( is_array( $rail_child_classes ) && in_array( 'wpae-process-connector', $rail_child_classes, true ) ) {
-						// Strip the inherited vertical 2px width so the
-						// horizontal line can actually stretch between markers.
-						foreach ( [ 'width', 'width_mobile', '_element_custom_width', '_element_custom_width_mobile' ] as $connector_width_key ) {
-							unset( $rail_child_settings[ $connector_width_key ] );
-						}
-						$rail_child_settings['min_height'] = [ 'unit' => 'px', 'size' => 2 ];
-						$rail_child_settings['min_height_mobile'] = [ 'unit' => 'px', 'size' => 2 ];
-						$rail_child_settings['_flex_size'] = 'grow';
-						$rail_child_settings['_flex_grow'] = 1;
-						$rail_child_settings['_flex_shrink'] = 1;
-						// Keep the native Divider on the cross-axis so
-						// Elementor stretches it to the full connector width.
-						$rail_child_settings['flex_direction'] = 'column';
-						$rail_child_settings['flex_direction_mobile'] = 'column';
-						$rail_child_settings['flex_align_items'] = 'stretch';
-						$rail_child_settings['flex_align_items_mobile'] = 'stretch';
-						// (array)(...) creates a temporary copy, so a
-						// by-reference foreach would modify the copy and lose
-						// the horizontal line; collect, rewrite, reassign.
-						$connector_children = is_array( $rail_child['elements'] ?? null ) ? $rail_child['elements'] : [];
-						foreach ( $connector_children as $ci => $connector_element ) {
-							if ( ! is_array( $connector_element ) || ! in_array( $connector_element['widgetType'] ?? '', [ 'divider', 'html' ], true ) ) {
-								continue;
-							}
-							$connector_settings = is_array( $connector_element['settings'] ?? null ) ? $connector_element['settings'] : [];
-							$connector_element['widgetType'] = 'divider';
-							unset( $connector_settings['html'] );
-							$connector_settings['style'] = 'solid';
-							$connector_settings['weight'] = [ 'unit' => 'px', 'size' => 2, 'sizes' => [] ];
-							$connector_settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-							$connector_settings['align'] = 'center';
-							$connector_settings['color'] = '#b9c5e8';
-							$connector_settings['gap'] = [ 'unit' => 'px', 'size' => 0, 'sizes' => [] ];
-							$connector_element['settings'] = $connector_settings;
-							$connector_children[ $ci ] = $connector_element;
-						}
-						$rail_child['elements'] = $connector_children;
-						$rail_child['settings'] = $rail_child_settings;
-					}
-					$rail_children[ $ri ] = $rail_child;
-				}
-				$rail_cell['elements'] = $rail_children;
-				$rail_cell['settings'] = $rail_settings;
-				$rail_cells[] = $rail_cell;
-			}
-			if ( is_array( $card_cell ) ) {
-				$card_settings = is_array( $card_cell['settings'] ?? null ) ? $card_cell['settings'] : [];
-				$card_settings['background_background'] = 'classic';
-				$card_settings['background_color'] = '#ffffff';
-				$card_settings['border_border'] = 'solid';
-				$card_settings['border_color'] = '#dbe3f0';
-				$card_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-                $card_settings['border_radius'] = [ 'unit' => 'px', 'size' => 0.75, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ];
-				$card_settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
-				wpae_llm_set_variant_container_width( $card_settings, $step_width );
-				// Same width budget as rail cells; no grow, so rows stay
-				// geometrically identical and markers align to cards.
-				$card_settings['_flex_size'] = 'custom';
-				$card_settings['_flex_grow'] = 0;
-				$card_settings['_flex_shrink'] = 1;
-				$card_settings['_flex_shrink_mobile'] = 1;
-				$card_cell['settings'] = $card_settings;
-				$card_cells[] = $card_cell;
-			}
-		}
-		$rail_row = [
-			'id' => $id . '-rail',
-			'elType' => 'container',
-			'settings' => [
-				'_css_classes' => 'wpae-process-rail',
-				'container_type' => 'flex',
-				'content_width' => 'full',
-				'flex_direction' => 'row',
-				'flex_direction_mobile' => 'row',
-				'flex_wrap' => 'nowrap',
-				'flex_wrap_mobile' => 'nowrap',
-				'flex_justify_content' => 'flex-start',
-				'flex_align_items' => 'center',
-				'flex_gap' => $track_gap,
-				// Four 25% cells already consume the full mobile row; a gap would
-				// add extra width and reintroduce horizontal overflow.
-				'flex_gap_mobile' => [ 'column' => '0', 'row' => '0', 'isLinked' => true, 'unit' => 'rem', 'size' => '0' ],
-				'_element_width' => 'initial',
-				'_flex_size' => 'grow',
-				'_flex_grow' => 1,
-				'_flex_shrink' => 1,
-			],
-			'elements' => $rail_cells,
-		];
-		$cards_row = [
-			'id' => $id . '-cards',
-			'elType' => 'container',
-			'settings' => [
-				'_css_classes' => 'wpae-process-cards',
-				'container_type' => 'flex',
-				'content_width' => 'full',
-				'flex_direction' => 'row',
-				'flex_direction_mobile' => 'column',
-				'flex_wrap' => 'nowrap',
-				'flex_wrap_mobile' => 'nowrap',
-				'flex_justify_content' => 'flex-start',
-				'flex_align_items' => 'stretch',
-				'flex_gap' => $track_gap,
-				'flex_gap_mobile' => $track_gap,
-				'_element_width' => 'initial',
-				'_flex_size' => 'grow',
-				'_flex_grow' => 1,
-				'_flex_shrink' => 1,
-			],
-			'elements' => $card_cells,
-		];
-		$timeline['elements'] = [
-			[
-				'id' => $id . '-track',
+
+			$marker = [
+				'id' => $id . '-marker-' . (string) $step_number,
 				'elType' => 'container',
 				'settings' => [
-					'_css_classes' => 'wpae-process-track wpae-process-track-horizontal',
+					'_css_classes' => 'wpae-process-marker',
 					'container_type' => 'flex',
 					'content_width' => 'full',
-					'flex_direction' => 'column',
-					'flex_direction_mobile' => 'column',
+					'flex_direction' => 'row',
 					'flex_wrap' => 'nowrap',
-					'flex_wrap_mobile' => 'nowrap',
+					'flex_justify_content' => 'center',
+					'flex_align_items' => 'center',
+					'background_background' => 'classic',
+					'background_color' => '#4460EC',
+					'border_radius' => [ 'unit' => 'px', 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'size' => 999, 'isLinked' => true ],
+					'width' => [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ],
+					'width_mobile' => [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ],
+					'min_height' => [ 'unit' => 'rem', 'size' => 3 ],
+					'min_height_mobile' => [ 'unit' => 'rem', 'size' => 2.5 ],
+					'_element_width' => 'initial',
+					'_element_custom_width' => [ 'unit' => 'rem', 'size' => 3, 'sizes' => [] ],
+					'_element_custom_width_mobile' => [ 'unit' => 'rem', 'size' => 2.5, 'sizes' => [] ],
+					'_flex_size' => 'custom',
+					'_flex_grow' => 0,
+					'_flex_shrink' => 0,
+				],
+				'elements' => [
+					$widget( $id . '-marker-' . (string) $step_number . '-label', 'heading', [
+						'title' => sprintf( '%02d', $step_number ),
+						'header_size' => 'h5',
+						'_css_classes' => 'wpae-process-marker-label',
+						'title_color' => '#ffffff',
+						'align' => 'center',
+						'typography_typography' => 'custom',
+						'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+						'typography_font_weight' => '700',
+						'typography_line_height' => [ 'unit' => 'em', 'size' => 1 ],
+						'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+					] ),
+				],
+			];
+
+			$marker_row = [
+				'id' => $id . '-marker-row-' . (string) $step_number,
+				'elType' => 'container',
+				'settings' => [
+					'container_type' => 'flex',
+					'content_width' => 'full',
+					'flex_direction' => 'row',
+					'flex_wrap' => 'nowrap',
+					'flex_align_items' => 'center',
 					'flex_justify_content' => 'flex-start',
-					'flex_align_items' => 'stretch',
-					'flex_gap' => $track_gap,
-					'flex_gap_mobile' => $track_gap,
+					'padding' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
 					'_element_width' => 'initial',
 					'_flex_size' => 'grow',
 					'_flex_grow' => 1,
 					'_flex_shrink' => 1,
 				],
-				'elements' => [ $rail_row, $cards_row ],
-			],
-		];
+				'elements' => [ $marker ],
+			];
+			if ( $step_number < $step_count ) {
+				$marker_row['elements'][] = $widget( $id . '-connector-line-' . (string) $step_number, 'divider', [
+					'style' => 'solid',
+					'weight' => [ 'unit' => 'px', 'size' => 1, 'sizes' => [] ],
+					'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'align' => 'left',
+					'color' => '#000',
+					'gap' => [ 'unit' => 'px', 'size' => 15, 'sizes' => [] ],
+				] );
+			}
+
+			$card_settings = [
+				'_css_classes' => 'wpae-process-content',
+				'container_type' => 'flex',
+				'content_width' => 'full',
+				'flex_direction' => 'column',
+				'flex_direction_mobile' => 'column',
+				'flex_wrap' => 'nowrap',
+				'flex_wrap_mobile' => 'nowrap',
+				'flex_align_items' => 'stretch',
+				'flex_align_items_mobile' => 'stretch',
+				'flex_gap' => [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ],
+				'flex_gap_mobile' => [ 'column' => '0.4', 'row' => '0.4', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.4' ],
+				'background_background' => 'classic',
+				'background_color' => '#ffffff',
+				'border_border' => 'solid',
+				'border_color' => '#dbe3f0',
+				'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+				'border_radius' => [ 'unit' => 'px', 'size' => 0.75, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ],
+				'padding' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ],
+				'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ],
+			];
+			wpae_llm_set_variant_container_width( $card_settings, $step_width );
+			$card_settings['_flex_shrink_mobile'] = 1;
+
+			$timeline['elements'][] = [
+				'id' => $id . '-content-' . (string) $step_number,
+				'elType' => 'container',
+				'settings' => $card_settings,
+				'elements' => [
+					$marker_row,
+					$widget( $id . '-title-' . (string) $step_number, 'heading', [
+						'title' => $step_label,
+						'header_size' => 'h3',
+						'title_color' => '#111827',
+						'align' => 'left',
+						'typography_typography' => 'custom',
+						'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.35 ],
+						'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.1 ],
+						'typography_font_weight' => '700',
+						'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+						'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.25 ],
+						'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+					] ),
+					$widget( $id . '-copy-' . (string) $step_number, 'text-editor', [
+						'editor' => $step_copy,
+						'text_color' => '#667085',
+						'align' => 'left',
+						'typography_typography' => 'custom',
+						'typography_font_size' => [ 'unit' => 'rem', 'size' => 1 ],
+						'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.95 ],
+						'typography_line_height' => [ 'unit' => 'em', 'size' => 1.5 ],
+						'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.45 ],
+						'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+					] ),
+				],
+			];
+		}
 	}
 
 	return $timeline;
@@ -5500,8 +5451,8 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                 $settings['_wpae_visual_variant'] = $variant;
                 $settings['_wpae_visual_layout'] = $layout;
                 $settings['flex_direction'] = $archetype === 'process' && $process_layout === 'horizontal' ? 'row' : ( $archetype === 'process' || $has_content_shell ? 'column' : ( in_array( $layout, [ 1, 5 ], true ) ? 'row' : 'column' ) );
-                $settings['flex_wrap'] = $archetype === 'process' && $process_layout === 'horizontal' ? 'wrap' : ( $archetype === 'process' || $has_content_shell ? 'nowrap' : ( in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap' ) );
-                $settings['flex_justify_content'] = $archetype === 'process' && $process_layout === 'horizontal' ? 'space-between' : ( $archetype === 'process' || $has_content_shell ? 'flex-start' : ( $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' ) ) );
+                $settings['flex_wrap'] = $archetype === 'process' && $process_layout === 'horizontal' ? 'nowrap' : ( $archetype === 'process' || $has_content_shell ? 'nowrap' : ( in_array( $layout, [ 1, 5 ], true ) ? 'wrap' : 'nowrap' ) );
+                $settings['flex_justify_content'] = $archetype === 'process' && $process_layout === 'horizontal' ? 'flex-start' : ( $archetype === 'process' || $has_content_shell ? 'flex-start' : ( $layout === 5 ? 'space-between' : ( $layout === 1 ? 'flex-start' : 'center' ) ) );
                 $settings['flex_align_items'] = $archetype === 'process' || $has_content_shell ? 'stretch' : ( $layout === 1 ? 'stretch' : 'flex-start' );
                 if ( $archetype === 'process' || $has_content_shell || in_array( $layout, [ 1, 5 ], true ) ) {
                     foreach ( $element['elements'] as &$top_child ) {
@@ -5512,7 +5463,7 @@ function wpae_llm_apply_fallback_variant_recursive( array &$elements, string $ar
                         $top_child_classes = preg_split( '/\s+/', trim( (string) ( $top_child_settings['_css_classes'] ?? '' ) ) );
                         $top_child_type = (string) ( $top_child['widgetType'] ?? '' );
                         if ( $archetype === 'process' ) {
-                            wpae_llm_set_variant_container_width( $top_child_settings, $process_layout === 'horizontal' ? 24 : 100 );
+                            wpae_llm_set_variant_container_width( $top_child_settings, $process_layout === 'horizontal' ? 22 : 100 );
                         } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-generated-badge', $top_child_classes, true ) ) {
                             wpae_llm_set_variant_container_width( $top_child_settings, 100 );
                         } elseif ( is_array( $top_child_classes ) && in_array( 'wpae-generated-content-shell', $top_child_classes, true ) ) {
