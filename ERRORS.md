@@ -31,6 +31,20 @@ before making a new change to the plugin.
   editor write, saved revision, DOM/rendered HTML, and desktop/mobile screenshot
   verification are still required.
 
+## EJ-107: Empty process page still depended on the provider
+
+- **Confirmed (2026-09-10, live post 4556):** A fresh editor/public load had
+  no saved Elementor root, so the process prompt could not enter selected-root
+  repair and reached `openrouter/free`; the provider returned HTTP 200 with
+  `finish_reason: length` and no usable JSON.
+- **Fix (v02.11.75):** When an explicit process request has no selected
+  elements, build the canonical timeline locally and pass it through the same
+  Elementor preflight/update transaction. Detailed prompts preserve their
+  quoted step labels. Existing vertical variants are not selected or rewritten
+  by this no-selection insert path.
+- **Status:** Local checks pass. Live generation and saved JSON/DOM/rendered
+  HTML/screenshots are pending the v02.11.75 deployment.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero

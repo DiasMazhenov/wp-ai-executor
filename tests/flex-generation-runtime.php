@@ -268,6 +268,9 @@ $legacy_horizontal_root = container_node( 'legacy-horizontal-root', [ 'container
     ] ),
 ] );
 check( wpae_llm_is_process_timeline_root( $legacy_horizontal_root ), 'Legacy horizontal root without its marker class was not recognised' );
+$detailed_process_message = 'Обнови выбранный горизонтальный таймлайн строго по эталонной карточке: повтори структуру для «Замысел», «Съёмка», «Монтаж», «Публикация».';
+$detailed_steps = wpae_llm_process_timeline_steps( $detailed_process_message );
+check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted labels in a detailed reference prompt were not preserved' );
 $vertical_timeline = wpae_llm_build_process_timeline(
     [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
     'vertical-process',

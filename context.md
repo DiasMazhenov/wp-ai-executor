@@ -2,14 +2,19 @@
 
 ## Current release
 
-- Plugin: `v02.11.74`
+- Plugin: `v02.11.75`
 - Guide: `v02.05.97`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.75: Adds a provider-independent process generation path when no
+  Elementor root is selected, preserving quoted labels from detailed prompts
+  such as `«Замысел», «Съёмка», «Монтаж», «Публикация»`. The canonical
+  horizontal reference structure is now generated and saved even when
+  `openrouter/free` is unavailable; local runtime coverage is 120 checks.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural
   repairs now stay on the deterministic canonical path instead of falling
-  through to `openrouter/free`; local runtime coverage is 119 checks.
+  through to `openrouter/free`.
 - v02.11.73: Aligns horizontal process/timeline generation with the supplied
   reference JSON instead of the previous shared rail/cards-row composition.
   Each horizontal step is now a direct `wpae-process-content` native Flexbox

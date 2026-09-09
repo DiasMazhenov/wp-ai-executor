@@ -3830,6 +3830,31 @@ function wpae_llm_process_timeline_steps( string $message, bool $allow_default =
         return $pairs;
     }
 
+    // A detailed editor repair prompt can repeat the requested step names as
+    // quoted labels without using the short "A, B, C" list form. Preserve the
+    // quoted sequence before falling back to the generic default steps.
+    $quoted_items = [];
+    if ( preg_match_all( '/«([^»]{2,80})»|"([^"\n]{2,80})"/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
+        foreach ( $quoted_matches as $match ) {
+            $candidate = trim( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) );
+            $clean     = wpae_llm_normalize_timeline_step_label( $candidate );
+            if ( $clean !== '' ) {
+                $quoted_items[] = $clean;
+            }
+        }
+    }
+    $quoted_items = array_values( array_unique( $quoted_items ) );
+    if ( count( $quoted_items ) >= 2 ) {
+        $result = [];
+        foreach ( array_slice( $quoted_items, 0, 6 ) as $index => $name ) {
+            $result[] = [
+                'label'   => $name,
+                'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ),
+            ];
+        }
+        return $result;
+    }
+
     // Recognise an explicit step list by structure, not by keyword: a numbered
     // list, a markdown-style bullet list, a "label: a, b, c" tail, or a tail
     // after an em-dash that contains a list separator. Plain prose never
@@ -7653,6 +7678,33 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 return new WP_Error( 'wpae_llm_action_failed', 'Не удалось выполнить локальный responsive-ремонт таймлайна.', [ 'status' => 422, 'details' => $deterministic_process_repair ] );
             }
         }
+    }
+    if ( $action_request && ! $targeted_edit && ! $vision_repair && $selected_post_id > 0 && empty( $selected_element_ids ) && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_action' ) ) {
+        $local_steps = wpae_llm_process_timeline_steps( $message );
+        $local_action = [
+            'action'   => 'insert_elements',
+            'post_id'  => $selected_post_id,
+            'position' => 'end',
+            'elements' => [ wpae_llm_build_process_timeline( $local_steps, 'wpae-process-timeline', wpae_llm_process_timeline_layout( $message ) ) ],
+        ];
+        $local_execution = wpae_llm_execute_action( $local_action, $selected_post_id, $action_archetype, -1, $message, false );
+        $local_execution['steps'] = array_merge(
+            [ [ 'id' => 'deterministic_process_generation', 'status' => ! empty( $local_execution['ok'] ) ? 'ok' : 'failed', 'message' => 'Новый горизонтальный таймлайн собран локальным canonical-пайплайном по эталонному JSON без вызова LLM-провайдера.', 'details' => [ 'layout' => wpae_llm_process_timeline_layout( $message ), 'step_count' => count( $local_steps ), 'provider_bypassed' => true ] ] ],
+            (array) ( $local_execution['steps'] ?? [] )
+        );
+        if ( empty( $local_execution['ok'] ) ) {
+            return new WP_Error( 'wpae_llm_action_failed', 'Не удалось локально создать горизонтальный таймлайн в Elementor.', [ 'status' => 422, 'details' => $local_execution ] );
+        }
+        return new WP_REST_Response( [
+            'ok'           => true,
+            'message'      => 'Горизонтальный таймлайн создан локальным Elementor-пайплайном по эталонной структуре.',
+            'operation_id' => $local_execution['operation_id'] ?? null,
+            'action'       => $local_execution['action'] ?? 'insert_elements',
+            'write'        => $local_execution,
+            'steps'        => $local_execution['steps'],
+            'provider'     => $runtime['provider'],
+            'model'        => $runtime['model'],
+        ], 200 );
     }
     $content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
     $library_retrieval = [
