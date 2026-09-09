@@ -44,8 +44,8 @@ const blockLibrary = read('includes/elementor/block-library.php');
 assert.match(transport, /'openai'/);
 assert.match(transport, /'deepseek'/);
 assert.match(transport, /'openrouter'/);
-assert.match(bootstrap, /Version:\s+v02\.11\.79/);
-assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.79'/);
+assert.match(bootstrap, /Version:\s+v02\.11\.80/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.80'/);
 assert.match(transport, /'model' => 'openrouter\/free'/);
 assert.match(transport, /'gemini'/);
 assert.match(transport, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
@@ -1028,6 +1028,9 @@ assert.match(llm, /\$is_marked_card_heading = .*wpae-card-heading/);
 assert.match(transactions, /Elementor\\Core\\Files\\CSS\\Post::create\( \$post_id \)->delete\(\)/);
 assert.match(transactions, /ASSETS_META_KEY/);
 assert.match(transactions, /elementor\/atomic-widgets\/styles\/clear/);
+assert.match(transactions, /function wpae_clear_current_elementor_autosave/);
+assert.match(transactions, /wp_get_post_autosave\( \$post_id \)/);
+assert.match(transactions, /wpae_elementor_autosave_clear_failed/);
 // GET /elementor/rendered-html: server-side rendered-HTML verification for
 // acceptance checks without a browser (EJ-086 process correction).
 assert.match(routes, /'\/elementor\/rendered-html'/);

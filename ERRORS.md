@@ -111,6 +111,22 @@ before making a new change to the plugin.
 - **Status:** Local reconciliation/runtime coverage passes. Live v02.11.79
   editor screenshot and mobile acceptance must be re-run after deployment.
 
+## EJ-112: Elementor editor bootstrapped a stale current-user autosave
+
+- **Confirmed (2026-09-10, live post 4556):** The public rendered page and
+  saved root `11d360f` were correct, but Elementor's `initial_document`
+  contained four old top-level roots. WordPress revision data identified
+  autosave `4975` (`10.09.2026 03:00`) as the source of that editor-only state.
+- **Root cause:** Structured writes updated `_elementor_data` and cleared
+  Elementor CSS/cache, but did not clear the current user's Elementor autosave.
+  Elementor preferred that autosave while bootstrapping the editor, so a full
+  editor reload kept showing stale prompt roots.
+- **Fix (v02.11.80):** After a successful structured Elementor write, delete the
+  current user's post autosave before the next editor bootstrap. A failed
+  autosave deletion is returned as a transaction error instead of being hidden.
+- **Status:** Live v02.11.80 deployment and editor reload/mobile acceptance
+  remain required.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero

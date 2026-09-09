@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.79`
+- Plugin: `v02.11.80`
 - Guide: `v02.05.98`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -31,6 +31,10 @@
   prompt-generated roots according to the saved top-level ID list, so the
   selected root's badge, section heading, cards, and native Dividers are
   visible in the editor as well as in rendered HTML.
+- v02.11.80: Clears the current user's stale Elementor autosave after a
+  successful structured write. WordPress otherwise bootstraps that autosave in
+  the editor and can hide newer saved `_elementor_data` behind old prompt roots;
+  the public page and the live editor now use the same saved source after reload.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural

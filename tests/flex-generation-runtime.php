@@ -77,6 +77,11 @@ function wp_remote_retrieve_response_code( $response ) { return $response['respo
 function wp_remote_retrieve_body( $response ) { return $response['body']; }
 function wp_remote_retrieve_header( $response, $name ) { return ''; }
 function get_post( $id, $output = null ) { return [ 'ID' => $id, 'post_title' => $GLOBALS['post_title'] ?? 'Existing page' ]; }
+function wp_get_post_autosave( $id ) { return $GLOBALS['test_autosave'] ?? null; }
+function wp_delete_post( $id, $force_delete = false ) {
+    $GLOBALS['deleted_autosaves'][] = [ 'id' => (int) $id, 'force' => (bool) $force_delete ];
+    return $GLOBALS['delete_autosave_result'] ?? (object) [ 'ID' => (int) $id ];
+}
 function get_post_meta( $id, $key = '', $single = false ) {
     $meta = [ '_elementor_data' => [ wp_json_encode( $GLOBALS['page_data'] ) ], '_elementor_css' => [ $GLOBALS['css_cache'] ?? '' ] ];
     return $key === '' ? $meta : ( $single ? ( $meta[ $key ][0] ?? '' ) : ( $meta[ $key ] ?? [] ) );
@@ -87,11 +92,22 @@ require __DIR__ . '/../includes/elementor/normalize.php';
 require __DIR__ . '/../includes/elementor/design-contract.php';
 require __DIR__ . '/../includes/elementor/validation.php';
 require __DIR__ . '/../includes/rollback/rollback.php';
+require __DIR__ . '/../includes/elementor/transactions.php';
 
 function check( $condition, $message ) {
     if ( ! $condition ) { throw new RuntimeException( $message ); }
     $GLOBALS['checks'] = ( $GLOBALS['checks'] ?? 0 ) + 1;
 }
+
+$GLOBALS['test_autosave'] = (object) [ 'ID' => 4975 ];
+$GLOBALS['deleted_autosaves'] = [];
+$GLOBALS['delete_autosave_result'] = (object) [ 'ID' => 4975 ];
+$autosave_report = wpae_clear_current_elementor_autosave( 4556 );
+check( ! empty( $autosave_report['cleared'] ) && $autosave_report['status'] === 'cleared', 'Current Elementor autosave was not cleared after a structured save' );
+check( $autosave_report['autosave_id'] === 4975 && count( $GLOBALS['deleted_autosaves'] ) === 1, 'Autosave cleanup did not target the current autosave exactly once' );
+$GLOBALS['test_autosave'] = null;
+$autosave_none_report = wpae_clear_current_elementor_autosave( 4556 );
+check( ! empty( $autosave_none_report['cleared'] ) && $autosave_none_report['status'] === 'none', 'Autosave cleanup did not accept a page without an autosave' );
 function widget( $id, $type, $settings ) { return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ]; }
 function container_node( $id, $settings, $children ) { return [ 'id' => $id, 'elType' => 'container', 'settings' => $settings, 'elements' => $children ]; }
 function provider_reply( $reply ) { return [ 'response' => [ 'code' => 200 ], 'body' => wp_json_encode( [ 'choices' => [ [ 'finish_reason' => 'stop', 'message' => [ 'content' => $reply ] ] ] ] ) ]; }

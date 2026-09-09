@@ -87,6 +87,55 @@ function wpae_clear_elementor_cache( int $post_id ): array {
     return $report;
 }
 
+/**
+ * Elementor prefers the current user's WordPress autosave when bootstrapping
+ * the editor. A stale autosave can therefore hide a newer, valid
+ * _elementor_data value in the live canvas even though the public page is
+ * correct. Once a structured write succeeds, the saved page supersedes that
+ * draft and the autosave must not shadow it on the next editor load.
+ */
+function wpae_clear_current_elementor_autosave( int $post_id ): array {
+    $report = [
+        'post_id' => $post_id,
+        'autosave_id' => 0,
+        'status' => 'not_checked',
+        'cleared' => false,
+        'errors' => [],
+    ];
+
+    if ( $post_id <= 0 || ! function_exists( 'wp_get_post_autosave' ) ) {
+        $report['status'] = 'unsupported';
+        $report['cleared'] = true;
+        return $report;
+    }
+
+    $autosave = wp_get_post_autosave( $post_id );
+    if ( ! $autosave || empty( $autosave->ID ) ) {
+        $report['status'] = 'none';
+        $report['cleared'] = true;
+        return $report;
+    }
+
+    $autosave_id = absint( $autosave->ID );
+    $report['autosave_id'] = $autosave_id;
+    if ( $autosave_id <= 0 || ! function_exists( 'wp_delete_post' ) ) {
+        $report['status'] = 'invalid';
+        $report['errors'][] = 'The current Elementor autosave could not be resolved for deletion.';
+        return $report;
+    }
+
+    $deleted = wp_delete_post( $autosave_id, true );
+    if ( false === $deleted ) {
+        $report['status'] = 'delete_failed';
+        $report['errors'][] = 'The current Elementor autosave could not be deleted.';
+        return $report;
+    }
+
+    $report['status'] = 'cleared';
+    $report['cleared'] = true;
+    return $report;
+}
+
 function wpae_save_elementor_page_data( int $post_id, array $elementor_data, string $template = 'elementor_canvas' ) {
     if ( $post_id <= 0 || get_post( $post_id ) === null ) {
         return new WP_Error( 'wpae_invalid_post_id', 'A valid post_id is required.' );
@@ -107,6 +156,11 @@ function wpae_save_elementor_page_data( int $post_id, array $elementor_data, str
     $cache = wpae_clear_elementor_cache( $post_id );
     if ( empty( $cache['ok'] ) ) {
         return new WP_Error( 'wpae_elementor_cache_clear_failed', 'Elementor cache clearing failed after metadata write.', [ 'cache' => $cache ] );
+    }
+
+    $autosave = wpae_clear_current_elementor_autosave( $post_id );
+    if ( empty( $autosave['cleared'] ) ) {
+        return new WP_Error( 'wpae_elementor_autosave_clear_failed', 'Elementor data was saved, but the current editor autosave could not be cleared.', [ 'autosave' => $autosave ] );
     }
 
     return true;
