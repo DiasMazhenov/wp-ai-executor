@@ -10,6 +10,12 @@
   such as `«Замысел», «Съёмка», «Монтаж», «Публикация»`. The canonical
   horizontal reference structure is now generated and saved even when
   `openrouter/free` is unavailable; local runtime coverage is 120 checks.
+  Live post 4556 now reports v02.11.75: the editor trace completed the
+  preflight/update transaction with HTTP 200, and a fresh editor reload
+  retained root `11d360f`, four direct reference cards, and three native
+  Divider widgets. Public rendered HTML contains all four labels and three
+  Divider widgets; desktop and mobile previews were checked, with mobile
+  body/root width 345px and no horizontal overflow.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural
@@ -21,8 +27,8 @@
   card containing a marker row, a native Divider for steps 1–3, a heading, and
   a text-editor; cards use the reference 20px radius, surface, padding, 22%
   desktop width, and 100% mobile width. The vertical left/alternating
-  structures remain separate and unchanged. Live post-4556 editor acceptance
-  is required before release claim.
+  structures remain separate and unchanged. Live reference acceptance is
+  recorded above after the v02.11.75 generation path was deployed.
 - v02.11.72: Treats quoted labeled CTA copy such as `Кнопка: «Обсудить
   проект», ссылка #contact` as an explicit semantic-plan requirement, so
   fallback normalization preserves the native button instead of removing it

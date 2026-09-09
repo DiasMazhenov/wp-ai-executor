@@ -27,9 +27,12 @@ before making a new change to the plugin.
   to `openrouter/free`, where the response ended with `finish_reason: length`.
 - **Fix (v02.11.74):** Recognise that legacy child signature as a process root
   and keep the selected repair on the local canonical rebuild path.
-- **Status:** Local runtime and contract regressions pass. Live post-4556
-  editor write, saved revision, DOM/rendered HTML, and desktop/mobile screenshot
-  verification are still required.
+- **Status:** Fixed and accepted on live post 4556 after v02.11.75 deployment.
+  A fresh editor reload retained the canonical root with four direct cards and
+  three native Divider widgets. The public rendered HTML contains all four
+  labels and three Divider widgets; desktop and mobile screenshots were
+  checked, and the mobile body/root stayed at 345px with no horizontal
+  overflow. Vertical variants were not rewritten.
 
 ## EJ-107: Empty process page still depended on the provider
 
@@ -42,8 +45,12 @@ before making a new change to the plugin.
   Elementor preflight/update transaction. Detailed prompts preserve their
   quoted step labels. Existing vertical variants are not selected or rewritten
   by this no-selection insert path.
-- **Status:** Local checks pass. Live generation and saved JSON/DOM/rendered
-  HTML/screenshots are pending the v02.11.75 deployment.
+- **Status:** Fixed and accepted on live post 4556. The editor header reports
+  v02.11.75; the chat trace records the local canonical generation,
+  preflight/update HTTP 200, and confirmed Elementor write. A fresh editor
+  reload retained the saved JSON/DOM structure, and a public cache-busted load
+  returned all four labels plus three native Divider widgets. Desktop/mobile
+  screenshots and mobile no-overflow metrics were verified.
 
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
