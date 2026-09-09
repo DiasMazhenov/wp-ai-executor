@@ -235,14 +235,20 @@ $reference_timeline = wpae_llm_build_process_timeline(
     'horizontal'
 );
 $reference_settings = $reference_timeline['settings'];
-check( $reference_settings['flex_direction'] === 'row' && $reference_settings['flex_direction_mobile'] === 'column', 'Horizontal reference timeline did not get responsive row/stack layout' );
+check( $reference_settings['flex_direction'] === 'column' && $reference_settings['flex_direction_mobile'] === 'column', 'Horizontal reference timeline header shell is not responsive column layout' );
 check( $reference_settings['flex_wrap'] === 'nowrap' && $reference_settings['flex_wrap_mobile'] === 'nowrap', 'Horizontal reference timeline can wrap unexpectedly' );
-check( count( $reference_timeline['elements'] ) === 4, 'Horizontal reference timeline does not have four direct cards' );
+$reference_badge = $reference_timeline['elements'][0] ?? [];
+$reference_heading = $reference_timeline['elements'][1] ?? [];
+$reference_items = $reference_timeline['elements'][2] ?? [];
+check( ( $reference_badge['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' && ( $reference_badge['elements'][0]['settings']['title'] ?? '' ) === 'ПРОЦЕСС', 'Horizontal reference timeline is missing the process badge' );
+check( ( $reference_heading['widgetType'] ?? '' ) === 'heading' && ( $reference_heading['settings']['_css_classes'] ?? '' ) === 'wpae-process-heading' && ( $reference_heading['settings']['title'] ?? '' ) === 'Как мы работаем', 'Horizontal reference timeline is missing its section heading' );
+check( ( $reference_items['settings']['_css_classes'] ?? '' ) === 'wpae-process-items' && $reference_items['settings']['flex_direction'] === 'row' && $reference_items['settings']['flex_direction_mobile'] === 'column', 'Horizontal reference timeline items row is not responsive' );
+check( count( $reference_items['elements'] ?? [] ) === 4, 'Horizontal reference timeline does not have four direct cards in its items row' );
 check( strpos( (string) wp_json_encode( $reference_timeline ), 'wpae-process-track' ) === false, 'Horizontal reference timeline retained the shared track wrapper' );
 check( strpos( (string) wp_json_encode( $reference_timeline ), 'wpae-process-rail' ) === false, 'Horizontal reference timeline retained the shared rail wrapper' );
 check( strpos( (string) wp_json_encode( $reference_timeline ), 'wpae-process-cards' ) === false, 'Horizontal reference timeline retained the shared cards wrapper' );
 $reference_dividers = 0;
-foreach ( $reference_timeline['elements'] as $reference_index => $reference_card ) {
+foreach ( $reference_items['elements'] as $reference_index => $reference_card ) {
     $card_settings = $reference_card['settings'];
     $card_classes = preg_split( '/\s+/', trim( (string) ( $card_settings['_css_classes'] ?? '' ) ) );
     check( in_array( 'wpae-process-content', $card_classes, true ), 'Reference timeline child is not a process-content card' );
@@ -271,6 +277,12 @@ check( wpae_llm_is_process_timeline_root( $legacy_horizontal_root ), 'Legacy hor
 $detailed_process_message = 'Обнови выбранный горизонтальный таймлайн строго по эталонной карточке: повтори структуру для «Замысел», «Съёмка», «Монтаж», «Публикация».';
 $detailed_steps = wpae_llm_process_timeline_steps( $detailed_process_message );
 check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted labels in a detailed reference prompt were not preserved' );
+$rebuilt_steps = wpae_llm_process_timeline_steps_from_elements( [ $reference_timeline ] );
+check( array_column( $rebuilt_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Process step reader did not ignore the horizontal badge/heading shell' );
+$contract_changed = 0;
+$contract_timeline = wpae_llm_enforce_process_timeline_contract( [ $reference_timeline ], $detailed_process_message, $contract_changed )[0] ?? [];
+$contract_json = wp_json_encode( $contract_timeline );
+check( substr_count( (string) $contract_json, '"wpae-generated-badge"' ) === 1 && substr_count( (string) $contract_json, '"wpae-process-heading"' ) === 1, 'Process contract duplicated or dropped the horizontal badge/heading shell' );
 $vertical_timeline = wpae_llm_build_process_timeline(
     [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
     'vertical-process',

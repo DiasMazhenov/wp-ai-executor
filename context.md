@@ -2,20 +2,22 @@
 
 ## Current release
 
-- Plugin: `v02.11.75`
-- Guide: `v02.05.97`
+- Plugin: `v02.11.76`
+- Guide: `v02.05.98`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
+  the horizontal reference timeline, keeping the four reference cards inside
+  a responsive items row. The step reader ignores that semantic shell, and
+  vertical timelines remain unchanged.
 - v02.11.75: Adds a provider-independent process generation path when no
   Elementor root is selected, preserving quoted labels from detailed prompts
   such as `«Замысел», «Съёмка», «Монтаж», «Публикация»`. The canonical
   horizontal reference structure is now generated and saved even when
   `openrouter/free` is unavailable; local runtime coverage is 120 checks.
-  Live post 4556 now reports v02.11.75: the editor trace completed the
-  preflight/update transaction with HTTP 200, and a fresh editor reload
-  retained root `11d360f`, four direct reference cards, and three native
-  Divider widgets. Public rendered HTML contains all four labels and three
-  Divider widgets; desktop and mobile previews were checked, with mobile
-  body/root width 345px and no horizontal overflow.
+  The v02.11.75 live check found that this deterministic path saved the cards
+  and Dividers but omitted the standard badge and section heading; v02.11.76
+  closes that gap and requires a fresh live write/reload before acceptance is
+  re-recorded.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural
@@ -28,7 +30,7 @@
   a text-editor; cards use the reference 20px radius, surface, padding, 22%
   desktop width, and 100% mobile width. The vertical left/alternating
   structures remain separate and unchanged. Live reference acceptance is
-  recorded above after the v02.11.75 generation path was deployed.
+  recorded only after the v02.11.76 badge/heading correction is deployed.
 - v02.11.72: Treats quoted labeled CTA copy such as `Кнопка: «Обсудить
   проект», ссылка #contact` as an explicit semantic-plan requirement, so
   fallback normalization preserves the native button instead of removing it

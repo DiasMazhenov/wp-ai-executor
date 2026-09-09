@@ -3983,7 +3983,42 @@ function wpae_llm_process_timeline_layout( string $message ): string {
 	return 'left';
 }
 
-function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-process-timeline', ?string $layout = 'left' ): array {
+function wpae_llm_process_timeline_heading( string $message = '' ): string {
+	if ( preg_match( '/(?:заголовок|название|title)\s*[:\-]\s*[«"“„]([^»"”]+)[»"”]/iu', $message, $match ) ) {
+		$title = trim( wp_strip_all_tags( (string) ( $match[1] ?? '' ) ) );
+		if ( $title !== '' ) {
+			return $title;
+		}
+	}
+
+	return 'Как мы работаем';
+}
+
+function wpae_llm_process_timeline_heading_from_elements( array $elements ): string {
+	foreach ( $elements as $element ) {
+		if ( ! is_array( $element ) ) {
+			continue;
+		}
+		$settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+		$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+		if ( ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'heading' && is_array( $classes ) && in_array( 'wpae-process-heading', $classes, true ) ) {
+			$title = trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) );
+			if ( $title !== '' ) {
+				return $title;
+			}
+		}
+		if ( is_array( $element['elements'] ?? null ) ) {
+			$title = wpae_llm_process_timeline_heading_from_elements( $element['elements'] );
+			if ( $title !== '' ) {
+				return $title;
+			}
+		}
+	}
+
+	return '';
+}
+
+function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-process-timeline', ?string $layout = 'left', ?string $section_title = null ): array {
 	$layout = in_array( $layout, [ 'left', 'alternating', 'horizontal' ], true ) ? $layout : 'left';
     $widget = static function ( string $widget_id, string $type, array $settings = [] ): array {
         return [ 'id' => $widget_id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
@@ -4302,7 +4337,7 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		$timeline['settings']['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 		$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
-		$timeline['elements'] = [];
+		$horizontal_cards = [];
 
 		foreach ( $timeline_steps as $index => $source_step ) {
 			$step_number = $index + 1;
@@ -4416,7 +4451,7 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 			wpae_llm_set_variant_container_width( $card_settings, $step_width );
 			$card_settings['_flex_shrink_mobile'] = 1;
 
-			$timeline['elements'][] = [
+			$horizontal_cards[] = [
 				'id' => $id . '-content-' . (string) $step_number,
 				'elType' => 'container',
 				'settings' => $card_settings,
@@ -4449,25 +4484,86 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				],
 			];
 		}
+
+		$section_title = trim( wp_strip_all_tags( (string) ( $section_title ?? '' ) ) );
+		if ( $section_title === '' ) {
+			$section_title = 'Как мы работаем';
+		}
+		$timeline['settings']['flex_direction'] = 'column';
+		$timeline['settings']['flex_direction_mobile'] = 'column';
+		$timeline['settings']['flex_wrap'] = 'nowrap';
+		$timeline['settings']['flex_wrap_mobile'] = 'nowrap';
+		$timeline['settings']['flex_align_items'] = 'stretch';
+		$timeline['settings']['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+		$timeline['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+		$timeline['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+		$timeline['elements'] = [
+			wpae_llm_badge_widget( $id . '-badge', 'process' ),
+			$widget( $id . '-heading', 'heading', [
+				'title' => $section_title,
+				'header_size' => 'h2',
+				'_css_classes' => 'wpae-process-heading',
+				'title_color' => '#111827',
+				'align' => 'left',
+				'typography_typography' => 'custom',
+				'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.25 ],
+				'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.75 ],
+				'typography_font_weight' => '700',
+				'typography_line_height' => [ 'unit' => 'em', 'size' => 1.1 ],
+				'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.15 ],
+				'margin' => [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+			] ),
+			[
+				'id' => $id . '-items',
+				'elType' => 'container',
+				'settings' => [
+					'_css_classes' => 'wpae-process-items',
+					'container_type' => 'flex',
+					'content_width' => 'full',
+					'flex_direction' => 'row',
+					'flex_direction_mobile' => 'column',
+					'flex_wrap' => 'nowrap',
+					'flex_wrap_mobile' => 'nowrap',
+					'flex_justify_content' => 'flex-start',
+					'flex_align_items' => 'stretch',
+					'flex_gap' => [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ],
+					'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+					'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'_element_width' => 'initial',
+					'_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'_element_width_mobile' => 'initial',
+					'_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'_flex_size' => 'custom',
+					'_flex_grow' => 0,
+					'_flex_shrink' => 0,
+					'_flex_size_mobile' => 'custom',
+					'_flex_grow_mobile' => 0,
+					'_flex_shrink_mobile' => 0,
+				],
+				'elements' => $horizontal_cards,
+			],
+		];
 	}
 
 	return $timeline;
 }
 
 function wpae_llm_process_timeline_steps_from_elements( array $elements ): array {
-    $read_step = static function ( array $step ) use ( &$read_step ): array {
-        $title = '';
-        $copy = '';
-        $walk = static function ( array $nodes ) use ( &$walk, &$title, &$copy ): void {
-            foreach ( $nodes as $node ) {
-                if ( ! is_array( $node ) ) {
-                    continue;
-                }
-                $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
-                $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-                if ( is_array( $classes ) && array_intersect( [ 'wpae-process-marker', 'wpae-process-connector', 'wpae-process-marker-column' ], $classes ) ) {
-                    continue;
-                }
+	$read_step = static function ( array $step ) use ( &$read_step ): array {
+		$title = '';
+		$copy = '';
+		$walk = static function ( array $nodes ) use ( &$walk, &$title, &$copy ): void {
+			foreach ( $nodes as $node ) {
+				if ( ! is_array( $node ) ) {
+					continue;
+				}
+				$settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+				$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+				if ( is_array( $classes ) && array_intersect( [ 'wpae-generated-badge', 'wpae-process-heading', 'wpae-process-items', 'wpae-process-marker', 'wpae-process-connector', 'wpae-process-marker-column' ], $classes ) ) {
+					continue;
+				}
                 if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' && $title === '' ) {
                     $title = trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) );
                 } elseif ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'text-editor' && $copy === '' ) {
@@ -4477,71 +4573,77 @@ function wpae_llm_process_timeline_steps_from_elements( array $elements ): array
                     $walk( $node['elements'] );
                 }
             }
-        };
-        $walk( [ $step ] );
-        return [ 'label' => $title, 'content' => $copy ];
-    };
-    $found = [];
-    $walk = static function ( array $nodes ) use ( &$walk, &$found, $read_step ): void {
-        foreach ( $nodes as $node ) {
-            if ( ! is_array( $node ) ) {
-                continue;
-            }
-            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
-            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-            $is_generated_shell = is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true );
-			if ( ( $node['elType'] ?? '' ) === 'container' && ! $is_generated_shell && is_array( $classes ) && ( in_array( 'wpae-process-timeline', $classes, true ) || in_array( 'wpae-bento-grid', $classes, true ) ) ) {
-				foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
-					if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
-						$child_classes = preg_split( '/\s+/', trim( (string) ( $child['settings']['_css_classes'] ?? '' ) ) );
-						if ( is_array( $child_classes ) && array_intersect( [ 'wpae-generated-badge', 'wpae-generated-content-shell' ], $child_classes ) ) {
-							continue;
+		};
+		$walk( [ $step ] );
+		return [ 'label' => $title, 'content' => $copy ];
+	};
+	$found = [];
+	$add_step = static function ( array $step ) use ( &$found ): void {
+		$step_data = [
+			'label' => trim( (string) ( $step['label'] ?? '' ) ),
+			'content' => trim( (string) ( $step['content'] ?? '' ) ),
+		];
+		if ( $step_data['label'] !== '' || $step_data['content'] !== '' ) {
+			$found[] = $step_data;
+		}
+	};
+	$walk = static function ( array $nodes ) use ( &$walk, &$found, $read_step, $add_step ): void {
+		foreach ( $nodes as $node ) {
+			if ( ! is_array( $node ) ) {
+				continue;
+			}
+			$settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+			$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+			if ( is_array( $classes ) && array_intersect( [ 'wpae-generated-badge', 'wpae-process-heading' ], $classes ) ) {
+				continue;
+			}
+			if ( is_array( $classes ) && in_array( 'wpae-process-items', $classes, true ) ) {
+				foreach ( (array) ( $node['elements'] ?? [] ) as $card ) {
+					if ( ! is_array( $card ) || ( $card['elType'] ?? '' ) !== 'container' ) {
+						continue;
+					}
+					$card_classes = preg_split( '/\s+/', trim( (string) ( $card['settings']['_css_classes'] ?? '' ) ) );
+					if ( is_array( $card_classes ) && in_array( 'wpae-process-content', $card_classes, true ) ) {
+						$add_step( $read_step( $card ) );
+					}
+				}
+				continue;
+			}
+			if ( is_array( $classes ) && in_array( 'wpae-process-track', $classes, true ) ) {
+				// Legacy horizontal tracks own a marker rail row plus a cards row;
+				// vertical tracks own steps directly.
+				foreach ( (array) ( $node['elements'] ?? [] ) as $track_child ) {
+					if ( ! is_array( $track_child ) || ( $track_child['elType'] ?? '' ) !== 'container' ) {
+						continue;
+					}
+					$track_child_classes = preg_split( '/\s+/', trim( (string) ( $track_child['settings']['_css_classes'] ?? '' ) ) );
+					if ( is_array( $track_child_classes ) && in_array( 'wpae-process-rail', $track_child_classes, true ) ) {
+						continue;
+					}
+					$step_containers = is_array( $track_child_classes ) && in_array( 'wpae-process-cards', $track_child_classes, true )
+						? (array) ( $track_child['elements'] ?? [] )
+						: [ $track_child ];
+					foreach ( $step_containers as $track_step ) {
+						if ( is_array( $track_step ) && ( $track_step['elType'] ?? '' ) === 'container' ) {
+							$add_step( $read_step( $track_step ) );
 						}
-						if ( is_array( $child_classes ) && in_array( 'wpae-process-track', $child_classes, true ) ) {
-							// Horizontal tracks own a marker rail row plus a
-							// cards row; vertical tracks own steps directly.
-							foreach ( (array) ( $child['elements'] ?? [] ) as $track_child ) {
-								if ( ! is_array( $track_child ) || ( $track_child['elType'] ?? '' ) !== 'container' ) {
-									continue;
-								}
-								$track_child_classes = preg_split( '/\s+/', trim( (string) ( $track_child['settings']['_css_classes'] ?? '' ) ) );
-								if ( is_array( $track_child_classes ) && array_intersect( [ 'wpae-process-rail' ], $track_child_classes ) ) {
-									continue;
-								}
-								$step_containers = is_array( $track_child_classes ) && in_array( 'wpae-process-cards', $track_child_classes, true )
-									? (array) ( $track_child['elements'] ?? [] )
-									: [ $track_child ];
-								foreach ( $step_containers as $track_step ) {
-									if ( ! is_array( $track_step ) || ( $track_step['elType'] ?? '' ) !== 'container' ) {
-										continue;
-									}
-									$track_step_data = $read_step( $track_step );
-									if ( $track_step_data['label'] !== '' || $track_step_data['content'] !== '' ) {
-										$found[] = $track_step_data;
-									}
-								}
-							}
-							continue;
-						}
-						$step = $read_step( $child );
-                        if ( $step['label'] !== '' || $step['content'] !== '' ) {
-                            $found[] = $step;
-                        }
-                    }
-                }
-                if ( count( $found ) >= 2 ) {
-                    return;
-                }
-            }
-            if ( is_array( $node['elements'] ?? null ) ) {
-                $walk( $node['elements'] );
-                if ( count( $found ) >= 2 ) {
-                    return;
-                }
-            }
-        }
-    };
-    $walk( $elements );
+					}
+				}
+				continue;
+			}
+			if ( is_array( $classes ) && array_intersect( [ 'wpae-process-content', 'wpae-process-step' ], $classes ) ) {
+				$add_step( $read_step( $node ) );
+				continue;
+			}
+			if ( is_array( $node['elements'] ?? null ) ) {
+				$walk( $node['elements'] );
+				if ( count( $found ) >= 6 ) {
+					return;
+				}
+			}
+		}
+	};
+	$walk( $elements );
     return array_slice( $found, 0, 6 );
 }
 
@@ -4560,7 +4662,8 @@ function wpae_llm_normalize_process_timeline( array $elements, string $message, 
                 if ( count( $steps ) < 2 ) {
                     $steps = wpae_llm_process_timeline_steps( $message );
                 }
-                $element = wpae_llm_build_process_timeline( $steps, (string) ( $element['id'] ?? 'wpae-process-timeline' ), $layout );
+				$existing_heading = wpae_llm_process_timeline_heading_from_elements( [ $element ] );
+				$element = wpae_llm_build_process_timeline( $steps, (string) ( $element['id'] ?? 'wpae-process-timeline' ), $layout, $existing_heading !== '' ? $existing_heading : wpae_llm_process_timeline_heading( $message ) );
                 $changed++;
                 return true;
             }
@@ -4576,7 +4679,7 @@ function wpae_llm_normalize_process_timeline( array $elements, string $message, 
     }
 
     $steps = count( $message_steps ) >= 2 ? $message_steps : wpae_llm_process_timeline_steps( $message );
-    $timeline = wpae_llm_build_process_timeline( $steps, 'wpae-process-timeline', $layout );
+	$timeline = wpae_llm_build_process_timeline( $steps, 'wpae-process-timeline', $layout, wpae_llm_process_timeline_heading( $message ) );
     foreach ( $elements as &$root ) {
         if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
             continue;
@@ -4630,8 +4733,9 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, string $me
         if ( count( $steps ) < 2 ) {
             $steps = wpae_llm_process_timeline_steps( $message );
         }
-        $timeline = wpae_llm_build_process_timeline( $steps, (string) ( $root['id'] ?? 'wpae-process-timeline' ), $layout );
-        $badge = null;
+		$existing_heading = wpae_llm_process_timeline_heading_from_elements( [ $root ] );
+		$timeline = wpae_llm_build_process_timeline( $steps, (string) ( $root['id'] ?? 'wpae-process-timeline' ), $layout, $existing_heading !== '' ? $existing_heading : wpae_llm_process_timeline_heading( $message ) );
+		$badge = null;
         foreach ( (array) ( $root['elements'] ?? [] ) as $child ) {
             if ( ! is_array( $child ) ) {
                 continue;
@@ -4642,8 +4746,17 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, string $me
                 break;
             }
         }
-        if ( $badge !== null ) {
-            $timeline['elements'] = array_merge( [ $badge ], $timeline['elements'] );
+		if ( $badge !== null ) {
+			foreach ( (array) ( $timeline['elements'] ?? [] ) as $timeline_index => $timeline_child ) {
+				if ( ! is_array( $timeline_child ) ) {
+					continue;
+				}
+				$timeline_child_classes = preg_split( '/\s+/', trim( (string) ( $timeline_child['settings']['_css_classes'] ?? '' ) ) );
+				if ( is_array( $timeline_child_classes ) && in_array( 'wpae-generated-badge', $timeline_child_classes, true ) ) {
+					$timeline['elements'][ $timeline_index ] = $badge;
+					break;
+				}
+			}
         }
         $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $root_classes = preg_split( '/\s+/', trim( (string) ( $root_settings['_css_classes'] ?? '' ) ) );
@@ -6462,7 +6575,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Как проходит работа', 'header_size' => 'h2' ] ),
             $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Понятный маршрут от первой задачи до готовой страницы.' ] ),
-            wpae_llm_build_process_timeline( wpae_llm_process_timeline_steps( $message ), 'wpae-process-timeline', wpae_llm_process_timeline_layout( $message ) ),
+			wpae_llm_build_process_timeline( wpae_llm_process_timeline_steps( $message ), 'wpae-process-timeline', wpae_llm_process_timeline_layout( $message ), wpae_llm_process_timeline_heading( $message ) ),
             $widget( 'llm-button', 'button', [ 'text' => 'Начать проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'pricing' ) {
@@ -7685,7 +7798,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'action'   => 'insert_elements',
             'post_id'  => $selected_post_id,
             'position' => 'end',
-            'elements' => [ wpae_llm_build_process_timeline( $local_steps, 'wpae-process-timeline', wpae_llm_process_timeline_layout( $message ) ) ],
+			'elements' => [ wpae_llm_build_process_timeline( $local_steps, 'wpae-process-timeline', wpae_llm_process_timeline_layout( $message ), wpae_llm_process_timeline_heading( $message ) ) ],
         ];
         $local_execution = wpae_llm_execute_action( $local_action, $selected_post_id, $action_archetype, -1, $message, false );
         $local_execution['steps'] = array_merge(
