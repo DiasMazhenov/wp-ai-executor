@@ -27,10 +27,9 @@ before making a new change to the plugin.
   to `openrouter/free`, where the response ended with `finish_reason: length`.
 - **Fix (v02.11.74):** Recognise that legacy child signature as a process root
   and keep the selected repair on the local canonical rebuild path.
-- **Status:** The reference-card structure is fixed and accepted on live post
-  4556, but full horizontal-section acceptance is reopened by EJ-108 because
-  v02.11.75 omitted the standard badge and section heading. The saved cards,
-  Dividers, desktop/mobile geometry and vertical isolation remain verified.
+- **Status:** Superseded by the v02.11.80 live acceptance below. The saved
+  reference-card structure, native Dividers, desktop/mobile geometry and
+  vertical isolation remain intact.
 
 ## EJ-107: Empty process page still depended on the provider
 
@@ -43,9 +42,8 @@ before making a new change to the plugin.
   Elementor preflight/update transaction. Detailed prompts preserve their
   quoted step labels. Existing vertical variants are not selected or rewritten
   by this no-selection insert path.
-- **Status:** The provider-independent write path is fixed and its v02.11.75
-  transaction was accepted, but final visual acceptance is reopened by EJ-108
-  until v02.11.76 also persists the badge and section heading.
+- **Status:** Superseded by the v02.11.80 live acceptance below; the
+  provider-independent path remains the fallback for this process request.
 
 ## EJ-108: Deterministic horizontal timeline omitted the section shell
 
@@ -60,9 +58,8 @@ before making a new change to the plugin.
   around the unchanged reference-card structure. The step reader explicitly
   skips this shell, and the rule remains horizontal-only so vertical variants
   are not rewritten.
-- **Status:** Local regressions are being re-run. Live v02.11.76 deployment,
-  saved JSON/DOM/rendered HTML and desktop/mobile screenshot verification are
-  required before acceptance is re-recorded.
+- **Status:** Closed by the v02.11.80 live verification below. The current
+  saved JSON/DOM/rendered page contains the standard badge and section heading.
 
 ## EJ-109: Selected shell repair was routed back to the provider
 
@@ -78,9 +75,8 @@ before making a new change to the plugin.
   when the requested additions are embedded native badge, heading, Divider,
   connector, card, or step elements; unrelated new-block requests retain the
   old provider-generation route.
-- **Status:** Local targeted-classifier regression coverage passes. Live
-  v02.11.77 repair and full JSON/DOM/rendered-html/desktop/mobile acceptance
-  remain required.
+- **Status:** Closed by the v02.11.80 live verification below. The selected
+  horizontal repair remains deterministic and does not call the provider.
 
 ## EJ-110: Direct horizontal cards were not recognised as a selected root
 
@@ -91,8 +87,8 @@ before making a new change to the plugin.
 - **Fix (v02.11.78):** The root detector now accepts direct horizontal
   `wpae-process-content` cards and the canonical `wpae-process-items` row in
   addition to the existing root and legacy track signatures.
-- **Status:** Local legacy-root regression coverage added. Live v02.11.78
-  deterministic repair and full visual acceptance remain required.
+- **Status:** Closed by the v02.11.80 live verification below. The selected
+  root `11d360f` is recognized and persisted with the canonical structure.
 
 ## EJ-111: Editor preview retained stale prompt-generated roots after a saved repair
 
@@ -108,8 +104,9 @@ before making a new change to the plugin.
 - **Fix (v02.11.79):** Process repair now returns `after_top_level_ids`, and the
   editor sync reconciles root models after replacement before refreshing the
   preview. This removes stale local roots without changing vertical variants.
-- **Status:** Local reconciliation/runtime coverage passes. Live v02.11.79
-  editor screenshot and mobile acceptance must be re-run after deployment.
+- **Status:** Closed on live v02.11.80. A fresh editor bootstrap now has one
+  top-level root `11d360f`; editor DOM has no stale prompt-generated roots or
+  prompt text, and desktop/mobile screenshots show the requested shell/cards.
 
 ## EJ-112: Elementor editor bootstrapped a stale current-user autosave
 
@@ -124,8 +121,15 @@ before making a new change to the plugin.
 - **Fix (v02.11.80):** After a successful structured Elementor write, delete the
   current user's post autosave before the next editor bootstrap. A failed
   autosave deletion is returned as a transaction error instead of being hidden.
-- **Status:** Live v02.11.80 deployment and editor reload/mobile acceptance
-  remain required.
+- **Verification (2026-09-10, live post 4556 on v02.11.80):** The old
+  revision URL for autosave `4975` now redirects to the posts list instead of
+  exposing an autosave. A fresh editor bootstrap contains exactly one root
+  `11d360f`; its DOM has badge `ПРОЦЕСС`, heading `Как мы работаем`, four step
+  labels and three native Divider widgets. Mobile editor geometry is a
+  single-column stack at 345px with document scroll width equal to 345px.
+- **Status:** Closed after the live JSON/DOM/rendered-page and desktop/mobile
+  screenshot verification. The public page has one horizontal timeline root,
+  all four labels, the badge/heading, three native Dividers and no prompt text.
 
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 

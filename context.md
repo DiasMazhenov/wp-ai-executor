@@ -35,6 +35,13 @@
   successful structured write. WordPress otherwise bootstraps that autosave in
   the editor and can hide newer saved `_elementor_data` behind old prompt roots;
   the public page and the live editor now use the same saved source after reload.
+- Live acceptance (2026-09-10, post 4556, v02.11.80): Fresh editor JSON has
+  one root `11d360f` with the horizontal design-system classes, native badge
+  `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.
+  Editor DOM and public rendered page match that JSON; mobile editor geometry
+  stacks all four cards at 325px width with no horizontal overflow. Desktop and
+  mobile screenshots were reviewed, and stale autosave revision `4975` no
+  longer exists after reload.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural
