@@ -39,13 +39,16 @@
   timeline container after the badge/heading shell is assembled. The supplied
   reference card padding remains unchanged, and vertical timeline variants keep
   their existing settings.
-- Live acceptance (2026-09-10, post 4556, v02.11.80): Fresh editor JSON has
-  one root `11d360f` with the horizontal design-system classes, native badge
+- Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
+  one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.
-  Editor DOM and public rendered page match that JSON; mobile editor geometry
-  stacks all four cards at 325px width with no horizontal overflow. Desktop and
-  mobile screenshots were reviewed, and stale autosave revision `4975` no
-  longer exists after reload.
+  The main shell keeps `1.25/1.25/1.5/1.25rem` desktop padding and
+  `1/0.875/1.25/0.875rem` mobile padding; the reference card padding is
+  unchanged. Editor DOM and public rendered page match that JSON; mobile
+  editor geometry stacks all four cards at 345px with computed shell padding
+  `16px 14px 20px` and no horizontal overflow. Desktop and mobile screenshots
+  were reviewed, and the final saved page contains no duplicate root or prompt
+  text. Stale autosave revision `4975` no longer exists after reload.
 - v02.11.74: Recognises an older saved horizontal timeline even when its root
   lost `wpae-process-timeline` but retained the `wpae-process-track` /
   `wpae-process-rail` / `wpae-process-cards` children. Selected structural

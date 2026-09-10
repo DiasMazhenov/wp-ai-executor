@@ -131,6 +131,30 @@ before making a new change to the plugin.
   screenshot verification. The public page has one horizontal timeline root,
   all four labels, the badge/heading, three native Dividers and no prompt text.
 
+## EJ-113: Horizontal shell reset the main-container inner padding
+
+- **Confirmed (2026-09-10, live post 4556 on v02.11.80):** The saved
+  horizontal root `11d360f` had `padding` and `padding_mobile` set to zero,
+  so the badge, heading and card row touched the shell edges. The reference
+  card's own interior padding was present; the missing spacing was on the
+  main timeline container.
+- **Root cause:** The horizontal assembly branch explicitly reset the shell
+  `padding` and `padding_mobile` to linked zero values after building the
+  badge/heading/items wrapper.
+- **Fix (v02.11.81):** Restore responsive shell padding without changing the
+  reference card padding or vertical timeline variants: desktop
+  `1.25/1.25/1.5/1.25rem`, mobile `1/0.875/1.25/0.875rem`.
+- **Verification (2026-09-10, live post 4556):** The canonical root `95aae8b`
+  is the only saved top-level element. Fresh editor JSON contains the exact
+  responsive values; editor computed padding is `20px 20px 24px` on desktop
+  and `16px 14px 20px` on mobile. Editor DOM and public rendered HTML each
+  contain one horizontal root, the `ПРОЦЕСС` badge, `Как мы работаем`, all
+  four labels and three native Divider widgets. Mobile editor scroll width
+  equals its 345px client width. The temporary duplicate from the no-selection
+  insert test was removed in Elementor before the final save.
+- **Status:** Closed after live JSON, DOM, rendered-HTML and desktop/mobile
+  screenshot verification.
+
 ## EJ-104: Live hero retest was blocked by provider transport timeout
 
 - **Confirmed (2026-09-08, live post 4556 on v02.11.72):** The exact hero
