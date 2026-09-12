@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.84`
+- Plugin: `v02.11.85`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -59,6 +59,10 @@
   generic archetype scoring. The deterministic hero fallback now preserves the
   brand, heading, body, visual-panel copy, separate CTA buttons, terracotta
   palette, and mobile stacking. A runtime regression covers the exact live brief.
+- v02.11.85: Prevents quoted process shell copy (the default `Как мы работаем`
+  heading and `ПРОЦЕСС` badge) from becoming timeline cards. Content-only
+  process prompts now preserve exactly the requested step labels, while the
+  horizontal contract remains four cards with three native Divider widgets.
 - Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
   one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.

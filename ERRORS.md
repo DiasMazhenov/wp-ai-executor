@@ -2170,3 +2170,17 @@ before making a new change to the plugin.
 - **Regression:** `tests/flex-generation-runtime.php` now exercises detection,
   CTA parsing, exact copy preservation, no URL leakage, visual-panel creation,
   and mobile stacking through the full fallback pipeline.
+
+## EJ-119: Process shell labels became extra timeline cards
+
+- **Confirmed (2026-09-13, live editor, v02.11.84):** The canonical process
+  prompt produced six cards. The default heading `Как мы работаем` and badge
+  `ПРОЦЕСС` appeared as cards 1 and 2, followed by the four requested labels.
+- **Root cause:** The quoted-label branch of
+  `wpae_llm_process_timeline_steps()` treated every quoted phrase as a step;
+  it did not distinguish the process shell from requested step content.
+- **Fix (v02.11.85):** Filter only the known shell labels (default/explicit
+  heading and `ПРОЦЕСС`) before deduplicating quoted labels. Other quoted
+  labels remain valid user content.
+- **Regression:** The exact live process prompt now asserts four step labels,
+  four native process cards, and three native Divider widgets.

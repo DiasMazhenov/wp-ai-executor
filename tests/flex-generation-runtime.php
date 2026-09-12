@@ -368,6 +368,12 @@ check( wpae_llm_is_process_timeline_root( $legacy_direct_root ), 'Legacy horizon
 $detailed_process_message = 'Обнови выбранный горизонтальный таймлайн строго по эталонной карточке: повтори структуру для «Замысел», «Съёмка», «Монтаж», «Публикация».';
 $detailed_steps = wpae_llm_process_timeline_steps( $detailed_process_message );
 check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted labels in a detailed reference prompt were not preserved' );
+$content_only_process_message = 'Создай горизонтальный блок «Как мы работаем» с бейджем «ПРОЦЕСС». Четыре этапа строго в таком порядке: «Замысел», «Съёмка», «Монтаж», «Публикация». Между этапами используй native Divider, на телефоне расположи карточки вертикально.';
+$content_only_process_steps = wpae_llm_process_timeline_steps( $content_only_process_message );
+check( array_column( $content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted process shell labels were incorrectly promoted to timeline cards' );
+$content_only_process_timeline = wpae_llm_build_process_timeline( $content_only_process_steps, 'content-only-process', 'horizontal', 'Как мы работаем' );
+$content_only_process_json = wp_json_encode( $content_only_process_timeline );
+check( substr_count( (string) $content_only_process_json, '"wpae-process-content"' ) === 4 && substr_count( (string) $content_only_process_json, '"widgetType":"divider"' ) === 3, 'Content-only process prompt did not produce four cards and three native dividers' );
 check( wpae_llm_is_targeted_edit_request( 'Обнови выбранный горизонтальный таймлайн: добавь стандартный нативный бейдж «ПРОЦЕСС» и секционный заголовок.' ), 'Selected process shell addition was misclassified as a new block' );
 check( ! wpae_llm_is_targeted_edit_request( 'Создай новый горизонтальный таймлайн: Замысел, Съёмка, Монтаж, Публикация.' ), 'New process generation was incorrectly classified as a targeted edit' );
 $rebuilt_steps = wpae_llm_process_timeline_steps_from_elements( [ $reference_timeline ] );

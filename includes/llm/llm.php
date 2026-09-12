@@ -3894,17 +3894,33 @@ function wpae_llm_process_timeline_steps( string $message, bool $allow_default =
     // A detailed editor repair prompt can repeat the requested step names as
     // quoted labels without using the short "A, B, C" list form. Preserve the
     // quoted sequence before falling back to the generic default steps.
-    $quoted_items = [];
-    if ( preg_match_all( '/«([^»]{2,80})»|"([^"\n]{2,80})"/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
-        foreach ( $quoted_matches as $match ) {
-            $candidate = trim( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) );
-            $clean     = wpae_llm_normalize_timeline_step_label( $candidate );
-            if ( $clean !== '' ) {
-                $quoted_items[] = $clean;
-            }
-        }
-    }
-    $quoted_items = array_values( array_unique( $quoted_items ) );
+	$quoted_items = [];
+	if ( preg_match_all( '/«([^»]{2,80})»|"([^"\n]{2,80})"/u', $message, $quoted_matches, PREG_SET_ORDER ) ) {
+		foreach ( $quoted_matches as $match ) {
+			$candidate = trim( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) );
+			$clean     = wpae_llm_normalize_timeline_step_label( $candidate );
+			if ( $clean !== '' ) {
+				$quoted_items[] = $clean;
+			}
+		}
+	}
+	// Quoted shell copy is not a process step. Content-only prompts commonly
+	// quote the section heading and badge next to the requested labels, e.g.
+	// «Как мы работаем» ... «ПРОЦЕСС» ... «Замысел», «Съёмка» ... . The
+	// previous parser treated every quoted phrase as a card and produced six
+	// cards instead of the four requested ones. Remove only the known shell
+	// labels; keep all other quoted labels as user content.
+	$shell_labels = [
+		wpae_llm_process_timeline_heading( $message ),
+		'ПРОЦЕСС',
+	];
+	if ( preg_match( '/(?:заголовок|название|title)\s*[:\-]\s*[«"“„]([^»"”]+)[»"”]/iu', $message, $heading_match ) ) {
+		$shell_labels[] = trim( (string) ( $heading_match[1] ?? '' ) );
+	}
+	$shell_labels = array_values( array_filter( array_map( 'wpae_llm_normalize_content_text', $shell_labels ) ) );
+	$quoted_items = array_values( array_unique( array_filter( $quoted_items, static function ( string $item ) use ( $shell_labels ): bool {
+		return ! in_array( wpae_llm_normalize_content_text( $item ), $shell_labels, true );
+	} ) ) );
     if ( count( $quoted_items ) >= 2 ) {
         $result = [];
         foreach ( array_slice( $quoted_items, 0, 6 ) as $index => $name ) {
