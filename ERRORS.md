@@ -2184,3 +2184,24 @@ before making a new change to the plugin.
   labels remain valid user content.
 - **Regression:** The exact live process prompt now asserts four step labels,
   four native process cards, and three native Divider widgets.
+
+## EJ-120: Final content-fidelity rejection had no recovery path
+
+- **Confirmed (2026-09-13, live editor, v02.11.85):** A content-only hero
+  request reached the final content-fidelity boundary after the provider
+  returned a structurally acceptable tree. The editor received HTTP 422 with
+  `LLM-команда отклонена: сгенерированный контент не соответствует запросу.`;
+  no verified replacement tree was written and the chat did not expose the
+  provider-versus-normalized content comparison.
+- **Root cause:** The pipeline had a deterministic fallback only for an
+  invalid initial/repair action. A later fidelity failure returned immediately,
+  even for a full content-composition request where a safe fallback could be
+  rebuilt and checked without weakening the fidelity contract.
+- **Fix (v02.11.86):** On that narrow full-brief boundary, preserve the failed
+  provider fidelity report, rebuild the deterministic native fallback, recheck
+  exact content and the semantic plan, and pass the verified tree through the
+  ordinary Elementor write boundary. Failure diagnostics now retain the
+  bounded action steps and provider/fallback fidelity details.
+- **Regression:** The runtime suite covers a provider tree with wrong copy,
+  bounded repair responses, fallback action-path diagnostics, exact requested
+  copy preservation, and rejection of provider copy leakage.

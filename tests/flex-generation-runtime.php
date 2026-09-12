@@ -306,6 +306,27 @@ $find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_
 $find_content_only_mobile_stack( [ $content_only_saved ] );
 check( $content_only_mobile_stack, 'Content-only hero is not stacked on mobile' );
 
+$wrong_provider_action = $action;
+$wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';
+$wrong_provider_action['elements'][0]['elements'][0]['elements'][1]['settings']['editor'] = 'Нерелевантное описание';
+$wrong_provider_action['elements'][0]['elements'][1]['elements'][0]['settings']['title'] = 'Нерелевантная визуальная подпись';
+$wrong_provider_action['elements'][0]['elements'][2]['settings']['text'] = 'Нерелевантная кнопка';
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $wrong_provider_action ) ), provider_reply( wp_json_encode( $wrong_provider_action ) ), provider_reply( wp_json_encode( $wrong_provider_action ) ) ];
+$wrong_provider_request = new WP_REST_Request();
+$wrong_provider_request->set_param( 'message', $content_only_hero_message );
+$wrong_provider_request->set_param( 'context', [ 'post_id' => 42 ] );
+$wrong_provider_response = wpae_llm_chat_request( $wrong_provider_request );
+check( $wrong_provider_response instanceof WP_REST_Response && ! empty( $wrong_provider_response->get_data()['ok'] ), 'Content-mismatched provider tree was not recovered safely' );
+$wrong_provider_data = $wrong_provider_response->get_data();
+check( ( $wrong_provider_data['diagnostics']['action_path'] ?? '' ) === 'fallback', 'Content-mismatched provider tree did not report fallback path' );
+$wrong_provider_json = (string) wp_json_encode( $GLOBALS['page_data'][2] ?? [], JSON_UNESCAPED_UNICODE );
+foreach ( [ 'Тихая форма', 'Пространство для вашей жизни', 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали', 'Архитектура повседневности', 'Обсудить проект', 'Смотреть проекты' ] as $required_copy ) {
+	check( strpos( $wrong_provider_json, $required_copy ) !== false, 'Content-mismatched provider recovery lost requested copy: ' . $required_copy );
+}
+check( strpos( $wrong_provider_json, 'Нерелевантный заголовок' ) === false, 'Content-mismatched provider copy leaked into the saved fallback' );
+
 $reference_timeline = wpae_llm_build_process_timeline(
     [
         [ 'label' => 'Замысел', 'content' => 'Этап 1: Замысел.' ],

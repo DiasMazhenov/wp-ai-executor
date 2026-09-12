@@ -8808,7 +8808,90 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'details' => $content_fidelity,
         ];
         if ( empty( $content_fidelity['ok'] ) ) {
-            return new WP_Error( 'wpae_llm_content_mismatch', 'LLM-команда отклонена: сгенерированный контент не соответствует запросу.', [ 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'action' => $action_diagnostics ] ] );
+            // A provider can return a structurally valid tree which loses
+            // user copy only after the later composition normalizers run.
+            // Do not write that tree and do not leave the editor with a
+            // generic error: for a full content brief, rebuild the same
+            // deterministic fallback used by the earlier validation route
+            // and let the normal Elementor write boundary verify it.
+            if ( ! $targeted_edit && wpae_llm_is_content_composition_request( $message ) ) {
+                $provider_content_fidelity = $content_fidelity;
+                $recovery_action = wpae_llm_build_fallback_action( $message, $post_id );
+                $recovery_fidelity = wpae_llm_content_fidelity( $message, (array) ( $recovery_action['elements'] ?? [] ) );
+                $recovery_plan_audit = wpae_llm_content_plan_audit( $content_plan, (array) ( $recovery_action['elements'] ?? [] ) );
+                if ( ! empty( $recovery_fidelity['ok'] ) && ! empty( $recovery_plan_audit['ok'] ) ) {
+                    $recovery_execution = wpae_llm_execute_action( $recovery_action, $post_id, $action_archetype, -1, $message, false );
+                    $recovery_steps = [
+                        [
+                            'id' => 'content_fidelity_fallback',
+                            'status' => 'ok',
+                            'message' => 'Provider-дерево потеряло явный контент после нормализации; применена детерминированная native-композиция с повторной проверкой содержания.',
+                            'details' => [
+                                'provider_fidelity' => $provider_content_fidelity,
+                                'fallback_fidelity' => $recovery_fidelity,
+                                'fallback_plan_audit' => $recovery_plan_audit,
+                            ],
+                        ],
+                    ];
+                    $recovery_execution['steps'] = array_merge( $recovery_steps, (array) ( $recovery_execution['steps'] ?? [] ) );
+                    $recovery_diagnostics = [
+                        'schema' => 'wpae-llm-generation-diagnostics-v1',
+                        'archetype' => $action_archetype,
+                        'action_path' => 'fallback',
+                        'provider_response' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
+                        'command' => array_merge(
+                            $action_diagnostics,
+                            [
+                                'fallback_reason' => 'Provider tree failed final content-fidelity after normalization.',
+                                'provider_content_fidelity' => $provider_content_fidelity,
+                                'fallback_content_fidelity' => $recovery_fidelity,
+                            ]
+                        ),
+                        'initial_validation' => $initial_validation,
+                        'repair_attempts' => $repair_attempts,
+                        'final_validation' => [
+                            'content_fidelity' => $recovery_fidelity,
+                            'semantic_plan' => $recovery_plan_audit,
+                            'provider_design' => false,
+                            'library_applied' => false,
+                        ],
+                        'execution' => [
+                            'ok' => ! empty( $recovery_execution['ok'] ),
+                            'status' => (int) ( $recovery_execution['status'] ?? 0 ),
+                            'update_error' => sanitize_text_field( (string) ( $recovery_execution['update_error'] ?? '' ) ),
+                        ],
+                    ];
+                    $recovery_execution['diagnostics'] = $recovery_diagnostics;
+                    if ( empty( $recovery_execution['ok'] ) ) {
+                        $recovery_diagnostics['execution']['failure_details'] = wpae_llm_execution_failure_diagnostics( $recovery_execution );
+                        $recovery_execution['diagnostics'] = $recovery_diagnostics;
+                        return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил задачу в Elementor после безопасного fallback.', [ 'status' => 422, 'details' => $recovery_execution ] );
+                    }
+                    return new WP_REST_Response( [
+                        'ok' => true,
+                        'message' => 'Задача выполнена через проверенный fallback Elementor. Вставлено элементов: ' . (int) ( $recovery_execution['inserted_count'] ?? 0 ) . '.',
+                        'operation_id' => $recovery_execution['operation_id'] ?? null,
+                        'action' => $recovery_execution['action'] ?? 'insert_elements',
+                        'write' => $recovery_execution,
+                        'steps' => $recovery_execution['steps'],
+                        'diagnostics' => $recovery_diagnostics,
+                        'library' => $library_trace,
+                        'provider' => $runtime['provider'],
+                        'model' => $runtime['model'],
+                    ], 200 );
+                }
+                $action_steps[] = [
+                    'id' => 'content_fidelity_fallback',
+                    'status' => 'failed',
+                    'message' => 'Детерминированный fallback также не прошел проверку явного контента; запись остановлена.',
+                    'details' => [
+                        'provider_fidelity' => $provider_content_fidelity,
+                        'fallback_fidelity' => $recovery_fidelity,
+                        'fallback_plan_audit' => $recovery_plan_audit,
+                    ],
+                ];
+            }
+            return new WP_Error( 'wpae_llm_content_mismatch', 'LLM-команда отклонена: сгенерированный контент не соответствует запросу.', [ 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'action' => $action_diagnostics, 'steps' => $action_steps ] ] );
         }
         if ( empty( $content_plan_audit['ok'] ) ) {
             return new WP_Error( 'wpae_llm_content_plan_failed', 'LLM-команда отклонена: нарушен семантический план или использован запрещенный вид виджета.', [ 'status' => 422, 'details' => [ 'content_plan' => $content_plan, 'audit' => $content_plan_audit, 'steps' => $action_steps ] ] );

@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.85`
+- Plugin: `v02.11.86`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -63,6 +63,12 @@
   heading and `ПРОЦЕСС` badge) from becoming timeline cards. Content-only
   process prompts now preserve exactly the requested step labels, while the
   horizontal contract remains four cards with three native Divider widgets.
+- v02.11.86: Adds a final content-fidelity recovery boundary for full
+  content-only briefs. If a structurally valid provider tree loses requested
+  copy during normalization, the tree is not written; a deterministic native
+  fallback is rechecked against both the content and semantic plan, then saved
+  through the normal Elementor dry-run/read-back lifecycle with bounded JSON
+  diagnostics explaining the provider-to-fallback transition.
 - Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
   one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.
