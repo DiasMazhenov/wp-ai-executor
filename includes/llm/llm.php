@@ -8052,7 +8052,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         'model' => $runtime['model'],
         'messages' => $messages,
         'temperature' => 0.2,
-        'max_completion_tokens' => $action_request ? 8000 : 400,
+        'max_completion_tokens' => $action_request ? WPAE_LLM_ACTION_MAX_COMPLETION_TOKENS : 400,
     ];
     if ( $action_request ) {
         $request_body['response_format'] = [ 'type' => 'json_object' ];

@@ -17,6 +17,7 @@ const WPAE_LLM_MAX_MESSAGE_LENGTH = 4000;
 const WPAE_LLM_ACTION_TIMEOUT_SECONDS = 120;
 const WPAE_LLM_MAX_HISTORY_ITEMS = 12;
 const WPAE_LLM_MAX_RESPONSE_BYTES = 262144;
+const WPAE_LLM_ACTION_MAX_COMPLETION_TOKENS = 12000;
 
 function wpae_llm_provider_options(): array {
     return [
@@ -373,9 +374,13 @@ function wpae_llm_response_diagnostics( $body ): array {
     $choice = is_array( $choices[0] ?? null ) ? $choices[0] : [];
     $message = is_array( $choice['message'] ?? null ) ? $choice['message'] : [];
     $content = $message['content'] ?? ( $choice['text'] ?? ( $body['output_text'] ?? null ) );
+    $finish_reason = sanitize_text_field( (string) ( $choice['finish_reason'] ?? '' ) );
+    $content_text = is_string( $content ) ? $content : '';
     return [
         'choices_count' => count( $choices ),
-        'finish_reason' => sanitize_text_field( (string) ( $choice['finish_reason'] ?? '' ) ),
+        'finish_reason' => $finish_reason,
+        'content_length' => strlen( $content_text ),
+        'likely_truncated' => in_array( strtolower( $finish_reason ), [ 'length', 'max_tokens', 'token_limit' ], true ),
         'content_type' => is_array( $content ) ? 'array' : gettype( $content ),
         'has_reasoning' => ! empty( $message['reasoning'] ?? $choice['reasoning'] ?? false ),
         'has_refusal' => is_string( $message['refusal'] ?? null ) && trim( $message['refusal'] ) !== '',
@@ -525,7 +530,7 @@ function wpae_llm_provider_request( string $url, array $remote_args, array $requ
             $initial_error = wpae_llm_provider_error_message( is_array( $initial_body ) ? $initial_body : [] );
             $initial_diagnostics = wpae_llm_response_diagnostics( is_array( $initial_body ) ? $initial_body : [] );
             $structured_route_rejected = $initial_status >= 400 && ( stripos( $initial_error, 'No endpoints found' ) !== false || stripos( $initial_error, 'requested parameters' ) !== false || stripos( $initial_error, 'Provider returned error' ) !== false );
-            $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && ( $initial_diagnostics['finish_reason'] ?? '' ) === 'error';
+            $structured_response_failed = $initial_status >= 200 && $initial_status < 300 && in_array( strtolower( (string) ( $initial_diagnostics['finish_reason'] ?? '' ) ), [ 'error', 'length', 'max_tokens', 'token_limit' ], true );
             if ( $structured_route_rejected || $structured_response_failed ) {
                 $remaining = $deadline - microtime( true );
                 if ( $remaining < 1 ) {

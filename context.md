@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.82`
+- Plugin: `v02.11.83`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -47,6 +47,11 @@
   user-unsaved roots. Multi-CTA normalization now keeps each requested label
   and URL paired across provider/library/fallback paths. Guide `v02.05.99`
   documents the lifecycle and concurrency rules.
+- v02.11.83: Makes structured action generation tolerant of provider output
+  truncation. Action requests use a bounded 12000-token completion budget,
+  OpenRouter retries successful-but-truncated structured responses without
+  schema-only parameters, and provider diagnostics expose `content_length` and
+  `likely_truncated` without exposing response payloads or credentials.
 - Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
   one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.

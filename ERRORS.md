@@ -2132,3 +2132,22 @@ before making a new change to the plugin.
 - **Regression status:** Local contract and PHP syntax checks pass; a fresh
   Browser Use benefits generation must confirm the duplicate is gone before
   the remaining block matrix is accepted.
+
+## EJ-117: OpenRouter structured action response ended at the token limit
+
+- **Confirmed (2026-09-13, live editor, v02.11.82):** A content-only hero
+  request reached OpenRouter with a present, non-empty Authorization header
+  and received HTTP 200, but the response reported `finish_reason: length`
+  at `max_tokens: 8000`; the incomplete action was surfaced to the editor as
+  HTTP 502 after the bounded retry.
+- **Root cause:** The structured OpenRouter retry handled `finish_reason=error`
+  but not a successful response truncated by the completion limit. The action
+  budget was also too small for the full native Flex JSON produced by the
+  configured free route.
+- **Fix (v02.11.83):** Raise the bounded action completion budget to 12000,
+  retry OpenRouter structured responses whose finish reason is `length`,
+  `max_tokens`, or `token_limit` without schema-only parameters, and expose
+  bounded truncation diagnostics (`content_length`, `likely_truncated`).
+- **Regression:** `tests/llm-chat-contract.test.js` asserts the shared action
+  budget and all truncation retry/diagnostic branches; PHP lint and all Node
+  suites remain green.
