@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.83`
+- Plugin: `v02.11.84`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -52,6 +52,13 @@
   OpenRouter retries successful-but-truncated structured responses without
   schema-only parameters, and provider diagnostics expose `content_length` and
   `likely_truncated` without exposing response payloads or credentials.
+- v02.11.84: Repairs content-only hero inference and fallback fidelity. Two
+  label-dash-anchor lines are parsed as separate CTA requirements, their URLs
+  stay in native Button link settings instead of visible copy, and a brief with
+  two distinct CTAs plus architectural narrative is classified as a hero before
+  generic archetype scoring. The deterministic hero fallback now preserves the
+  brand, heading, body, visual-panel copy, separate CTA buttons, terracotta
+  palette, and mobile stacking. A runtime regression covers the exact live brief.
 - Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
   one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.

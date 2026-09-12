@@ -684,8 +684,37 @@ function wpae_llm_content_archetype_scores( string $message, array $labeled_pair
     return $scores;
 }
 
+function wpae_llm_is_content_only_hero_brief( string $message ): bool {
+	if ( wpae_llm_is_process_request( $message ) ) {
+		return false;
+	}
+
+	$requirements = wpae_llm_extract_requested_ctas( $message );
+	$urls = [];
+	foreach ( $requirements as $requirement ) {
+		$url = wpae_llm_normalize_cta_url( $requirement['url'] ?? '' );
+		if ( $url !== '' ) {
+			$urls[ $url ] = true;
+		}
+	}
+	if ( count( $urls ) < 2 || count( wpae_llm_content_units( $message ) ) < 3 ) {
+		return false;
+	}
+
+	$normalized = wpae_llm_normalize_content_text( $message );
+	if ( preg_match( '/\b(цена|стоимост|тариф|пакет|вопрос\w*|ответ\w*|отзыв\w*|команд\w*|преимуществ\w*|выгод\w*|портфолио|кейс\w*|процесс\w*|этап\w*|таймлайн\w*|навигац\w*|мега[\s-]*меню)\b/iu', $normalized ) ) {
+		return false;
+	}
+
+	return (bool) preg_match( '/архитектур\w*|интерьер\w*|пространств\w*\s+для\s+|студи\w*|светл\w*|повседневност\w*/iu', $normalized )
+		|| count( wpae_llm_content_units( $message ) ) >= 4;
+}
+
 function wpae_llm_detect_block_archetype( string $message ): string {
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
+	if ( wpae_llm_is_content_only_hero_brief( $message ) ) {
+		return 'hero';
+	}
     $scores = wpae_llm_content_archetype_scores( $message, $labeled_pairs );
     if ( ! wpae_llm_is_process_request( $message ) ) {
         $scores['process'] = 0;
@@ -1182,10 +1211,22 @@ function wpae_llm_extract_requested_content( string $message ): array {
         $structured_pairs = wpae_llm_extract_faq_content( $message );
     }
     foreach ( $structured_pairs as $pair ) {
-        $matches[] = $pair['label'];
-        $matches[] = $pair['content'];
+		$pair_label = (string) ( $pair['label'] ?? '' );
+		$pair_content = (string) ( $pair['content'] ?? '' );
+		$matches[] = $pair_label;
+		// A content-only CTA written as "Label — #target" is a requirement
+		// pair, not visible copy. Keep the label and preserve the URL in the
+		// CTA contract instead of forcing the hash into a text widget.
+		if ( ! ( wpae_llm_is_cta_copy( $pair_label ) && wpae_llm_normalize_cta_url( $pair_content ) !== '' ) ) {
+			$matches[] = $pair_content;
+		}
     }
-    if ( ! empty( $structured_pairs ) ) {
+	if ( ! empty( $structured_pairs ) && wpae_llm_is_content_composition_request( $message ) && ! $process_request ) {
+		foreach ( wpae_llm_content_units( $message ) as $unit ) {
+			$unit = trim( (string) $unit );
+			$matches[] = wpae_llm_is_cta_copy( $unit ) ? wpae_llm_compact_cta_text( $unit ) : $unit;
+		}
+	} elseif ( ! empty( $structured_pairs ) ) {
         foreach ( wpae_llm_content_units( $message ) as $unit ) {
             if ( wpae_llm_is_cta_copy( $unit ) ) {
                 $matches[] = function_exists( 'wpae_llm_compact_cta_text' ) ? wpae_llm_compact_cta_text( $unit ) : $unit;
@@ -1481,6 +1522,7 @@ function wpae_llm_content_fidelity( string $message, array $elements ): array {
 
 function wpae_llm_compact_cta_text( string $value ): string {
     $value = trim( sanitize_text_field( $value ) );
+	$value = trim( (string) preg_replace( '/\s*(?:[—–-]\s*|,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*)(?:#[A-Za-z][A-Za-z0-9_:\-]*|https?:\/\/[^\s,.;]+|\/(?!\s)[^\s,.;]+)\s*$/iu', '', $value ) );
     $length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
     if ( $length <= 64 ) {
         return $value;
@@ -4895,6 +4937,22 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
             ];
         }
     }
+	$line_pattern = '/^\s*(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(.{2,120}?)\s*[—–-]\s*(#[A-Za-z][A-Za-z0-9_:\-]*|https?:\/\/[^\s,.;]+|\/(?!\s)[^\s,.;]+)\s*$/iu';
+	foreach ( wpae_llm_content_units( $message ) as $unit ) {
+		if ( ! preg_match( $line_pattern, trim( (string) $unit ), $match ) ) {
+			continue;
+		}
+		$label = wpae_llm_compact_cta_text( trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) ) );
+		if ( $label === '' || ! wpae_llm_is_cta_copy( $label ) ) {
+			continue;
+		}
+		$role = strtolower( (string) ( $match[1] ?? '' ) );
+		$requirements[] = [
+			'text' => $label,
+			'url' => wpae_llm_normalize_cta_url( $match[3] ?? '' ),
+			'role' => preg_match( '/втора|secondary/u', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/u', $role ) ? 'primary' : 'cta' ),
+		];
+	}
     if ( empty( $requirements ) ) {
         foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
             if ( ! wpae_llm_is_cta_copy( (string) $value ) ) {
@@ -5851,7 +5909,7 @@ function wpae_llm_badge_label( string $archetype ): string {
     return $labels[ $archetype ] ?? 'НОВЫЙ БЛОК';
 }
 
-function wpae_llm_badge_widget( string $id, string $archetype ): array {
+function wpae_llm_badge_widget( string $id, string $archetype, ?string $label = null ): array {
     return [
         'id' => $id,
         'elType' => 'container',
@@ -5881,7 +5939,7 @@ function wpae_llm_badge_widget( string $id, string $archetype ): array {
                 'elType' => 'widget',
                 'widgetType' => 'heading',
                 'settings' => [
-                    'title' => wpae_llm_badge_label( $archetype ),
+                    'title' => $label !== null && trim( $label ) !== '' ? trim( sanitize_text_field( $label ) ) : wpae_llm_badge_label( $archetype ),
                     'header_size' => 'h6',
                     '_css_classes' => 'wpae-generated-badge-label',
                     'title_color' => '#111827',
@@ -6645,7 +6703,182 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $widget( 'llm-copy', 'text-editor', [ 'editor' => 'Содержательный блок под вашу задачу.' ] ),
         $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
     ];
-    if ( $archetype === 'benefits' ) {
+    if ( $archetype === 'hero' ) {
+		$units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_content_units( $message ) ) ) );
+		$requirements = wpae_llm_extract_requested_ctas( $message );
+		$copy_units = [];
+		foreach ( $units as $unit ) {
+			$unit_text = wpae_llm_compact_cta_text( $unit );
+			$is_cta_unit = false;
+			foreach ( $requirements as $requirement ) {
+				if ( wpae_llm_normalize_content_text( $unit_text ) === wpae_llm_normalize_content_text( (string) ( $requirement['text'] ?? '' ) ) ) {
+					$is_cta_unit = true;
+					break;
+				}
+			}
+			if ( ! $is_cta_unit ) {
+				$copy_units[] = $unit;
+			}
+		}
+		$brand = '';
+		$visual_copy = '';
+		if ( count( $copy_units ) >= 4 ) {
+			$brand = (string) array_shift( $copy_units );
+		}
+		$title = (string) ( array_shift( $copy_units ) ?? 'Пространство для вашей жизни' );
+		if ( count( $copy_units ) >= 2 ) {
+			$visual_copy = (string) array_pop( $copy_units );
+		}
+		$body = trim( implode( ' ', $copy_units ) );
+		$button = static function ( string $id, array $requirement, bool $secondary = false ) use ( $widget ): array {
+			$settings = [
+				'text' => (string) ( $requirement['text'] ?? '' ),
+				'link' => [ 'url' => wpae_llm_normalize_cta_url( $requirement['url'] ?? '' ) ?: '#contact' ],
+				'button_background_color' => $secondary ? 'transparent' : '#a84c36',
+				'button_hover_background_color' => $secondary ? '#f4e6df' : '#8f3e2c',
+				'button_text_color' => $secondary ? '#a84c36' : '#ffffff',
+				'button_hover_text_color' => '#a84c36',
+				'border_border' => 'solid',
+				'border_color' => '#a84c36',
+				'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+				'_css_classes' => 'wpae-generated-cta',
+			];
+			wpae_llm_normalize_generated_button_settings( $settings );
+			$settings['button_background_color'] = $secondary ? 'transparent' : '#a84c36';
+			$settings['button_hover_background_color'] = $secondary ? '#f4e6df' : '#8f3e2c';
+			$settings['button_text_color'] = $secondary ? '#a84c36' : '#ffffff';
+			$settings['button_hover_text_color'] = '#a84c36';
+			return $widget( $id, 'button', $settings );
+		};
+		$left_elements = [];
+		if ( $brand !== '' ) {
+			$left_elements[] = $widget( 'llm-hero-brand', 'heading', [
+				'title' => $brand,
+				'header_size' => 'h6',
+				'title_color' => '#a84c36',
+				'typography_typography' => 'custom',
+				'typography_font_size' => [ 'unit' => 'rem', 'size' => 0.9 ],
+				'typography_font_weight' => '600',
+				'typography_letter_spacing' => [ 'unit' => 'px', 'size' => 1.4 ],
+				'align' => 'left',
+				'align_mobile' => 'left',
+			] );
+		}
+		$left_elements[] = $widget( 'llm-hero-heading', 'heading', [
+			'title' => $title,
+			'header_size' => 'h1',
+			'title_color' => '#28251f',
+			'typography_typography' => 'custom',
+			'typography_font_size' => [ 'unit' => 'rem', 'size' => 3.8 ],
+			'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 3.1 ],
+			'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 2.2 ],
+			'typography_line_height' => [ 'unit' => 'em', 'size' => 1.05 ],
+			'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.1 ],
+			'typography_font_weight' => '700',
+			'align' => 'left',
+			'align_mobile' => 'left',
+		] );
+		if ( $body !== '' ) {
+			$left_elements[] = $widget( 'llm-hero-copy', 'text-editor', [
+				'editor' => $body,
+				'text_color' => '#514b42',
+				'typography_typography' => 'custom',
+				'typography_font_size' => [ 'unit' => 'rem', 'size' => 1.15 ],
+				'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1 ],
+				'typography_line_height' => [ 'unit' => 'em', 'size' => 1.5 ],
+				'align' => 'left',
+				'align_mobile' => 'left',
+			] );
+		}
+		if ( ! empty( $requirements ) ) {
+			$cta_elements = [];
+			foreach ( array_slice( $requirements, 0, 3 ) as $index => $requirement ) {
+				$cta_elements[] = $button( 'llm-hero-cta-' . (string) ( $index + 1 ), $requirement, $index > 0 );
+			}
+			$left_elements[] = [
+				'id' => 'llm-hero-cta-row',
+				'elType' => 'container',
+				'settings' => [
+					'_css_classes' => 'wpae-hero-cta-row',
+					'content_width' => 'full',
+					'flex_direction' => 'row',
+					'flex_direction_mobile' => 'column',
+					'flex_wrap' => 'wrap',
+					'flex_wrap_mobile' => 'nowrap',
+					'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+					'flex_gap_mobile' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
+					'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+				],
+				'elements' => $cta_elements,
+			];
+		}
+		$hero_badge = wpae_llm_badge_widget( 'llm-hero-badge', 'hero' );
+		$elements = [
+			$hero_badge,
+			[
+				'id' => 'llm-hero-content-shell',
+				'elType' => 'container',
+				'settings' => [
+					'_css_classes' => 'wpae-generated-content-shell wpae-hero-content-shell',
+					'content_width' => 'full',
+					'flex_direction' => 'row',
+					'flex_direction_mobile' => 'column',
+					'flex_wrap' => 'nowrap',
+					'flex_wrap_mobile' => 'nowrap',
+					'flex_justify_content' => 'space-between',
+					'flex_align_items' => 'stretch',
+					'flex_gap' => [ 'column' => '3', 'row' => '3', 'isLinked' => true, 'unit' => 'rem', 'size' => '3' ],
+					'flex_gap_mobile' => [ 'column' => '1.5', 'row' => '1.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.5' ],
+					'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+					'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+				],
+				'elements' => [
+					[
+						'id' => 'llm-hero-copy-column',
+						'elType' => 'container',
+						'settings' => [
+							'_css_classes' => 'wpae-hero-copy-column',
+							'content_width' => 'full',
+							'flex_direction' => 'column',
+							'flex_direction_mobile' => 'column',
+							'flex_gap' => [ 'column' => '1.25', 'row' => '1.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.25' ],
+							'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+							'width' => [ 'unit' => '%', 'size' => 58, 'sizes' => [] ],
+							'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+							'_element_custom_width' => [ 'unit' => '%', 'size' => 58, 'sizes' => [] ],
+							'_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+						],
+						'elements' => $left_elements,
+					],
+					[
+						'id' => 'llm-hero-visual-panel',
+						'elType' => 'container',
+						'settings' => [
+							'_css_classes' => 'wpae-hero-visual-panel',
+							'content_width' => 'full',
+							'flex_direction' => 'column',
+							'flex_direction_mobile' => 'column',
+							'flex_justify_content' => 'center',
+							'flex_align_items' => 'flex-start',
+							'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+							'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+							'background_background' => 'classic',
+							'background_color' => '#e7c7b7',
+							'border_radius' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.5', 'bottom' => '1.5', 'left' => '1.5', 'isLinked' => true ],
+							'padding' => [ 'unit' => 'rem', 'top' => '3', 'right' => '2.5', 'bottom' => '3', 'left' => '2.5', 'isLinked' => false ],
+							'padding_mobile' => [ 'unit' => 'rem', 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5', 'isLinked' => false ],
+							'width' => [ 'unit' => '%', 'size' => 38, 'sizes' => [] ],
+							'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+							'_element_custom_width' => [ 'unit' => '%', 'size' => 38, 'sizes' => [] ],
+							'_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+						],
+						'elements' => [ $widget( 'llm-hero-visual-copy', 'heading', [ 'title' => $visual_copy !== '' ? $visual_copy : 'Архитектура повседневности', 'header_size' => 'h3', 'title_color' => '#28251f', 'typography_typography' => 'custom', 'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.1 ], 'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.65 ], 'typography_line_height' => [ 'unit' => 'em', 'size' => 1.1 ], 'align' => 'left', 'align_mobile' => 'left' ] ) ],
+					],
+				],
+			],
+		];
+	} elseif ( $archetype === 'benefits' ) {
         $content_units = array_values( array_filter(
             wpae_llm_extract_requested_content( $message ),
             static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit )

@@ -268,6 +268,44 @@ $collect_fallback_widget_types( [ $GLOBALS['page_data'][2] ?? [] ] );
 check( empty( $fallback_widget_types['divider'] ), 'Hero fallback inherited an unrelated process Divider' );
 check( strpos( (string) wp_json_encode( $GLOBALS['page_data'][2] ?? [] ), 'wpae-process-' ) === false, 'Hero fallback inherited unrelated process semantics' );
 
+$content_only_hero_message = "Тихая форма\nПространство для вашей жизни\nПроектируем спокойные, светлые интерьеры с вниманием к каждой детали\nОбсудить проект — #contact\nСмотреть проекты — #projects\nАрхитектура повседневности";
+check( wpae_llm_detect_block_archetype( $content_only_hero_message ) === 'hero', 'Content-only hero with two anchor CTAs was misclassified' );
+$content_only_ctas = wpae_llm_extract_requested_ctas( $content_only_hero_message );
+check( count( $content_only_ctas ) === 2 && $content_only_ctas[0]['text'] === 'Обсудить проект' && $content_only_ctas[0]['url'] === '#contact', 'Content-only CTA parser did not split primary label and URL' );
+check( $content_only_ctas[1]['text'] === 'Смотреть проекты' && $content_only_ctas[1]['url'] === '#projects', 'Content-only CTA parser did not preserve secondary label and URL' );
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( 'not JSON' ), provider_reply( 'still not JSON' ), provider_reply( 'still not JSON' ) ];
+$content_only_request = new WP_REST_Request();
+$content_only_request->set_param( 'message', $content_only_hero_message );
+$content_only_request->set_param( 'context', [ 'post_id' => 42 ] );
+$content_only_response = wpae_llm_chat_request( $content_only_request );
+check( $content_only_response instanceof WP_REST_Response && ! empty( $content_only_response->get_data()['ok'] ), 'Content-only hero fallback did not save' );
+$content_only_saved = $GLOBALS['page_data'][2] ?? [];
+$content_only_json = (string) wp_json_encode( $content_only_saved, JSON_UNESCAPED_UNICODE );
+foreach ( [ 'Тихая форма', 'Пространство для вашей жизни', 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали', 'Архитектура повседневности', 'Обсудить проект', 'Смотреть проекты' ] as $required_copy ) {
+	check( strpos( $content_only_json, $required_copy ) !== false, 'Content-only hero lost requested copy: ' . $required_copy );
+}
+check( strpos( $content_only_json, 'Обсудить проект — #contact' ) === false && strpos( $content_only_json, 'Смотреть проекты — #projects' ) === false, 'CTA URL leaked into visible content-only hero copy' );
+check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"#e7c7b7' ) !== false, 'Content-only hero did not create the separate visual panel' );
+$content_only_mobile_stack = false;
+$find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_content_only_mobile_stack, &$content_only_mobile_stack ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		$classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) );
+		if ( is_array( $classes ) && in_array( 'wpae-hero-content-shell', $classes, true ) && ( $node['settings']['flex_direction_mobile'] ?? '' ) === 'column' ) {
+			$content_only_mobile_stack = true;
+		}
+		if ( is_array( $node['elements'] ?? null ) ) {
+			$find_content_only_mobile_stack( $node['elements'] );
+		}
+	}
+};
+$find_content_only_mobile_stack( [ $content_only_saved ] );
+check( $content_only_mobile_stack, 'Content-only hero is not stacked on mobile' );
+
 $reference_timeline = wpae_llm_build_process_timeline(
     [
         [ 'label' => 'Замысел', 'content' => 'Этап 1: Замысел.' ],

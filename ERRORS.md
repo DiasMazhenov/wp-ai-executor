@@ -2151,3 +2151,22 @@ before making a new change to the plugin.
 - **Regression:** `tests/llm-chat-contract.test.js` asserts the shared action
   budget and all truncation retry/diagnostic branches; PHP lint and all Node
   suites remain green.
+
+## EJ-118: Content-only hero collapsed into a generic portfolio fallback
+
+- **Confirmed (2026-09-13, live editor, v02.11.83):** A brief containing a
+  brand, hero copy, two CTA lines with anchor URLs, and a visual-panel phrase
+  was classified as `portfolio`. The fallback exposed `КЕЙСЫ`, generic case
+  copy, raw `#contact`/`#projects` text, and duplicated green button blocks;
+  AI Vision scored the result 68 and rolled it back.
+- **Root cause:** Dash-separated CTA lines were consumed as generic labeled
+  pairs before archetype detection; content fidelity did not include the
+  standalone hero lines, CTA URL suffixes were not stripped, and there was no
+  deterministic content-only hero composition.
+- **Fix (v02.11.84):** Infer a hero before generic scores when two distinct CTA
+  URLs and hero narrative are present, parse each CTA label and URL separately,
+  include content-only lines in fidelity, and build a native responsive hero
+  with a separate visual panel and two correctly linked Buttons.
+- **Regression:** `tests/flex-generation-runtime.php` now exercises detection,
+  CTA parsing, exact copy preservation, no URL leakage, visual-panel creation,
+  and mobile stacking through the full fallback pipeline.
