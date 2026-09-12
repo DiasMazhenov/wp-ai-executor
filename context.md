@@ -2,8 +2,8 @@
 
 ## Current release
 
-- Plugin: `v02.11.81`
-- Guide: `v02.05.98`
+- Plugin: `v02.11.82`
+- Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
   the horizontal reference timeline, keeping the four reference cards inside
@@ -39,6 +39,14 @@
   timeline container after the badge/heading shell is assembled. The supplied
   reference card padding remains unchanged, and vertical timeline variants keep
   their existing settings.
+- v02.11.82: Closes the transaction-safety audit: autosaves require an explicit
+  owner and exact fingerprint, cleanup is deferred until successful read-back,
+  writes reject before-state conflicts and confirm required metadata, after-save
+  contract checks retain the trusted pre-operation legacy context, rollback
+  refuses newer concurrent edits, and editor reconciliation preserves
+  user-unsaved roots. Multi-CTA normalization now keeps each requested label
+  and URL paired across provider/library/fallback paths. Guide `v02.05.99`
+  documents the lifecycle and concurrency rules.
 - Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
   one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.

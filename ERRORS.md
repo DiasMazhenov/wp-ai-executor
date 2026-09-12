@@ -7,6 +7,54 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
+
+- **Confirmed (2026-09-12, local audit boundary):** The transaction selected
+  another user's latest autosave when the owner was omitted, deleted the draft
+  before final verification, accepted a failed `_elementor_data` write as
+  success, and lost the before-state exception for unchanged legacy Flex roots.
+- **Root cause:** Autosave lookup/cleanup, metadata writes, after-save contract
+  validation, and quality reporting were separate implicit boundaries without
+  an operation-owned snapshot or canonical read-back comparison.
+- **Fix (v02.11.82, local):** Capture only an explicitly owned autosave with a
+  fingerprint; defer exact cleanup until verification; reject unexpected
+  before-state changes; verify required metadata and canonical saved JSON;
+  pass the trusted pre-operation legacy tree into after-save validation; and
+  build quality from confirmed read-back data. Rollback now refuses a newer
+  concurrent fingerprint.
+- **Regression:** `transactions-probe.php` asserts two owners, owner unknown,
+  no draft, edited/replaced draft, delete failure, no-op metadata, write
+  conflict, missing metadata, failed verification, and concurrent rollback.
+- **Status:** Local fix verified; live transaction lifecycle and installed
+  v02.11.82 still require authenticated deployment and editor acceptance.
+
+## EJ-115: Editor reconciliation treated user-unsaved roots as stale
+
+- **Confirmed (2026-09-12, local VM):** Reconciliation deleted a local root
+  absent from the server's saved ID list even when the root was created or
+  edited by the user during the request.
+- **Fix (v02.11.82, local):** Only operation-owned AI roots may be removed;
+  replace also compares the selected root fingerprint captured at request
+  start and reports a conflict without deleting the user's change.
+- **Regression:** `editor-roots-probe.js` covers an unsaved user root, owned AI
+  root, repeated sync, selected-root edit, and partial delete failure.
+- **Status:** Local fix verified; live editor conflict test pending authenticated
+  editor access.
+
+## EJ-116: Multiple CTA normalization collapsed labels and destinations
+
+- **Confirmed (2026-09-12, local pipeline boundary):** The first requested CTA
+  was copied to every button and ordinary fallback normalization could replace
+  explicit anchors such as `#booking` with `#contact`.
+- **Fix (v02.11.82, local):** CTA requirements are extracted as independent
+  text/URL/role pairs; matching is per button, unsafe URLs fall back safely,
+  and fallback changes only one button before the final provider/library/
+  fallback normalizer maps all requirements.
+- **Regression:** `cta-probe.php` covers two CTA pairs, explicit booking target,
+  unsafe URL, fallback-to-normalizer mapping, and preserves styles when asked.
+- **Status:** Local fix verified; live provider/library/fallback generation matrix
+  remains pending after deployment.
+
 ## EJ-106: Horizontal generator did not follow the supplied reference structure
 
 - **Confirmed (2026-09-10, local generation contract):** The horizontal

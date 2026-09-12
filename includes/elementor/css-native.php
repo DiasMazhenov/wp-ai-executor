@@ -413,16 +413,68 @@ function wpae_elementor_css_to_native( WP_REST_Request $request ): WP_REST_Respo
             'report' => $report,
         ], 422 );
     }
+    $design_system_contract = wpae_validate_design_system_contract( $updated_data, [
+        'allow_unchanged_legacy_top_level' => $existing_data,
+    ] );
+    if ( ! $design_system_contract['ok'] ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => 'CSS-to-native migration failed the design-system contract before write.',
+            'details' => $design_system_contract,
+            'report' => $report,
+        ], 422 );
+    }
 
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_css_to_native:' . $post_id, [ $post_id ] );
-    $saved = wpae_save_elementor_page_data( $post_id, $updated_data, $template );
+    $transaction_context = [
+        'allow_unchanged_legacy_top_level' => $existing_data,
+        'expected_before_elementor_data' => $existing_data,
+        'autosave_snapshot' => wpae_capture_elementor_autosave( $post_id, function_exists( 'get_current_user_id' ) ? absint( get_current_user_id() ) : 0 ),
+    ];
+    $saved = wpae_save_elementor_page_data( $post_id, $updated_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
+        $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
+        $rollback = ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
+            : null;
         return new WP_REST_Response( [
             'ok' => false,
             'error' => $saved->get_error_message(),
             'details' => $saved->get_error_data(),
             'report' => $report,
+            'transaction' => wpae_build_elementor_transaction_status( 'elementor_css_to_native', $post_id, $rollback_snapshot, [
+                'metadata_save' => [
+                    'ok' => false,
+                    'message' => $saved->get_error_message(),
+                    'details' => $saved->get_error_data(),
+                ],
+            ] ),
+            'auto_rollback' => $rollback,
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
+    }
+
+    $finalized = wpae_finalize_elementor_transaction(
+        'elementor_css_to_native',
+        $post_id,
+        $rollback_snapshot,
+        $updated_data,
+        [
+            'ok' => true,
+            'operation' => 'css_to_native',
+            'design_system_contract' => $design_system_contract,
+            'protected_zone_guard' => $protected_zone_guard,
+        ],
+        $request,
+        null,
+        $transaction_context
+    );
+    if ( is_wp_error( $finalized ) ) {
+        return new WP_REST_Response( [
+            'ok' => false,
+            'error' => $finalized->get_error_message(),
+            'details' => $finalized->get_error_data(),
+            'report' => $report,
+        ], 422 );
     }
 
     return new WP_REST_Response( [
@@ -433,7 +485,8 @@ function wpae_elementor_css_to_native( WP_REST_Request $request ): WP_REST_Respo
         'rollback_expires_at' => $rollback_snapshot['expires_at'] ?? null,
         'protected_zone_guard' => $protected_zone_guard,
         'report' => $report,
-        'editability_audit' => wpae_build_elementor_editability_audit( $updated_data, [ 'source' => 'css_to_native_after_save', 'post_id' => $post_id ] ),
-        'quality_summary' => wpae_build_after_save_quality_summary( $post_id, $updated_data, [] ),
+        'transaction' => $finalized['transaction'],
+        'editability_audit' => wpae_build_elementor_editability_audit( $finalized['confirmed_elementor_data'] ?? $updated_data, [ 'source' => 'css_to_native_after_save', 'post_id' => $post_id ] ),
+        'quality_summary' => $finalized['quality_summary'],
     ], 200 );
 }

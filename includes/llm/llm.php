@@ -3741,23 +3741,34 @@ function wpae_llm_apply_fallback_cta( array &$elements, string $cta, int &$chang
     if ( $cta === '' ) {
         return;
     }
-    foreach ( $elements as &$element ) {
-        if ( ! is_array( $element ) ) {
-            continue;
-        }
-        if ( ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'button' ) {
-            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
-            if ( (string) ( $settings['text'] ?? '' ) !== $cta ) {
-                $settings['text'] = $cta;
-                $element['settings'] = $settings;
-                $changed++;
+    // Fallback content is deliberately conservative: it selects one existing
+    // button. The semantic CTA normalizer that runs after fallback maps each
+    // requested CTA to its own button/link and can append missing buttons.
+    // Rewriting every button here used to make a secondary CTA indistinguishable
+    // from the primary one before that mapping had a chance to run.
+    $applied = false;
+    $apply = static function ( array &$nodes ) use ( &$apply, &$applied, $cta, &$changed ): void {
+        foreach ( $nodes as &$element ) {
+            if ( $applied || ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'widget' && ( $element['widgetType'] ?? '' ) === 'button' ) {
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                if ( (string) ( $settings['text'] ?? '' ) !== $cta ) {
+                    $settings['text'] = $cta;
+                    $element['settings'] = $settings;
+                    $changed++;
+                }
+                $applied = true;
+                continue;
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $apply( $element['elements'] );
             }
         }
-        if ( is_array( $element['elements'] ?? null ) ) {
-            wpae_llm_apply_fallback_cta( $element['elements'], $cta, $changed );
-        }
-    }
-    unset( $element );
+        unset( $element );
+    };
+    $apply( $elements );
 }
 
 function wpae_llm_apply_fallback_faq_content( array &$elements, string $message, int &$changed ): void {
@@ -4841,82 +4852,188 @@ function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
     return $elements;
 }
 
-function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed, bool $preserve_style = false ): array {
-    $cta = '';
-    foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
-            $cta = wpae_llm_compact_cta_text( (string) $value );
-            break;
+function wpae_llm_normalize_cta_url( $value ): string {
+    $value = trim( sanitize_text_field( (string) $value ) );
+    $value = trim( $value, " \t\n\r\0\x0B.,;)]}" );
+    if ( $value === '' || preg_match( '/[\x00-\x1F\x7F]/', $value ) ) {
+        return '';
+    }
+    if ( preg_match( '/^#[A-Za-z][A-Za-z0-9_:\-]*$/', $value ) ) {
+        return $value;
+    }
+    if ( preg_match( '#^/(?!/)[^\s<>"\']+$#', $value ) ) {
+        return $value;
+    }
+    if ( ! preg_match( '#^(?:https?://|mailto:|tel:)#i', $value ) ) {
+        return '';
+    }
+    $safe = esc_url_raw( $value );
+    $parts = wp_parse_url( $safe );
+    if ( ! is_array( $parts ) || empty( $parts['scheme'] ) || ! in_array( strtolower( (string) $parts['scheme'] ), [ 'http', 'https', 'mailto', 'tel' ], true ) ) {
+        return '';
+    }
+    if ( in_array( strtolower( (string) $parts['scheme'] ), [ 'http', 'https' ], true ) && empty( $parts['host'] ) ) {
+        return '';
+    }
+    return $safe;
+}
+
+function wpae_llm_extract_requested_ctas( string $message ): array {
+    $requirements = [];
+    $pattern = '/(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(?:кнопка|cta|button)\s*:\s*[«"]([^»"\n]{2,120})[»"](?:\s*,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*([^\s,.;]+))?/iu';
+    if ( preg_match_all( $pattern, $message, $matches, PREG_SET_ORDER ) ) {
+        foreach ( $matches as $match ) {
+            $label = wpae_llm_compact_cta_text( trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) ) );
+            if ( $label === '' ) {
+                continue;
+            }
+            $role = strtolower( (string) ( $match[1] ?? '' ) );
+            $requirements[] = [
+                'text' => $label,
+                'url' => wpae_llm_normalize_cta_url( $match[3] ?? '' ),
+                'role' => preg_match( '/втора|secondary/u', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/u', $role ) ? 'primary' : 'cta' ),
+            ];
         }
     }
-    if ( $cta === '' ) {
+    if ( empty( $requirements ) ) {
+        foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
+            if ( ! wpae_llm_is_cta_copy( (string) $value ) ) {
+                continue;
+            }
+            $requirements[] = [ 'text' => wpae_llm_compact_cta_text( (string) $value ), 'url' => '', 'role' => 'cta' ];
+        }
+    }
+    $unique = [];
+    foreach ( $requirements as $index => $requirement ) {
+        $text = trim( (string) ( $requirement['text'] ?? '' ) );
+        if ( $text === '' ) {
+            continue;
+        }
+        $key = wpae_llm_normalize_content_text( $text ) . '|' . (string) ( $requirement['url'] ?? '' );
+        if ( isset( $unique[ $key ] ) ) {
+            continue;
+        }
+        $requirement['index'] = $index;
+        $unique[ $key ] = $requirement;
+    }
+    return array_values( $unique );
+}
+
+function wpae_llm_button_url( array $settings ): string {
+    $link = $settings['link'] ?? [];
+    return wpae_llm_normalize_cta_url( is_array( $link ) ? ( $link['url'] ?? '' ) : $link );
+}
+
+function wpae_llm_apply_cta_requirement_to_button( array &$element, array $requirement, bool $preserve_style, int &$changed ): void {
+    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+    $before_text = (string) ( $settings['text'] ?? '' );
+    $text = (string) ( $requirement['text'] ?? '' );
+    if ( $before_text !== $text ) {
+        $settings['text'] = $text;
+        $changed++;
+    }
+    $current_url = wpae_llm_button_url( $settings );
+    $requested_url = wpae_llm_normalize_cta_url( $requirement['url'] ?? '' );
+    $target_url = $requested_url !== '' ? $requested_url : ( $current_url !== '' ? $current_url : '#contact' );
+    $stored_url = is_array( $settings['link'] ?? null ) ? (string) ( $settings['link']['url'] ?? '' ) : (string) ( $settings['link'] ?? '' );
+    if ( $stored_url !== $target_url || ! is_array( $settings['link'] ?? null ) ) {
+        $link = is_array( $settings['link'] ?? null ) ? $settings['link'] : [];
+        $link['url'] = $target_url;
+        $settings['link'] = $link;
+        $changed++;
+    }
+    if ( ! $preserve_style ) {
+        $before_classes = (string) ( $settings['_css_classes'] ?? '' );
+        $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
+            ? wpae_append_css_classes( $before_classes, [ 'wpae-generated-cta' ] )
+            : trim( $before_classes . ' wpae-generated-cta' );
+        if ( $settings['_css_classes'] !== $before_classes ) {
+            $changed++;
+        }
+        if ( wpae_llm_normalize_generated_button_settings( $settings ) ) {
+            $changed++;
+        }
+    }
+    $element['settings'] = $settings;
+}
+
+function wpae_llm_normalize_requested_cta( array $elements, string $message, int &$changed, bool $preserve_style = false ): array {
+    $requirements = wpae_llm_extract_requested_ctas( $message );
+    if ( empty( $requirements ) ) {
         return $elements;
     }
 
-    $normalized_cta = wpae_llm_normalize_content_text( $cta );
-    $button_found = false;
-    $replaced_text = false;
-    $walk = static function ( array &$nodes ) use ( &$walk, $cta, $normalized_cta, $preserve_style, &$button_found, &$replaced_text, &$changed ): void {
+    $buttons = [];
+    $text_editors = [];
+    $collect = static function ( array &$nodes ) use ( &$collect, &$buttons, &$text_editors ): void {
         foreach ( $nodes as &$element ) {
             if ( ! is_array( $element ) ) {
                 continue;
             }
             $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
-            $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             if ( $widget_type === 'button' ) {
-                $settings['text'] = $cta;
-                if ( ! $preserve_style ) {
-                    $settings['link'] = [ 'url' => '#contact' ];
-                    $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' )
-                        ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-generated-cta' ] )
-                        : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-generated-cta' );
-                    wpae_llm_normalize_generated_button_settings( $settings );
-                }
-                $element['settings'] = $settings;
-                $button_found = true;
-            } elseif ( $widget_type === 'text-editor' && ! $button_found ) {
-                $editor_text = wpae_llm_normalize_content_text( $settings['editor'] ?? '' );
-                if ( $editor_text === $normalized_cta ) {
-                    $element['widgetType'] = 'button';
-                    $settings = [
-                        'text' => $cta,
-                        'link' => [ 'url' => '#contact' ],
-                        '_css_classes' => 'wpae-generated-cta',
-                    ];
-                    wpae_llm_normalize_generated_button_settings( $settings );
-                    $element['settings'] = $settings;
-                    $element['elements'] = [];
-                    $button_found = true;
-                    $replaced_text = true;
-                    $changed++;
-                }
+                $buttons[] =& $element;
+            } elseif ( $widget_type === 'text-editor' ) {
+                $text_editors[] =& $element;
             }
             if ( is_array( $element['elements'] ?? null ) ) {
-                $walk( $element['elements'] );
+                $collect( $element['elements'] );
             }
         }
         unset( $element );
     };
-    $walk( $elements );
+    $collect( $elements );
 
-    if ( $button_found ) {
-        if ( $replaced_text ) {
-            $changed++;
+    $used_buttons = [];
+    $missing = [];
+    foreach ( $requirements as $requirement_index => $requirement ) {
+        $wanted_text = wpae_llm_normalize_content_text( (string) ( $requirement['text'] ?? '' ) );
+        $wanted_url = wpae_llm_normalize_cta_url( $requirement['url'] ?? '' );
+        $match_index = null;
+        foreach ( $buttons as $button_index => &$button ) {
+            if ( isset( $used_buttons[ $button_index ] ) ) {
+                continue;
+            }
+            $settings = is_array( $button['settings'] ?? null ) ? $button['settings'] : [];
+            $same_text = wpae_llm_normalize_content_text( (string) ( $settings['text'] ?? '' ) ) === $wanted_text;
+            $same_url = $wanted_url !== '' && wpae_llm_button_url( $settings ) === $wanted_url;
+            if ( ( $same_text && ( $wanted_url === '' || $same_url ) ) || ( ! $same_text && $same_url ) ) {
+                $match_index = $button_index;
+                break;
+            }
         }
+        unset( $button );
+        if ( $match_index === null && isset( $buttons[ $requirement_index ] ) && ! isset( $used_buttons[ $requirement_index ] ) ) {
+            $match_index = $requirement_index;
+        }
+        if ( $match_index !== null ) {
+            $used_buttons[ $match_index ] = true;
+            wpae_llm_apply_cta_requirement_to_button( $buttons[ $match_index ], $requirement, $preserve_style, $changed );
+            continue;
+        }
+        $converted = false;
+        foreach ( $text_editors as &$editor ) {
+            $editor_text = is_array( $editor['settings'] ?? null ) ? (string) ( $editor['settings']['editor'] ?? '' ) : '';
+            if ( wpae_llm_normalize_content_text( $editor_text ) !== $wanted_text ) {
+                continue;
+            }
+            $editor['widgetType'] = 'button';
+            $editor['settings'] = [ 'text' => (string) $requirement['text'], 'link' => [ 'url' => wpae_llm_normalize_cta_url( $requirement['url'] ?? '' ) ?: '#contact' ], '_css_classes' => 'wpae-generated-cta' ];
+            $editor['elements'] = [];
+            wpae_llm_apply_cta_requirement_to_button( $editor, $requirement, false, $changed );
+            $converted = true;
+            break;
+        }
+        unset( $editor );
+        if ( ! $converted ) {
+            $missing[] = $requirement;
+        }
+    }
+
+    if ( empty( $missing ) ) {
         return $elements;
     }
 
-    $button = [
-        'id' => 'wpae-generated-cta-' . substr( md5( $normalized_cta ), 0, 7 ),
-        'elType' => 'widget',
-        'widgetType' => 'button',
-        'settings' => [
-            'text' => $cta,
-            'link' => [ 'url' => '#contact' ],
-            '_css_classes' => 'wpae-generated-cta',
-        ],
-        'elements' => [],
-    ];
     $target = null;
     $find_shell = static function ( array &$nodes ) use ( &$find_shell, &$target ): void {
         foreach ( $nodes as &$element ) {
@@ -4950,9 +5067,17 @@ function wpae_llm_normalize_requested_cta( array $elements, string $message, int
         unset( $root );
     }
     if ( is_array( $target ) ) {
-        wpae_llm_normalize_generated_button_settings( $button['settings'] );
-        $target[] = $button;
-        $changed++;
+        foreach ( $missing as $requirement ) {
+            $button = [
+                'id' => 'wpae-generated-cta-' . substr( md5( wpae_llm_normalize_content_text( (string) $requirement['text'] ) . '|' . (string) ( $requirement['url'] ?? '' ) ), 0, 7 ),
+                'elType' => 'widget',
+                'widgetType' => 'button',
+                'settings' => [ 'text' => (string) $requirement['text'], 'link' => [ 'url' => wpae_llm_normalize_cta_url( $requirement['url'] ?? '' ) ?: '#contact' ], '_css_classes' => 'wpae-generated-cta' ],
+                'elements' => [],
+            ];
+            wpae_llm_apply_cta_requirement_to_button( $button, $requirement, false, $changed );
+            $target[] = $button;
+        }
     }
     unset( $target );
     return $elements;

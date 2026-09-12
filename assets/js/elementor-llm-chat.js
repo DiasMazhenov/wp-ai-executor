@@ -811,11 +811,15 @@
     function clearEditorRoots() {
         return waitForEditorRuntime().then(function (ready) {
             if (!ready) return false;
-            liveGeneratedRootIds = [];
-            return reconcileEditorRoots([]);
+            return removeLiveGeneratedRoots().then(function (removed) {
+                if (!removed) return false;
+                liveGeneratedRootIds = [];
+                return true;
+            });
         });
     }
     var liveGeneratedRootIds = [];
+    var editorSyncConflict = null;
 
     function getEditorModelId(model) {
         if (!model) return '';
@@ -884,13 +888,21 @@
             return ok;
         });
     }
-    function reconcileEditorRoots(expectedRootIds) {
+    function reconcileEditorRoots(expectedRootIds, ownedRootIds) {
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
         var container = window.elementor.getPreviewContainer();
         var roots = getEditorModelChildren(container);
         if (!container || !roots.length || !Array.isArray(expectedRootIds)) return Promise.resolve(true);
         var expected = expectedRootIds.map(String).filter(Boolean);
-        var stale = roots.filter(function (model) { return expected.indexOf(getEditorModelId(model)) === -1; });
+        // Server IDs describe the saved document, not every local model. Only
+        // explicitly operation-owned roots may be removed; a root created or
+        // edited by the user while the provider was waiting is never inferred
+        // to be stale from the server response.
+        var owned = Array.isArray(ownedRootIds) ? ownedRootIds.map(String).filter(Boolean) : [];
+        var stale = roots.filter(function (model) {
+            var id = getEditorModelId(model);
+            return expected.indexOf(id) === -1 && owned.indexOf(id) !== -1;
+        });
         if (!stale.length) return Promise.resolve(true);
         function deleteStaleModel(model, attempt) {
             var modelContainer = getEditorContainerById(getEditorModelId(model));
@@ -912,11 +924,39 @@
             });
         }, Promise.resolve(true));
     }
-    function syncEditorElements(editorSync, repairDepth) {
+    function getEditorModelFingerprint(model) {
+        if (!model) return '';
+        var value = null;
+        try {
+            value = typeof model.toJSON === 'function' ? model.toJSON() : (model.attributes || model);
+            return JSON.stringify(value);
+        } catch (error) {
+            return getEditorModelId(model);
+        }
+    }
+    function captureEditorRootSnapshot() {
+        if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return { ids: [], fingerprints: {} };
+        var container = window.elementor.getPreviewContainer();
+        var fingerprints = {};
+        var models = getEditorModelChildren(container);
+        var ids = models.map(function (model) {
+            var id = getEditorModelId(model);
+            if (id) fingerprints[id] = getEditorModelFingerprint(model);
+            return id;
+        }).filter(Boolean);
+        return { ids: ids, fingerprints: fingerprints };
+    }
+    function editorModelMatchesSnapshot(model, snapshot) {
+        if (!snapshot || !snapshot.fingerprints) return true;
+        var id = getEditorModelId(model);
+        if (!id || !Object.prototype.hasOwnProperty.call(snapshot.fingerprints, id)) return true;
+        return snapshot.fingerprints[id] === getEditorModelFingerprint(model);
+    }
+    function syncEditorElements(editorSync, repairDepth, rootSnapshot) {
         if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
         if (Number(repairDepth) > 0 && (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function')) {
             return waitForEditorRuntime().then(function (ready) {
-                return ready ? syncEditorElements(editorSync, repairDepth) : false;
+                return ready ? syncEditorElements(editorSync, repairDepth, rootSnapshot) : false;
             });
         }
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
@@ -929,6 +969,14 @@
             var targetContainer = getEditorContainerById(replaceId);
             var expectedRootIds = Array.isArray(editorSync.after_top_level_ids) ? editorSync.after_top_level_ids : null;
             if (!target || !targetContainer || !replaceId) return Promise.resolve(false);
+            if (!editorModelMatchesSnapshot(target, rootSnapshot)) {
+                editorSyncConflict = {
+                    type: 'selected_element_changed',
+                    element_id: replaceId,
+                    message: 'Выбранный элемент изменился в редакторе, пока выполнялся запрос. Локальная правка сохранена; автоматическая замена пропущена.'
+                };
+                return Promise.resolve(false);
+            }
             var targetIndex = rootModels.indexOf(target);
             try {
                 return Promise.resolve(window.$e.run('document/elements/delete', { container: targetContainer })).then(function () {
@@ -942,7 +990,7 @@
                         return getEditorModelId(model) === replaceId;
                     });
                     if (!created) return false;
-                    var reconcile = expectedRootIds ? reconcileEditorRoots(expectedRootIds) : Promise.resolve(true);
+                    var reconcile = expectedRootIds ? reconcileEditorRoots(expectedRootIds, editorSync.operation_owned_root_ids) : Promise.resolve(true);
                     return reconcile.then(function (reconciled) {
                         if (!reconciled) return false;
                         return waitForPreviewPaint().then(function () { return refreshElementorPreview(); });
@@ -957,8 +1005,8 @@
         if (position === 'start') elements.reverse();
         var expectedRootIds = Array.isArray(editorSync.before_top_level_ids) ? editorSync.before_top_level_ids : null;
         var prepare = Number(repairDepth) > 0
-            ? removeLiveGeneratedRoots().then(function (removed) { return removed ? reconcileEditorRoots(expectedRootIds) : false; })
-            : reconcileEditorRoots(expectedRootIds);
+            ? removeLiveGeneratedRoots().then(function (removed) { return removed ? reconcileEditorRoots(expectedRootIds, editorSync.operation_owned_root_ids) : false; })
+            : reconcileEditorRoots(expectedRootIds, editorSync.operation_owned_root_ids);
         return prepare.then(function (ready) {
             if (!ready) return false;
             try {
@@ -1353,6 +1401,7 @@
     function request(message, retried, options) {
         if (requestInFlight) return Promise.resolve(false);
         requestInFlight = true;
+        editorSyncConflict = null;
         options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
         if (repairDepth === 0) {
@@ -1385,7 +1434,8 @@
         var requestContext = {
             post_id: config.postId,
             selected_elements: options.selectedElements || selectedElements(),
-            background_image_urls: getPreviewBackgroundImageUrls()
+            background_image_urls: getPreviewBackgroundImageUrls(),
+            editor_root_snapshot: captureEditorRootSnapshot()
         };
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
@@ -1480,7 +1530,7 @@
                 addGeneratedJsonSpoiler(editorSyncData && Array.isArray(editorSyncData.elements) ? editorSyncData.elements : []);
                 var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
                     ? syncEditorPatches(body.write.editor_sync)
-                    : syncEditorElements(body.write.editor_sync, repairDepth);
+                    : syncEditorElements(body.write.editor_sync, repairDepth, requestContext.editor_root_snapshot);
                 visionPromise = Promise.resolve(editorSyncPromise).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
                     if (editorSynced) {
@@ -1499,6 +1549,10 @@
                                 return false;
                             });
                         });
+                    }
+                    if (editorSyncConflict) {
+                        addMessage('assistant', editorSyncConflict.message);
+                        return false;
                     }
                     return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
                         addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Предпросмотр измененного элемента обновлен из сохраненных данных.' : 'Предпросмотр Elementor обновлен из сохраненных данных.');

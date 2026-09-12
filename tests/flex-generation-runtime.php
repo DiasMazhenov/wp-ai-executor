@@ -76,10 +76,28 @@ function wp_safe_remote_post( $url, $args ) {
 function wp_remote_retrieve_response_code( $response ) { return $response['response']['code']; }
 function wp_remote_retrieve_body( $response ) { return $response['body']; }
 function wp_remote_retrieve_header( $response, $name ) { return ''; }
-function get_post( $id, $output = null ) { return [ 'ID' => $id, 'post_title' => $GLOBALS['post_title'] ?? 'Existing page' ]; }
-function wp_get_post_autosave( $id ) { return $GLOBALS['test_autosave'] ?? null; }
+function get_post( $id, $output = null ) {
+    $autosave = $GLOBALS['test_autosave'] ?? null;
+    if ( $autosave && (int) ( $autosave->ID ?? 0 ) === (int) $id ) {
+        return $autosave;
+    }
+    return [ 'ID' => $id, 'post_title' => $GLOBALS['post_title'] ?? 'Existing page' ];
+}
+function wp_get_post_autosave( $id, $owner_id = 0 ) {
+    $autosave = $GLOBALS['test_autosave'] ?? null;
+    if ( ! $autosave || (int) ( $autosave->post_parent ?? $id ) !== (int) $id ) {
+        return null;
+    }
+    if ( $owner_id > 0 && (int) ( $autosave->post_author ?? 0 ) !== (int) $owner_id ) {
+        return null;
+    }
+    return $autosave;
+}
 function wp_delete_post( $id, $force_delete = false ) {
     $GLOBALS['deleted_autosaves'][] = [ 'id' => (int) $id, 'force' => (bool) $force_delete ];
+    if ( isset( $GLOBALS['test_autosave']->ID ) && (int) $GLOBALS['test_autosave']->ID === (int) $id ) {
+        $GLOBALS['test_autosave'] = null;
+    }
     return $GLOBALS['delete_autosave_result'] ?? (object) [ 'ID' => (int) $id ];
 }
 function get_post_meta( $id, $key = '', $single = false ) {
@@ -99,15 +117,25 @@ function check( $condition, $message ) {
     $GLOBALS['checks'] = ( $GLOBALS['checks'] ?? 0 ) + 1;
 }
 
-$GLOBALS['test_autosave'] = (object) [ 'ID' => 4975 ];
+$GLOBALS['test_autosave'] = (object) [
+    'ID' => 4975,
+    'post_parent' => 4556,
+    'post_author' => 10,
+    'post_modified' => '2026-09-13 10:00:00',
+    'post_content' => '{"elements":[]}',
+];
 $GLOBALS['deleted_autosaves'] = [];
 $GLOBALS['delete_autosave_result'] = (object) [ 'ID' => 4975 ];
 $autosave_report = wpae_clear_current_elementor_autosave( 4556 );
-check( ! empty( $autosave_report['cleared'] ) && $autosave_report['status'] === 'cleared', 'Current Elementor autosave was not cleared after a structured save' );
-check( $autosave_report['autosave_id'] === 4975 && count( $GLOBALS['deleted_autosaves'] ) === 1, 'Autosave cleanup did not target the current autosave exactly once' );
+check( empty( $autosave_report['cleared'] ) && $autosave_report['status'] === 'owner_unknown', 'Autosave cleanup queried or deleted a draft without an explicit owner' );
+check( count( $GLOBALS['deleted_autosaves'] ) === 0, 'Owner-unknown autosave cleanup performed a destructive delete' );
+$autosave_snapshot = wpae_capture_elementor_autosave( 4556, 10 );
+$autosave_report = wpae_clear_current_elementor_autosave( 4556, 10, $autosave_snapshot );
+check( ! empty( $autosave_report['cleared'] ) && $autosave_report['status'] === 'cleared', 'Explicitly owned Elementor autosave was not cleared after a confirmed save' );
+check( $autosave_report['autosave_id'] === 4975 && count( $GLOBALS['deleted_autosaves'] ) === 1, 'Autosave cleanup did not target the captured autosave exactly once' );
 $GLOBALS['test_autosave'] = null;
-$autosave_none_report = wpae_clear_current_elementor_autosave( 4556 );
-check( ! empty( $autosave_none_report['cleared'] ) && $autosave_none_report['status'] === 'none', 'Autosave cleanup did not accept a page without an autosave' );
+$autosave_none_report = wpae_clear_current_elementor_autosave( 4556, 10 );
+check( ! empty( $autosave_none_report['cleared'] ) && $autosave_none_report['status'] === 'none_at_start', 'Autosave cleanup did not accept a page without an autosave' );
 function widget( $id, $type, $settings ) { return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ]; }
 function container_node( $id, $settings, $children ) { return [ 'id' => $id, 'elType' => 'container', 'settings' => $settings, 'elements' => $children ]; }
 function provider_reply( $reply ) { return [ 'response' => [ 'code' => 200 ], 'body' => wp_json_encode( [ 'choices' => [ [ 'finish_reason' => 'stop', 'message' => [ 'content' => $reply ] ] ] ] ) ]; }

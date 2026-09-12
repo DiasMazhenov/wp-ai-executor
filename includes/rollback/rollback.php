@@ -306,7 +306,7 @@ function wpae_restore_option_snapshot( string $option_name, array $snapshot ): a
     return [ 'option' => $option_name, 'action' => 'restored' ];
 }
 
-function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consume = true ): array {
+function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consume = true, ?string $expected_current_fingerprint = null ): array {
     $snapshots = wpae_prune_rollback_snapshots( wpae_get_rollback_snapshots() );
 
     if ( $snapshot_id === '' || ! isset( $snapshots[ $snapshot_id ] ) ) {
@@ -320,6 +320,22 @@ function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consum
     }
 
     $snapshot = $snapshots[ $snapshot_id ];
+    if ( $expected_current_fingerprint !== null ) {
+        foreach ( array_keys( (array) ( $snapshot['posts'] ?? [] ) ) as $post_id ) {
+            $post_id = absint( $post_id );
+            if ( $post_id > 0 && wpae_rollback_post_fingerprint( $post_id ) !== $expected_current_fingerprint ) {
+                return [
+                    'ok' => false,
+                    'status' => 409,
+                    'snapshot_id' => $snapshot_id,
+                    'error' => 'Rollback was not applied because the page changed after this operation; newer content was preserved.',
+                    'conflict' => true,
+                    'current_fingerprint' => wpae_rollback_post_fingerprint( $post_id ),
+                    'expected_current_fingerprint' => $expected_current_fingerprint,
+                ];
+            }
+        }
+    }
     $restored_posts = [];
     $restored_options = [];
 

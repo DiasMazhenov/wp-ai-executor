@@ -509,7 +509,9 @@ function wpae_agent_guide(): array {
             'applies_to' => [ 'POST /elementor/page', 'POST /elementor/update', 'POST /elementor/patch' ],
             'mode' => 'atomic',
             'returned_as' => 'transaction',
-            'rule' => 'Structured Elementor writes create a rollback snapshot before writing, verify saved metadata and cache refresh after writing, and automatically roll back on transaction failure.',
+            'rule' => 'Structured Elementor writes create a rollback snapshot before writing, verify every required metadata value by read-back (including canonical _elementor_data equality), carry the trusted before-state contract through after-save verification, defer owned autosave cleanup until verification succeeds, and automatically roll back on transaction failure.',
+            'concurrency' => 'The write endpoint rejects an unexpected before-state change. On verification failure, rollback uses the observed post-state fingerprint and refuses to overwrite a newer concurrent edit; the retained snapshot must be reported for recovery.',
+            'autosave' => 'Never query or delete an autosave without an explicit owner. Capture the exact owner/parent/fingerprint before writing; delete it only after successful verification, and preserve it when it is newer, edited, replaced, missing ownership proof, or deletion fails.',
             'auto_rollback_on' => [
                 'metadata save error.',
                 'saved _elementor_data is missing, invalid JSON, or fails Elementor validation.',

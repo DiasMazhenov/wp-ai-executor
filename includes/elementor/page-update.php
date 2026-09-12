@@ -93,10 +93,16 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
-    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
+    $transaction_context = [
+        'allow_unchanged_legacy_top_level' => $existing_data,
+        'expected_before_elementor_data' => $existing_data,
+        'autosave_snapshot' => wpae_capture_elementor_autosave( $post_id, function_exists( 'get_current_user_id' ) ? absint( get_current_user_id() ) : 0 ),
+    ];
+    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
+        $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
         $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
             : null;
         return new WP_REST_Response( [
             'ok' => false,
@@ -113,7 +119,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
-    $finalized = wpae_finalize_elementor_transaction( 'elementor_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline );
+    $finalized = wpae_finalize_elementor_transaction( 'elementor_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline, $transaction_context );
     if ( is_wp_error( $finalized ) ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -241,10 +247,16 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
     $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . $post_id, [ $post_id ] );
-    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
+    $transaction_context = [
+        'allow_unchanged_legacy_top_level' => $existing_data,
+        'expected_before_elementor_data' => $existing_data,
+        'autosave_snapshot' => wpae_capture_elementor_autosave( $post_id, function_exists( 'get_current_user_id' ) ? absint( get_current_user_id() ) : 0 ),
+    ];
+    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
+        $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
         $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
             : null;
         return new WP_REST_Response( [
             'ok' => false,
@@ -263,7 +275,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
-    $finalized = wpae_finalize_elementor_transaction( 'elementor_patch', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline );
+    $finalized = wpae_finalize_elementor_transaction( 'elementor_patch', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline, $transaction_context );
     if ( is_wp_error( $finalized ) ) {
         return new WP_REST_Response( [
             'ok' => false,
@@ -342,6 +354,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'Target post_id does not exist.' ], 404 );
     }
 
+    $existing_data = [];
     $protected_zone_guard = [ 'ok' => true, 'protected_zones' => [] ];
     if ( $post_id > 0 ) {
         $existing_data = wpae_get_elementor_data_for_post( $post_id );
@@ -412,10 +425,18 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_page:create:' . $post_id, [], [], [ $post_id ] );
     }
 
-    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template );
+    $transaction_context = [
+        'allow_unchanged_legacy_top_level' => $is_new_post ? [] : $existing_data,
+        'expected_before_elementor_data' => $is_new_post ? [] : $existing_data,
+        'autosave_snapshot' => $is_new_post
+            ? []
+            : wpae_capture_elementor_autosave( $post_id, function_exists( 'get_current_user_id' ) ? absint( get_current_user_id() ) : 0 ),
+    ];
+    $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
+        $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
         $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
             : null;
 
         return new WP_REST_Response( [
@@ -436,7 +457,7 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
         ], $saved->get_error_code() === 'wpae_invalid_elementor_data' ? 422 : 400 );
     }
 
-    $finalized = wpae_finalize_elementor_transaction( $is_new_post ? 'elementor_page_create' : 'elementor_page_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline );
+    $finalized = wpae_finalize_elementor_transaction( $is_new_post ? 'elementor_page_create' : 'elementor_page_update', $post_id, $rollback_snapshot, $elementor_data, $preflight, $request, $visual_regression_baseline, $transaction_context );
     if ( is_wp_error( $finalized ) ) {
         return new WP_REST_Response( [
             'ok' => false,

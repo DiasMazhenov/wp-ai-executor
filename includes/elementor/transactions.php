@@ -87,56 +87,220 @@ function wpae_clear_elementor_cache( int $post_id ): array {
     return $report;
 }
 
+function wpae_elementor_canonical_value( $value ) {
+    if ( ! is_array( $value ) ) {
+        return $value;
+    }
+
+    $is_list = $value === [] || array_keys( $value ) === range( 0, count( $value ) - 1 );
+    $canonical = [];
+    foreach ( $value as $key => $child ) {
+        // Elementor may invalidate render caches between a write and a read.
+        // They are not part of the editable data contract; IDs, settings and
+        // child order remain part of the comparison.
+        if ( in_array( (string) $key, [ 'htmlCache', 'html_cache' ], true ) ) {
+            continue;
+        }
+        $canonical[ $key ] = wpae_elementor_canonical_value( $child );
+    }
+    if ( ! $is_list ) {
+        ksort( $canonical, SORT_STRING );
+    } else {
+        $canonical = array_values( $canonical );
+    }
+    return $canonical;
+}
+
+function wpae_elementor_data_matches( array $expected, array $actual ): bool {
+    return hash_equals(
+        hash( 'sha256', (string) wp_json_encode( wpae_elementor_canonical_value( $expected ) ) ),
+        hash( 'sha256', (string) wp_json_encode( wpae_elementor_canonical_value( $actual ) ) )
+    );
+}
+
+function wpae_elementor_autosave_field( $autosave, string $field ) {
+    if ( is_object( $autosave ) ) {
+        return $autosave->{$field} ?? null;
+    }
+    return is_array( $autosave ) ? ( $autosave[ $field ] ?? null ) : null;
+}
+
+function wpae_elementor_autosave_fingerprint( $autosave ): string {
+    $fields = [];
+    foreach ( [ 'ID', 'post_parent', 'post_author', 'post_date', 'post_date_gmt', 'post_modified', 'post_modified_gmt', 'post_title', 'post_excerpt', 'post_content' ] as $field ) {
+        $fields[ $field ] = (string) wpae_elementor_autosave_field( $autosave, $field );
+    }
+    return hash( 'sha256', (string) wp_json_encode( $fields ) );
+}
+
 /**
- * Elementor prefers the current user's WordPress autosave when bootstrapping
- * the editor. A stale autosave can therefore hide a newer, valid
- * _elementor_data value in the live canvas even though the public page is
- * correct. Once a structured write succeeds, the saved page supersedes that
- * draft and the autosave must not shadow it on the next editor load.
+ * Capture one explicitly owned autosave before the transaction writes. The
+ * author is deliberately mandatory: wp_get_post_autosave( $post_id ) may
+ * return another user's latest draft and must never be used for destructive
+ * cleanup.
  */
-function wpae_clear_current_elementor_autosave( int $post_id ): array {
+function wpae_capture_elementor_autosave( int $post_id, int $owner_id = 0 ): array {
     $report = [
         'post_id' => $post_id,
+        'owner_id' => $owner_id,
         'autosave_id' => 0,
         'status' => 'not_checked',
+        'cleanup_allowed' => false,
         'cleared' => false,
         'errors' => [],
     ];
 
-    if ( $post_id <= 0 || ! function_exists( 'wp_get_post_autosave' ) ) {
+    if ( $post_id <= 0 ) {
+        $report['status'] = 'invalid_post';
+        $report['ok'] = false;
+        $report['errors'][] = 'A valid parent post is required to inspect an autosave.';
+        return $report;
+    }
+    if ( $owner_id <= 0 ) {
+        $report['status'] = 'owner_unknown';
+        $report['ok'] = true;
+        $report['skipped_reason'] = 'An explicit autosave owner was not available; no autosave was queried or deleted.';
+        return $report;
+    }
+    if ( ! function_exists( 'wp_get_post_autosave' ) ) {
         $report['status'] = 'unsupported';
-        $report['cleared'] = true;
+        $report['ok'] = true;
+        $report['skipped_reason'] = 'WordPress autosave API is unavailable.';
         return $report;
     }
 
-    $autosave = wp_get_post_autosave( $post_id );
-    if ( ! $autosave || empty( $autosave->ID ) ) {
+    $autosave = wp_get_post_autosave( $post_id, $owner_id );
+    if ( ! $autosave || ! wpae_elementor_autosave_field( $autosave, 'ID' ) ) {
         $report['status'] = 'none';
+        $report['ok'] = true;
         $report['cleared'] = true;
         return $report;
     }
 
-    $autosave_id = absint( $autosave->ID );
+    $autosave_id = absint( wpae_elementor_autosave_field( $autosave, 'ID' ) );
+    $parent_id = absint( wpae_elementor_autosave_field( $autosave, 'post_parent' ) );
+    $author_id = absint( wpae_elementor_autosave_field( $autosave, 'post_author' ) );
     $report['autosave_id'] = $autosave_id;
-    if ( $autosave_id <= 0 || ! function_exists( 'wp_delete_post' ) ) {
-        $report['status'] = 'invalid';
-        $report['errors'][] = 'The current Elementor autosave could not be resolved for deletion.';
+    $report['autosave_parent_id'] = $parent_id;
+    $report['autosave_author_id'] = $author_id;
+    if ( $autosave_id <= 0 || $parent_id !== $post_id || $author_id !== $owner_id ) {
+        $report['status'] = 'ownership_mismatch';
+        $report['ok'] = true;
+        $report['skipped_reason'] = 'The resolved autosave did not prove the requested parent/author ownership.';
         return $report;
     }
 
-    $deleted = wp_delete_post( $autosave_id, true );
+    $report['status'] = 'captured';
+    $report['ok'] = true;
+    $report['cleanup_allowed'] = true;
+    $report['fingerprint'] = wpae_elementor_autosave_fingerprint( $autosave );
+    return $report;
+}
+
+/**
+ * Delete only the exact autosave captured at operation start, and only after
+ * all post-write checks pass. A newer or edited draft is intentionally kept.
+ */
+function wpae_cleanup_elementor_autosave( array $snapshot ): array {
+    $report = array_merge(
+        [
+            'post_id' => absint( $snapshot['post_id'] ?? 0 ),
+            'owner_id' => absint( $snapshot['owner_id'] ?? 0 ),
+            'autosave_id' => absint( $snapshot['autosave_id'] ?? 0 ),
+            'status' => 'not_requested',
+            'cleanup_allowed' => false,
+            'cleared' => false,
+            'errors' => [],
+        ],
+        [ 'ok' => true ]
+    );
+
+    if ( empty( $snapshot ) || ( $snapshot['status'] ?? '' ) === 'none' ) {
+        $report['status'] = 'none_at_start';
+        $report['cleared'] = true;
+        return $report;
+    }
+    if ( ( $snapshot['status'] ?? '' ) === 'owner_unknown' ) {
+        $report['status'] = 'owner_unknown';
+        $report['skipped_reason'] = 'No autosave cleanup was attempted without an explicit owner.';
+        return $report;
+    }
+    if ( empty( $snapshot['cleanup_allowed'] ) ) {
+        $report['status'] = 'ownership_not_proven';
+        $report['skipped_reason'] = 'Autosave ownership was not proven at operation start.';
+        return $report;
+    }
+    if ( ! function_exists( 'get_post' ) || ! function_exists( 'wp_delete_post' ) ) {
+        $report['status'] = 'unsupported';
+        $report['ok'] = false;
+        $report['errors'][] = 'WordPress post APIs required for safe autosave cleanup are unavailable.';
+        return $report;
+    }
+
+    $autosave = get_post( $report['autosave_id'] );
+    if ( ! $autosave ) {
+        $report['status'] = 'already_gone';
+        $report['cleared'] = true;
+        return $report;
+    }
+    $parent_id = absint( wpae_elementor_autosave_field( $autosave, 'post_parent' ) );
+    $author_id = absint( wpae_elementor_autosave_field( $autosave, 'post_author' ) );
+    if ( $parent_id !== $report['post_id'] || $author_id !== $report['owner_id'] ) {
+        $report['status'] = 'ownership_changed';
+        $report['skipped_reason'] = 'The autosave no longer belongs to the transaction owner.';
+        return $report;
+    }
+    if ( wpae_elementor_autosave_fingerprint( $autosave ) !== (string) ( $snapshot['fingerprint'] ?? '' ) ) {
+        $report['status'] = 'changed_during_operation';
+        $report['skipped_reason'] = 'The original autosave was edited while the transaction was running; it was preserved.';
+        return $report;
+    }
+    $latest = wp_get_post_autosave( $report['post_id'], $report['owner_id'] );
+    if ( $latest && ( absint( wpae_elementor_autosave_field( $latest, 'ID' ) ) !== $report['autosave_id'] || wpae_elementor_autosave_fingerprint( $latest ) !== (string) ( $snapshot['fingerprint'] ?? '' ) ) ) {
+        $report['status'] = 'replaced_during_operation';
+        $report['skipped_reason'] = 'A newer or changed owner autosave replaced the captured draft; it was preserved.';
+        return $report;
+    }
+
+    $deleted = wp_delete_post( $report['autosave_id'], true );
     if ( false === $deleted ) {
         $report['status'] = 'delete_failed';
-        $report['errors'][] = 'The current Elementor autosave could not be deleted.';
+        $report['ok'] = false;
+        $report['errors'][] = 'The captured owner autosave could not be deleted.';
         return $report;
     }
-
     $report['status'] = 'cleared';
     $report['cleared'] = true;
     return $report;
 }
 
-function wpae_save_elementor_page_data( int $post_id, array $elementor_data, string $template = 'elementor_canvas' ) {
+function wpae_clear_current_elementor_autosave( int $post_id, int $owner_id = 0, ?array $expected_snapshot = null ): array {
+    if ( $owner_id <= 0 ) {
+        return [
+            'post_id' => $post_id,
+            'owner_id' => 0,
+            'autosave_id' => 0,
+            'status' => 'owner_unknown',
+            'cleanup_allowed' => false,
+            'cleared' => false,
+            'ok' => true,
+            'errors' => [],
+            'skipped_reason' => 'No autosave was queried or deleted without an explicit owner.',
+        ];
+    }
+    $snapshot = $expected_snapshot ?: wpae_capture_elementor_autosave( $post_id, $owner_id );
+    return wpae_cleanup_elementor_autosave( $snapshot );
+}
+
+function wpae_elementor_meta_value_matches( string $meta_key, $expected, $actual ): bool {
+    if ( $meta_key === '_elementor_data' ) {
+        $decoded = is_string( $actual ) ? json_decode( $actual, true ) : null;
+        return is_array( $decoded ) && is_array( $expected ) && wpae_elementor_data_matches( $expected, $decoded );
+    }
+    return (string) $expected === (string) $actual;
+}
+
+function wpae_save_elementor_page_data( int $post_id, array $elementor_data, string $template = 'elementor_canvas', array $transaction_context = [] ) {
     if ( $post_id <= 0 || get_post( $post_id ) === null ) {
         return new WP_Error( 'wpae_invalid_post_id', 'A valid post_id is required.' );
     }
@@ -146,21 +310,42 @@ function wpae_save_elementor_page_data( int $post_id, array $elementor_data, str
         return new WP_Error( 'wpae_invalid_elementor_data', 'Elementor data failed validation.', [ 'errors' => $errors ] );
     }
 
-    update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
-    update_post_meta( $post_id, '_elementor_template_type', 'wp-page' );
-    update_post_meta( $post_id, '_elementor_version', defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '' );
-    update_post_meta( $post_id, '_elementor_data', wp_slash( wp_json_encode( $elementor_data ) ) );
-    update_post_meta( $post_id, '_wp_page_template', $template ?: 'elementor_canvas' );
-    update_post_meta( $post_id, '_wpae_design_system_id', wpae_get_design_system_id() );
-    update_post_meta( $post_id, '_wpae_design_system_hash', wpae_get_design_system_source_hash() );
+    if ( array_key_exists( 'expected_before_elementor_data', $transaction_context ) ) {
+        $before_raw = get_post_meta( $post_id, '_elementor_data', true );
+        $before_decoded = is_string( $before_raw ) && trim( $before_raw ) !== '' ? json_decode( $before_raw, true ) : [];
+        $expected_before = is_array( $transaction_context['expected_before_elementor_data'] ) ? $transaction_context['expected_before_elementor_data'] : [];
+        if ( ! is_array( $before_decoded ) || ! wpae_elementor_data_matches( $expected_before, $before_decoded ) ) {
+            return new WP_Error( 'wpae_elementor_write_conflict', 'Elementor data changed while the operation was preparing; the newer saved content was preserved.', [ 'expected_before' => $expected_before, 'actual_before' => is_array( $before_decoded ) ? $before_decoded : null ] );
+        }
+    }
+
+    $meta_values = [
+        '_elementor_edit_mode' => 'builder',
+        '_elementor_template_type' => 'wp-page',
+        '_elementor_version' => defined( 'ELEMENTOR_VERSION' ) ? ELEMENTOR_VERSION : '',
+        '_elementor_data' => wp_slash( wp_json_encode( $elementor_data ) ),
+        '_wp_page_template' => $template ?: 'elementor_canvas',
+        '_wpae_design_system_id' => wpae_get_design_system_id(),
+        '_wpae_design_system_hash' => wpae_get_design_system_source_hash(),
+    ];
+    $meta_errors = [];
+    foreach ( $meta_values as $meta_key => $expected_value ) {
+        $result = update_post_meta( $post_id, $meta_key, $expected_value );
+        $actual_value = get_post_meta( $post_id, $meta_key, true );
+        if ( ! wpae_elementor_meta_value_matches( $meta_key, $meta_key === '_elementor_data' ? $elementor_data : $expected_value, $actual_value ) ) {
+            $meta_errors[] = [
+                'meta_key' => $meta_key,
+                'update_returned_false' => false === $result,
+                'message' => 'Read-back value does not match the requested metadata.',
+            ];
+        }
+    }
+    if ( ! empty( $meta_errors ) ) {
+        return new WP_Error( 'wpae_elementor_metadata_write_failed', 'Elementor metadata write was not confirmed by read-back.', [ 'errors' => $meta_errors ] );
+    }
     $cache = wpae_clear_elementor_cache( $post_id );
     if ( empty( $cache['ok'] ) ) {
         return new WP_Error( 'wpae_elementor_cache_clear_failed', 'Elementor cache clearing failed after metadata write.', [ 'cache' => $cache ] );
-    }
-
-    $autosave = wpae_clear_current_elementor_autosave( $post_id );
-    if ( empty( $autosave['cleared'] ) ) {
-        return new WP_Error( 'wpae_elementor_autosave_clear_failed', 'Elementor data was saved, but the current editor autosave could not be cleared.', [ 'autosave' => $autosave ] );
     }
 
     return true;
@@ -309,19 +494,32 @@ function wpae_compare_visual_regression_snapshots( array $before, array $after )
     ];
 }
 
-function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_elementor_data, array $preflight, WP_REST_Request $request, ?array $visual_regression_baseline = null ): array {
+function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_elementor_data, array $preflight, WP_REST_Request $request, ?array $visual_regression_baseline = null, array $transaction_context = [] ): array {
     $checks = [];
     $raw_data = get_post_meta( $post_id, '_elementor_data', true );
     $decoded = is_string( $raw_data ) ? json_decode( $raw_data, true ) : null;
     $saved_valid = is_array( $decoded ) && empty( wpae_validate_elementor_data_array( $decoded ) );
+    $readback_matches = $saved_valid && wpae_elementor_data_matches( $expected_elementor_data, $decoded );
 
     $checks['saved_elementor_data'] = [
-        'ok' => $saved_valid,
-        'message' => $saved_valid ? 'Saved _elementor_data decodes as valid Elementor array.' : 'Saved _elementor_data is missing, invalid JSON, or fails Elementor validation.',
+        'ok' => $saved_valid && $readback_matches,
+        'message' => ! $saved_valid
+            ? 'Saved _elementor_data is missing, invalid JSON, or fails Elementor validation.'
+            : ( $readback_matches ? 'Saved _elementor_data decodes, validates, and matches the requested tree.' : 'Saved _elementor_data is valid but does not match the requested tree.' ),
         'json_error' => is_string( $raw_data ) && ! is_array( $decoded ) ? json_last_error_msg() : null,
+        'expected_fingerprint' => hash( 'sha256', (string) wp_json_encode( wpae_elementor_canonical_value( $expected_elementor_data ) ) ),
+        'actual_fingerprint' => is_array( $decoded ) ? hash( 'sha256', (string) wp_json_encode( wpae_elementor_canonical_value( $decoded ) ) ) : null,
+    ];
+    $checks['post_state_fingerprint'] = [
+        'ok' => true,
+        'message' => function_exists( 'wpae_rollback_post_fingerprint' ) ? 'Current post state fingerprint captured for rollback conflict protection.' : 'Rollback fingerprint helper is unavailable.',
+        'fingerprint' => function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null,
     ];
 
-    $design_contract = is_array( $decoded ) ? wpae_validate_design_system_contract( $decoded ) : [ 'ok' => false ];
+    $design_context = [
+        'allow_unchanged_legacy_top_level' => (array) ( $transaction_context['allow_unchanged_legacy_top_level'] ?? [] ),
+    ];
+    $design_contract = is_array( $decoded ) ? wpae_validate_design_system_contract( $decoded, $design_context ) : [ 'ok' => false ];
     $checks['design_system_contract'] = [
         'ok' => ! empty( $design_contract['ok'] ),
         'message' => ! empty( $design_contract['ok'] ) ? 'Saved data keeps the active design-system contract.' : 'Saved data violates the active design-system contract.',
@@ -335,7 +533,8 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
         'details' => $cache,
     ];
 
-    $quality_summary = wpae_build_after_save_quality_summary( $post_id, $expected_elementor_data, $preflight );
+    $confirmed_elementor_data = is_array( $decoded ) ? $decoded : [];
+    $quality_summary = wpae_build_after_save_quality_summary( $post_id, $confirmed_elementor_data, $preflight );
     $strict_quality = (bool) $request->get_param( 'transaction_strict_quality' );
     $quality_level = (string) ( $quality_summary['visual_audit']['level'] ?? '' );
     $quality_ok = ! $strict_quality || in_array( $quality_level, [ 'strong', 'acceptable' ], true );
@@ -368,7 +567,7 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
         }
     }
 
-    $design_review = wpae_build_elementor_design_review( $expected_elementor_data, [
+    $design_review = wpae_build_elementor_design_review( $confirmed_elementor_data, [
         'source' => 'transaction_after_save',
         'post_id' => $post_id,
         'iteration' => $request->get_param( 'design_review_iteration' ),
@@ -498,20 +697,22 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
         'ok' => empty( $failed ),
         'checks' => $checks,
         'failed_checks' => $failed,
+        'confirmed_elementor_data' => $confirmed_elementor_data,
         'quality_summary' => $quality_summary,
     ];
 }
 
-function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?array $rollback_snapshot, array $elementor_data, array $preflight, WP_REST_Request $request, ?array $visual_regression_baseline = null ) {
+function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?array $rollback_snapshot, array $elementor_data, array $preflight, WP_REST_Request $request, ?array $visual_regression_baseline = null, array $transaction_context = [] ) {
     $transaction = wpae_build_elementor_transaction_status( $operation, $post_id, $rollback_snapshot );
-    $verification = wpae_verify_saved_elementor_transaction( $post_id, $elementor_data, $preflight, $request, $visual_regression_baseline );
+    $verification = wpae_verify_saved_elementor_transaction( $post_id, $elementor_data, $preflight, $request, $visual_regression_baseline, $transaction_context );
     $transaction['checks'] = $verification['checks'];
     $transaction['failed_checks'] = $verification['failed_checks'];
     $transaction['ok'] = ! empty( $verification['ok'] );
 
     if ( ! $transaction['ok'] ) {
+        $rollback_fingerprint = (string) ( $verification['checks']['post_state_fingerprint']['fingerprint'] ?? '' );
         $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint !== '' ? $rollback_fingerprint : null )
             : [ 'ok' => false, 'error' => 'No rollback snapshot was available.' ];
         $transaction['auto_rollback'] = $rollback;
 
@@ -525,11 +726,35 @@ function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?
         );
     }
 
+    if ( ! empty( $transaction_context['autosave_snapshot'] ) ) {
+        $autosave = wpae_cleanup_elementor_autosave( (array) $transaction_context['autosave_snapshot'] );
+        $transaction['checks']['autosave_cleanup'] = [
+            'ok' => ! empty( $autosave['ok'] ),
+            'message' => ! empty( $autosave['ok'] )
+                ? ( ! empty( $autosave['cleared'] ) ? 'The captured owner autosave was cleared after transaction verification.' : 'Autosave cleanup was safely skipped because the draft was absent, newer, or changed.' )
+                : 'The captured owner autosave could not be cleared after verification.',
+            'details' => $autosave,
+        ];
+        if ( empty( $autosave['ok'] ) ) {
+            $transaction['ok'] = false;
+            $transaction['failed_checks'][] = 'autosave_cleanup';
+            // The page has already passed read-back and design checks. Keep
+            // the valid write and the rollback evidence rather than restoring
+            // an older page merely because a draft deletion failed.
+            return new WP_Error(
+                'wpae_elementor_autosave_cleanup_failed',
+                'Elementor data was verified, but the owned autosave could not be cleared; the valid page write was preserved.',
+                [ 'transaction' => $transaction, 'quality_summary' => $verification['quality_summary'] ]
+            );
+        }
+    }
+
     if ( ! empty( $rollback_snapshot['id'] ) ) {
         wpae_seal_rollback_snapshot( (string) $rollback_snapshot['id'], $post_id );
     }
     return [
         'transaction' => $transaction,
+        'confirmed_elementor_data' => $verification['confirmed_elementor_data'] ?? $elementor_data,
         'quality_summary' => $verification['quality_summary'],
     ];
 }
