@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.94`
+- Plugin: `v02.11.95`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2436,3 +2436,14 @@ before removal.
   server-side audit evidence, а не предположения о provider JSON.
 - В v02.11.94 клиент сохраняет полный sanitized REST diagnostics object при
   ошибке со steps; ключи, cookies и payload secrets в чат не добавляются.
+
+## Hero CTA fallback repair — 2026-09-20, Asia/Almaty
+- Live v02.11.94 diagnostic подтвердил первую расходимость: у fallback-плана
+  `explicit_cta_count` было 2, но итоговый `button_count` стал 0.
+- Причина: `wpae_llm_remove_unrequested_buttons()` проверял только generic
+  content units. Labeled CTA с текстом и URL находился только в
+  `wpae_llm_extract_requested_ctas()`, поэтому обе native Button удалялись до
+  URL-aware normalizer.
+- v02.11.95 сохраняет кнопки, если CTA найден специализированным extractor;
+  добавлена регрессия точного архитектурного hero prompt с обеими парами
+  text+URL. Live v02.11.95 ещё не установлен.

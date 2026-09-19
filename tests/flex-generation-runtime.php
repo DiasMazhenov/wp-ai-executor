@@ -153,6 +153,21 @@ $message = 'Создай hero. Заголовок: «Пространство д
 $explicit_cta_message = 'Создай новый hero для архитектурной студии «Тихая форма». Заголовок: «Пространство для вашей жизни». Текст: «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Кнопка: «Обсудить проект», ссылка #contact. Выразительная асимметричная композиция из native Flexbox-контейнеров, крупная типографика, тёплый светлый фон и терракотовый акцент. Справа отдельный визуальный блок с надписью «Архитектура повседневности». Адаптируй для телефона.';
 $explicit_cta_plan = wpae_llm_content_plan( $explicit_cta_message, 'hero' );
 check( ! empty( $explicit_cta_plan['cta_required'] ) && in_array( 'Обсудить проект', (array) ( $explicit_cta_plan['explicit_cta'] ?? [] ), true ), 'Labeled quoted CTA was not added to the semantic content plan' );
+$explicit_fallback_action = wpae_llm_build_fallback_action( $explicit_cta_message, 42 );
+$explicit_fallback_changed = 0;
+wpae_llm_remove_unrequested_buttons( $explicit_fallback_action['elements'], $explicit_cta_message, $explicit_fallback_changed );
+$explicit_fallback_action['elements'] = wpae_llm_normalize_requested_cta( $explicit_fallback_action['elements'], $explicit_cta_message, $explicit_fallback_changed );
+$explicit_fallback_json = (string) wp_json_encode( $explicit_fallback_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( substr_count( $explicit_fallback_json, '"widgetType":"button"' ) === 1, 'Single labeled CTA fallback lost its requested native button before semantic validation' );
+check( strpos( $explicit_fallback_json, '"text":"Обсудить проект"' ) !== false && strpos( $explicit_fallback_json, '"url":"#contact"' ) !== false, 'Primary labeled CTA fallback lost its paired URL' );
+$two_cta_fallback_message = 'Создай новый hero. Заголовок: «Пространство для вашей жизни». Текст: «Проектируем спокойные, светлые интерьеры». Основная кнопка: «Обсудить проект», ссылка #contact. Вторая кнопка: «Смотреть проекты», ссылка #projects. Надпись: «Архитектура повседневности».';
+$two_cta_fallback_action = wpae_llm_build_fallback_action( $two_cta_fallback_message, 42 );
+$two_cta_fallback_changed = 0;
+wpae_llm_remove_unrequested_buttons( $two_cta_fallback_action['elements'], $two_cta_fallback_message, $two_cta_fallback_changed );
+$two_cta_fallback_action['elements'] = wpae_llm_normalize_requested_cta( $two_cta_fallback_action['elements'], $two_cta_fallback_message, $two_cta_fallback_changed );
+$two_cta_fallback_json = (string) wp_json_encode( $two_cta_fallback_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( substr_count( $two_cta_fallback_json, '"widgetType":"button"' ) === 2, 'Two labeled CTA fallback lost requested native buttons before semantic validation' );
+check( strpos( $two_cta_fallback_json, '"text":"Смотреть проекты"' ) !== false && strpos( $two_cta_fallback_json, '"url":"#projects"' ) !== false, 'Secondary labeled CTA fallback lost its paired URL' );
 $failure_diagnostics = wpae_llm_execution_failure_diagnostics( [
     'status' => 422,
     'update_error' => 'Elementor data failed design-system contract.',

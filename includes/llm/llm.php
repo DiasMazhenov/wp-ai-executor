@@ -1844,7 +1844,11 @@ function wpae_llm_remove_unrequested_buttons( array &$elements, string $message,
             break;
         }
     }
-    if ( $has_requested_cta ) {
+    // Labeled CTA sentences such as "Основная кнопка: «…», ссылка #…" are
+    // intentionally parsed by the CTA-specific extractor, not the generic
+    // content-unit extractor. Do not delete those native buttons as generic
+    // unrequested controls before the URL-aware normalizer runs.
+    if ( $has_requested_cta || ! empty( wpae_llm_extract_requested_ctas( $message ) ) ) {
         return;
     }
     $walk = static function ( array &$nodes ) use ( &$walk, &$changed ): void {

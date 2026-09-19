@@ -26,6 +26,13 @@ before making a new change to the plugin.
   first failing semantic field can be verified live. Root cause of the live
   rejection is not yet confirmed.
 
+- **Labeled CTA removal in fallback (v02.11.94, fixed locally for v02.11.95):**
+  The live diagnostic showed two explicit CTA requirements but zero buttons in
+  the final fallback. The generic button-pruning guard ignored the
+  URL-aware CTA extractor and removed both requested native buttons. The guard
+  now preserves any CTA found by either parser; regression checks both labels
+  and paired `#contact`/`#projects` links.
+
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
 - **Confirmed (2026-09-12, local audit boundary):** The transaction selected
