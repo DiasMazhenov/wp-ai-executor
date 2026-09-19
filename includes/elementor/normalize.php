@@ -144,6 +144,153 @@ function wpae_normalize_native_widget_content( array &$settings, string $widget_
     }
 }
 
+/**
+ * Convert the compact visual shorthand that some providers return into the
+ * actual Elementor control keys. A response can be valid JSON and still be
+ * visually broken when Elementor receives objects such as
+ * background_color={value:...} or typography={font_size:...}; those objects
+ * are not native control values and are ignored by the renderer.
+ */
+function wpae_normalize_provider_native_settings( array &$settings, string $element_path, string $widget_type, array &$report ): void {
+    $unwrap_value = static function ( $value ) {
+        if ( is_array( $value ) && array_key_exists( 'value', $value ) && is_scalar( $value['value'] ) ) {
+            return (string) $value['value'];
+        }
+        return $value;
+    };
+
+    foreach ( array_keys( $settings ) as $key ) {
+        $value = $settings[ $key ];
+        if ( ! is_array( $value ) || ! array_key_exists( 'value', $value ) || ! is_scalar( $value['value'] ) ) {
+            continue;
+        }
+        if ( preg_match( '/(?:^|_)(?:color|background_color|border_color|primary_color|secondary_color)$/', (string) $key ) ) {
+            $settings[ $key ] = $unwrap_value( $value );
+            wpae_elementor_normalize_add_change(
+                $report,
+                'unwrapped_provider_color',
+                $element_path,
+                'Converted a provider color wrapper to the scalar Elementor control value.',
+                [ 'setting' => $key ]
+            );
+        }
+    }
+
+    if ( is_array( $settings['layout'] ?? null ) ) {
+        $layout = $settings['layout'];
+        $layout_map = [
+            'flex_direction' => 'flex_direction',
+            'align_items' => 'flex_align_items',
+            'justify_content' => 'flex_justify_content',
+            'wrap' => 'flex_wrap',
+        ];
+        foreach ( $layout_map as $source => $target ) {
+            if ( array_key_exists( $target, $settings ) || ! is_scalar( $layout[ $source ] ?? null ) ) {
+                continue;
+            }
+            $settings[ $target ] = sanitize_key( (string) $layout[ $source ] );
+            wpae_elementor_normalize_add_change(
+                $report,
+                'flattened_provider_layout',
+                $element_path,
+                'Flattened a provider layout shorthand into the native Elementor Flexbox control.',
+                [ 'from' => 'layout.' . $source, 'to' => $target ]
+            );
+        }
+        foreach ( [ 'desktop' => 'gap', 'tablet' => 'gap_tablet', 'mobile' => 'gap_mobile' ] as $device => $source ) {
+            $target = $device === 'desktop' ? 'flex_gap' : 'flex_gap_' . $device;
+            if ( array_key_exists( $target, $settings ) || ! is_array( $layout[ $source ] ?? null ) ) {
+                continue;
+            }
+            $gap = $layout[ $source ];
+            if ( ! is_numeric( $gap['size'] ?? null ) ) {
+                continue;
+            }
+            $size = (string) $gap['size'];
+            $settings[ $target ] = [
+                'column' => $size,
+                'row' => $size,
+                'isLinked' => true,
+                'unit' => sanitize_key( (string) ( $gap['unit'] ?? 'rem' ) ),
+                'size' => $size,
+            ];
+            wpae_elementor_normalize_add_change(
+                $report,
+                'flattened_provider_layout',
+                $element_path,
+                'Flattened a provider gap shorthand into the native Elementor Flexbox gap control.',
+                [ 'from' => 'layout.' . $source, 'to' => $target ]
+            );
+        }
+        unset( $settings['layout'] );
+        wpae_elementor_normalize_add_change(
+            $report,
+            'removed_provider_layout_wrapper',
+            $element_path,
+            'Removed a non-native provider layout wrapper after copying its supported controls.',
+            [ 'setting' => 'layout' ]
+        );
+    }
+
+    if ( is_array( $settings['typography'] ?? null ) ) {
+        $typography = $settings['typography'];
+        $settings['typography_typography'] = 'custom';
+        $font_sizes = is_array( $typography['font_size'] ?? null ) ? $typography['font_size'] : [];
+        foreach ( [ 'desktop' => 'typography_font_size', 'tablet' => 'typography_font_size_tablet', 'mobile' => 'typography_font_size_mobile' ] as $device => $target ) {
+            $source = $font_sizes[ $device ] ?? null;
+            if ( is_array( $source ) && is_numeric( $source['size'] ?? null ) ) {
+                $settings[ $target ] = [
+                    'unit' => sanitize_key( (string) ( $source['unit'] ?? 'rem' ) ),
+                    'size' => (float) $source['size'],
+                ];
+            }
+        }
+        if ( is_scalar( $typography['font_weight'] ?? null ) ) {
+            $settings['typography_font_weight'] = (string) $typography['font_weight'];
+        }
+        if ( is_scalar( $typography['font_family'] ?? null ) ) {
+            $settings['typography_font_family'] = (string) $typography['font_family'];
+        }
+        if ( is_numeric( $typography['line_height'] ?? null ) ) {
+            $settings['typography_line_height'] = [ 'unit' => 'em', 'size' => (float) $typography['line_height'] ];
+        }
+        if ( is_array( $typography['color'] ?? null ) && is_scalar( $typography['color']['value'] ?? null ) ) {
+            $color = (string) $typography['color']['value'];
+            $color_key = $widget_type === 'heading' ? 'title_color' : ( $widget_type === 'button' ? 'button_text_color' : 'text_color' );
+            $settings[ $color_key ] = $color;
+        }
+        unset( $settings['typography'] );
+        wpae_elementor_normalize_add_change(
+            $report,
+            'flattened_provider_typography',
+            $element_path,
+            'Flattened provider typography into native responsive Elementor typography controls.',
+            [ 'widgetType' => $widget_type ]
+        );
+    }
+
+    if ( is_array( $settings['border'] ?? null ) ) {
+        $border = $settings['border'];
+        if ( ! array_key_exists( 'border_border', $settings ) ) {
+            $settings['border_border'] = 'solid';
+        }
+        if ( is_array( $border['width'] ?? null ) && ! array_key_exists( 'border_width', $settings ) ) {
+            $settings['border_width'] = $border['width'];
+        }
+        if ( is_array( $border['color'] ?? null ) && is_scalar( $border['color']['value'] ?? null ) && ! array_key_exists( 'border_color', $settings ) ) {
+            $settings['border_color'] = (string) $border['color']['value'];
+        }
+        unset( $settings['border'] );
+        wpae_elementor_normalize_add_change(
+            $report,
+            'flattened_provider_border',
+            $element_path,
+            'Flattened provider border shorthand into native Elementor border controls.',
+            [ 'setting' => 'border' ]
+        );
+    }
+}
+
 function wpae_normalize_known_third_party_widget( array &$element, array &$report, string $element_path ): void {
     $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
     if ( $widget_type !== 'jkit_heading' ) {
@@ -443,6 +590,8 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 wpae_elementor_normalize_add_change( $report, 'inferred_widget_type', $element_path, 'Filled missing widgetType with best-effort native widget type.', [ 'widgetType' => $element['widgetType'] ] );
             }
 
+            wpae_normalize_provider_native_settings( $element['settings'], $element_path, sanitize_key( (string) $element['widgetType'] ), $report );
+
             wpae_normalize_known_third_party_widget( $element, $report, $element_path );
 
             if ( ! isset( $element['elements'] ) || ! is_array( $element['elements'] ) ) {
@@ -468,6 +617,8 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
             }
         } else {
             $element['elType'] = 'container';
+
+            wpae_normalize_provider_native_settings( $element['settings'], $element_path, '', $report );
 
             wpae_elementor_normalize_flex_settings( $element['settings'], $report, $element_path );
 

@@ -2205,3 +2205,95 @@ before making a new change to the plugin.
 - **Regression:** The runtime suite covers a provider tree with wrong copy,
   bounded repair responses, fallback action-path diagnostics, exact requested
   copy preservation, and rejection of provider copy leakage.
+
+## EJ-121: Vision recovery left duplicate roots and generic CTA styling
+
+- **Confirmed (2026-09-13, live editor, v02.11.86):** The content-only hero
+  preserved the requested text and anchors, but the rendered buttons were
+  remapped to the site's generic green accent and the Vision retry left several
+  duplicate hero roots after rollback/reload. Vision scored the sparse result
+  68–70 and correctly rejected it.
+- **Root cause:** The fallback write still passed through the design-token map,
+  which unconditionally replaced explicit `button_background_color` values;
+  additionally, `liveGeneratedRootIds` was an in-memory list and was empty
+  after the full reload used by Vision repair, so operation-owned roots could
+  not be removed before the next repair insertion.
+- **Fix (v02.11.87):** Preserve the deterministic fallback's authored native
+  palette at the write boundary, use that fallback for full Vision regeneration
+  instead of replaying the sparse provider tree, and persist operation-owned
+  root IDs through the Vision repair session so rollback/reload removes only
+  roots created by that operation.
+- **Regression:** Runtime now asserts terracotta CTA settings and rejects the
+  generic green remap; JS contract tests cover root-ID persistence and the
+  Vision fallback route. Live acceptance must still prove the clean editor,
+  desktop/mobile screenshots, and the full 10-brief matrix after deployment.
+
+## EJ-122: Native Button background key was ignored by Elementor
+
+- **Confirmed (2026-09-13, live editor, v02.11.87):** The generated JSON
+  contained the intended terracotta values, but the rendered CTA backgrounds
+  remained `rgb(97, 206, 112)` (the site's global green accent). The new root
+  still showed the correct CTA labels and URLs in DOM, so this was a render
+  contract defect rather than a content-fidelity failure.
+- **Root cause:** WPAE wrote `button_background_color` and
+  `button_hover_background_color`; native Elementor Button controls use
+  `background_color` and `button_background_hover_color`. Elementor silently
+  ignored the aliases and applied the global accent.
+- **Fix (v02.11.88):** Fallback generation writes the native keys, generated
+  Button normalization migrates and removes legacy aliases, and the design
+  token map performs the same migration for provider payloads before its
+  palette pass. Runtime coverage now rejects the legacy key and verifies the
+  native terracotta value.
+
+## EJ-123: Provider shorthand passed JSON validation but was not native Elementor design
+
+- **Confirmed (2026-09-13, live editor, v02.11.88):** The generated design
+  JSON contained `typography: {...}`, `layout: {...}`, `border: {...}`, and
+  color objects such as `background_color: {value: "#4460EC"}`. The provider
+  response was accepted as an `insert_elements` command, but these wrappers are
+  not Elementor control keys, so the canvas ignored key visual settings. The
+  same response collapsed the hero into one heading, one multi-paragraph
+  text-editor, and two CTAs; Vision scored it 60/100 and described placeholder
+  green CTA blocks.
+- **Root cause:** Shape/content-fidelity checks treated valid JSON plus matching
+  text as a complete composition; the provider-design path skipped the fallback
+  visual grammar and did not flatten provider shorthand before the native write
+  boundary.
+- **Fix (v02.11.89):** Native normalization unwraps provider colors, flattens
+  layout gaps/alignment, responsive typography, and border settings to
+  Elementor control keys. Content-only provider trees now pass a semantic
+  composition gate (badge, CTA count, hierarchy, and repeatable content slots)
+  before write; failed trees use the deterministic content-complete fallback and
+  report the concrete quality failures. Runtime regressions cover both the
+  shorthand conversion and sparse-hero rejection.
+
+## EJ-124: Benefits brief was misclassified and shifted card copy
+
+- **Confirmed (2026-09-13, live editor, v02.11.89):** The content-only brief
+  beginning `Почему нас выбирают` was routed to the portfolio fallback. The
+  saved block therefore showed the `КЕЙСЫ` badge, an unrequested portfolio
+  intro, and dash-separated label/description pairs shifted into adjacent
+  cards. Vision scored the result 82/100 and reported duplicated paragraph
+  rendering during the subsequent bounded repair.
+- **Root cause:** The archetype catalog and detector recognised `почему мы`
+  but not `почему нас`; the portfolio body marker `работаем` then won the
+  generic score. The portfolio-oriented fallback builder also treated each
+  dash line as a single heading and consumed the next line as the description.
+- **Fix (v02.11.90):** Benefits detection accepts both forms, and the
+  benefits fallback parses labeled pairs into separate native Heading and
+  Text Editor widgets. The quality-gate fallback applies the same exact
+  content mapping before write. Runtime assertions cover the badge route,
+  three card labels, and all three descriptions.
+
+## EJ-125: Composition gate rejected valid badge-less content blocks
+
+- **Confirmed (2026-09-20, local regression review):** The new provider
+  quality gate treated a missing `wpae-generated-badge` as a universal failure.
+  That forced semantically complete CTA/FAQ-style provider compositions into
+  fallback even when their content slots and native widgets were correct.
+- **Root cause:** The badge visual rule was copied into the semantic quality
+  gate instead of being applied only by the fallback visual-grammar route.
+- **Fix (v02.11.91):** Badge presence remains diagnostic data but is no longer
+  a provider-quality failure. The gate still rejects sparse hierarchy,
+  collapsed semantic slots, missing requested media/CTA, and invalid native
+  structure. Runtime coverage includes a complete badge-less CTA composition.

@@ -7,7 +7,7 @@
     "assets/css/elementor-llm-chat.css": "60da84fd348b5b54082c62bfb39e0896635d7d3eaca60f4fc1fc346d3ec3c957",
     "assets/js/elementor-block-library-ui.js": "c67a90108b4ff4a507a79d97f668f8eb53a44703d9dcda364493836588c62cf5",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "f61beb42b2ffcb9fad9d3143a68d80ac6da8c60c643a096f6e977acb151bc7b2",
+    "assets/js/elementor-llm-chat.js": "f899103b505a727b2aa65144dd5ce1fea0f8fe6002185fd5c5d838a5bc8b98c1",
     "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
     "assets/previews/vocario-404.jpg": "46c02d4078d7fd9595d83585d2fd89e82273096be63f111d7567a4a1c05a1a0f",
     "assets/previews/vocario-about-us.jpg": "0ec916cb2daf9c7f934da367a4aa9082777509c8bbc3ef9eef6ab5513406ca0a",
@@ -53,11 +53,11 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "e51feebca00c3643a212d131de21284064303997db3ef79df55f71e8b277b2d0",
-    "includes/elementor/normalize.php": "0a595e269d97bc8f4bfc8fa1ad80296d628f4630937df848f04716b0b96637a7",
+    "includes/elementor/normalize.php": "844a87a965009a79fb72bf0766ff61ce0294c73056a1fd1374242f467af1e04e",
     "includes/elementor/page-update.php": "4fae29cdbc5ecb6f3c9fabfad06c73f9653c6bf862576947b4fa78cfa1680a27",
     "includes/elementor/recipes.php": "ceeb2831e88e8de60bdfd30b2416d0d36b5b87de2ed7fd3231e2d0b6d9c934a3",
     "includes/elementor/templates.php": "81d54937d106e0cb542e00b1e1a91e708076d5ac64792c0012e15970035ed3a2",
-    "includes/elementor/token-map.php": "89442bb28694bd5e35023089ded7984b5316538aebc372294bb45d5d2754bf00",
+    "includes/elementor/token-map.php": "d1306341c75c59d8110fff4b264375c73d5b6bfb76341c33b35054996d5d7d16",
     "includes/elementor/transactions.php": "3c53bb82193c6e40cd82da5a97337d2060488118c7de41eb911e8231569b6ac7",
     "includes/elementor/typography.php": "549860ccf90c94da1e2e11958322f141cc42a185485fd94c34eb2a1baf96d2be",
     "includes/elementor/validation-rules.php": "fa79c61c1f0872c435eb48dd4e901d9084ed84bbfd2f427a5fa7b67d44fbeab5",
@@ -69,7 +69,7 @@
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "5e22261eae2ad62c55e99cfcf0c1862e781a53afe327ab39f7b3e7d0cf1cd41b",
+    "includes/llm/llm.php": "51f794a148d80299113e37ef870a6e62bf712dfed8811546e53d599d8a4ba1b9",
     "includes/llm/transport.php": "285aa3f02346ea03844840b4d8880f36f0ab4dd3d0b20042021d4a96a89f2714",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "d407cef764165d1417f871d8a57bb56f8a1e65d9342827e6401c8d2122af63c8",
@@ -81,6 +81,6 @@
     "includes/updates/package-updater.php": "bc77e52c63c504525bf388e84a387f412c03fa07d3eebb353a5e88501ace7b1e",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "486ebb526900bb0346fee7361729e0d08dc26473bed915707e12e77541ca0149",
-    "wp-ai-executor.php": "57409c3ad03006391892eddc278d78e194ca6573ddc60c0bc055bcda3c472531"
+    "wp-ai-executor.php": "41843a9275bfd192ee5a0792aa7a0ea2a9c5a6292e78fe3e29dcd6625e157890"
   }
 }

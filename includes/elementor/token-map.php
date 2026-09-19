@@ -161,9 +161,18 @@ function wpae_token_map_apply_elements( array $elements, array $tokens, array &$
         }
 
         if ( $widget_type === 'button' ) {
+            // Migrate legacy WPAE/provider aliases before the generic native
+            // color pass. Elementor ignores these aliases on render.
+            if ( array_key_exists( 'button_background_color', $settings ) && ( ! array_key_exists( 'background_color', $settings ) || trim( (string) $settings['background_color'] ) === '' ) ) {
+                wpae_token_map_set( $settings, 'background_color', $settings['button_background_color'], $element_id, 'legacy.button_background_color', $report );
+            }
+            if ( array_key_exists( 'button_hover_background_color', $settings ) && ( ! array_key_exists( 'button_background_hover_color', $settings ) || trim( (string) $settings['button_background_hover_color'] ) === '' ) ) {
+                wpae_token_map_set( $settings, 'button_background_hover_color', $settings['button_hover_background_color'], $element_id, 'legacy.button_hover_background_color', $report );
+            }
+            wpae_token_map_unset( $settings, 'button_background_color', $element_id, 'legacy.button_background_color', $report );
+            wpae_token_map_unset( $settings, 'button_hover_background_color', $element_id, 'legacy.button_hover_background_color', $report );
             $palette = (array) ( $tokens['palette'] ?? [] );
             foreach ( [
-                'button_background_color' => 'accent',
                 'button_text_color' => 'surface',
             ] as $key => $role ) {
                 if ( $is_photo_hero_text && $key === 'button_text_color' ) {

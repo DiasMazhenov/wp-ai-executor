@@ -31,7 +31,7 @@ function wpae_llm_is_process_request( string $message, string $archetype = '' ):
 	// "проект" is intentionally NOT in this list: "таймлайн проекта" is a
 	// process, not a portfolio. Process words elsewhere in the check_text
 	// remain the tie-breaker.
-	$non_process_markers = '/(?:преимуществ|выгод|почему\s+мы|отзыв\w*|рекомендац\w*|кейс\w*|портфолио|тариф\w*|пакет\w*|цен\w*|стоимост\w*|услуг\w*|о\s+(?:нас|нашей\s+)?компани\w*|о\s+(?:нас|нашей\s+)?студи\w*|о\s+нас|about|контакт\w*|hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран|faq|част\w*\s+вопрос\w*|карусел\w*|слайдер\w*|партн[её]р\w*|мега[\s-]*меню|шапк\w*|header)\b/iu';
+	$non_process_markers = '/(?:преимуществ|выгод|почему\s+(?:мы|нас)|отзыв\w*|рекомендац\w*|кейс\w*|портфолио|тариф\w*|пакет\w*|цен\w*|стоимост\w*|услуг\w*|о\s+(?:нас|нашей\s+)?компани\w*|о\s+(?:нас|нашей\s+)?студи\w*|о\s+нас|about|контакт\w*|hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран|faq|част\w*\s+вопрос\w*|карусел\w*|слайдер\w*|партн[её]р\w*|мега[\s-]*меню|шапк\w*|header)\b/iu';
 	if ( preg_match( $non_process_markers, $intent_head ) ) {
 		return false;
 	}
@@ -100,6 +100,119 @@ function wpae_llm_is_content_composition_request( string $message ): bool {
     // Content-only briefs can be neutral copy without domain keywords or labels.
     $has_brief_shape = count( $sentences ) >= 3 && strlen( implode( ' ', $sentences ) ) >= 80;
     return count( $sentences ) >= 3 && ( $has_cta || $has_content_signal || $has_brief_shape );
+}
+
+/**
+ * A provider can return a syntactically valid one-root tree that is still a
+ * poor composition: one heading, one paragraph containing several semantic
+ * slots, and unmarked CTA controls. Do not write that tree just because the
+ * shape and content-fidelity checks pass. The deterministic archetype
+ * builders are the bounded recovery path for this specific quality failure.
+ */
+function wpae_llm_provider_composition_quality( string $message, array $elements, string $archetype ): array {
+    $failures = [];
+    $counts = [
+        'widgets' => 0,
+        'copy_widgets' => 0,
+        'headings' => 0,
+        'text_editors' => 0,
+        'buttons' => 0,
+        'special_widgets' => [],
+        'has_badge' => false,
+        'multi_unit_text_editor' => false,
+    ];
+    $walk = static function ( array $nodes ) use ( &$walk, &$counts ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                $counts['has_badge'] = true;
+            }
+            $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+            if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+                $counts['widgets']++;
+                if ( in_array( $widget_type, [ 'heading', 'text-editor', 'button', 'icon-box', 'icon-list', 'testimonial', 'counter', 'price-list', 'accordion' ], true ) ) {
+                    $counts['copy_widgets']++;
+                }
+                if ( $widget_type === 'heading' ) {
+                    $counts['headings']++;
+                } elseif ( $widget_type === 'text-editor' ) {
+                    $counts['text_editors']++;
+                    $editor = (string) ( $settings['editor'] ?? '' );
+                    if ( preg_match( '/<p\b[^>]*>.*<p\b|(?:\r?\n){1,2}/isu', $editor ) ) {
+                        $counts['multi_unit_text_editor'] = true;
+                    }
+                } elseif ( $widget_type === 'button' ) {
+                    $counts['buttons']++;
+                }
+                if ( in_array( $widget_type, [ 'icon-list', 'accordion', 'price-list', 'testimonial', 'image', 'divider' ], true ) ) {
+                    $counts['special_widgets'][ $widget_type ] = (int) ( $counts['special_widgets'][ $widget_type ] ?? 0 ) + 1;
+                }
+            }
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $walk( $node['elements'] );
+            }
+        }
+    };
+    $walk( $elements );
+
+    $units = wpae_llm_content_units( $message );
+    $cta_requirements = wpae_llm_extract_requested_ctas( $message );
+    $non_cta_units = array_values( array_filter( $units, static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit ) ) );
+    $expected_copy_slots = count( $non_cta_units ) + count( $cta_requirements );
+    if ( ! empty( $units ) && $counts['widgets'] < 3 ) {
+        $failures[] = 'provider returned too few native widgets';
+    }
+
+    $repeatable_widget = false;
+    foreach ( [ 'accordion', 'price-list', 'testimonial', 'icon-list' ] as $type ) {
+        if ( ! empty( $counts['special_widgets'][ $type ] ) ) {
+            $repeatable_widget = true;
+            break;
+        }
+    }
+    if ( ! empty( $units ) && ! $repeatable_widget && $expected_copy_slots >= 3 && $counts['copy_widgets'] < $expected_copy_slots ) {
+        $failures[] = 'semantic content slots were collapsed into too few widgets';
+    }
+    if ( $archetype === 'hero' ) {
+        if ( count( $non_cta_units ) >= 3 && $counts['headings'] < 2 ) {
+            $failures[] = 'hero brand/title/visual hierarchy is incomplete';
+        }
+        if ( count( $cta_requirements ) > 0 && $counts['buttons'] < count( $cta_requirements ) ) {
+            $failures[] = 'hero CTA requirements were collapsed into too few buttons';
+        }
+        if ( $counts['multi_unit_text_editor'] && count( $non_cta_units ) >= 3 ) {
+            $failures[] = 'hero body copy contains multiple semantic units in one text-editor';
+        }
+    }
+    if ( in_array( $archetype, [ 'benefits', 'team', 'portfolio', 'testimonials' ], true ) && count( $non_cta_units ) >= 4 && $counts['copy_widgets'] < 4 && ! $repeatable_widget ) {
+        $failures[] = 'repeatable block content is not represented by separate native items';
+    }
+    if ( $archetype === 'faq' && empty( $counts['special_widgets']['accordion'] ) && $counts['headings'] < 2 ) {
+        $failures[] = 'FAQ has no accordion and no question headings';
+    }
+    if ( $archetype === 'pricing' && empty( $counts['special_widgets']['price-list'] ) && $counts['headings'] < 3 ) {
+        $failures[] = 'pricing block has no price list and fewer than three tier headings';
+    }
+
+    return [
+        'ok' => empty( $failures ),
+        'archetype' => $archetype,
+        'failures' => array_values( array_unique( $failures ) ),
+        'counts' => $counts,
+        'expected_copy_slots' => $expected_copy_slots,
+        'requested_ctas' => count( $cta_requirements ),
+    ];
+}
+
+function wpae_llm_is_content_only_brief( string $message ): bool {
+    if ( trim( $message ) === '' || wpae_llm_is_instruction_only_brief( $message ) ) {
+        return false;
+    }
+    return ! (bool) preg_match( '/\b(?:создай|создать|сделай|добавь|добавить|собери|сформируй|используй|примени|адаптируй|native|elementor|flexbox|виджет\w*|контейнер\w*|разделител\w*|коннектор\w*|техническ\w*|responsive|desktop|tablet|mobile|hero|faq|pricing|portfolio|timeline)\b/iu', $message );
 }
 
 function wpae_llm_is_action_request( string $message ): bool {
@@ -618,9 +731,9 @@ function wpae_llm_content_archetype_catalog(): array {
             'semantic' => '/\b(отзыв\w*|рекомендац\w*|testimonial\w*|мнение\w*\s+клиент\w*)\b/iu',
         ],
         'benefits' => [
-            'headline' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?)\b/iu',
-            'body' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?)\b/iu',
-            'semantic' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?|почему\s+мы)\b/iu',
+            'headline' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?|почему\s+(?:мы|нас))\b/iu',
+            'body' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?|почему\s+(?:мы|нас))\b/iu',
+            'semantic' => '/\b(преимуществ\w*|выгод\w*|features?|benefits?|почему\s+(?:мы|нас))\b/iu',
         ],
 		'process' => [
 			'headline' => '/\b(процесс\w*|этап\w*|шаг\w*|таймлайн\w*|process|steps?|timeline)\b/iu',
@@ -773,7 +886,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         if ( preg_match( '/[«"]/u', $message ) ) {
             return 'testimonials';
         }
-        if ( preg_match( '/(?:^|[.!?\n]\s*)(?:преимуществ\w*|выгод\w*|почему\s+мы|features?|benefits?)\b/iu', trim( $message ) ) ) {
+        if ( preg_match( '/(?:^|[.!?\n]\s*)(?:преимуществ\w*|выгод\w*|почему\s+(?:мы|нас)|features?|benefits?)\b/iu', trim( $message ) ) ) {
             return 'benefits';
         }
 		if ( wpae_llm_is_process_request( $message ) ) {
@@ -820,7 +933,7 @@ function wpae_llm_detect_block_archetype( string $message ): string {
         'mega_menu' => '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu',
         'carousel' => '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu',
         'hero' => '/\b(hero|хиро|первый экран|обложк|главн\w*|home)\b|школ\w*\s+публичн\w*\s+выступлен\w*/iu',
-        'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему мы)/iu',
+        'benefits' => '/\b(преимуществ|benefit|features?|выгод|почему\s+(?:мы|нас))/iu',
         'pricing' => '/\b(тариф|цен|пакет|pricing|стоимост)/iu',
         'about' => '/\b(о\s+компани\w*|о\s+нас|кто\s+мы|about|о\s+(?:нашей\s+)?студи\w*)/iu',
         'team' => '/\b(команд\w*|сотрудник\w*|специалист\w*|коллег\w*)/iu',
@@ -4861,6 +4974,17 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, string $me
 
 function wpae_llm_normalize_generated_button_settings( array &$settings ): bool {
     $before = wp_json_encode( $settings );
+    // Elementor's native Button controls use `background_color` and
+    // `button_background_hover_color`. Older WPAE/provider payloads used
+    // non-native aliases, which were silently ignored and rendered the
+    // site's global green accent instead of the authored palette.
+    if ( array_key_exists( 'button_background_color', $settings ) && ( ! array_key_exists( 'background_color', $settings ) || trim( (string) $settings['background_color'] ) === '' ) ) {
+        $settings['background_color'] = $settings['button_background_color'];
+    }
+    if ( array_key_exists( 'button_hover_background_color', $settings ) && ( ! array_key_exists( 'button_background_hover_color', $settings ) || trim( (string) $settings['button_background_hover_color'] ) === '' ) ) {
+        $settings['button_background_hover_color'] = $settings['button_hover_background_color'];
+    }
+    unset( $settings['button_background_color'], $settings['button_hover_background_color'] );
     foreach ( [ 'width', 'width_tablet', 'width_mobile', 'min_width', 'max_width', '_element_width', '_element_width_tablet', '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
         unset( $settings[ $key ] );
     }
@@ -6750,8 +6874,8 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 			$settings = [
 				'text' => (string) ( $requirement['text'] ?? '' ),
 				'link' => [ 'url' => wpae_llm_normalize_cta_url( $requirement['url'] ?? '' ) ?: '#contact' ],
-				'button_background_color' => $secondary ? 'transparent' : '#a84c36',
-				'button_hover_background_color' => $secondary ? '#f4e6df' : '#8f3e2c',
+				'background_color' => $secondary ? 'transparent' : '#a84c36',
+				'button_background_hover_color' => $secondary ? '#f4e6df' : '#8f3e2c',
 				'button_text_color' => $secondary ? '#a84c36' : '#ffffff',
 				'button_hover_text_color' => '#a84c36',
 				'border_border' => 'solid',
@@ -6760,8 +6884,8 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 				'_css_classes' => 'wpae-generated-cta',
 			];
 			wpae_llm_normalize_generated_button_settings( $settings );
-			$settings['button_background_color'] = $secondary ? 'transparent' : '#a84c36';
-			$settings['button_hover_background_color'] = $secondary ? '#f4e6df' : '#8f3e2c';
+			$settings['background_color'] = $secondary ? 'transparent' : '#a84c36';
+			$settings['button_background_hover_color'] = $secondary ? '#f4e6df' : '#8f3e2c';
 			$settings['button_text_color'] = $secondary ? '#a84c36' : '#ffffff';
 			$settings['button_hover_text_color'] = '#a84c36';
 			return $widget( $id, 'button', $settings );
@@ -6896,25 +7020,32 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 		];
 	} elseif ( $archetype === 'benefits' ) {
         $content_units = array_values( array_filter(
-            wpae_llm_extract_requested_content( $message ),
+            wpae_llm_content_units( $message ),
             static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit )
         ) );
-        if ( count( $content_units ) >= 3 ) {
-            $section_title = array_shift( $content_units );
+        $benefit_pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
+        if ( count( $content_units ) >= 3 && count( $benefit_pairs ) >= 2 ) {
+            $section_title = (string) ( $content_units[0] ?? 'Преимущества для вашего проекта' );
             $benefit_cards = [];
-            foreach ( array_slice( $content_units, 0, 6 ) as $index => $unit ) {
+            foreach ( $benefit_pairs as $index => $pair ) {
                 $card_number = (string) ( $index + 1 );
+                $label = trim( (string) ( $pair['label'] ?? '' ) );
+                $content = trim( (string) ( $pair['content'] ?? '' ) );
+                if ( $label === '' || $content === '' ) {
+                    continue;
+                }
                 $benefit_cards[] = $card( 'llm-benefit-' . $card_number, [
                     wpae_llm_card_heading_widget(
                         'llm-benefit-' . $card_number . '-title',
-                        $widget( 'llm-benefit-' . $card_number . '-source', 'heading', [ 'title' => $unit, 'header_size' => 'h4' ] )
+                        $widget( 'llm-benefit-' . $card_number . '-source', 'heading', [ 'title' => $label, 'header_size' => 'h4' ] )
                     ),
+                    $widget( 'llm-benefit-' . $card_number . '-copy', 'text-editor', [ 'editor' => $content ] ),
                 ] );
             }
-            $elements = [
+            $elements = ! empty( $benefit_cards ) ? [
                 $widget( 'llm-heading', 'heading', [ 'title' => $section_title, 'header_size' => 'h2' ] ),
                 $grid( 'llm-benefits-grid', $benefit_cards ),
-            ];
+            ] : $elements;
         } else {
             $elements = [
                 $widget( 'llm-heading', 'heading', [ 'title' => 'Преимущества для вашего проекта', 'header_size' => 'h2' ] ),
@@ -8623,7 +8754,26 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $template_source_fingerprint = [];
         $template_fidelity = [ 'ok' => true, 'schema' => 'wpae-template-fidelity-v1', 'status' => 'not_applicable', 'failures' => [] ];
         $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
-        if ( $action_fallback && ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
+        // A full Vision regeneration is a recovery boundary, not a second
+        // chance to write the same sparse provider tree. Rebuild the block
+        // from the semantic brief so the bounded repair has a deterministic,
+        // content-complete native composition to validate.
+        $vision_fallback_mode = false;
+        if ( $vision_regenerate && ! $targeted_edit ) {
+            $provider_action_diagnostics = (array) $action_diagnostics;
+            $action = wpae_llm_build_fallback_action( $message, $post_id );
+            $action_fallback = true;
+            $vision_fallback_mode = true;
+            $action_diagnostics = array_merge(
+                $provider_action_diagnostics,
+                [
+                    'response_type' => 'deterministic_fallback',
+                    'fallback_reason' => 'AI Vision rejected the provider composition; rebuilt the block from the semantic brief before the bounded repair write.',
+                    'vision_regenerate' => true,
+                ]
+            );
+        }
+        if ( $action_fallback && ! $vision_fallback_mode && ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
             $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
             if ( ! empty( $library_elements ) ) {
                 $template_source_fingerprint = wpae_llm_template_fingerprint( $library_elements );
@@ -8664,9 +8814,31 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $provider_design = ! $action_fallback && ! $library_applied;
         $provider_design_changed = 0;
+        $provider_quality = [ 'ok' => true, 'failures' => [], 'counts' => [] ];
         if ( $provider_design ) {
             $action['elements'] = WPAE_LLM_Design::normalize( $action['elements'], $provider_design_changed );
+            $provider_quality = wpae_llm_provider_composition_quality( $message, (array) $action['elements'], $action_archetype );
+            if ( ! $targeted_edit && wpae_llm_is_content_only_brief( $message ) && empty( $provider_quality['ok'] ) ) {
+                $provider_action_diagnostics = (array) $action_diagnostics;
+                $action = wpae_llm_build_fallback_action( $message, $post_id );
+                $action_fallback = true;
+                $provider_design = false;
+                $action_diagnostics = array_merge(
+                    $provider_action_diagnostics,
+                    [
+                        'response_type' => 'deterministic_fallback',
+                        'fallback_reason' => 'Provider tree passed JSON/content checks but failed the semantic composition quality gate before write.',
+                        'provider_quality' => $provider_quality,
+                    ]
+                );
+                $quality_fallback_content_changed = 0;
+                wpae_llm_apply_fallback_archetype_content( $action['elements'], $message, $action_archetype, $quality_fallback_content_changed );
+                if ( $quality_fallback_content_changed > 0 ) {
+                    $fallback_content_changed += $quality_fallback_content_changed;
+                }
+            }
         }
+        $provider_design = ! $action_fallback && ! $library_applied;
         if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design && ! $provider_design ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
@@ -8749,6 +8921,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'details' => $action_diagnostics,
             ],
             [
+                'id' => 'composition_quality',
+                'status' => empty( $provider_quality['ok'] ) ? 'failed' : ( $provider_design ? 'ok' : 'skipped' ),
+                'message' => empty( $provider_quality['ok'] )
+                    ? 'Ответ провайдера отклонен до записи: смысловые слоты были сжаты в слишком бедную композицию; применен content-complete fallback.'
+                    : ( $provider_design ? 'Provider-композиция прошла базовую проверку смысловых слотов.' : 'Проверка provider-композиции не требовалась для fallback или библиотеки.' ),
+                'details' => $provider_quality,
+            ],
+            [
                 'id' => 'hero_composition',
                 'status' => $action_archetype === 'hero' && ! $provider_design ? 'ok' : 'skipped',
                 'message' => $action_archetype === 'hero' && ! $provider_design ? 'Hero выровнен единообразно: badge, текст, иконки и CTA используют одну ось.' : 'Hero-нормализация не требуется для этого типа блока.',
@@ -8820,7 +9000,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $recovery_fidelity = wpae_llm_content_fidelity( $message, (array) ( $recovery_action['elements'] ?? [] ) );
                 $recovery_plan_audit = wpae_llm_content_plan_audit( $content_plan, (array) ( $recovery_action['elements'] ?? [] ) );
                 if ( ! empty( $recovery_fidelity['ok'] ) && ! empty( $recovery_plan_audit['ok'] ) ) {
-                    $recovery_execution = wpae_llm_execute_action( $recovery_action, $post_id, $action_archetype, -1, $message, false );
+                    $recovery_execution = wpae_llm_execute_action( $recovery_action, $post_id, $action_archetype, -1, $message, true );
                     $recovery_steps = [
                         [
                             'id' => 'content_fidelity_fallback',
@@ -8941,11 +9121,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'final_validation' => [
                 'content_fidelity' => $content_fidelity,
                 'semantic_plan' => $content_plan_audit,
+                'provider_quality' => $provider_quality,
                 'provider_design' => $provider_design,
                 'library_applied' => $library_applied,
             ],
         ];
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design );
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design || $action_fallback );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         $generation_diagnostics['execution'] = [
             'ok' => ! empty( $execution['ok'] ),

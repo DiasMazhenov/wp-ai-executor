@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.86`
+- Plugin: `v02.11.91`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -69,6 +69,43 @@
   fallback is rechecked against both the content and semantic plan, then saved
   through the normal Elementor dry-run/read-back lifecycle with bounded JSON
   diagnostics explaining the provider-to-fallback transition.
+- v02.11.87: Fixes the live visual-recovery boundary. Full Vision regeneration
+  now rebuilds from the semantic brief using the deterministic native fallback,
+  fallback colors are not overwritten by the generic green token-map accent,
+  and operation-owned editor roots survive reload so rollback cannot leave
+  duplicate prompt blocks. Regression coverage asserts the terracotta CTA
+  palette and persisted root ownership.
+- v02.11.88: Fixes native Elementor Button palette serialization. The fallback
+  now writes `background_color` and `button_background_hover_color`, while the
+  token map and generated-button normalizer migrate legacy WPAE aliases before
+  render. This prevents Elementor from silently falling back to the site's
+  global green accent; runtime coverage checks the actual native keys.
+- v02.11.89: Fixes a second live-generation boundary. Some providers returned
+  visual shorthand objects (`typography`, `layout`, `border`, and
+  `{value: ...}` colors) that are valid JSON but not Elementor native control
+  values; the normalizer now flattens them before preflight/write. A provider
+  can also return a syntactically valid but semantically poor content-only
+  composition (one heading, one multi-unit text editor, and bare CTAs). The
+  server now audits this shape before write and routes a failed content-only
+  brief to the deterministic content-complete archetype fallback with a safe
+  diagnostic reason. Local runtime coverage is 174 checks; live v02.11.88
+  exposed the failure and v02.11.89 still requires a fresh install and repeat
+  live proof.
+- v02.11.90: Fixes the next content-only regression found in the live
+  `Почему нас выбирают` smoke. The classifier now recognises `почему нас` as
+  benefits, and the deterministic builder keeps each label paired with its own
+  description instead of shifting dash-separated lines between cards. The
+  quality-gate fallback applies the same content remapping before the write.
+  v02.11.89 live evidence showed the old misclassification as `КЕЙСЫ` and the
+  shifted pairs; v02.11.90 requires a fresh install and repeat live proof.
+- v02.11.91: Makes the provider composition gate archetype-aware by removing
+  the unconditional badge requirement. A semantically complete CTA/FAQ or
+  other block may now preserve a provider composition without a badge; sparse
+  hierarchy, collapsed content slots, missing requested CTA/media, and native
+  control failures remain blocking. The fallback visual grammar still adds
+  the appropriate badge on its own route. v02.11.90 is installed live; this
+  quality-gate release is prepared locally and requires installation before
+  fresh live acceptance.
 - Live acceptance (2026-09-10, post 4556, v02.11.81): Fresh editor JSON has
   one root `95aae8b` with the horizontal design-system classes, native badge
   `ПРОЦЕСС`, heading `Как мы работаем`, four cards and three Divider widgets.

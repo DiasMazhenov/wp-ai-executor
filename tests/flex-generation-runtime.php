@@ -288,6 +288,9 @@ foreach ( [ 'Тихая форма', 'Пространство для вашей
 }
 check( strpos( $content_only_json, 'Обсудить проект — #contact' ) === false && strpos( $content_only_json, 'Смотреть проекты — #projects' ) === false, 'CTA URL leaked into visible content-only hero copy' );
 check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"#e7c7b7' ) !== false, 'Content-only hero did not create the separate visual panel' );
+check( strpos( $content_only_json, '"background_color":"#a84c36' ) !== false, 'Content-only hero lost its authored terracotta CTA palette at the write boundary' );
+check( strpos( $content_only_json, '"button_background_color"' ) === false, 'Content-only hero retained a non-native Button background key' );
+check( strpos( $content_only_json, '"background_color":"#61ce70' ) === false, 'Content-only hero was remapped to the generic green design-system accent' );
 $content_only_mobile_stack = false;
 $find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_content_only_mobile_stack, &$content_only_mobile_stack ): void {
 	foreach ( $nodes as $node ) {
@@ -305,6 +308,104 @@ $find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_
 };
 $find_content_only_mobile_stack( [ $content_only_saved ] );
 check( $content_only_mobile_stack, 'Content-only hero is not stacked on mobile' );
+
+$provider_shorthand = [
+    container_node( 'provider-shorthand', [
+        'container_type' => 'flex',
+        'layout' => [
+            'flex_direction' => 'row',
+            'align_items' => 'center',
+            'gap' => [ 'unit' => 'rem', 'size' => 1.25 ],
+        ],
+        'background_color' => [ 'value' => '#f4eee4' ],
+    ], [
+        widget( 'shorthand-heading', 'heading', [
+            'title' => 'Заголовок',
+            'typography' => [
+                'font_size' => [
+                    'desktop' => [ 'unit' => 'rem', 'size' => 3.2 ],
+                    'tablet' => [ 'unit' => 'rem', 'size' => 2.6 ],
+                    'mobile' => [ 'unit' => 'rem', 'size' => 2.1 ],
+                ],
+                'font_weight' => '700',
+                'line_height' => 1.1,
+                'color' => [ 'value' => '#111827' ],
+            ],
+        ] ),
+        widget( 'shorthand-button', 'button', [
+            'text' => 'Открыть',
+            'background_color' => [ 'value' => '#a84c36' ],
+            'border' => [
+                'width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+                'color' => [ 'value' => '#a84c36' ],
+            ],
+        ] ),
+    ] ),
+];
+$provider_shorthand_normalized = wpae_elementor_normalize_data( $provider_shorthand )['data'];
+$provider_shorthand_root = $provider_shorthand_normalized[0];
+$provider_shorthand_heading = $provider_shorthand_root['elements'][0]['settings'];
+$provider_shorthand_button = $provider_shorthand_root['elements'][1]['settings'];
+check( $provider_shorthand_root['settings']['background_color'] === '#f4eee4', 'Provider background wrapper was not converted to a native scalar color' );
+check( $provider_shorthand_root['settings']['flex_align_items'] === 'center' && $provider_shorthand_root['settings']['flex_gap']['size'] === '1.25', 'Provider layout shorthand was not flattened to native Flexbox controls' );
+check( $provider_shorthand_heading['typography_font_size_mobile']['size'] === 2.1 && $provider_shorthand_heading['title_color'] === '#111827', 'Provider typography shorthand was not flattened to responsive native controls' );
+check( $provider_shorthand_button['background_color'] === '#a84c36' && $provider_shorthand_button['border_color'] === '#a84c36' && $provider_shorthand_button['border_border'] === 'solid', 'Provider button visual shorthand was not converted to native Elementor controls' );
+check( ! array_key_exists( 'typography', $provider_shorthand_heading ) && ! array_key_exists( 'border', $provider_shorthand_button ), 'Non-native provider visual wrappers leaked into normalized settings' );
+
+$poor_content_only_provider = [
+    container_node( 'poor-provider', [ 'container_type' => 'flex' ], [
+        widget( 'poor-heading', 'heading', [ 'title' => 'Тихая форма' ] ),
+        widget( 'poor-copy', 'text-editor', [ 'editor' => '<p>Пространство для вашей жизни</p><p>Проектируем спокойные, светлые интерьеры с вниманием к каждой детали</p><p>Архитектура повседневности</p>' ] ),
+        widget( 'poor-cta-1', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
+        widget( 'poor-cta-2', 'button', [ 'text' => 'Смотреть проекты', 'link' => [ 'url' => '#projects' ] ] ),
+    ] ),
+];
+$poor_quality = wpae_llm_provider_composition_quality( $content_only_hero_message, $poor_content_only_provider, 'hero' );
+check( empty( $poor_quality['ok'] ), 'Sparse content-only provider tree passed the composition quality gate' );
+check( ! in_array( 'required generated badge is missing', (array) $poor_quality['failures'], true ) && in_array( 'hero brand/title/visual hierarchy is incomplete', (array) $poor_quality['failures'], true ), 'Composition quality diagnostics incorrectly required a badge instead of reporting the sparse hero hierarchy' );
+$fallback_quality = wpae_llm_provider_composition_quality( $content_only_hero_message, (array) ( wpae_llm_build_fallback_action( $content_only_hero_message, 42 )['elements'] ?? [] ), 'hero' );
+check( ! empty( $fallback_quality['ok'] ), 'Deterministic content-complete hero fallback failed its own composition quality gate' );
+
+$cta_provider_without_badge = [
+    widget( 'cta-title', 'heading', [ 'title' => 'Обсудим ваш проект' ] ),
+    widget( 'cta-copy', 'text-editor', [ 'editor' => 'Опишите задачу, а мы предложим следующий шаг.' ] ),
+    widget( 'cta-button', 'button', [ 'text' => 'Записаться на консультацию', 'link' => [ 'url' => '#booking' ] ] ),
+];
+$cta_quality = wpae_llm_provider_composition_quality( "Обсудим ваш проект\nОпишите задачу, а мы предложим следующий шаг.\nЗаписаться на консультацию — #booking", $cta_provider_without_badge, 'cta' );
+check( ! empty( $cta_quality['ok'] ) && empty( $cta_quality['counts']['has_badge'] ), 'A semantically complete CTA provider composition without a badge was rejected' );
+
+$benefits_message = "Почему нас выбирают\nТочная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха\nСвет и воздух — Работаем с естественным светом и спокойными материалами\nПорядок в деталях — Продумываем хранение, маршруты и ежедневные привычки";
+$benefits_action = wpae_llm_build_fallback_action( $benefits_message, 42 );
+$benefits_cards = [];
+$collect_benefits_cards = static function ( array $nodes ) use ( &$collect_benefits_cards, &$benefits_cards ): void {
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        if ( ( $node['elType'] ?? '' ) === 'container' && strpos( (string) ( $node['id'] ?? '' ), 'llm-benefit-' ) === 0 && preg_match( '/^llm-benefit-[1-9][0-9]*$/', (string) $node['id'] ) ) {
+            $headings = [];
+            $copy = [];
+            foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+                if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
+                    continue;
+                }
+                if ( ( $child['widgetType'] ?? '' ) === 'heading' ) {
+                    $headings[] = (string) ( $child['settings']['title'] ?? '' );
+                } elseif ( ( $child['widgetType'] ?? '' ) === 'text-editor' ) {
+                    $copy[] = (string) ( $child['settings']['editor'] ?? '' );
+                }
+            }
+            $benefits_cards[] = [ 'headings' => $headings, 'copy' => $copy ];
+        }
+        if ( is_array( $node['elements'] ?? null ) ) {
+            $collect_benefits_cards( $node['elements'] );
+        }
+    }
+};
+$collect_benefits_cards( (array) ( $benefits_action['elements'] ?? [] ) );
+check( count( $benefits_cards ) === 3, 'Benefits fallback did not create one native card per labeled content pair' );
+check( ( $benefits_cards[0]['headings'][0] ?? '' ) === 'Точная работа с пространством' && ( $benefits_cards[1]['headings'][0] ?? '' ) === 'Свет и воздух' && ( $benefits_cards[2]['headings'][0] ?? '' ) === 'Порядок в деталях', 'Benefits fallback merged the dash-separated title and description' );
+check( ( $benefits_cards[0]['copy'][0] ?? '' ) === 'Планируем каждый метр и сохраняем ощущение воздуха' && ( $benefits_cards[1]['copy'][0] ?? '' ) === 'Работаем с естественным светом и спокойными материалами' && ( $benefits_cards[2]['copy'][0] ?? '' ) === 'Продумываем хранение, маршруты и ежедневные привычки', 'Benefits fallback shifted or duplicated card descriptions' );
 
 $wrong_provider_action = $action;
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';

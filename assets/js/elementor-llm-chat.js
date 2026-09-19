@@ -370,6 +370,7 @@
                 visionRepair: true,
                 visionRegenerate: Boolean(options.visionRegenerate),
                 visionFindings: String(options.visionFindings || '').slice(0, 3600),
+                ownedRootIds: Array.isArray(options.ownedRootIds) ? options.ownedRootIds.map(String).filter(Boolean).slice(0, 12) : liveGeneratedRootIds.slice(0, 12),
                 selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined
             } : {};
             window.sessionStorage.setItem(visionRepairKey, JSON.stringify({ message: String(message).slice(0, 4000), options: repairOptions, createdAt: Date.now() }));
@@ -393,6 +394,9 @@
             return;
         }
         clearVisionRepair();
+        liveGeneratedRootIds = Array.isArray(pending.options && pending.options.ownedRootIds)
+            ? pending.options.ownedRootIds.map(String).filter(Boolean).slice(0, 12)
+            : [];
         setOpen(true);
         status.textContent = strings.sending;
         addMessage('user', pending.message);
@@ -1594,7 +1598,7 @@
                     addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
                     return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
                         if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией: ' + rollback.error);
-                        var repairOptions = { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), selectedElements: requestContext.selected_elements };
+                        var repairOptions = { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), ownedRootIds: liveGeneratedRootIds.slice(0, 12), selectedElements: requestContext.selected_elements };
                         if (!scheduleVisionRepairAfterReload(originalBrief, repairOptions)) throw new Error('Не удалось сохранить Vision repair перед перезагрузкой Elementor.');
                         return true;
                     });
