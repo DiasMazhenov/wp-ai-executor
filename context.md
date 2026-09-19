@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.91`
+- Plugin: `v02.11.92`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2143,3 +2143,272 @@ Callbacks resolve the active models through `elementor.selection.getElements()`.
 - richer native token controls in the dashboard;
 - live AI Vision provider and transaction-gate smoke tests;
 - runtime REST/editor tests on a WordPress + Elementor installation.
+## Merged session history — imported from SESSION_CONTEXT.md
+
+The append-only session journal was merged here on 2026-09-20. The original
+untracked file was backed up to `/private/tmp/SESSION_CONTEXT-pre-context-merge-20260920.md`
+before removal.
+
+# Session Context
+
+## Objective — 2026-09-08
+- Изучить WP AI Executor, исправить подтверждённые проблемы генерации и добиться качественного редактируемого Flexbox-дизайна в Elementor.
+
+## Initial state
+- Рабочий репозиторий подтверждён: `DiasMazhenov/wp-ai-executor`, `main`, `6dca229`, версия `v02.11.69`. Отслеживаемые файлы без локальных изменений.
+- Открыт живой редактор Elementor страницы 4556. Существующий таймлайн сохраняется при проверках новых генераций.
+- Прочитаны context.md, PLAN.md, журнал прежних ошибок и правила визуальной приёмки; старые записи не заменяют текущую проверку.
+- Graphify CLI отсутствует; существующий локальный граф устарел. Навигация продолжится по графу JSON и текущим исходникам без перезаписи графа.
+
+## Plan
+1. Воспроизвести ошибки: контрактные тесты, PHP-проверки, провайдер, normalizer, качество дизайна, запись/undo, синхронизация редактора.
+2. Исправить общие причины и добавить поведенческие регрессионные проверки.
+3. Обновить выпуск и manifest, проверить staged-файлы, доставить исправления штатным способом.
+4. Проверить живую генерацию, выбранный JSON, DOM и скриншоты desktop/mobile; явно отметить внешние блокеры, если они останутся.
+
+## Status
+- Локальная причина live HTTP 422 подтверждена и исправлена; текущая ветка
+  содержит незакоммиченные изменения для v02.11.71. Live post 4556 пока не
+  менялся в этой итерации.
+
+## Follow-up diagnosis — v02.11.71
+- JSON поста 4556 подтвердил два top-level корня: timeline `95475b2` с
+  актуальной дизайн-системой и отдельный неизменённый badge-root `99e94cb`
+  без `wpae-ds`. Contract теперь допускает только точное сохранение такого
+  legacy-root по id+fingerprint; изменённый или новый root по-прежнему
+  отклоняется.
+- Новая диагностика сохраняет безопасный provider finish reason, decoded
+  shape/content checks, bounded repair attempts, semantic audit и execution
+  status в JSON чата; credentials и raw provider body не сохраняются.
+- Подтверждён отдельный fallback-дефект: process normalizer безусловно
+  добавлял timeline в hero fallback. Вызов ограничен `process`-запросами.
+- После исправления: `flex-generation-runtime.php` — 71 checks OK; все 3
+  Node contract suites, PHP lint и `git diff --check` проходят.
+
+## Release preparation — v02.11.71
+- Версия entrypoint/header поднята до `v02.11.71`; `wpae-package.json`
+  пересчитан для изменённых runtime-файлов.
+- Следующие шаги: staged-files audit, commit/push, ZIP-install в WordPress,
+  свежий Elementor editor и повтор exact hero prompt только после отдельного
+  подтверждения передачи текста live-провайдеру. Существующий timeline не
+  удалять и vertical variants не менять.
+
+## Changes — generation pipeline
+- Подтверждён дефект: корректный первый ответ LLM заменялся fallback, потому что успех первого ответа не учитывался в условии `!action_repair`.
+- Исправлена маршрутизация provider/repair/fallback. Авторская композиция не заменяется библиотекой, случайной вариацией, общей сеткой или принудительной палитрой.
+- Добавлен отдельный `includes/llm/design.php` для native responsive-дополнений без перезаписи явно заданного дизайна.
+- Нормализатор заполняет dimension-объекты и native flex gaps, переносит tablet gap, исключает нарастающие boxed/padding у вложенных контейнеров.
+- Добавлен общий deadline для транспортных повторов. Далее: подключить ко всем запросам, поведенческие регрессии, undo/concurrency, release и живой тест.
+- Исходный живой тест hero: `openrouter/free` дважды завершился cURL 28 (45 секунд), новая генерация не подтверждена.
+
+## Verification and safety
+- Первые 47 поведенческих проверок прошли на реальном PHP-pipeline с подменённой только границей WordPress/HTTP: успешный и repaired provider, сохранение существующей страницы и авторской композиции, idempotence, mobile/tablet, shared transport deadline, undo conflict.
+- Undo теперь сверяет after-state сохранённого снимка; после отмены полностью обновляет редактор, чтобы старое дерево не записалось повторно.
+- Browser timeout больше не выдаётся за подтверждённую ошибку провайдера и не запускает повторную запись при неизвестном результате.
+- Проверка прав учитывает `context.post_id`, а не только параметр верхнего уровня. Исключения провайдера редактируются перед выводом, debug logging условный.
+
+## Release preparation — v02.11.70
+- Добавлена проверка пустых/слишком больших композиций и включение native typography group для явных размеров.
+- Выявлен и исправлен конфликт реального design contract с пользовательской палитрой; маркеры и native-оформление по-прежнему обязательны.
+- 58 поведенческих проверок плюс две существующие контрактные проверки прошли.
+- Штатный браузер восстановлен через browser runtime: WP AI Executor v02.11.69 установлен и связан с WP Pusher.
+- GitHub main не защищён и совпадает с исходным 6dca229; готовится commit/push и обновление сайта.
+
+## Published code
+- Commit `aa57823` отправлен в GitHub main, 2026-09-08 11:42:06 Asia/Almaty.
+- PHP lint: 42 файла, ошибок нет; SHA256 manifest: 79 файлов, совпадают; JS syntax и все 3 test suites прошли.
+- В WP Pusher нажато Update plugin только для WP AI Executor; ожидается подтверждение установленной версии.
+
+## Deployment follow-up
+- WP Pusher вернул `An error occured: Загрузка не удалась`; live editor остаётся v02.11.69. Предыдущее предположение об успехе по возвращению кнопки было исправлено проверкой версии.
+- Подготовлен проверенный ZIP `/private/tmp/wp-ai-executor-v02.11.70.zip` (runtime + manifest), переход к штатной загрузке обновления WordPress.
+
+## Live release verified
+- WordPress ZIP updater подтвердил успешное обновление. Свежий редактор страницы 4556 показывает `openrouter/free · v02.11.70`.
+- Запущен исходный prompt архитектурного hero; существующий таймлайн виден, выбор элементов пуст.
+
+## Handoff requested by user
+- На v02.11.70 модель ответила (finish_reason=stop), но pipeline перешёл в deterministic_fallback и dry_run вернул design-system contract 422; новая композиция не сохранена.
+- Причины отклонения provider-дерева и ошибки contract пока не установлены. Гипотеза о маркерах двух существующих корней требует проверки, не считать доказанной.
+- Следующее чтение браузера отклонено auto-review из-за лимита Codex; обход не предпринимался.
+- Пользователь попросил подробный prompt для другого агента. Создан `NEXT_AGENT_PROMPT.md` с состоянием, доказательствами, нерешёнными задачами и критериями живой приёмки.
+
+## Audit requested — 2026-09-12, Asia/Almaty
+- Новый запрос: проверить ошибки и подготовить актуальный подробный prompt следующему агенту; текущий этап — аудит, без исправлений runtime и публикации.
+- Проверен локальный main `fce89163cfbb061644a1de951444833bf9019f2b`, plugin v02.11.81, guide v02.05.98. Старые записи v02.11.70 выше — история, не текущее состояние checkout.
+- Базовые проверки: 137 PHP runtime assertions в трёх успешных Node test suites; PHP lint 42 файлов и JS syntax 3 файлов без ошибок; manifest 79 файлов, обнаружено 5 несовпадений SHA256.
+- Добавлены локальные диагностические сценарии в `docs/audits/2026-09-12/`: реальные функции transactions, contract, CTA, package validator и JS reconciliation на фиктивных границах WordPress/Elementor. Проверяют владельца autosave, несохранённые корни, after-save legacy context, соответствие записанного результата, manifest и несколько CTA.
+- Живой сайт в этой сессии не проверялся; сведения о принятом таймлайне v02.11.81 взяты из журналов репозитория за 10 сентября.
+- Диагностики выполнены: восемь наблюдений подтвердили шесть дефектов (A01–A04 P1, A05–A06 P2). Исходные результаты сохранены в `docs/audits/2026-09-12/results.jsonl`.
+- Создан `PLUGIN_AUDIT_2026-09-12.md`: причины, исходники, условия, воспроизведения, границы доказательства и критерии приёмки.
+- Полностью обновлён `NEXT_AGENT_PROMPT.md` под v02.11.81/fce8916: порядок исправлений, регрессии, сохранность данных, CTA, manifest, разные Flex-композиции и живая приёмка. Старые данные v02.11.70 больше не представлены как текущие.
+- Завершающая проверка: ссылки документов существуют, PHP/JS syntax всех новых диагностических сценариев корректен, сохранено 8 JSON-наблюдений, tracked runtime по git status не изменён. Исправления шести дефектов и свежая живая приёмка остаются задачей следующего агента.
+
+## Fix audit — 2026-09-12, Asia/Almaty
+- Создана рабочая ветка `codex/fix-transaction-safety-20260912` от
+  `fce8916`; пользовательские untracked-артефакты не включаются.
+- Повторены базовые проверки: три Node suite прошли, PHP runtime сообщает
+  137 assertions. Диагностические probes воспроизвели A01, A02, A03, A04,
+  A05 и A06 как описано в `PLUGIN_AUDIT_2026-09-12.md`.
+- Текущая задача: исправить четыре P1 (autosave lifecycle, editor-root
+  reconciliation, contract context, read-back verification), затем A06 и
+  manifest; сохранить horizontal timeline и vertical variants.
+- Следующий шаг: прочитать точные transaction/page-update/rollback/CTA/manifest
+  границы, добавить изолированные регрессии с реальными lifecycle stubs и
+  только затем менять runtime.
+
+## Fix implementation — 2026-09-13, Asia/Almaty
+- Runtime changes are on `codex/fix-transaction-safety-20260912`: explicit-owner
+  autosave capture/fingerprint/deferred cleanup, read-back metadata verification,
+  expected-before conflict detection, trusted pre-operation legacy contract
+  context, confirmed-data quality summaries, and fingerprint-guarded rollback.
+- Editor reconciliation now removes only explicitly operation-owned AI roots and
+  detects a selected-root fingerprint change before replace; user-unsaved roots
+  are preserved. Fallback CTA application now selects one button before the
+  semantic multi-CTA normalizer maps each requested text/link.
+- Regression probes were upgraded with assertions. Current results: Node 3/3;
+  runtime 139 checks; A01/A03/A04 transactions probe passes ownership,
+  replacement, delete-failure, contract read-back, no-op, conflict, required
+  meta, failed verification and concurrent rollback checks; A02 editor VM and
+  A06 CTA probe pass. Package probe is pending final version and manifest
+  regeneration.
+- GitHub `origin/main` still equals `fce89163cfbb061644a1de951444833bf9019f2b`.
+  Public post 4556 currently renders root `95aae8b`, badge `ПРОЦЕСС`, heading
+  `Как мы работаем`, four labels and three native Dividers. A CUA-created browser
+  tab reached the WordPress login screen, so authenticated editor inspection and
+  deployment remain pending; no credentials were requested or used.
+- Next: update guide/version, regenerate `wpae-package.json`, run full lint and
+  ZIP validator, audit staged files, commit/push, then perform authenticated
+  live update and JSON/DOM/rendered/screenshot acceptance if access is available.
+
+## Fix verification — 2026-09-13, Asia/Almaty
+- CSS-to-native and both typography write paths now pass the same expected-before,
+  metadata read-back, cache refresh, after-save contract, rollback and deferred
+  owned-autosave cleanup lifecycle as update/patch/create. Their quality and
+  editability reports use confirmed read-back data.
+- Candidate release is `v02.11.82` with guide `v02.05.99`. The manifest contains
+  79 files; all SHA256 values match and the package probe accepts complete ZIPs
+  while rejecting corrupted, incomplete and unsafe-path packages.
+- Final local checks passed: Node 3/3, PHP runtime 139 checks, transactions
+  probe, editor-root probe (11 assertions), CTA probe, PHP lint 42 files, JS
+  syntax for 3 runtime files, and `git diff --check`. PHPCS/WPCS is not
+  installed/configured in this checkout.
+- Results after the fixes are stored separately in
+  `docs/audits/2026-09-12/fixed-results.jsonl`; baseline
+  `results.jsonl` remains unchanged.
+- Public post 4556 was re-read: root `95aae8b`, badge `ПРОЦЕСС`, heading
+  `Как мы работаем`, four ordered stages and three native Dividers remain
+  rendered. Authenticated editor/deploy for `v02.11.82` is still pending: the
+  available browser reached WordPress login and unauthenticated REST returns
+  401. No live page was modified in this session.
+
+## Release handoff — 2026-09-13, Asia/Almaty
+- Commit `c274de10a469bcb80c9ee4eed525380f2614cbeb` (`fix: harden Elementor
+  transaction lifecycle`) was created from the feature branch and pushed to
+  `origin/codex/fix-transaction-safety-20260912`; remote SHA was confirmed.
+- A real 79-file ZIP was built at
+  `/private/tmp/wp-ai-executor-v02.11.82.zip` (2,186,798 bytes) and accepted
+  by the package manifest validator. This is a local release artifact, not a
+  live installation.
+- Live deploy and Elementor editor acceptance remain explicitly pending until
+  an authenticated WordPress/WP Pusher session is available. Do not infer
+  deployment from the GitHub push.
+
+## Handoff refresh — 2026-09-20, Asia/Almaty
+- Пользователь запросил подробный промт следующему агенту. Сверены HEAD 373f6dd, ветка codex/fix-transaction-safety-20260912, версия HEAD v02.11.86 и dirty working tree v02.11.90/guide v02.05.99 (10 tracked-файлов).
+- Свежая базовая проверка: три Node test-файла прошли, PHP runtime — 177 checks OK. Специальные probes, manifest и live acceptance в этом этапе повторно не проверялись.
+- NEXT_AGENT_PROMPT.md обновлён: прежние A01–A06 представлены как уже исправленные по истории регрессии; приоритет — review незакоммиченных v02.11.87–90, benefits «Почему нас выбирают», native controls, качество provider/fallback и Vision/reload без дублей. Включены контрольные prompts, десять сценариев приёмки и выпуск.
+- Runtime и существующие незакоммиченные правки не изменены.
+
+## Quality-gate correction — 2026-09-20, Asia/Almaty
+- После review v02.11.90 исправлен корень ложного fallback: provider composition
+  gate больше не требует badge для CTA/FAQ/прочих семантически корректных блоков;
+  `has_badge` оставлен только диагностикой. Добавлен regression для badge-less CTA.
+- Локальная версия поднята до `v02.11.91`; runtime — 178 checks OK, Node 3/3,
+  PHP lint целевых файлов, JS syntax и `git diff --check` проходят. Manifest
+  пересчитан для последнего `llm.php`, `normalize.php`, `token-map.php`, JS и bootstrap.
+- Live WordPress ранее подтверждён на `v02.11.90` в редакторе. Исторический
+  benefits smoke `v02.11.89` дал неправильную структуру; исправление benefits
+  classifier/pair parsing уже локально в v02.11.91. Новый smoke после v02.11.90
+  был отправлен, но его итог не прочитан.
+- Установка v02.11.91, 10 live-сценариев и новые screenshots остаются pending:
+  CUA auto-review остановил browser access по usage limit. Не считать локальный
+  пакет установленным и не считать pending smoke успешным. Одна рабочая вкладка
+  editor сохранена; тестовые Elementor roots не удалялись.
+- Commit `1d8892c2c2970dd51114adb56b3aaf81a57c01c7` создан и push подтверждён в
+  `origin/codex/fix-transaction-safety-20260912`. `main` и пользовательские
+  untracked-артефакты не изменялись.
+
+## Main-branch correction — 2026-09-20, Asia/Almaty
+- Пользователь уточнил deployment rule: коммиты должны находиться только в
+  `main`. Checkout переключён на `main`, выполнен fast-forward от `fce8916`
+  до `1d8892c`, а `origin/main` подтверждён тем же SHA.
+- Feature-ветка сохранена как историческая ссылка; новые изменения в неё не
+  добавлялись. Untracked audit/context/graphify-артефакты по-прежнему не staged.
+
+## Reverification on main — 2026-09-20 01:40, Asia/Almaty
+- После переключения на `main` повторены локальные проверки: runtime `178
+  checks OK`, Node `3/3`, A01/A02/A03/A04/A06 probes, PHP lint `42` файлов,
+  JS syntax и `git diff --check` — без ошибок.
+- Manifest содержит `79` runtime-файлов, все SHA256 совпадают. Готовый ZIP
+  `/private/tmp/wp-ai-executor-v02.11.91.zip` содержит `80` entries и принят
+  прямым `wpae_read_package_manifest()` validator как `ok=true`.
+- Текущий commit и `origin/main`: `1d8892c2c2970dd51114adb56b3aaf81a57c01c7`.
+- Live installation, editor JSON/DOM/rendered HTML, computed styles,
+  screenshots и 10-сценарная матрица остаются pending: browser/CUA ранее
+  остановлен auto-review usage limit. Не заявлять v02.11.91 установленным.
+
+## Push-to-Deploy trigger — 2026-09-20 01:53, Asia/Almaty
+- После подтверждённого push `main` вызван переданный WP Pusher webhook для
+  пакета `wp-ai-executor/wp-ai-executor.php` один раз. Ответ endpoint: HTTP 200,
+  тело пустое (`0` bytes).
+- Это подтверждает приём webhook, но не установку плагина. Версию WordPress,
+  свежий Elementor JSON/DOM/rendered HTML и screenshots нужно подтвердить через
+  авторизованный editor после восстановления browser/CUA access.
+- Webhook token не записан в этот журнал; его следует перевыпустить, поскольку
+  он был раскрыт в пользовательском сообщении.
+
+## Handoff report wording correction — 2026-09-20 02:01, Asia/Almaty
+- `LUNA_HANDOFF_REPORT.md` создан как отчёт о состоянии и evidence. Командный
+  раздел с инструкциями следующему агенту заменён на фактическое описание
+  незакрытых evidence boundaries и ограничений.
+- В отчёте сохранены только статусы, причины, результаты проверок и границы
+  доказательств; императивные формулировки удалены.
+
+## Context consolidation and fresh access — 2026-09-20 02:16, Asia/Almaty
+- История из отдельного `SESSION_CONTEXT.md` объединена в этот `context.md`;
+  исходный untracked-файл сохранён во временной резервной копии и удалён из
+  проекта, чтобы не поддерживать два канонических журнала.
+- `package-probe.php` получил только диагностическое исправление: compact JSON
+  summary вместо бинарного `files`, а также отдельные valid/hash/missing-file/
+  unsafe-path сценарии. Все четыре сценария прошли с точными validator errors.
+- Авторизованный CUA снова доступен: WP Pusher показывает WP AI Executor на
+  branch `main` с Push-to-Deploy enabled, а свежий Elementor editor сообщает
+  `Модель: openrouter/free · Версия: v02.11.91`. Предыдущий benefits result в
+  чате не отображается, canvas сейчас пустой; новая генерация в этом этапе ещё
+  не отправлялась.
+
+## Review Luna report — next handoff
+- Прочитан LUNA_HANDOFF_REPORT.md от 2026-09-20 01:57. Локально подтверждены main/1d8892c2c2970dd51114adb56b3aaf81a57c01c7, v02.11.91/guide v02.05.99, чистые tracked-файлы. Remote, live version и tests в этом этапе заново не проверялись.
+- Приоритет следующего этапа: свежая проверка разрешённого browser access и installed version, затем benefits/hero и оставшаяся live-матрица. Исторический usage limit не считается новым подтверждённым блокером.
+- По чтению package-probe обнаружено недостаточное доказательство unsafe-path: архив не содержит runtime files, поэтому отказ может предшествовать проверке опасного пути. Гипотеза пустого stdout: сериализация полного validator files, включая бинарные данные. Runtime-воспроизведение оставлено следующему агенту.
+- NEXT_AGENT_PROMPT.md обновлён: отдельные package-негативные сценарии, конкретные briefs, доказательства установки и обязательный новый отчёт с разницей относительно прошлого запуска. Исходный LUNA_HANDOFF_REPORT.md сохранён без изменений.
+
+## Transport fallback repair — 2026-09-20, Asia/Almaty
+- В live Elementor на post 4556 воспроизведён benefits-запрос с точным content-only
+  prompt. После единственного UI retry `openrouter/free` завершился
+  `cURL error 28: Operation timed out after 58417 milliseconds`; запись блока не
+  произошла. Это подтверждённый transport timeout, а не ошибка Elementor JSON.
+- В `wpae_llm_chat_request()` transport failure раньше завершал action-request
+  немедленным 502 до существующего deterministic fallback. Исправлена эта общая
+  граница: после исчерпания transport-попыток content action использует тот же
+  проверенный native fallback, сохраняет sanitized provider error и не запускает
+  дополнительный provider repair; обычный provider/repair путь не изменён.
+- Добавлена runtime regression на `WP_Error/cURL error 28`: один provider call,
+  один Elementor write, `action_path=fallback`, точные benefits-карточки и
+  диагностическая причина. Runtime теперь `186 checks OK`, Node `3/3`.
+- Версия поднята до `v02.11.92` из-за воспроизведённого runtime-дефекта; guide
+  остаётся `v02.05.99`. Изменения ещё не закоммичены, не отправлены и не
+  установлены на сайте на момент записи этой секции. Live acceptance 10
+  сценариев продолжена после выпуска; benefits operation уже зафиксирована как
+  transport-fallback failure до установки fix.

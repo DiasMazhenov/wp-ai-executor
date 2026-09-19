@@ -2297,3 +2297,12 @@ before making a new change to the plugin.
   a provider-quality failure. The gate still rejects sparse hierarchy,
   collapsed semantic slots, missing requested media/CTA, and invalid native
   structure. Runtime coverage includes a complete badge-less CTA composition.
+- **OpenRouter transport timeout / deterministic fallback (v02.11.92):** live
+  benefits generation on post 4556 reproduced `cURL error 28` after the single
+  client retry. The action path previously returned `LLM-провайдер недоступен.`
+  before reaching the existing native fallback. The shared chat boundary now
+  converts exhausted transport failures for content actions into the same
+  validated deterministic fallback and keeps only sanitized transport evidence
+  in diagnostics. Local runtime regression covers one provider call, one write,
+  exact benefits copy and `action_path=fallback`; fresh live proof after install
+  remains pending.

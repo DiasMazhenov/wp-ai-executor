@@ -8452,6 +8452,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         'body' => wp_json_encode( $request_body ),
     ];
     $provider_attempts = [];
+    $provider_transport_fallback = false;
+    $provider_transport_error = '';
     $provider_diagnostics = [
         'schema' => 'wpae-llm-provider-diagnostics-v1',
         'provider' => sanitize_key( (string) $runtime['provider'] ),
@@ -8484,13 +8486,34 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $provider_diagnostics['model'] = sanitize_text_field( (string) $runtime['model'] );
         $provider_diagnostics['attempt_count'] = count( $provider_attempts );
         $provider_diagnostics['attempts'] = $provider_attempts;
-        return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'], 'diagnostics' => $provider_diagnostics ] );
+        if ( ! $action_request || $selected_post_id <= 0 ) {
+            return new WP_Error( 'wpae_llm_provider_request_failed', 'LLM-провайдер недоступен.', [ 'status' => 502, 'details' => sanitize_text_field( $response->get_error_message() ), 'provider' => $runtime['provider'], 'diagnostics' => $provider_diagnostics ] );
+        }
+
+        // A transport outage must not turn a content-generation request into
+        // a no-op. Reuse the same deterministic native fallback that handles
+        // malformed provider JSON, while preserving the sanitized transport
+        // evidence in generation diagnostics.
+        $provider_transport_fallback = true;
+        $provider_transport_error = wpae_llm_diagnostic_text( $response->get_error_message() );
+        $transport_fallback_action = wpae_llm_build_fallback_action( $message, $selected_post_id );
+        $response = [
+            'response' => [ 'code' => 200 ],
+            'body' => wp_json_encode( [
+                'choices' => [ [
+                    'finish_reason' => 'stop',
+                    'message' => [ 'content' => wp_json_encode( $transport_fallback_action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ],
+                ] ],
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+        ];
     }
 
     $status = wp_remote_retrieve_response_code( $response );
     $raw = wp_remote_retrieve_body( $response );
     $body = json_decode( $raw, true );
-    $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_response', $action_request, $status, $raw, $body );
+    if ( ! $provider_transport_fallback ) {
+        $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_response', $action_request, $status, $raw, $body );
+    }
     $used_fallback_model = '';
     if ( $status < 200 || $status >= 300 ) {
         $provider_error = wpae_llm_provider_error_message( $body ) ?: wpae_llm_provider_error_fallback( $body, $status );
@@ -8590,7 +8613,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             return new WP_REST_Response( [ 'ok' => true, 'message' => 'Точечная правка выполнена через Elementor. Изменено свойств: ' . (int) $patch_execution['changed_count'] . '.', 'operation_id' => $patch_execution['operation_id'] ?? null, 'action' => $patch_execution['action'], 'write' => $patch_execution, 'steps' => $patch_execution['steps'], 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
         }
         $action_repair = false;
-        $action_fallback = false;
+        $action_fallback = $provider_transport_fallback;
         $decoded_action = (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' );
         $decoded_elements = is_array( $action['elements'] ?? null ) ? $action['elements'] : [];
         $decoded_widget_count = wpae_llm_count_widgets( $decoded_elements );
@@ -8598,8 +8621,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
         $initial_validation = wpae_llm_build_action_validation_diagnostics( $action, $post_id, $message );
         $action_diagnostics['validation'] = $initial_validation;
+        if ( $provider_transport_fallback ) {
+            $action_diagnostics['response_type'] = 'deterministic_fallback';
+            $action_diagnostics['fallback_reason'] = 'Provider transport failed after the bounded attempts; deterministic native fallback was used.';
+            $action_diagnostics['provider_transport_error'] = $provider_transport_error;
+            $action_diagnostics['provider_attempts'] = $provider_attempts;
+        }
         $repair_attempts = [];
-        $action_valid = ! empty( $initial_validation['ok'] );
+        $action_valid = $provider_transport_fallback || ! empty( $initial_validation['ok'] );
         if ( ! $action_valid ) {
             $repair_error = '';
 			$repair_messages = [

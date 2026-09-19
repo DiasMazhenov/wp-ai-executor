@@ -309,6 +309,24 @@ $find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_
 $find_content_only_mobile_stack( [ $content_only_saved ] );
 check( $content_only_mobile_stack, 'Content-only hero is not stacked on mobile' );
 
+$transport_benefits_message = "Почему нас выбирают\nТочная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха\nСвет и воздух — Работаем с естественным светом и спокойными материалами\nПорядок в деталях — Продумываем хранение, маршруты и ежедневные привычки";
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ new WP_Error( 'http_request_failed', 'cURL error 28: Operation timed out after 58417 milliseconds' ) ];
+$transport_fallback_request = new WP_REST_Request();
+$transport_fallback_request->set_param( 'message', $transport_benefits_message );
+$transport_fallback_request->set_param( 'context', [ 'post_id' => 42 ] );
+$transport_fallback_response = wpae_llm_chat_request( $transport_fallback_request );
+check( $transport_fallback_response instanceof WP_REST_Response && ! empty( $transport_fallback_response->get_data()['ok'] ), 'Provider transport failure did not reach deterministic fallback' );
+$transport_fallback_data = $transport_fallback_response->get_data();
+check( ( $transport_fallback_data['diagnostics']['action_path'] ?? '' ) === 'fallback', 'Transport fallback did not report fallback action path' );
+check( strpos( (string) ( $transport_fallback_data['diagnostics']['command']['provider_transport_error'] ?? '' ), 'cURL error 28' ) !== false, 'Transport fallback lost sanitized provider error diagnostics' );
+check( count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'Transport fallback made duplicate provider calls or writes' );
+$transport_fallback_json = (string) wp_json_encode( $GLOBALS['page_data'][2] ?? [], JSON_UNESCAPED_UNICODE );
+foreach ( [ 'Почему нас выбирают', 'Точная работа с пространством', 'Свет и воздух', 'Порядок в деталях' ] as $required_benefit_copy ) {
+	check( strpos( $transport_fallback_json, $required_benefit_copy ) !== false, 'Transport fallback lost benefits content: ' . $required_benefit_copy );
+}
+
 $provider_shorthand = [
     container_node( 'provider-shorthand', [
         'container_type' => 'flex',
