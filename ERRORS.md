@@ -7,6 +7,15 @@ before making a new change to the plugin.
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.
 
+- **Benefits pair fidelity / fallback overwrite (v02.11.92, fixed locally for
+  v02.11.93):** Live fallback generation correctly classified the benefits
+  brief and created native cards, but a later fidelity repair treated each
+  already-split `label — description` line as additional missing copy. The
+  generic repair then overwrote card headings/descriptions and shifted pairs.
+  The extraction boundary now suppresses redundant full-line requirements when
+  both pair fields are present. Runtime coverage is `192 checks OK`; live
+  v02.11.93 verification is pending release.
+
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
 - **Confirmed (2026-09-12, local audit boundary):** The transaction selected

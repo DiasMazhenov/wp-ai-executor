@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.92`
+- Plugin: `v02.11.93`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2407,8 +2407,20 @@ before removal.
 - Добавлена runtime regression на `WP_Error/cURL error 28`: один provider call,
   один Elementor write, `action_path=fallback`, точные benefits-карточки и
   диагностическая причина. Runtime теперь `186 checks OK`, Node `3/3`.
-- Версия поднята до `v02.11.92` из-за воспроизведённого runtime-дефекта; guide
-  остаётся `v02.05.99`. Изменения ещё не закоммичены, не отправлены и не
-  установлены на сайте на момент записи этой секции. Live acceptance 10
-  сценариев продолжена после выпуска; benefits operation уже зафиксирована как
-  transport-fallback failure до установки fix.
+- Версия `v02.11.92` зафиксирована коммитом `371a655787796028edf90f03a29fe8763f84249d`,
+  отправлена в `origin/main` и установлена через WP Pusher; WordPress Plugins и
+  свежий Elementor подтвердили `v02.11.92`. Live benefits после установки
+  прошёл запись через fallback, но выявил отдельный сдвиг пар контента.
+
+## Benefits pair fidelity repair — 2026-09-20, Asia/Almaty
+- В live-generated JSON v02.11.92 после записи benefits заголовок первой карточки
+  содержал всю строку `заголовок — описание`, а описания были сдвинуты между
+  карточками. DOM/editor preview подтвердили тот же результат.
+- Причина подтверждена в `wpae_llm_extract_requested_content()`: после корректного
+  разбора labeled pairs fidelity дополнительно требовал исходные цельные строки.
+  `wpae_llm_apply_fallback_content()` принимал их за пропущенный контент и
+  перезаписывал соседние heading/text-editor.
+- Исправлено: цельная строка, уже представленная парой native полей, больше не
+  добавляется как отдельное требование; добавлена проверка точных заголовков,
+  описаний и полного chat-request fallback. Runtime — `192 checks OK`, Node —
+  `3/3`; v02.11.93 ожидает выпуск и повторную live-приёмку.

@@ -1337,6 +1337,25 @@ function wpae_llm_extract_requested_content( string $message ): array {
 	if ( ! empty( $structured_pairs ) && wpae_llm_is_content_composition_request( $message ) && ! $process_request ) {
 		foreach ( wpae_llm_content_units( $message ) as $unit ) {
 			$unit = trim( (string) $unit );
+			$normalized_unit = wpae_llm_normalize_content_text( $unit );
+			$is_structured_pair_line = false;
+			foreach ( $structured_pairs as $pair ) {
+				$pair_label = wpae_llm_normalize_content_text( (string) ( $pair['label'] ?? '' ) );
+				$pair_content = wpae_llm_normalize_content_text( (string) ( $pair['content'] ?? '' ) );
+				if ( $pair_label === '' || $pair_content === '' ) {
+					continue;
+				}
+				if ( strpos( $normalized_unit, $pair_label ) !== false && strpos( $normalized_unit, $pair_content ) !== false ) {
+					$is_structured_pair_line = true;
+					break;
+				}
+			}
+			// A labeled line is already represented by two native fields below.
+			// Treating the unsplit "label — description" line as a third
+			// requirement makes the generic fallback repair overwrite the pair.
+			if ( $is_structured_pair_line ) {
+				continue;
+			}
 			$matches[] = wpae_llm_is_cta_copy( $unit ) ? wpae_llm_compact_cta_text( $unit ) : $unit;
 		}
 	} elseif ( ! empty( $structured_pairs ) ) {

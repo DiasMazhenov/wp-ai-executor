@@ -31,7 +31,7 @@ function absint( $value ) { return abs( (int) $value ); }
 function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $value ) ); }
 function sanitize_html_class( $value ) { return preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $value ); }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
-function sanitize_textarea_field( $value ) { return sanitize_text_field( $value ); }
+function sanitize_textarea_field( $value ) { return trim( preg_replace( '/\r\n?/', "\n", strip_tags( (string) $value ) ) ); }
 function wp_strip_all_tags( $value ) { return strip_tags( (string) $value ); }
 function esc_url_raw( $value ) { return (string) $value; }
 function wp_json_encode( $value, $flags = 0 ) { return json_encode( $value, $flags ); }
@@ -326,6 +326,10 @@ $transport_fallback_json = (string) wp_json_encode( $GLOBALS['page_data'][2] ?? 
 foreach ( [ 'Почему нас выбирают', 'Точная работа с пространством', 'Свет и воздух', 'Порядок в деталях' ] as $required_benefit_copy ) {
 	check( strpos( $transport_fallback_json, $required_benefit_copy ) !== false, 'Transport fallback lost benefits content: ' . $required_benefit_copy );
 }
+foreach ( [ 'Планируем каждый метр и сохраняем ощущение воздуха', 'Работаем с естественным светом и спокойными материалами', 'Продумываем хранение, маршруты и ежедневные привычки' ] as $required_benefit_description ) {
+	check( strpos( $transport_fallback_json, $required_benefit_description ) !== false, 'Transport fallback lost benefits description: ' . $required_benefit_description );
+}
+check( strpos( $transport_fallback_json, 'Точная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха' ) === false, 'Transport fallback wrote an unsplit benefits pair into a single widget' );
 
 $provider_shorthand = [
     container_node( 'provider-shorthand', [
@@ -424,6 +428,10 @@ $collect_benefits_cards( (array) ( $benefits_action['elements'] ?? [] ) );
 check( count( $benefits_cards ) === 3, 'Benefits fallback did not create one native card per labeled content pair' );
 check( ( $benefits_cards[0]['headings'][0] ?? '' ) === 'Точная работа с пространством' && ( $benefits_cards[1]['headings'][0] ?? '' ) === 'Свет и воздух' && ( $benefits_cards[2]['headings'][0] ?? '' ) === 'Порядок в деталях', 'Benefits fallback merged the dash-separated title and description' );
 check( ( $benefits_cards[0]['copy'][0] ?? '' ) === 'Планируем каждый метр и сохраняем ощущение воздуха' && ( $benefits_cards[1]['copy'][0] ?? '' ) === 'Работаем с естественным светом и спокойными материалами' && ( $benefits_cards[2]['copy'][0] ?? '' ) === 'Продумываем хранение, маршруты и ежедневные привычки', 'Benefits fallback shifted or duplicated card descriptions' );
+$benefits_fidelity = wpae_llm_content_fidelity( $benefits_message, (array) ( $benefits_action['elements'] ?? [] ) );
+check( ! empty( $benefits_fidelity['ok'] ), 'Benefits content fidelity treated already-split label/description pairs as missing full-line copy' );
+$benefits_requested = wpae_llm_extract_requested_content( $benefits_message );
+check( ! in_array( 'Точная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха', $benefits_requested, true ), 'Benefits requested-content extraction retained a redundant unsplit pair line' );
 
 $wrong_provider_action = $action;
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';
