@@ -63,6 +63,13 @@ before making a new change to the plugin.
   that rebuild. The regression asserts three buttons, exact labels, `#contact`,
   and final content fidelity; runtime coverage is `208 checks OK`.
 
+- **Pricing CTA siblings were detached from cards (v02.11.98, fixed locally for v02.11.99):**
+  The live v02.11.98 result preserved all three CTA labels and `#contact`, but
+  Vision found the buttons as root-level siblings below the pricing grid,
+  leaving the cards without their actions. The pricing contract now receives
+  explicit CTA requirements and inserts each native Button into its matching
+  pricing card before the final normalization. Runtime coverage is `209 checks OK`.
+
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
 - **Confirmed (2026-09-12, local audit boundary):** The transaction selected

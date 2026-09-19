@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.98`
+- Plugin: `v02.11.99`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2469,3 +2469,14 @@ before removal.
 - Runtime coverage после исправления — 208 checks; полный in-memory chat
   fallback для того же prompt дал fidelity `10/10` и три native Button с
   `#contact`. Live v02.11.98 ожидает установки и повторной приёмки.
+
+## Pricing CTA card nesting repair — 2026-09-20, Asia/Almaty
+- Live v02.11.98 подтвердил три native CTA и полную content fidelity, но Vision
+  обнаружил, что кнопки были соседями общей pricing-сетки, а не детьми карточек.
+- Подтверждённая причина: pricing contract rebuild создавал карточки только из
+  label/price/description, после чего общий CTA normalizer добавлял кнопки на
+  уровень корня. В v02.11.99 builder получает explicit CTA requirements и
+  вкладывает кнопку в соответствующую карточку; normalizer сохраняет её текст,
+  URL и native style.
+- Runtime coverage после исправления — 209 checks; live v02.11.99 ожидает
+  установки и повторной Vision-приёмки.

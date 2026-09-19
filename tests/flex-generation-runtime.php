@@ -506,7 +506,7 @@ $pricing_content_only_action['elements'] = wpae_llm_apply_generation_visual_gram
 $pricing_cta_changed = 0;
 $pricing_content_only_action['elements'] = wpae_llm_normalize_requested_cta( $pricing_content_only_action['elements'], $pricing_content_only_message, $pricing_cta_changed );
 $pricing_contract_changed = 0;
-$pricing_layout = wpae_llm_build_pricing_pair_layout( $pricing_content_only_action['elements'], wpae_llm_extract_pricing_content( $pricing_content_only_message ), $pricing_contract_changed );
+$pricing_layout = wpae_llm_build_pricing_pair_layout( $pricing_content_only_action['elements'], wpae_llm_extract_pricing_content( $pricing_content_only_message ), $pricing_contract_changed, wpae_llm_extract_requested_ctas( $pricing_content_only_message ) );
 $pricing_content_only_action['elements'] = $pricing_layout;
 // The final pricing contract rebuild must not discard CTAs normalized before it.
 $pricing_cta_after_contract_changed = 0;
@@ -515,6 +515,25 @@ $pricing_content_only_json = (string) wp_json_encode( $pricing_content_only_acti
 check( substr_count( $pricing_content_only_json, '"widgetType":"button"' ) === 3, 'Pricing contract rebuild discarded content-only CTA buttons' );
 check( strpos( $pricing_content_only_json, '"text":"Выбрать Полное сопровождение"' ) !== false && strpos( $pricing_content_only_json, '"url":"#contact"' ) !== false, 'Pricing content-only CTA text or URL was lost after the final contract' );
 check( ! empty( wpae_llm_content_fidelity( $pricing_content_only_message, $pricing_content_only_action['elements'] )['ok'] ), 'Pricing content-only fallback failed final content fidelity after CTA reapplication' );
+$pricing_card_buttons = 0;
+$pricing_walk = static function ( array $nodes ) use ( &$pricing_walk, &$pricing_card_buttons ): void {
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        $classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) );
+        if ( ( $node['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-pricing-card', $classes, true ) ) {
+            foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+                if ( is_array( $child ) && ( $child['widgetType'] ?? '' ) === 'button' ) {
+                    $pricing_card_buttons++;
+                }
+            }
+        }
+        $pricing_walk( (array) ( $node['elements'] ?? [] ) );
+    }
+};
+$pricing_walk( $pricing_content_only_action['elements'] );
+check( $pricing_card_buttons === 3, 'Pricing CTA buttons are not nested inside their native pricing cards' );
 
 $reference_timeline = wpae_llm_build_process_timeline(
     [
