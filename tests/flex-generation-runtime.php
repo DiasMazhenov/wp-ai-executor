@@ -168,6 +168,12 @@ $two_cta_fallback_action['elements'] = wpae_llm_normalize_requested_cta( $two_ct
 $two_cta_fallback_json = (string) wp_json_encode( $two_cta_fallback_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 check( substr_count( $two_cta_fallback_json, '"widgetType":"button"' ) === 2, 'Two labeled CTA fallback lost requested native buttons before semantic validation' );
 check( strpos( $two_cta_fallback_json, '"text":"Смотреть проекты"' ) !== false && strpos( $two_cta_fallback_json, '"url":"#projects"' ) !== false, 'Secondary labeled CTA fallback lost its paired URL' );
+$two_cta_hero_copy = wpae_llm_extract_hero_copy( $two_cta_fallback_message );
+check( $two_cta_hero_copy['brand'] === '' && $two_cta_hero_copy['title'] === 'Пространство для вашей жизни' && $two_cta_hero_copy['body'] === 'Проектируем спокойные, светлые интерьеры', 'Hero copy extractor did not separate explicit title and body labels: ' . wp_json_encode( $two_cta_hero_copy, JSON_UNESCAPED_UNICODE ) );
+check( $two_cta_hero_copy['visual'] === 'Архитектура повседневности', 'Hero copy extractor did not isolate the visual-panel label: ' . wp_json_encode( $two_cta_hero_copy, JSON_UNESCAPED_UNICODE ) );
+$exact_hero_copy = wpae_llm_extract_hero_copy( $explicit_cta_message );
+check( $exact_hero_copy['brand'] === 'Тихая форма' && $exact_hero_copy['title'] === 'Пространство для вашей жизни' && $exact_hero_copy['body'] === 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали', 'Full hero brief lost its brand, title, or body semantic fields' );
+check( $exact_hero_copy['visual'] === 'Архитектура повседневности', 'Full hero brief lost its visual-panel copy' );
 $two_cta_hero_changed = 0;
 $two_cta_hero_elements = wpae_llm_normalize_hero_composition( $two_cta_fallback_action['elements'], $two_cta_hero_changed, $two_cta_fallback_message, true );
 $two_cta_hero_buttons = [];
@@ -324,6 +330,8 @@ foreach ( [ 'Тихая форма', 'Пространство для вашей
 check( strpos( $content_only_json, 'Обсудить проект — #contact' ) === false && strpos( $content_only_json, 'Смотреть проекты — #projects' ) === false, 'CTA URL leaked into visible content-only hero copy' );
 check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"#e7c7b7' ) !== false, 'Content-only hero did not create the separate visual panel' );
 check( strpos( $content_only_json, '"background_color":"#a84c36' ) !== false, 'Content-only hero lost its authored terracotta CTA palette at the write boundary' );
+check( strpos( $content_only_json, 'Создай новый hero' ) === false && strpos( $content_only_json, 'native Flexbox-контейнеров' ) === false, 'Hero fallback wrote technical prompt instructions into visible Elementor copy' );
+check( substr_count( $content_only_json, '"widgetType":"button"' ) === 2 && strpos( $content_only_json, '"url":"#projects"' ) !== false, 'Content-only hero fallback did not save both native CTA buttons and URLs' );
 check( strpos( $content_only_json, '"button_background_color"' ) === false, 'Content-only hero retained a non-native Button background key' );
 check( strpos( $content_only_json, '"background_color":"#61ce70' ) === false, 'Content-only hero was remapped to the generic green design-system accent' );
 $content_only_mobile_stack = false;

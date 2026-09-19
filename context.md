@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.96`
+- Plugin: `v02.11.97`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2450,5 +2450,10 @@ before removal.
   последующей hero-нормализации.
 - v02.11.96 передает все явно запрошенные hero CTA через trusted-source
   normalization, сохраняя их native Button, подпись и URL; добавлена
-  регрессия для двух CTA `#contact`/`#projects`. Live v02.11.96 ожидает
-  установки и повторной live-приёмки.
+  регрессия для двух CTA `#contact`/`#projects`. Live v02.11.96 установлен,
+  но Vision-приёмка выявила отдельное попадание служебного prompt copy в
+  hero после fallback-нормализации.
+- v02.11.97 извлекает brand/title/body/visual из явных hero-полей и
+  content-only строк, не записывает технические инструкции в Text Editor и
+  применяет trusted-source clean только к реально принятому шаблону. Runtime
+  coverage — 203 checks; live v02.11.97 ожидает установки.

@@ -42,6 +42,18 @@ before making a new change to the plugin.
   carries the CTA-specific requirements, labels, and safe URLs as separate
   native Buttons. Runtime coverage checks both button count and paired URLs.
 
+- **Hero fallback wrote prompt instructions as visible copy (v02.11.96, fixed locally for v02.11.97):**
+  Live v02.11.96 saved two native CTA buttons and passed the semantic plan, but
+  the generated JSON used `Создай новый hero для архитектурной студии...` as
+  the heading and the remaining technical brief as one Text Editor. Vision
+  rejected the render and the bounded repair was rolled back. The fallback
+  selected raw `wpae_llm_content_units()` by position; the trusted hero
+  normalizer could repeat that mistake even when a library candidate was only
+  selected, not applied. Hero extraction now uses explicit brand/title/body/
+  visual labels, filters instruction-only units, and gates trusted clean on an
+  actually applied trusted template. Regression covers both labeled and
+  content-only hero briefs.
+
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
 - **Confirmed (2026-09-12, local audit boundary):** The transaction selected

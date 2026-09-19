@@ -72,6 +72,53 @@ function wpae_llm_content_units( string $message ): array {
     return $units;
 }
 
+function wpae_llm_extract_hero_copy( string $message ): array {
+	$copy = [ 'brand' => '', 'title' => '', 'body' => '', 'visual' => '' ];
+	$extract_quoted = static function ( string $pattern ) use ( $message ): string {
+		return preg_match( $pattern, $message, $match ) ? trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) ) : '';
+	};
+	$copy['brand'] = $extract_quoted( '/(?:архитектурн\w*\s+студи\w*|студи\w*|бренд)\s*[«"]([^»"\n]{2,120})[»"]/iu' );
+	$copy['title'] = $extract_quoted( '/(?:заголовок|heading|title)\s*[:\-]\s*[«"]([^»"\n]{2,240})[»"]/iu' );
+	$copy['body'] = $extract_quoted( '/(?:текст|описание|подзаголовок|description)\s*[:\-]\s*[«"]([^»"\n]{3,500})[»"]/iu' );
+	$copy['visual'] = $extract_quoted( '/(?:надпис\w*|слоган)\s*[:\-]?\s*[«"]([^»"\n]{2,240})[»"]/iu' );
+
+	$cta_requirements = wpae_llm_extract_requested_ctas( $message );
+	$cta_texts = array_map( static fn( $requirement ): string => wpae_llm_normalize_content_text( (string) ( $requirement['text'] ?? '' ) ), $cta_requirements );
+	$candidates = [];
+	foreach ( wpae_llm_content_units( $message ) as $unit ) {
+		$unit = trim( (string) $unit );
+		$normalized_unit = wpae_llm_normalize_content_text( $unit );
+		$compact_unit = wpae_llm_normalize_content_text( wpae_llm_compact_cta_text( $unit ) );
+		if ( $normalized_unit === '' || in_array( $compact_unit, $cta_texts, true ) || wpae_llm_is_cta_copy( $unit ) ) {
+			continue;
+		}
+		if ( $copy['visual'] === '' && preg_match( '/(?:архитектур\w*|повседневност\w*|надпис\w*)/iu', $unit ) ) {
+			$copy['visual'] = trim( sanitize_text_field( (string) preg_replace( '/^.*?надпис\w*\s*[:\-]?\s*[«"]([^»"\n]+)[»"].*$/iu', '$1', $unit ) ) );
+			if ( $copy['visual'] === $unit ) {
+				$copy['visual'] = $unit;
+			}
+			continue;
+		}
+		if ( preg_match( '/^(?:заголовок|текст|описание|подзаголовок|надпис\w*|слоган|title|heading|description)\s*:/iu', $unit ) || preg_match( '/^(?:создай|создать|сделай|добавь|добавить|сформируй|собери|адаптируй|используй|примени)\b/iu', $unit ) || preg_match( '/\b(?:native|elementor|flexbox|виджет\w*|контейнер\w*|разделител\w*|коннектор\w*|адаптир\w*|телефон\w*|mobile|desktop|tablet|асимметрич\w*|терракот\w*|фон|акцент)\b/iu', $unit ) ) {
+			continue;
+		}
+		$candidates[] = $unit;
+	}
+	if ( $copy['brand'] === '' && count( $candidates ) >= 3 ) {
+		$copy['brand'] = trim( (string) array_shift( $candidates ) );
+	}
+	if ( $copy['title'] === '' && ! empty( $candidates ) ) {
+		$copy['title'] = trim( (string) array_shift( $candidates ) );
+	}
+	if ( $copy['body'] === '' && ! empty( $candidates ) ) {
+		$copy['body'] = trim( (string) array_shift( $candidates ) );
+	}
+	if ( $copy['visual'] === '' && ! empty( $candidates ) ) {
+		$copy['visual'] = trim( (string) array_pop( $candidates ) );
+	}
+	return $copy;
+}
+
 function wpae_llm_is_cta_copy( string $value ): bool {
     $value = trim( sanitize_text_field( $value ) );
     return (bool) preg_match( '/^(?:(?:кнопка|cta|button)\s*[:\-]\s*)?(?:обсудить|обсудите|получить|получите|узнать|узнайте|заказать|закажите|оформить|оформите|купить|купите|начать|начните|выбрать|выберите|написать|напишите|связаться|свяжитесь|оставить\s+заявк\w*|оставьте\s+заявк\w*|смотреть|смотрите|записаться|запишитесь|забронировать|забронируйте|регистрац\w*)\b/iu', $value );
@@ -2942,10 +2989,14 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
             return $root;
         }
 
-        $title = (string) array_shift( $units );
+        $hero_copy = wpae_llm_extract_hero_copy( $message );
+        $title = (string) ( $hero_copy['title'] ?? '' );
+        if ( $title === '' ) {
+            $title = (string) array_shift( $units );
+        }
         $cta_requirements = array_slice( wpae_llm_extract_requested_ctas( $message ), 0, 3 );
         $cta = '';
-        $body = [];
+        $body = ! empty( $hero_copy['body'] ) ? [ (string) $hero_copy['body'] ] : [];
         foreach ( $units as $unit ) {
             $compact_unit = wpae_llm_compact_cta_text( $unit );
             $is_requested_cta = false;
@@ -2958,9 +3009,9 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
             }
             if ( $is_requested_cta || wpae_llm_is_cta_copy( $unit ) ) {
                 $cta = $unit;
-                continue;
+            } elseif ( empty( $body ) ) {
+                $body[] = $unit;
             }
-            $body[] = $unit;
         }
 
         $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
@@ -6888,32 +6939,13 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
     ];
     if ( $archetype === 'hero' ) {
-		$units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_content_units( $message ) ) ) );
 		$requirements = wpae_llm_extract_requested_ctas( $message );
-		$copy_units = [];
-		foreach ( $units as $unit ) {
-			$unit_text = wpae_llm_compact_cta_text( $unit );
-			$is_cta_unit = false;
-			foreach ( $requirements as $requirement ) {
-				if ( wpae_llm_normalize_content_text( $unit_text ) === wpae_llm_normalize_content_text( (string) ( $requirement['text'] ?? '' ) ) ) {
-					$is_cta_unit = true;
-					break;
-				}
-			}
-			if ( ! $is_cta_unit ) {
-				$copy_units[] = $unit;
-			}
-		}
-		$brand = '';
-		$visual_copy = '';
-		if ( count( $copy_units ) >= 4 ) {
-			$brand = (string) array_shift( $copy_units );
-		}
-		$title = (string) ( array_shift( $copy_units ) ?? 'Пространство для вашей жизни' );
-		if ( count( $copy_units ) >= 2 ) {
-			$visual_copy = (string) array_pop( $copy_units );
-		}
-		$body = trim( implode( ' ', $copy_units ) );
+		$hero_copy = wpae_llm_extract_hero_copy( $message );
+		$brand = (string) ( $hero_copy['brand'] ?? '' );
+		$title = (string) ( $hero_copy['title'] ?? '' );
+		$body = (string) ( $hero_copy['body'] ?? '' );
+		$visual_copy = (string) ( $hero_copy['visual'] ?? '' );
+		$title = $title !== '' ? $title : 'Пространство для вашей жизни';
 		$button = static function ( string $id, array $requirement, bool $secondary = false ) use ( $widget ): array {
 			$settings = [
 				'text' => (string) ( $requirement['text'] ?? '' ),
@@ -8971,7 +9003,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             }
             $existing_image_urls = wpae_llm_collect_background_image_urls( $existing_for_image_rotation );
             $existing_image_urls = wpae_llm_sanitize_background_image_urls( array_merge( $existing_image_urls, $live_background_image_urls ) );
-            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1, $existing_image_urls );
+            $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, $library_applied && ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1, $existing_image_urls );
         }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
