@@ -14,7 +14,17 @@ before making a new change to the plugin.
   generic repair then overwrote card headings/descriptions and shifted pairs.
   The extraction boundary now suppresses redundant full-line requirements when
   both pair fields are present. Runtime coverage is `192 checks OK`; live
-  v02.11.93 verification is pending release.
+  v02.11.93 benefits verification passed after release, while the later hero
+  scenario exposed a separate semantic-plan rejection.
+
+- **Live hero semantic-plan rejection (v02.11.93, diagnostics fix local for
+  v02.11.94):** The exact architectural-studio hero prompt was rejected in the
+  live editor after provider decoding and before write; no hero was saved. The
+  browser showed only the step summary, while the nested sanitized audit was
+  not surfaced. The local deterministic fallback for the same prompt passes.
+  v02.11.94 exposes the complete REST diagnostics in the chat error path so the
+  first failing semantic field can be verified live. Root cause of the live
+  rejection is not yet confirmed.
 
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 

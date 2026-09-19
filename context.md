@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.93`
+- Plugin: `v02.11.94`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2423,4 +2423,16 @@ before removal.
 - Исправлено: цельная строка, уже представленная парой native полей, больше не
   добавляется как отдельное требование; добавлена проверка точных заголовков,
   описаний и полного chat-request fallback. Runtime — `192 checks OK`, Node —
-  `3/3`; v02.11.93 ожидает выпуск и повторную live-приёмку.
+  `3/3`; v02.11.93 выпущена и повторно принята для benefits; v02.11.94 содержит
+  расширение sanitized diagnostics для live semantic/contract ошибок и ожидает
+  выпуск.
+
+## Live error diagnostics — 2026-09-20, Asia/Almaty
+- Hero-промт в свежем Elementor v02.11.93 получил provider-ответ, но был
+  отклонен на semantic-plan до записи; в чате отображались шаги, но не полный
+  вложенный `content_plan/audit`.
+- Локальный полный fallback pipeline для того же prompt проходит semantic audit,
+  content fidelity и write regression. Live/local расхождение требует свежего
+  server-side audit evidence, а не предположения о provider JSON.
+- В v02.11.94 клиент сохраняет полный sanitized REST diagnostics object при
+  ошибке со steps; ключи, cookies и payload secrets в чат не добавляются.

@@ -1483,7 +1483,11 @@
                         stepError.wpaeCode = errorCode;
                         stepError.httpStatus = response.status;
                         stepError.steps = diagnostics.steps;
-                        stepError.diagnostics = providerDiagnostics;
+                        // Preserve the complete sanitized REST diagnostics for
+                        // semantic/contract failures. Provider-only metadata
+                        // hides the actual failed plan and makes live repair
+                        // needlessly speculative.
+                        stepError.diagnostics = diagnostics && typeof diagnostics === 'object' ? diagnostics : providerDiagnostics;
                         throw stepError;
                     }
                     if (errorData.provider_message) detail += ': ' + errorData.provider_message;
