@@ -168,6 +168,26 @@ $two_cta_fallback_action['elements'] = wpae_llm_normalize_requested_cta( $two_ct
 $two_cta_fallback_json = (string) wp_json_encode( $two_cta_fallback_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 check( substr_count( $two_cta_fallback_json, '"widgetType":"button"' ) === 2, 'Two labeled CTA fallback lost requested native buttons before semantic validation' );
 check( strpos( $two_cta_fallback_json, '"text":"Смотреть проекты"' ) !== false && strpos( $two_cta_fallback_json, '"url":"#projects"' ) !== false, 'Secondary labeled CTA fallback lost its paired URL' );
+$two_cta_hero_changed = 0;
+$two_cta_hero_elements = wpae_llm_normalize_hero_composition( $two_cta_fallback_action['elements'], $two_cta_hero_changed, $two_cta_fallback_message, true );
+$two_cta_hero_buttons = [];
+$collect_two_cta_hero_buttons = static function ( array $nodes ) use ( &$collect_two_cta_hero_buttons, &$two_cta_hero_buttons ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'button' ) {
+			$two_cta_hero_buttons[] = $node;
+		}
+		if ( is_array( $node['elements'] ?? null ) ) {
+			$collect_two_cta_hero_buttons( $node['elements'] );
+		}
+	}
+};
+$collect_two_cta_hero_buttons( $two_cta_hero_elements );
+check( count( $two_cta_hero_buttons ) === 2, 'Trusted hero normalization collapsed two requested CTAs into one button' );
+check( ( $two_cta_hero_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $two_cta_hero_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects', 'Trusted hero normalization lost distinct CTA URLs' );
+check( ( $two_cta_hero_buttons[0]['settings']['text'] ?? '' ) === 'Обсудить проект' && ( $two_cta_hero_buttons[1]['settings']['text'] ?? '' ) === 'Смотреть проекты', 'Trusted hero normalization lost distinct CTA labels' );
 $failure_diagnostics = wpae_llm_execution_failure_diagnostics( [
     'status' => 422,
     'update_error' => 'Elementor data failed design-system contract.',

@@ -33,6 +33,15 @@ before making a new change to the plugin.
   now preserves any CTA found by either parser; regression checks both labels
   and paired `#contact`/`#projects` links.
 
+- **Trusted hero normalization collapsed multiple CTA (v02.11.95, fixed locally for v02.11.96):**
+  The live v02.11.95 diagnostic still reported two explicit CTA requirements but
+  zero final buttons after the fallback had already passed with seven widgets.
+  `wpae_llm_normalize_hero_composition()` rebuilt a trusted hero from one
+  singular `$cta` value and hard-coded `#contact`, so the later normalization
+  boundary discarded the second requested button. The clean hero path now
+  carries the CTA-specific requirements, labels, and safe URLs as separate
+  native Buttons. Runtime coverage checks both button count and paired URLs.
+
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
 - **Confirmed (2026-09-12, local audit boundary):** The transaction selected

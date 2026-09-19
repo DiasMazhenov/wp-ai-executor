@@ -2943,10 +2943,20 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
         }
 
         $title = (string) array_shift( $units );
+        $cta_requirements = array_slice( wpae_llm_extract_requested_ctas( $message ), 0, 3 );
         $cta = '';
         $body = [];
         foreach ( $units as $unit ) {
-            if ( wpae_llm_is_cta_copy( $unit ) ) {
+            $compact_unit = wpae_llm_compact_cta_text( $unit );
+            $is_requested_cta = false;
+            foreach ( $cta_requirements as $requirement ) {
+                $requested_text = (string) ( $requirement['text'] ?? '' );
+                if ( wpae_llm_normalize_content_text( $compact_unit ) === wpae_llm_normalize_content_text( $requested_text ) || wpae_llm_normalize_content_text( $unit ) === wpae_llm_normalize_content_text( $requested_text ) ) {
+                    $is_requested_cta = true;
+                    break;
+                }
+            }
+            if ( $is_requested_cta || wpae_llm_is_cta_copy( $unit ) ) {
                 $cta = $unit;
                 continue;
             }
@@ -3086,20 +3096,31 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
                 $shell_elements[ count( $shell_elements ) - 1 ]['settings']['_css_classes'] = 'wpae-photo-hero-text';
             }
         }
-        if ( $cta !== '' ) {
+        $hero_ctas = $cta_requirements;
+        if ( empty( $hero_ctas ) && $cta !== '' ) {
+            $hero_ctas[] = [ 'text' => wpae_llm_compact_cta_text( $cta ), 'url' => '#contact' ];
+        }
+        foreach ( $hero_ctas as $cta_index => $requirement ) {
+            $is_secondary = (int) $cta_index > 0;
             $button_settings = [
-                'text' => $cta,
+                'text' => (string) ( $requirement['text'] ?? '' ),
                 'align' => 'left',
                 'align_mobile' => 'left',
-                'link' => [ 'url' => '#contact' ],
-                'button_text_color' => '#ffffff',
-                'button_hover_text_color' => '#ffffff',
-                'background_color' => '',
+                'link' => [ 'url' => wpae_llm_normalize_cta_url( $requirement['url'] ?? '' ) ?: '#contact' ],
+                'button_text_color' => $is_secondary && ! $has_photo ? '#a84c36' : '#ffffff',
+                'button_hover_text_color' => $is_secondary && ! $has_photo ? '#a84c36' : '#ffffff',
+                'background_color' => $is_secondary ? 'transparent' : '#a84c36',
+                'button_background_hover_color' => $is_secondary ? '#f4e6df' : '#8f3e2c',
+                'border_border' => 'solid',
+                'border_color' => '#a84c36',
+                'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
             ];
             wpae_llm_normalize_generated_button_settings( $button_settings );
-            $button_settings['button_text_color'] = '#ffffff';
-            $button_settings['button_hover_text_color'] = '#ffffff';
-            $shell_elements[] = $widget( $root_id . '-hero-cta', 'button', $button_settings );
+            $button_settings['button_text_color'] = $is_secondary && ! $has_photo ? '#a84c36' : '#ffffff';
+            $button_settings['button_hover_text_color'] = $is_secondary && ! $has_photo ? '#a84c36' : '#ffffff';
+            $button_settings['background_color'] = $is_secondary ? 'transparent' : '#a84c36';
+            $button_settings['button_background_hover_color'] = $is_secondary ? '#f4e6df' : '#8f3e2c';
+            $shell_elements[] = $widget( $root_id . '-hero-cta-' . ( (int) $cta_index + 1 ), 'button', $button_settings );
             if ( $has_photo ) {
                 $shell_elements[ count( $shell_elements ) - 1 ]['settings']['_css_classes'] = 'wpae-photo-hero-text';
             }
