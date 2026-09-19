@@ -497,6 +497,25 @@ foreach ( [ 'Тихая форма', 'Пространство для вашей
 }
 check( strpos( $wrong_provider_json, 'Нерелевантный заголовок' ) === false, 'Content-mismatched provider copy leaked into the saved fallback' );
 
+$pricing_content_only_message = "Тарифы\nСтарт — 30 000 ₸ — Одна консультация для ясного первого шага\nПроект — 150 000 ₸ — Планировка и концепция для вашего пространства\nПолное сопровождение — 300 000 ₸ — Проект и авторский надзор до результата\nВыбрать Старт — #contact\nВыбрать Проект — #contact\nВыбрать Полное сопровождение — #contact";
+$pricing_content_only_action = wpae_llm_build_fallback_action( $pricing_content_only_message, 42 );
+$pricing_fallback_changed = 0;
+wpae_llm_apply_fallback_archetype_content( $pricing_content_only_action['elements'], $pricing_content_only_message, 'pricing', $pricing_fallback_changed );
+$pricing_visual_changed = 0;
+$pricing_content_only_action['elements'] = wpae_llm_apply_generation_visual_grammar( $pricing_content_only_action['elements'], 'pricing', $pricing_visual_changed );
+$pricing_cta_changed = 0;
+$pricing_content_only_action['elements'] = wpae_llm_normalize_requested_cta( $pricing_content_only_action['elements'], $pricing_content_only_message, $pricing_cta_changed );
+$pricing_contract_changed = 0;
+$pricing_layout = wpae_llm_build_pricing_pair_layout( $pricing_content_only_action['elements'], wpae_llm_extract_pricing_content( $pricing_content_only_message ), $pricing_contract_changed );
+$pricing_content_only_action['elements'] = $pricing_layout;
+// The final pricing contract rebuild must not discard CTAs normalized before it.
+$pricing_cta_after_contract_changed = 0;
+$pricing_content_only_action['elements'] = wpae_llm_normalize_requested_cta( $pricing_content_only_action['elements'], $pricing_content_only_message, $pricing_cta_after_contract_changed );
+$pricing_content_only_json = (string) wp_json_encode( $pricing_content_only_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( substr_count( $pricing_content_only_json, '"widgetType":"button"' ) === 3, 'Pricing contract rebuild discarded content-only CTA buttons' );
+check( strpos( $pricing_content_only_json, '"text":"Выбрать Полное сопровождение"' ) !== false && strpos( $pricing_content_only_json, '"url":"#contact"' ) !== false, 'Pricing content-only CTA text or URL was lost after the final contract' );
+check( ! empty( wpae_llm_content_fidelity( $pricing_content_only_message, $pricing_content_only_action['elements'] )['ok'] ), 'Pricing content-only fallback failed final content fidelity after CTA reapplication' );
+
 $reference_timeline = wpae_llm_build_process_timeline(
     [
         [ 'label' => 'Замысел', 'content' => 'Этап 1: Замысел.' ],

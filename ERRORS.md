@@ -54,6 +54,15 @@ before making a new change to the plugin.
   actually applied trusted template. Regression covers both labeled and
   content-only hero briefs.
 
+- **Pricing contract discarded content-only CTA (v02.11.97, fixed locally for v02.11.98):**
+  A live pricing prompt contained three labeled CTA pairs. After provider
+  timeout the fallback retained the three pricing cards, but the final audit
+  reported `button_count=0` and all CTA requirements missing. The canonical
+  pricing layout rebuild ran after CTA normalization and replaced the tree,
+  discarding the native Button widgets. CTA normalization now runs again after
+  that rebuild. The regression asserts three buttons, exact labels, `#contact`,
+  and final content fidelity; runtime coverage is `208 checks OK`.
+
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
 - **Confirmed (2026-09-12, local audit boundary):** The transaction selected

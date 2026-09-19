@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.97`
+- Plugin: `v02.11.98`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2457,3 +2457,15 @@ before removal.
   content-only строк, не записывает технические инструкции в Text Editor и
   применяет trusted-source clean только к реально принятому шаблону. Runtime
   coverage — 203 checks; live v02.11.97 ожидает установки.
+
+## Pricing CTA contract repair — 2026-09-20, Asia/Almaty
+- В live v02.11.97 content-only pricing prompt после transport timeout корректно
+  перешёл в fallback, но финальный audit сообщил `button_count=0` при трёх
+  явных CTA. Запись не выполнялась.
+- Подтверждённая причина: canonical pricing contract пересобирал карточки уже
+  после CTA-нормализации и выбрасывал native Button widgets. В v02.11.98 CTA
+  нормализуются повторно сразу после этой границы; соседние provider/repair
+  маршруты не изменены.
+- Runtime coverage после исправления — 208 checks; полный in-memory chat
+  fallback для того же prompt дал fidelity `10/10` и три native Button с
+  `#contact`. Live v02.11.98 ожидает установки и повторной приёмки.

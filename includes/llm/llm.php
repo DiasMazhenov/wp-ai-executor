@@ -8986,6 +8986,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 					$action['elements'] = $pricing_layout;
 				}
 			}
+			// The canonical pricing rebuild replaces the card tree. Re-apply
+			// explicit content-only CTAs after that boundary so the contract
+			// cannot discard buttons that were normalized earlier.
+			$pricing_cta_changed = 0;
+			$action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $pricing_cta_changed );
+			$cta_changed = (int) ( $cta_changed ?? 0 ) + $pricing_cta_changed;
 		}
 		if ( ! $provider_design && wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
 			$final_process_changed = 0;
