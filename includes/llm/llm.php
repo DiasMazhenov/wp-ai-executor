@@ -4,6 +4,7 @@ defined( 'ABSPATH' ) || exit;
 
 require_once __DIR__ . '/transport.php';
 require_once __DIR__ . '/design.php';
+require_once __DIR__ . '/decision-engine.php';
 
 function wpae_llm_is_instruction_only_brief( string $message ): bool {
 	$message = trim( $message );
@@ -9331,6 +9332,46 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( $library_retrieval_enabled ) {
         $library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
     }
+	$design_engine_result = [
+		'ok' => false,
+		'trace' => [
+			'schema' => defined( 'WPAE_LLM_DESIGN_ENGINE_SCHEMA' ) ? WPAE_LLM_DESIGN_ENGINE_SCHEMA : 'wpae-edde-plan-v1',
+			'mode' => function_exists( 'wpae_llm_design_engine_mode' ) ? wpae_llm_design_engine_mode() : 'off',
+			'status' => 'skipped',
+			'reason' => 'not_eligible',
+		],
+	];
+	$design_engine_active = false;
+	$design_engine_action = [];
+	$design_engine_post_id = $selected_post_id > 0 ? $selected_post_id : absint( $request->get_param( 'post_id' ) );
+	if ( $design_engine_post_id <= 0 && is_array( $editor_context_input ) ) {
+		$design_engine_post_id = absint( $editor_context_input['post_id'] ?? 0 );
+	}
+	$design_engine_eligible = $action_request
+		&& ! $targeted_edit
+		&& ! $vision_repair
+		&& ! $vision_regenerate
+		&& $action_archetype === 'hero'
+		&& $design_engine_post_id > 0;
+	if ( $design_engine_eligible && function_exists( 'wpae_llm_design_engine_decide' ) ) {
+		$design_engine_result = wpae_llm_design_engine_decide( $message, $action_archetype, $content_plan, is_array( $editor_context_input ) ? $editor_context_input : [], $runtime );
+		if ( ! empty( $design_engine_result['ok'] ) && function_exists( 'wpae_llm_design_engine_compile_hero' ) ) {
+			$design_engine_action = wpae_llm_design_engine_compile_hero(
+				wpae_llm_build_fallback_action( $message, $design_engine_post_id ),
+				(array) ( $design_engine_result['plan'] ?? [] ),
+				$message
+			);
+			$design_engine_shape = wpae_llm_validate_action_shape( $design_engine_action, $design_engine_post_id );
+			if ( ! empty( $design_engine_shape['ok'] ) ) {
+				$design_engine_active = ( $design_engine_result['trace']['mode'] ?? '' ) === 'active';
+				$design_engine_result['trace']['compile'] = $design_engine_action['_wpae_edde']['compile'] ?? [];
+			} else {
+				$design_engine_result['ok'] = false;
+				$design_engine_result['trace']['status'] = 'compile_invalid';
+				$design_engine_result['trace']['reason'] = 'native_action_shape';
+			}
+		}
+	}
     $system_prompt = 'Ты помогаешь работать с WordPress и Elementor. Не заявляй, что изменения выполнены, если не получил подтверждение API. Соблюдай native Elementor settings, Flexbox Containers, mobile-first и сохраняй существующие WebGL/GSAP/Three.js enhancement-зоны.';
     $guided_context = [];
     if ( $action_request ) {
@@ -9440,8 +9481,18 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         'attempt_count' => 0,
         'attempts' => [],
     ];
-    $response = wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'], $provider_deadline );
-    if ( is_wp_error( $response ) ) {
+    $response = $design_engine_active
+		? [
+			'response' => [ 'code' => 200 ],
+			'body' => wp_json_encode( [
+				'choices' => [ [
+					'finish_reason' => 'stop',
+					'message' => [ 'content' => wp_json_encode( $design_engine_action, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ],
+				] ],
+			], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+		]
+		: wpae_llm_provider_request( $url, $remote_args, $request_body, $action_request, $runtime['provider'], $provider_deadline );
+    if ( is_wp_error( $response ) && ! $design_engine_active ) {
         $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_transport', $action_request, 0, '', null, $response );
         // Transport-level failure (timeout or HTTP layer). One opt-in fallback
         // model attempt keeps slow shared wildcard routes usable without the
@@ -9490,7 +9541,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $status = wp_remote_retrieve_response_code( $response );
     $raw = wp_remote_retrieve_body( $response );
     $body = json_decode( $raw, true );
-    if ( ! $provider_transport_fallback ) {
+    if ( ! $provider_transport_fallback && ! $design_engine_active ) {
         $provider_attempts[] = wpae_llm_build_request_diagnostics( $url, $remote_args, $request_body, $runtime['provider'], $runtime['model'], 'primary_response', $action_request, $status, $raw, $body );
     }
     $used_fallback_model = '';
@@ -9574,6 +9625,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
         $action_diagnostics['decoded_element_count'] = is_array( $action['elements'] ?? null ) ? count( $action['elements'] ) : 0;
         $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
+		if ( $design_engine_active ) {
+			$action_diagnostics['response_type'] = 'design_engine';
+			$action_diagnostics['design_engine_schema'] = defined( 'WPAE_LLM_DESIGN_ENGINE_SCHEMA' ) ? WPAE_LLM_DESIGN_ENGINE_SCHEMA : 'wpae-edde-plan-v1';
+		}
         if ( $targeted_edit ) {
             $action = wpae_llm_ensure_targeted_border_radius_patch( $action, $message, $post_id, (array) ( $editor_context_input['selected_elements'] ?? [] ) );
             $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : $action_diagnostics;
@@ -9956,7 +10011,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $action_steps = [
             [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'semantic_plan', 'status' => ! empty( $content_plan_audit['ok'] ) ? 'ok' : 'failed', 'message' => ! empty( $content_plan_audit['ok'] ) ? 'Смысловой план контента подтвержден до записи.' : 'Композиция нарушает смысловой план контента.', 'details' => [ 'plan' => $content_plan, 'audit' => $content_plan_audit ] ],
-            [ 'id' => 'provider_response', 'status' => 'ok', 'message' => 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
+            [ 'id' => 'provider_response', 'status' => 'ok', 'message' => $design_engine_active ? 'Typed EDDE-план скомпилирован в native Elementor-команду.' : 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],
             [
                 'id' => 'command_decode',
                 'status' => ! empty( $action_diagnostics['json_decoded'] ) ? 'ok' : 'failed',
@@ -9968,7 +10023,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'status' => empty( $provider_quality['ok'] ) ? 'failed' : ( $provider_design ? 'ok' : 'skipped' ),
                 'message' => empty( $provider_quality['ok'] )
                     ? 'Ответ провайдера отклонен до записи: смысловые слоты были сжаты в слишком бедную композицию; применен content-complete fallback.'
-                    : ( $provider_design ? 'Provider-композиция прошла базовую проверку смысловых слотов.' : 'Проверка provider-композиции не требовалась для fallback или библиотеки.' ),
+                    : ( $design_engine_active ? 'EDDE-композиция прошла базовую проверку смысловых слотов.' : ( $provider_design ? 'Provider-композиция прошла базовую проверку смысловых слотов.' : 'Проверка provider-композиции не требовалась для fallback или библиотеки.' ) ),
                 'details' => $provider_quality,
             ],
             [
@@ -10062,6 +10117,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                         'schema' => 'wpae-llm-generation-diagnostics-v1',
                         'archetype' => $action_archetype,
                         'action_path' => 'fallback',
+                        'design_engine' => (array) ( $design_engine_result['trace'] ?? [] ),
                         'provider_response' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
                         'command' => array_merge(
                             $action_diagnostics,
@@ -10153,11 +10209,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action_steps[] = [ 'id' => 'render_cache', 'status' => 'ok', 'message' => 'Устаревший Elementor render cache очищен перед записью обновленного контента.', 'details' => [ 'nodes_cleared' => $render_cache_changed ] ];
         }
         $execution_variation_seed = $library_applied || $provider_design ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
-        $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.', 'details' => [ 'source' => $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ] ];
+        $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $design_engine_active ? 'Typed EDDE-план скомпилирован существующим native Elementor-пайплайном.' : ( $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.' ), 'details' => [ 'source' => $design_engine_active ? 'edde' : ( $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ) ] ];
         $generation_diagnostics = [
             'schema' => 'wpae-llm-generation-diagnostics-v1',
             'archetype' => $action_archetype,
-            'action_path' => $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ),
+            'action_path' => $design_engine_active ? 'edde' : ( $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ) ),
+            'design_engine' => (array) ( $design_engine_result['trace'] ?? [] ),
             'provider_response' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
             'command' => $action_diagnostics,
             'initial_validation' => $initial_validation,
@@ -10167,10 +10224,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'semantic_plan' => $content_plan_audit,
                 'provider_quality' => $provider_quality,
                 'provider_design' => $provider_design,
+                'design_engine_active' => $design_engine_active,
                 'library_applied' => $library_applied,
             ],
         ];
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design || $action_fallback, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $design_engine_active || $provider_design || $action_fallback, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         $generation_diagnostics['execution'] = [
             'ok' => ! empty( $execution['ok'] ),

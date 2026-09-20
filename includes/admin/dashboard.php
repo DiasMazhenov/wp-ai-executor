@@ -973,6 +973,15 @@ function wpae_settings_page() {
                         <span class="wpae-section-note">Необязательно. Используется один раз, если основной пул вернёт rate limit или зависнет. Выберите ранее введённую модель из списка или впишите новую. Оставьте пустым, чтобы отключить.</span>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-llm-design-engine-mode">Design Decision Engine</label>
+                        <select class="wpae-input" id="wpae-llm-design-engine-mode" name="wpae_llm[design_engine_mode]">
+                            <option value="off" <?php selected( $llm_settings['design_engine_mode'] ?? 'off', 'off' ); ?>>Выключен</option>
+                            <option value="shadow" <?php selected( $llm_settings['design_engine_mode'] ?? 'off', 'shadow' ); ?>>Shadow: решения только в diagnostics</option>
+                            <option value="active" <?php selected( $llm_settings['design_engine_mode'] ?? 'off', 'active' ); ?>>Active: только hero vertical slice</option>
+                        </select>
+                        <span class="wpae-section-note">EDDE возвращает ограниченный typed plan и компилирует его текущим native Elementor-пайплайном. Pricing, process и targeted edits остаются на прежних контрактах.</span>
+                    </div>
+                    <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-api-key">API-ключ провайдера</label>
                         <input class="wpae-input" id="wpae-llm-api-key" name="wpae_llm[api_key]" type="password" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( ! empty( $llm_settings['has_api_key'] ) ? '••••••••••••' : 'Введите API-ключ провайдера' ); ?>" />
                         <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Промпты и ответы в плагине не сохраняются.</span>

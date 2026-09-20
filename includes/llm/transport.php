@@ -105,6 +105,10 @@ function wpae_llm_get_settings(): array {
     if ( ! empty( $model_options ) && $fallback_model !== '' && ! isset( $model_options[ $fallback_model ] ) ) {
         $fallback_model = '';
     }
+	$design_engine_mode = sanitize_key( (string) ( $stored['design_engine_mode'] ?? 'off' ) );
+	if ( ! in_array( $design_engine_mode, [ 'off', 'shadow', 'active' ], true ) ) {
+		$design_engine_mode = 'off';
+	}
 
     $api_key = wpae_vision_decrypt_api_key( (string) ( $stored['api_key_encrypted'] ?? '' ) );
     return [
@@ -114,6 +118,7 @@ function wpae_llm_get_settings(): array {
         'model' => $model,
         'fallback_model' => $fallback_model,
         'fallback_model_history' => wpae_llm_fallback_model_history( $stored ),
+		'design_engine_mode' => $design_engine_mode,
         'has_api_key' => $api_key !== '',
         'api_key_hint' => $api_key !== '' ? 'Ключ сохранен' : 'Ключ не задан',
         'updated_at' => sanitize_text_field( (string) ( $stored['updated_at'] ?? '' ) ),
@@ -204,6 +209,11 @@ function wpae_update_llm_settings( array $input ) {
         $fallback_model = '';
     }
     $stored['fallback_model'] = $fallback_model;
+	$design_engine_mode = sanitize_key( (string) ( $input['design_engine_mode'] ?? ( $stored['design_engine_mode'] ?? 'off' ) ) );
+	if ( ! in_array( $design_engine_mode, [ 'off', 'shadow', 'active' ], true ) ) {
+		$design_engine_mode = 'off';
+	}
+	$stored['design_engine_mode'] = $design_engine_mode;
     $history = is_array( $stored['fallback_model_history'] ?? null ) ? $stored['fallback_model_history'] : [];
     if ( $fallback_model !== '' && ! in_array( $fallback_model, $history, true ) ) {
         array_unshift( $history, $fallback_model );

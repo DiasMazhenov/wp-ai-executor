@@ -901,6 +901,56 @@ $undo_response = wpae_llm_undo( $undo );
 check( $undo_response->get_status() === 409 && $undo_response->get_data()['code'] === 'wpae_undo_conflict', 'Undo overwrote a later edit' );
 check( isset( $GLOBALS['options']['wp_ai_executor_rollback_snapshots']['undo'] ), 'Conflict consumed rollback evidence' );
 
+$edde_plan = [
+	'schema' => WPAE_LLM_DESIGN_ENGINE_SCHEMA,
+	'archetype' => 'hero',
+	'composition' => 'split_40_60',
+	'content_alignment' => 'center',
+	'vertical_alignment' => 'center',
+	'spacing_rhythm' => 'spacious',
+	'surface' => 'outlined',
+	'typography' => 'display',
+	'cta_hierarchy' => 'primary_secondary',
+	'responsive_strategy' => 'copy_first_stack',
+];
+check( wpae_llm_design_engine_decode_plan( wp_json_encode( $edde_plan ), [ 'composition' => 'split_60_40' ] )['plan']['composition'] === 'split_60_40', 'EDDE explicit composition constraint did not override a provider plan' );
+check( ! wpae_llm_design_engine_decode_plan( wp_json_encode( array_merge( $edde_plan, [ 'confidence' => 0.9 ] ) ) )['ok'], 'EDDE accepted an untyped confidence field' );
+$edde_constraints = wpae_llm_design_engine_explicit_constraints( $explicit_cta_message );
+check( ! array_key_exists( 'content_alignment', $edde_constraints ), 'EDDE mistook a right-side visual panel for right-aligned copy' );
+$edde_color_action = wpae_llm_design_engine_compile_hero( wpae_llm_build_fallback_action( $message, 42 ), $edde_plan, 'Создай hero с фоном #123456.' );
+check( ( $edde_color_action['elements'][0]['settings']['background_color'] ?? '' ) === '#123456', 'EDDE compiler overrode an explicit user background color: ' . wp_json_encode( [ 'id' => $edde_color_action['elements'][0]['id'] ?? '', 'settings' => $edde_color_action['elements'][0]['settings'] ?? [] ] ) );
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_engine_mode' => 'active' ];
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $edde_plan ) ) ];
+$edde_request = new WP_REST_Request();
+$edde_request->set_param( 'message', $explicit_cta_message );
+$edde_request->set_param( 'context', [ 'post_id' => 42 ] );
+$edde_response = wpae_llm_chat_request( $edde_request );
+check( $edde_response instanceof WP_REST_Response && ! empty( $edde_response->get_data()['ok'] ), 'EDDE active hero did not use the existing write boundary' );
+$edde_data = $edde_response->get_data();
+check( ( $edde_data['diagnostics']['action_path'] ?? '' ) === 'edde' && ( $edde_data['diagnostics']['design_engine']['status'] ?? '' ) === 'ok', 'EDDE active diagnostics did not report the typed path' );
+check( count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'EDDE active exceeded its single bounded decision call or wrote more than once' );
+$edde_saved = $GLOBALS['page_data'][2] ?? [];
+$edde_shell = $edde_saved['elements'][1] ?? [];
+$edde_copy = $edde_shell['elements'][0] ?? [];
+$edde_visual = $edde_shell['elements'][1] ?? [];
+check( abs( (float) ( $edde_copy['settings']['width']['size'] ?? 0 ) - 38.4 ) < 0.01 && abs( (float) ( $edde_visual['settings']['width']['size'] ?? 0 ) - 57.6 ) < 0.01, 'EDDE compiler did not preserve the typed 40/60 composition at the native 96% layout budget' );
+check( ( $edde_shell['settings']['flex_justify_content'] ?? '' ) === 'center' && ( $edde_visual['settings']['border_border'] ?? '' ) === 'solid', 'EDDE compiler lost vertical or outlined surface decisions' );
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'shadow';
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $edde_plan ) ), provider_reply( wp_json_encode( $action ) ) ];
+$shadow_request = new WP_REST_Request();
+$shadow_request->set_param( 'message', $message );
+$shadow_request->set_param( 'context', [ 'post_id' => 42 ] );
+$shadow_response = wpae_llm_chat_request( $shadow_request );
+check( $shadow_response instanceof WP_REST_Response && ! empty( $shadow_response->get_data()['ok'] ), 'EDDE shadow mode changed the existing provider path' );
+$shadow_data = $shadow_response->get_data();
+check( ( $shadow_data['diagnostics']['action_path'] ?? '' ) === 'provider' && ( $shadow_data['diagnostics']['design_engine']['status'] ?? '' ) === 'ok', 'EDDE shadow mode did not preserve provider action diagnostics' );
+check( count( $GLOBALS['http_calls'] ) === 2 && count( $GLOBALS['writes'] ) === 1, 'EDDE shadow mode did not stay within decision plus provider call budget' );
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'off';
+
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );
 $permission->set_param( 'context', [ 'post_id' => 99 ] );
