@@ -1364,22 +1364,28 @@ function wpae_llm_extract_requested_content( string $message ): array {
             $matches = array_merge( $matches, $found[1] );
         }
     }
-    $labeled_pairs = wpae_llm_extract_labeled_content( $message );
+	$labeled_pairs = wpae_llm_extract_labeled_content( $message );
 	$structured_pairs = $labeled_pairs;
 	$faq_request = (bool) preg_match( '/\b(?:faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu', $message );
 	if ( $faq_request ) {
 		$faq_pairs = wpae_llm_extract_faq_content( $message );
 		if ( ! empty( $faq_pairs ) ) {
 			$structured_pairs = $faq_pairs;
-			$faq_values = [];
-			foreach ( $faq_pairs as $faq_pair ) {
-				$faq_values[] = wpae_llm_normalize_content_text( (string) ( $faq_pair['label'] ?? '' ) );
-				$faq_values[] = wpae_llm_normalize_content_text( (string) ( $faq_pair['content'] ?? '' ) );
-			}
-			$matches = array_values( array_filter( $matches, static function ( $value ) use ( $faq_values ): bool {
-				return ! in_array( wpae_llm_normalize_content_text( (string) $value ), $faq_values, true );
-			} ) );
 		}
+	}
+	if ( ! empty( $structured_pairs ) ) {
+		// A structured pair is authoritative for every repeatable archetype, not
+		// only FAQ. Remove its raw quoted fields before adding the clean label and
+		// content below, otherwise Portfolio/Benefits can duplicate fields or
+		// retain the instruction tail after the final quoted pair.
+		$pair_values = [];
+		foreach ( $structured_pairs as $pair ) {
+			$pair_values[] = wpae_llm_normalize_content_text( (string) ( $pair['label'] ?? '' ) );
+			$pair_values[] = wpae_llm_normalize_content_text( (string) ( $pair['content'] ?? '' ) );
+		}
+		$matches = array_values( array_filter( $matches, static function ( $value ) use ( $pair_values ): bool {
+			return ! in_array( wpae_llm_normalize_content_text( (string) $value ), $pair_values, true );
+		} ) );
 	}
 	$pricing_request = count( wpae_llm_extract_pricing_content( $message ) ) >= 2;
 	if ( $pricing_request ) {
@@ -1583,7 +1589,20 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     if ( ! is_string( $content_message ) || $content_message === '' ) {
         $content_message = $message;
     }
-    $dash_separator = '(?:\s*[—–]\s*|\s+-\s+)';
+	$dash_separator = '(?:\s*[—–]\s*|\s+-\s+)';
+	$quoted_dash_pairs = [];
+	if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:«([^»]{2,320})»|"([^"\n]{2,320})")/u', $content_message, $quoted_dash_matches, PREG_SET_ORDER ) ) {
+		foreach ( $quoted_dash_matches as $match ) {
+			$label = trim( sanitize_text_field( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) ) );
+			$content = trim( sanitize_text_field( (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) ) ) );
+			if ( $label !== '' && $content !== '' ) {
+				$quoted_dash_pairs[] = [ 'label' => $label, 'content' => $content ];
+			}
+		}
+	}
+	if ( count( $quoted_dash_pairs ) >= 2 ) {
+		return array_slice( $quoted_dash_pairs, 0, 12 );
+	}
     if (
         preg_match( '/(?:«[^»]{2,80}»|"[^"\n]{2,80}")' . $dash_separator . '/u', $content_message )
         && preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")' . $dash_separator . '(.*?)(?=;\s*(?:«|\")|(?:\.\s+)(?=(?:К\s+каждому|В\s+конце|Добавь|Добавить)\b)|$)/us', $content_message, $quoted_label_matches, PREG_SET_ORDER )
@@ -2052,11 +2071,25 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
     if ( count( $pairs ) < 2 ) {
         return;
     }
-    $heading = '';
-    if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
-        $heading = trim( sanitize_text_field( (string) $match[1] ) );
-    }
-    $cta = '';
+	$heading = '';
+	if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+		$heading = trim( sanitize_text_field( (string) $match[1] ) );
+	}
+	if ( $heading === '' ) {
+		$pair_values = [];
+		foreach ( $pairs as $pair ) {
+			$pair_values[] = wpae_llm_normalize_content_text( (string) ( $pair['label'] ?? '' ) );
+			$pair_values[] = wpae_llm_normalize_content_text( (string) ( $pair['content'] ?? '' ) );
+		}
+		foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
+			$normalized_value = wpae_llm_normalize_content_text( (string) $value );
+			if ( $normalized_value !== '' && ! in_array( $normalized_value, $pair_values, true ) && ! wpae_llm_is_cta_copy( (string) $value ) ) {
+				$heading = trim( sanitize_text_field( (string) $value ) );
+				break;
+			}
+		}
+	}
+	$cta = '';
     if ( preg_match( '/(?:кнопка|cta)\s*:\s*([^\.\n]{3,120})/iu', $message, $match ) ) {
         $cta = trim( sanitize_text_field( (string) $match[1] ) );
     }

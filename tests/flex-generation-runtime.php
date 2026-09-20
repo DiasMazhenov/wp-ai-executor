@@ -539,6 +539,29 @@ check( strpos( $faq_json, 'Можно работать дистанционно'
 check( strpos( $faq_json, 'Что входит в проект' ) !== false && strpos( $faq_json, 'Планировка, концепция и согласованный комплект материалов' ) !== false, 'FAQ fallback lost the third exact question or answer' );
 check( empty( wpae_llm_content_fidelity( $faq_message, $faq_action['elements'] )['missing'] ), 'FAQ fallback failed final content fidelity' );
 
+$portfolio_message = 'Создай блок «Наши проекты» с тремя работами: «Квартира у парка» — «Светлый интерьер для семьи»; «Дом у озера» — «Природные материалы и открытые пространства»; «Городская студия» — «Компактная планировка для одного человека». Сохрани три работы, точные описания и порядок. Используй редактируемые элементы Elementor. Не выдумывай фотографии выполненных проектов. Адаптируй для телефона.';
+$portfolio_pairs = wpae_llm_extract_labeled_content( $portfolio_message );
+check( count( $portfolio_pairs ) === 3, 'Portfolio parser did not extract three quoted title/description pairs' );
+check( ( $portfolio_pairs[0]['label'] ?? '' ) === 'Квартира у парка' && ( $portfolio_pairs[0]['content'] ?? '' ) === 'Светлый интерьер для семьи', 'Portfolio parser changed the first exact pair' );
+check( ( $portfolio_pairs[2]['label'] ?? '' ) === 'Городская студия' && ( $portfolio_pairs[2]['content'] ?? '' ) === 'Компактная планировка для одного человека', 'Portfolio parser retained instruction text in the last description' );
+$portfolio_requested = wpae_llm_extract_requested_content( $portfolio_message );
+check( $portfolio_requested === [ 'Наши проекты', 'Квартира у парка', 'Светлый интерьер для семьи', 'Дом у озера', 'Природные материалы и открытые пространства', 'Городская студия', 'Компактная планировка для одного человека' ], 'Portfolio requested-content extraction did not return the title and six clean pair fields in order' );
+check( ! in_array( 'Сохрани три работы, точные описания и порядок', $portfolio_requested, true ) && ! in_array( 'Используй редактируемые элементы Elementor', $portfolio_requested, true ), 'Portfolio requested-content extraction retained a technical instruction' );
+$portfolio_action = wpae_llm_build_fallback_action( $portfolio_message, 42 );
+$portfolio_changed = 0;
+wpae_llm_apply_fallback_archetype_content( $portfolio_action['elements'], $portfolio_message, 'portfolio', $portfolio_changed );
+$portfolio_fidelity = wpae_llm_content_fidelity( $portfolio_message, $portfolio_action['elements'] );
+$portfolio_missing = (array) ( $portfolio_fidelity['missing'] ?? [] );
+if ( ! empty( $portfolio_missing ) ) {
+	wpae_llm_apply_fallback_content( $portfolio_action['elements'], $portfolio_missing, 'portfolio', $portfolio_changed );
+}
+$portfolio_fidelity = wpae_llm_content_fidelity( $portfolio_message, $portfolio_action['elements'] );
+check( ! empty( $portfolio_fidelity['ok'] ), 'Portfolio fallback failed final content fidelity after pair normalization' );
+$portfolio_json = (string) wp_json_encode( $portfolio_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $portfolio_json, '"title":"Наши проекты"' ) !== false, 'Portfolio fallback did not place the explicit section title in a native Heading' );
+check( strpos( $portfolio_json, 'Сохрани три работы' ) === false && strpos( $portfolio_json, 'Используй редактируемые элементы Elementor' ) === false, 'Portfolio fallback leaked prompt instructions into native widgets' );
+check( strpos( $portfolio_json, 'Квартира у парка' ) !== false && strpos( $portfolio_json, 'Компактная планировка для одного человека' ) !== false, 'Portfolio fallback lost exact project content' );
+
 $wrong_provider_action = $action;
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][1]['settings']['editor'] = 'Нерелевантное описание';
