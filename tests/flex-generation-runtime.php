@@ -631,7 +631,7 @@ $pricing_content_only_action['elements'] = wpae_llm_apply_generation_visual_gram
 $pricing_cta_changed = 0;
 $pricing_content_only_action['elements'] = wpae_llm_normalize_requested_cta( $pricing_content_only_action['elements'], $pricing_content_only_message, $pricing_cta_changed );
 $pricing_contract_changed = 0;
-$pricing_layout = wpae_llm_build_pricing_pair_layout( $pricing_content_only_action['elements'], wpae_llm_extract_pricing_content( $pricing_content_only_message ), $pricing_contract_changed, wpae_llm_extract_requested_ctas( $pricing_content_only_message ) );
+$pricing_layout = wpae_llm_build_pricing_pair_layout( $pricing_content_only_action['elements'], wpae_llm_extract_pricing_content( $pricing_content_only_message ), $pricing_contract_changed );
 $pricing_content_only_action['elements'] = $pricing_layout;
 // The final pricing contract rebuild must not discard CTAs normalized before it.
 $pricing_cta_after_contract_changed = 0;
@@ -663,8 +663,9 @@ $pricing_walk( $pricing_content_only_action['elements'] );
 check( $pricing_card_buttons === 3, 'Pricing CTA buttons are not nested inside their native pricing cards' );
 
 $quoted_pricing_message = "Создай блок «Тарифы» с тремя карточками:\n«Старт» — «Одна консультация» — «30 000 ₸»;\n«Проект» — «Планировка и концепция» — «150 000 ₸»;\n«Полное сопровождение» — «Проект и авторский надзор» — «300 000 ₸».\nВ каждой карточке отдельная кнопка:\n«Выбрать Старт» → #start,\n«Выбрать Проект» → #project,\n«Выбрать сопровождение» → #support.\nИспользуй светлый фон и терракотовые акценты. На телефоне расположи карточки вертикально.";
-$quoted_pricing_pairs = wpae_llm_extract_pricing_content( $quoted_pricing_message );
-check( count( $quoted_pricing_pairs ) === 3 && $quoted_pricing_pairs[0]['label'] === 'Старт' && $quoted_pricing_pairs[0]['content'] === '30 000 ₸ — Одна консультация', 'Quoted pricing content-only parser did not preserve label, price, and description order' );
+$quoted_pricing_contract = wpae_llm_extract_pricing_content( $quoted_pricing_message );
+$quoted_pricing_items = $quoted_pricing_contract['items'];
+check( count( $quoted_pricing_items ) === 3 && $quoted_pricing_items[0]['label'] === 'Старт' && $quoted_pricing_items[0]['price_text'] === '30 000 ₸' && $quoted_pricing_items[0]['description'] === 'Одна консультация', 'Quoted pricing contract did not preserve label, price, and description order' );
 check( wpae_llm_detect_block_archetype( $quoted_pricing_message ) === 'pricing', 'Quoted pricing request was misclassified as a hero after CTA extraction' );
 $quoted_pricing_ctas = wpae_llm_extract_requested_ctas( $quoted_pricing_message );
 check( count( $quoted_pricing_ctas ) === 3 && $quoted_pricing_ctas[0]['text'] === 'Выбрать Старт' && $quoted_pricing_ctas[0]['url'] === '#start' && $quoted_pricing_ctas[2]['url'] === '#support', 'Arrow CTA parser did not preserve all pricing labels and targets' );
@@ -673,8 +674,9 @@ check( ! empty( wpae_llm_content_fidelity( $quoted_pricing_message, $quoted_pric
 $quoted_pricing_json = (string) wp_json_encode( $quoted_pricing_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 check( substr_count( $quoted_pricing_json, '"widgetType":"button"' ) === 3 && strpos( $quoted_pricing_json, '"url":"#start"' ) !== false && strpos( $quoted_pricing_json, '"url":"#support"' ) !== false, 'Quoted pricing fallback did not build three native CTA buttons with exact targets' );
 $inline_pricing_message = 'Создай блок «Выберите формат работы» с бейджем «ТАРИФЫ». Три предложения: «Старт» — «Для небольшой задачи с понятным объёмом» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка #start. «Проект» — «Для комплексной работы от идеи до результата» — «от 150 000 ₸» — кнопка «Обсудить проект», ссылка #project. «Поддержка» — «Для регулярных задач и развития проекта» — «от 80 000 ₸/мес» — кнопка «Подключить поддержку», ссылка #support.';
-$inline_pricing_pairs = wpae_llm_extract_pricing_content( $inline_pricing_message );
-check( count( $inline_pricing_pairs ) === 3 && $inline_pricing_pairs[0]['content'] === 'от 50 000 ₸ — Для небольшой задачи с понятным объёмом' && $inline_pricing_pairs[2]['content'] === 'от 80 000 ₸/мес — Для регулярных задач и развития проекта', 'Inline quoted pricing parser did not preserve all amounts and descriptions' );
+$inline_pricing_contract = wpae_llm_extract_pricing_content( $inline_pricing_message );
+$inline_pricing_items = $inline_pricing_contract['items'];
+check( count( $inline_pricing_items ) === 3 && $inline_pricing_items[0]['price_text'] === 'от 50 000 ₸' && $inline_pricing_items[2]['price_text'] === 'от 80 000 ₸/мес' && $inline_pricing_contract['heading'] === 'Выберите формат работы' && $inline_pricing_contract['badge'] === 'ТАРИФЫ', 'Inline pricing contract did not preserve amounts, heading, and badge' );
 $inline_pricing_action = wpae_llm_build_fallback_action( $inline_pricing_message, 42 );
 $inline_pricing_fidelity = wpae_llm_content_fidelity( $inline_pricing_message, $inline_pricing_action['elements'] );
 check( ! empty( $inline_pricing_fidelity['ok'] ), 'Inline quoted pricing fallback failed exact content fidelity' );
@@ -685,6 +687,31 @@ check( strpos( $inline_pricing_json, '"title":"от 150 000 ₸"' ) !== false, '
 check( strpos( $inline_pricing_json, '"title":"Выберите формат работы"' ) !== false, 'Inline quoted pricing fallback lost the requested section title' );
 check( strpos( $inline_pricing_json, '"title":"ТАРИФЫ"' ) !== false, 'Inline quoted pricing fallback lost the requested badge label' );
 check( strpos( $inline_pricing_json, '"title":"от 80 000 ₸/мес"' ) !== false && strpos( $inline_pricing_json, '"editor":"Для регулярных задач и развития проекта"' ) !== false, 'Inline quoted pricing fallback merged the monthly price and description' );
+
+$multiline_pricing_message = "Создай блок: «Выберите формат работы» с бейджем: «ТАРИФЫ».\n«Старт» — «Для небольшой задачи: быстро и понятно.» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка #start.\n«Проект» — «Для комплексной работы, от идеи до результата?» — «от 150 000 ₸» — кнопка «Обсудить проект», ссылка #project.\n«Поддержка» — «Для регулярных задач и развития проекта.» — «от 80 000 ₸/мес» — кнопка «Подключить поддержку», ссылка #support.";
+$multiline_pricing_contract = wpae_llm_extract_pricing_content( $multiline_pricing_message );
+$multiline_pricing_items = $multiline_pricing_contract['items'];
+check( count( $multiline_pricing_items ) === 3 && $multiline_pricing_items[0]['description'] === 'Для небольшой задачи: быстро и понятно.' && $multiline_pricing_items[1]['description'] === 'Для комплексной работы, от идеи до результата?' && $multiline_pricing_items[2]['price_text'] === 'от 80 000 ₸/мес', 'Multiline pricing contract lost punctuation or the monthly price period' );
+check( array_column( $multiline_pricing_items, 'cta_url' ) === [ '#start', '#project', '#support' ] && array_column( $multiline_pricing_items, 'cta_text' ) === [ 'Выбрать Старт', 'Обсудить проект', 'Подключить поддержку' ], 'Pricing contract did not keep CTA text and URL pairs ordered by card' );
+$normalized_pricing_contract = wpae_llm_normalize_pricing_contract( $multiline_pricing_contract );
+$normalized_pricing_contract_again = wpae_llm_normalize_pricing_contract( $normalized_pricing_contract );
+check( wp_json_encode( $normalized_pricing_contract, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) === wp_json_encode( $normalized_pricing_contract_again, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ), 'Pricing contract normalization is not idempotent' );
+$optional_pricing_contract = wpae_llm_normalize_pricing_contract( [
+	'heading' => 'Тарифы',
+	'badge' => 'ТАРИФЫ',
+	'items' => [
+		[ 'label' => 'Мини', 'description' => '', 'price_text' => 'от 10 000 ₸', 'cta_text' => '', 'cta_url' => '' ],
+		[ 'label' => 'Стандарт', 'description' => 'Полный объём', 'price_text' => 'от 30 000 ₸', 'cta_text' => 'Выбрать', 'cta_url' => '#standard' ],
+	],
+] );
+check( $optional_pricing_contract['items'][0]['description'] === '' && $optional_pricing_contract['items'][0]['price_text'] === 'от 10 000 ₸', 'Pricing contract rejected an absent optional description or changed price_text' );
+$optional_pricing_changed = 0;
+$optional_pricing_layout = wpae_llm_build_pricing_pair_layout( [], $optional_pricing_contract, $optional_pricing_changed );
+$optional_pricing_json = (string) wp_json_encode( $optional_pricing_layout, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $optional_pricing_json, '"title":"от 10 000 ₸"' ) !== false && strpos( $optional_pricing_json, '"editor":""' ) === false, 'Pricing builder created empty optional description content' );
+$invalid_url_message = 'Создай блок «Тарифы»: «Старт» — «Описание» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка javascript:alert(1). «Проект» — «Описание проекта» — «от 150 000 ₸».';
+$invalid_url_contract = wpae_llm_extract_pricing_content( $invalid_url_message );
+check( ( $invalid_url_contract['items'][0]['cta_text'] ?? '' ) === 'Выбрать Старт' && ( $invalid_url_contract['items'][0]['cta_url'] ?? '' ) === '', 'Invalid CTA URL was not rejected by the pricing contract policy' );
 
 $reference_timeline = wpae_llm_build_process_timeline(
     [

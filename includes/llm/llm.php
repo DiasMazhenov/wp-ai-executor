@@ -1153,6 +1153,10 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         return [
             'label' => trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) ),
             'content' => trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) ),
+            'description' => trim( sanitize_text_field( (string) ( $pair['description'] ?? '' ) ) ),
+            'price_text' => trim( sanitize_text_field( (string) ( $pair['price_text'] ?? '' ) ) ),
+            'cta_text' => trim( sanitize_text_field( (string) ( $pair['cta_text'] ?? '' ) ) ),
+            'cta_url' => (string) ( $pair['cta_url'] ?? '' ),
         ];
     }, wpae_llm_extract_labeled_content( $message ) ), 0, 8 );
     $content_pairs = $pairs;
@@ -1479,7 +1483,18 @@ function wpae_llm_extract_requested_content( string $message ): array {
             $matches = array_merge( $matches, $found[1] );
         }
     }
-	$labeled_pairs = wpae_llm_extract_labeled_content( $message );
+	$pricing_contract = wpae_llm_extract_pricing_content( $message );
+	$pricing_items = is_array( $pricing_contract['items'] ?? null ) ? $pricing_contract['items'] : [];
+	$pricing_request = count( $pricing_items ) >= 2;
+	$labeled_pairs = $pricing_request ? array_map( static function ( array $item ): array {
+		return [
+			'label' => (string) ( $item['label'] ?? '' ),
+			'content' => (string) ( $item['description'] ?? '' ),
+			'price_text' => (string) ( $item['price_text'] ?? '' ),
+			'cta_text' => (string) ( $item['cta_text'] ?? '' ),
+			'cta_url' => (string) ( $item['cta_url'] ?? '' ),
+		];
+	}, $pricing_items ) : wpae_llm_extract_labeled_content( $message );
 	$structured_pairs = $labeled_pairs;
 	$faq_request = (bool) preg_match( '/\b(?:faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu', $message );
 	if ( $faq_request ) {
@@ -1502,12 +1517,19 @@ function wpae_llm_extract_requested_content( string $message ): array {
 			return ! in_array( wpae_llm_normalize_content_text( (string) $value ), $pair_values, true );
 		} ) );
 	}
-	$pricing_request = count( wpae_llm_extract_pricing_content( $message ) ) >= 2;
 	if ( $pricing_request ) {
 		// Pricing pair extraction below is authoritative. Quoted labels,
 		// descriptions, and amounts from the raw line would otherwise be added
 		// a second time as unrelated fidelity requirements.
 		$matches = [];
+		foreach ( $pricing_items as $item ) {
+			foreach ( [ 'label', 'price_text', 'description', 'cta_text' ] as $field ) {
+				$value = trim( (string) ( $item[ $field ] ?? '' ) );
+				if ( $value !== '' ) {
+					$matches[] = $value;
+				}
+			}
+		}
 	}
     if ( $process_request ) {
         // Process labels are explicit content; the surrounding instruction is
@@ -1534,7 +1556,8 @@ function wpae_llm_extract_requested_content( string $message ): array {
     if ( count( $structured_pairs ) < 2 && preg_match( '/\?|؟/u', $message ) ) {
         $structured_pairs = wpae_llm_extract_faq_content( $message );
     }
-    foreach ( $structured_pairs as $pair ) {
+	$content_pairs = $pricing_request ? [] : $structured_pairs;
+    foreach ( $content_pairs as $pair ) {
 		$pair_label = (string) ( $pair['label'] ?? '' );
 		$pair_content = (string) ( $pair['content'] ?? '' );
 		$matches[] = $pair_label;
@@ -1621,23 +1644,79 @@ function wpae_llm_extract_navigation_content( string $message ): array {
     return [ 'items' => array_slice( array_values( $items ), 0, 8 ), 'cta' => $cta ];
 }
 
+function wpae_llm_normalize_pricing_contract( array $contract ): array {
+	$normalized = [
+		'heading' => trim( sanitize_text_field( (string) ( $contract['heading'] ?? '' ) ), " \t\n\r\0\x0B\"" ),
+		'badge' => trim( sanitize_text_field( (string) ( $contract['badge'] ?? '' ) ), " \t\n\r\0\x0B\"" ),
+		'items' => [],
+	];
+	$items = is_array( $contract['items'] ?? null ) ? $contract['items'] : [];
+	foreach ( array_slice( $items, 0, 8 ) as $item ) {
+		if ( ! is_array( $item ) ) {
+			continue;
+		}
+		$label = trim( sanitize_text_field( (string) ( $item['label'] ?? '' ) ), " \t\n\r\0\x0B\"" );
+		$description = trim( sanitize_text_field( (string) ( $item['description'] ?? '' ) ), " \t\n\r\0\x0B\"" );
+		$price_text = trim( sanitize_text_field( (string) ( $item['price_text'] ?? '' ) ), " \t\n\r\0\x0B\"" );
+		$cta_text = trim( sanitize_text_field( (string) ( $item['cta_text'] ?? '' ) ), " \t\n\r\0\x0B\"" );
+		if ( $label === '' || $price_text === '' ) {
+			continue;
+		}
+		$normalized['items'][] = [
+			'label' => $label,
+			'description' => $description,
+			'price_text' => $price_text,
+			'cta_text' => $cta_text,
+			'cta_url' => wpae_llm_normalize_cta_url( $item['cta_url'] ?? '' ),
+		];
+	}
+
+	return $normalized;
+}
+
+function wpae_llm_pricing_contract_from_pairs( array $pairs, string $message ): array {
+	$ctas = wpae_llm_extract_requested_ctas( $message );
+	$items = [];
+	foreach ( array_values( $pairs ) as $index => $pair ) {
+		if ( ! is_array( $pair ) ) {
+			continue;
+		}
+		$cta = is_array( $ctas[ $index ] ?? null ) ? $ctas[ $index ] : [];
+		$items[] = [
+			'label' => (string) ( $pair['label'] ?? '' ),
+			'description' => (string) ( $pair['description'] ?? '' ),
+			'price_text' => (string) ( $pair['price_text'] ?? '' ),
+			'cta_text' => (string) ( $cta['text'] ?? '' ),
+			'cta_url' => (string) ( $cta['url'] ?? '' ),
+		];
+	}
+
+	return wpae_llm_normalize_pricing_contract( [
+		'heading' => wpae_llm_extract_section_title( $message ),
+		'badge' => wpae_llm_extract_section_badge( $message ),
+		'items' => $items,
+	] );
+}
+
 function wpae_llm_extract_pricing_content( string $message ): array {
+	$empty_contract = [ 'heading' => '', 'badge' => '', 'items' => [] ];
     if ( ! preg_match( '/₸|\$|€|₽|\b(тариф|стоимост|пакет|pricing)\b/iu', $message ) ) {
-        return [];
-    }
-    $pairs = [];
-    $append_pair = static function ( array &$target, string $label, string $price, string $description ): void {
-        $label = trim( sanitize_text_field( $label ), " \t\n\r\0\x0B.,;:«»\"" );
-        $price = trim( sanitize_text_field( $price ), " \t\n\r\0\x0B.,;:«»\"" );
-        $description = trim( sanitize_text_field( $description ), " \t\n\r\0\x0B.,;:«»\"" );
-        if ( $label === '' || $price === '' ) {
-            return;
-        }
-        $target[ wpae_llm_normalize_content_text( $label ) ] = [
-            'label' => $label,
-            'content' => $price . ( $description !== '' ? ' — ' . $description : '' ),
-        ];
-    };
+		return $empty_contract;
+	}
+	$pairs = [];
+	$append_pair = static function ( array &$target, string $label, string $price, string $description ): void {
+		$label = trim( sanitize_text_field( $label ), " \t\n\r\0\x0B\"" );
+		$price = trim( sanitize_text_field( $price ), " \t\n\r\0\x0B\"" );
+		$description = trim( sanitize_text_field( $description ), " \t\n\r\0\x0B\"" );
+		if ( $label === '' || $price === '' ) {
+			return;
+		}
+		$target[ wpae_llm_normalize_content_text( $label ) ] = [
+			'label' => $label,
+			'description' => $description,
+			'price_text' => $price,
+		];
+	};
 
     // Inline briefs may keep all tiers in one sentence and quote the amount,
     // for example «Старт» — «Описание» — «от 50 000 ₸» — кнопка ... .
@@ -1654,7 +1733,7 @@ function wpae_llm_extract_pricing_content( string $message ): array {
         }
     }
     if ( count( $pairs ) >= 2 ) {
-        return array_slice( array_values( $pairs ), 0, 8 );
+		return wpae_llm_pricing_contract_from_pairs( array_slice( array_values( $pairs ), 0, 8 ), $message );
     }
 
     // Content-only prompts commonly express a tier as
@@ -1663,25 +1742,25 @@ function wpae_llm_extract_pricing_content( string $message ): array {
     // separate requirement and leaves the fallback with no pricing pairs.
     foreach ( preg_split( '/\r?\n+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $line ) {
         $line = trim( (string) $line, " \t\n\r\0\x0B.;," );
-        if ( preg_match( '/^\s*[«\"]([^»\"\n]{2,80})[»\"]\s*[—–-]\s*[«\"]([^»\"\n]{2,240})[»\"]\s*[—–-]\s*[«\"]?(\d[\d\s]*(?:₸|\$|€|₽))[»\"]?\s*$/u', $line, $match ) ) {
+		if ( preg_match( '/^\s*[«\"]([^»\"\n]{2,80})[»\"]\s*[—–-]\s*[«\"]([^»\"\n]{2,240})[»\"]\s*[—–-]\s*[«\"]?((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)[»\"]?\s*$/u', $line, $match ) ) {
             $append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[3] ?? '' ), (string) ( $match[2] ?? '' ) );
             continue;
         }
-        if ( preg_match( '/^\s*([^—–:\n.;]{2,80}?)\s*[—–-]\s*([^—–:\n.;]{2,240}?)\s*[—–-]\s*[«\"]?(\d[\d\s]*(?:₸|\$|€|₽))[»\"]?\s*$/u', $line, $match ) ) {
+		if ( preg_match( '/^\s*([^—–:\n.;]{2,80}?)\s*[—–-]\s*([^—–:\n.;]{2,240}?)\s*[—–-]\s*[«\"]?((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)[»\"]?\s*$/u', $line, $match ) ) {
             $append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[3] ?? '' ), (string) ( $match[2] ?? '' ) );
             continue;
         }
-        if ( preg_match( '/^\s*([^—–:\n.;]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽))\s*[—–-]\s*(.+?)\s*$/u', $line, $match ) ) {
+		if ( preg_match( '/^\s*([^—–:\n.;]{2,80}?)\s*[—–-]\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)\s*[—–-]\s*(.+?)\s*$/u', $line, $match ) ) {
             $append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[2] ?? '' ), (string) ( $match[3] ?? '' ) );
         }
     }
     if ( count( $pairs ) >= 2 ) {
-        return array_slice( array_values( $pairs ), 0, 8 );
+		return wpae_llm_pricing_contract_from_pairs( array_slice( array_values( $pairs ), 0, 8 ), $message );
     }
 
     // Content-only briefs often put all tiers into one paragraph; parse each
     // label/amount boundary before the generic sentence splitter sees it.
-    $pricing_pattern = '/(?:^|[.!?;\n]\s*|:\s+)([^—–:\n.;]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?)(?:\s*[,;:]\s*([^.!?\n;]+?))?(?=(?:[.!?;]\s+|$)[^—–:\n.;]{2,80}?\s*[—–-]\s*\d|[.!?;]\s*$|$)/u';
+	$pricing_pattern = '/(?:^|[.!?;\n]\s*|:\s+)([^—–:\n.;]{2,80}?)\s*[—–-]\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)?(?:\s*\/\s*[\p{L}\w]+)?)(?:\s*[,;:]\s*([^.!?\n;]+?))?(?=(?:[.!?;]\s+|$)[^—–:\n.;]{2,80}?\s*[—–-]\s*\d|[.!?;]\s*$|$)/u';
     if ( preg_match_all( $pricing_pattern, trim( $message ), $matches, PREG_SET_ORDER ) ) {
         foreach ( $matches as $match ) {
             $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
@@ -1698,7 +1777,7 @@ function wpae_llm_extract_pricing_content( string $message ): array {
     // punctuation after the label.
     if ( count( $pairs ) < 2 ) {
         foreach ( preg_split( '/\r?\n+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $line ) {
-            if ( ! preg_match( '/^\s*([^—–:\n]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?[^.\n]*)(?:\.\s*(.*?))?\s*$/u', trim( (string) $line ), $match ) ) {
+			if ( ! preg_match( '/^\s*([^—–:\n]{2,80}?)\s*[—–-]\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)\s*(?:\.\s*(.*?))?\s*$/u', trim( (string) $line ), $match ) ) {
                 continue;
             }
             $label = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
@@ -1710,13 +1789,28 @@ function wpae_llm_extract_pricing_content( string $message ): array {
             $append_pair( $pairs, $label, $price, $description );
         }
     }
-    return array_slice( $pairs, 0, 8 );
+	return wpae_llm_pricing_contract_from_pairs( array_slice( $pairs, 0, 8 ), $message );
 }
 
 function wpae_llm_extract_labeled_content( string $message ): array {
-    $pricing_pairs = wpae_llm_extract_pricing_content( $message );
-    if ( count( $pricing_pairs ) >= 2 ) {
-        return $pricing_pairs;
+    $pricing_contract = wpae_llm_extract_pricing_content( $message );
+    $pricing_items = is_array( $pricing_contract['items'] ?? null ) ? $pricing_contract['items'] : [];
+    if ( count( $pricing_items ) >= 2 ) {
+        return array_map( static function ( array $item ): array {
+            $description = trim( (string) ( $item['description'] ?? '' ) );
+            $price_text = trim( (string) ( $item['price_text'] ?? '' ) );
+            return [
+                'label' => trim( (string) ( $item['label'] ?? '' ) ),
+                // Compatibility shape for non-pricing consumers. The pricing
+                // builder receives the structured contract directly and never
+                // reparses this derived display string.
+                'content' => $price_text . ( $description !== '' ? ' — ' . $description : '' ),
+                'description' => $description,
+                'price_text' => $price_text,
+                'cta_text' => trim( (string) ( $item['cta_text'] ?? '' ) ),
+                'cta_url' => (string) ( $item['cta_url'] ?? '' ),
+            ];
+        }, $pricing_items );
     }
     $content_message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
 	if ( ! is_string( $content_message ) || $content_message === '' ) {
@@ -1944,25 +2038,13 @@ function wpae_llm_content_fidelity( string $message, array $elements ): array {
     $requested = wpae_llm_extract_requested_content( $message );
     $raw_haystack = wpae_llm_collect_action_content( $elements );
     $haystack = wpae_llm_normalize_content_text( $raw_haystack );
-    $split_pricing_haystack = wpae_llm_normalize_content_text( (string) preg_replace( '/\s*[—–]\s*/u', ' ', $raw_haystack ) );
-    $has_pricing_pairs = count( wpae_llm_extract_pricing_content( $message ) ) >= 2;
     $missing = [];
     foreach ( $requested as $value ) {
         $normalized_value = wpae_llm_normalize_content_text( $value );
         if ( strpos( $haystack, $normalized_value ) !== false ) {
             continue;
         }
-        // Pricing is intentionally split into native price heading + text
-        // editor. Fidelity must compare the two semantic fields, not require
-        // a literal em dash that is no longer rendered between widgets.
-        $pricing_match = false;
-        if ( $has_pricing_pairs && preg_match( '/^(.+?)\s*[—–]\s*(.+)$/u', (string) $value, $parts ) ) {
-            $pricing_match = strpos( $split_pricing_haystack, wpae_llm_normalize_content_text( $parts[1] ) ) !== false
-                && strpos( $split_pricing_haystack, wpae_llm_normalize_content_text( $parts[2] ) ) !== false;
-        }
-        if ( ! $pricing_match ) {
-            $missing[] = $value;
-        }
+        $missing[] = $value;
     }
     return [
         'requested_count' => count( $requested ),
@@ -2217,6 +2299,11 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
     if ( count( $pairs ) < 2 ) {
         return;
     }
+	if ( $archetype === 'pricing' && count( (array) ( wpae_llm_extract_pricing_content( $message )['items'] ?? [] ) ) >= 2 ) {
+		// Pricing cards already come from the structured contract. Generic CTA
+		// repair would move one card's label onto another card or the badge.
+		return;
+	}
 	$heading = wpae_llm_extract_section_title( $message );
 	if ( $heading === '' ) {
 		$pair_values = [];
@@ -3854,10 +3941,13 @@ function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$c
     return $elements;
 }
 
-function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pairs, int &$changed, array $cta_requirements = [], string $section_title = '', string $badge_label = '' ): array {
-    if ( count( $pairs ) < 2 ) {
-        return [];
-    }
+function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pricing_contract, int &$changed, array $cta_requirements = [], string $section_title = '', string $badge_label = '' ): array {
+	$items = is_array( $pricing_contract['items'] ?? null ) ? $pricing_contract['items'] : [];
+	if ( count( $items ) < 2 ) {
+		return [];
+	}
+	$section_title = $section_title !== '' ? $section_title : trim( (string) ( $pricing_contract['heading'] ?? '' ) );
+	$badge_label = $badge_label !== '' ? $badge_label : trim( (string) ( $pricing_contract['badge'] ?? '' ) );
 
     $root = null;
     foreach ( $template_elements as $element ) {
@@ -3874,18 +3964,13 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
         return [ 'id' => $id, 'elType' => 'widget', 'widgetType' => $type, 'settings' => $settings, 'elements' => [] ];
     };
     $cards = [];
-    foreach ( array_slice( $pairs, 0, 8 ) as $index => $pair ) {
-        $label = trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) );
-        $content = trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) );
-        if ( $label === '' || $content === '' ) {
-            continue;
-        }
-        $price = $content;
-        $description = '';
-        if ( preg_match( '/^\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)\s*(?:[,.;:]\s*(.*)|[—–-]\s*(.*))?$/u', $content, $match ) ) {
-            $price = trim( (string) ( $match[1] ?? $content ) );
-            $description = trim( (string) ( ( $match[2] ?? '' ) !== '' ? $match[2] : ( $match[3] ?? '' ) ) );
-        }
+	foreach ( array_slice( $items, 0, 8 ) as $index => $item ) {
+		$label = trim( sanitize_text_field( (string) ( $item['label'] ?? '' ) ) );
+		$price = trim( sanitize_text_field( (string) ( $item['price_text'] ?? '' ) ) );
+		$description = trim( sanitize_text_field( (string) ( $item['description'] ?? '' ) ) );
+		if ( $label === '' || $price === '' ) {
+			continue;
+		}
         $card_id = 'wpae-pricing-card-' . (string) ( $index + 1 );
         $card_elements = [
             $widget( $card_id . '-label', 'heading', [
@@ -3926,15 +4011,21 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
                 'text_color' => '#667085',
             ] );
         }
-        if ( isset( $cta_requirements[ $index ] ) && is_array( $cta_requirements[ $index ] ) ) {
-            $cta = [
+		$cta_text = trim( sanitize_text_field( (string) ( $item['cta_text'] ?? '' ) ) );
+		$cta_url = wpae_llm_normalize_cta_url( $item['cta_url'] ?? '' );
+		if ( $cta_text === '' && isset( $cta_requirements[ $index ] ) && is_array( $cta_requirements[ $index ] ) ) {
+			$cta_text = trim( sanitize_text_field( (string) ( $cta_requirements[ $index ]['text'] ?? '' ) ) );
+			$cta_url = wpae_llm_normalize_cta_url( $cta_requirements[ $index ]['url'] ?? '' );
+		}
+		if ( $cta_text !== '' ) {
+			$cta = [
                 'id' => $card_id . '-cta',
                 'elType' => 'widget',
                 'widgetType' => 'button',
                 'settings' => [],
                 'elements' => [],
             ];
-            wpae_llm_apply_cta_requirement_to_button( $cta, $cta_requirements[ $index ], false, $changed );
+			wpae_llm_apply_cta_requirement_to_button( $cta, [ 'text' => $cta_text, 'url' => $cta_url ], false, $changed );
             $card_elements[] = $cta;
         }
         $card = [
@@ -4241,13 +4332,14 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
         return $template_elements;
     }
-    if ( in_array( $archetype, [ 'portfolio', 'image-box' ], true ) && wpae_llm_apply_library_image_box_content( $template_elements, $message, $changed ) ) {
-        wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
-        return $template_elements;
-    }
-    $pairs = wpae_llm_extract_labeled_content( $message );
-    if ( $archetype === 'pricing' && count( $pairs ) >= 2 ) {
-        $pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pairs, $changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ), wpae_llm_extract_section_badge( $message ) );
+	if ( in_array( $archetype, [ 'portfolio', 'image-box' ], true ) && wpae_llm_apply_library_image_box_content( $template_elements, $message, $changed ) ) {
+		wpae_llm_clear_unrequested_library_copy( $template_elements, $message, $changed );
+		return $template_elements;
+	}
+	$pricing_contract = wpae_llm_extract_pricing_content( $message );
+	$pairs = wpae_llm_extract_labeled_content( $message );
+	if ( $archetype === 'pricing' && count( (array) ( $pricing_contract['items'] ?? [] ) ) >= 2 ) {
+		$pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pricing_contract, $changed );
         if ( ! empty( $pricing_layout ) ) {
             return $pricing_layout;
         }
@@ -4860,7 +4952,7 @@ function wpae_llm_process_timeline_heading_from_elements( array $elements ): str
 }
 
 function wpae_llm_extract_section_title( string $message ): string {
-	if ( preg_match( '/(?:блок|секция|раздел)\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+	if ( preg_match( '/(?:блок|секция|раздел)\s*:?\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
 		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
 	}
 	if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
@@ -4877,7 +4969,7 @@ function wpae_llm_extract_section_title( string $message ): string {
 }
 
 function wpae_llm_extract_section_badge( string $message ): string {
-	if ( preg_match( '/(?:бейдж\w*|badge)\s*[«"]([^»"\n]{2,80})[»"]/iu', $message, $match ) ) {
+	if ( preg_match( '/(?:бейдж\w*|badge)\s*:?\s*[«"]([^»"\n]{2,80})[»"]/iu', $message, $match ) ) {
 		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
 	}
 	return '';
@@ -7869,9 +7961,9 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             $widget( 'llm-button', 'button', [ 'text' => 'Начать проект', 'link' => [ 'url' => '#contact' ] ] ),
         ];
     } elseif ( $archetype === 'pricing' ) {
-        $pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
+        $pricing_contract = wpae_llm_extract_pricing_content( $message );
         $pricing_layout_changed = 0;
-        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_pairs, $pricing_layout_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ), wpae_llm_extract_section_badge( $message ) );
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_contract, $pricing_layout_changed );
         if ( ! empty( $pricing_layout[0]['elements'] ) ) {
             $elements = $pricing_layout[0]['elements'];
         } else {
@@ -9790,9 +9882,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		}
 		$pricing_contract_changed = 0;
 		if ( ! $provider_design && $action_archetype === 'pricing' && is_array( $action['elements'] ?? null ) ) {
-			$pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
-			if ( count( $pricing_pairs ) >= 2 ) {
-				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ), wpae_llm_extract_section_badge( $message ) );
+			$pricing_contract = wpae_llm_extract_pricing_content( $message );
+			if ( count( (array) ( $pricing_contract['items'] ?? [] ) ) >= 2 ) {
+				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_contract, $pricing_contract_changed );
 				if ( ! empty( $pricing_layout ) ) {
 					$action['elements'] = $pricing_layout;
 				}
@@ -9889,7 +9981,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 			[ 'id' => 'native_visual_contract', 'status' => 'ok', 'message' => 'Перед записью подтверждены native repeatable layout и нативные настройки CTA без утечки глобальных стилей.', 'details' => [ 'settings_updated' => $native_visual_changed, 'archetype' => $action_archetype ] ],
 		];
 		if ( $pricing_contract_changed > 0 ) {
-			$action_steps[] = [ 'id' => 'pricing_contract', 'status' => 'ok', 'message' => 'Тарифный блок пересобран на финальной границе в одну чистую native Flex-композицию без generic placeholder-оболочек.', 'details' => [ 'cards_rebuilt' => true, 'card_count' => count( $pricing_pairs ?? [] ), 'container_type' => 'flex', 'generic_visual_wrappers_allowed' => false ] ];
+		$action_steps[] = [ 'id' => 'pricing_contract', 'status' => 'ok', 'message' => 'Тарифный блок пересобран на финальной границе в одну чистую native Flex-композицию без generic placeholder-оболочек.', 'details' => [ 'cards_rebuilt' => true, 'card_count' => count( (array) ( $pricing_contract['items'] ?? [] ) ), 'container_type' => 'flex', 'generic_visual_wrappers_allowed' => false ] ];
 		}
 		if ( $vision_feedback_prompt !== '' ) {
 			$action_steps[] = [
