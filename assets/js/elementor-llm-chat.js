@@ -405,7 +405,7 @@
         // preview first so rolled-back roots cannot survive into the repair.
         window.setTimeout(function () {
             refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
-                return clearEditorRoots();
+                return clearEditorRoots(true);
             }).then(function () {
                 request(pending.message, false, pending.options || {});
             });
@@ -812,12 +812,14 @@
             check();
         });
     }
-    function clearEditorRoots() {
+    function clearEditorRoots(preserveOwnership) {
         return waitForEditorRuntime().then(function (ready) {
             if (!ready) return false;
             return removeLiveGeneratedRoots().then(function (removed) {
                 if (!removed) return false;
-                liveGeneratedRootIds = [];
+                // Vision repair carries operation-owned IDs through the
+                // preview reload so the server can replace the saved root.
+                if (!preserveOwnership) liveGeneratedRootIds = [];
                 return true;
             });
         });
@@ -887,10 +889,7 @@
                 if (!ok) return false;
                 return deleteModel(model, 0);
             });
-        }, Promise.resolve(true)).then(function (ok) {
-            if (ok) liveGeneratedRootIds = [];
-            return ok;
-        });
+        }, Promise.resolve(true));
     }
     function reconcileEditorRoots(expectedRootIds, ownedRootIds) {
         if (!window.$e || typeof window.$e.run !== 'function' || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.resolve(false);
