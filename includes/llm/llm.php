@@ -9048,7 +9048,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         : [];
     $vision_findings = $vision_repair && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
     $vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
-    $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
+    $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ! $retry_current_operation && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
     $selected_element_ids = is_array( $editor_context_input )
         ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )

@@ -46,8 +46,8 @@ const blockLibrary = read('includes/elementor/block-library.php');
 assert.match(transport, /'openai'/);
 assert.match(transport, /'deepseek'/);
 assert.match(transport, /'openrouter'/);
-assert.match(bootstrap, /Version:\s+v02\.11\.116/);
-assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.116'/);
+assert.match(bootstrap, /Version:\s+v02\.11\.117/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.117'/);
 assert.match(transport, /'model' => 'openrouter\/free'/);
 assert.match(transport, /'gemini'/);
 assert.match(transport, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
@@ -310,6 +310,7 @@ assert.match(llm, /автоматический repair-проход по зам�
 assert.match(llm, /Перегенерируй один полноценный Elementor-блок заново/);
 assert.match(llm, /\$vision_regenerate = is_array\( \$editor_context_input \)/);
 assert.match(llm, /\$targeted_edit = \$action_request .* ! \$vision_regenerate/);
+assert.match(llm, /\$targeted_edit = \$action_request .* ! \$retry_current_operation/);
 assert.match(llm, /visible_text/);
 assert.match(llm, /is_string\( \$decoded \)/);
 assert.match(llm, /\$nested = json_decode/);
