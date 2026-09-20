@@ -1,6 +1,6 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-21 00:21, Asia/Almaty
+Дата отчёта: 2026-09-21 00:31, Asia/Almaty
 
 ## Текущий continuation run — 2026-09-21, Asia/Almaty
 
@@ -8,9 +8,10 @@
   ветка `main`, checkout `/Users/diasmazhenov/vibecode/wp-ai-executor`.
   Незакоммиченные изменения относятся только к описанному fix и release metadata;
   прежние untracked audit/report артефакты не включаются.
-- В live Elementor через доступный `mcp__cua_repl.js` подтверждены WordPress 6.9,
-  Elementor 4.1.1, Elementor Pro 4.1.1 и WP AI Executor `v02.11.115`.
-  Использован draft `post=5197`, заголовок `Live Process v113`.
+- В live WordPress Plugins UI и свежем Elementor editor через доступный
+  `mcp__cua_repl.js` подтверждены WordPress 6.9, Elementor 4.1.1, Elementor
+  Pro 4.1.1 и WP AI Executor `v02.11.116`. Использован draft `post=5197`,
+  заголовок `Live Process v113`.
 - Контрольный Flex root создан штатным Elementor и сохранён до AI-сценария:
   root `0705585`, Heading `52d6d52`, текст `USER_BLOCK_KEEP_5197`.
 - Точный generation prompt выполнен без нового provider-запроса локальным
@@ -34,7 +35,7 @@
   в том же refresh/reconciliation window. Evidence:
   [unsaved-loss-dom.json](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/unsaved-loss-dom.json),
   [unsaved-loss.png](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/unsaved-loss.png).
-  После этого изменяющие live-сценарии остановлены.
+  После этого изменяющие live-сценарии остановлены до установки fix.
 - Root cause исправлен в `v02.11.116`: `captureEditorRootSnapshot()` теперь
   fingerprints всё editor tree и сохраняет parent map; `refreshElementorPreviewSafely()`
   не делает cache-busted iframe reload, если несохранённый sibling/descendant не
@@ -42,11 +43,24 @@
   по текущему canvas; чистое дерево по-прежнему обновляется из сохранённых данных.
 - Локальная проверка fix: `271 checks OK`, 3 Node suites PASS, editor-root probe
   `15 assertions PASS` (включая nested unsaved model), PHP lint, JS syntax,
-  `git diff --check` и manifest/package probe PASS. Live install v116, повтор
-  unsaved-сценария после установки, Save/reload/Undo и fresh public preview ещё
-  не объявляются до push и WP Pusher update.
+  `git diff --check` и manifest/package probe PASS. Commit `0c7b474`
+  (`Preserve unsaved Elementor edits during AI preview sync`) запушен в `main`.
+- После push live v116 повторён на свежем Elementor editor. Контрольный root
+  `0705585` сначала был сохранён с `USER_BLOCK_KEEP_5197`, затем изменён без
+  отдельного Save на `USER_BLOCK_KEEP_5197_UNSAVED`. Exact nested retry завершён
+  с operation `wpae-20260920192732-80632e09`, Vision `98`, confidence `100%`;
+  marker остался в DOM сразу после retry. После Save/reload marker сохранился,
+  top-level roots остались ровно `ad4b9da`, `0705585`, `f351d44`, duplicate не
+  появился. Live Undo показал `Последнее изменение отменено.`, после Save и
+  финального reload тот же user root и три root ID сохранились.
+- Fresh public preview `https://mazhenov.kz/?page_id=5197` проверен через DOM:
+  присутствуют badge `ПРОЦЕСС`, `Как мы работаем`, этапы `Замысел`, `Съёмка`,
+  `Монтаж`, `Публикация`, четыре описания и `USER_BLOCK_KEEP_5197_UNSAVED`.
+  Визуальный скриншот public preview инструмент не отдал; это не засчитывается
+  как screenshot evidence, но DOM/read-back проверка выполнена.
 - В этом отчёте старые разделы A–J сохраняют исторические результаты v115 и
-  прежний блокированный запуск; для текущего статуса приоритет имеет этот раздел.
+  прежние статусы NOT RUN, возникшие до доступного CUA; для текущего статуса
+  приоритет имеет этот раздел.
 
 ## A. Изменения относительно прошлого отчёта
 
