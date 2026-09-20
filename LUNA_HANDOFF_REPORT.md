@@ -8,6 +8,7 @@
 - Ветка: `main`.
 - Исходный HEAD этапа: `3cabdba`.
 - Кодовый commit этапа: `0a2869a` (`Preserve pricing content through shared contract`), pushed to `origin/main`.
+- Итоговый HEAD handoff-документации: `5e8c43f`.
 - Установленная через WP Pusher версия: `v02.11.123`; WordPress Plugins и Elementor editor config показали `v02.11.123`.
 - Guide: `v02.05.99`.
 - Новые pricing pages `5214` и `5216` оставлены черновиками; для существующего neighbor `5197` не нажималась публикация и сохранён его текущий статус.
