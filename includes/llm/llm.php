@@ -2072,6 +2072,9 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
         return;
     }
 	$heading = '';
+	if ( preg_match( '/\b(?:блок|секция|раздел)\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+		$heading = trim( sanitize_text_field( (string) $match[1] ) );
+	}
 	if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
 		$heading = trim( sanitize_text_field( (string) $match[1] ) );
 	}
@@ -2198,7 +2201,29 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
         }
     }
     unset( $root );
-    wpae_llm_apply_fallback_cta( $elements, $cta, $changed );
+	wpae_llm_apply_fallback_cta( $elements, $cta, $changed );
+}
+
+/**
+ * Keep every deterministic fallback boundary on the same content contract.
+ * Vision rebuilds and semantic recovery must not reintroduce generic CTA or
+ * prompt instructions after the first fallback pass.
+ */
+function wpae_llm_prepare_fallback_elements( array &$elements, string $message, string $archetype, int &$changed ): array {
+	wpae_llm_remove_unrequested_buttons( $elements, $message, $changed );
+	wpae_llm_apply_fallback_archetype_content( $elements, $message, $archetype, $changed );
+	if ( $archetype === 'faq' ) {
+		wpae_llm_apply_fallback_faq_content( $elements, $message, $changed );
+	}
+	$fidelity = wpae_llm_content_fidelity( $message, $elements );
+	$missing = (array) ( $fidelity['missing'] ?? [] );
+	if ( ! empty( $missing ) ) {
+		wpae_llm_apply_fallback_content( $elements, $missing, $archetype, $changed );
+	}
+	// The generic content repair never creates buttons, but keep this guard at
+	// the shared boundary so future fallback templates cannot leak a CTA.
+	wpae_llm_remove_unrequested_buttons( $elements, $message, $changed );
+	return wpae_llm_content_fidelity( $message, $elements );
 }
 
 function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, int &$changed, string $archetype = '', bool $content_already_set = false ): bool {
@@ -7730,13 +7755,31 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             $elements[] = $widget( 'llm-button', 'button', [ 'text' => $cta, 'link' => [ 'url' => '#contact' ] ] );
         }
     }
+	$fallback_root = [
+		'id' => 'llm-fallback',
+		'elType' => 'container',
+		'settings' => [
+			'content_width' => 'boxed',
+			'flex_direction' => 'column',
+			'background_background' => 'classic',
+			'background_color' => 'transparent',
+			'flex_gap' => $gap,
+			'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
+			'padding' => $padding,
+			'padding_mobile' => [ 'unit' => 'rem', 'top' => '2', 'right' => '1', 'bottom' => '2', 'left' => '1', 'isLinked' => true ],
+		],
+		'elements' => $elements,
+	];
+	$fallback_elements = [ $fallback_root ];
+	$fallback_content_changed = 0;
+	wpae_llm_prepare_fallback_elements( $fallback_elements, $message, $archetype, $fallback_content_changed );
     return [
         'action' => 'insert_elements',
         'post_id' => $post_id,
         'position' => 'end',
         'fallback_archetype' => $archetype,
         'fallback_variant' => wpae_llm_fallback_variant( $message ),
-        'elements' => [ [ 'id' => 'llm-fallback', 'elType' => 'container', 'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'background_background' => 'classic', 'background_color' => 'transparent', 'flex_gap' => $gap, 'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ], 'padding' => $padding, 'padding_mobile' => [ 'unit' => 'rem', 'top' => '2', 'right' => '1', 'bottom' => '2', 'left' => '1', 'isLinked' => true ] ], 'elements' => $elements ] ],
+		'elements' => $fallback_elements,
     ];
 }
 
