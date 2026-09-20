@@ -329,6 +329,13 @@ foreach ( [ 'Тихая форма', 'Пространство для вашей
 }
 check( strpos( $content_only_json, 'Обсудить проект — #contact' ) === false && strpos( $content_only_json, 'Смотреть проекты — #projects' ) === false, 'CTA URL leaked into visible content-only hero copy' );
 check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"#e7c7b7' ) !== false, 'Content-only hero did not create the separate visual panel' );
+check( strpos( $content_only_json, 'wpae-generated-root' ) !== false, 'Generated hero root did not receive the operation ownership marker' );
+$content_only_children = (array) ( $content_only_saved['elements'] ?? [] );
+$content_only_badge_classes = preg_split( '/\s+/', trim( (string) ( $content_only_children[0]['settings']['_css_classes'] ?? '' ) ) );
+$content_only_shell_classes = preg_split( '/\s+/', trim( (string) ( $content_only_children[1]['settings']['_css_classes'] ?? '' ) ) );
+check( in_array( 'wpae-generated-badge', $content_only_badge_classes, true ) && in_array( 'wpae-hero-content-shell', $content_only_shell_classes, true ), 'Hero badge was left inside the horizontal content row instead of remaining a root-level control' );
+check( ( $content_only_children[1]['settings']['flex_direction'] ?? '' ) === 'row' && ( $content_only_children[1]['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'Hero content shell lost desktop row/mobile stack contract' );
+check( count( array_filter( (array) ( $content_only_children[1]['elements'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) ) === 2, 'Hero content shell does not contain exactly two balanced visual zones' );
 check( strpos( $content_only_json, '"background_color":"#a84c36' ) !== false, 'Content-only hero lost its authored terracotta CTA palette at the write boundary' );
 check( strpos( $content_only_json, 'Создай новый hero' ) === false && strpos( $content_only_json, 'native Flexbox-контейнеров' ) === false, 'Hero fallback wrote technical prompt instructions into visible Elementor copy' );
 check( substr_count( $content_only_json, '"widgetType":"button"' ) === 2 && strpos( $content_only_json, '"url":"#projects"' ) !== false, 'Content-only hero fallback did not save both native CTA buttons and URLs' );
@@ -351,6 +358,13 @@ $find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_
 };
 $find_content_only_mobile_stack( [ $content_only_saved ] );
 check( $content_only_mobile_stack, 'Content-only hero is not stacked on mobile' );
+$owned_hero = $content_only_saved;
+$owned_hero['id'] = 'owned-hero';
+$GLOBALS['page_data'] = [ $owned_hero ];
+$GLOBALS['writes'] = [];
+$replace_execution = wpae_llm_execute_action( wpae_llm_build_fallback_action( $content_only_hero_message, 42 ), 42, 'hero', -1, $content_only_hero_message, false, [ 'replace_root_ids' => [ 'owned-hero' ] ] );
+check( ! empty( $replace_execution['ok'] ) && count( $GLOBALS['page_data'] ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === 'owned-hero', 'Vision-owned hero retry did not replace exactly one marked root' );
+check( ( $replace_execution['editor_sync']['mode'] ?? '' ) === 'replace' && ( $replace_execution['editor_sync']['replace_element_id'] ?? '' ) === 'owned-hero' && ! empty( $replace_execution['diff']['changed'] ), 'Owned-root replacement did not expose replace sync or a changed read-back diff' );
 
 $transport_benefits_message = "Почему нас выбирают\nТочная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха\nСвет и воздух — Работаем с естественным светом и спокойными материалами\nПорядок в деталях — Продумываем хранение, маршруты и ежедневные привычки";
 $GLOBALS['page_data'] = $legacy_page;
@@ -514,6 +528,8 @@ $pricing_content_only_action['elements'] = wpae_llm_normalize_requested_cta( $pr
 $pricing_content_only_json = (string) wp_json_encode( $pricing_content_only_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 check( substr_count( $pricing_content_only_json, '"widgetType":"button"' ) === 3, 'Pricing contract rebuild discarded content-only CTA buttons' );
 check( strpos( $pricing_content_only_json, '"text":"Выбрать Полное сопровождение"' ) !== false && strpos( $pricing_content_only_json, '"url":"#contact"' ) !== false, 'Pricing content-only CTA text or URL was lost after the final contract' );
+check( strpos( $pricing_content_only_json, '"title":"30 000 ₸"' ) !== false && strpos( $pricing_content_only_json, '"editor":"Одна консультация для ясного первого шага"' ) !== false, 'Pricing parser did not split em-dash price content into native price and description fields' );
+check( strpos( $pricing_content_only_json, '"background_color":"#4460EC"' ) !== false && strpos( $pricing_content_only_json, '"background_color":"#61ce70"' ) === false, 'Generated pricing buttons inherited the unrelated global green instead of a native palette' );
 check( ! empty( wpae_llm_content_fidelity( $pricing_content_only_message, $pricing_content_only_action['elements'] )['ok'] ), 'Pricing content-only fallback failed final content fidelity after CTA reapplication' );
 $pricing_card_buttons = 0;
 $pricing_walk = static function ( array $nodes ) use ( &$pricing_walk, &$pricing_card_buttons ): void {

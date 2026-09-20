@@ -1439,7 +1439,8 @@
             post_id: config.postId,
             selected_elements: options.selectedElements || selectedElements(),
             background_image_urls: getPreviewBackgroundImageUrls(),
-            editor_root_snapshot: captureEditorRootSnapshot()
+            editor_root_snapshot: captureEditorRootSnapshot(),
+            operation_owned_root_ids: liveGeneratedRootIds.slice(0, 12)
         };
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;

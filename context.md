@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.99`
+- Plugin: `v02.11.100`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2480,3 +2480,21 @@ before removal.
   URL и native style.
 - Runtime coverage после исправления — 209 checks; live v02.11.99 ожидает
   установки и повторной Vision-приёмки.
+
+## Architectural hero/pricing/retry boundary — 2026-09-20, Asia/Almaty
+- v02.11.100 contains the shared fixes identified from the live hero/pricing
+  render: generated hero geometry is canonicalized to root → badge → two-zone
+  Flex shell with desktop row/mobile column; a badge nested inside the row is
+  lifted back to the root and its native `align_self` is bounded to
+  `flex-start`.
+- Content-only pricing lines using an em dash are split into native price
+  Heading and description Text Editor fields. Missing Button colors receive
+  active design-system native values instead of inheriting an unrelated site
+  global color; explicit provider colors remain unchanged.
+- Every generated root receives `wpae-generated-root` ownership metadata. The
+  Vision regenerate request carries operation-owned root IDs through the
+  browser/server boundary and replaces only a matching marked root; user roots
+  are not inferred or removed. The action diff now reports content changes even
+  when top-level count stays equal.
+- Runtime coverage is 217 checks after these changes; live v02.11.100 has not
+  yet been installed or accepted in the editor.

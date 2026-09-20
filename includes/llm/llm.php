@@ -593,7 +593,7 @@ function wpae_llm_action_diff( array $before, array $inserted, array $after ): a
         'before_top_level_ids' => $top_level_ids( $before ),
         'after_top_level_ids' => $top_level_ids( $after ),
         'inserted_ids' => array_values( array_unique( $ids ) ),
-        'changed' => count( $after ) !== count( $before ),
+        'changed' => wp_json_encode( $after ) !== wp_json_encode( $before ),
     ];
 }
 
@@ -1684,10 +1684,25 @@ function wpae_llm_collect_action_content( array $elements ): string {
 
 function wpae_llm_content_fidelity( string $message, array $elements ): array {
     $requested = wpae_llm_extract_requested_content( $message );
-    $haystack = wpae_llm_normalize_content_text( wpae_llm_collect_action_content( $elements ) );
+    $raw_haystack = wpae_llm_collect_action_content( $elements );
+    $haystack = wpae_llm_normalize_content_text( $raw_haystack );
+    $split_pricing_haystack = wpae_llm_normalize_content_text( (string) preg_replace( '/\s*[—–]\s*/u', ' ', $raw_haystack ) );
+    $has_pricing_pairs = count( wpae_llm_extract_pricing_content( $message ) ) >= 2;
     $missing = [];
     foreach ( $requested as $value ) {
-        if ( strpos( $haystack, wpae_llm_normalize_content_text( $value ) ) === false ) {
+        $normalized_value = wpae_llm_normalize_content_text( $value );
+        if ( strpos( $haystack, $normalized_value ) !== false ) {
+            continue;
+        }
+        // Pricing is intentionally split into native price heading + text
+        // editor. Fidelity must compare the two semantic fields, not require
+        // a literal em dash that is no longer rendered between widgets.
+        $pricing_match = false;
+        if ( $has_pricing_pairs && preg_match( '/^(.+?)\s*[—–]\s*(.+)$/u', (string) $value, $parts ) ) {
+            $pricing_match = strpos( $split_pricing_haystack, wpae_llm_normalize_content_text( $parts[1] ) ) !== false
+                && strpos( $split_pricing_haystack, wpae_llm_normalize_content_text( $parts[2] ) ) !== false;
+        }
+        if ( ! $pricing_match ) {
             $missing[] = $value;
         }
     }
@@ -3271,6 +3286,181 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
     return $elements;
 }
 
+function wpae_llm_normalize_generated_hero_geometry( array $elements, int &$changed = 0 ): array {
+    $read_width = static function ( array $settings ): ?float {
+        foreach ( [ 'width', '_element_custom_width' ] as $key ) {
+            $width = $settings[ $key ] ?? null;
+            if ( is_array( $width ) && strtolower( (string) ( $width['unit'] ?? '' ) ) === '%' && is_numeric( $width['size'] ?? null ) ) {
+                return max( 0, min( 100, (float) $width['size'] ) );
+            }
+        }
+        return null;
+    };
+
+    foreach ( $elements as $index => $root ) {
+        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $root_settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+        $children = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
+        $badge = null;
+        $content_shell = null;
+        $content_children = [];
+        foreach ( $children as $child ) {
+            if ( ! is_array( $child ) ) {
+                continue;
+            }
+            $child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+            $classes = preg_split( '/\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+            if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
+                $badge = $badge ?? $child;
+            } elseif ( is_array( $classes ) && in_array( 'wpae-generated-content-shell', $classes, true ) ) {
+                $content_shell = $content_shell ?? $child;
+            } else {
+                $content_children[] = $child;
+            }
+        }
+        if ( ! is_array( $badge ) && is_array( $content_shell ) ) {
+            $shell_children = is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [];
+            foreach ( $shell_children as $shell_index => $shell_child ) {
+                if ( ! is_array( $shell_child ) ) {
+                    continue;
+                }
+                $shell_child_settings = is_array( $shell_child['settings'] ?? null ) ? $shell_child['settings'] : [];
+                $shell_child_classes = preg_split( '/\s+/', trim( (string) ( $shell_child_settings['_css_classes'] ?? '' ) ) );
+                if ( is_array( $shell_child_classes ) && in_array( 'wpae-generated-badge', $shell_child_classes, true ) ) {
+                    $badge = $shell_child;
+                    array_splice( $shell_children, $shell_index, 1 );
+                    $content_shell['elements'] = $shell_children;
+                    break;
+                }
+            }
+        }
+        if ( ! is_array( $badge ) ) {
+            continue;
+        }
+
+        $badge_settings = is_array( $badge['settings'] ?? null ) ? $badge['settings'] : [];
+        $badge_settings['align_self'] = 'flex-start';
+        $badge_settings['align_self_tablet'] = 'flex-start';
+        $badge_settings['align_self_mobile'] = 'flex-start';
+        $badge_settings['_element_width'] = 'initial';
+        $badge_settings['_flex_grow'] = 0;
+        $badge_settings['_flex_shrink'] = 0;
+        $badge_settings['custom_css'] = trim( (string) ( $badge_settings['custom_css'] ?? '' ) );
+        if ( strpos( $badge_settings['custom_css'], 'align-self' ) === false ) {
+            $badge_settings['custom_css'] .= ( $badge_settings['custom_css'] !== '' ? ' ' : '' ) . 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
+        }
+        $badge['settings'] = $badge_settings;
+
+        if ( ! is_array( $content_shell ) && count( $content_children ) >= 2 ) {
+            $content_shell = [
+                'id' => (string) ( $root['id'] ?? 'wpae-generated-hero' ) . '-content-shell',
+                'elType' => 'container',
+                'settings' => [
+                    '_css_classes' => 'wpae-generated-content-shell wpae-hero-content-shell',
+                    'container_type' => 'flex',
+                    'content_width' => 'full',
+                    'flex_direction' => 'row',
+                    'flex_direction_mobile' => 'column',
+                    'flex_wrap' => 'nowrap',
+                    'flex_wrap_mobile' => 'nowrap',
+                    'flex_justify_content' => 'space-between',
+                    'flex_align_items' => 'stretch',
+                    'flex_align_items_mobile' => 'stretch',
+                    'flex_gap' => [ 'column' => '2', 'row' => '2', 'isLinked' => true, 'unit' => 'rem', 'size' => '2' ],
+                    'flex_gap_mobile' => [ 'column' => '1.5', 'row' => '1.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '1.5' ],
+                    'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    '_element_width' => 'initial',
+                    '_element_custom_width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                    '_element_width_mobile' => 'initial',
+                    '_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                ],
+                'elements' => $content_children,
+            ];
+            $content_children = [];
+            $changed++;
+        }
+
+        $root_settings['container_type'] = 'flex';
+        $root_settings['content_width'] = 'full';
+        $root_settings['flex_direction'] = 'column';
+        $root_settings['flex_direction_tablet'] = 'column';
+        $root_settings['flex_direction_mobile'] = 'column';
+        $root_settings['flex_wrap'] = 'nowrap';
+        $root_settings['flex_wrap_tablet'] = 'nowrap';
+        $root_settings['flex_wrap_mobile'] = 'nowrap';
+        $root_settings['flex_align_items'] = 'stretch';
+        $root_settings['flex_align_items_tablet'] = 'stretch';
+        $root_settings['flex_align_items_mobile'] = 'stretch';
+        $root['settings'] = $root_settings;
+
+        if ( is_array( $content_shell ) ) {
+            $shell_settings = is_array( $content_shell['settings'] ?? null ) ? $content_shell['settings'] : [];
+            $shell_settings['container_type'] = 'flex';
+            $shell_settings['content_width'] = 'full';
+            $shell_settings['flex_direction'] = 'row';
+            $shell_settings['flex_direction_tablet'] = 'column';
+            $shell_settings['flex_direction_mobile'] = 'column';
+            $shell_settings['flex_wrap'] = 'nowrap';
+            $shell_settings['flex_wrap_tablet'] = 'nowrap';
+            $shell_settings['flex_wrap_mobile'] = 'nowrap';
+            $shell_settings['flex_align_items'] = 'stretch';
+            $shell_settings['flex_align_items_tablet'] = 'stretch';
+            $shell_settings['flex_align_items_mobile'] = 'stretch';
+            $shell_settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+            $shell_settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+            $shell_children = is_array( $content_shell['elements'] ?? null ) ? $content_shell['elements'] : [];
+            $container_indexes = [];
+            foreach ( $shell_children as $child_index => $child ) {
+                if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+                    $container_indexes[] = $child_index;
+                }
+            }
+            if ( count( $container_indexes ) === 2 ) {
+                $widths = [];
+                foreach ( $container_indexes as $child_index ) {
+                    $widths[] = $read_width( is_array( $shell_children[ $child_index ]['settings'] ?? null ) ? $shell_children[ $child_index ]['settings'] : [] );
+                }
+                $needs_desktop_balance = $widths[0] === null && $widths[1] === null;
+                if ( $needs_desktop_balance ) {
+                    $widths = [ 58.0, 38.0 ];
+                } elseif ( $widths[0] !== null && $widths[1] !== null && ( $widths[0] + $widths[1] ) > 96 ) {
+                    $scale = 96 / max( 1, $widths[0] + $widths[1] );
+                    $widths = [ $widths[0] * $scale, $widths[1] * $scale ];
+                    $needs_desktop_balance = true;
+                }
+                foreach ( $container_indexes as $width_index => $child_index ) {
+                    $child_settings = is_array( $shell_children[ $child_index ]['settings'] ?? null ) ? $shell_children[ $child_index ]['settings'] : [];
+                    $before_child = wp_json_encode( $child_settings );
+                    if ( $needs_desktop_balance ) {
+                        wpae_llm_set_variant_container_width( $child_settings, (float) $widths[ $width_index ] );
+                    } else {
+                        $child_settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+                        $child_settings['_element_width_mobile'] = 'initial';
+                        $child_settings['_element_custom_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+                        $child_settings['flex_shrink_mobile'] = 1;
+                        $child_settings['_flex_shrink_mobile'] = 1;
+                    }
+                    $shell_children[ $child_index ]['settings'] = $child_settings;
+                    if ( $before_child !== wp_json_encode( $child_settings ) ) {
+                        $changed++;
+                    }
+                }
+            }
+            $content_shell['settings'] = $shell_settings;
+            $content_shell['elements'] = $shell_children;
+            $root['elements'] = array_merge( [ $badge, $content_shell ], $content_children );
+        } else {
+            $root['elements'] = array_merge( [ $badge ], $content_children );
+        }
+        $changed++;
+        $elements[ $index ] = $root;
+    }
+    return $elements;
+}
+
 function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$changed = 0 ): array {
     $read_percent_width = static function ( array $settings ): ?float {
         foreach ( [ 'width', '_element_custom_width' ] as $key ) {
@@ -3407,9 +3597,9 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
         }
         $price = $content;
         $description = '';
-        if ( preg_match( '/^\s*(\d[\d\s]*(?:₸|\$|€|₽)?)\s*(?:[,.;:]\s*(.*))?$/u', $content, $match ) ) {
+        if ( preg_match( '/^\s*(\d[\d\s]*(?:₸|\$|€|₽)?)\s*(?:[,.;:]\s*(.*)|[—–-]\s*(.*))?$/u', $content, $match ) ) {
             $price = trim( (string) ( $match[1] ?? $content ) );
-            $description = trim( (string) ( $match[2] ?? '' ) );
+            $description = trim( (string) ( ( $match[2] ?? '' ) !== '' ? $match[2] : ( $match[3] ?? '' ) ) );
         }
         $card_id = 'wpae-pricing-card-' . (string) ( $index + 1 );
         $card_elements = [
@@ -5091,6 +5281,25 @@ function wpae_llm_normalize_generated_button_settings( array &$settings ): bool 
         $settings['button_background_hover_color'] = $settings['button_hover_background_color'];
     }
     unset( $settings['button_background_color'], $settings['button_hover_background_color'] );
+    $tokens = function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [];
+    $palette = is_array( $tokens['palette'] ?? null ) ? $tokens['palette'] : [];
+    $accent = trim( (string) ( $palette['accent'] ?? '#4460EC' ) );
+    $surface = trim( (string) ( $palette['surface'] ?? '#ffffff' ) );
+    $ink = trim( (string) ( $palette['ink'] ?? '#111827' ) );
+    // Missing native values must not fall through to a site's unrelated global
+    // button style. Explicit provider/user values remain authoritative.
+    if ( ! array_key_exists( 'background_color', $settings ) || trim( (string) $settings['background_color'] ) === '' ) {
+        $settings['background_color'] = $accent;
+    }
+    if ( ! array_key_exists( 'button_background_hover_color', $settings ) || trim( (string) $settings['button_background_hover_color'] ) === '' ) {
+        $settings['button_background_hover_color'] = $accent === '#4460EC' ? '#3348B8' : $accent;
+    }
+    if ( ! array_key_exists( 'button_text_color', $settings ) || trim( (string) $settings['button_text_color'] ) === '' ) {
+        $settings['button_text_color'] = $surface;
+    }
+    if ( ! array_key_exists( 'button_hover_text_color', $settings ) || trim( (string) $settings['button_hover_text_color'] ) === '' ) {
+        $settings['button_hover_text_color'] = $surface !== '' ? $surface : $ink;
+    }
     foreach ( [ 'width', 'width_tablet', 'width_mobile', 'min_width', 'max_width', '_element_width', '_element_width_tablet', '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
         unset( $settings[ $key ] );
     }
@@ -5689,6 +5898,24 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
                     $settings['flex_wrap'] = 'nowrap';
                 }
                 if ( $depth === 0 ) {
+                    // The generated root is the transaction boundary: it must
+                    // own one predictable responsive flow and a stable marker
+                    // for a later Vision repair/retry to replace safely.
+                    $settings['content_width'] = 'full';
+                    $settings['flex_direction'] = 'column';
+                    $settings['flex_direction_tablet'] = 'column';
+                    $settings['flex_direction_mobile'] = 'column';
+                    $settings['flex_wrap'] = 'nowrap';
+                    $settings['flex_wrap_tablet'] = 'nowrap';
+                    $settings['flex_wrap_mobile'] = 'nowrap';
+                    $settings['flex_justify_content'] = 'flex-start';
+                    $settings['flex_align_items'] = 'stretch';
+                    $settings['flex_align_items_tablet'] = 'stretch';
+                    $settings['flex_align_items_mobile'] = 'stretch';
+                    $classes[] = 'wpae-generated-root';
+                    if ( $archetype !== '' ) {
+                        $classes[] = 'wpae-generated-' . sanitize_key( $archetype );
+                    }
                     $settings['background_background'] = 'classic';
                     $settings['background_color'] = 'transparent';
                 }
@@ -8051,7 +8278,7 @@ function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     return $decoded;
 }
 
-function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1, string $message = '', bool $preserve_provider_design = false ): array {
+function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1, string $message = '', bool $preserve_provider_design = false, array $operation_context = [] ): array {
     $operation_id = wpae_llm_new_operation_id();
     $received_action = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
     $received_post_id = absint( $action['post_id'] ?? 0 );
@@ -8171,7 +8398,35 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     }
     $steps[] = [ 'id' => 'element_ids', 'status' => 'ok', 'message' => 'Для новых элементов созданы уникальные Elementor ID.', 'details' => [ 'element_count' => count( $elements ) ] ];
     $position = sanitize_key( (string) ( $action['position'] ?? 'end' ) );
-    $next = $position === 'start' ? array_merge( $elements, $existing ) : array_merge( $existing, $elements );
+    $replace_root_ids = [];
+    foreach ( (array) ( $operation_context['replace_root_ids'] ?? [] ) as $root_id ) {
+        $root_id = sanitize_key( (string) $root_id );
+        if ( $root_id !== '' ) {
+            $replace_root_ids[] = $root_id;
+        }
+    }
+    $replace_root_ids = array_values( array_unique( $replace_root_ids ) );
+    $replace_index = null;
+    $replace_element_id = '';
+    foreach ( $existing as $existing_index => $existing_root ) {
+        if ( ! is_array( $existing_root ) || ! in_array( sanitize_key( (string) ( $existing_root['id'] ?? '' ) ), $replace_root_ids, true ) ) {
+            continue;
+        }
+        $existing_classes = preg_split( '/\s+/', trim( (string) ( $existing_root['settings']['_css_classes'] ?? '' ) ) );
+        if ( is_array( $existing_classes ) && in_array( 'wpae-generated-root', $existing_classes, true ) ) {
+            $replace_index = $existing_index;
+            $replace_element_id = sanitize_key( (string) ( $existing_root['id'] ?? '' ) );
+            break;
+        }
+    }
+    if ( $replace_index !== null && isset( $elements[0] ) ) {
+        $next = $existing;
+        $elements[0]['id'] = $replace_element_id;
+        $next[ $replace_index ] = $elements[0];
+        $position = 'replace';
+    } else {
+        $next = $position === 'start' ? array_merge( $elements, $existing ) : array_merge( $existing, $elements );
+    }
     $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
     $request->set_param( 'post_id', $post_id );
     $request->set_param( 'elementor_data', $next );
@@ -8242,12 +8497,16 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         'inserted_count' => count( $elements ),
         'inserted_widget_count' => wpae_llm_count_widgets( $elements ),
         'fallback_variant' => $fallback_variant_applied ? $fallback_variant : null,
-        'action_summary' => 'Добавлен блок ' . ( $action['position'] ?? 'end' ) . ': ' . count( $elements ) . ' контейнер.',
+        'action_summary' => $position === 'replace' ? 'Обновлён принадлежащий этой операции блок: ' . count( $elements ) . ' контейнер.' : 'Добавлен блок ' . ( $action['position'] ?? 'end' ) . ': ' . count( $elements ) . ' контейнер.',
         'diff' => $diff,
         'editor_sync' => [
             'position' => $position,
             'elements' => $elements,
             'before_top_level_ids' => (array) ( $diff['before_top_level_ids'] ?? [] ),
+            'after_top_level_ids' => (array) ( $diff['after_top_level_ids'] ?? [] ),
+            'operation_owned_root_ids' => array_values( array_filter( array_map( static fn( $element ): string => sanitize_key( (string) ( is_array( $element ) ? ( $element['id'] ?? '' ) : '' ) ), $elements ) ) ),
+            'mode' => $position === 'replace' ? 'replace' : 'insert',
+            'replace_element_id' => $position === 'replace' ? $replace_element_id : '',
         ],
         'quality_summary' => $data['quality_summary'] ?? null,
         'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
@@ -8362,8 +8621,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $selected_element_count = is_array( $editor_context_input ) && is_array( $editor_context_input['selected_elements'] ?? null ) ? count( $editor_context_input['selected_elements'] ) : 0;
     $vision_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_repair'] );
     $vision_regenerate = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_regenerate'] );
-	$vision_findings = $vision_repair && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
-	$vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
+    $operation_owned_root_ids = is_array( $editor_context_input )
+        ? array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $editor_context_input['operation_owned_root_ids'] ?? [] ), 0, 12 ) ) ) )
+        : [];
+    $vision_findings = $vision_repair && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
+    $vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
     $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
     $selected_element_ids = is_array( $editor_context_input )
@@ -9022,6 +9284,28 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $existing_image_urls = wpae_llm_sanitize_background_image_urls( array_merge( $existing_image_urls, $live_background_image_urls ) );
             $action['elements'] = wpae_llm_normalize_hero_composition( $action['elements'], $hero_composition_changed, $message, $library_applied && ! empty( $selected_library['trusted_bundled'] ), isset( $variation_seed ) ? (int) $variation_seed : -1, $existing_image_urls );
         }
+        if ( $action_archetype === 'hero' && is_array( $action['elements'] ?? null ) ) {
+            $hero_geometry_changed = 0;
+            $action['elements'] = wpae_llm_normalize_generated_hero_geometry( $action['elements'], $hero_geometry_changed );
+            $hero_composition_changed += $hero_geometry_changed;
+        }
+        if ( is_array( $action['elements'] ?? null ) ) {
+            foreach ( $action['elements'] as &$generated_root ) {
+                if ( ! is_array( $generated_root ) || ( $generated_root['elType'] ?? '' ) !== 'container' ) {
+                    continue;
+                }
+                $generated_settings = is_array( $generated_root['settings'] ?? null ) ? $generated_root['settings'] : [];
+                $generated_classes = preg_split( '/\s+/', trim( (string) ( $generated_settings['_css_classes'] ?? '' ) ) );
+                $generated_classes = is_array( $generated_classes ) ? array_values( array_filter( $generated_classes ) ) : [];
+                $generated_classes[] = 'wpae-generated-root';
+                if ( $action_archetype !== '' ) {
+                    $generated_classes[] = 'wpae-generated-' . sanitize_key( $action_archetype );
+                }
+                $generated_settings['_css_classes'] = implode( ' ', array_values( array_unique( $generated_classes ) ) );
+                $generated_root['settings'] = $generated_settings;
+            }
+            unset( $generated_root );
+        }
         $render_cache_changed = 0;
         if ( is_array( $action['elements'] ?? null ) ) {
             wpae_llm_invalidate_render_cache( $action['elements'], $render_cache_changed );
@@ -9122,7 +9406,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $recovery_fidelity = wpae_llm_content_fidelity( $message, (array) ( $recovery_action['elements'] ?? [] ) );
                 $recovery_plan_audit = wpae_llm_content_plan_audit( $content_plan, (array) ( $recovery_action['elements'] ?? [] ) );
                 if ( ! empty( $recovery_fidelity['ok'] ) && ! empty( $recovery_plan_audit['ok'] ) ) {
-                    $recovery_execution = wpae_llm_execute_action( $recovery_action, $post_id, $action_archetype, -1, $message, true );
+                    $recovery_execution = wpae_llm_execute_action( $recovery_action, $post_id, $action_archetype, -1, $message, true, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
                     $recovery_steps = [
                         [
                             'id' => 'content_fidelity_fallback',
@@ -9248,7 +9532,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'library_applied' => $library_applied,
             ],
         ];
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design || $action_fallback );
+        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $provider_design || $action_fallback, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         $generation_diagnostics['execution'] = [
             'ok' => ! empty( $execution['ok'] ),
