@@ -815,7 +815,7 @@
     function clearEditorRoots(preserveOwnership) {
         return waitForEditorRuntime().then(function (ready) {
             if (!ready) return false;
-            return removeLiveGeneratedRoots().then(function (removed) {
+            return removeLiveGeneratedRoots(Boolean(preserveOwnership)).then(function (removed) {
                 if (!removed) return false;
                 // Vision repair carries operation-owned IDs through the
                 // preview reload so the server can replace the saved root.
@@ -864,10 +864,13 @@
             return wanted.indexOf(getEditorModelId(model)) !== -1;
         });
     }
-    function removeLiveGeneratedRoots() {
+    function removeLiveGeneratedRoots(preserveOwnership) {
         var roots = findLiveGeneratedRoots();
         if (!roots.length) {
-            liveGeneratedRootIds = [];
+            // A preview reload can briefly expose no editor models even though
+            // the saved root is still owned by this operation. Do not erase
+            // that ownership before the repair request reaches the server.
+            if (!preserveOwnership) liveGeneratedRootIds = [];
             return Promise.resolve(true);
         }
         if (!window.$e || typeof window.$e.run !== 'function') return Promise.resolve(false);
