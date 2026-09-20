@@ -572,6 +572,34 @@ $portfolio_json = (string) wp_json_encode( $portfolio_action['elements'], JSON_U
 check( strpos( $portfolio_json, '"title":"Наши проекты"' ) !== false, 'Portfolio fallback did not place the explicit section title in a native Heading' );
 check( strpos( $portfolio_json, 'Сохрани три работы' ) === false && strpos( $portfolio_json, 'Используй редактируемые элементы Elementor' ) === false, 'Portfolio fallback leaked prompt instructions into native widgets' );
 check( strpos( $portfolio_json, 'Квартира у парка' ) !== false && strpos( $portfolio_json, 'Компактная планировка для одного человека' ) !== false, 'Portfolio fallback lost exact project content' );
+$portfolio_layout_changed = 0;
+$portfolio_layout = wpae_llm_normalize_generated_typography( $portfolio_action['elements'], 'portfolio', 0, $portfolio_layout_changed );
+$portfolio_bento_changed = 0;
+$portfolio_layout = wpae_llm_apply_bento_layout( $portfolio_layout, 'portfolio', $portfolio_bento_changed );
+$portfolio_repair_layout_changed = 0;
+$portfolio_layout = wpae_llm_repair_unbalanced_repeatable_layout( $portfolio_layout, $portfolio_message, 'portfolio', $portfolio_repair_layout_changed );
+$portfolio_grammar_changed = 0;
+$portfolio_layout = wpae_llm_apply_generation_visual_grammar( $portfolio_layout, 'portfolio', $portfolio_grammar_changed );
+$portfolio_nested_card_grids = 0;
+$collect_portfolio_card_grids = static function ( array $nodes, bool $inside_grid = false ) use ( &$collect_portfolio_card_grids, &$portfolio_nested_card_grids ): void {
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        $settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+        $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+        $child_containers = array_filter( (array) ( $node['elements'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' );
+        if ( $inside_grid && $is_grid && count( $child_containers ) > 0 ) {
+            $portfolio_nested_card_grids++;
+        }
+        if ( is_array( $node['elements'] ?? null ) ) {
+            $collect_portfolio_card_grids( $node['elements'], $inside_grid || $is_grid );
+        }
+    }
+};
+$collect_portfolio_card_grids( $portfolio_layout );
+check( $portfolio_nested_card_grids === 0, 'Repeatable card layout nested icon/heading/copy into extra bento containers' );
 
 $wrong_provider_action = $action;
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';

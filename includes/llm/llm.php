@@ -8287,7 +8287,7 @@ function wpae_llm_normalize_generated_typography( array $elements, string $arche
     return $elements;
 }
 
-function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$changed ): array {
+function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$changed, bool $inside_bento_grid = false ): array {
     $repeatable = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
     if ( ! in_array( $archetype, $repeatable, true ) || $archetype === 'process' ) {
         return $elements;
@@ -8302,6 +8302,16 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
         $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+        // A card is already the repeatable unit. Its direct heading, copy and
+        // icon widgets must stay together; wrapping those three widgets again
+        // creates the visible icon/heading/copy columns inside one card.
+        if ( $inside_bento_grid && ! $is_grid ) {
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $element['elements'] = wpae_llm_apply_bento_layout( $element['elements'], $archetype, $changed, true );
+            }
+            $elements[ $index ] = $element;
+            continue;
+        }
         $child_containers = [];
         foreach ( $children as $child_index => $child ) {
             if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
@@ -8408,7 +8418,7 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         }
 
         if ( is_array( $element['elements'] ?? null ) ) {
-            $element['elements'] = wpae_llm_apply_bento_layout( $element['elements'], $archetype, $changed );
+            $element['elements'] = wpae_llm_apply_bento_layout( $element['elements'], $archetype, $changed, $inside_bento_grid || $is_grid );
         }
         $element['settings'] = $settings;
         $elements[ $index ] = $element;
