@@ -1,6 +1,6 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-20 19:28, Asia/Almaty
+Дата отчёта: 2026-09-20 19:46, Asia/Almaty
 
 ## A. Изменения относительно прошлого отчёта
 
@@ -28,16 +28,25 @@
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115.md`.
 - Перед этой редакцией сохранена копия отчёта в
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md`.
+- Перед этой редакцией сохранена копия отчёта в
+  `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md`.
 
 ## B. Возможности среды
 
-- Обязательная проверка callable-инструментов выполнена 2026-09-20 19:27
-  (+05): фильтр имён `ALL_TOOLS` по browser/Playwright/CDP/Elementor/DevTools
-  вернул `NO_CALLABLE_BROWSER_EDITOR_TOOLS`.
-- Реальный browser/editor вызов в этом этапе не выполнялся: подходящего
-  инструмента в доступном runtime нет. `capture_screen_context` не заменяет
-  такой инструмент и по правилам среды не используется вне активного voice
-  chat.
+- Предыдущий фильтр имён `ALL_TOOLS` по browser/Playwright/CDP/Elementor/
+  DevTools выполнялся в отдельном этапе и дал `NO_CALLABLE_BROWSER_EDITOR_TOOLS`;
+  этот результат не использовался как единственное доказательство.
+- В текущем namespace найден `mcp__node_repl__js`; отдельного
+  `mcp__cua_repl.js` или другого прямого CUA-инструмента в callable-списке нет.
+  Документация `mcp__node_repl__js` допускает запуск JavaScript в node_repl.
+- Выполнен реальный вызов через этот документированный инструмент с кодом
+  `await cua.getState()`. Результат: `ReferenceError: cua is not defined`.
+  Других одинаковых попыток не выполнялось.
+- Это подтверждает отсутствие доступного CUA runtime в текущей сессии, но не
+  подтверждает отсутствие авторизации WordPress: сетевой запрос к сайту не
+  выполнен, состояние авторизации неизвестно.
+- `capture_screen_context` не заменяет browser/editor-инструмент и по правилам
+  среды не используется вне активного voice chat.
 - Текущий ambient URL Elementor (`post=5197`) не считается доступом,
   screenshot, DOM, JSON или доказательством установленной версии. Обход через
   curl, произвольные URL или другой канал не выполнялся.
@@ -51,8 +60,8 @@
 
 - Рабочая папка: `/Users/diasmazhenov/vibecode/wp-ai-executor`.
 - Ветка: `main`.
-- HEAD на момент начала этой редакции отчёта:
-  `21fe42ff9a70e80dbf2bdaa7687df30c8465266d`.
+- HEAD до начала этой проверки:
+  `41b4166cc8e39748d01581ce2f9715e96ed3864e`.
 - Runtime commit: `3bb0b92f8f4f2a3283ed42a0a25b0edbd12cded4` — operation-owned
   process retry, nested selection resolver, session ownership and Vision crop
   bounds.
@@ -65,9 +74,12 @@
 - На момент начала этой редакции tracked working tree был чистым. Сохранены
   untracked `.DS_Store`, `.codex/`, `.openchamber/`, `docs/`, `graphify-out/`,
   audit files, `NEXT_AGENT_PROMPT.md` и report backups, включая
-  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md`; они не
-  добавлялись в runtime commit.
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md` и
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md`; они не добавлялись
+  в runtime commit.
 - Рабочая версия кода и release manifest: `v02.11.115`, guide: `v02.05.99`.
+- Runtime-файлы в этом запуске не изменялись; новая версия и новый release
+  package не создавались.
 - Последняя фактически подтверждённая установленная версия: `v02.11.114`.
   Установка `v02.11.115` в WordPress/Elementor в этом этапе не подтверждена:
   push выполнен, но callable browser-инструмент для Plugins UI/Elementor
@@ -191,7 +203,8 @@ local end-to-end проверка общей retry-границы на pricing r
 | `git diff --check` | PASS | No whitespace errors. |
 | Release ZIP `/private/tmp/wp-ai-executor-v02.11.115.zip` | PASS, validator `ok=true`, 79 files, SHA256 `112ef129eaac816bcf36123fb2eba0ec7dbc0d82521269e2ba24d7e7ae12bba7` | Temporary local artifact; not site installation evidence. |
 | `git push origin main` | PASS in the preceding runtime stage; this environment check did not push runtime code | Remote push only; not WordPress installation evidence. |
-| Callable browser/editor discovery | PASS, exact result `NO_CALLABLE_BROWSER_EDITOR_TOOLS` at 2026-09-20 19:27 +05 | Explains why live checks are NOT RUN; does not validate Elementor. |
+| `ALL_TOOLS` namespace discovery | PASS, found `mcp__node_repl__js`; direct `mcp__cua_repl.js` absent | Discovery only; does not validate browser access or WordPress auth. |
+| `mcp__node_repl__js` with `await cua.getState()` | BLOCKED, `ReferenceError: cua is not defined` during this 2026-09-20 +05 run | Exact runtime failure; no browser state, DOM or auth result. |
 | Plugins UI, fresh Elementor, public preview and screenshots for v115 | NOT RUN | No callable browser tool in this session. |
 
 WPCS, PHPStan и ESLint в checkout не настроены; результаты этих инструментов
@@ -225,8 +238,10 @@ WPCS, PHPStan и ESLint в checkout не настроены; результат�
 - Не выполнены: свежая browser retry matrix 1–9, реальный user control block,
   live unsaved edit/Undo/concurrency, две противоположные Vision capture cases,
   public DOM/computed styles, screenshots v115, live install verification.
-- Внешний блокер: в текущем сеансе нет callable browser/editor automation
-  tool; shell tests не дают права объявлять live Elementor/public acceptance.
+- Внешний блокер: прямой CUA/browser runtime отсутствует; единственный
+  найденный `mcp__node_repl__js` не содержит объекта `cua`. Shell tests не дают
+  права объявлять live Elementor/public acceptance, а авторизация сайта
+  остаётся неизвестной.
 - Недоступные evidence: новые screenshots, public HTML, computed styles,
   console/network trace и установленная v115. Секреты, cookies, nonce и
   private payload в отчёт не включались.
