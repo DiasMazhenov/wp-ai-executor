@@ -1639,6 +1639,24 @@ function wpae_llm_extract_pricing_content( string $message ): array {
         ];
     };
 
+    // Inline briefs may keep all tiers in one sentence and quote the amount,
+    // for example «Старт» — «Описание» — «от 50 000 ₸» — кнопка ... .
+    // Capture only quoted triples whose third field contains a numeric price;
+    // the following CTA prose belongs to the existing CTA parser.
+    if ( preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*[—–-]\s*(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:«([^»]{2,120})»|"([^"\n]{2,120})")/u', $message, $quoted_tier_matches, PREG_SET_ORDER ) ) {
+        foreach ( $quoted_tier_matches as $match ) {
+            $label = (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) );
+            $description = (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) );
+            $price = (string) ( $match[5] !== '' ? $match[5] : ( $match[6] ?? '' ) );
+            if ( preg_match( '/\d[\d\s]*(?:₸|\$|€|₽)/u', $price ) ) {
+                $append_pair( $pairs, $label, $price, $description );
+            }
+        }
+    }
+    if ( count( $pairs ) >= 2 ) {
+        return array_slice( array_values( $pairs ), 0, 8 );
+    }
+
     // Content-only prompts commonly express a tier as
     // «Название» — «Описание» — «Цена». Parse that shape before the generic
     // sentence parser, which otherwise treats the quoted description as a
@@ -3864,7 +3882,7 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
         }
         $price = $content;
         $description = '';
-        if ( preg_match( '/^\s*(\d[\d\s]*(?:₸|\$|€|₽)?)\s*(?:[,.;:]\s*(.*)|[—–-]\s*(.*))?$/u', $content, $match ) ) {
+        if ( preg_match( '/^\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)?)\s*(?:[,.;:]\s*(.*)|[—–-]\s*(.*))?$/u', $content, $match ) ) {
             $price = trim( (string) ( $match[1] ?? $content ) );
             $description = trim( (string) ( ( $match[2] ?? '' ) !== '' ? $match[2] : ( $match[3] ?? '' ) ) );
         }
@@ -5796,7 +5814,7 @@ function wpae_llm_normalize_cta_url( $value ): string {
 
 function wpae_llm_extract_requested_ctas( string $message ): array {
     $requirements = [];
-    $pattern = '/(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(?:кнопка|cta|button)\s*:\s*[«"]([^»"\n]{2,120})[»"](?:\s*,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*([^\s,.;]+))?/iu';
+    $pattern = '/(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(?:кнопка|cta|button)\s*:?\s*[«"]([^»"\n]{2,120})[»"](?:\s*,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*([^\s,.;]+))?/iu';
     if ( preg_match_all( $pattern, $message, $matches, PREG_SET_ORDER ) ) {
         foreach ( $matches as $match ) {
             $label = wpae_llm_compact_cta_text( trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) ) );

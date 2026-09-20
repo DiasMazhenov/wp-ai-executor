@@ -672,6 +672,16 @@ $quoted_pricing_action = wpae_llm_build_fallback_action( $quoted_pricing_message
 check( ! empty( wpae_llm_content_fidelity( $quoted_pricing_message, $quoted_pricing_action['elements'] )['ok'] ), 'Quoted pricing fallback failed content fidelity' );
 $quoted_pricing_json = (string) wp_json_encode( $quoted_pricing_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 check( substr_count( $quoted_pricing_json, '"widgetType":"button"' ) === 3 && strpos( $quoted_pricing_json, '"url":"#start"' ) !== false && strpos( $quoted_pricing_json, '"url":"#support"' ) !== false, 'Quoted pricing fallback did not build three native CTA buttons with exact targets' );
+$inline_pricing_message = 'Создай блок «Выберите формат работы» с бейджем «ТАРИФЫ». Три предложения: «Старт» — «Для небольшой задачи с понятным объёмом» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка #start. «Проект» — «Для комплексной работы от идеи до результата» — «от 150 000 ₸» — кнопка «Обсудить проект», ссылка #project. «Поддержка» — «Для регулярных задач и развития проекта» — «от 80 000 ₸/мес» — кнопка «Подключить поддержку», ссылка #support.';
+$inline_pricing_pairs = wpae_llm_extract_pricing_content( $inline_pricing_message );
+check( count( $inline_pricing_pairs ) === 3 && $inline_pricing_pairs[0]['content'] === 'от 50 000 ₸ — Для небольшой задачи с понятным объёмом' && $inline_pricing_pairs[2]['content'] === 'от 80 000 ₸/мес — Для регулярных задач и развития проекта', 'Inline quoted pricing parser did not preserve all amounts and descriptions' );
+$inline_pricing_action = wpae_llm_build_fallback_action( $inline_pricing_message, 42 );
+$inline_pricing_fidelity = wpae_llm_content_fidelity( $inline_pricing_message, $inline_pricing_action['elements'] );
+check( ! empty( $inline_pricing_fidelity['ok'] ), 'Inline quoted pricing fallback failed exact content fidelity' );
+$inline_pricing_json = (string) wp_json_encode( $inline_pricing_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( substr_count( $inline_pricing_json, '"widgetType":"button"' ) === 3, 'Inline quoted pricing fallback lost native CTA widgets' );
+check( strpos( $inline_pricing_json, '"url":"#start"' ) !== false, 'Inline quoted pricing fallback lost the #start CTA URL' );
+check( strpos( $inline_pricing_json, '"title":"от 150 000 ₸"' ) !== false, 'Inline quoted pricing fallback lost the quoted amount field' );
 
 $reference_timeline = wpae_llm_build_process_timeline(
     [
