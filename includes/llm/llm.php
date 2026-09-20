@@ -3854,7 +3854,7 @@ function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$c
     return $elements;
 }
 
-function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pairs, int &$changed, array $cta_requirements = [], string $section_title = '' ): array {
+function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pairs, int &$changed, array $cta_requirements = [], string $section_title = '', string $badge_label = '' ): array {
     if ( count( $pairs ) < 2 ) {
         return [];
     }
@@ -3983,7 +3983,7 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
     $grid = wpae_llm_bento_grid( 'wpae-pricing-grid', $cards );
     $grid['settings']['container_type'] = 'flex';
     $root['elements'] = [
-        wpae_llm_badge_widget( 'wpae-pricing-badge', 'pricing' ),
+        wpae_llm_badge_widget( 'wpae-pricing-badge', 'pricing', $badge_label ),
         $widget( 'wpae-pricing-heading', 'heading', [
             'title' => $section_title !== '' ? $section_title : 'Тарифы',
             'header_size' => 'h2',
@@ -4247,7 +4247,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     }
     $pairs = wpae_llm_extract_labeled_content( $message );
     if ( $archetype === 'pricing' && count( $pairs ) >= 2 ) {
-        $pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pairs, $changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ) );
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pairs, $changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ), wpae_llm_extract_section_badge( $message ) );
         if ( ! empty( $pricing_layout ) ) {
             return $pricing_layout;
         }
@@ -4872,6 +4872,13 @@ function wpae_llm_extract_section_title( string $message ): string {
 			continue;
 		}
 		return trim( sanitize_text_field( $unit ) );
+	}
+	return '';
+}
+
+function wpae_llm_extract_section_badge( string $message ): string {
+	if ( preg_match( '/(?:бейдж\w*|badge)\s*[«"]([^»"\n]{2,80})[»"]/iu', $message, $match ) ) {
+		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
 	}
 	return '';
 }
@@ -7864,7 +7871,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     } elseif ( $archetype === 'pricing' ) {
         $pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
         $pricing_layout_changed = 0;
-        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_pairs, $pricing_layout_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ) );
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_pairs, $pricing_layout_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ), wpae_llm_extract_section_badge( $message ) );
         if ( ! empty( $pricing_layout[0]['elements'] ) ) {
             $elements = $pricing_layout[0]['elements'];
         } else {
@@ -9785,7 +9792,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		if ( ! $provider_design && $action_archetype === 'pricing' && is_array( $action['elements'] ?? null ) ) {
 			$pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
 			if ( count( $pricing_pairs ) >= 2 ) {
-				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ) );
+				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ), wpae_llm_extract_section_badge( $message ) );
 				if ( ! empty( $pricing_layout ) ) {
 					$action['elements'] = $pricing_layout;
 				}
