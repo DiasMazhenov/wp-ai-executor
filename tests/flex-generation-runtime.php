@@ -526,6 +526,7 @@ check( in_array( 'Частые вопросы', $faq_requested, true ) && in_arr
 check( ! in_array( 'Сохрани точные вопросы, ответы и порядок', $faq_requested, true ) && ! in_array( '«Как начать?»', $faq_requested, true ), 'FAQ requested-content extraction retained instruction or quoted duplicate content' );
 $faq_plan = wpae_llm_content_plan( $faq_message, 'faq' );
 check( count( $faq_plan['content_pairs'] ?? [] ) === 3 && ( $faq_plan['content_pairs'][1]['label'] ?? '' ) === 'Можно работать дистанционно', 'FAQ semantic plan did not use the question/answer parser' );
+check( empty( $faq_plan['explicit_cta'] ?? [] ) && empty( $faq_plan['cta_required'] ), 'FAQ semantic plan inferred a CTA from ordinary answer copy' );
 $faq_action = wpae_llm_build_fallback_action( $faq_message, 42 );
 $faq_ctas = wpae_llm_extract_requested_ctas( $faq_message );
 check( empty( $faq_ctas ), 'FAQ answer text was incorrectly inferred as an explicit CTA requirement' );

@@ -1059,17 +1059,18 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
             ];
         }, wpae_llm_extract_faq_content( $message ) ), 0, 8 );
     }
-    $ctas = [];
-    // Quoted CTA copy is explicit content even when the brief uses a labeled
-    // sentence such as "Кнопка: «Обсудить проект», ссылка #contact." and the
-    // generic labeled-pair parser has no dash-separated pair to return.
-    $cta_candidates = array_merge( $units, array_column( $pairs, 'content' ), wpae_llm_extract_requested_content( $message ) );
-    foreach ( $cta_candidates as $value ) {
-        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
-            $ctas[] = wpae_llm_compact_cta_text( (string) $value );
-        }
-    }
-    $ctas = array_values( array_unique( array_filter( $ctas ) ) );
+    // Keep one CTA contract for extraction and auditing. Ordinary copy such as
+    // an FAQ answer may contain an imperative phrase but is not a button.
+    $ctas = array_values(
+        array_unique(
+            array_filter(
+                array_map(
+                    static fn( $requirement ): string => trim( (string) ( $requirement['text'] ?? '' ) ),
+                    wpae_llm_extract_requested_ctas( $message )
+                )
+            )
+        )
+    );
     $allowed_widgets = [
         'hero' => [ 'heading', 'text-editor', 'button', 'image' ],
         'benefits' => [ 'heading', 'text-editor', 'icon-list', 'icon' ],
