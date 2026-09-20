@@ -806,6 +806,7 @@ check( ( $nested_repair_result['steps'][0]['details']['selection_relation'] ?? '
 check( ! wpae_llm_is_process_structure_repair_request( 'Измени только текст дочернего заголовка выбранного таймлайна.' ), 'Copy-only nested process edit was routed to structural rebuild' );
 check( wpae_llm_is_process_structure_repair_request( 'Добавь к выбранному таймлайну нативные Divider между карточками.' ), 'Structural process repair was not recognised' );
 check( wpae_llm_is_independent_insert_request( 'Добавь ещё один горизонтальный блок процесса.' ), 'Independent process insertion was not distinguished from retry' );
+check( wpae_llm_is_independent_insert_request( 'Создай отдельный блок «Как мы работаем» с этапами «Замысел», «Съёмка», «Монтаж», «Публикация».' ), 'Separate process block was not distinguished from retry when the editor selection remained active' );
 $vertical_timeline = wpae_llm_build_process_timeline(
     [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
     'vertical-process',

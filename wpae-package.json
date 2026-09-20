@@ -69,7 +69,7 @@
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "55699d95b69996b4b00f818e93df3fe865bcb58fd2eee1ede2a989d3d8e8b1c6",
+    "includes/llm/llm.php": "b68bc0359d7ce11ae4ae1725420a500ba92d7a2a0e7df86d4a92ac70647e4388",
     "includes/llm/transport.php": "285aa3f02346ea03844840b4d8880f36f0ab4dd3d0b20042021d4a96a89f2714",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "d407cef764165d1417f871d8a57bb56f8a1e65d9342827e6401c8d2122af63c8",
@@ -81,6 +81,6 @@
     "includes/updates/package-updater.php": "bc77e52c63c504525bf388e84a387f412c03fa07d3eebb353a5e88501ace7b1e",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "a11cb3b36c4759f3e9f64efa23ee82cda037689ef244a00fcbf7703eed550cee",
-    "wp-ai-executor.php": "edfdeaa6da40bed916d97ff2ebc9d366d9b473d459cea9f176167b5da0f2580f"
+    "wp-ai-executor.php": "1b25b654abd7d9abfa48ccb4b213a737c2ff0bd914c082c88e096a2132513371"
   }
 }

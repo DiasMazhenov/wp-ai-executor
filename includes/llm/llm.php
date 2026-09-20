@@ -357,7 +357,7 @@ function wpae_llm_is_process_structure_repair_request( string $message, string $
 }
 
 function wpae_llm_is_independent_insert_request( string $message ): bool {
-	return (bool) preg_match( '/\b(ещ[её]\s+один|нов(?:ый|ую|ое)\s+(?:блок\w*|таймлайн\w*|секци\w*)|добавь\s+(?:ещ[её]\s+)?(?:нов\w*\s+)?(?:блок\w*|таймлайн\w*|секци\w*)|вставь\s+нов\w*)\b/iu', $message );
+	return (bool) preg_match( '/\b(ещ[её]\s+один|(?:нов(?:ый|ую|ое)|отдельн(?:ый|ую|ое))\s+(?:блок\w*|таймлайн\w*|секци\w*)|добавь\s+(?:ещ[её]\s+)?(?:нов\w*\s+|отдельн\w*\s+)?(?:блок\w*|таймлайн\w*|секци\w*)|вставь\s+(?:нов\w*|отдельн\w*)\s*)\b/iu', $message );
 }
 
 function wpae_llm_build_vision_feedback_prompt( string $original_brief, string $findings, bool $regenerate = true ): string {
