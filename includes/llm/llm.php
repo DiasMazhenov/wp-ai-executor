@@ -5355,6 +5355,7 @@ function wpae_llm_normalize_generated_button_settings( array &$settings, string 
     if ( $has_requested_accent ) {
         $settings['background_background'] = 'classic';
         $settings['background_color'] = $accent;
+        $settings['button_background_hover_color'] = $accent === '#a84c36' ? '#8f3e2c' : $accent;
         foreach ( [ 'background_color_stop', 'background_color_b', 'background_color_b_stop', 'background_gradient_type', 'background_gradient_angle', 'background_gradient_position' ] as $key ) {
             unset( $settings[ $key ] );
         }
