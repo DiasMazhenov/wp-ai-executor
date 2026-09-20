@@ -2,21 +2,23 @@
 
 ## Current release
 
-- Plugin: `v02.11.115`
+- Plugin: `v02.11.122`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
-- v02.11.115: Moves process retry through one shared root resolver: a nested
-  badge/heading selection is mapped to its process root, explicit retry keeps
-  operation-owned root IDs through session reload, and an absent or foreign
-  target returns a conflict instead of appending a duplicate. Copy-only nested
-  edits remain on the provider patch route and independent "ещё один блок"
-  requests remain inserts. Vision capture now records target scroll bounds,
-  crop completeness, viewport scroll and bounded target geometry; incomplete
-  crops are declared uncertain instead of authorizing destructive repair from
-  the image alone. Local runtime coverage is 269 checks; fresh live retry,
-  public DOM and screenshot capture were not run in this stage because no
-  callable browser tool was available. `context.md` is the only canonical
-  context journal; `SESSION_CONTEXT.md` is intentionally not used.
+- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, final HEAD `5524fc3`, pushed to `origin/main`.
+- Installed site version: `v02.11.122`, confirmed by WP Pusher success and fresh Elementor editor header on draft `post=5197`.
+- v02.11.122 preserves an explicitly requested pricing badge through the shared pricing builder. The final live root `08b8ce2` renders `ТАРИФЫ`, `Выберите формат работы`, three native Flex cards, exact descriptions, prices, button labels and `#start/#project/#support` links.
+- v02.11.121 separates a monthly price such as `от 80 000 ₸/мес` from its description and preserves the requested pricing section heading.
+- v02.11.120 parses inline quoted pricing tiers, `от` amounts and CTA syntax `кнопка «…», ссылка #…`.
+- v02.11.119 classifies `Создай отдельный блок…` as an independent insert, so the exact second process prompt does not enter the selected-root retry route.
+- v02.11.118 keeps meaningful process descriptions in the canonical builder/fallback. Explicit user copy is preserved; generated descriptions explain the step and are not generic `Этап N: название` text.
+- Live process evidence: canonical generation operation `wpae-20260920200050-e0f5e885`, root `4294478`, Vision `95/98`; independent exact-content process operation `wpae-20260920201239-a97301d7`, rendered root `926ca35`, Vision `95/98`.
+- Live pricing evidence: deterministic fallback after provider stop, operation `wpae-20260920203934-746c61a0`, rendered root `08b8ce2`, Vision `90/95`, HTTP 200, one inserted element and 14 native widgets. Editor save/reload and public DOM/read-back passed.
+- v02.11.117 ownership proof remains valid: owned retry operation `wpae-20260920194049-0ba44b51`; foreign generated-root retry safely refused without a new duplicate. The unsaved marker `USER_BLOCK_KEEP_5197_UNSAVED` survived the v122 save/reload.
+- Runtime checks: `287` PHP checks; all 3 Node suites pass; PHP lint, `git diff --check` and package hashes pass.
+- Screenshot files were not produced by the available CUA API. In-session desktop/mobile images were visually reviewed, but the report marks the screenshot gallery `SCREENSHOT BLOCKED`. Separate live Vision incomplete-capture A/B scenarios remain NOT RUN.
+- `context.md` is the only canonical context journal; `SESSION_CONTEXT.md` is intentionally not used.
+
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
   the horizontal reference timeline, keeping the four reference cards inside
   a responsive items row. The step reader ignores that semantic shell, and
