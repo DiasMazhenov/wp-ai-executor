@@ -1,6 +1,6 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-20 19:17, Asia/Almaty
+Дата отчёта: 2026-09-20 19:28, Asia/Almaty
 
 ## A. Изменения относительно прошлого отчёта
 
@@ -26,23 +26,47 @@
   этапе не выполнено.
 - Предыдущий отчёт сохранён в
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115.md`.
+- Перед этой редакцией сохранена копия отчёта в
+  `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md`.
 
-## B. Репозиторий и версии
+## B. Возможности среды
+
+- Обязательная проверка callable-инструментов выполнена 2026-09-20 19:27
+  (+05): фильтр имён `ALL_TOOLS` по browser/Playwright/CDP/Elementor/DevTools
+  вернул `NO_CALLABLE_BROWSER_EDITOR_TOOLS`.
+- Реальный browser/editor вызов в этом этапе не выполнялся: подходящего
+  инструмента в доступном runtime нет. `capture_screen_context` не заменяет
+  такой инструмент и по правилам среды не используется вне активного voice
+  chat.
+- Текущий ambient URL Elementor (`post=5197`) не считается доступом,
+  screenshot, DOM, JSON или доказательством установленной версии. Обход через
+  curl, произвольные URL или другой канал не выполнялся.
+- Доступны локальные shell/Git/PHP/Node-проверки. Они не дают доступа к
+  Plugins UI, Elementor model, public DOM, computed styles или screenshot.
+- Поэтому установка v02.11.115, свежая retry-приёмка и Vision/public
+  приёмка имеют статус NOT RUN; новый runtime-релиз для продолжения не
+  создавался.
+
+## C. Репозиторий и версии
 
 - Рабочая папка: `/Users/diasmazhenov/vibecode/wp-ai-executor`.
 - Ветка: `main`.
-- HEAD: `f9ec71c4de1d8a4ac4c72830fffa4e66bb45cc0e`.
+- HEAD на момент начала этой редакции отчёта:
+  `21fe42ff9a70e80dbf2bdaa7687df30c8465266d`.
 - Runtime commit: `3bb0b92f8f4f2a3283ed42a0a25b0edbd12cded4` — operation-owned
   process retry, nested selection resolver, session ownership and Vision crop
   bounds.
 - Regression commit: `f9ec71c4de1d8a4ac4c72830fffa4e66bb45cc0e` — foreign/deleted
   retry-target assertions.
-- `git push origin main` подтверждён: `3bb0b92..f9ec71c main -> main`.
+- Предыдущий push `main` подтверждён в истории отчёта; локальная ссылка
+  `origin/main` в текущем checkout отсутствует, поэтому текущее отношение к
+  remote до нового push не утверждается.
 - PR не создавался.
-- Tracked working tree чистый после коммита. Сохранены untracked
-  `.DS_Store`, `.codex/`, `.openchamber/`, `docs/`, `graphify-out/`, audit
-  files, `NEXT_AGENT_PROMPT.md` и старые report backups; они не добавлялись в
-  runtime commit.
+- На момент начала этой редакции tracked working tree был чистым. Сохранены
+  untracked `.DS_Store`, `.codex/`, `.openchamber/`, `docs/`, `graphify-out/`,
+  audit files, `NEXT_AGENT_PROMPT.md` и report backups, включая
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md`; они не
+  добавлялись в runtime commit.
 - Рабочая версия кода и release manifest: `v02.11.115`, guide: `v02.05.99`.
 - Последняя фактически подтверждённая установленная версия: `v02.11.114`.
   Установка `v02.11.115` в WordPress/Elementor в этом этапе не подтверждена:
@@ -51,22 +75,7 @@
 - Только `context.md` является каноническим контекстным журналом проекта.
   `SESSION_CONTEXT.md` не создавался и не используется.
 
-## C. Public preview
-
-- Свежий штатный Preview для v02.11.115 не открывался: browser-инструмент
-  недоступен, а произвольный URL не использовался как evidence.
-- В предыдущем live этапе для draft `post=5197` открывался public draft-preview
-  tab; наблюдался пустой документ с единственным текстом `desktop`.
-- Статус записи, редирект, публичный root, Elementor wrapper, computed styles,
-  console errors и фактический viewport для нового этапа не прочитаны.
-- Причина пустого preview не доказана. Не установлено, было ли это связано с
-  авторизацией, draft-preview URL, сохранением draft, скрытым root или runtime
-  ошибкой WordPress/Elementor/WPAE.
-- Public DOM/computed-style/screenshot acceptance: NOT RUN.
-- Новые изменения исправляют ownership/retry и полноту Vision capture, но не
-  содержат доказанного исправления public-preview открытия.
-
-## D. Retry matrix
+## D. Retry и ownership matrix
 
 Все live-результаты ниже разделены с локальными regression assertions. Новых
 root IDs на v02.11.115 не создавалось.
@@ -102,7 +111,22 @@ local end-to-end проверка общей retry-границы на pricing r
   NOT RUN live. Existing local snapshot/conflict assertions не являются этой
   проверкой.
 
-## F. EJ-128 — полнота Vision capture
+## F. Public preview
+
+- Свежий штатный Preview для v02.11.115 не открывался: browser-инструмент
+  недоступен, а произвольный URL не использовался как evidence.
+- В предыдущем live этапе для draft `post=5197` открывался public draft-preview
+  tab; наблюдался пустой документ с единственным текстом `desktop`.
+- Статус записи, редирект, публичный root, Elementor wrapper, computed styles,
+  console errors и фактический viewport для нового этапа не прочитаны.
+- Причина пустого preview не доказана. Не установлено, было ли это связано с
+  авторизацией, draft-preview URL, сохранением draft, скрытым root или runtime
+  ошибкой WordPress/Elementor/WPAE.
+- Public DOM/computed-style/screenshot acceptance: NOT RUN.
+- Новые изменения исправляют ownership/retry и полноту Vision capture, но не
+  содержат доказанного исправления public-preview открытия.
+
+## G. EJ-128 — полнота Vision capture
 
 - До v115 capture использовал `getBoundingClientRect()` как width/height и мог
   отправить Vision только видимую часть длинного target.
@@ -124,7 +148,7 @@ local end-to-end проверка общей retry-границы на pricing r
   изменены; фактическая картинка, Vision findings и repair decision этого
   этапа отсутствуют.
 
-## G. Изменённый код
+## H. Изменённый код
 
 - `includes/llm/llm.php`: symptom — nested retry мог стать append; cause —
   selection IDs проверялись только среди top-level roots и ownership не
@@ -152,7 +176,7 @@ local end-to-end проверка общей retry-границы на pricing r
 - `context.md`, `ERRORS.md`: factual v115 entry and new retry/crop error entry;
   no `SESSION_CONTEXT.md` was created.
 
-## H. Проверки и evidence
+## I. Проверки и evidence
 
 | Команда / evidence | Result | Граница |
 |---|---|---|
@@ -166,7 +190,8 @@ local end-to-end проверка общей retry-границы на pricing r
 | `node --check assets/js/elementor-llm-chat.js` | PASS | Syntax only. |
 | `git diff --check` | PASS | No whitespace errors. |
 | Release ZIP `/private/tmp/wp-ai-executor-v02.11.115.zip` | PASS, validator `ok=true`, 79 files, SHA256 `112ef129eaac816bcf36123fb2eba0ec7dbc0d82521269e2ba24d7e7ae12bba7` | Temporary local artifact; not site installation evidence. |
-| `git push origin main` | PASS, `3bb0b92..f9ec71c main -> main` | Remote push only; not WordPress installation evidence. |
+| `git push origin main` | PASS in the preceding runtime stage; this environment check did not push runtime code | Remote push only; not WordPress installation evidence. |
+| Callable browser/editor discovery | PASS, exact result `NO_CALLABLE_BROWSER_EDITOR_TOOLS` at 2026-09-20 19:27 +05 | Explains why live checks are NOT RUN; does not validate Elementor. |
 | Plugins UI, fresh Elementor, public preview and screenshots for v115 | NOT RUN | No callable browser tool in this session. |
 
 WPCS, PHPStan и ESLint в checkout не настроены; результаты этих инструментов
@@ -174,7 +199,7 @@ WPCS, PHPStan и ESLint в checkout не настроены; результат�
 Исторические screenshots v02.11.114 были показаны inline в предыдущей сессии;
 доступного абсолютного файла или artifact ID для них нет.
 
-## I. Общая матрица
+### Общая матрица
 
 | Сценарий | Последняя версия и источник | Fresh generation сейчас | Актуальность после v115 |
 |---|---|---|---|
