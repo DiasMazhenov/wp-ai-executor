@@ -2496,5 +2496,28 @@ before removal.
   browser/server boundary and replaces only a matching marked root; user roots
   are not inferred or removed. The action diff now reports content changes even
   when top-level count stays equal.
-- Runtime coverage is 217 checks after these changes; live v02.11.100 has not
-  yet been installed or accepted in the editor.
+- Runtime coverage is 217 checks after these changes. WP Pusher installed
+  v02.11.100 on `main`; fresh Elementor chat and WordPress Plugins UI confirmed
+  the installed version.
+
+## Live architectural read-back — 2026-09-20, Asia/Almaty
+- Content-only hero generation on post 4556 produced operation
+  `wpae-20260920001608-e0975c62`; provider JSON was valid, but the semantic
+  quality gate selected the content-complete deterministic fallback. This was
+  not an OpenRouter authentication or transport failure.
+- Saved root `ca97e44` contains the ownership marker, badge `10b3759`, shell
+  `cd4368e`, copy `1cef5b4` and visual `1b3bf93`. CTA links are exactly
+  `#contact` and `#projects`.
+- Editor computed values were root `1010px`, shell `962px`, copy `551.664px`,
+  visual `362.336px`. Public computed values were shell row `1004px`, copy
+  `577.156px`, visual `378.844px`, with visible overflow `visible`.
+- Public DOM/read-back contained one hero root `ca97e44`; old duplicate hero
+  `c93da4b` was absent. Two identical old pricing roots were observed; root
+  `720d8c5` was removed through Elementor UI and root `3e993cb` was preserved.
+- After save and public reload the page contained one pricing composition, one
+  hero, exact hero text, two CTA links and no old hero root. Mobile Elementor
+  preview showed stacked copy/visual zones; desktop public screenshot showed
+  the two-zone hero.
+- The editor viewport screenshot can crop a wide preview because of Elementor
+  chrome; direct public computed styles, DOM and screenshot are the authoritative
+  layout evidence for the page.

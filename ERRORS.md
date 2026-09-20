@@ -70,7 +70,7 @@ before making a new change to the plugin.
   explicit CTA requirements and inserts each native Button into its matching
   pricing card before the final normalization. Runtime coverage is `209 checks OK`.
 
-- **Generated hero geometry and split pricing content crossed shared boundaries (v02.11.99, fixed locally for v02.11.100):**
+- **Generated hero geometry and split pricing content crossed shared boundaries (v02.11.99, fixed for v02.11.100):**
   The live hero could render the generated badge as a sibling inside the
   horizontal copy/visual row, producing a detached right-side badge and weak
   whitespace balance. Pricing text using `price — description` remained one
@@ -79,8 +79,10 @@ before making a new change to the plugin.
   shell contract; pricing parsing preserves separate native fields; and the
   Button normalizer supplies native palette values only when absent. Vision
   retry also carries marked operation-owned roots so a replacement cannot
-  create a duplicate. Runtime coverage is `217 checks OK`; live verification is
-  pending installation of v02.11.100.
+  create a duplicate. Runtime coverage is `217 checks OK`. v02.11.100 was
+  installed through WP Pusher and live post 4556 confirmed one generated hero
+  root, one pricing composition root, desktop row/mobile column geometry,
+  exact hero content and both CTA URLs after read-back.
 
 ## EJ-114: Structured write lifecycle accepted unsafe autosave/read-back state
 
