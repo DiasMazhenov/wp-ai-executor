@@ -527,7 +527,12 @@ check( ! in_array( 'Сохрани точные вопросы, ответы и 
 $faq_plan = wpae_llm_content_plan( $faq_message, 'faq' );
 check( count( $faq_plan['content_pairs'] ?? [] ) === 3 && ( $faq_plan['content_pairs'][1]['label'] ?? '' ) === 'Можно работать дистанционно', 'FAQ semantic plan did not use the question/answer parser' );
 $faq_action = wpae_llm_build_fallback_action( $faq_message, 42 );
+$faq_ctas = wpae_llm_extract_requested_ctas( $faq_message );
+check( empty( $faq_ctas ), 'FAQ answer text was incorrectly inferred as an explicit CTA requirement' );
+$faq_cleanup_changed = 0;
+wpae_llm_remove_unrequested_buttons( $faq_action['elements'], $faq_message, $faq_cleanup_changed );
 $faq_json = (string) wp_json_encode( $faq_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( substr_count( $faq_json, '"widgetType":"button"' ) === 0, 'FAQ fallback retained an unrequested CTA button from ordinary answer copy' );
 check( strpos( $faq_json, 'Как начать' ) !== false && strpos( $faq_json, 'Оставьте заявку, и мы согласуем встречу' ) !== false, 'FAQ fallback lost the first exact question or answer' );
 check( strpos( $faq_json, 'Можно работать дистанционно' ) !== false && strpos( $faq_json, 'Да, обсуждения и согласования проводим онлайн' ) !== false, 'FAQ fallback lost the second exact question or answer' );
 check( strpos( $faq_json, 'Что входит в проект' ) !== false && strpos( $faq_json, 'Планировка, концепция и согласованный комплект материалов' ) !== false, 'FAQ fallback lost the third exact question or answer' );

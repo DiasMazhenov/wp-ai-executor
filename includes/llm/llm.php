@@ -1992,18 +1992,11 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
 }
 
 function wpae_llm_remove_unrequested_buttons( array &$elements, string $message, int &$changed ): void {
-    $has_requested_cta = false;
-    foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-        if ( wpae_llm_is_cta_copy( (string) $value ) ) {
-            $has_requested_cta = true;
-            break;
-        }
-    }
     // Labeled CTA sentences such as "Основная кнопка: «…», ссылка #…" are
     // intentionally parsed by the CTA-specific extractor, not the generic
     // content-unit extractor. Do not delete those native buttons as generic
     // unrequested controls before the URL-aware normalizer runs.
-    if ( $has_requested_cta || ! empty( wpae_llm_extract_requested_ctas( $message ) ) ) {
+    if ( ! empty( wpae_llm_extract_requested_ctas( $message ) ) ) {
         return;
     }
     $walk = static function ( array &$nodes ) use ( &$walk, &$changed ): void {
@@ -5564,14 +5557,9 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
 			'role' => preg_match( '/втора|secondary/u', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/u', $role ) ? 'primary' : 'cta' ),
 		];
 	}
-    if ( empty( $requirements ) ) {
-        foreach ( wpae_llm_extract_requested_content( $message ) as $value ) {
-            if ( ! wpae_llm_is_cta_copy( (string) $value ) ) {
-                continue;
-            }
-            $requirements[] = [ 'text' => wpae_llm_compact_cta_text( (string) $value ), 'url' => '', 'role' => 'cta' ];
-        }
-    }
+    // Do not infer a CTA from ordinary content. FAQ answers such as
+    // "Оставьте заявку..." are copy, not a button requirement. Explicit CTA
+    // labels are already handled by the labelled or arrow+URL patterns above.
     $unique = [];
     foreach ( $requirements as $index => $requirement ) {
         $text = trim( (string) ( $requirement['text'] ?? '' ) );
