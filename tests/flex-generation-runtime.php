@@ -776,6 +776,12 @@ $owned_retry_target = wpae_llm_find_process_timeline_target( [ $owned_retry_root
 check( ! empty( $owned_retry_target['ok'] ) && ( $owned_retry_target['root_id'] ?? '' ) === 'owned-retry-root' && ( $owned_retry_target['selection_relation'] ?? '' ) === 'descendant', 'Nested process selection did not resolve to its top-level root' );
 $owned_retry_operation_target = wpae_llm_find_operation_owned_process_target( [ $owned_retry_root ], [ 'owned-retry-root' ] );
 check( ! empty( $owned_retry_operation_target['ok'] ) && ! empty( $owned_retry_operation_target['operation_owned'] ), 'Operation-owned process root was not accepted for safe retry' );
+$foreign_retry_root = $owned_retry_root;
+$foreign_retry_root['settings']['_css_classes'] = 'wpae-process-timeline';
+$foreign_retry_target = wpae_llm_find_operation_owned_process_target( [ $foreign_retry_root ], [ 'owned-retry-root' ] );
+check( empty( $foreign_retry_target['ok'] ) && ( $foreign_retry_target['reason'] ?? '' ) === 'root_not_operation_owned', 'Foreign process root was accepted as an operation-owned retry target' );
+$missing_retry_target = wpae_llm_find_operation_owned_process_target( [ $owned_retry_root ], [ 'missing-retry-root' ] );
+check( empty( $missing_retry_target['ok'] ) && ( $missing_retry_target['reason'] ?? '' ) === 'process_root_not_found', 'Deleted process root did not produce a safe retry conflict' );
 $GLOBALS['page_data'] = [ $owned_retry_root ];
 $GLOBALS['writes'] = [];
 $nested_repair_result = wpae_llm_execute_process_timeline_repair( $GLOBALS['page_data'], 42, [ $owned_retry_nested_id ], $detailed_process_message, 'nested-repair-operation' );
