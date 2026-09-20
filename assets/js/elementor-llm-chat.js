@@ -978,19 +978,78 @@
         if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return { ids: [], fingerprints: {} };
         var container = window.elementor.getPreviewContainer();
         var fingerprints = {};
+        var parents = {};
         var models = getEditorModelChildren(container);
+        var visit = function (model, parentId) {
+            var id = getEditorModelId(model);
+            if (id) {
+                fingerprints[id] = getEditorModelFingerprint(model);
+                if (parentId) parents[id] = parentId;
+            }
+            getEditorModelChildren(model).forEach(function (child) { visit(child, id); });
+        };
         var ids = models.map(function (model) {
             var id = getEditorModelId(model);
-            if (id) fingerprints[id] = getEditorModelFingerprint(model);
+            visit(model, '');
             return id;
         }).filter(Boolean);
-        return { ids: ids, fingerprints: fingerprints };
+        return { ids: ids, fingerprints: fingerprints, parents: parents };
     }
     function editorModelMatchesSnapshot(model, snapshot) {
         if (!snapshot || !snapshot.fingerprints) return true;
         var id = getEditorModelId(model);
         if (!id || !Object.prototype.hasOwnProperty.call(snapshot.fingerprints, id)) return true;
         return snapshot.fingerprints[id] === getEditorModelFingerprint(model);
+    }
+    function editorSyncMutationIds(editorSync) {
+        var ids = {};
+        var add = function (id) { if (id) ids[String(id)] = true; };
+        var walk = function (nodes) {
+            (Array.isArray(nodes) ? nodes : []).forEach(function (node) {
+                if (!node || typeof node !== 'object') return;
+                add(node.id);
+                walk(node.elements);
+            });
+        };
+        if (!editorSync || typeof editorSync !== 'object') return ids;
+        [editorSync.replace_element_id].concat(editorSync.changed_ids || [], editorSync.target_element_ids || [], editorSync.selected_scope_ids || []).forEach(add);
+        walk(editorSync.elements);
+        (editorSync.patches || []).forEach(function (patch) { add(patch && (patch.element_id || patch.id)); });
+        return ids;
+    }
+    function hasUnsavedEditorChanges(snapshot, editorSync) {
+        if (!snapshot || !snapshot.fingerprints || !window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return false;
+        var mutationIds = editorSyncMutationIds(editorSync);
+        var current = {};
+        var visit = function (model) {
+            var id = getEditorModelId(model);
+            if (id) current[id] = model;
+            getEditorModelChildren(model).forEach(visit);
+        };
+        getEditorModelChildren(window.elementor.getPreviewContainer()).forEach(visit);
+        var isMutationRelated = function (id) {
+            var seen = {};
+            while (id && !seen[id]) {
+                seen[id] = true;
+                if (mutationIds[id]) return true;
+                id = snapshot.parents && snapshot.parents[id] ? snapshot.parents[id] : '';
+            }
+            return false;
+        };
+        return Object.keys(snapshot.fingerprints).some(function (id) {
+            if (isMutationRelated(id)) return false;
+            return !current[id] || snapshot.fingerprints[id] !== getEditorModelFingerprint(current[id]);
+        }) || Object.keys(current).some(function (id) {
+            return !snapshot.fingerprints[id] && !mutationIds[id];
+        });
+    }
+    function refreshElementorPreviewSafely(snapshot, editorSync) {
+        // A full iframe reload hydrates from saved _elementor_data and would
+        // discard unrelated local Elementor edits. Realtime sync already
+        // painted the changed tree, so keep that canvas when another model is
+        // dirty and only reload when the snapshot is still clean.
+        if (hasUnsavedEditorChanges(snapshot, editorSync)) return Promise.resolve(true);
+        return refreshElementorPreview();
     }
     function syncEditorElements(editorSync, repairDepth, rootSnapshot) {
         if (!editorSync || !Array.isArray(editorSync.elements) || !editorSync.elements.length) return Promise.resolve(false);
@@ -1033,7 +1092,7 @@
                     var reconcile = expectedRootIds ? reconcileEditorRoots(expectedRootIds, editorSync.operation_owned_root_ids) : Promise.resolve(true);
                     return reconcile.then(function (reconciled) {
                         if (!reconciled) return false;
-                        return waitForPreviewPaint().then(function () { return refreshElementorPreview(); });
+                        return waitForPreviewPaint().then(function () { return refreshElementorPreviewSafely(rootSnapshot, editorSync); });
                     });
                 }, function () { return false; });
             } catch (error) {
@@ -1128,7 +1187,7 @@
         }
         return false;
     }
-    function syncEditorPatches(editorSync) {
+    function syncEditorPatches(editorSync, rootSnapshot) {
         if (!editorSync || !Array.isArray(editorSync.patches) || !editorSync.patches.length) return Promise.resolve(false);
         var models = [];
         selectedModels().forEach(function (model) { collectEditorModelTree(model, models); });
@@ -1143,7 +1202,7 @@
         });
         return applied === editorSync.patches.length
             ? waitForPreviewPaint()
-                .then(function () { return refreshElementorPreview(); })
+                .then(function () { return refreshElementorPreviewSafely(rootSnapshot, editorSync); })
                 .then(function (refreshed) { return refreshed === true; })
             : Promise.resolve(false);
     }
@@ -1368,14 +1427,14 @@
             });
         });
     }
-    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync) {
+    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync, rootSnapshot) {
         var reviewScope = visionReviewScope(editorSync);
         var visionSyncIds = getVisionSyncIds(editorSync);
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
-        return waitForPreviewRefresh(alreadySynced ? Promise.resolve(true) : refreshElementorPreview(), minimumWidgetCount).then(function () {
+        return waitForPreviewRefresh(alreadySynced ? Promise.resolve(true) : refreshElementorPreviewSafely(rootSnapshot, editorSync), minimumWidgetCount).then(function () {
             return focusEditorSync(editorSync).then(function (focused) {
                 if (focused) return true;
-                return refreshElementorPreview().then(function (refreshed) {
+                return refreshElementorPreviewSafely(rootSnapshot, editorSync).then(function (refreshed) {
                     if (!refreshed) throw new Error('Новый блок не найден в preview Elementor после realtime-вставки.');
                     return focusEditorSync(editorSync).then(function (refocused) {
                         if (!refocused) throw new Error('Новый блок не найден в preview Elementor после обновления.');
@@ -1613,7 +1672,7 @@
                 }
                 addGeneratedJsonSpoiler(editorSyncData && Array.isArray(editorSyncData.elements) ? editorSyncData.elements : []);
                 var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
-                    ? syncEditorPatches(body.write.editor_sync)
+                    ? syncEditorPatches(body.write.editor_sync, requestContext.editor_root_snapshot)
                     : syncEditorElements(body.write.editor_sync, repairDepth, requestContext.editor_root_snapshot);
                 visionPromise = Promise.resolve(editorSyncPromise).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
@@ -1628,7 +1687,7 @@
                             addMessage('assistant', syncMessage);
                             return true;
                         }).catch(function () {
-                            return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
+                            return waitForPreviewRefresh(refreshElementorPreviewSafely(requestContext.editor_root_snapshot, editorSyncData), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
                                 addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Canvas не подтвердил realtime-правку, preview обновлен из сохраненных данных.' : 'Canvas не подтвердил realtime-вставку, preview обновлен из сохраненных данных.');
                                 return false;
                             });
@@ -1638,7 +1697,7 @@
                         addMessage('assistant', editorSyncConflict.message);
                         return false;
                     }
-                    return waitForPreviewRefresh(refreshElementorPreview(), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
+                    return waitForPreviewRefresh(refreshElementorPreviewSafely(requestContext.editor_root_snapshot, editorSyncData), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
                         addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Предпросмотр измененного элемента обновлен из сохраненных данных.' : 'Предпросмотр Elementor обновлен из сохраненных данных.');
                         return false;
                     }).catch(function (error) {
@@ -1647,7 +1706,7 @@
                     });
                 }).then(function () {
                     if (!options.skipVision && config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
-                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData).catch(function (error) {
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData, requestContext.editor_root_snapshot).catch(function (error) {
                             return { vision_unavailable: true, error: error && error.message ? error.message : 'Проверка Vision недоступна.' };
                         });
                     }

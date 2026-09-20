@@ -1,6 +1,52 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-20 20:05, Asia/Almaty
+Дата отчёта: 2026-09-21 00:21, Asia/Almaty
+
+## Текущий continuation run — 2026-09-21, Asia/Almaty
+
+- Исходный HEAD этого продолжения: `1336a670a7c20790f949cd95a989a9b79af4b3a5`,
+  ветка `main`, checkout `/Users/diasmazhenov/vibecode/wp-ai-executor`.
+  Незакоммиченные изменения относятся только к описанному fix и release metadata;
+  прежние untracked audit/report артефакты не включаются.
+- В live Elementor через доступный `mcp__cua_repl.js` подтверждены WordPress 6.9,
+  Elementor 4.1.1, Elementor Pro 4.1.1 и WP AI Executor `v02.11.115`.
+  Использован draft `post=5197`, заголовок `Live Process v113`.
+- Контрольный Flex root создан штатным Elementor и сохранён до AI-сценария:
+  root `0705585`, Heading `52d6d52`, текст `USER_BLOCK_KEEP_5197`.
+- Точный generation prompt выполнен без нового provider-запроса локальным
+  canonical process pipeline. Operation `wpae-20260920151905-6d52c1c9`, новый
+  root `f351d44`; после reload top-level roots были `ad4b9da`, `0705585`,
+  `f351d44`. Badge `ПРОЦЕСС`, heading `Как мы работаем`, четыре этапа и четыре
+  описания присутствуют; Vision сообщил `92`, confidence `95%`.
+- После reload выбран nested Heading `Замысел` внутри `f351d44` и выполнен точный
+  nested retry prompt. Operation `wpae-20260920190713-a8a35481` сохранил тот же
+  root, не добавил duplicate; Vision сообщил `92`, confidence `98%`. Desktop и
+  mobile DOM/screenshot evidence сохранены в каталоге визуализаций:
+  [nested-retry-dom.json](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/nested-retry-dom.json),
+  [nested-retry-mobile-dom.json](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/nested-retry-mobile-dom.json),
+  [nested-retry-desktop-clean.png](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/nested-retry-desktop-clean.png),
+  [nested-retry-mobile-wide.png](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/nested-retry-mobile-wide.png).
+- Негативный unsaved-сценарий воспроизведён до следующего изменения кода:
+  контрольный Heading был изменён на `USER_BLOCK_KEEP_5197_UNSAVED` без отдельного
+  Save, затем отправлен тот же nested retry. После reconciliation/preview refresh
+  в DOM вернулось сохранённое `USER_BLOCK_KEEP_5197`; пользовательская правка
+  потеряна. Второй запрос завершился provider patch mismatch, но потеря произошла
+  в том же refresh/reconciliation window. Evidence:
+  [unsaved-loss-dom.json](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/unsaved-loss-dom.json),
+  [unsaved-loss.png](/Users/diasmazhenov/.codex/visualizations/2026/09/20/01a0bf61-2d8e-7620-8883-0e7fbe022ac2/unsaved-loss.png).
+  После этого изменяющие live-сценарии остановлены.
+- Root cause исправлен в `v02.11.116`: `captureEditorRootSnapshot()` теперь
+  fingerprints всё editor tree и сохраняет parent map; `refreshElementorPreviewSafely()`
+  не делает cache-busted iframe reload, если несохранённый sibling/descendant не
+  относится к operation mutation scope. Realtime sync и Vision продолжают работать
+  по текущему canvas; чистое дерево по-прежнему обновляется из сохранённых данных.
+- Локальная проверка fix: `271 checks OK`, 3 Node suites PASS, editor-root probe
+  `15 assertions PASS` (включая nested unsaved model), PHP lint, JS syntax,
+  `git diff --check` и manifest/package probe PASS. Live install v116, повтор
+  unsaved-сценария после установки, Save/reload/Undo и fresh public preview ещё
+  не объявляются до push и WP Pusher update.
+- В этом отчёте старые разделы A–J сохраняют исторические результаты v115 и
+  прежний блокированный запуск; для текущего статуса приоритет имеет этот раздел.
 
 ## A. Изменения относительно прошлого отчёта
 
