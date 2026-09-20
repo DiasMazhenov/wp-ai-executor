@@ -551,6 +551,17 @@ $pricing_walk = static function ( array $nodes ) use ( &$pricing_walk, &$pricing
 $pricing_walk( $pricing_content_only_action['elements'] );
 check( $pricing_card_buttons === 3, 'Pricing CTA buttons are not nested inside their native pricing cards' );
 
+$quoted_pricing_message = "Создай блок «Тарифы» с тремя карточками:\n«Старт» — «Одна консультация» — «30 000 ₸»;\n«Проект» — «Планировка и концепция» — «150 000 ₸»;\n«Полное сопровождение» — «Проект и авторский надзор» — «300 000 ₸».\nВ каждой карточке отдельная кнопка:\n«Выбрать Старт» → #start,\n«Выбрать Проект» → #project,\n«Выбрать сопровождение» → #support.\nИспользуй светлый фон и терракотовые акценты. На телефоне расположи карточки вертикально.";
+$quoted_pricing_pairs = wpae_llm_extract_pricing_content( $quoted_pricing_message );
+check( count( $quoted_pricing_pairs ) === 3 && $quoted_pricing_pairs[0]['label'] === 'Старт' && $quoted_pricing_pairs[0]['content'] === '30 000 ₸ — Одна консультация', 'Quoted pricing content-only parser did not preserve label, price, and description order' );
+check( wpae_llm_detect_block_archetype( $quoted_pricing_message ) === 'pricing', 'Quoted pricing request was misclassified as a hero after CTA extraction' );
+$quoted_pricing_ctas = wpae_llm_extract_requested_ctas( $quoted_pricing_message );
+check( count( $quoted_pricing_ctas ) === 3 && $quoted_pricing_ctas[0]['text'] === 'Выбрать Старт' && $quoted_pricing_ctas[0]['url'] === '#start' && $quoted_pricing_ctas[2]['url'] === '#support', 'Arrow CTA parser did not preserve all pricing labels and targets' );
+$quoted_pricing_action = wpae_llm_build_fallback_action( $quoted_pricing_message, 42 );
+check( ! empty( wpae_llm_content_fidelity( $quoted_pricing_message, $quoted_pricing_action['elements'] )['ok'] ), 'Quoted pricing fallback failed content fidelity' );
+$quoted_pricing_json = (string) wp_json_encode( $quoted_pricing_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( substr_count( $quoted_pricing_json, '"widgetType":"button"' ) === 3 && strpos( $quoted_pricing_json, '"url":"#start"' ) !== false && strpos( $quoted_pricing_json, '"url":"#support"' ) !== false, 'Quoted pricing fallback did not build three native CTA buttons with exact targets' );
+
 $reference_timeline = wpae_llm_build_process_timeline(
     [
         [ 'label' => 'Замысел', 'content' => 'Этап 1: Замысел.' ],

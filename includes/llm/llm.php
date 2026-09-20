@@ -120,7 +120,7 @@ function wpae_llm_extract_hero_copy( string $message ): array {
 }
 
 function wpae_llm_is_cta_copy( string $value ): bool {
-    $value = trim( sanitize_text_field( $value ) );
+    $value = trim( sanitize_text_field( $value ), " \t\n\r\0\x0B.,;:«»\"" );
     return (bool) preg_match( '/^(?:(?:кнопка|cta|button)\s*[:\-]\s*)?(?:обсудить|обсудите|получить|получите|узнать|узнайте|заказать|закажите|оформить|оформите|купить|купите|начать|начните|выбрать|выберите|написать|напишите|связаться|свяжитесь|оставить\s+заявк\w*|оставьте\s+заявк\w*|смотреть|смотрите|записаться|запишитесь|забронировать|забронируйте|регистрац\w*)\b/iu', $value );
 }
 
@@ -862,7 +862,7 @@ function wpae_llm_is_content_only_hero_brief( string $message ): bool {
 	}
 
 	$normalized = wpae_llm_normalize_content_text( $message );
-	if ( preg_match( '/\b(цена|стоимост|тариф|пакет|вопрос\w*|ответ\w*|отзыв\w*|команд\w*|преимуществ\w*|выгод\w*|портфолио|кейс\w*|процесс\w*|этап\w*|таймлайн\w*|навигац\w*|мега[\s-]*меню)\b/iu', $normalized ) ) {
+	if ( preg_match( '/\b(цен\w*|стоимост\w*|тариф\w*|пакет\w*|вопрос\w*|ответ\w*|отзыв\w*|команд\w*|преимуществ\w*|выгод\w*|портфолио|кейс\w*|процесс\w*|этап\w*|таймлайн\w*|навигац\w*|мега[\s-]*меню)\b/iu', $normalized ) ) {
 		return false;
 	}
 
@@ -1344,7 +1344,14 @@ function wpae_llm_extract_requested_content( string $message ): array {
         }
     }
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
-    $structured_pairs = $labeled_pairs;
+	$structured_pairs = $labeled_pairs;
+	$pricing_request = count( wpae_llm_extract_pricing_content( $message ) ) >= 2;
+	if ( $pricing_request ) {
+		// Pricing pair extraction below is authoritative. Quoted labels,
+		// descriptions, and amounts from the raw line would otherwise be added
+		// a second time as unrelated fidelity requirements.
+		$matches = [];
+	}
     if ( $process_request ) {
         // Process labels are explicit content; the surrounding instruction is
         // not. Keep the parser's structural gate so plain process prose does
@@ -1384,6 +1391,12 @@ function wpae_llm_extract_requested_content( string $message ): array {
 	if ( ! empty( $structured_pairs ) && wpae_llm_is_content_composition_request( $message ) && ! $process_request ) {
 		foreach ( wpae_llm_content_units( $message ) as $unit ) {
 			$unit = trim( (string) $unit );
+			if ( $pricing_request && ! wpae_llm_is_cta_copy( $unit ) ) {
+				continue;
+			}
+			if ( preg_match( '/^\s*(?:создай|создать|сделай|добавь|добавить|сформируй|собери|используй|примени|адаптируй|в\s+кажд(?:ой|ом)\s+карточк|на\s+телефон\w*|на\s+мобильн\w*)\b/iu', $unit ) ) {
+				continue;
+			}
 			$normalized_unit = wpae_llm_normalize_content_text( $unit );
 			$is_structured_pair_line = false;
 			foreach ( $structured_pairs as $pair ) {
@@ -1456,6 +1469,41 @@ function wpae_llm_extract_pricing_content( string $message ): array {
         return [];
     }
     $pairs = [];
+    $append_pair = static function ( array &$target, string $label, string $price, string $description ): void {
+        $label = trim( sanitize_text_field( $label ), " \t\n\r\0\x0B.,;:«»\"" );
+        $price = trim( sanitize_text_field( $price ), " \t\n\r\0\x0B.,;:«»\"" );
+        $description = trim( sanitize_text_field( $description ), " \t\n\r\0\x0B.,;:«»\"" );
+        if ( $label === '' || $price === '' ) {
+            return;
+        }
+        $target[ wpae_llm_normalize_content_text( $label ) ] = [
+            'label' => $label,
+            'content' => $price . ( $description !== '' ? ' — ' . $description : '' ),
+        ];
+    };
+
+    // Content-only prompts commonly express a tier as
+    // «Название» — «Описание» — «Цена». Parse that shape before the generic
+    // sentence parser, which otherwise treats the quoted description as a
+    // separate requirement and leaves the fallback with no pricing pairs.
+    foreach ( preg_split( '/\r?\n+/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $line ) {
+        $line = trim( (string) $line, " \t\n\r\0\x0B.;," );
+        if ( preg_match( '/^\s*[«\"]([^»\"\n]{2,80})[»\"]\s*[—–-]\s*[«\"]([^»\"\n]{2,240})[»\"]\s*[—–-]\s*[«\"]?(\d[\d\s]*(?:₸|\$|€|₽))[»\"]?\s*$/u', $line, $match ) ) {
+            $append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[3] ?? '' ), (string) ( $match[2] ?? '' ) );
+            continue;
+        }
+        if ( preg_match( '/^\s*([^—–:\n.;]{2,80}?)\s*[—–-]\s*([^—–:\n.;]{2,240}?)\s*[—–-]\s*[«\"]?(\d[\d\s]*(?:₸|\$|€|₽))[»\"]?\s*$/u', $line, $match ) ) {
+            $append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[3] ?? '' ), (string) ( $match[2] ?? '' ) );
+            continue;
+        }
+        if ( preg_match( '/^\s*([^—–:\n.;]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽))\s*[—–-]\s*(.+?)\s*$/u', $line, $match ) ) {
+            $append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[2] ?? '' ), (string) ( $match[3] ?? '' ) );
+        }
+    }
+    if ( count( $pairs ) >= 2 ) {
+        return array_slice( array_values( $pairs ), 0, 8 );
+    }
+
     // Content-only briefs often put all tiers into one paragraph; parse each
     // label/amount boundary before the generic sentence splitter sees it.
     $pricing_pattern = '/(?:^|[.!?;\n]\s*|:\s+)([^—–:\n.;]{2,80}?)\s*[—–-]\s*(\d[\d\s]*(?:₸|\$|€|₽)?)(?:\s*[,;:]\s*([^.!?\n;]+?))?(?=(?:[.!?;]\s+|$)[^—–:\n.;]{2,80}?\s*[—–-]\s*\d|[.!?;]\s*$|$)/u';
@@ -1467,10 +1515,7 @@ function wpae_llm_extract_pricing_content( string $message ): array {
             if ( $label === '' || $price === '' ) {
                 continue;
             }
-            $pairs[] = [
-                'label' => $label,
-                'content' => $price . ( $description !== '' ? ', ' . $description : '' ),
-            ];
+            $append_pair( $pairs, $label, $price, $description );
         }
     }
 
@@ -1487,10 +1532,7 @@ function wpae_llm_extract_pricing_content( string $message ): array {
             if ( $label === '' || $price === '' ) {
                 continue;
             }
-            $pairs[] = [
-                'label' => $label,
-                'content' => $price . ( $description !== '' ? '. ' . $description : '' ),
-            ];
+            $append_pair( $pairs, $label, $price, $description );
         }
     }
     return array_slice( $pairs, 0, 8 );
@@ -1715,8 +1757,9 @@ function wpae_llm_content_fidelity( string $message, array $elements ): array {
 }
 
 function wpae_llm_compact_cta_text( string $value ): string {
-    $value = trim( sanitize_text_field( $value ) );
-	$value = trim( (string) preg_replace( '/\s*(?:[—–-]\s*|,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*)(?:#[A-Za-z][A-Za-z0-9_:\-]*|https?:\/\/[^\s,.;]+|\/(?!\s)[^\s,.;]+)\s*$/iu', '', $value ) );
+    $value = trim( sanitize_text_field( $value ), " \t\n\r\0\x0B.,;:«»\"" );
+	$value = trim( (string) preg_replace( '/\s*(?:(?:[—–-]|→|->)\s*|,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*)(?:#[A-Za-z][A-Za-z0-9_:\-]*|https?:\/\/[^\s,.;]+|\/(?!\s)[^\s,.;]+)\s*$/iu', '', $value ) );
+	$value = trim( $value, " \t\n\r\0\x0B.,;:«»\"" );
     $length = function_exists( 'mb_strlen' ) ? mb_strlen( $value ) : strlen( $value );
     if ( $length <= 64 ) {
         return $value;
@@ -5392,12 +5435,12 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
             ];
         }
     }
-	$line_pattern = '/^\s*(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(.{2,120}?)\s*[—–-]\s*(#[A-Za-z][A-Za-z0-9_:\-]*|https?:\/\/[^\s,.;]+|\/(?!\s)[^\s,.;]+)\s*$/iu';
+	$line_pattern = '/^\s*(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(.{2,120}?)\s*(?:[—–-]|→|->)\s*(#[A-Za-z][A-Za-z0-9_:\-]*|https?:\/\/[^\s,.;]+|\/(?!\s)[^\s,.;]+)\s*[,.;:]?\s*$/iu';
 	foreach ( wpae_llm_content_units( $message ) as $unit ) {
 		if ( ! preg_match( $line_pattern, trim( (string) $unit ), $match ) ) {
 			continue;
 		}
-		$label = wpae_llm_compact_cta_text( trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) ) );
+		$label = wpae_llm_compact_cta_text( trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ), " \t\n\r\0\x0B.,;:«»\"" ) );
 		if ( $label === '' || ! wpae_llm_is_cta_copy( $label ) ) {
 			continue;
 		}
@@ -5424,6 +5467,27 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
         }
         $key = wpae_llm_normalize_content_text( $text ) . '|' . (string) ( $requirement['url'] ?? '' );
         if ( isset( $unique[ $key ] ) ) {
+            continue;
+        }
+        // A quoted content-only CTA can be seen once by the broad labelled
+        // matcher (without its target) and again by the arrow matcher (with
+        // its target). Prefer the targeted occurrence, while keeping two
+        // otherwise identical labels that intentionally use different URLs.
+        $same_text = [];
+        foreach ( $unique as $existing_key => $existing ) {
+            if ( wpae_llm_normalize_content_text( (string) ( $existing['text'] ?? '' ) ) !== wpae_llm_normalize_content_text( $text ) ) {
+                continue;
+            }
+            $same_text[ $existing_key ] = $existing;
+        }
+        $requirement_url = wpae_llm_normalize_cta_url( $requirement['url'] ?? '' );
+        if ( $requirement_url !== '' ) {
+            foreach ( $same_text as $existing_key => $existing ) {
+                if ( wpae_llm_normalize_cta_url( $existing['url'] ?? '' ) === '' ) {
+                    unset( $unique[ $existing_key ] );
+                }
+            }
+        } elseif ( ! empty( array_filter( $same_text, static fn( $existing ): bool => wpae_llm_normalize_cta_url( $existing['url'] ?? '' ) !== '' ) ) ) {
             continue;
         }
         $requirement['index'] = $index;
