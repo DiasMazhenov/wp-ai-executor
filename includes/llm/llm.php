@@ -7820,7 +7820,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 				'elements' => $cta_elements,
 			];
 		}
-		$hero_badge = wpae_llm_badge_widget( 'llm-hero-badge', 'hero' );
+		$hero_badge = wpae_llm_badge_widget( 'llm-hero-badge', 'hero', $visual_copy !== '' ? $visual_copy : null );
 		$elements = [
 			$hero_badge,
 			[

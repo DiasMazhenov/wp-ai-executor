@@ -70,7 +70,7 @@
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
     "includes/llm/decision-engine.php": "a6f83f99b7d1c8708584f0beeadd2815df702e2777c4fc6ec975b1fb71980c26",
-    "includes/llm/llm.php": "5e67badc264a373e0eacb30636bd86e2c419377a3b9896e9965a84735d5957b5",
+    "includes/llm/llm.php": "18e508f4728ab5a06f09cc7884be39ebd3c1ebb76ad77bd04d3584219ed5ced2",
     "includes/llm/transport.php": "240008280e0a8f9842bfbe70f771cd164b0d58d7638a549c7b6c048227710ca7",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
     "includes/rest/routes.php": "d407cef764165d1417f871d8a57bb56f8a1e65d9342827e6401c8d2122af63c8",

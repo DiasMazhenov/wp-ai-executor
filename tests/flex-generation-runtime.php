@@ -202,6 +202,8 @@ check( ( $natural_hero_copy['title'] ?? '' ) === 'Пространство дл�
 $natural_hero_action = wpae_llm_build_fallback_action( $natural_hero_message, 42 );
 $natural_hero_fidelity = wpae_llm_content_fidelity( $natural_hero_message, (array) ( $natural_hero_action['elements'] ?? [] ) );
 check( ! empty( $natural_hero_fidelity['ok'] ), 'Natural-language hero fallback failed final content fidelity' );
+$natural_hero_json = (string) wp_json_encode( $natural_hero_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $natural_hero_json, '"id":"llm-hero-badge-label"' ) !== false && strpos( $natural_hero_json, '"title":"АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ"' ) !== false, 'Natural-language hero fallback did not promote the requested eyebrow into the native badge' );
 $failure_diagnostics = wpae_llm_execution_failure_diagnostics( [
     'status' => 422,
     'update_error' => 'Elementor data failed design-system contract.',
