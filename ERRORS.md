@@ -2383,3 +2383,46 @@ before making a new change to the plugin.
   in diagnostics. Local runtime regression covers one provider call, one write,
   exact benefits copy and `action_path=fallback`; fresh live proof after install
   remains pending.
+
+## EJ-126: Responsive provider layout objects were not native Elementor controls
+
+- **Confirmed (2026-09-20, isolated live pricing read-back):** provider-style
+  responsive objects such as `flex_direction: {desktop: row, mobile: column}`
+  could reach Elementor as one object and silently fall back to the wrong
+  computed direction. The same failure explained the earlier stacked desktop
+  composition.
+- **Root cause:** the provider-to-native boundary normalized scalar layout
+  values but did not flatten responsive objects into Elementor's
+  `*_tablet`/`*_mobile` control keys.
+- **Fix (v02.11.103, commit `63933c0`):** shared native visual normalization
+  flattens responsive direction, wrap, justify and align controls before
+  write. Runtime coverage includes responsive object assertions. The current
+  live v02.11.105 pricing root computes `row` on desktop and `column` on the
+  mobile breakpoint.
+
+## EJ-127: Requested terracotta accent did not own an explicit stale hover value
+
+- **Confirmed (2026-09-20, isolated post 5169, v02.11.104):** saved JSON had
+  `background_color: #a84c36`, but provider-supplied
+  `button_background_hover_color: #3348B8` survived a prompt requesting
+  terracotta accents. The normal computed style hid this until hover or JSON
+  inspection.
+- **Root cause:** the shared Button normalizer treated an explicit provider
+  hover value as authoritative even after it had selected a user-requested
+  accent for the normal background.
+- **Fix (v02.11.105, commit `ebd404f`):** requested-accent normalization now
+  sets the corresponding native hover color in the same branch; a regression
+  starts with the stale blue value and asserts `#8f3e2c`. Live v02.11.105
+  generated JSON and public computed normal styles confirm the native palette.
+
+## EJ-128: Vision screenshot crop can over-report a missing card
+
+- **Observed (v02.11.104, isolated post 5169):** Vision scored a valid
+  three-card editor result `68/100` because the current editor crop did not
+  show the lower/right portion of the third card, then requested a repair.
+  DOM, JSON and public render still contained all three cards.
+- **Current status:** operation-owned root preservation in `224e308` prevented
+  the repair/reload path from creating a duplicate. The v02.11.105 clean
+  generation scored `90/100` and did not trigger this false repair. The
+  screenshot crop remains a diagnostic risk; it is not evidence that the
+  generated JSON or public DOM lost content.

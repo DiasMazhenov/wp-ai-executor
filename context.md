@@ -2521,3 +2521,41 @@ before removal.
 - The editor viewport screenshot can crop a wide preview because of Elementor
   chrome; direct public computed styles, DOM and screenshot are the authoritative
   layout evidence for the page.
+
+## Pricing visual contract and live v02.11.105 — 2026-09-20, Asia/Almaty
+- Live v02.11.104 pricing repair on isolated post `5169` exposed a remaining
+  native-control mismatch: the saved normal button color was terracotta, but
+  an explicit provider hover value remained `#3348B8`. This was a shared
+  button-normalizer boundary defect, not a screenshot hallucination.
+- v02.11.105 sets the requested-accent hover control at the same normalization
+  boundary (`#8f3e2c` for terracotta), adds a regression with a stale blue
+  provider hover value, updates package hashes, and was committed as
+  `ebd404f` on `main`.
+- The release was pushed to `origin/main` and installed through WP Pusher.
+  WordPress Plugins and a fresh Elementor editor confirmed `v02.11.105`.
+- Clean live generation on isolated draft post `5171` used the exact pricing
+  content prompt. Provider returned valid JSON, but the composition gate
+  rejected the sparse provider tree and selected the content-complete
+  deterministic fallback. Operation `wpae-20260920095027-5d84fe00` completed
+  with HTTP 200 and one new root `b11af7a`.
+- Saved generated JSON contains one `wpae-generated-root` pricing composition,
+  native Flex row on desktop and column on mobile, three card containers,
+  three Heading widgets, three Text Editor widgets and three Button widgets.
+  All labels, descriptions, prices and URLs `#start`, `#project`, `#support`
+  were preserved. Generated Button controls are classic `#a84c36` with
+  terracotta hover `#8f3e2c`.
+- Editor DOM and public DOM agree with the JSON. Public computed buttons are
+  `rgb(168, 76, 54)` on a transparent image-free background with white text.
+  Public desktop render is horizontal; public 390px and 360px renders are
+  vertical with `scrollWidth === clientWidth`. Editor mobile breakpoint gives
+  the same column layout and no horizontal overflow.
+- Vision scored this v02.11.105 result `90/100`, confidence `95%`; the only
+  advisory was slightly more mobile button padding. The existing site AI-Dana
+  widget appears in public mobile screenshots and can cover the lower CTA;
+  it is outside the generated Elementor tree and was not modified.
+- A full editor reload/read-back retained root `b11af7a`, the three cards, the
+  three exact links and the mobile column layout. The prior v02.11.104
+  Vision crop/reload race had already been fixed in `224e308` by preserving
+  operation-owned root IDs while the preview iframe temporarily has no models.
+- Project continuity uses only `context.md` as the canonical context journal.
+  `SESSION_CONTEXT.md` is intentionally not used and was not created.
