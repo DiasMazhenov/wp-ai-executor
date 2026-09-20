@@ -1,6 +1,6 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-21 00:31, Asia/Almaty
+Дата отчёта: 2026-09-21 00:43, Asia/Almaty
 
 ## Текущий continuation run — 2026-09-21, Asia/Almaty
 
@@ -10,7 +10,7 @@
   прежние untracked audit/report артефакты не включаются.
 - В live WordPress Plugins UI и свежем Elementor editor через доступный
   `mcp__cua_repl.js` подтверждены WordPress 6.9, Elementor 4.1.1, Elementor
-  Pro 4.1.1 и WP AI Executor `v02.11.116`. Использован draft `post=5197`,
+  Pro 4.1.1 и WP AI Executor `v02.11.117`. Использован draft `post=5197`,
   заголовок `Live Process v113`.
 - Контрольный Flex root создан штатным Elementor и сохранён до AI-сценария:
   root `0705585`, Heading `52d6d52`, текст `USER_BLOCK_KEEP_5197`.
@@ -58,6 +58,30 @@
   `Монтаж`, `Публикация`, четыре описания и `USER_BLOCK_KEEP_5197_UNSAVED`.
   Визуальный скриншот public preview инструмент не отдал; это не засчитывается
   как screenshot evidence, но DOM/read-back проверка выполнена.
+- На v02.11.116 дополнительный live-тест именно кнопки `Перегенерировать
+  последний запрос` выявил ownership bypass: при смене selection structural
+  targeted path принял retry и завершил operation
+  `wpae-20260920193518-4398b295`; изменение отменено штатным Undo. Причина была
+  в том, что `$targeted_edit` обрабатывался раньше `retry_current_operation`.
+- В v02.11.117 `$targeted_edit` исключает `retry_current_operation`, поэтому
+  explicit regenerate проходит operation-owned guard. WP Pusher сообщил
+  `Plugin was successfully updated`, Plugins UI и свежий editor показали v117.
+  Owner retry на `f351d44` завершён operation `wpae-20260920194049-0ba44b51`
+  (Vision `95`, confidence `98%`). После выбора nested Heading чужого
+  generated-root `ad4b9da` и нажатия `Перегенерировать последний запрос` получен
+  безопасный отказ `Безопасная цель повторной сборки не найдена; новый дубликат
+  не добавлен.`; roots остались `ad4b9da`, `0705585`, `f351d44`, marker
+  `USER_BLOCK_KEEP_5197_UNSAVED` не изменился. Live v117 ownership: PASS.
+- В свежем v117 editor (CUA tab `5`, live evidence, не сохранено отдельным
+  файлом) проверен Mobile portrait: preview iframe `360×632`, process roots
+  `345px` wide, stacked cards, `scrollWidth=clientWidth=345` для `ad4b9da` и
+  `f351d44`; badge, heading и 4 этапа присутствуют. Long marker контрольного
+  Heading сам имеет `scrollWidth=499` и относится только к тестовому тексту
+  соседнего user root. Desktop DOM и сохранённые скриншоты остаются по ссылкам
+  выше; public preview повторно перечитан после v117 через CUA tab `4`.
+- Ownership fix изменил `includes/llm/llm.php`, обновил `wp-ai-executor.php` до
+  `v02.11.117`, manifest и source-contract assertion. Commit `be8a4b7`
+  (`Guard regenerate retries by operation ownership`) запушен в `main`.
 - В этом отчёте старые разделы A–J сохраняют исторические результаты v115 и
   прежние статусы NOT RUN, возникшие до доступного CUA; для текущего статуса
   приоритет имеет этот раздел.
