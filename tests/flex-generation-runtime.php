@@ -516,6 +516,23 @@ check( ! empty( $benefits_fidelity['ok'] ), 'Benefits content fidelity treated a
 $benefits_requested = wpae_llm_extract_requested_content( $benefits_message );
 check( ! in_array( 'Точная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха', $benefits_requested, true ), 'Benefits requested-content extraction retained a redundant unsplit pair line' );
 
+$faq_message = 'Создай FAQ «Частые вопросы». «Как начать?» — «Оставьте заявку, и мы согласуем встречу». «Можно работать дистанционно?» — «Да, обсуждения и согласования проводим онлайн». «Что входит в проект?» — «Планировка, концепция и согласованный комплект материалов». Сохрани точные вопросы, ответы и порядок. Адаптируй блок для телефона.';
+$faq_pairs = wpae_llm_extract_faq_content( $faq_message );
+check( count( $faq_pairs ) === 3, 'FAQ parser did not extract three quoted question/answer pairs' );
+check( ( $faq_pairs[0]['label'] ?? '' ) === 'Как начать' && ( $faq_pairs[0]['content'] ?? '' ) === 'Оставьте заявку, и мы согласуем встречу', 'FAQ parser did not strip punctuation while preserving the first pair' );
+check( ( $faq_pairs[2]['label'] ?? '' ) === 'Что входит в проект' && ( $faq_pairs[2]['content'] ?? '' ) === 'Планировка, концепция и согласованный комплект материалов', 'FAQ parser changed the last pair or its order' );
+$faq_requested = wpae_llm_extract_requested_content( $faq_message );
+check( in_array( 'Частые вопросы', $faq_requested, true ) && in_array( 'Как начать', $faq_requested, true ) && in_array( 'Оставьте заявку, и мы согласуем встречу', $faq_requested, true ), 'FAQ requested-content extraction lost the title or first pair' );
+check( ! in_array( 'Сохрани точные вопросы, ответы и порядок', $faq_requested, true ) && ! in_array( '«Как начать?»', $faq_requested, true ), 'FAQ requested-content extraction retained instruction or quoted duplicate content' );
+$faq_plan = wpae_llm_content_plan( $faq_message, 'faq' );
+check( count( $faq_plan['content_pairs'] ?? [] ) === 3 && ( $faq_plan['content_pairs'][1]['label'] ?? '' ) === 'Можно работать дистанционно', 'FAQ semantic plan did not use the question/answer parser' );
+$faq_action = wpae_llm_build_fallback_action( $faq_message, 42 );
+$faq_json = (string) wp_json_encode( $faq_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $faq_json, 'Как начать' ) !== false && strpos( $faq_json, 'Оставьте заявку, и мы согласуем встречу' ) !== false, 'FAQ fallback lost the first exact question or answer' );
+check( strpos( $faq_json, 'Можно работать дистанционно' ) !== false && strpos( $faq_json, 'Да, обсуждения и согласования проводим онлайн' ) !== false, 'FAQ fallback lost the second exact question or answer' );
+check( strpos( $faq_json, 'Что входит в проект' ) !== false && strpos( $faq_json, 'Планировка, концепция и согласованный комплект материалов' ) !== false, 'FAQ fallback lost the third exact question or answer' );
+check( empty( wpae_llm_content_fidelity( $faq_message, $faq_action['elements'] )['missing'] ), 'FAQ fallback failed final content fidelity' );
+
 $wrong_provider_action = $action;
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][1]['settings']['editor'] = 'Нерелевантное описание';

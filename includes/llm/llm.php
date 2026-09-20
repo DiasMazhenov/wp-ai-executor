@@ -1041,6 +1041,15 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         ];
     }, wpae_llm_extract_labeled_content( $message ) ), 0, 8 );
     $content_pairs = $pairs;
+    if ( $archetype === 'faq' ) {
+        // FAQ prompts use question/answer pairs whose question mark is inside
+        // the quoted label. Prefer that parser over the generic dash parser so
+        // the semantic plan cannot retain quoted wrappers or instruction text.
+        $faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 8 );
+        if ( ! empty( $faq_pairs ) ) {
+            $content_pairs = $faq_pairs;
+        }
+    }
     $archetype_scores = wpae_llm_content_archetype_scores( $message, $pairs );
     if ( $archetype === 'faq' && count( $content_pairs ) < 2 ) {
         $content_pairs = array_slice( array_map( static function ( $pair ): array {
@@ -1356,6 +1365,21 @@ function wpae_llm_extract_requested_content( string $message ): array {
     }
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
 	$structured_pairs = $labeled_pairs;
+	$faq_request = (bool) preg_match( '/\b(?:faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu', $message );
+	if ( $faq_request ) {
+		$faq_pairs = wpae_llm_extract_faq_content( $message );
+		if ( ! empty( $faq_pairs ) ) {
+			$structured_pairs = $faq_pairs;
+			$faq_values = [];
+			foreach ( $faq_pairs as $faq_pair ) {
+				$faq_values[] = wpae_llm_normalize_content_text( (string) ( $faq_pair['label'] ?? '' ) );
+				$faq_values[] = wpae_llm_normalize_content_text( (string) ( $faq_pair['content'] ?? '' ) );
+			}
+			$matches = array_values( array_filter( $matches, static function ( $value ) use ( $faq_values ): bool {
+				return ! in_array( wpae_llm_normalize_content_text( (string) $value ), $faq_values, true );
+			} ) );
+		}
+	}
 	$pricing_request = count( wpae_llm_extract_pricing_content( $message ) ) >= 2;
 	if ( $pricing_request ) {
 		// Pricing pair extraction below is authoritative. Quoted labels,
@@ -1405,7 +1429,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
 			if ( $pricing_request && ! wpae_llm_is_cta_copy( $unit ) ) {
 				continue;
 			}
-			if ( preg_match( '/^\s*(?:создай|создать|сделай|добавь|добавить|сформируй|собери|используй|примени|адаптируй|в\s+кажд(?:ой|ом)\s+карточк|на\s+телефон\w*|на\s+мобильн\w*)\b/iu', $unit ) ) {
+			if ( preg_match( '/^\s*(?:создай|создать|сделай|добавь|добавить|сформируй|собери|используй|примени|адаптируй|сохран\w*|не\s+выдум\w*|не\s+добавляй|в\s+кажд(?:ой|ом)\s+карточк|на\s+телефон\w*|на\s+мобильн\w*)\b/iu', $unit ) ) {
 				continue;
 			}
 			$normalized_unit = wpae_llm_normalize_content_text( $unit );
@@ -1678,6 +1702,21 @@ function wpae_llm_extract_faq_content( string $message ): array {
     $message = trim( sanitize_text_field( $message ) );
     $message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $message );
     $message = preg_replace( '/^\s*(?:faq|частые вопросы|вопросы)\s*:\s*/iu', '', $message );
+	$quoted_pairs = [];
+	if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:«([^»]{3,320})»|"([^"\n]{3,320})")/u', (string) $message, $quoted_matches, PREG_SET_ORDER ) ) {
+		foreach ( $quoted_matches as $match ) {
+			$label = trim( preg_replace( '/[?؟\s]+$/u', '', (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) ) );
+			$content = trim( preg_replace( '/[.!?؟\s]+$/u', '', (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) ) ) );
+			$label = trim( sanitize_text_field( $label ) );
+			$content = trim( sanitize_text_field( $content ) );
+			if ( $label !== '' && $content !== '' ) {
+				$quoted_pairs[] = [ 'label' => $label, 'content' => $content ];
+			}
+		}
+	}
+	if ( ! empty( $quoted_pairs ) ) {
+		return array_slice( $quoted_pairs, 0, 12 );
+	}
     $units = preg_split( '/(?:\r?\n+|(?<=[.!?؟])\s+)/u', trim( (string) $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [];
     $pairs = [];
     for ( $index = 0, $count = count( $units ); $index < $count; $index++ ) {
