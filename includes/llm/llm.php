@@ -19,7 +19,46 @@ function wpae_llm_request_intent_head( string $message ): string {
 	return trim( (string) ( $parts[0] ?? '' ) );
 }
 
+/**
+ * Content-only process briefs are a small, explicit grammar: a shell label,
+ * a process badge/marker, and at least three bare labels on separate lines.
+ * Keep this boundary separate from prose classification so words such as
+ * "работаем" cannot turn a process into a portfolio.
+ */
+function wpae_llm_is_content_only_process_brief( string $message ): bool {
+	$message = trim( $message );
+	if ( $message === '' || preg_match( '/\b(?:создай|создать|сделай|добавь|собери|сформируй|используй|примени|адаптируй|native|elementor|flexbox|виджет\w*|контейнер\w*|разделител\w*|коннектор\w*|техническ\w*|responsive|desktop|tablet|mobile|vertical|horizontal)\b/iu', $message ) ) {
+		return false;
+	}
+	if ( preg_match( '/\b(?:вертикаль\w*|чередующ\w*|слева|alternat\w*|left)\b/iu', $message ) ) {
+		return false;
+	}
+
+	$lines = array_values( array_filter( array_map( 'trim', preg_split( '/\R/u', $message, -1, PREG_SPLIT_NO_EMPTY ) ) ) );
+	if ( count( $lines ) < 5 ) {
+		return false;
+	}
+
+	$has_shell = false;
+	$labels = [];
+	foreach ( $lines as $line ) {
+		if ( preg_match( '/^(?:как\s+мы\s+работаем|процесс\w*|этапы|шаги)$/iu', $line ) ) {
+			$has_shell = true;
+			continue;
+		}
+		$label = wpae_llm_normalize_timeline_step_label( $line );
+		if ( $label !== '' ) {
+			$labels[] = wpae_llm_normalize_content_text( $label );
+		}
+	}
+
+	return $has_shell && count( array_values( array_unique( array_filter( $labels ) ) ) ) >= 3;
+}
+
 function wpae_llm_is_process_request( string $message, string $archetype = '' ): bool {
+	if ( wpae_llm_is_content_only_process_brief( $message ) ) {
+		return true;
+	}
 	$intent_head = wpae_llm_request_intent_head( $message );
 	if ( $intent_head === '' ) {
 		return $archetype === 'process';
@@ -883,6 +922,9 @@ function wpae_llm_is_content_only_hero_brief( string $message ): bool {
 
 function wpae_llm_detect_block_archetype( string $message ): string {
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
+	if ( wpae_llm_is_content_only_process_brief( $message ) ) {
+		return 'process';
+	}
 	if ( wpae_llm_is_content_only_hero_brief( $message ) ) {
 		return 'hero';
 	}
@@ -8960,6 +9002,46 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             }
             if ( ( $deterministic_process_repair['error'] ?? '' ) !== 'Выбранный процессный таймлайн не найден.' ) {
                 return new WP_Error( 'wpae_llm_action_failed', 'Не удалось выполнить локальный responsive-ремонт таймлайна.', [ 'status' => 422, 'details' => $deterministic_process_repair ] );
+            }
+        }
+    }
+    // A normal retry can leave the previously generated root selected in the
+    // editor. Reuse the same canonical repair boundary for that process root
+    // instead of sending a content-only brief to the provider or appending a
+    // duplicate block.
+    if ( ! $targeted_edit && ! $vision_repair && $selected_post_id > 0 && ! empty( $selected_element_ids ) && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_process_timeline_repair' ) ) {
+        $selected_existing = wpae_get_elementor_data_for_post( $selected_post_id );
+        if ( ! is_wp_error( $selected_existing ) ) {
+            $selected_process_root = false;
+            $selected_lookup = array_fill_keys( $selected_element_ids, true );
+            foreach ( $selected_existing as $selected_element ) {
+                if ( ! is_array( $selected_element ) || ! isset( $selected_lookup[ sanitize_key( (string) ( $selected_element['id'] ?? '' ) ) ] ) ) {
+                    continue;
+                }
+                if ( wpae_llm_is_process_timeline_root( $selected_element ) ) {
+                    $selected_process_root = true;
+                    break;
+                }
+            }
+            if ( $selected_process_root ) {
+                $deterministic_process_retry = wpae_llm_execute_process_timeline_repair( $selected_existing, $selected_post_id, $selected_element_ids, $message, wpae_llm_new_operation_id() );
+                if ( ! empty( $deterministic_process_retry['ok'] ) ) {
+                    $deterministic_process_retry['steps'] = array_merge(
+                        [ [ 'id' => 'deterministic_process_retry', 'status' => 'ok', 'message' => 'Retry выбранного process-root выполнен локальным canonical-пайплайном без нового provider-запроса и без дублирования блока.', 'details' => [ 'root_reused' => true, 'provider_bypassed' => true ] ] ],
+                        (array) ( $deterministic_process_retry['steps'] ?? [] )
+                    );
+                    return new WP_REST_Response( [
+                        'ok' => true,
+                        'message' => 'Горизонтальный таймлайн повторно собран в выбранном Elementor-корне без дублирования.',
+                        'operation_id' => $deterministic_process_retry['operation_id'] ?? null,
+                        'action' => 'patch_elements',
+                        'write' => $deterministic_process_retry,
+                        'steps' => $deterministic_process_retry['steps'],
+                        'provider' => $runtime['provider'],
+                        'model' => $runtime['model'],
+                    ], 200 );
+                }
+                return new WP_Error( 'wpae_llm_action_failed', 'Не удалось повторно собрать выбранный process-root локальным Elementor-пайплайном.', [ 'status' => 422, 'details' => $deterministic_process_retry ] );
             }
         }
     }

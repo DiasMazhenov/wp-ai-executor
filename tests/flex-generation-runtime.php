@@ -739,6 +739,10 @@ $content_only_process_message = 'Создай горизонтальный бл�
 $content_only_process_steps = wpae_llm_process_timeline_steps( $content_only_process_message );
 check( array_column( $content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted process shell labels were incorrectly promoted to timeline cards' );
 $bare_content_only_process_message = "Как мы работаем\nПРОЦЕСС\nЗамысел\nСъёмка\nМонтаж\nПубликация";
+$bare_process_archetype = wpae_llm_detect_block_archetype( $bare_content_only_process_message );
+check( wpae_llm_is_content_only_process_brief( $bare_content_only_process_message ), 'Content-only process shell was not recognised before archetype scoring' );
+check( wpae_llm_is_process_request( $bare_content_only_process_message ), 'Content-only process shell was not recognised as a process request' );
+check( $bare_process_archetype === 'process', 'Content-only process shell was misclassified as ' . $bare_process_archetype );
 $bare_content_only_process_steps = wpae_llm_process_timeline_steps( $bare_content_only_process_message );
 check( array_column( $bare_content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Bare content-only process lines did not stay in order' );
 check( wpae_llm_process_timeline_layout( $bare_content_only_process_message ) === 'horizontal', 'Content-only process brief did not infer horizontal layout' );
