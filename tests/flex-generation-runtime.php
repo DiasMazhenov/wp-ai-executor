@@ -682,6 +682,8 @@ $inline_pricing_json = (string) wp_json_encode( $inline_pricing_action['elements
 check( substr_count( $inline_pricing_json, '"widgetType":"button"' ) === 3, 'Inline quoted pricing fallback lost native CTA widgets' );
 check( strpos( $inline_pricing_json, '"url":"#start"' ) !== false, 'Inline quoted pricing fallback lost the #start CTA URL' );
 check( strpos( $inline_pricing_json, '"title":"от 150 000 ₸"' ) !== false, 'Inline quoted pricing fallback lost the quoted amount field' );
+check( strpos( $inline_pricing_json, '"title":"Выберите формат работы"' ) !== false, 'Inline quoted pricing fallback lost the requested section title' );
+check( strpos( $inline_pricing_json, '"title":"от 80 000 ₸/мес"' ) !== false && strpos( $inline_pricing_json, '"editor":"Для регулярных задач и развития проекта"' ) !== false, 'Inline quoted pricing fallback merged the monthly price and description' );
 
 $reference_timeline = wpae_llm_build_process_timeline(
     [

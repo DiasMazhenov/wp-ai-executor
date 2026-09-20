@@ -3854,7 +3854,7 @@ function wpae_llm_normalize_preserved_library_geometry( array $elements, int &$c
     return $elements;
 }
 
-function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pairs, int &$changed, array $cta_requirements = [] ): array {
+function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pairs, int &$changed, array $cta_requirements = [], string $section_title = '' ): array {
     if ( count( $pairs ) < 2 ) {
         return [];
     }
@@ -3882,7 +3882,7 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
         }
         $price = $content;
         $description = '';
-        if ( preg_match( '/^\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)?)\s*(?:[,.;:]\s*(.*)|[—–-]\s*(.*))?$/u', $content, $match ) ) {
+        if ( preg_match( '/^\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)\s*(?:[,.;:]\s*(.*)|[—–-]\s*(.*))?$/u', $content, $match ) ) {
             $price = trim( (string) ( $match[1] ?? $content ) );
             $description = trim( (string) ( ( $match[2] ?? '' ) !== '' ? $match[2] : ( $match[3] ?? '' ) ) );
         }
@@ -3985,7 +3985,7 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pa
     $root['elements'] = [
         wpae_llm_badge_widget( 'wpae-pricing-badge', 'pricing' ),
         $widget( 'wpae-pricing-heading', 'heading', [
-            'title' => 'Тарифы',
+            'title' => $section_title !== '' ? $section_title : 'Тарифы',
             'header_size' => 'h2',
             'typography_typography' => 'custom',
             'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.5 ],
@@ -4247,7 +4247,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     }
     $pairs = wpae_llm_extract_labeled_content( $message );
     if ( $archetype === 'pricing' && count( $pairs ) >= 2 ) {
-        $pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pairs, $changed, wpae_llm_extract_requested_ctas( $message ) );
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pairs, $changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ) );
         if ( ! empty( $pricing_layout ) ) {
             return $pricing_layout;
         }
@@ -7864,7 +7864,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
     } elseif ( $archetype === 'pricing' ) {
         $pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
         $pricing_layout_changed = 0;
-        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_pairs, $pricing_layout_changed, wpae_llm_extract_requested_ctas( $message ) );
+        $pricing_layout = wpae_llm_build_pricing_pair_layout( [], $pricing_pairs, $pricing_layout_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ) );
         if ( ! empty( $pricing_layout[0]['elements'] ) ) {
             $elements = $pricing_layout[0]['elements'];
         } else {
@@ -9785,7 +9785,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		if ( ! $provider_design && $action_archetype === 'pricing' && is_array( $action['elements'] ?? null ) ) {
 			$pricing_pairs = array_slice( wpae_llm_extract_pricing_content( $message ), 0, 8 );
 			if ( count( $pricing_pairs ) >= 2 ) {
-				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed, wpae_llm_extract_requested_ctas( $message ) );
+				$pricing_layout = wpae_llm_build_pricing_pair_layout( $action['elements'], $pricing_pairs, $pricing_contract_changed, wpae_llm_extract_requested_ctas( $message ), wpae_llm_extract_section_title( $message ) );
 				if ( ! empty( $pricing_layout ) ) {
 					$action['elements'] = $pricing_layout;
 				}
