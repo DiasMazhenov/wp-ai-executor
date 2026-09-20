@@ -1,6 +1,6 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-20 19:57, Asia/Almaty
+Дата отчёта: 2026-09-20 20:05, Asia/Almaty
 
 ## A. Изменения относительно прошлого отчёта
 
@@ -32,6 +32,8 @@
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md`.
 - Перед этой редакцией сохранена копия отчёта в
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-direct-tool-check.md`.
+- Перед этой редакцией сохранена копия отчёта в
+  `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-user-install-report.md`.
 
 ## B. Возможности среды
 
@@ -53,6 +55,8 @@
   по callable-списку (`cua`, `browser`, `Playwright`, `CDP`, `computer`,
   `DevTools`, tool-search). Точный результат:
   `NO_DIRECT_OR_DEFERRED_BROWSER_SEARCH_TOOLS`.
+- Дополнительный текущий фильтр доступных имён по browser/CUA/Playwright/CDP
+  дал `NO_DIRECT_BROWSER_TOOLS`.
 - Известный вызов `await cua.getState()` в обычном `mcp__node_repl__js` в этом
   запуске повторно не выполнялся; его предыдущий результат сохранён выше как
   историческое evidence.
@@ -61,9 +65,10 @@
   curl, произвольные URL или другой канал не выполнялся.
 - Доступны локальные shell/Git/PHP/Node-проверки. Они не дают доступа к
   Plugins UI, Elementor model, public DOM, computed styles или screenshot.
-- Поэтому установка v02.11.115, свежая retry-приёмка и Vision/public
-  приёмка имеют статус NOT RUN; новый runtime-релиз для продолжения не
-  создавался.
+- Поэтому независимая проверка установки v02.11.115, свежая retry-приёмка и
+  Vision/public приёмка имеют статус NOT RUN; пользователь сообщил, что v115
+  установлена, но через WordPress/Elementor это не подтверждено. Новый
+  runtime-релиз для продолжения не создавался.
 
 ## C. Репозиторий и версии
 
@@ -85,15 +90,16 @@
   audit files, `NEXT_AGENT_PROMPT.md` и report backups, включая
   `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md` и
   `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md` и
-  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-direct-tool-check.md`; они не
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-direct-tool-check.md` и
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-user-install-report.md`; они не
   добавлялись в runtime commit.
 - Рабочая версия кода и release manifest: `v02.11.115`, guide: `v02.05.99`.
 - Runtime-файлы в этом запуске не изменялись; новая версия и новый release
   package не создавались.
-- Последняя фактически подтверждённая установленная версия: `v02.11.114`.
-  Установка `v02.11.115` в WordPress/Elementor в этом этапе не подтверждена:
-  push выполнен, но callable browser-инструмент для Plugins UI/Elementor
-  отсутствовал.
+- Последняя независимо фактически подтверждённая установленная версия:
+  `v02.11.114`. Пользователь сообщил об установке `v02.11.115` в текущем
+  запуске, но WordPress/Elementor не прочитаны из-за отсутствия callable
+  browser-инструмента; статус установки v115: USER-REPORTED / NOT VERIFIED.
 - Только `context.md` является каноническим контекстным журналом проекта.
   `SESSION_CONTEXT.md` не создавался и не используется.
 
@@ -101,6 +107,15 @@
 
 Все live-результаты ниже разделены с локальными regression assertions. Новых
 root IDs на v02.11.115 не создавалось.
+
+- Точный prompt генерации, не выполнен в текущем запуске: `Создай блок «Как
+  мы работаем». Над заголовком добавь бейдж «ПРОЦЕСС». Этапы: «Замысел»,
+  «Съёмка», «Монтаж», «Публикация». Добавь к каждому этапу короткое
+  описание.`
+- Точный prompt nested retry, не выполнен в текущем запуске: `Переделай этот
+  блок «Как мы работаем», сохранив бейдж «ПРОЦЕСС» и этапы «Замысел»,
+  «Съёмка», «Монтаж», «Публикация». Обнови существующий блок, не добавляя
+  новый.`
 
 | № | Сценарий и ожидаемое действие | Фактический результат | IDs/сохранность | Статус |
 |---|---|---|---|---|
@@ -216,6 +231,7 @@ local end-to-end проверка общей retry-границы на pricing r
 | `ALL_TOOLS` namespace discovery | PASS, found `mcp__node_repl__js`; direct `mcp__cua_repl.js` absent | Discovery only; does not validate browser access or WordPress auth. |
 | `mcp__node_repl__js` with `await cua.getState()` | BLOCKED, `ReferenceError: cua is not defined` during this 2026-09-20 +05 run | Exact runtime failure; no browser state, DOM or auth result. |
 | Current direct/deferred browser-tool search | BLOCKED, exact result `NO_DIRECT_OR_DEFERRED_BROWSER_SEARCH_TOOLS` | No direct browser call was possible; known failing node_repl call was not repeated. |
+| Current browser/CUA name check | BLOCKED, exact result `NO_DIRECT_BROWSER_TOOLS` | No WordPress request or installation check was possible. |
 | Plugins UI, fresh Elementor, public preview and screenshots for v115 | NOT RUN | No callable browser tool in this session. |
 
 WPCS, PHPStan и ESLint в checkout не настроены; результаты этих инструментов
@@ -242,7 +258,8 @@ WPCS, PHPStan и ESLint в checkout не настроены; результат�
 
 - Подтверждённые открытые дефекты: public draft preview остаётся без
   доказанной причины; EJ-128 остаётся OPEN LIVE; v115 не подтверждён
-  установленным на сайте; generic retry на pricing не проверен.
+  установленным на сайте инструментально (есть сообщение пользователя об
+  установке); generic retry на pricing не проверен.
 - Непроверенные гипотезы: пустой public preview может быть связан с URL,
   авторизацией, draft status, сохранением или runtime, но текущих данных для
   выбора причины нет.
