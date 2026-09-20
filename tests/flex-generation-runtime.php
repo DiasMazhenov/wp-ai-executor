@@ -554,6 +554,11 @@ check( strpos( $portfolio_built_json, '"widgetType":"button"' ) === false, 'Fall
 check( strpos( $portfolio_built_json, 'Сохрани три работы' ) === false && strpos( $portfolio_built_json, 'Используй редактируемые элементы Elementor' ) === false, 'Fallback builder leaked Portfolio instructions' );
 $portfolio_built_fidelity = wpae_llm_content_fidelity( $portfolio_message, $portfolio_action['elements'] );
 check( ! empty( $portfolio_built_fidelity['ok'] ), 'Fallback builder did not return a content-complete Portfolio tree' );
+$portfolio_repair_changed = 0;
+$portfolio_repaired = wpae_llm_repair_unbalanced_repeatable_layout( $portfolio_action['elements'], $portfolio_message, 'portfolio', $portfolio_repair_changed );
+$portfolio_repaired_json = (string) wp_json_encode( $portfolio_repaired, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $portfolio_repaired_json, 'Создай блок «Наши проекты»' ) === false, 'Repeatable-layout repair promoted the full Portfolio instruction to a heading' );
+check( strpos( $portfolio_repaired_json, '"title":"Наши проекты"' ) !== false, 'Repeatable-layout repair did not preserve the explicit Portfolio heading' );
 $portfolio_changed = 0;
 wpae_llm_apply_fallback_archetype_content( $portfolio_action['elements'], $portfolio_message, 'portfolio', $portfolio_changed );
 $portfolio_fidelity = wpae_llm_content_fidelity( $portfolio_message, $portfolio_action['elements'] );

@@ -2071,13 +2071,7 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
     if ( count( $pairs ) < 2 ) {
         return;
     }
-	$heading = '';
-	if ( preg_match( '/\b(?:блок|секция|раздел)\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
-		$heading = trim( sanitize_text_field( (string) $match[1] ) );
-	}
-	if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
-		$heading = trim( sanitize_text_field( (string) $match[1] ) );
-	}
+	$heading = wpae_llm_extract_section_title( $message );
 	if ( $heading === '' ) {
 		$pair_values = [];
 		foreach ( $pairs as $pair ) {
@@ -4649,6 +4643,23 @@ function wpae_llm_process_timeline_heading_from_elements( array $elements ): str
 	return '';
 }
 
+function wpae_llm_extract_section_title( string $message ): string {
+	if ( preg_match( '/(?:блок|секция|раздел)\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+	}
+	if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+	}
+	foreach ( wpae_llm_content_units( $message ) as $unit ) {
+		$unit = trim( (string) $unit );
+		if ( $unit === '' || preg_match( '/^(?:создай|создать|сделай|добавь|добавить|сформируй|собери|используй|примени|адаптируй|сохрани|не\s+выдум\w*|не\s+добавляй)\b/iu', $unit ) ) {
+			continue;
+		}
+		return trim( sanitize_text_field( $unit ) );
+	}
+	return '';
+}
+
 function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-process-timeline', ?string $layout = 'left', ?string $section_title = null ): array {
 	$layout = in_array( $layout, [ 'left', 'alternating', 'horizontal' ], true ) ? $layout : 'left';
     $widget = static function ( string $widget_id, string $type, array $settings = [] ): array {
@@ -6168,7 +6179,7 @@ function wpae_llm_repair_unbalanced_repeatable_layout( array $elements, string $
         return $elements;
     }
 
-    $section_title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? '' ) );
+	$section_title = wpae_llm_extract_section_title( $message );
     $normalized_section_title = wpae_llm_normalize_content_text( $section_title );
     $content_units = array_values( array_filter( array_slice( wpae_llm_content_units( $message ), 1 ), static fn( $unit ): bool => trim( (string) $unit ) !== '' ) );
     $leaf_cards = static function ( array $nodes ) use ( &$leaf_cards ): array {
