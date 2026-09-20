@@ -2,20 +2,23 @@
 
 ## Current release
 
-- Plugin: `v02.11.122`
+- Plugin: `v02.11.123`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
-- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, final HEAD `5524fc3`, pushed to `origin/main`.
-- Installed site version: `v02.11.122`, confirmed by WP Pusher success and fresh Elementor editor header on draft `post=5197`.
-- v02.11.122 preserves an explicitly requested pricing badge through the shared pricing builder. The final live root `08b8ce2` renders `ТАРИФЫ`, `Выберите формат работы`, three native Flex cards, exact descriptions, prices, button labels and `#start/#project/#support` links.
+- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, code commit `0a2869a` pushed to `origin/main` before the handoff documentation update.
+- Installed site version: `v02.11.123`, confirmed by WP Pusher success and the fresh Elementor editor header/config on draft `post=5214`.
+- v02.11.123 introduces one shared pricing contract (`heading`, `badge`, ordered `items` with `label`, `description`, `price_text`, `cta_text`, `cta_url`). The parser, fallback, library path, final rebuild and content-fidelity checks consume the same structured fields; the shared fallback CTA repair now exits for a complete pricing contract so labels cannot shift between cards and the badge.
+- Live inline pricing draft `post=5214` (`Pricing Contract Live v123`) saved through deterministic fallback twice: `wpae-20260920212451-0354fc7b` and one retry `wpae-20260920212634-8ac26eb7`. Public preview after reload contains exact `ТАРИФЫ`, heading, three cards, descriptions, prices and `#start/#project/#support`; desktop width/scroll width `1280/1280`, mobile `390/390`.
+- Live multiline pricing draft `post=5216` (`Pricing Contract Multiline v123`) saved through deterministic fallback twice: `wpae-20260920213428-bb3207af` and one retry `wpae-20260920213611-d154514e`. Public preview preserves punctuation and the same three CTA pairs; mobile viewport `390/390` has no horizontal overflow.
+- Live process neighbor `post=5197` (`Live Process v113`) used the local canonical horizontal timeline path: operation `wpae-20260920213810-13934c79`, 17 native widgets, HTTP 200, Vision `92/98`; public root `elementor-element-365eb83` contains `ПРОЦЕСС`, `Как мы работаем`, four requested labels/descriptions and responsive no-overflow at `390px`.
+- Open Design principles were adapted as boundaries only: functional skill/design-template/design-system separation, data-shaped adapter contracts, and explicit filesystem/text-artifact execution profiles. Sources: [architecture.md](https://github.com/nexu-io/open-design/blob/main/docs/architecture.md), [skills-protocol.md](https://github.com/nexu-io/open-design/blob/main/docs/skills-protocol.md), [agent-adapters.md](https://github.com/nexu-io/open-design/blob/main/docs/agent-adapters.md), [execution-profile.ts](https://github.com/nexu-io/open-design/blob/main/packages/contracts/src/execution-profile.ts). These sources do not define this Elementor pricing contract.
 - v02.11.121 separates a monthly price such as `от 80 000 ₸/мес` from its description and preserves the requested pricing section heading.
 - v02.11.120 parses inline quoted pricing tiers, `от` amounts and CTA syntax `кнопка «…», ссылка #…`.
 - v02.11.119 classifies `Создай отдельный блок…` as an independent insert, so the exact second process prompt does not enter the selected-root retry route.
 - v02.11.118 keeps meaningful process descriptions in the canonical builder/fallback. Explicit user copy is preserved; generated descriptions explain the step and are not generic `Этап N: название` text.
-- Live process evidence: canonical generation operation `wpae-20260920200050-e0f5e885`, root `4294478`, Vision `95/98`; independent exact-content process operation `wpae-20260920201239-a97301d7`, rendered root `926ca35`, Vision `95/98`.
-- Live pricing evidence: deterministic fallback after provider stop, operation `wpae-20260920203934-746c61a0`, rendered root `08b8ce2`, Vision `90/95`, HTTP 200, one inserted element and 14 native widgets. Editor save/reload and public DOM/read-back passed.
+- Prior live process and pricing evidence remains historical context; the current post IDs and operation IDs above are the v02.11.123 acceptance records.
 - v02.11.117 ownership proof remains valid: owned retry operation `wpae-20260920194049-0ba44b51`; foreign generated-root retry safely refused without a new duplicate. The unsaved marker `USER_BLOCK_KEEP_5197_UNSAVED` survived the v122 save/reload.
-- Runtime checks: `287` PHP checks; all 3 Node suites pass; PHP lint, `git diff --check` and package hashes pass.
+- Runtime checks: `293` PHP checks; all 3 Node suites pass; PHP lint, `git diff --check` and package hashes pass.
 - Screenshot files were not produced by the available CUA API. In-session desktop/mobile images were visually reviewed, but the report marks the screenshot gallery `SCREENSHOT BLOCKED`. Separate live Vision incomplete-capture A/B scenarios remain NOT RUN.
 - `context.md` is the only canonical context journal; `SESSION_CONTEXT.md` is intentionally not used.
 

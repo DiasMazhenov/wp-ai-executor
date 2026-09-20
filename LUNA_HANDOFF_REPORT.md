@@ -1,92 +1,81 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-21 01:42, Asia/Almaty
+Дата отчёта: 2026-09-21 02:43, Asia/Almaty
 
 ## 1. Состояние релиза
 
 - Рабочая папка: `/Users/diasmazhenov/vibecode/wp-ai-executor`.
 - Ветка: `main`.
-- Исходный HEAD этапа: `6626d6e`.
-- Итоговый HEAD: `5524fc3` (`origin/main` обновлён).
-- Установленная через WP Pusher версия: `v02.11.122`; редактор Elementor показал эту версию.
+- Исходный HEAD этапа: `3cabdba`.
+- Кодовый commit этапа: `0a2869a` (`Preserve pricing content through shared contract`), pushed to `origin/main`.
+- Установленная через WP Pusher версия: `v02.11.123`; WordPress Plugins и Elementor editor config показали `v02.11.123`.
 - Guide: `v02.05.99`.
-- Тестовая запись: draft `post=5197`, «Live Process v113».
-- Существующие process/pricing roots не удалялись. Marker `USER_BLOCK_KEEP_5197_UNSAVED` остался после save/reload.
+- Новые pricing pages `5214` и `5216` оставлены черновиками; для существующего neighbor `5197` не нажималась публикация и сохранён его текущий статус.
 
-## 2. Исправления
+## 2. Что изменено
 
-- v02.11.118 (`d90f10a`): canonical process builder сохраняет содержательные описания; явные описания проходят parsing → normalization → validation → write.
-- v02.11.119 (`c81b705`): запрос «Создай отдельный блок…» распознаётся как независимая вставка, а не retry выбранного root.
-- v02.11.120 (`1bfb9b5`): inline pricing parser сохраняет три quoted-пары, суммы с префиксом `от` и CTA вида «кнопка …», «ссылка …».
-- v02.11.121 (`77e9300`): pricing builder отделяет месячную цену `от 80 000 ₸/мес` от описания и сохраняет заголовок блока `Выберите формат работы`.
-- v02.11.122 (`5524fc3`): pricing builder сохраняет явный badge `ТАРИФЫ`; добавлены regression checks.
+`includes/llm/llm.php` получил общий нормализованный pricing contract: `heading`, `badge`, упорядоченные `items` с `label`, `description`, `price_text`, `cta_text`, `cta_url`. Один и тот же contract проходит parsing → normalization → semantic plan → native builder → content-fidelity → final write. Shared fallback CTA repair теперь пропускает complete pricing contract, поэтому generic repair не может перенести CTA одной карточки в другую или в badge.
 
-Кодовые изменения находятся в `includes/llm/llm.php`, тестовом harness, версии плагина и `wpae-package.json`. Ownership/unsaved protections из `0c7b474` и `be8a4b7` не ослаблялись.
+Pricing parser сохраняет inline и multiline формы, punctuation и месячную цену `от 80 000 ₸/мес`; native builder записывает heading, badge, descriptions, price headings и кнопки с отдельными `#start`, `#project`, `#support` links. Existing native URL sanitizer, design-system token map, transaction lifecycle, editor reconciliation и unsaved-root ownership не заменялись.
 
-## 3. Live matrix
+Open Design использован только как принцип границ: отдельные functional skills/design templates/design systems, data-shaped adapter contracts и явные filesystem/text-artifact execution profiles. Это адаптация архитектурных принципов, а не утверждение, что Open Design определяет Elementor pricing contract. Источники: [architecture.md](https://github.com/nexu-io/open-design/blob/main/docs/architecture.md), [skills-protocol.md](https://github.com/nexu-io/open-design/blob/main/docs/skills-protocol.md), [agent-adapters.md](https://github.com/nexu-io/open-design/blob/main/docs/agent-adapters.md), [execution-profile.ts](https://github.com/nexu-io/open-design/blob/main/packages/contracts/src/execution-profile.ts).
 
-| Сценарий | Маршрут | Operation / root | Save/reload | Vision | Статус |
+## 3. Live acceptance matrix
+
+| Сценарий | Маршрут | Operation IDs | Save/read-back | Vision | Статус |
 |---|---|---|---|---|---|
-| «Создай блок “Как мы работаем”… Добавь к каждому этапу короткое описание» | canonical, без provider-вызова | `wpae-20260920200050-e0f5e885`, root `4294478` | HTTP 200; exact labels/order and meaningful descriptions visible in editor | 95 / 98% | PASS |
-| «Создай отдельный блок…» с четырьмя заданными описаниями | canonical independent insert, без provider-вызова | `wpae-20260920201239-a97301d7`, rendered root `926ca35` | HTTP 200; exact four pairs visible in editor | 95 / 98% | PASS |
-| Pricing brief с `ТАРИФЫ`, 3 tiers, prices, CTAs and anchors | deterministic fallback after provider result `stop` | `wpae-20260920203934-746c61a0`, rendered root `08b8ce2` | HTTP 200; 1 element, 14 native widgets; exact block survived editor reload | 90 / 95% | PASS |
+| Inline pricing: `ТАРИФЫ`, heading, 3 tiers, descriptions, prices, CTA + anchors | `deterministic_fallback` после provider `stop` | `wpae-20260920212451-0354fc7b`; один retry `wpae-20260920212634-8ac26eb7` | Оба HTTP 200; final public reload: 3 cards, exact copy, `#start/#project/#support` | Первый capture `60/95` дал false-negative по CTA; после ровно одного retry capture не получил widgets в Elementor canvas, поэтому Vision unavailable; public DOM/read-back exact | PASS по сохранённым данным и DOM; Vision capture — BLOCKED |
+| Multiline pricing с punctuation и переносами | `deterministic_fallback` после provider `stop` | `wpae-20260920213428-bb3207af`; один retry `wpae-20260920213611-d154514e` | Оба HTTP 200; public reload сохранил `Для небольшой задачи: быстро и понятно.`, `Для комплексной работы, от идеи до результата?`, `Для регулярных задач и развития проекта.` и exact CTA/anchors | Первый capture `85/95` отметил различие CTA; retry завершился сохранением, но последующий Elementor capture не нашёл widgets, Vision unavailable | PASS по сохранённым данным и DOM; Vision capture — BLOCKED |
+| Neighbor process: `ПРОЦЕСС`, `Как мы работаем`, 4 этапа с заданными описаниями | local canonical horizontal timeline, без provider write | `wpae-20260920213810-13934c79` | HTTP 200; 17 native widgets; public root `elementor-element-365eb83`; public desktop/mobile read-back exact | `92/98` | PASS |
 
-Final pricing public DOM contains exactly three `.wpae-pricing-card` cards and native links `#start`, `#project`, `#support`. The latest root text is:
+Inline draft: [public preview post 5214](https://mazhenov.kz/?page_id=5214&preview=true). Multiline draft: [public preview post 5216](https://mazhenov.kz/?page_id=5216&preview=true). Process neighbor: [public process preview](https://mazhenov.kz/live-process-v113/).
 
-- `ТАРИФЫ` → `Выберите формат работы`;
-- `Старт` → `от 50 000 ₸` → `Для небольшой задачи с понятным объёмом` → `Выбрать Старт`;
-- `Проект` → `от 150 000 ₸` → `Для комплексной работы от идеи до результата` → `Обсудить проект`;
-- `Поддержка` → `от 80 000 ₸/мес` → `Для регулярных задач и развития проекта` → `Подключить поддержку`.
+## 4. DOM, responsive и design-system evidence
 
-Public preview/read-back: [post 5197 public preview](https://mazhenov.kz/?page_id=5197). Старые исторические pricing roots остаются рядом с новым root по условию задачи; latest root определяется `data-id=08b8ce2` и badge `ТАРИФЫ`.
+- `post=5214` public root classes включают `wpae-generated-root wpae-generated-pricing wpae-pricing-composition wpae-bento-grid wpae-ds wpae-system-ds-18cdb263` и Elementor ID class `elementor-element-a809b76`. Desktop: `viewport 1280`, `body/root scroll width 1280`; 3 cards и все три native links присутствуют после reload.
+- `post=5214` mobile Elementor canvas: `viewport 360`, `bodyClientWidth/bodyScrollWidth 345/345`; labels `Старт`, `Проект`, `Поддержка`, prices и три anchors присутствуют.
+- `post=5216` public root classes включают `wpae-generated-root wpae-generated-pricing wpae-pricing-composition wpae-bento-grid wpae-ds wpae-system-ds-18cdb263` и Elementor ID class `elementor-element-86e43b5`. At `390×844`: `body/root 390/390`, no horizontal overflow.
+- `post=5197` public root classes включают `wpae-process-timeline wpae-process-timeline-horizontal wpae-block wpae-ds wpae-system-ds-18cdb263` и Elementor ID class `elementor-element-365eb83`. Public DOM содержит `ПРОЦЕСС`, `Как мы работаем`, `Замысел`, `Съёмка`, `Монтаж`, `Публикация` и все четыре заданных описания. At `390px`: `bodyClientWidth/bodyScrollWidth 390/390`.
+- В DOM нет provider payload, ключей или диагностических секретов; CTA URLs проходят existing safe URL policy.
 
-## 4. Визуальная проверка
+## 5. Screenshot gallery и Vision security
 
-- Process desktop: native Flex horizontal cards, badge → heading → four stages, visible Divider connectors, no clipping in the reviewed editor frame.
-- Process mobile: cards stack vertically; marker rail remains readable and no horizontal overflow наблюдался у AI-generated process roots. Long marker `USER_BLOCK_KEEP_5197_UNSAVED` относится к контрольному пользовательскому root и отдельно не засчитывался как defect AI block.
-- Pricing desktop: three cards are visible with aligned price/description/CTA rows; final clean editor frame showed the requested heading, badge and all three cards.
-- Pricing mobile: cards stack one column; separate captures covered the first/second and third cards, including `Поддержка`; no horizontal overflow or clipping observed in the reviewed frames.
-- Public DOM/read-back after reload confirms the same native content and CTA anchors.
+CUA показал и визуально проверил desktop/mobile renders для pricing inline, pricing multiline и process. Доступный CUA API отдаёт screenshot bytes для in-session review, но не предоставляет writable local path или artifact URL.
 
-**SCREENSHOT BLOCKED.** CUA emitted desktop/mobile screenshots for review in-session, but the available API did not provide a writable local screenshot path. Поэтому реальных файлов gallery для Markdown-ссылок нет; CUA tab ID не выдаётся за screenshot artifact.
+**SCREENSHOT BLOCKED.** Реальных файлов gallery для Markdown-ссылок нет; tab IDs и inline tool images не выдаются за локальные screenshot artifacts.
 
-## 5. Vision security scenarios
+Отдельные opposing Vision A/B capture scenarios не запускались:
 
-The required opposing capture scenarios were not run as separate live A/B experiments:
+- A — текст есть в DOM, но отсутствует в неполном capture: NOT RUN.
+- B — текст действительно отсутствует в inspected block: NOT RUN.
 
-- A (text present in DOM but outside an incomplete capture): NOT RUN.
-- B (text actually absent from the inspected block): NOT RUN.
+Generation-attached Vision scores выше не являются доказательством этих двух независимых security scenarios. Local vision-security contract tests прошли.
 
-The live AI Vision scores above are generation-attached visual checks, not proof of those two independent incomplete-capture security scenarios. Existing local vision-security contract checks remain passing.
+## 6. Data safety и ownership
 
-## 6. Data safety and ownership
+- Pricing и multiline создавались на чистых draft pages `5214` и `5216`; старые top-level roots и пользовательские данные не удалялись.
+- Neighbor process `5197` до live run имел zero Elementor widgets в public preview; canonical write добавил один owned process root. Контроль unsaved/foreign-root rules остаётся покрыт существующим live proof `USER_BLOCK_KEEP_5197_UNSAVED` и runtime checks; эта новая запись не объявляет чужой root пользовательским.
+- Не публиковались страницы, не менялись доступы, не трогались незапрошенные untracked files и lock files.
 
-- v117 owner-retry live proof remains valid: operation `wpae-20260920194049-0ba44b51` completed for the owned root; selecting a foreign generated root returned the safe refusal «Безопасная цель повторной сборки не найдена; новый дубликат не добавлен.».
-- The unsaved marker `USER_BLOCK_KEEP_5197_UNSAVED` was present before the v122 pricing generation and remained after save/reload.
-- No old process/pricing root was deleted. Pricing inserts increased the saved page element count; this is intentional historical test data, not cleanup.
-- No publish action was used.
+## 7. Проверки
 
-## 7. Checks
-
-- `php tests/flex-generation-runtime.php` → `flex generation runtime: 287 checks OK`.
-- `node --test tests/*.test.js` → 3 suites passed: flex generation runtime, LLM chat contract, vision security contract.
+- `php tests/flex-generation-runtime.php` → `flex generation runtime: 293 checks OK`.
+- `node --test tests/llm-chat-contract.test.js` → pass.
+- `node --test tests/vision-security-contract.test.js tests/flex-generation-runtime.test.js` → both pass; flex runtime `293` checks.
 - `php -l includes/llm/llm.php` → no syntax errors.
+- `php -l tests/flex-generation-runtime.php` → no syntax errors.
 - `php -l wp-ai-executor.php` → no syntax errors.
 - `git diff --check` → pass.
-- Manifest hashes match current `includes/llm/llm.php` and `wp-ai-executor.php`.
+- `wpae-package.json` hashes regenerated and match current runtime/header files.
 
-## 8. Push and installation
+## 8. Push и installation
 
-- `d90f10a` pushed: meaningful process descriptions.
-- `c81b705` pushed: independent process insertion classifier.
-- `1bfb9b5` pushed: inline pricing parser and CTA preservation.
-- `77e9300` pushed: requested pricing title and monthly-description split.
-- `5524fc3` pushed: requested pricing badge preservation.
-- WP Pusher reported `Plugin was successfully updated.` for v02.11.122.
-- Final tracked tree is clean; unrelated untracked audit/report/cache artifacts remain un-staged.
+- `0a2869a` pushed to `origin/main`.
+- WP Pusher сообщил `Plugin was successfully updated.`.
+- WordPress Plugins read-back: `v02.11.123`.
+- Elementor inline `window.WPAELLMChat.pluginVersion`: `v02.11.123`, endpoint and `ready=true`.
+- Untracked `.DS_Store`, `.codex/`, `.openchamber/`, historical reports, `NEXT_AGENT_PROMPT.md`, `PLUGIN_AUDIT_2026-09-12.md`, `docs/`, `graphify-out/` и другие audit/cache artifacts не добавлялись в commit.
 
-## 9. Observable limitations
+## 9. Итоговый статус
 
-- Screenshot files are unavailable, so the requested screenshot gallery is blocked despite in-session visual review.
-- Separate Vision A/B incomplete-capture experiments remain NOT RUN.
-- The test draft contains historical generated blocks and the ownership marker by design; this report does not claim it is a clean production page.
+Shared pricing contract, deterministic fallback/final rebuild, native design-system composition, multiline parsing, live editor save, public DOM/read-back, responsive no-overflow and process neighbor regression имеют зафиксированное evidence. Ограничения handoff: screenshot gallery files отсутствуют, отдельные Vision A/B incomplete-capture scenarios не запускались.
