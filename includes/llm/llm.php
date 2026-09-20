@@ -166,9 +166,11 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
         'buttons' => 0,
         'special_widgets' => [],
         'has_badge' => false,
+        'has_bento_grid' => false,
+        'top_level_headings' => 0,
         'multi_unit_text_editor' => false,
     ];
-    $walk = static function ( array $nodes ) use ( &$walk, &$counts ): void {
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$counts ): void {
         foreach ( $nodes as $node ) {
             if ( ! is_array( $node ) ) {
                 continue;
@@ -178,6 +180,9 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
             if ( is_array( $classes ) && in_array( 'wpae-generated-badge', $classes, true ) ) {
                 $counts['has_badge'] = true;
             }
+            if ( ( $node['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
+                $counts['has_bento_grid'] = true;
+            }
             $widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
             if ( ( $node['elType'] ?? '' ) === 'widget' ) {
                 $counts['widgets']++;
@@ -186,6 +191,9 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
                 }
                 if ( $widget_type === 'heading' ) {
                     $counts['headings']++;
+                    if ( $depth === 1 ) {
+                        $counts['top_level_headings']++;
+                    }
                 } elseif ( $widget_type === 'text-editor' ) {
                     $counts['text_editors']++;
                     $editor = (string) ( $settings['editor'] ?? '' );
@@ -200,7 +208,7 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
                 }
             }
             if ( is_array( $node['elements'] ?? null ) ) {
-                $walk( $node['elements'] );
+                $walk( $node['elements'], $depth + 1 );
             }
         }
     };
@@ -243,6 +251,9 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
     }
     if ( $archetype === 'pricing' && empty( $counts['special_widgets']['price-list'] ) && $counts['headings'] < 3 ) {
         $failures[] = 'pricing block has no price list and fewer than three tier headings';
+    }
+    if ( $archetype === 'pricing' && empty( $counts['special_widgets']['price-list'] ) && ( ! $counts['has_bento_grid'] || $counts['top_level_headings'] < 1 ) ) {
+        $failures[] = 'pricing provider lacks a native repeatable card grid and section heading';
     }
 
     return [
@@ -5311,7 +5322,14 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, string $me
     return $elements;
 }
 
-function wpae_llm_normalize_generated_button_settings( array &$settings ): bool {
+function wpae_llm_requested_accent( string $message, string $fallback ): string {
+    if ( preg_match( '/\b(?:терракот\w*|terracotta|rust\s*accent)\b/iu', $message ) ) {
+        return '#a84c36';
+    }
+    return $fallback;
+}
+
+function wpae_llm_normalize_generated_button_settings( array &$settings, string $message = '', bool $preserve_layout_style = false ): bool {
     $before = wp_json_encode( $settings );
     // Elementor's native Button controls use `background_color` and
     // `button_background_hover_color`. Older WPAE/provider payloads used
@@ -5326,22 +5344,45 @@ function wpae_llm_normalize_generated_button_settings( array &$settings ): bool 
     unset( $settings['button_background_color'], $settings['button_hover_background_color'] );
     $tokens = function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [];
     $palette = is_array( $tokens['palette'] ?? null ) ? $tokens['palette'] : [];
-    $accent = trim( (string) ( $palette['accent'] ?? '#4460EC' ) );
+    $default_accent = trim( (string) ( $palette['accent'] ?? '#4460EC' ) );
+    $accent = wpae_llm_requested_accent( $message, $default_accent );
     $surface = trim( (string) ( $palette['surface'] ?? '#ffffff' ) );
     $ink = trim( (string) ( $palette['ink'] ?? '#111827' ) );
     // Missing native values must not fall through to a site's unrelated global
     // button style. Explicit provider/user values remain authoritative.
+    $background = trim( (string) ( $settings['background_color'] ?? '' ) );
+    $has_requested_accent = $accent !== $default_accent && $background !== 'transparent';
+    if ( $has_requested_accent ) {
+        $settings['background_background'] = 'classic';
+        $settings['background_color'] = $accent;
+        foreach ( [ 'background_color_stop', 'background_color_b', 'background_color_b_stop', 'background_gradient_type', 'background_gradient_angle', 'background_gradient_position' ] as $key ) {
+            unset( $settings[ $key ] );
+        }
+        $background = $accent;
+    } elseif ( strtolower( (string) ( $settings['background_background'] ?? '' ) ) === 'gradient' && $background === '' ) {
+        // A gradient without a native start color renders through the site's
+        // global button style. Collapse this incomplete provider shorthand to
+        // one explicit native color instead of leaking that global style.
+        $settings['background_background'] = 'classic';
+        $settings['background_color'] = $accent;
+        foreach ( [ 'background_color_stop', 'background_color_b', 'background_color_b_stop', 'background_gradient_type', 'background_gradient_angle', 'background_gradient_position' ] as $key ) {
+            unset( $settings[ $key ] );
+        }
+    }
     if ( ! array_key_exists( 'background_color', $settings ) || trim( (string) $settings['background_color'] ) === '' ) {
         $settings['background_color'] = $accent;
     }
     if ( ! array_key_exists( 'button_background_hover_color', $settings ) || trim( (string) $settings['button_background_hover_color'] ) === '' ) {
-        $settings['button_background_hover_color'] = $accent === '#4460EC' ? '#3348B8' : $accent;
+        $settings['button_background_hover_color'] = $accent === '#4460EC' ? '#3348B8' : ( $accent === '#a84c36' ? '#8f3e2c' : $accent );
     }
     if ( ! array_key_exists( 'button_text_color', $settings ) || trim( (string) $settings['button_text_color'] ) === '' ) {
         $settings['button_text_color'] = $surface;
     }
     if ( ! array_key_exists( 'button_hover_text_color', $settings ) || trim( (string) $settings['button_hover_text_color'] ) === '' ) {
         $settings['button_hover_text_color'] = $surface !== '' ? $surface : $ink;
+    }
+    if ( $preserve_layout_style ) {
+        return $before !== wp_json_encode( $settings );
     }
     foreach ( [ 'width', 'width_tablet', 'width_mobile', 'min_width', 'max_width', '_element_width', '_element_width_tablet', '_element_width_mobile', '_element_custom_width', '_element_custom_width_tablet', '_element_custom_width_mobile' ] as $key ) {
         unset( $settings[ $key ] );
@@ -5366,6 +5407,38 @@ function wpae_llm_normalize_generated_button_settings( array &$settings ): bool 
         $settings['custom_css'] = $custom_css;
     }
     return $before !== wp_json_encode( $settings );
+}
+
+function wpae_llm_normalize_native_visual_contract( array $elements, string $message, string $archetype, int &$changed = 0 ): array {
+    if ( in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'portfolio', 'team' ], true ) ) {
+        $before_layout = wp_json_encode( $elements );
+        $elements = wpae_llm_apply_bento_layout( $elements, $archetype, $changed );
+        wpae_llm_normalize_bento_grids_recursive( $elements, $changed, $archetype );
+        if ( $before_layout !== wp_json_encode( $elements ) && $changed === 0 ) {
+            $changed++;
+        }
+    }
+
+    $walk = static function ( array &$nodes ) use ( &$walk, $message, &$changed ): void {
+        foreach ( $nodes as &$element ) {
+            if ( ! is_array( $element ) ) {
+                continue;
+            }
+            if ( ( $element['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $element['widgetType'] ?? '' ) ) === 'button' ) {
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                if ( wpae_llm_normalize_generated_button_settings( $settings, $message, true ) ) {
+                    $changed++;
+                }
+                $element['settings'] = $settings;
+            }
+            if ( is_array( $element['elements'] ?? null ) ) {
+                $walk( $element['elements'] );
+            }
+        }
+        unset( $element );
+    };
+    $walk( $elements );
+    return $elements;
 }
 
 function wpae_llm_wrap_generation_cta( array $elements, int &$changed ): array {
@@ -9353,6 +9426,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action['elements'] = wpae_llm_normalize_generated_hero_geometry( $action['elements'], $hero_geometry_changed );
             $hero_composition_changed += $hero_geometry_changed;
         }
+        $native_visual_changed = 0;
+        if ( is_array( $action['elements'] ?? null ) ) {
+            // Shared provider/fallback boundary: preserve authored composition,
+            // but guarantee native repeatable layout and button controls before
+            // the tree reaches Elementor.
+            $action['elements'] = wpae_llm_normalize_native_visual_contract( $action['elements'], $message, $action_archetype, $native_visual_changed );
+        }
         if ( is_array( $action['elements'] ?? null ) ) {
             foreach ( $action['elements'] as &$generated_root ) {
                 if ( ! is_array( $generated_root ) || ( $generated_root['elType'] ?? '' ) !== 'container' ) {
@@ -9405,6 +9485,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'details' => [ 'settings_updated' => $hero_composition_changed ],
             ],
 			[ 'id' => 'flex_contract', 'status' => 'ok', 'message' => 'Все layout-контейнеры приведены к native Flexbox с responsive-правилами.', 'details' => [ 'settings_updated' => $flex_contract_changed, 'container_type' => 'flex', 'legacy_layout_allowed' => false ] ],
+			[ 'id' => 'native_visual_contract', 'status' => 'ok', 'message' => 'Перед записью подтверждены native repeatable layout и нативные настройки CTA без утечки глобальных стилей.', 'details' => [ 'settings_updated' => $native_visual_changed, 'archetype' => $action_archetype ] ],
 		];
 		if ( $pricing_contract_changed > 0 ) {
 			$action_steps[] = [ 'id' => 'pricing_contract', 'status' => 'ok', 'message' => 'Тарифный блок пересобран на финальной границе в одну чистую native Flex-композицию без generic placeholder-оболочек.', 'details' => [ 'cards_rebuilt' => true, 'card_count' => count( $pricing_pairs ?? [] ), 'container_type' => 'flex', 'generic_visual_wrappers_allowed' => false ] ];

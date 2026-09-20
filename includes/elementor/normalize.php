@@ -176,6 +176,45 @@ function wpae_normalize_provider_native_settings( array &$settings, string $elem
         }
     }
 
+    // Some providers put responsive Flex controls directly in an object,
+    // e.g. flex_direction={desktop:row,mobile:column}. Elementor expects the
+    // desktop value at the base key and device overrides as sibling keys;
+    // leaving the object in place makes the editor silently fall back to a
+    // column layout.
+    $responsive_controls = [
+        'flex_direction',
+        'flex_wrap',
+        'flex_justify_content',
+        'flex_align_items',
+    ];
+    foreach ( $responsive_controls as $control ) {
+        $value = $settings[ $control ] ?? null;
+        if ( ! is_array( $value ) || ! array_key_exists( 'desktop', $value ) ) {
+            continue;
+        }
+        $desktop = $value['desktop'];
+        if ( is_scalar( $desktop ) && trim( (string) $desktop ) !== '' ) {
+            $settings[ $control ] = sanitize_key( (string) $desktop );
+            wpae_elementor_normalize_add_change(
+                $report,
+                'flattened_provider_responsive_layout',
+                $element_path,
+                'Converted a responsive provider Flex control to Elementor base and device settings.',
+                [ 'from' => $control, 'to' => $control ]
+            );
+        }
+        foreach ( [ 'tablet', 'mobile' ] as $device ) {
+            $device_value = $value[ $device ] ?? null;
+            if ( ! is_scalar( $device_value ) || trim( (string) $device_value ) === '' ) {
+                continue;
+            }
+            $device_key = $control . '_' . $device;
+            if ( ! array_key_exists( $device_key, $settings ) || is_array( $settings[ $device_key ] ) || trim( (string) $settings[ $device_key ] ) === '' ) {
+                $settings[ $device_key ] = sanitize_key( (string) $device_value );
+            }
+        }
+    }
+
     if ( is_array( $settings['layout'] ?? null ) ) {
         $layout = $settings['layout'];
         $layout_map = [

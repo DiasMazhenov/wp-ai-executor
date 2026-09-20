@@ -431,6 +431,32 @@ check( $provider_shorthand_heading['typography_font_size_mobile']['size'] === 2.
 check( $provider_shorthand_button['background_color'] === '#a84c36' && $provider_shorthand_button['border_color'] === '#a84c36' && $provider_shorthand_button['border_border'] === 'solid', 'Provider button visual shorthand was not converted to native Elementor controls' );
 check( ! array_key_exists( 'typography', $provider_shorthand_heading ) && ! array_key_exists( 'border', $provider_shorthand_button ), 'Non-native provider visual wrappers leaked into normalized settings' );
 
+$provider_responsive = [
+    container_node( 'provider-responsive', [
+        'container_type' => 'flex',
+        'flex_direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'column' ],
+        'flex_wrap' => [ 'desktop' => 'nowrap', 'mobile' => 'wrap' ],
+    ], [ widget( 'responsive-copy', 'text-editor', [ 'editor' => 'Контент' ] ) ] ),
+];
+$provider_responsive_normalized = wpae_elementor_normalize_data( $provider_responsive )['data'][0]['settings'];
+check( $provider_responsive_normalized['flex_direction'] === 'row' && $provider_responsive_normalized['flex_direction_tablet'] === 'row' && $provider_responsive_normalized['flex_direction_mobile'] === 'column', 'Responsive provider Flex direction object was not converted to native Elementor keys' );
+check( $provider_responsive_normalized['flex_wrap'] === 'nowrap' && $provider_responsive_normalized['flex_wrap_mobile'] === 'wrap', 'Responsive provider Flex wrap object was not converted to native Elementor keys' );
+
+$pricing_provider_without_shell = [
+    container_node( 'pricing-provider-without-shell', [ 'container_type' => 'flex' ], [
+        container_node( 'pricing-provider-card-1', [], [ widget( 'pricing-provider-title-1', 'heading', [ 'title' => 'Старт' ] ) ] ),
+        container_node( 'pricing-provider-card-2', [], [ widget( 'pricing-provider-title-2', 'heading', [ 'title' => 'Проект' ] ) ] ),
+        container_node( 'pricing-provider-card-3', [], [ widget( 'pricing-provider-title-3', 'heading', [ 'title' => 'Полное сопровождение' ] ) ] ),
+    ] ),
+];
+$pricing_provider_quality = wpae_llm_provider_composition_quality( "Тарифы\nСтарт — 30 000 ₸\nПроект — 150 000 ₸\nПолное сопровождение — 300 000 ₸", $pricing_provider_without_shell, 'pricing' );
+check( empty( $pricing_provider_quality['ok'] ) && in_array( 'pricing provider lacks a native repeatable card grid and section heading', (array) $pricing_provider_quality['failures'], true ), 'Sparse pricing provider tree passed without a native grid/section shell' );
+$pricing_visual_changed = 0;
+$pricing_visual = wpae_llm_normalize_native_visual_contract( [ container_node( 'pricing-visual-root', [ 'container_type' => 'flex' ], [ widget( 'pricing-visual-button', 'button', [ 'text' => 'Выбрать', 'background_background' => 'gradient', 'background_color_b' => '#f2295b' ] ) ] ) ], 'Тарифы. Используй терракотовые акценты.', 'pricing', $pricing_visual_changed );
+$pricing_visual_button = $pricing_visual[0]['elements'][0]['settings'];
+check( $pricing_visual_button['background_background'] === 'classic' && $pricing_visual_button['background_color'] === '#a84c36' && $pricing_visual_button['button_background_hover_color'] === '#8f3e2c', 'Requested terracotta direction did not reach native button controls' );
+check( $pricing_visual_button['button_text_color'] === '#ffffff' && $pricing_visual_changed > 0, 'Provider button native visual contract did not fill readable text color' );
+
 $poor_content_only_provider = [
     container_node( 'poor-provider', [ 'container_type' => 'flex' ], [
         widget( 'poor-heading', 'heading', [ 'title' => 'Тихая форма' ] ),
