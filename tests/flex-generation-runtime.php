@@ -194,6 +194,14 @@ $collect_two_cta_hero_buttons( $two_cta_hero_elements );
 check( count( $two_cta_hero_buttons ) === 2, 'Trusted hero normalization collapsed two requested CTAs into one button' );
 check( ( $two_cta_hero_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $two_cta_hero_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects', 'Trusted hero normalization lost distinct CTA URLs' );
 check( ( $two_cta_hero_buttons[0]['settings']['text'] ?? '' ) === 'Обсудить проект' && ( $two_cta_hero_buttons[1]['settings']['text'] ?? '' ) === 'Смотреть проекты', 'Trusted hero normalization lost distinct CTA labels' );
+$natural_hero_message = 'Создай на пустой странице hero-блок для архитектурной студии «Тихая форма». Используй эти точные тексты: надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ», заголовок «Пространство для вашей жизни», описание «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Основная кнопка «Обсудить проект» со ссылкой #contact; вторичная «Смотреть проекты» со ссылкой #projects. Сделай композицию 40/60, выравнивание по центру и адаптацию для телефона.';
+$natural_ctas = wpae_llm_extract_requested_ctas( $natural_hero_message );
+check( count( $natural_ctas ) === 2 && ( $natural_ctas[0]['text'] ?? '' ) === 'Обсудить проект' && ( $natural_ctas[0]['url'] ?? '' ) === '#contact' && ( $natural_ctas[1]['text'] ?? '' ) === 'Смотреть проекты' && ( $natural_ctas[1]['url'] ?? '' ) === '#projects', 'Natural-language hero CTA parser lost a role, label, or URL' );
+$natural_hero_copy = wpae_llm_extract_hero_copy( $natural_hero_message );
+check( ( $natural_hero_copy['title'] ?? '' ) === 'Пространство для вашей жизни' && ( $natural_hero_copy['body'] ?? '' ) === 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали' && ( $natural_hero_copy['visual'] ?? '' ) === 'АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ', 'Natural-language hero copy parser did not preserve labeled eyebrow, title, and body' );
+$natural_hero_action = wpae_llm_build_fallback_action( $natural_hero_message, 42 );
+$natural_hero_fidelity = wpae_llm_content_fidelity( $natural_hero_message, (array) ( $natural_hero_action['elements'] ?? [] ) );
+check( ! empty( $natural_hero_fidelity['ok'] ), 'Natural-language hero fallback failed final content fidelity' );
 $failure_diagnostics = wpae_llm_execution_failure_diagnostics( [
     'status' => 422,
     'update_error' => 'Elementor data failed design-system contract.',

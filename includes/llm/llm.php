@@ -118,9 +118,9 @@ function wpae_llm_extract_hero_copy( string $message ): array {
 		return preg_match( $pattern, $message, $match ) ? trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) ) : '';
 	};
 	$copy['brand'] = $extract_quoted( '/(?:архитектурн\w*\s+студи\w*|студи\w*|бренд)\s*[«"]([^»"\n]{2,120})[»"]/iu' );
-	$copy['title'] = $extract_quoted( '/(?:заголовок|heading|title)\s*[:\-]\s*[«"]([^»"\n]{2,240})[»"]/iu' );
-	$copy['body'] = $extract_quoted( '/(?:текст|описание|подзаголовок|description)\s*[:\-]\s*[«"]([^»"\n]{3,500})[»"]/iu' );
-	$copy['visual'] = $extract_quoted( '/(?:надпис\w*|слоган)\s*[:\-]?\s*[«"]([^»"\n]{2,240})[»"]/iu' );
+	$copy['title'] = $extract_quoted( '/(?:\bзаголов\w*|heading|title)\s*[:\-]?\s*[«"]([^»"\n]{2,240})[»"]/iu' );
+	$copy['body'] = $extract_quoted( '/(?:текст|описание|подзаголовок|description)\s*[:\-]?\s*[«"]([^»"\n]{3,500})[»"]/iu' );
+	$copy['visual'] = $extract_quoted( '/(?:надпис\w*|надзаголов\w*|eyebrow|overline|kicker|слоган)\s*[:\-]?\s*[«"]([^»"\n]{2,240})[»"]/iu' );
 
 	$cta_requirements = wpae_llm_extract_requested_ctas( $message );
 	$cta_texts = array_map( static fn( $requirement ): string => wpae_llm_normalize_content_text( (string) ( $requirement['text'] ?? '' ) ), $cta_requirements );
@@ -139,7 +139,7 @@ function wpae_llm_extract_hero_copy( string $message ): array {
 			}
 			continue;
 		}
-		if ( preg_match( '/^(?:заголовок|текст|описание|подзаголовок|надпис\w*|слоган|title|heading|description)\s*:/iu', $unit ) || preg_match( '/^(?:создай|создать|сделай|добавь|добавить|сформируй|собери|адаптируй|используй|примени)\b/iu', $unit ) || preg_match( '/\b(?:native|elementor|flexbox|виджет\w*|контейнер\w*|разделител\w*|коннектор\w*|адаптир\w*|телефон\w*|mobile|desktop|tablet|асимметрич\w*|терракот\w*|фон|акцент)\b/iu', $unit ) ) {
+		if ( preg_match( '/^(?:заголовок|текст|описание|подзаголовок|надпис\w*|надзаголов\w*|eyebrow|overline|kicker|слоган|title|heading|description)\s*:/iu', $unit ) || preg_match( '/^(?:создай|создать|сделай|добавь|добавить|сформируй|собери|адаптируй|используй|примени)\b/iu', $unit ) || preg_match( '/\b(?:native|elementor|flexbox|виджет\w*|контейнер\w*|разделител\w*|коннектор\w*|адаптир\w*|телефон\w*|mobile|desktop|tablet|асимметрич\w*|терракот\w*|фон|акцент)\b/iu', $unit ) ) {
 			continue;
 		}
 		$candidates[] = $unit;
@@ -5914,7 +5914,7 @@ function wpae_llm_normalize_cta_url( $value ): string {
 
 function wpae_llm_extract_requested_ctas( string $message ): array {
     $requirements = [];
-    $pattern = '/(?:(основн\w*|главн\w*|перва\w*|втора\w*|primary|secondary)\s+)?(?:кнопка|cta|button)\s*:?\s*[«"]([^»"\n]{2,120})[»"](?:\s*,?\s*(?:ссылка|link|url|href)\s*[:\-]?\s*([^\s,.;]+))?/iu';
+	$pattern = '/(?:(?:(основн\w*|главн\w*|перва\w*|втор\w*|primary|secondary)\s+)(?:кнопка|cta|button)?|(?:кнопка|cta|button))\s*:?\s*[«"]([^»"\n]{2,120})[»"](?:\s*,?\s*(?:(?:(?:с|со)\s+)?ссылк\w*|link|url|href)\s*[:\-]?\s*([^\s,.;]+))?/iu';
     if ( preg_match_all( $pattern, $message, $matches, PREG_SET_ORDER ) ) {
         foreach ( $matches as $match ) {
             $label = wpae_llm_compact_cta_text( trim( sanitize_text_field( (string) ( $match[2] ?? '' ) ) ) );
@@ -5925,7 +5925,7 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
             $requirements[] = [
                 'text' => $label,
                 'url' => wpae_llm_normalize_cta_url( $match[3] ?? '' ),
-                'role' => preg_match( '/втора|secondary/u', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/u', $role ) ? 'primary' : 'cta' ),
+				'role' => preg_match( '/втор|secondary/iu', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/iu', $role ) ? 'primary' : 'cta' ),
             ];
         }
     }
@@ -5942,7 +5942,7 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
 		$requirements[] = [
 			'text' => $label,
 			'url' => wpae_llm_normalize_cta_url( $match[3] ?? '' ),
-			'role' => preg_match( '/втора|secondary/u', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/u', $role ) ? 'primary' : 'cta' ),
+			'role' => preg_match( '/втор|secondary/iu', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/iu', $role ) ? 'primary' : 'cta' ),
 		];
 	}
     // Do not infer a CTA from ordinary content. FAQ answers such as
