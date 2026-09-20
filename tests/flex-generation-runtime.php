@@ -768,6 +768,22 @@ check( ! empty( $repair_result['ok'] ), 'Process timeline repair did not complet
 check( ( $repair_result['editor_sync']['after_top_level_ids'] ?? [] ) === [ 'repair-root' ], 'Process repair did not expose the saved top-level IDs for editor reconciliation' );
 check( substr_count( (string) wp_json_encode( $repair_result['editor_sync']['elements'][0] ?? [] ), '"wpae-generated-badge"' ) === 1, 'Process repair editor sync lost the native badge' );
 check( substr_count( (string) wp_json_encode( $repair_result['editor_sync']['elements'][0] ?? [] ), '"wpae-process-heading"' ) === 1, 'Process repair editor sync lost the section heading' );
+$owned_retry_root = $reference_timeline;
+$owned_retry_root['id'] = 'owned-retry-root';
+$owned_retry_root['settings']['_css_classes'] = 'wpae-process-timeline wpae-generated-root';
+$owned_retry_nested_id = (string) ( $owned_retry_root['elements'][1]['id'] ?? '' );
+$owned_retry_target = wpae_llm_find_process_timeline_target( [ $owned_retry_root ], [ $owned_retry_nested_id ] );
+check( ! empty( $owned_retry_target['ok'] ) && ( $owned_retry_target['root_id'] ?? '' ) === 'owned-retry-root' && ( $owned_retry_target['selection_relation'] ?? '' ) === 'descendant', 'Nested process selection did not resolve to its top-level root' );
+$owned_retry_operation_target = wpae_llm_find_operation_owned_process_target( [ $owned_retry_root ], [ 'owned-retry-root' ] );
+check( ! empty( $owned_retry_operation_target['ok'] ) && ! empty( $owned_retry_operation_target['operation_owned'] ), 'Operation-owned process root was not accepted for safe retry' );
+$GLOBALS['page_data'] = [ $owned_retry_root ];
+$GLOBALS['writes'] = [];
+$nested_repair_result = wpae_llm_execute_process_timeline_repair( $GLOBALS['page_data'], 42, [ $owned_retry_nested_id ], $detailed_process_message, 'nested-repair-operation' );
+check( ! empty( $nested_repair_result['ok'] ) && ( $nested_repair_result['editor_sync']['after_top_level_ids'] ?? [] ) === [ 'owned-retry-root' ] && count( $GLOBALS['page_data'] ) === 1, 'Nested process retry rebuilt a duplicate or lost the operation-owned root' );
+check( ( $nested_repair_result['steps'][0]['details']['selection_relation'] ?? '' ) === 'descendant' && ( $nested_repair_result['steps'][0]['details']['selected_element_id'] ?? '' ) === $owned_retry_nested_id, 'Nested retry did not report its actual selection boundary' );
+check( ! wpae_llm_is_process_structure_repair_request( 'Измени только текст дочернего заголовка выбранного таймлайна.' ), 'Copy-only nested process edit was routed to structural rebuild' );
+check( wpae_llm_is_process_structure_repair_request( 'Добавь к выбранному таймлайну нативные Divider между карточками.' ), 'Structural process repair was not recognised' );
+check( wpae_llm_is_independent_insert_request( 'Добавь ещё один горизонтальный блок процесса.' ), 'Independent process insertion was not distinguished from retry' );
 $vertical_timeline = wpae_llm_build_process_timeline(
     [ [ 'label' => 'Вертикальный', 'content' => 'Не менять.' ], [ 'label' => 'Шаг', 'content' => 'Сохраняем.' ] ],
     'vertical-process',

@@ -3,6 +3,17 @@
 This file records confirmed failures and their regression status. Read it
 before making a new change to the plugin.
 
+- **Process retry ownership and incomplete Vision crop (v02.11.114 symptom,
+  fixed locally for v02.11.115):** A retry could receive a nested Elementor
+  selection and fall through to provider/fallback insertion, while a reload
+  could lose the operation-owned root IDs. The shared resolver now maps nested
+  selections to a marked top-level process root, refuses a missing or foreign
+  explicit retry target with HTTP 409, and persists bounded ownership in the
+  editor session. Vision now carries measured scroll bounds and an explicit
+  incomplete-capture flag; the prompt forbids destructive conclusions from an
+  incomplete crop alone. Runtime and contract regressions pass; fresh live
+  nested/reload retry and opposite viewport crop cases remain unverified.
+
 - **RETRACTED (2026-09-04, EJ-086):** The two same-day "live acceptance"
   notes for v02.11.48 and v02.11.50 horizontal timelines were false. Neither
   generation actually wrote a fixed tree; see EJ-086.

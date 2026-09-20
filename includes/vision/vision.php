@@ -164,6 +164,23 @@ function wpae_vision_render_context( $value ): array {
         'viewport_width' => max( 0, min( 10000, absint( $value['viewport_width'] ?? 0 ) ) ),
         'viewport_height' => max( 0, min( 10000, absint( $value['viewport_height'] ?? 0 ) ) ),
         'horizontal_overflow' => ! empty( $value['horizontal_overflow'] ),
+        'capture_scope' => sanitize_key( (string) ( $value['capture_scope'] ?? '' ) ),
+        'capture_complete' => array_key_exists( 'capture_complete', $value ) ? (bool) $value['capture_complete'] : true,
+        'capture_width' => max( 0, min( 10000, absint( $value['capture_width'] ?? 0 ) ) ),
+        'capture_height' => max( 0, min( 10000, absint( $value['capture_height'] ?? 0 ) ) ),
+        'target_scroll_width' => max( 0, min( 10000, absint( $value['target_scroll_width'] ?? 0 ) ) ),
+        'target_scroll_height' => max( 0, min( 10000, absint( $value['target_scroll_height'] ?? 0 ) ) ),
+        'page_scroll_x' => max( - 10000, min( 10000, (int) ( $value['page_scroll_x'] ?? 0 ) ) ),
+        'page_scroll_y' => max( - 10000, min( 10000, (int) ( $value['page_scroll_y'] ?? 0 ) ) ),
+    ];
+    $target_rect = is_array( $value['target_rect'] ?? null ) ? $value['target_rect'] : [];
+    $context['target_rect'] = [
+        'x' => max( - 10000, min( 10000, (float) ( $target_rect['x'] ?? 0 ) ) ),
+        'y' => max( - 10000, min( 10000, (float) ( $target_rect['y'] ?? 0 ) ) ),
+        'width' => max( 0, min( 10000, (float) ( $target_rect['width'] ?? 0 ) ) ),
+        'height' => max( 0, min( 10000, (float) ( $target_rect['height'] ?? 0 ) ) ),
+        'top' => max( - 10000, min( 10000, (float) ( $target_rect['top'] ?? 0 ) ) ),
+        'bottom' => max( - 10000, min( 20000, (float) ( $target_rect['bottom'] ?? 0 ) ) ),
     ];
     $ids = [];
     foreach ( array_slice( (array) ( $value['visible_element_ids'] ?? [] ), 0, 40 ) as $id ) {
@@ -181,7 +198,7 @@ function wpae_vision_render_context( $value ): array {
         }
     }
     $context['target_element_ids'] = array_values( array_unique( $target_ids ) );
-    return array_filter( $context, static fn( $item ) => $item !== '' && $item !== 0 );
+    return array_filter( $context, static fn( $item ) => $item !== '' && $item !== 0 && $item !== null );
 }
 
 function wpae_vision_compare_text( $value ): string {
@@ -627,10 +644,14 @@ function wpae_vision_prompt( WP_REST_Request $request ): string {
     $scope_instruction = ( $render_context['review_scope'] ?? '' ) === 'selected_patch'
         ? "This is a targeted edit review. Judge only the captured selected Elementor subtree and the requested change. A single heading or widget is intentionally not a complete page: do not report surrounding empty space, missing cards, or lack of a full section as defects. Report only missing requested content, unreadable text, overflow, broken styling, or defects inside the selected subtree."
         : "Do not approve sparse or unfinished composition: large unused regions, detached text columns, accidental template fragments, missing card/group structure, weak hierarchy, or a CTA without a coherent supporting layout are major visual defects. For these cases use a score below 75 and provide a concrete fix.";
+    $capture_instruction = ( array_key_exists( 'capture_complete', $render_context ) && false === $render_context['capture_complete'] )
+        ? "The screenshot capture is incomplete relative to the measured target bounds. Do not infer missing content or prescribe destructive repair from the crop alone; use the objective DOM/JSON context, mark uncertainty as minor or info, and request a complete capture when visual confirmation is necessary."
+        : '';
 
     return "Review this WordPress/Elementor page screenshot as a senior UI/UX and accessibility reviewer. Viewport: {$viewport}.\n"
         . "Check hierarchy, spacing, alignment, contrast, responsive overflow, CTA visibility, density, legibility, and whether the result looks intentional rather than generic. Compare the screenshot with the generated Elementor JSON and objective DOM context when supplied; use them to verify structure, content placement, Flex layout, and media instead of guessing from a crop. Do not infer hidden DOM facts from the screenshot alone. Ignore Elementor editor chrome, dropzones, selection outlines, and empty editor placeholders; do not call an editor shell an empty public page. Use objective render context as evidence and mark uncertain findings minor or info.\n"
         . "Content fidelity is mandatory: compare the project brief with visible screenshot text and objective text_excerpt. Every explicit title, label, name, quote, price, or CTA from the brief must be present and not replaced by generic copy. The objective text_excerpt is authoritative evidence for text presence inside the captured target: if a requested phrase is present there, do not report it as missing merely because the screenshot crop is small or ambiguous. A CTA phrase present in text_excerpt proves the CTA text exists; assess its placement or styling separately, but do not call its label missing or the button empty. Only report missing content when it is absent from both the screenshot and objective text_excerpt; such a finding must use category content_fidelity. If the content cannot be verified, say so as a minor finding instead of claiming it matches. Objective render facts are also authoritative: visible_media_count greater than zero proves that visual media/background is present, and labeled_cta_count greater than zero proves that a labeled CTA exists. Do not report those facts as missing; review their actual quality instead.\n"
+        . ( $capture_instruction !== '' ? $capture_instruction . "\n" : '' )
         . $scope_instruction . "\n"
         . ( $brief !== '' ? "Project brief: {$brief}\n" : '' )
         . ( $context_text !== '' ? "Additional non-secret context: {$context_text}\n" : '' )

@@ -345,6 +345,21 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
 	return $selection_signal || $property_signal;
 }
 
+function wpae_llm_is_process_structure_repair_request( string $message, string $archetype = '' ): bool {
+	if ( ! wpae_llm_is_process_request( $message, $archetype ) ) {
+		return false;
+	}
+
+	$structural_signal = (bool) preg_match( '/\b(бейдж\w*|разделител\w*|divider|коннектор\w*|карточ\w*|этап\w*)\b/iu', $message );
+	$copy_only_signal = (bool) preg_match( '/\b(текст\w*|заголов\w*|описан\w*|подпис\w*)\b/iu', $message ) && ! $structural_signal;
+
+	return ! $copy_only_signal;
+}
+
+function wpae_llm_is_independent_insert_request( string $message ): bool {
+	return (bool) preg_match( '/\b(ещ[её]\s+один|нов(?:ый|ую|ое)\s+(?:блок\w*|таймлайн\w*|секци\w*)|добавь\s+(?:ещ[её]\s+)?(?:нов\w*\s+)?(?:блок\w*|таймлайн\w*|секци\w*)|вставь\s+нов\w*)\b/iu', $message );
+}
+
 function wpae_llm_build_vision_feedback_prompt( string $original_brief, string $findings, bool $regenerate = true ): string {
 	$original_brief = trim( sanitize_textarea_field( substr( $original_brief, 0, 4000 ) ) );
 	$findings = trim( sanitize_textarea_field( substr( $findings, 0, 3600 ) ) );
@@ -536,6 +551,73 @@ function wpae_llm_is_process_timeline_root( array $element ): bool {
     return false;
 }
 
+/**
+ * Resolve a selected descendant to the process root that owns the operation.
+ * The editor reports the clicked Backbone model, not necessarily its top-level
+ * container; retry must not fall through to the append/provider path because
+ * of that representation detail.
+ */
+function wpae_llm_find_process_timeline_target( array $elements, array $selected_ids ): array {
+	$selected_lookup = array_fill_keys( array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) ), true );
+	if ( empty( $selected_lookup ) ) {
+		return [ 'ok' => false, 'reason' => 'selection_empty' ];
+	}
+
+	foreach ( $elements as $index => $element ) {
+		if ( ! is_array( $element ) || ! wpae_llm_is_process_timeline_root( $element ) ) {
+			continue;
+		}
+		$matched = [];
+		$walk = static function ( array $nodes ) use ( &$walk, &$matched, $selected_lookup ): void {
+			foreach ( $nodes as $node ) {
+				if ( ! is_array( $node ) ) {
+					continue;
+				}
+				$id = sanitize_key( (string) ( $node['id'] ?? '' ) );
+				if ( $id !== '' && isset( $selected_lookup[ $id ] ) ) {
+					$matched[] = $id;
+				}
+				if ( is_array( $node['elements'] ?? null ) ) {
+					$walk( $node['elements'] );
+				}
+			}
+		};
+		$walk( [ $element ] );
+		if ( empty( $matched ) ) {
+			continue;
+		}
+
+		$root_id = sanitize_key( (string) ( $element['id'] ?? '' ) );
+		$selected_id = in_array( $root_id, $matched, true ) ? $root_id : $matched[0];
+		return [
+			'ok' => true,
+			'top_level_index' => (int) $index,
+			'root_id' => $root_id,
+			'selected_element_id' => $selected_id,
+			'selected_ids' => array_values( array_unique( $matched ) ),
+			'selection_relation' => $selected_id === $root_id ? 'root' : 'descendant',
+			'scope_ids' => wpae_llm_collect_selected_scope_ids( $elements, [ $root_id ] ),
+		];
+	}
+
+	return [ 'ok' => false, 'reason' => 'process_root_not_found' ];
+}
+
+function wpae_llm_find_operation_owned_process_target( array $elements, array $operation_root_ids ): array {
+	$target = wpae_llm_find_process_timeline_target( $elements, $operation_root_ids );
+	if ( empty( $target['ok'] ) ) {
+		return $target;
+	}
+	$root = $elements[ (int) $target['top_level_index'] ] ?? [];
+	$settings = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
+	$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+	if ( ! is_array( $classes ) || ! in_array( 'wpae-generated-root', $classes, true ) ) {
+		return [ 'ok' => false, 'reason' => 'root_not_operation_owned', 'root_id' => $target['root_id'] ?? '' ];
+	}
+	$target['operation_owned'] = true;
+	return $target;
+}
+
 function wpae_llm_is_list( array $value ): bool {
     $index = 0;
     foreach ( array_keys( $value ) as $key ) {
@@ -648,20 +730,11 @@ function wpae_llm_action_diff( array $before, array $inserted, array $after ): a
 }
 
 function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id, array $selected_ids, string $message, string $operation_id ): array {
-    $selected_lookup = array_fill_keys( array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) ), true );
-    $selected_index = null;
-    foreach ( $existing as $index => $element ) {
-        if ( ! is_array( $element ) || ! isset( $selected_lookup[ sanitize_key( (string) ( $element['id'] ?? '' ) ) ] ) ) {
-            continue;
-        }
-        if ( wpae_llm_is_process_timeline_root( $element ) ) {
-            $selected_index = $index;
-            break;
-        }
-    }
-    if ( $selected_index === null || ! function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
-        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Выбранный процессный таймлайн не найден.' ];
-    }
+	$target = wpae_llm_find_process_timeline_target( $existing, $selected_ids );
+	$selected_index = ! empty( $target['ok'] ) ? (int) $target['top_level_index'] : null;
+	if ( $selected_index === null || ! function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Выбранный процессный таймлайн не найден.' ];
+	}
 
     $changed = 0;
     $rebuilt = wpae_llm_enforce_process_timeline_contract( [ $existing[ $selected_index ] ], $message, $changed );
@@ -671,12 +744,12 @@ function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id
     $next = $existing;
     $next[ $selected_index ] = $rebuilt[0];
     $root_id = sanitize_key( (string) ( $next[ $selected_index ]['id'] ?? '' ) );
-    $scope_ids = wpae_llm_collect_selected_scope_ids( $existing, $selected_ids );
+	$scope_ids = (array) ( $target['scope_ids'] ?? [] );
     $steps = [ [
         'id' => 'process_timeline_repair',
         'status' => 'ok',
         'message' => 'Выбранный таймлайн пересобран детерминированно: линии используют нативный Elementor-разделитель, а мобильная рельса — responsive-ширины.',
-        'details' => [ 'selected_root_id' => $root_id, 'layout' => wpae_llm_process_timeline_layout( $message ), 'selected_scope_count' => count( $scope_ids ) ],
+		'details' => [ 'selected_root_id' => $root_id, 'selected_element_id' => $target['selected_element_id'] ?? '', 'selection_relation' => $target['selection_relation'] ?? 'root', 'layout' => wpae_llm_process_timeline_layout( $message ), 'selected_scope_count' => count( $scope_ids ) ],
     ] ];
     $build_request = static function ( bool $dry_run ) use ( $post_id, $next ): WP_REST_Request {
         $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
@@ -740,7 +813,7 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
     if ( is_wp_error( $existing ) ) {
         return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Не удалось прочитать текущую структуру Elementor для точечной правки.', 'status' => 422, 'details' => [ 'error' => $existing->get_error_message() ] ];
     }
-    if ( (string) ( $action['action'] ?? '' ) === 'patch_elements' && absint( $action['post_id'] ?? 0 ) === $post_id && ! empty( $selected_ids ) && wpae_llm_is_process_request( $message, 'process' ) ) {
+    if ( (string) ( $action['action'] ?? '' ) === 'patch_elements' && absint( $action['post_id'] ?? 0 ) === $post_id && ! empty( $selected_ids ) && wpae_llm_is_process_structure_repair_request( $message, 'process' ) ) {
         $process_repair = wpae_llm_execute_process_timeline_repair( $existing, $post_id, $selected_ids, $message, $operation_id );
         if ( ! empty( $process_repair['ok'] ) || ( $process_repair['error'] ?? '' ) !== 'Выбранный процессный таймлайн не найден.' ) {
             return $process_repair;
@@ -8969,6 +9042,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $selected_element_count = is_array( $editor_context_input ) && is_array( $editor_context_input['selected_elements'] ?? null ) ? count( $editor_context_input['selected_elements'] ) : 0;
     $vision_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_repair'] );
     $vision_regenerate = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_regenerate'] );
+    $retry_current_operation = is_array( $editor_context_input ) && ! empty( $editor_context_input['retry_current_operation'] );
     $operation_owned_root_ids = is_array( $editor_context_input )
         ? array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $editor_context_input['operation_owned_root_ids'] ?? [] ), 0, 12 ) ) ) )
         : [];
@@ -8980,7 +9054,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )
         : [];
     $selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
-    if ( $targeted_edit && ! $vision_repair && $selected_post_id > 0 && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_process_timeline_repair' ) ) {
+    if ( $targeted_edit && ! $vision_repair && $selected_post_id > 0 && wpae_llm_is_process_structure_repair_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_process_timeline_repair' ) ) {
         $selected_existing = wpae_get_elementor_data_for_post( $selected_post_id );
         if ( ! is_wp_error( $selected_existing ) ) {
             $deterministic_process_repair = wpae_llm_execute_process_timeline_repair( $selected_existing, $selected_post_id, $selected_element_ids, $message, wpae_llm_new_operation_id() );
@@ -9005,29 +9079,34 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             }
         }
     }
-    // A normal retry can leave the previously generated root selected in the
-    // editor. Reuse the same canonical repair boundary for that process root
-    // instead of sending a content-only brief to the provider or appending a
-    // duplicate block.
-    if ( ! $targeted_edit && ! $vision_repair && $selected_post_id > 0 && ! empty( $selected_element_ids ) && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_process_timeline_repair' ) ) {
+    // A retry must resolve the operation-owned top-level root, even when the
+    // editor reports a nested badge/heading selection. Never fall through to
+    // the provider append path when the safe retry target is missing.
+    $process_retry_request = ! $targeted_edit
+        && ! $vision_repair
+        && $selected_post_id > 0
+        && wpae_llm_is_process_request( $message, $action_archetype )
+        && function_exists( 'wpae_llm_execute_process_timeline_repair' );
+    if ( $process_retry_request && ( $retry_current_operation || ! wpae_llm_is_independent_insert_request( $message ) ) ) {
         $selected_existing = wpae_get_elementor_data_for_post( $selected_post_id );
-        if ( ! is_wp_error( $selected_existing ) ) {
-            $selected_process_root = false;
-            $selected_lookup = array_fill_keys( $selected_element_ids, true );
-            foreach ( $selected_existing as $selected_element ) {
-                if ( ! is_array( $selected_element ) || ! isset( $selected_lookup[ sanitize_key( (string) ( $selected_element['id'] ?? '' ) ) ] ) ) {
-                    continue;
-                }
-                if ( wpae_llm_is_process_timeline_root( $selected_element ) ) {
-                    $selected_process_root = true;
-                    break;
-                }
+        if ( is_wp_error( $selected_existing ) ) {
+            if ( $retry_current_operation ) {
+                return new WP_Error( 'wpae_llm_retry_target_conflict', 'Не удалось прочитать сохранённый корень текущей операции; новый блок не добавлен.', [ 'status' => 409, 'details' => [ 'reason' => 'readback_failed', 'post_id' => $selected_post_id ] ] );
             }
-            if ( $selected_process_root ) {
-                $deterministic_process_retry = wpae_llm_execute_process_timeline_repair( $selected_existing, $selected_post_id, $selected_element_ids, $message, wpae_llm_new_operation_id() );
+        } else {
+            $retry_ids = $retry_current_operation ? $operation_owned_root_ids : $selected_element_ids;
+            $retry_target = $retry_current_operation
+                ? wpae_llm_find_operation_owned_process_target( $selected_existing, $retry_ids )
+                : wpae_llm_find_process_timeline_target( $selected_existing, $retry_ids );
+            if ( empty( $retry_target['ok'] ) ) {
+                if ( $retry_current_operation || ! empty( $selected_element_ids ) ) {
+                    return new WP_Error( 'wpae_llm_retry_target_conflict', 'Безопасная цель повторной сборки не найдена; новый дубликат не добавлен.', [ 'status' => 409, 'details' => [ 'reason' => $retry_target['reason'] ?? 'target_not_found', 'post_id' => $selected_post_id, 'selected_element_ids' => array_slice( $selected_element_ids, 0, 8 ), 'operation_owned_root_ids' => array_slice( $operation_owned_root_ids, 0, 12 ) ] ] );
+                }
+            } else {
+                $deterministic_process_retry = wpae_llm_execute_process_timeline_repair( $selected_existing, $selected_post_id, $retry_ids, $message, wpae_llm_new_operation_id() );
                 if ( ! empty( $deterministic_process_retry['ok'] ) ) {
                     $deterministic_process_retry['steps'] = array_merge(
-                        [ [ 'id' => 'deterministic_process_retry', 'status' => 'ok', 'message' => 'Retry выбранного process-root выполнен локальным canonical-пайплайном без нового provider-запроса и без дублирования блока.', 'details' => [ 'root_reused' => true, 'provider_bypassed' => true ] ] ],
+                        [ [ 'id' => 'deterministic_process_retry', 'status' => 'ok', 'message' => 'Retry выбранного process-root выполнен локальным canonical-пайплайном без нового provider-запроса и без дублирования блока.', 'details' => [ 'root_reused' => true, 'provider_bypassed' => true, 'retry_current_operation' => $retry_current_operation, 'selection_relation' => $retry_target['selection_relation'] ?? 'root', 'selected_element_id' => $retry_target['selected_element_id'] ?? '' ] ] ],
                         (array) ( $deterministic_process_retry['steps'] ?? [] )
                     );
                     return new WP_REST_Response( [

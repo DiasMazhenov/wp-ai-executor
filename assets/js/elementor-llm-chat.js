@@ -73,6 +73,8 @@
     // The last brief also survives page reloads: after a final provider failure
     // the chat history is gone, and that is exactly when regeneration is needed.
     var lastBriefKey = 'wpae_llm_last_brief:' + String(config.postId || '0');
+    var operationRootsKey = 'wpae_llm_operation_roots:' + String(config.postId || '0');
+    var operationRootsTtl = 600000;
     var readLastBrief = function () {
         try {
             var raw = window.sessionStorage.getItem(lastBriefKey);
@@ -82,6 +84,26 @@
             return value.trim();
         } catch (error) { return ''; }
     };
+    function readOperationRoots() {
+        try {
+            var raw = window.sessionStorage.getItem(operationRootsKey);
+            if (!raw) return [];
+            var state = JSON.parse(raw);
+            if (!state || Date.now() - Number(state.createdAt || 0) > operationRootsTtl) {
+                window.sessionStorage.removeItem(operationRootsKey);
+                return [];
+            }
+            return Array.isArray(state.ids) ? state.ids.map(String).filter(Boolean).slice(0, 12) : [];
+        } catch (error) { return []; }
+    }
+    function rememberOperationRoots(ids) {
+        var uniqueIds = Array.from(new Set((Array.isArray(ids) ? ids : []).map(String).filter(Boolean))).slice(0, 12);
+        if (!uniqueIds.length) return;
+        try { window.sessionStorage.setItem(operationRootsKey, JSON.stringify({ ids: uniqueIds, createdAt: Date.now() })); } catch (error) {}
+    }
+    function clearOperationRoots() {
+        try { window.sessionStorage.removeItem(operationRootsKey); } catch (error) {}
+    }
     regenerate.addEventListener('click', function () {
         // Regeneration replays the most recent user brief through the normal
         // request path, so server gates and Vision review stay identical.
@@ -93,7 +115,7 @@
             addMessage('assistant', strings.regenerateEmpty || 'Нет предыдущего запроса для перегенерации.');
             return;
         }
-        request(last, false, {});
+        request(last, false, { retryCurrentOperation: true });
     });
     var headActions = document.createElement('div');
     headActions.className = 'wpae-llm-head-actions';
@@ -311,6 +333,7 @@
                 visionRegenerate: Boolean(options.visionRegenerate),
                 visionFindings: String(options.visionFindings || '').slice(0, 3600),
                 skipVision: Boolean(options.skipVision),
+                retryCurrentOperation: Boolean(options.retryCurrentOperation),
                 selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined
             } : {};
             window.sessionStorage.setItem(providerRetryKey, JSON.stringify({ message: String(message).slice(0, 4000), options: retryOptions, createdAt: Date.now() }));
@@ -397,6 +420,7 @@
         liveGeneratedRootIds = Array.isArray(pending.options && pending.options.ownedRootIds)
             ? pending.options.ownedRootIds.map(String).filter(Boolean).slice(0, 12)
             : [];
+        rememberOperationRoots(liveGeneratedRootIds);
         setOpen(true);
         status.textContent = strings.sending;
         addMessage('user', pending.message);
@@ -683,7 +707,7 @@
             findTarget();
         });
     }
-    function getPreviewRenderContext(targetElementIds, reviewScope) {
+    function getPreviewRenderContext(targetElementIds, reviewScope, captureMeta) {
         var iframe = getPreviewIframe();
         var doc = iframe && iframe.contentDocument;
         if (!doc) return {};
@@ -712,6 +736,7 @@
             return isVisible(element) && (element.innerText || '').replace(/\s+/g, ' ').trim() !== '';
         }).length;
         var headingCount = Array.prototype.slice.call(scope.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(isVisible).length;
+        captureMeta = captureMeta && typeof captureMeta === 'object' ? captureMeta : {};
         return {
             source: 'elementor_editor_preview',
             editor_chrome_excluded: true,
@@ -726,6 +751,15 @@
             viewport_width: doc.documentElement.clientWidth || iframe.clientWidth || 0,
             viewport_height: iframe.clientHeight || doc.documentElement.clientHeight || 0,
             horizontal_overflow: !!(scope && scope.scrollWidth > scope.clientWidth + 2),
+            capture_scope: String(captureMeta.capture_scope || (target ? 'element' : 'document')),
+            capture_complete: captureMeta.capture_complete !== false,
+            capture_width: Number(captureMeta.capture_width || 0),
+            capture_height: Number(captureMeta.capture_height || 0),
+            target_scroll_width: Number(captureMeta.target_scroll_width || 0),
+            target_scroll_height: Number(captureMeta.target_scroll_height || 0),
+            page_scroll_x: Number(captureMeta.page_scroll_x || 0),
+            page_scroll_y: Number(captureMeta.page_scroll_y || 0),
+            target_rect: captureMeta.target_rect || null,
             visible_element_ids: ids,
             target_element_ids: Array.isArray(targetElementIds) ? targetElementIds.slice(0, 8) : []
         };
@@ -824,7 +858,7 @@
             });
         });
     }
-    var liveGeneratedRootIds = [];
+    var liveGeneratedRootIds = readOperationRoots();
     var editorSyncConflict = null;
 
     function getEditorModelId(model) {
@@ -1169,14 +1203,41 @@
             }
             var captureTarget = target || doc.body || doc.documentElement;
             var targetRect = captureTarget.getBoundingClientRect();
-            var captureWidth = target ? Math.ceil(targetRect.width) : width;
-            var captureHeight = target ? Math.ceil(targetRect.height) : height;
+            var documentElement = doc.documentElement;
+            var documentBody = doc.body || documentElement;
+            var targetScrollWidth = target
+                ? Math.max(target.scrollWidth || 0, targetRect.width)
+                : Math.max(documentElement.scrollWidth || 0, documentBody.scrollWidth || 0, width);
+            var targetScrollHeight = target
+                ? Math.max(target.scrollHeight || 0, targetRect.height)
+                : Math.max(documentElement.scrollHeight || 0, documentBody.scrollHeight || 0, height);
+            var captureWidth = Math.ceil(targetScrollWidth);
+            var captureHeight = Math.ceil(targetScrollHeight);
             if (captureWidth < 1 || captureHeight < 1) {
                 hidden.forEach(function (item) { item.element.style.display = item.display; });
                 throw new Error('Сгенерированный блок имеет нулевой размер в preview Elementor.');
             }
             captureWidth = Math.max(320, Math.min(captureWidth, 4000));
             captureHeight = Math.max(320, Math.min(captureHeight, 4000));
+            var pageView = doc.defaultView || window;
+            var captureMeta = {
+                capture_scope: target ? 'element' : 'document',
+                capture_complete: captureWidth >= Math.ceil(targetScrollWidth) && captureHeight >= Math.ceil(targetScrollHeight),
+                capture_width: captureWidth,
+                capture_height: captureHeight,
+                target_scroll_width: Math.ceil(targetScrollWidth),
+                target_scroll_height: Math.ceil(targetScrollHeight),
+                page_scroll_x: Number(pageView.scrollX || 0),
+                page_scroll_y: Number(pageView.scrollY || 0),
+                target_rect: {
+                    x: Number(targetRect.left || 0),
+                    y: Number(targetRect.top || 0),
+                    width: Number(targetRect.width || 0),
+                    height: Number(targetRect.height || 0),
+                    top: Number(targetRect.top || 0),
+                    bottom: Number(targetRect.bottom || 0)
+                }
+            };
             var targetBackground = doc.defaultView.getComputedStyle(captureTarget).backgroundColor;
             if (!targetBackground || targetBackground === 'rgba(0, 0, 0, 0)') targetBackground = doc.defaultView.getComputedStyle(doc.body || doc.documentElement).backgroundColor;
             if (!targetBackground || targetBackground === 'rgba(0, 0, 0, 0)') targetBackground = '#ffffff';
@@ -1191,8 +1252,8 @@
                 scale: 1,
                 width: captureWidth,
                 height: captureHeight,
-                windowWidth: width,
-                windowHeight: height,
+                windowWidth: Math.max(width, captureWidth),
+                windowHeight: Math.max(height, captureHeight),
                 x: 0,
                 y: 0
             };
@@ -1203,7 +1264,7 @@
                 restore();
                 var imageBase64 = canvas.toDataURL('image/jpeg', 0.72);
                 if (imageBase64.length > 5600000) throw new Error('Screenshot preview превышает допустимый размер AI Vision.');
-                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: captureWidth + 'x' + captureHeight, render_context: getPreviewRenderContext(targetElementIds, reviewScope) };
+                return { image_base64: imageBase64, mime_type: 'image/jpeg', viewport: captureWidth + 'x' + captureHeight, render_context: getPreviewRenderContext(targetElementIds, reviewScope, captureMeta) };
             }, function (error) {
                 restore();
                 throw error;
@@ -1411,7 +1472,10 @@
         options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
         if (repairDepth === 0) {
-            liveGeneratedRootIds = [];
+            if (!options.retryCurrentOperation) {
+                liveGeneratedRootIds = [];
+                clearOperationRoots();
+            }
             // Remember the original brief so the regenerate button can replay
             // it even after a full editor reload cleared the chat history.
             try {
@@ -1445,6 +1509,7 @@
             editor_root_snapshot: captureEditorRootSnapshot(),
             operation_owned_root_ids: liveGeneratedRootIds.slice(0, 12)
         };
+        if (options.retryCurrentOperation) requestContext.retry_current_operation = true;
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
         if (options.visionFindings) requestContext.vision_findings = String(options.visionFindings).slice(0, 3600);
@@ -1539,6 +1604,13 @@
                 var editorSyncedState = false;
                 var editorSyncData = body.write.editor_sync;
                 editorSyncDataForReview = editorSyncData;
+                var operationRootIds = editorSyncData && Array.isArray(editorSyncData.operation_owned_root_ids)
+                    ? editorSyncData.operation_owned_root_ids
+                    : getEditorSyncIds(editorSyncData);
+                if (operationRootIds.length) {
+                    liveGeneratedRootIds = Array.from(new Set(liveGeneratedRootIds.concat(operationRootIds.map(String).filter(Boolean)))).slice(0, 12);
+                    rememberOperationRoots(liveGeneratedRootIds);
+                }
                 addGeneratedJsonSpoiler(editorSyncData && Array.isArray(editorSyncData.elements) ? editorSyncData.elements : []);
                 var editorSyncPromise = body.write.editor_sync && body.write.editor_sync.mode === 'patch'
                     ? syncEditorPatches(body.write.editor_sync)

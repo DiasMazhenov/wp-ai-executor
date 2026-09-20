@@ -2,9 +2,21 @@
 
 ## Current release
 
-- Plugin: `v02.11.114`
+- Plugin: `v02.11.115`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
+- v02.11.115: Moves process retry through one shared root resolver: a nested
+  badge/heading selection is mapped to its process root, explicit retry keeps
+  operation-owned root IDs through session reload, and an absent or foreign
+  target returns a conflict instead of appending a duplicate. Copy-only nested
+  edits remain on the provider patch route and independent "ещё один блок"
+  requests remain inserts. Vision capture now records target scroll bounds,
+  crop completeness, viewport scroll and bounded target geometry; incomplete
+  crops are declared uncertain instead of authorizing destructive repair from
+  the image alone. Local runtime coverage is 269 checks; fresh live retry,
+  public DOM and screenshot capture were not run in this stage because no
+  callable browser tool was available. `context.md` is the only canonical
+  context journal; `SESSION_CONTEXT.md` is intentionally not used.
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
   the horizontal reference timeline, keeping the four reference cards inside
   a responsive items row. The step reader ignores that semantic shell, and
