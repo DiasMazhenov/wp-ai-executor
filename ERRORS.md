@@ -2426,3 +2426,45 @@ before making a new change to the plugin.
   generation scored `90/100` and did not trigger this false repair. The
   screenshot crop remains a diagnostic risk; it is not evidence that the
   generated JSON or public DOM lost content.
+
+## EJ-129: Repeatable portfolio repair split card content into nested containers
+
+- **Confirmed (2026-09-20, isolated live post 5189, v02.11.111):** the
+  portfolio fallback contained the requested work title, description and
+  label, but the repeatable card content was split into nested bento
+  containers. The saved tree therefore no longer represented one editable
+  card per requested work.
+- **Root cause:** `wpae_llm_apply_bento_layout()` recursively treated completed
+  card descendants as new repeatable units instead of stopping at the semantic
+  card boundary.
+- **Fix (v02.11.112, commit `04ec4b3`):** the shared bento normalization stops
+  recursion at an already complete repeatable card and preserves its heading,
+  text and label in the same native container. Runtime and live post 5189
+  reload evidence passed.
+
+## EJ-130: Content-only process retry was classified as portfolio
+
+- **Confirmed (v02.11.113, isolated live post 5197):** the initial content-only
+  process insertion passed, but retry after reload used the selected nested
+  heading rather than the process root. The request was classified as
+  portfolio because the generic score matched `работаем`; provider transport
+  then timed out and the portfolio fallback was rejected because its repeatable
+  structure did not satisfy the four process labels. No valid replacement was
+  written by that attempt.
+- **Root cause:** content-only process shell grammar was not recognized before
+  archetype scoring, and the retry boundary had no deterministic route for a
+  selected canonical process root. The UI selection error was a separate live
+  test condition: selecting a badge heading correctly bypassed the root route.
+- **Fix (v02.11.114, commit `ac58aad`):** shared content-only process
+  classification runs before generic scoring, and a selected marked process
+  root is rebuilt through the canonical process pipeline without a provider
+  request or duplicate insertion. Runtime covers the classifier and the
+  deterministic retry contract.
+- **Live verification (2026-09-20, v02.11.114, post 5197):** after selecting
+  root `ad4b9da` through Elementor Navigator, retry operation
+  `wpae-20260920130325-f758074b` reported local canonical rebuild, native
+  Divider connectors and responsive mobile widths; Vision scored 95/100 with
+  98% confidence. Read-back after reload contained one root, four cards and
+  three Dividers. The first invalid-selection attempt created a duplicate via
+  the ordinary fallback route; it was removed through Elementor UI and is not
+  counted as a successful retry.

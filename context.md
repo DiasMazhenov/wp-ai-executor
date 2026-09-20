@@ -2,7 +2,7 @@
 
 ## Current release
 
-- Plugin: `v02.11.100`
+- Plugin: `v02.11.114`
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
@@ -2559,3 +2559,46 @@ before removal.
   operation-owned root IDs while the preview iframe temporarily has no models.
 - Project continuity uses only `context.md` as the canonical context journal.
   `SESSION_CONTEXT.md` is intentionally not used and was not created.
+
+## Process retry architectural fix and live v02.11.114 — 2026-09-20, Asia/Almaty
+- Commit `b79e658` added the process retry message boundary; commit `ac58aad`
+  completed the shared content-only process classifier and selected-root
+  deterministic retry route. Both commits are on `main`; `ac58aad` was pushed
+  successfully to `origin/main`.
+- `wp-ai-executor.php`, the runtime contract test and manifest now identify
+  `v02.11.114`. The changed manifest hashes are for
+  `includes/llm/llm.php` and `wp-ai-executor.php`; the JS runtime hash remains
+  the already verified value from v02.11.113.
+- WP Pusher updated the live site. WordPress Plugins UI showed WP AI Executor
+  `v02.11.114`; the same screen showed WordPress `6.9`, Elementor `4.1.1` and
+  Elementor Pro `4.1.1`. Fresh Elementor chat showed
+  `openrouter/free · v02.11.114`.
+- Isolated post `5197` was used for live process verification. Initial
+  operation `wpae-20260920123440-be0aca26` created root `ad4b9da` from the
+  content-only prompt `Как мы работаем / ПРОЦЕСС / Замысел / Съёмка / Монтаж /
+  Публикация`. The saved JSON, editor AX hierarchy and rendered editor text
+  contained the badge, heading, four labels and three native Divider widgets.
+- The pre-fix retry after reload selected a nested heading and was correctly
+  observed as an invalid-selection reproduction: it went through provider /
+  portfolio fallback and attempted a duplicate. Elementor UI removed that
+  second root before the valid retry; the original root was preserved.
+- The valid v02.11.114 retry selected root `ad4b9da` through Navigator and used
+  operation `wpae-20260920130325-f758074b`. The chat reported a local canonical
+  rebuild without a new provider request or duplicate, HTTP 200 preflight and
+  update, three native Dividers and responsive mobile widths. Vision reported
+  `95/100`, confidence `98%`.
+- Live retry JSON contains one root with 32 native elements, four process card
+  containers, four Heading labels, four Text Editor copies, and exactly three
+  `divider.default` widgets. Desktop uses a row for the four cards; mobile
+  preview shows one column. Rendered editor text order is exact. After editor
+  reload, DOM read-back still showed one `ad4b9da` root and one occurrence of
+  the shell heading; no `ed5b167` duplicate remained.
+- Desktop and mobile editor screenshots were captured inline in the session.
+  The direct public draft-preview tab returned a blank document containing only
+  `desktop`, so independent public DOM/computed-style acceptance is recorded
+  as not available for this draft. Editor preview DOM and AX rendered hierarchy
+  were available; raw public DOM was not.
+- Local runtime is `262 checks OK`; the three Node test files, transaction,
+  editor-root, CTA and package probes, PHP/JS syntax and `git diff --check`
+  remain part of the v02.11.114 release verification. No `SESSION_CONTEXT.md`
+  was created or used; `context.md` is the only canonical context journal.
