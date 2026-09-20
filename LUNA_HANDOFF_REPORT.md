@@ -1,6 +1,6 @@
 # WP AI Executor — Luna handoff report
 
-Дата отчёта: 2026-09-20 19:46, Asia/Almaty
+Дата отчёта: 2026-09-20 19:57, Asia/Almaty
 
 ## A. Изменения относительно прошлого отчёта
 
@@ -30,6 +30,8 @@
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md`.
 - Перед этой редакцией сохранена копия отчёта в
   `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md`.
+- Перед этой редакцией сохранена копия отчёта в
+  `/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-direct-tool-check.md`.
 
 ## B. Возможности среды
 
@@ -47,6 +49,13 @@
   выполнен, состояние авторизации неизвестно.
 - `capture_screen_context` не заменяет browser/editor-инструмент и по правилам
   среды не используется вне активного voice chat.
+- В текущем запуске выполнен отдельный поиск прямых и отложенных инструментов
+  по callable-списку (`cua`, `browser`, `Playwright`, `CDP`, `computer`,
+  `DevTools`, tool-search). Точный результат:
+  `NO_DIRECT_OR_DEFERRED_BROWSER_SEARCH_TOOLS`.
+- Известный вызов `await cua.getState()` в обычном `mcp__node_repl__js` в этом
+  запуске повторно не выполнялся; его предыдущий результат сохранён выше как
+  историческое evidence.
 - Текущий ambient URL Elementor (`post=5197`) не считается доступом,
   screenshot, DOM, JSON или доказательством установленной версии. Обход через
   curl, произвольные URL или другой канал не выполнялся.
@@ -61,7 +70,7 @@
 - Рабочая папка: `/Users/diasmazhenov/vibecode/wp-ai-executor`.
 - Ветка: `main`.
 - HEAD до начала этой проверки:
-  `41b4166cc8e39748d01581ce2f9715e96ed3864e`.
+  `3fa127f48743a0dfdd378c1ab174c9b9a21190d2`.
 - Runtime commit: `3bb0b92f8f4f2a3283ed42a0a25b0edbd12cded4` — operation-owned
   process retry, nested selection resolver, session ownership and Vision crop
   bounds.
@@ -75,8 +84,9 @@
   untracked `.DS_Store`, `.codex/`, `.openchamber/`, `docs/`, `graphify-out/`,
   audit files, `NEXT_AGENT_PROMPT.md` и report backups, включая
   `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-environment-check.md` и
-  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md`; они не добавлялись
-  в runtime commit.
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-cua-check.md` и
+  `LUNA_HANDOFF_REPORT-2026-09-20-pre-v115-direct-tool-check.md`; они не
+  добавлялись в runtime commit.
 - Рабочая версия кода и release manifest: `v02.11.115`, guide: `v02.05.99`.
 - Runtime-файлы в этом запуске не изменялись; новая версия и новый release
   package не создавались.
@@ -205,6 +215,7 @@ local end-to-end проверка общей retry-границы на pricing r
 | `git push origin main` | PASS in the preceding runtime stage; this environment check did not push runtime code | Remote push only; not WordPress installation evidence. |
 | `ALL_TOOLS` namespace discovery | PASS, found `mcp__node_repl__js`; direct `mcp__cua_repl.js` absent | Discovery only; does not validate browser access or WordPress auth. |
 | `mcp__node_repl__js` with `await cua.getState()` | BLOCKED, `ReferenceError: cua is not defined` during this 2026-09-20 +05 run | Exact runtime failure; no browser state, DOM or auth result. |
+| Current direct/deferred browser-tool search | BLOCKED, exact result `NO_DIRECT_OR_DEFERRED_BROWSER_SEARCH_TOOLS` | No direct browser call was possible; known failing node_repl call was not repeated. |
 | Plugins UI, fresh Elementor, public preview and screenshots for v115 | NOT RUN | No callable browser tool in this session. |
 
 WPCS, PHPStan и ESLint в checkout не настроены; результаты этих инструментов
@@ -238,17 +249,10 @@ WPCS, PHPStan и ESLint в checkout не настроены; результат�
 - Не выполнены: свежая browser retry matrix 1–9, реальный user control block,
   live unsaved edit/Undo/concurrency, две противоположные Vision capture cases,
   public DOM/computed styles, screenshots v115, live install verification.
-- Внешний блокер: прямой CUA/browser runtime отсутствует; единственный
-  найденный `mcp__node_repl__js` не содержит объекта `cua`. Shell tests не дают
-  права объявлять live Elementor/public acceptance, а авторизация сайта
-  остаётся неизвестной.
+- Внешний блокер: в текущем запуске прямой и отложенный browser/CUA-инструмент
+  не найден; известный `mcp__node_repl__js` не содержит объекта `cua`. Shell
+  tests не дают права объявлять live Elementor/public acceptance, а авторизация
+  сайта остаётся неизвестной.
 - Недоступные evidence: новые screenshots, public HTML, computed styles,
   console/network trace и установленная v115. Секреты, cookies, nonce и
   private payload в отчёт не включались.
-
-Глобально относительно цели проекта мы топчемся на месте: локальная
-архитектурная граница retry улучшена и проверена воспроизводимыми тестами, но
-это ещё не реальный глобальный прогресс всей native Elementor-системы без
-новой live/public приёмки. Нужны реальные предложения по реальному глобальному
-прогрессу — изменения, которые расширяют проверенное покрытие и устраняют
-общие причины, а не очередные точечные правки.
