@@ -1701,10 +1701,23 @@ function wpae_llm_extract_labeled_content( string $message ): array {
         return $pricing_pairs;
     }
     $content_message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
-    if ( ! is_string( $content_message ) || $content_message === '' ) {
-        $content_message = $message;
-    }
+	if ( ! is_string( $content_message ) || $content_message === '' ) {
+		$content_message = $message;
+	}
 	$dash_separator = '(?:\s*[—–]\s*|\s+-\s+)';
+	$quoted_colon_pairs = [];
+	if ( preg_match_all( '/(?:\bэтап\s*)?(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*:\s*(?:«([^»]{2,320})»|"([^"\n]{2,320})")/iu', $message, $quoted_colon_matches, PREG_SET_ORDER ) ) {
+		foreach ( $quoted_colon_matches as $match ) {
+			$label = trim( sanitize_text_field( (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) ) );
+			$content = trim( sanitize_text_field( (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) ) ) );
+			if ( $label !== '' && $content !== '' ) {
+				$quoted_colon_pairs[] = [ 'label' => $label, 'content' => $content ];
+			}
+		}
+	}
+	if ( count( $quoted_colon_pairs ) >= 2 ) {
+		return array_slice( $quoted_colon_pairs, 0, 12 );
+	}
 	$quoted_dash_pairs = [];
 	if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:«([^»]{2,320})»|"([^"\n]{2,320})")/u', $content_message, $quoted_dash_matches, PREG_SET_ORDER ) ) {
 		foreach ( $quoted_dash_matches as $match ) {
@@ -4590,10 +4603,10 @@ function wpae_llm_process_timeline_steps( ?string $message, bool $allow_default 
 	} ) ) );
     if ( count( $quoted_items ) >= 2 ) {
         $result = [];
-        foreach ( array_slice( $quoted_items, 0, 6 ) as $index => $name ) {
+		foreach ( array_slice( $quoted_items, 0, 6 ) as $name ) {
             $result[] = [
                 'label'   => $name,
-                'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ),
+                'content' => wpae_llm_process_timeline_generated_content( $name ),
             ];
         }
         return $result;
@@ -4618,10 +4631,10 @@ function wpae_llm_process_timeline_steps( ?string $message, bool $allow_default 
 	$bare_items = array_values( array_unique( $bare_items ) );
 	if ( count( $bare_items ) >= 3 ) {
 		$result = [];
-		foreach ( array_slice( $bare_items, 0, 6 ) as $index => $name ) {
+		foreach ( array_slice( $bare_items, 0, 6 ) as $name ) {
 			$result[] = [
 				'label'   => $name,
-				'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ),
+				'content' => wpae_llm_process_timeline_generated_content( $name ),
 			];
 		}
 		return $result;
@@ -4714,10 +4727,10 @@ function wpae_llm_process_timeline_steps( ?string $message, bool $allow_default 
     }
 
     $result = array();
-    foreach ( array_slice( $items, 0, 6 ) as $index => $name ) {
+    foreach ( array_slice( $items, 0, 6 ) as $name ) {
         $result[] = array(
             'label'   => $name,
-            'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ),
+            'content' => wpae_llm_process_timeline_generated_content( $name ),
         );
     }
     return $result;
@@ -4734,6 +4747,39 @@ function wpae_llm_normalize_timeline_step_label( string $raw ): string {
         return $clean;
     }
     return '';
+}
+
+function wpae_llm_process_timeline_generated_content( string $label ): string {
+	$label = trim( sanitize_text_field( $label ) );
+	$normalized = wpae_llm_normalize_content_text( $label );
+	$known_descriptions = [
+		'замысел' => 'Формулируем цель, аудиторию и ключевую идею.',
+		'съемка' => 'Записываем материал по утверждённому плану.',
+		'съёмка' => 'Записываем материал по утверждённому плану.',
+		'монтаж' => 'Собираем материал в цельную историю и проверяем детали.',
+		'публикация' => 'Готовим итоговый материал к выбранному каналу публикации.',
+	];
+	if ( isset( $known_descriptions[ $normalized ] ) ) {
+		return $known_descriptions[ $normalized ];
+	}
+	$keyword_descriptions = [
+		'/\bбриф\w*\b/iu' => 'Уточняем задачу, аудиторию и ожидаемый результат.',
+		'/\bисслед\w*\b/iu' => 'Собираем факты и формулируем рабочие выводы.',
+		'/\bструктур\w*\b/iu' => 'Выстраиваем порядок материалов и ключевые сообщения.',
+		'/\bподготов\w*\b/iu' => 'Собираем исходные материалы и план действий.',
+		'/\bсборк\w*\b|\bразработ\w*\b/iu' => 'Собираем решение и проверяем его основные части.',
+		'/\bпровер\w*\b|\bтест\w*\b/iu' => 'Сверяем результат с задачей и исправляем недочёты.',
+		'/\bзапуск\w*\b|\bрелиз\w*\b/iu' => 'Готовим результат к выбранному каналу или сценарию запуска.',
+	];
+	foreach ( $keyword_descriptions as $pattern => $description ) {
+		if ( preg_match( $pattern, $normalized ) ) {
+			return $description;
+		}
+	}
+	if ( $label === '' ) {
+		return 'Формируем результат этапа и подготавливаем его к следующему шагу.';
+	}
+	return sprintf( 'Формируем результат этапа «%s» и подготавливаем его к следующему шагу.', $label );
 }
 
 function wpae_llm_process_timeline_default_steps(): array {
@@ -4827,7 +4873,7 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
             $step_label = 'Шаг ' . (string) $step_number;
         }
         if ( $step_copy === '' ) {
-            $step_copy = 'Понятный следующий шаг без лишней сложности.';
+            $step_copy = wpae_llm_process_timeline_generated_content( $step_label );
         }
 
         $marker_elements = [
@@ -5148,7 +5194,7 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				$step_label = 'Шаг ' . (string) $step_number;
 			}
 			if ( $step_copy === '' ) {
-				$step_copy = 'Понятный следующий шаг без лишней сложности.';
+				$step_copy = wpae_llm_process_timeline_generated_content( $step_label );
 			}
 
 			$marker = [

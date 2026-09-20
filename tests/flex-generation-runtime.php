@@ -675,10 +675,10 @@ check( substr_count( $quoted_pricing_json, '"widgetType":"button"' ) === 3 && st
 
 $reference_timeline = wpae_llm_build_process_timeline(
     [
-        [ 'label' => 'Замысел', 'content' => 'Этап 1: Замысел.' ],
-        [ 'label' => 'Съёмка', 'content' => 'Этап 2: Съёмка.' ],
-        [ 'label' => 'Монтаж', 'content' => 'Этап 3: Монтаж.' ],
-        [ 'label' => 'Публикация', 'content' => 'Этап 4: Публикация.' ],
+        [ 'label' => 'Замысел', 'content' => 'Формулируем цель, аудиторию и ключевую идею.' ],
+        [ 'label' => 'Съёмка', 'content' => 'Записываем материал по утверждённому плану.' ],
+        [ 'label' => 'Монтаж', 'content' => 'Собираем материал в цельную историю и проверяем детали.' ],
+        [ 'label' => 'Публикация', 'content' => 'Готовим итоговый материал к выбранному каналу публикации.' ],
     ],
     'reference-process',
     'horizontal'
@@ -738,6 +738,22 @@ check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съё�
 $content_only_process_message = 'Создай горизонтальный блок «Как мы работаем» с бейджем «ПРОЦЕСС». Четыре этапа строго в таком порядке: «Замысел», «Съёмка», «Монтаж», «Публикация». Между этапами используй native Divider, на телефоне расположи карточки вертикально.';
 $content_only_process_steps = wpae_llm_process_timeline_steps( $content_only_process_message );
 check( array_column( $content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted process shell labels were incorrectly promoted to timeline cards' );
+$generated_process_message = 'Создай блок «Как мы работаем». Над заголовком добавь бейдж «ПРОЦЕСС». Этапы: «Замысел», «Съёмка», «Монтаж», «Публикация». Добавь к каждому этапу короткое описание.';
+$generated_process_steps = wpae_llm_process_timeline_steps( $generated_process_message );
+check( array_column( $generated_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Generated process labels changed order or content' );
+$generated_process_copies = array_column( $generated_process_steps, 'content' );
+check( count( $generated_process_copies ) === 4 && count( array_filter( $generated_process_copies, static fn( $copy ): bool => (bool) preg_match( '/^Этап\s+\d+\s*:/u', (string) $copy ) ) ) === 0, 'Generated process descriptions fell back to numbered label placeholders' );
+check( min( array_map( static fn( $copy ): int => function_exists( 'mb_strlen' ) ? mb_strlen( (string) $copy ) : strlen( (string) $copy ), $generated_process_copies ) ) > 20, 'Generated process descriptions are not meaningful enough for the requested stage brief' );
+$generated_process_timeline = wpae_llm_build_process_timeline( $generated_process_steps, 'generated-process', 'horizontal', 'Как мы работаем' );
+$generated_process_json = (string) wp_json_encode( $generated_process_timeline, JSON_UNESCAPED_UNICODE );
+check( strpos( $generated_process_json, 'Формулируем цель, аудиторию и ключевую идею.' ) !== false && strpos( $generated_process_json, 'Готовим итоговый материал к выбранному каналу публикации.' ) !== false, 'Canonical process builder did not retain generated stage descriptions' );
+$explicit_process_message = 'Создай отдельный блок «Как мы работаем» с бейджем «ПРОЦЕСС». Этап «Замысел»: «Определяем задачу, аудиторию и идею ролика». Этап «Съёмка»: «Записываем материал по согласованному сценарию». Этап «Монтаж»: «Собираем историю, обрабатываем звук и цвет». Этап «Публикация»: «Готовим финальные файлы для выбранных площадок».';
+$explicit_process_steps = wpae_llm_process_timeline_steps( $explicit_process_message );
+check( array_column( $explicit_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Explicit process labels were not parsed from colon pairs' );
+check( array_column( $explicit_process_steps, 'content' ) === [ 'Определяем задачу, аудиторию и идею ролика', 'Записываем материал по согласованному сценарию', 'Собираем историю, обрабатываем звук и цвет', 'Готовим финальные файлы для выбранных площадок' ], 'Explicit process descriptions were not preserved exactly' );
+$explicit_process_timeline = wpae_llm_build_process_timeline( $explicit_process_steps, 'explicit-process', 'horizontal', 'Как мы работаем' );
+$explicit_process_json = (string) wp_json_encode( $explicit_process_timeline, JSON_UNESCAPED_UNICODE );
+check( strpos( $explicit_process_json, 'Определяем задачу, аудиторию и идею ролика' ) !== false && strpos( $explicit_process_json, 'Готовим финальные файлы для выбранных площадок' ) !== false, 'Native process builder lost explicitly requested descriptions' );
 $bare_content_only_process_message = "Как мы работаем\nПРОЦЕСС\nЗамысел\nСъёмка\nМонтаж\nПубликация";
 $bare_process_archetype = wpae_llm_detect_block_archetype( $bare_content_only_process_message );
 check( wpae_llm_is_content_only_process_brief( $bare_content_only_process_message ), 'Content-only process shell was not recognised before archetype scoring' );
