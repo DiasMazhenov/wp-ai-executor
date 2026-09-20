@@ -337,6 +337,7 @@ $content_only_json = (string) wp_json_encode( $content_only_saved, JSON_UNESCAPE
 foreach ( [ 'Тихая форма', 'Пространство для вашей жизни', 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали', 'Архитектура повседневности', 'Обсудить проект', 'Смотреть проекты' ] as $required_copy ) {
 	check( strpos( $content_only_json, $required_copy ) !== false, 'Content-only hero lost requested copy: ' . $required_copy );
 }
+check( substr_count( $content_only_json, 'Архитектура повседневности' ) === 1 && strpos( $content_only_json, '"widgetType":"icon"' ) !== false, 'Hero fallback duplicated the eyebrow instead of using a native visual icon' );
 check( strpos( $content_only_json, 'Обсудить проект — #contact' ) === false && strpos( $content_only_json, 'Смотреть проекты — #projects' ) === false, 'CTA URL leaked into visible content-only hero copy' );
 check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"#e7c7b7' ) !== false, 'Content-only hero did not create the separate visual panel' );
 check( strpos( $content_only_json, 'wpae-generated-root' ) !== false, 'Generated hero root did not receive the operation ownership marker' );

@@ -7762,7 +7762,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 			$left_elements[] = $widget( 'llm-hero-brand', 'heading', [
 				'title' => $brand,
 				'header_size' => 'h6',
-				'title_color' => '#a84c36',
+				'title_color' => '#514b42',
 				'typography_typography' => 'custom',
 				'typography_font_size' => [ 'unit' => 'rem', 'size' => 0.9 ],
 				'typography_font_weight' => '600',
@@ -7821,6 +7821,16 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 			];
 		}
 		$hero_badge = wpae_llm_badge_widget( 'llm-hero-badge', 'hero', $visual_copy !== '' ? $visual_copy : null );
+		$visual_panel_elements = [
+			$widget( 'llm-hero-visual-icon', 'icon', [
+				'selected_icon' => [ 'value' => 'fas fa-building', 'library' => 'fa-solid' ],
+				'primary_color' => '#a84c36',
+				'size' => [ 'unit' => 'rem', 'size' => 4 ],
+				'align' => 'center',
+				'content_width' => 'full',
+				'_css_classes' => 'wpae-hero-visual-icon',
+			] ),
+		];
 		$elements = [
 			$hero_badge,
 			[
@@ -7880,7 +7890,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 							'_element_custom_width' => [ 'unit' => '%', 'size' => 38, 'sizes' => [] ],
 							'_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
 						],
-						'elements' => [ $widget( 'llm-hero-visual-copy', 'heading', [ 'title' => $visual_copy !== '' ? $visual_copy : 'Архитектура повседневности', 'header_size' => 'h3', 'title_color' => '#28251f', 'typography_typography' => 'custom', 'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.1 ], 'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.65 ], 'typography_line_height' => [ 'unit' => 'em', 'size' => 1.1 ], 'align' => 'left', 'align_mobile' => 'left' ] ) ],
+						'elements' => $visual_panel_elements,
 					],
 				],
 			],
@@ -8977,6 +8987,21 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     if ( function_exists( 'wpae_rekey_elementor_ids_recursive' ) ) {
         $elements = wpae_rekey_elementor_ids_recursive( $elements, 'llm-' . wp_generate_password( 10, false, false ) );
     }
+    foreach ( $elements as &$generated_root ) {
+        if ( ! is_array( $generated_root ) || ( $generated_root['elType'] ?? '' ) !== 'container' ) {
+            continue;
+        }
+        $generated_settings = is_array( $generated_root['settings'] ?? null ) ? $generated_root['settings'] : [];
+        $generated_classes = preg_split( '/\s+/', trim( (string) ( $generated_settings['_css_classes'] ?? '' ) ) );
+        $generated_classes = is_array( $generated_classes ) ? array_values( array_filter( $generated_classes ) ) : [];
+        $generated_classes[] = 'wpae-generated-root';
+        if ( $archetype !== '' ) {
+            $generated_classes[] = 'wpae-generated-' . sanitize_key( $archetype );
+        }
+        $generated_settings['_css_classes'] = implode( ' ', array_values( array_unique( $generated_classes ) ) );
+        $generated_root['settings'] = $generated_settings;
+    }
+    unset( $generated_root );
     $steps[] = [ 'id' => 'element_ids', 'status' => 'ok', 'message' => 'Для новых элементов созданы уникальные Elementor ID.', 'details' => [ 'element_count' => count( $elements ) ] ];
     $position = sanitize_key( (string) ( $action['position'] ?? 'end' ) );
     $replace_root_ids = [];
