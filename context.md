@@ -6,7 +6,6 @@
 - Guide: `v02.05.99`
 - Repository: `DiasMazhenov/wp-ai-executor`
 - Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, code commit `0a2869a` pushed to `origin/main` before the handoff documentation update.
-- Handoff documentation commit: `5e8c43f`.
 - Installed site version: `v02.11.123`, confirmed by WP Pusher success and the fresh Elementor editor header/config on draft `post=5214`.
 - v02.11.123 introduces one shared pricing contract (`heading`, `badge`, ordered `items` with `label`, `description`, `price_text`, `cta_text`, `cta_url`). The parser, fallback, library path, final rebuild and content-fidelity checks consume the same structured fields; the shared fallback CTA repair now exits for a complete pricing contract so labels cannot shift between cards and the badge.
 - Live inline pricing draft `post=5214` (`Pricing Contract Live v123`) saved through deterministic fallback twice: `wpae-20260920212451-0354fc7b` and one retry `wpae-20260920212634-8ac26eb7`. Public preview after reload contains exact `ТАРИФЫ`, heading, three cards, descriptions, prices and `#start/#project/#support`; desktop width/scroll width `1280/1280`, mobile `390/390`.
