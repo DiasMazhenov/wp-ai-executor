@@ -738,6 +738,11 @@ check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съё�
 $content_only_process_message = 'Создай горизонтальный блок «Как мы работаем» с бейджем «ПРОЦЕСС». Четыре этапа строго в таком порядке: «Замысел», «Съёмка», «Монтаж», «Публикация». Между этапами используй native Divider, на телефоне расположи карточки вертикально.';
 $content_only_process_steps = wpae_llm_process_timeline_steps( $content_only_process_message );
 check( array_column( $content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted process shell labels were incorrectly promoted to timeline cards' );
+$bare_content_only_process_message = "Как мы работаем\nПРОЦЕСС\nЗамысел\nСъёмка\nМонтаж\nПубликация";
+$bare_content_only_process_steps = wpae_llm_process_timeline_steps( $bare_content_only_process_message );
+check( array_column( $bare_content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Bare content-only process lines did not stay in order' );
+check( wpae_llm_process_timeline_layout( $bare_content_only_process_message ) === 'horizontal', 'Content-only process brief did not infer horizontal layout' );
+check( is_array( wpae_llm_process_timeline_steps( null, false ) ), 'Null retry message crashed the shared process parser' );
 $content_only_process_timeline = wpae_llm_build_process_timeline( $content_only_process_steps, 'content-only-process', 'horizontal', 'Как мы работаем' );
 $content_only_process_json = wp_json_encode( $content_only_process_timeline );
 check( substr_count( (string) $content_only_process_json, '"wpae-process-content"' ) === 4 && substr_count( (string) $content_only_process_json, '"widgetType":"divider"' ) === 3, 'Content-only process prompt did not produce four cards and three native dividers' );

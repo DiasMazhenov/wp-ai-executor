@@ -4433,7 +4433,11 @@ function wpae_llm_bento_grid( string $id, array $elements ): array {
     ];
 }
 
-function wpae_llm_process_timeline_steps( string $message, bool $allow_default = true ): array {
+function wpae_llm_process_timeline_steps( ?string $message, bool $allow_default = true ): array {
+	// Vision retries may arrive through an older editor bridge with a missing
+	// message. Keep the shared parser total and let the caller's canonical
+	// prompt recovery decide whether there is enough content to rebuild.
+	$message = (string) $message;
     $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
     if ( count( $pairs ) >= 2 ) {
         return $pairs;
@@ -4479,6 +4483,34 @@ function wpae_llm_process_timeline_steps( string $message, bool $allow_default =
         }
         return $result;
     }
+
+	// Content-only editor briefs often arrive as one meaningful label per line.
+	// Accept that explicit process shape, but only when a process shell is
+	// present; ordinary prose must still use the safe default steps.
+	$bare_items = [];
+	$has_process_shell = (bool) preg_match( '/(?:\bпроцесс\w*\b|\bэтап\w*\b|\bшаг\w*\b|как\s+мы\s+работаем)/iu', $message );
+	if ( $has_process_shell ) {
+		$shell_labels = array_values( array_filter( array_map( 'wpae_llm_normalize_content_text', array_merge( $shell_labels, [ 'Этапы', 'Шаги' ] ) ) ) );
+		$lines = preg_split( '/\R/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY );
+		foreach ( (array) $lines as $line ) {
+			$candidate = wpae_llm_normalize_timeline_step_label( (string) $line );
+			if ( $candidate === '' || in_array( wpae_llm_normalize_content_text( $candidate ), $shell_labels, true ) ) {
+				continue;
+			}
+			$bare_items[] = $candidate;
+		}
+	}
+	$bare_items = array_values( array_unique( $bare_items ) );
+	if ( count( $bare_items ) >= 3 ) {
+		$result = [];
+		foreach ( array_slice( $bare_items, 0, 6 ) as $index => $name ) {
+			$result[] = [
+				'label'   => $name,
+				'content' => sprintf( 'Этап %d: %s.', $index + 1, $name ),
+			];
+		}
+		return $result;
+	}
 
     // Recognise an explicit step list by structure, not by keyword: a numbered
     // list, a markdown-style bullet list, a "label: a, b, c" tail, or a tail
@@ -4598,17 +4630,22 @@ function wpae_llm_process_timeline_default_steps(): array {
     );
 }
 
-function wpae_llm_process_timeline_layout( string $message ): string {
+function wpae_llm_process_timeline_layout( ?string $message ): string {
+	$message = (string) $message;
 	if ( preg_match( '/горизонталь\w*|по\s+горизонтал\w*|horizontal/iu', $message ) ) {
 		return 'horizontal';
 	}
 	if ( preg_match( '/центр\w*|чередующ\w*|alternat\w*|center\w*/iu', $message ) ) {
 		return 'alternating';
 	}
+	if ( preg_match( '/\bпроцесс\b/iu', $message ) && ! preg_match( '/вертикаль\w*|чередующ\w*|\bслева\b/iu', $message ) ) {
+		return 'horizontal';
+	}
 	return 'left';
 }
 
-function wpae_llm_process_timeline_heading( string $message = '' ): string {
+function wpae_llm_process_timeline_heading( ?string $message = '' ): string {
+	$message = (string) $message;
 	if ( preg_match( '/(?:заголовок|название|title)\s*[:\-]\s*[«"“„]([^»"”]+)[»"”]/iu', $message, $match ) ) {
 		$title = trim( wp_strip_all_tags( (string) ( $match[1] ?? '' ) ) );
 		if ( $title !== '' ) {
@@ -5292,7 +5329,8 @@ function wpae_llm_process_timeline_steps_from_elements( array $elements ): array
     return array_slice( $found, 0, 6 );
 }
 
-function wpae_llm_normalize_process_timeline( array $elements, string $message, int &$changed = 0 ): array {
+function wpae_llm_normalize_process_timeline( array $elements, ?string $message, int &$changed = 0 ): array {
+	$message = (string) $message;
     $message_steps = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
 	$layout = wpae_llm_process_timeline_layout( $message );
     $replace = static function ( array &$nodes ) use ( &$replace, $message_steps, &$changed ): bool {
@@ -5349,7 +5387,8 @@ function wpae_llm_normalize_process_timeline( array $elements, string $message, 
     return $elements;
 }
 
-function wpae_llm_enforce_process_timeline_contract( array $elements, string $message, int &$changed = 0 ): array {
+function wpae_llm_enforce_process_timeline_contract( array $elements, ?string $message, int &$changed = 0 ): array {
+	$message = (string) $message;
     $layout = wpae_llm_process_timeline_layout( $message );
     $contains_process = static function ( array $nodes ) use ( &$contains_process ): bool {
         foreach ( $nodes as $node ) {
@@ -8868,7 +8907,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $body_params = $request->get_json_params();
     $body_params = is_array( $body_params ) ? $body_params : [];
     $message_input = array_key_exists( 'message', $body_params ) ? $body_params['message'] : $request->get_param( 'message' );
+    $editor_context_input = array_key_exists( 'context', $body_params ) ? $body_params['context'] : $request->get_param( 'context' );
+    $context_original_message = is_array( $editor_context_input ) ? sanitize_textarea_field( (string) ( $editor_context_input['original_message'] ?? '' ) ) : '';
     $message = sanitize_textarea_field( (string) $message_input );
+    if ( $message === '' && $context_original_message !== '' ) {
+        $message = $context_original_message;
+    }
     if ( $message === '' ) {
         return new WP_Error( 'wpae_llm_message_required', 'Поле message обязательно.', [ 'status' => 400 ] );
     }
@@ -8877,7 +8921,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     }
 
     $action_request = wpae_llm_is_action_request( $message );
-    $editor_context_input = array_key_exists( 'context', $body_params ) ? $body_params['context'] : $request->get_param( 'context' );
     $live_background_image_urls = is_array( $editor_context_input )
         ? wpae_llm_sanitize_background_image_urls( $editor_context_input['background_image_urls'] ?? [] )
         : [];

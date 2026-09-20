@@ -1439,6 +1439,7 @@
         }, 900);
         var requestContext = {
             post_id: config.postId,
+            original_message: String(originalBrief || message || '').slice(0, 4000),
             selected_elements: options.selectedElements || selectedElements(),
             background_image_urls: getPreviewBackgroundImageUrls(),
             editor_root_snapshot: captureEditorRootSnapshot(),
