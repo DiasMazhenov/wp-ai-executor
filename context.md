@@ -5,7 +5,7 @@
 - Plugin source release: `v02.11.125`; installed live release remains `v02.11.124` until a separate WP Pusher deployment and fresh browser acceptance.
 - Guide: `v02.05.99`.
 - Repository: `DiasMazhenov/wp-ai-executor`; checkout `/Users/diasmazhenov/vibecode/wp-ai-executor`; branch `main`.
-- Current source/context commit: `47abcdc` (`Document deterministic pipeline handoff`), pushed to `origin/main`; live installation remains intentionally pending this source-only architecture handoff.
+- Current source/context commit: `1e55868` (`Record pipeline push status`), pushed to `origin/main`; live installation remains intentionally pending this source-only architecture handoff.
 - Scope is the existing WordPress page `post=5214` only. No new WordPress page or draft was created.
 - Live editor: `https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor`; after WP Pusher update it showed `Модель: openrouter/free · Версия: v02.11.124`. The WordPress plugins screen reported `WP AI Executor`, `v02.11.124`, active, with `Plugin was successfully updated.`
 - EDDE diagnostics remained active (`mode=active`, `action_path=edde`, provider `openrouter/free`). The hero-only decision state is compiled into native Elementor JSON and continues through the existing validation, transaction, read-back, and editor-refresh boundary.

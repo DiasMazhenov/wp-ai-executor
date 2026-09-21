@@ -459,9 +459,9 @@ live evidence v02.11.124 на post=5214 остается действитель�
 ## 22. Commit, push и следующий шаг
 
 - Implementation commit: `2f97c8f`.
-- Documentation/context commit: `47abcdc`.
+- Documentation/context commits: `47abcdc`, final status commit `1e55868`.
 - Push: **успешен** в разрешенный `origin/main`; remote `refs/heads/main`
-  подтвержден на `47abcdc95e8aba1ed7ecae903fbbccc6d0f02b9b`.
+  подтвержден на final `1e55868`.
 - Live WP Pusher deployment в этом этапе не выполнялся.
 - Следующий минимальный шаг: push `v02.11.125`, установить его через WP
   Pusher на уже открытую страницу `post=5214`, выполнить одну controlled
