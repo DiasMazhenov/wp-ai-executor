@@ -114,6 +114,7 @@ function wpae_llm_content_units( string $message ): array {
 
 function wpae_llm_extract_hero_copy( string $message ): array {
 	$copy = [ 'brand' => '', 'title' => '', 'body' => '', 'visual' => '' ];
+	$has_labeled_copy = (bool) preg_match( '/(?:надзаголов\\w*|заголов\\w*|описани\\w*)\s*[«"]/iu', $message );
 	$extract_quoted = static function ( string $pattern ) use ( $message ): string {
 		return preg_match( $pattern, $message, $match ) ? trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) ) : '';
 	};
@@ -139,12 +140,15 @@ function wpae_llm_extract_hero_copy( string $message ): array {
 			}
 			continue;
 		}
+		if ( $has_labeled_copy && preg_match( '/^(?:надзаголов\w*|заголов\w*|описани\w*)\b/iu', $unit ) ) {
+			continue;
+		}
 		if ( preg_match( '/^(?:заголовок|текст|описание|подзаголовок|надпис\w*|надзаголов\w*|eyebrow|overline|kicker|слоган|title|heading|description)\s*:/iu', $unit ) || preg_match( '/^(?:создай|создать|сделай|добавь|добавить|сформируй|собери|адаптируй|используй|примени)\b/iu', $unit ) || preg_match( '/\b(?:native|elementor|flexbox|виджет\w*|контейнер\w*|разделител\w*|коннектор\w*|адаптир\w*|телефон\w*|mobile|desktop|tablet|асимметрич\w*|терракот\w*|фон|акцент)\b/iu', $unit ) ) {
 			continue;
 		}
 		$candidates[] = $unit;
 	}
-	if ( $copy['brand'] === '' && count( $candidates ) >= 3 ) {
+	if ( $copy['brand'] === '' && ! $has_labeled_copy && count( $candidates ) >= 3 ) {
 		$copy['brand'] = trim( (string) array_shift( $candidates ) );
 	}
 	if ( $copy['title'] === '' && ! empty( $candidates ) ) {

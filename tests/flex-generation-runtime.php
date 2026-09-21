@@ -204,6 +204,12 @@ $natural_hero_fidelity = wpae_llm_content_fidelity( $natural_hero_message, (arra
 check( ! empty( $natural_hero_fidelity['ok'] ), 'Natural-language hero fallback failed final content fidelity' );
 $natural_hero_json = (string) wp_json_encode( $natural_hero_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 check( strpos( $natural_hero_json, '"id":"llm-hero-badge-label"' ) !== false && strpos( $natural_hero_json, '"title":"АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ"' ) !== false, 'Natural-language hero fallback did not promote the requested eyebrow into the native badge' );
+$second_hero_message = 'Создай второй hero-блок в конце текущей страницы, не удаляй и не изменяй существующие hero и pricing. Надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ», заголовок «Пространство для вашей жизни», описание «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Основная кнопка «Обсудить проект» со ссылкой #contact; вторичная «Смотреть проекты» со ссылкой #projects. Композиция 60/40: текст слева, визуальная зона справа. Компактные отступы, нейтральный размер заголовка, outlined surface, фон #F6F0E6, на мобильном сначала текст, затем визуальная зона. Существующие hero и pricing сохрани.';
+$second_hero_copy = wpae_llm_extract_hero_copy( $second_hero_message );
+check( ( $second_hero_copy['brand'] ?? '' ) === '' && ( $second_hero_copy['title'] ?? '' ) === 'Пространство для вашей жизни' && ( $second_hero_copy['body'] ?? '' ) === 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали' && ( $second_hero_copy['visual'] ?? '' ) === 'АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ', 'Signed second-hero fields were polluted by the generic brand heuristic' );
+$second_hero_action = wpae_llm_build_fallback_action( $second_hero_message, 42 );
+$second_hero_json = (string) wp_json_encode( $second_hero_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $second_hero_json, '"id":"llm-hero-visual-panel"' ) !== false && strpos( $second_hero_json, '"title":"Надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ"' ) === false, 'Signed second-hero fallback leaked the full labeled sentence into a native heading' );
 $failure_diagnostics = wpae_llm_execution_failure_diagnostics( [
     'status' => 422,
     'update_error' => 'Elementor data failed design-system contract.',
