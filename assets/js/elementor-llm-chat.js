@@ -1511,6 +1511,35 @@
             });
         });
     }
+    function reviewPendingOperation(operation, brief) {
+        operation = operation && typeof operation === 'object' ? operation : {};
+        var operationId = String(operation.operation_id || '');
+        var roots = Array.isArray(operation.root_ids) ? operation.root_ids.map(String).filter(Boolean).slice(0, 12) : [];
+        if (!operationId || !roots.length) return Promise.reject(new Error('Для pending operation не найден сохраненный operation_id или root.'));
+        var editorSync = {
+            mode: 'insert',
+            elements: roots.map(function (id) { return { id: id }; }),
+            operation_owned_root_ids: roots,
+            target_element_ids: roots
+        };
+        var requestContext = {
+            operation_identity: String(operation.operation_identity || readOperationIdentity()).slice(0, 120),
+            operation_owned_root_ids: roots,
+            editor_root_snapshot: captureEditorRootSnapshot()
+        };
+        var body = { operation_id: operationId, diagnostics: { operation_ledger: operation } };
+        var operationContext = buildVisionOperationContext(body, requestContext, editorSync);
+        liveGeneratedRootIds = roots.slice();
+        rememberOperationRoots(roots);
+        return runVisionReview('', 1, true, brief || '', editorSync, requestContext.editor_root_snapshot, operationContext).then(function (review) {
+            return reconcileDesignOperation(body, requestContext, editorSync, review).then(function (reconciled) {
+                if (reconciled && reconciled.operation) {
+                    addMessage('assistant', 'Актуальный preview и Vision привязаны к существующей операции. Состояние журнала: ' + String(reconciled.operation.current_state || 'written') + '.');
+                }
+                return review;
+            });
+        });
+    }
     function reconcileDesignOperation(body, requestContext, editorSync, review) {
         var operationId = String(body && body.operation_id || '');
         var ledger = body && body.diagnostics && body.diagnostics.operation_ledger ? body.diagnostics.operation_ledger : {};
@@ -1642,10 +1671,15 @@
     }
     var requestInFlight = false;
     function request(message, retried, options) {
+        options = options || {};
+        if (options.retryCurrentOperation && !readOperationIdentity()) {
+            addMessage('assistant', 'Не найден идентификатор текущей операции; повтор доставки остановлен, чтобы не создать дубликат.');
+            status.textContent = strings.error;
+            return Promise.resolve(false);
+        }
         if (requestInFlight) return Promise.resolve(false);
         requestInFlight = true;
         editorSyncConflict = null;
-        options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
         var operationIdentity = readOperationIdentity();
         if (repairDepth === 0) {
@@ -1757,6 +1791,11 @@
                     requestError.providerStatus = Number(errorData.provider_status || diagnostics.provider_status || errorData.status || diagnostics.status || 0);
                     requestError.retryAfter = Number(errorData.retry_after || diagnostics.retry_after || 0);
                     requestError.diagnostics = providerDiagnostics;
+                    requestError.pendingOperation = (diagnostics && diagnostics.operation)
+                        || (diagnostics && diagnostics.details && diagnostics.details.operation)
+                        || (body && body.details && body.details.operation)
+                        || (errorData && errorData.operation)
+                        || null;
                     throw requestError;
                 }
                 return body;
@@ -1908,6 +1947,20 @@
             if (error.diagnostics) addDiagnosticJsonMessage(error.diagnostics);
             if (!retried && isProviderRateLimited(error)) { scheduleRateLimitedRetry(message, options, error.retryAfter); return; }
             if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message, options)) return;
+            if (error.wpaeCode === 'wpae_design_operation_pending' && error.pendingOperation) {
+                addMessage('assistant', 'Эта операция уже записана без нового root. Проверяю актуальный preview и Vision, затем выполняю reconcile.');
+                setPipelinePhase('render', 'active');
+                reviewPendingOperation(error.pendingOperation, options.originalBrief || message).then(function (review) {
+                    setPipelinePhase('render', 'done');
+                    setPipelinePhase('review', review && review.report ? 'done' : 'skipped');
+                    if (review && review.report) addMessage('assistant', describeVisionReview(review));
+                    status.textContent = strings.done;
+                }).catch(function (reviewError) {
+                    addMessage('assistant', 'Операция сохранена, но reconcile оставлен pending: ' + reviewError.message);
+                    status.textContent = strings.error;
+                });
+                return;
+            }
             clearProviderRetry();
             addMessage('assistant', strings.error + ': ' + error.message);
             status.textContent = strings.error;
