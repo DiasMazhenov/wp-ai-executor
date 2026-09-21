@@ -1,75 +1,64 @@
 # WP AI Executor Context
 
-Последнее обновление: **2026-09-22 00:29:09 +05:00 (Asia/Almaty)**
-Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`
-Ветка: `main`
-Target: **post=5214, Pricing Contract Live v123**. Новые pages/drafts не создавались.
+Последнее обновление: **2026-09-22 01:33:54 +05:00 (Asia/Almaty)**
+Target: **post=5214, Pricing Contract Live v123**. Новые pages, drafts и Elementor roots не создавались.
 
 ## Source/live
 
-- Runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`; handoff documentation is tracked in subsequent commits.
-- Runtime/live version: **v02.11.141**.
-- Live installation: **PASS** through WP Pusher; Plugins page showed v02.11.141.
-- Push: **PASS** recorded as runtime `2702845..d34e401` and documentation `d34e401..905df45`; current shell could not re-resolve GitHub DNS for a second remote check.
-- Feature flags: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
-- Active/active priority: local deterministic pipeline first; EDDE is not a competing compiler.
+- Начало этапа: HEAD `438e5d9`, runtime `d34e401`, v02.11.141.
+- Итоговый source HEAD: `4ae6f71cbdc0692efc1136f5766b7e0b6e2b1083`.
+- Source/live version: **v02.11.142**.
+- WP Pusher обновил активный плагин до v02.11.142: PASS.
+- Первая ZIP-загрузка оставила одну неактивную копию v02.11.142; она ожидает удаления из списка плагинов.
+- Push `438e5d9..4ae6f71 main -> main`: PASS.
+- Flags: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
 
-## Current saved roots
-
-- Hero: `a9282de`.
-- FAQ: `13568dc`.
-- Pricing: `b898e72`.
-- Pricing operation: `wpae-66b8db408b2372e5`.
-- Pricing exact CTA hrefs: `#start`, `#project`, `#support`.
-- Hero exact CTA hrefs: `#contact`, `#projects`.
-- No temporary `WPAE-UNSAVED-NEIGHBOR-*` marker remains.
-
-## Pipeline boundary
+## Architecture and routing
 
 ```text
 BriefIR v1 -> DesignPlan v1 -> WidgetCapabilityRegistry/LayoutReport
 -> ElementorIR v2 -> native compiler -> validation
--> existing transaction/update/read-back -> render -> Vision/reconcile
+-> existing transaction/read-back -> render -> Vision/reconcile
 ```
 
-Legacy provider JSON, EDDE hero slice, transaction/rollback, retry/undo and page-update paths remain. No second write path, marketplace, new token system or new WordPress page was added.
+В active/active первым выбирается local deterministic pipeline. EDDE не запускается вторым compiler-ом; legacy provider JSON, transaction/rollback, retry/undo и существующий write path сохранены.
 
-## Critical live recovery fact
+## Current saved roots
 
-Revision `5303` removed the hero copy from the saved page representation. Revision `5300` retained hero, pricing and FAQ. Revision `5300` was restored through WordPress, then the restored Elementor model was saved through the existing Elementor UI so `_elementor_data` and public DOM matched. Final editor and public DOM contain all three roots above.
+- Hero: `a9282de`, background `rgb(246,240,230)`.
+- FAQ: `13568dc`.
+- Pricing: `b898e72`, background `rgb(255,255,255)`.
+- Hero CTA: `#contact`, `#projects`.
+- Pricing CTA: `#start`, `#project`, `#support`.
+- Temporary unsaved-neighbor marker and duplicate pricing root absent.
 
-## v141 source changes
+## v142 stale-operation guard
 
-- `includes/llm/brief-ir.php`: structural quoted-value URL boundary, punctuation-safe URL preservation and explicit surface provenance.
-- `includes/llm/design-plan.php`: explicit surface override validation and plan provenance.
-- `includes/elementor/elementor-ir.php`: compiler application of explicit surface override.
-- `includes/elementor/operation-ledger.php`: shared operation/report scope guard for revision, saved hash, fingerprint and roots.
-- `includes/llm/llm.php`: Vision report identity/scope checks before reviewed/completed.
-- Parser/design/vision/routing regression fixtures and v141 asset contract updates.
+- `includes/elementor/operation-ledger.php`: `wpae_design_operation_target_status()` checks post, root scope, saved hash and target fingerprint; missing root is `stale_target/root_missing`, rollback is classified separately when proven.
+- `includes/elementor/editor-chat.php`: exposes target status and `reviewable` to editor.
+- `includes/llm/llm.php`: reconcile rejects stale/mismatched report identity before reviewed/completed.
+- `assets/js/elementor-llm-chat.js`: no screenshot/provider fallback for a missing target; stale check button is hidden.
+- `wp-ai-executor.php`: v02.11.142; `wpae-package.json`: 90 files, hash mismatches 0.
 
-## Durable state
+## Durable pending record
 
-Localized pending metadata after reload exposed operation `wpae-89007d964d7436ab`, state `written`, revision `5`, root `1fa90e6`, with saved hash and target fingerprint. The root is not in the final current roots, so the record was not promoted. UI reconcile attempted fresh Vision and returned `wpae_vision_capture_failed`; reviewed/completed remains pending.
+Operation `wpae-89007d964d7436ab`, identity `e12c2e08-2952-4906-8dbb-f66d3ed42eb1`, revision `5`, state `written`, root `1fa90e6`. Current roots do not contain `1fa90e6`. Before v142 reconcile returned `wpae_vision_capture_failed`; after v142 editor reload showed no `Проверить сохранённый результат` button and no page mutation. Record remains written/pending, not reviewed/completed.
 
-## Live unsaved-neighbor probe
+Selected patch evidence is separate: `wpae-20260921192047-21f06cd2`, element `bc09c44`, Vision `100/100`.
 
-Temporary native Text Editor baseline was saved, changed without Save, and preserved through one selected-scope AI patch and subsequent Save/reload. The temporary widget was then deleted and cleanup saved. Final page has no test marker; hero, FAQ and pricing remain.
+## Live evidence
 
-## Live geometry
-
-- Editor desktop: hero `1010px` wide, pricing `1010px` wide, no overflow.
-- Editor tablet: `753px`, hero `flex-direction=column`, no overflow.
-- Editor mobile: `345px`, hero `flex-direction=column`, copy-first order, no overflow.
-- Public desktop: hero width `1265px`, pricing width `1265px`, pricing background `rgb(255,255,255)`, hero background `rgb(246,240,230)`, no overflow.
+- Public DOM after v142 contains exact hero copy/CTAs, FAQ and pricing. Hero width `1265px`/height `342px`; FAQ `305.203125px`; pricing `429.375px`; no overflow.
+- Editor: desktop `1010px`, tablet `753px`, mobile `345px`; mobile copy-first stack; no overflow.
+- Fresh inline CUA screenshots were captured after v142 reload for editor desktop/mobile and public hero/pricing.
+- Screenshot files/links are blocked: CUA documents inline screenshot bytes only and no PNG writer/artifact export.
 
 ## Checks
 
-- PHP lint for changed runtime files: PASS.
-- `php tests/design-pipeline-contract.php`: PASS, 73 checks.
+- PHP lint changed runtime files: PASS.
+- `php tests/design-pipeline-contract.php`: PASS, 76 checks.
 - `php tests/flex-generation-runtime.php`: PASS, 331 checks.
 - `node --test tests/*.test.js`: PASS, 4 suites.
 - `php docs/audits/2026-09-12/package-probe.php`: PASS, 90 files, mismatches 0.
-- `git diff --check`: PASS before documentation update.
-- Fresh editor/public DOM and inline CUA screenshots after save/reload: PASS.
-- Whole-operation Vision report: BLOCKED by `wpae_vision_capture_failed`.
-- Filesystem PNG links: BLOCKED; CUA exposes inline screenshot bytes but no documented PNG writer/artifact export.
+- `git diff --check`: PASS.
+- Whole-operation Vision: BLOCKED by stale missing target; selected Vision PASS.
