@@ -1,586 +1,255 @@
-# WP AI Executor — полный отчёт о введении архитектурных изменений
+# WP AI Executor — актуальный отчёт стабилизации deterministic design pipeline
 
-Дата фиксации: 2026-09-21, часовой пояс Asia/Almaty
-Репозиторий: /Users/diasmazhenov/vibecode/wp-ai-executor
-Ветка: main
-Целевая WordPress-страница: post=5214
-Источник и live: v02.11.124
-Итоговый commit: 76829f92c9120bcd634f439dc16bf9910ca381bb (76829f9)
-Push: origin/main, 2026-09-21 14:58:04 +05
+Дата фиксации: 2026-09-21 18:54:03 +05:00 (Asia/Almaty)
+Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`
+Ветка: `main`
+Целевая WordPress-страница: `post=5214`
+Assignment baseline: `d69d734`
+Рабочий source перед этой live-сессией: `df3ac87`
+Итоговый runtime source commit: `a55824d32b8815b7d39219e2cd91347dff728281`
+Source/live version: `v02.11.128`
+Runtime push: PASS, `origin/main`
+Runtime install: PASS, WP Pusher и Plugins page показали `WP AI Executor v02.11.128`
+Документационный commit: будет указан после фиксации этого файла.
 
-## 1. Границы работы и итоговый статус
+## Итоговый статус
 
-Вся проверка выполнена на одной существующей странице Elementor post=5214. Новые WordPress-страницы, записи и черновики не создавались. Существующие hero и pricing сохранены.
+Работа выполнена на одной существующей странице `post=5214`. Новые WordPress pages, posts и drafts не создавались. Соседний pricing-контент на публичной странице сохранился.
 
-Исходной точкой этой серии был commit 500ec909ec29022dc243bf6991b5f80a5882e5a9 (Clarify 60/40 acceptance boundary). К моменту передачи:
+Итоговый deterministic pipeline проверен на независимой второй вставке: exact copy, две CTA, native widgets, 40/60 desktop composition, tablet 50/50, mobile 100/100 copy-first, saved root и публичный DOM подтверждены. Ledger для этой операции остался в честном состоянии `written/render_review_pending`, потому что серверный rendered HTML hash и сохранённый screenshot-файл отсутствуют.
 
-- исходный код собран в v02.11.124;
-- WP Pusher сообщил Plugin was successfully updated.;
-- страница плагинов показала активный WP AI Executor v02.11.124;
-- после перезагрузки Elementor показал Модель: openrouter/free · Версия: v02.11.124;
-- live acceptance выполнена на post=5214 для первого hero, pricing и второго hero;
-- public saved DOM после перезагрузки содержит текущие roots без raw prompt в опубликованном содержимом;
-- старые raw-prompt nodes остаются только в локальном iframe DOM Elementor как исторический overlay.
+Полная файловая screenshot-приёмка не завершена. Browser API возвращает screenshot bytes для inline-показа, но документированного writer/artifact API для этих bytes в текущем Codex In-app Browser нет. Поэтому в этом документе нет выдуманных ссылок на png-файлы; статус галереи оставлен `SCREENSHOT BLOCKED`.
 
-## 2. Введённая архитектура EDDE
+## Фактическая архитектура и приоритет маршрутов
 
-EDDE (Elementor Design Decision Engine) оставлен узким вертикальным срезом только для hero-блоков. Он не заменяет общий pipeline записи Elementor и не получает право писать _elementor_data напрямую.
+Текущий поток:
 
-Фактический поток:
-
-~~~mermaid
-flowchart TD
-    A[Prompt в Elementor chat] --> B[Archetype и content plan]
-    B --> C[EDDE state wpae-edde-state-v1]
-    C --> D[LLM plan wpae-edde-plan-v1]
-    D --> E[Enum decode и explicit constraints]
-    E --> F[Native hero compiler]
-    F --> G[Content, shape и design-system validation]
-    G --> H[Общий transaction/write/read-back boundary]
-    H --> I[Editor refresh и operation diagnostics]
-~~~
-
-wpae-edde-plan-v1 ограничен типизированными enum-полями:
-
-| Поле | Разрешённые значения |
-|---|---|
-| schema | wpae-edde-plan-v1 |
-| archetype | hero |
-| composition | split_60_40, split_50_50, split_40_60, stacked_left |
-| content_alignment | left, center, right |
-| vertical_alignment | start, center |
-| spacing_rhythm | compact, balanced, spacious |
-| surface | minimal, soft_panel, outlined |
-| typography | display, neutral |
-| cta_hierarchy | single_primary, primary_secondary |
-| responsive_strategy | copy_first_stack |
-
-В decision state передаются content slots, CTA-пары, explicit constraints, design-system identifiers, editor context и provider/model. Произвольный Elementor JSON, секреты и прямой meta write в EDDE не входят.
-
-## 3. Исправления, вошедшие в v02.11.124
-
-### Сохранение ограничений при Vision regeneration
-
-Ранее Vision regeneration мог перейти на общий fallback с фиксированным соотношением 58/38. Это стирало пользовательские требования 40/60 или 60/40, выравнивание, surface, типографику, CTA hierarchy, responsive stack и фон.
-
-Теперь regeneration:
-
-1. строит bounded hero plan;
-2. применяет wpae_llm_design_engine_explicit_constraints() к исходному сообщению;
-3. повторно компилирует fallback через существующий wpae_llm_design_engine_compile_hero();
-4. сохраняет vision_regenerate_design_plan в diagnostics;
-5. проходит прежние content/design-system/fidelity/transaction/read-back/editor-refresh проверки.
-
-Отдельный write path не создан: запись идёт через существующую транзакционную границу.
-
-### Корректный разбор направления текста
-
-Регулярное выражение alignment теперь останавливается на запятой, точке с запятой и переводе строки. Поэтому фраза «текст слева, визуальная зона справа» даёт content_alignment=left; положение визуальной зоны справа больше не ошибочно превращается в right-aligned copy.
-
-### Защита от превращения подписанных полей в заголовок
-
-В wpae_llm_extract_hero_copy() добавлен приоритет явных меток «надзаголовок», «заголовок», «описание». Если такие поля уже распознаны, их полная строка не может стать generic brand heading. Это устранило регрессию второго hero, где весь prompt с labels попадал в визуальный заголовок.
-
-### Pricing и native writeback
-
-Для live-приёмки pricing восстановлена одна responsive desktop row из трёх карточек (1d83207), а EDDE/widget writeback и recovery продолжают использовать общую native Elementor структуру (b74baf9). Pricing не включён в EDDE scope и не был удалён при hero-операциях.
-
-## 4. Файлы и история изменений
-
-| Commit | Изменение |
-|---|---|
-| e549f64 | Feature-flagged EDDE hero decision vertical slice. |
-| 511dbd0 | Сохранение EDDE constraints при Vision regeneration. |
-| 500ec90 | Явная граница acceptance для 60/40. |
-| b74baf9 | Pricing recovery и EDDE widget writeback. |
-| 1d83207 | Три pricing cards в одной responsive desktop row. |
-| 76829f9 | Исправление labeled hero fallback copy extraction. |
-
-Кодовые файлы текущего релиза:
-
-| Файл | Роль изменения |
-|---|---|
-| includes/llm/llm.php | Vision regeneration через EDDE compiler; extraction явных hero labels. |
-| includes/llm/decision-engine.php | Typed EDDE plan, explicit constraints и точный alignment parsing. |
-| tests/flex-generation-runtime.php | Production-path regression для 40/60, 60/40, CTA, surface, mobile stack и второго hero prompt. |
-| tests/llm-chat-contract.test.js | Контракт версии v02.11.124. |
-| wp-ai-executor.php | Header и WPAE_VERSION = v02.11.124. |
-| wpae-package.json | SHA-256 manifest для 80 файлов. |
-| context.md | Канонический журнал текущего source/live состояния. |
-
-## 5. Точные live prompts
-
-### Первый hero: 40/60
-
-~~~text
-Добавь новую hero-секцию для архитектурной студии «Тихая форма».
-Надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ».
-Заголовок «Пространство для вашей жизни».
-Описание «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали».
-Основная кнопка «Обсудить проект», ссылка #contact.
-Вторичная кнопка «Смотреть проекты», ссылка #projects.
-Текстовая часть занимает 40%, визуальная — 60%.
-Текст выровнен по левому краю, визуальная зона расположена справа
-и оформлена тонкой рамкой.
-Композиция просторная, заголовок крупный, фон #F6F0E6.
-На мобильном сначала текст, затем визуальная часть.
-Существующие секции не изменяй.
-~~~
-
-### Второй hero: 60/40
-
-~~~text
-Создай второй hero-блок в конце текущей страницы, не удаляй и не изменяй существующие hero и pricing. Надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ», заголовок «Пространство для вашей жизни», описание «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Основная кнопка «Обсудить проект» со ссылкой #contact; вторичная «Смотреть проекты» со ссылкой #projects. Композиция 60/40: текст слева, визуальная зона справа. Компактные отступы, нейтральный размер заголовка, outlined surface, фон #F6F0E6, на мобильном сначала текст, затем визуальная зона. Существующие hero и pricing сохрани.
-~~~
-
-## 6. Live operations и read-back
-
-### Первый hero — split_40_60
-
-Operation: wpae-20260921090807-8fa12ddb
-Saved root: 96b68e5
-Режим: EDDE active; UI diagnostics показывали openrouter/free. Точное сохранённое поле action_path для этой операции отдельно не извлекалось, поэтому оно не объявляется как независимое доказательство.
-
-Публичный read-back подтвердил:
-
-- фон #F6F0E6;
-- text-left и visual-right;
-- desktop content shell в строке;
-- copy/visual ширины примерно 38.4/57.6;
-- мобильные колонки 100/100, текст перед визуальной частью;
-- wpae-hero-visual-panel с тонкой рамкой;
-- две CTA-пары: Обсудить проект → #contact и Смотреть проекты → #projects;
-- существующие секции ниже hero сохранились.
-
-### Pricing preservation
-
-Operation: wpae-20260921094359-dc8fd3ea
-Saved root: 9f3bee7
-Nested grid: f02313f
-Vision: score 85, confidence 95%, accepted.
-
-В read-back остались три карточки:
-
-| Карточка | Текст | Ссылка |
-|---|---|---|
-| Старт | от 50 000 ₸ и исходное описание | #start |
-| Проект | от 150 000 ₸ и исходное описание | #project |
-| Поддержка | от 80 000 ₸/мес и исходное описание | #support |
-
-Кнопки и их labels также сохранились: Выбрать Старт, Обсудить проект, Подключить поддержку.
-
-### Второй hero — split_60_40
-
-Operation: wpae-20260921100000-cc191309
-Saved root: 9bdbc05
-Vision: score 85, confidence 95%, accepted.
-
-Ход операции:
-
-1. EDDE plan был typed и скомпилирован.
-2. Provider response был отклонён quality gate как sparse composition.
-3. Запущен deterministic content-complete fallback.
-4. Native widgets: 6; existing elements: 2; inserted: 1.
-5. Save завершился HTTP 200, затем выполнены read-back и refresh.
-
-Публичная геометрия после reload:
-
-| Узел | Evidence |
-|---|---|
-| Root 9bdbc05 | #F6F0E6, flex column, 1265×340, y=902 |
-| Content shell 4db3319 | flex row, gap 20, 1217×168, x=24, y=1035 |
-| Copy 6b0a8c8 | 701×168, примерно 60%, x=24 |
-| Visual 8ada197 | wpae-hero-visual-panel, outlined, 467×168, примерно 40%, x=745 |
-
-На мобильном read-back и inline screenshot показали copy-first stack: текст и CTA идут перед visual panel. В текущем editor iframe кроме нового root видны старые raw-prompt nodes; публичный DOM их не содержит.
-
-## 7. Сопоставление plan → compiler → normalization → write
-
-| Сценарий | Plan | Compiler/normalization | Write/read-back |
-|---|---|---|---|
-| Первый hero | hero, split_40_60, left, spacious, outlined, display, primary_secondary, copy_first_stack | Native copy/visual columns; #F6F0E6; две CTA link settings; mobile stack | Root 96b68e5; public geometry 38.4/57.6; exact copy and links present |
-| Pricing | Existing non-EDDE structure | Responsive row normalizer keeps all 3 cards and paired CTA links | Root 9f3bee7; grid f02313f; all 3 cards preserved |
-| Второй hero | hero, split_60_40, left, compact, outlined, neutral, primary_secondary, copy_first_stack | Sparse provider response rejected; deterministic fallback recompiled; labeled copy extraction prevents raw prompt heading | Root 9bdbc05; public geometry 60/40; Vision 85/95; HTTP 200 |
-
-Все три сценария проходят общий validation, transaction, _elementor_data write/read-back и editor refresh. EDDE не записывает WordPress meta напрямую.
-
-## 8. Vision, A/B и unsaved-safety matrix
-
-| Проверка | Результат | Граница доказательства |
-|---|---|---|
-| EDDE active mode | PASS | Live diagnostics в Elementor: mode=active, provider openrouter/free. |
-| Первый hero 40/60 | PASS | Live save, public DOM geometry, exact copy/CTA и desktop/mobile inline captures. Числовой Vision score этой операции не был сохранён в итоговом diagnostics extract. |
-| Pricing preservation | PASS | Root/grid read-back, три карточки и Vision 85/95. |
-| Второй hero 60/40 | PASS | Provider sparse → fallback path, public geometry, exact copy/CTA, Vision 85/95. |
-| Vision regeneration constraint fidelity | PASS | v124 compiler повторно применяет composition/alignment/surface/typography/CTA/mobile/background constraints. |
-| Vision incomplete-capture scenario A | NOT RUN | Отдельный неполный screenshot capture не запускался. |
-| Vision incomplete-capture scenario B | NOT RUN | Отдельный неполный screenshot capture не запускался. |
-| Live manual neighboring unsaved pricing edit | NOT RUN | Не создавался рискованный ручной edit; никаких новых страниц и черновиков не добавлялось. |
-| Runtime ownership/transaction safety | PASS | editor-roots-probe.js — 15 assertions; transactions-probe.php — autosave owner/fingerprint, conflict, rollback и failure guards. |
-
-## 9. Локальные проверки
-
-| Команда | Результат |
-|---|---|
-| php -l includes/llm/llm.php | PASS |
-| php -l includes/llm/decision-engine.php | PASS |
-| php -l wp-ai-executor.php | PASS |
-| php tests/flex-generation-runtime.php | PASS — 331 checks OK |
-| node --test tests/flex-generation-runtime.test.js | PASS; PHP runtime 331 |
-| node --test tests/llm-chat-contract.test.js | PASS |
-| node --test tests/vision-security-contract.test.js | PASS |
-| php docs/audits/2026-09-12/package-probe.php | PASS: 4 scenarios, 80 files, valid_zip=true, unsafe_path=false, corrupted_hash=false, missing_required_file=false; full-result UTF-8 serialization probe отдельно предупредил Malformed UTF-8 |
-| node docs/audits/2026-09-12/editor-roots-probe.js | PASS — 15 assertions, unsaved roots preserved, owned AI root removed, idempotency preserved |
-| php docs/audits/2026-09-12/transactions-probe.php | PASS — autosave, conflict, rollback и delete-failure guards |
-| git diff --check | PASS |
-| Direct SHA-256 manifest check | PASS — 80 files |
-
-## 10. Deployment evidence
-
-Source deployment:
-
-- git commit выполнен для runtime изменений в 76829f9;
-- git push origin main выполнен;
-- изменённые файлы пакета покрыты wpae-package.json.
-
-WordPress deployment:
-
-- открыт существующий WP Pusher экран;
-- обновлена строка WP AI Executor с ветки main;
-- UI показал Plugin was successfully updated.;
-- после reload Elementor показал v02.11.124;
-- активность подтверждена экраном плагинов (Деактивировать).
-
-Эти два слоя не смешиваются: commit/push подтверждает исходник, WP Pusher и header подтверждают установленный live release.
-
-## 11. Screenshot evidence и ограничение ссылок
-
-В CUA были получены свежие inline captures:
-
-- public desktop: первый hero и pricing;
-- Elementor mobile: первый hero;
-- public desktop: второй hero и pricing;
-- Elementor mobile: второй hero.
-
-Файловых screenshot paths нет. tab.screenshot() возвращает Uint8Array без имени файла, а tab.content.export() возвращает точную ошибку:
-
-~~~text
-Codex in-app browser does not support command "tab_content_export"
-~~~
-
-Поэтому в отчёте намеренно не указаны выдуманные absolute links. Inline captures были показаны в ходе этой сессии; экспортируемая файловая gallery через доступный CUA API заблокирована.
-
-## 12. Известные ограничения и наблюдаемые дефекты
-
-- В Elementor iframe остаются исторические raw-prompt nodes от предыдущих операций. Они не входят в public saved DOM и не являются текущим сохранённым root.
-- Vision зафиксировал только один minor: badge typography была задана крупнее ожидаемого (2.75rem); операция при этом принята с 85/95.
-- Два отдельных A/B сценария с неполным capture не запускались.
-- Ручной live unsaved-neighbor сценарий не запускался; вместо него зафиксированы проходящие runtime ownership/transaction probes.
-- CUA не выдаёт локальные screenshot paths, поэтому прямые ссылки на файлы отсутствуют.
-
-## 13. Финальное состояние
-
-На момент передачи source и live синхронизированы на v02.11.124; текущая страница post=5214 содержит исходный pricing, первый hero 40/60 и второй hero 60/40. EDDE остаётся hero-only, а запись проходит существующие native Elementor transaction/read-back boundaries. Итоговый исходник находится в 76829f9 и отправлен в origin/main.
-
----
-
-# Архитектурное продолжение: deterministic design pipeline v1
-
-Дата фиксации: 2026-09-21, Asia/Almaty
-Рабочий clone: `/Users/diasmazhenov/vibecode/wp-ai-executor`
-Целевая страница: только существующая Elementor page `post=5214`
-Source release: `v02.11.125`
-Live release на момент отчета: `v02.11.124`
-Implementation commit: `2f97c8f` (`Introduce deterministic design pipeline contracts`)
-
-## 14. Что изменено
-
-Генератор получил versioned границу между пользовательским prompt, typed
-design decisions и native Elementor data:
-
-```text
+```
 prompt
   -> BriefIR v1
-  -> DesignPlan v1
-  -> deterministic LayoutReport / capability checks
+  -> typed DesignPlan v1
+  -> WidgetCapabilityRegistry/LayoutReport
   -> ElementorIR v2
-  -> native compiler
-  -> existing Elementor preflight/transaction/readback
+  -> native Elementor compiler
+  -> structural/semantic/layout validation
+  -> existing transaction + update/read-back boundary
+  -> editor/public render
+  -> Vision/design review
+  -> bounded reconcile or patch
 ```
 
-`BriefIR` сохраняет `exact_text`, нормализованный текст, URL CTA отдельно,
-source span, confidence и provenance. Парсер отдельно покрывает русские и
-английские prompts, короткие labels `FAQ`, `О нас`, `7 шагов`, несколько CTA,
-style-only и ambiguous prompts, длинный заголовок с переносом строки и явную
-медиа-ссылку. Он не создает content, metrics, claims или URL, которых нет в
-источнике.
+Модель не формирует произвольное Elementor tree в active deterministic режиме. Provider-generated tree остаётся legacy adapter-ом для режимов, где deterministic pipeline не выбран. Альтернативного write path нет.
 
-`DesignPlan v1` ограничен archetypes `hero`, `process` и `pricing`. Для каждого
-плана фиксируются composition, allowed native widgets, content refs, semantic
-token refs, responsive policy, media refs, quality gates и provenance. Остальные
-archetypes продолжают legacy compatibility path.
+Feature flags на начало и конец live-сессии: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
 
-`ElementorIR v2` не является provider JSON. Он содержит `node_id`, role,
-widget type, refs, constraints, responsive policy, media refs, editable fields
-и provenance. `native-compiler.php` предоставляет единственную стабильную
-границу компиляции в native Elementor data; compiler сам создает детерминированные
-IDs, разрешает semantic tokens, задает Flex basis/grow/shrink, mobile stack,
-responsive settings, exact copy, links и image metadata.
+| Pipeline | EDDE | Фактический action path | Provider calls | Writes | Проверка |
+|---|---|---|---:|---:|---|
+| off | off | `provider` | 1 | 1 | PASS, локальный route contract |
+| off | active | `edde` | 0 | 1 | PASS, локальный route/runtime contract |
+| shadow | active | `edde` с `shadow_only=true` | 0 | 1 | PASS, shadow compiler не пишет |
+| active | active | `pipeline`, precedence=pipeline | 0 | 1 | PASS, обе live active вставки |
 
-`LayoutReport` проверяет 1440, 1024, 768 и 390 px: container/used/available
-width, gaps, basis, min/max, zero-width children, overflow, fixed text height,
-mobile stack и suggested patches. Добавлен contrast gate для text/muted/CTA
-semantic roles.
+При `active/active` один запрос не запускал EDDE и pipeline последовательно: routing выбрал pipeline до compiler, diagnostics показали `action_path=pipeline`, `route=local_deterministic`, `provider_calls=0`. Двойной compiler и двойная запись не наблюдались.
 
-## 15. Какие root causes исправлены
+## Изменения в source
 
-1. Парсинг и layout decisions больше не смешаны с provider-generated tree.
-2. Второй CTA больше не теряет label, URL или provenance; UTF-8 prefix не
-   ломает распознавание `title`, `eyebrow` и CTA.
-3. Явный `hero` имеет приоритет над словом `шагов` внутри copy и не ошибочно
-   становится `process`.
-4. Многострочный quoted text сохраняется без потери переноса.
-5. Недоступный widget проходит через общий capability registry и получает
-   известный native fallback с downgrade diagnostic.
-6. Missing token и низкий contrast видны до записи; palette choices нового
-   слоя больше не зависят от произвольных цветов модели.
-7. Layout basis и mobile stack вычисляются локально, поэтому provider не может
-   самовольно создать zero-width child или fixed-height text block.
-8. Повторный active-запрос защищен idempotency key и operation ledger; новый
-   root не добавляется поверх pending/unknown операции без reconcile.
+### v02.11.128
 
-## 16. Измененные файлы
+Изменены:
 
-Новые runtime-модули:
+- `includes/llm/brief-ir.php` — распознавание семантических ограничений «текст слева 40%, визуальная часть справа 60%» с provenance; результатом становится `split_40_60`.
+- `includes/llm/decision-engine.php` — EDDE применяет те же explicit side-percentage constraints.
+- `includes/elementor/elementor-ir.php` — brand сохраняется отдельным native heading; порядок copy group нормализован как brand → eyebrow → title → body → CTA; brand/eyebrow получают h6 и semantic muted token.
+- `tests/design-pipeline-contract.php` — exact live brief regression: split 40/60, widget order, native CTA links.
+- `tests/llm-chat-contract.test.js` — ожидаемая версия `v02.11.128`.
+- `wp-ai-executor.php` — plugin header и runtime version.
+- `wpae-package.json` — SHA-256 обновлены после runtime-изменений; проверка ниже дала 90 файлов без mismatches.
 
-- `includes/llm/brief-ir.php`
-- `includes/llm/design-plan.php`
-- `includes/llm/routing.php`
-- `includes/design/token-resolution.php`
-- `includes/elementor/capability-registry.php`
-- `includes/elementor/reference-set.php`
-- `includes/elementor/layout-report.php`
-- `includes/elementor/elementor-ir.php`
-- `includes/elementor/native-compiler.php`
-- `includes/elementor/operation-ledger.php`
+### Ранее введённые и проверенные границы
 
-Изменены existing boundaries и UX:
+Исторические изменения EDDE, BriefIR/DesignPlan/ElementorIR, LayoutReport, token/reference validation, operation ledger, reconcile endpoint и routing policy были сохранены и проверены. В частности:
 
-- `includes/llm/llm.php` — feature-flagged shadow/active integration,
-  diagnostics, preflight summary, deterministic ID handoff и operation state.
-- `includes/llm/transport.php` — persisted `design_pipeline_mode`.
-- `includes/admin/dashboard.php` — настройки `off/shadow/active`.
-- `assets/js/elementor-llm-chat.js` и `assets/css/elementor-llm-chat.css` —
-  видимые фазы разбора, планирования, components, responsive, compile, write,
-  render и visual review; существующие retry/undo/session recovery сохранены.
-- `wp-ai-executor.php` — source version `v02.11.125`.
-- `wpae-package.json` — SHA-256 manifest обновлен с 80 до 90 runtime files.
-- `README.md`, `ERRORS.md` — описаны режимы pipeline и EJ-131.
-- `tests/design-pipeline-contract.php` и Node wrapper — новый contract harness.
+- operation ledger использует bounded option store и атомарный `add_option` lock;
+- idempotency key включает `post_id + brief_hash + selected_scope + operation_type + operation_identity`;
+- допустимые переходы состояния проверяются allowlist-ом;
+- reconcile проверяет post capability, operation identity, revision, saved hash, root ownership, target fingerprint, evidence source и Vision report;
+- только существующий transaction/update/read-back boundary пишет Elementor data;
+- routing diagnostics отличает `null` неизвестной transport-метрики от измеренного нуля.
 
-## 17. Сохраненные legacy paths
+Новые архетипы, marketplace, новая token system и отдельный write path не добавлялись.
 
-- `includes/llm/decision-engine.php` остается узким EDDE hero slice и не
-  превращен в универсальный DSL.
-- Legacy provider action decode, fallback, recipes, blueprint, block library,
-  `includes/llm/design.php`, normalizers и content-fidelity guards не удалены.
-- `includes/elementor/transactions.php`, `page-update.php`, validation,
-  protected-zone checks, autosave ownership, rollback и saved `_elementor_data`
-  readback остаются единственной write boundary.
-- `design_pipeline_mode=off` сохраняет текущий provider path без изменения
-  поведения; `shadow` строит новый результат только в памяти и показывает
-  comparison diagnostics, а запись выполняет legacy path.
-- Existing user-authored roots, foreign/autosave roots, protected zones,
-  links и untouched content не удаляются новым слоем.
+## Idempotency, concurrency и reconcile
 
-## 18. Feature flags и operation states
+Локальный contract harness воспроизвёл:
 
-`design_pipeline_mode` принимает только:
+| Сценарий | Результат |
+|---|---|
+| Повтор доставки того же idempotency key | PASS: возвращается существующая операция, новый root не создаётся |
+| Конкурентный захват | PASS: второй захват получает `lock_conflict/unknown`; option lock не теряет журнал |
+| Новая явная вставка с тем же brief | PASS: новый `operation_identity` создаёт новую операцию и новый deterministic root |
+| Недопустимый переход состояния | PASS: переход отклонён, журнал помечает `invalid_state_transition` |
+| Browser rendered/reviewed без server verification | PASS: reconcile оставляет `written` |
+| Старый unknown после более нового written | PASS: monotonic reconcile не деградирует состояние |
 
-```text
-off     -> legacy path
-shadow  -> BriefIR/Plan/IR/compiler diagnostics, без нового write
-active  -> bounded native compiler для hero/process/pricing
+Endpoint `POST /wp-json/ai-executor/v1/llm/operation-reconcile` ограничивает JSON payload 32768 bytes. Browser evidence не подтверждает read-back сама по себе. Для `rendered/reviewed/completed` сервер перечитывает Elementor data; для `reviewed/completed` дополнительно требуется Vision report с тем же post. Устаревший `operation_identity` или revision отклоняется с 409. Несовпадение saved hash, target fingerprint или root scope отклоняется с 409. Повторное подтверждение с тем же evidence идемпотентно.
+
+Живой ledger:
+
+| Operation | Root | Состояние | Доказательство |
+|---|---|---|---|
+| `wpae-20260921110642-50ed0529` | `4979256` | `written/render_review_pending` | состояние, переданное на вход этапа |
+| `wpae-c237dc2ec56bf748` | `1d846cc` | `written/render_review_pending` | v127 active generation, до v128 fix |
+| `wpae-20260921134608-904e4277` | selected patch | не найден в ledger | UI ответил «Ledger reconcile требует read-back: Операция не найдена» |
+| `wpae-32d5d4d8c09fdd16` | `20e991c` | `written/render_review_pending` | v128 независимая active insertion |
+
+Patch operation не была выдана за retry или за независимую вставку. Она не изменила ledger другой операции.
+
+## LayoutReport и фактический DOM
+
+LayoutReport v1 для v128:
+
+| Breakpoint | Container width | Used width | Mobile stack | Violations |
+|---|---:|---:|---|---|
+| desktop | 1200 | 1168 | n/a | [] |
+| laptop | 960 | 928 | n/a | [] |
+| tablet | 704 | 672 | n/a | [] |
+| mobile | 326 | 326 | `copy_first_stack` | [] |
+
+Compiler native settings для root `20e991c`:
+
+- desktop row: copy basis 40%, media basis 60%;
+- tablet: copy 50%, media 50%;
+- mobile: both 100%, direction column;
+- outer padding 1.5rem;
+- desktop gap 1.5rem, mobile gap 1rem;
+- media fallback has solid `#d1d5db` border and stable 12rem minimum height;
+- no fixed text height, no zero-width child.
+
+Public DOM read-back after reload was captured at the actual browser viewport 891×913 CSS px, DPR 2. Root `20e991c` had background `rgb(246, 240, 230)`, outer rect x=0, y=1002.77, width=876, height=382; inner rect x=24, width=828. At this tablet-width viewport the two direct children were row-aligned: copy width 400.45 and media width 403.55 with a 24px gap. Their widths plus gap equal the available inner width; no horizontal overflow or zero-width visible child was observed. This matches the declared tablet 50/50 policy rather than incorrectly applying desktop 40/60 to the cross-axis.
+
+Elementor responsive mode was explicitly switched to «Мобильный - книжная ориентация (до 767px)». AX read-back showed the v128 order `Тихая форма → АРХИТЕКТУРА → Пространство для идей → описание → Начать проект → Смотреть проекты`, with copy before media. The generated JSON declares mobile 100/100 and column direction.
+
+The IAB viewport capability was documented and invoked for 390px, but this existing tab continued to report 891×913; therefore public computed DOM at exactly 390, 768, 1024 and 1440 was not falsely claimed. The 390 public-DOM comparison is BLOCKED by the browser backend viewport override; the editor mobile mode and compiler policy remain directly observed. LayoutReport is still a preliminary invariant check, not a replacement for computed CSS or screenshots.
+
+## Semantic contrast and routing diagnostics
+
+v128 diagnostics:
+
+- text/page background ratio: 15.649, minimum 4.5;
+- muted/page background ratio: 6.667, minimum 4.5;
+- CTA surface/primary ratio: 5.085, minimum 3 for UI object;
+- small muted text receives the shared `color.muted` contrast-safe fallback; role name alone cannot bypass the size threshold;
+- missing project token warnings remain explicit.
+
+For the local deterministic route, provider metadata was not fabricated: `source=not_called`, `provider_calls=0`, `metrics_known.*=false`, token/latency/cost/success fields are `null`, not measured zeros or synthetic success.
+
+## Live generation evidence
+
+Editor: `https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor`
+Public source: `https://mazhenov.kz/pricing-contract-live-v123/`
+
+Exact prompt used for both insert attempts:
+
+```
+Добавь новую hero-секцию для архитектурной студии «Тихая форма».
+Надзаголовок «АРХИТЕКТУРА».
+Заголовок «Пространство для идей».
+Описание «Опишите задачу и получите понятный первый шаг».
+Основная кнопка «Начать проект», ссылка #contact.
+Вторичная кнопка «Смотреть проекты», ссылка #projects.
+Текст слева занимает 40%, визуальная часть справа — 60%.
+Тонкая рамка визуальной зоны, просторные отступы, фон #F6F0E6.
+На мобильном сначала текст, затем визуальная часть.
+Существующие блоки не изменяй.
 ```
 
-Durable record использует `wpae-design-operation-v1` и states:
-`planned -> generated -> normalized -> validated -> written -> rendered ->
-reviewed -> revised -> completed`, плюс `failed` и `unknown`. Idempotency key
-строится из `post_id + brief_hash + selected_scope + operation_type`.
+### Первый результат до v128
 
-## 19. Проверки
+Operation `wpae-c237dc2ec56bf748`, root `1d846cc`, source v02.11.127:
 
-Пройдены:
+- route diagnostics: `action_path=pipeline`, `route=local_deterministic`, `provider_calls=0`;
+- saved operation state: `written/render_review_pending`;
+- generated copy placed title before eyebrow and used the opposite 60/40 semantic order;
+- Vision score 90, confidence 95%, finding: eyebrow hierarchy;
+- selected-root patch `wpae-20260921134608-904e4277` changed only bounded selected elements; it did not create a second independent root and did not repair the node order;
+- patch reconcile was rejected because that UI operation was absent from the durable ledger.
 
-- `php tests/design-pipeline-contract.php` — **32 checks OK**;
-- `php tests/flex-generation-runtime.php` — **331 checks OK**;
-- `node --test tests/design-pipeline-contract.test.js`;
-- `node --test tests/flex-generation-runtime.test.js tests/llm-chat-contract.test.js tests/vision-security-contract.test.js tests/design-pipeline-contract.test.js` — все **4 suites PASS**;
-- `node --check assets/js/elementor-llm-chat.js`;
-- PHP lint всех измененных PHP-файлов;
-- `git diff --check`;
-- package SHA-256 verification — **90/90 PASS**.
+Status: FAIL/partial for the requested semantic ordering. The root was retained to avoid deleting user/page content.
 
-Новый self-check отдельно проверяет short labels, RU/EN, hero/process/pricing,
-несколько CTA, URL fidelity, multiline title, style-only, ambiguity,
-capability downgrade, ReferenceSet focal point, deterministic IDs, native
-Flex basis, mobile stack, zero-width violation, contrast, idempotency и route
-policy.
+### Второй результат после v128
 
-## 20. Browser/render evidence
+Operation `wpae-32d5d4d8c09fdd16`, operation identity `e74c5a87-43c4-44c3-a080-4529a6808e51`, idempotency key `15d9a13dcbf69af38c6853dbfb5a01cf5922a60aaeb01a0a0ca9b38604cf21d5`, root `20e991c`:
 
-Новая версия пока не устанавливалась в WordPress и `design_pipeline_mode` не
-переключался в `active`. Поэтому для v02.11.125 нет свежих current generation,
-saved `_elementor_data` readback, rendered HTML, DOM geometry, desktop/mobile
-screenshots или Vision review. Это source-only architecture release; прежнее
-live evidence v02.11.124 на post=5214 остается действительным для уже
-установленного EDDE/legacy path и не является acceptance нового active compiler.
+- route: `pipeline`, precedence `pipeline`, `local_deterministic`, provider calls 0, one write;
+- BriefIR hash `eced777cf49b3219ecceaeef43b55756e42d0209049888e7360519f4436eb1b`;
+- DesignPlan hash `f2722ad3d29e1d10e840a289eaec8da2c2a6b8517d6d61de77ae218afef18d85`;
+- compiled hash `5c11246aa98cbe75491363947e81c426bf4cd49af5a4654d1fd06e0f35d8734c`;
+- saved hash `64c440a0763c45c773da2f53ac1afffd257a6c7de793dd2de406395175d7ce6a`;
+- target fingerprint `468dd0498a4d4a699a69052a8fcb79c9994778ffe439e84dde7c2cd2b73a2a38`;
+- revision 4, current state `written`, `rendered_html_hash=""`, `render_review_pending=true`;
+- native widgets: container, heading, text-editor, button; no unavailable widget downgrade;
+- exact visible copy and links were present in editor and public AX:
+  - brand `Тихая форма`;
+  - eyebrow `АРХИТЕКТУРА`;
+  - title `Пространство для идей`;
+  - body `Опишите задачу и получите понятный первый шаг`;
+  - `Начать проект` → `#contact`;
+  - `Смотреть проекты` → `#projects`;
+- Vision: score 90, confidence 95%; minor finding was additional vertical padding, not a content or layout failure.
 
-В результате визуальная приемка v02.11.125 сознательно имеет статус
-**pending**, а не completed. Новые страницы и черновики для проверки не
-создавались.
+Status: PASS for deterministic routing, content fidelity, native structure, saved root and observed DOM; BLOCKED for file-based screenshot gallery and server-completed rendered/reviewed state.
 
-## 21. Остаточные предупреждения и limitations
+Pricing preservation: public AX after reload still contained `ТАРИФЫ`, `Выберите формат работы`, `Старт`, `от 50 000 ₸`, `Проект`, `от 150 000 ₸`, `Поддержка`, `от 80 000 ₸/мес` and the existing `#start`, `#project`, `#support` links. No neighboring root was removed. A separate manual unsaved-edit-before-AI-operation scenario was not run; no loss of existing pricing content was observed.
 
-- Live `active` install/revision check еще не выполнены; source `v02.11.125`
-  и live `v02.11.124` намеренно разделены.
-- Operation ledger уже durable и idempotent, но отдельный REST reconcile UI
-  endpoint для unknown browser timeout остается следующим минимальным шагом;
-  существующий editor retry/undo path не удален.
-- Provider telemetry policy schema присутствует, однако точные input/output
-  tokens, latency и cost требуют подключения к фактическому transport response
-  metadata; в локальном compiler-only пути стоимость равна нулю.
-- Server-side LayoutReport не доказывает computed CSS, keyboard behavior,
-  animation timing или screenshot-level fidelity; это по-прежнему требуют
-  свежие browser screenshots и Vision review.
-- Legacy hardcoded colors в EDDE/fallback сохранены ради backward-compatible
-  path; новый compiler использует semantic refs и safe defaults.
+## Screenshot gallery
 
-## 22. Commit, push и следующий шаг
+The documented screenshot path was checked before the long live test:
 
-- Implementation commit: `2f97c8f`.
-- Documentation/context commits: `47abcdc`, final status commit `1e55868`.
-- Push: **успешен** в разрешенный `origin/main`; remote `refs/heads/main`
-  подтвержден на final `1e55868`.
-- Live WP Pusher deployment в этом этапе не выполнялся.
-- Следующий минимальный шаг: установить уже отправленный `v02.11.125` через
-  WP Pusher на уже открытую страницу `post=5214`, выполнить одну controlled
-  active hero generation и собрать saved JSON, rendered HTML, DOM geometry,
-  desktop/mobile screenshots и Vision review. Только после этого можно
-  переводить active acceptance из pending в completed.
+- `tab.getScreenshot()` returns screenshot bytes and supports inline display;
+- `tab.content.export()` returns exactly: `Codex in-app browser does not support command "tab_content_export"`;
+- `pageAssets` exports observed page assets only (image/font/style/video), not screenshot bytes;
+- no documented screenshot bytes-to-file writer or screenshot artifact method is available in this browser session.
 
-## 23. Addendum: live active acceptance на post=5214
+Inline public desktop and Elementor mobile frames were captured and visually inspected during this run. They cannot be addressed by an absolute filesystem path. Required gallery status:
 
-Этот раздел supersedes the source-only status in sections 20–22. Проверка
-выполнена 2026-09-21, Asia/Almaty, на существующей странице `post=5214`;
-новая WordPress-страница или draft не создавались.
+- Hero A (v127 failed semantic result) — desktop: **SCREENSHOT BLOCKED**; mobile: **SCREENSHOT BLOCKED**.
+- Hero B (v128 root `20e991c`) — desktop, public preview, actual viewport 891×913 CSS px: **SCREENSHOT BLOCKED**; mobile, Elementor responsive mode ≤767px: **SCREENSHOT BLOCKED**.
 
-### 23.1 Live operation
+No generated image, alternate renderer, stale inline capture, or single tab ID is being presented as a saved screenshot artifact.
 
-- В live settings сохранены `Design Decision Engine=active` и
-  `Deterministic Design Pipeline=active`.
-- На текущей странице выполнен один контролируемый запрос hero с exact copy:
-  `АРХИТЕКТУРА`, `Пространство для идей`, `Опишите задачу и получите понятный
-  первый шаг.`, CTA `Начать проект` → `#contact`.
-- Operation ID: `wpae-20260921110642-50ed0529`.
-- Elementor preflight и update вернули `HTTP 200`; transaction записала root
-  `4979256` и четыре native widgets.
-- Brief hash:
-  `12fedfafa6bd4c37272c7759a93018387c42f91a15527f4598a9f6c3892976af`.
-- DesignPlan hash:
-  `7949b74904a674f848ef9fb1decd89fd5b7aa585417e1bf4ab7c2afb0d7c4f6b`.
-- Compiled hash:
-  `296dfc784545c9fff30b1ba0cdbe724afe1a34fdb104eb57b4d28fe7d72620f5`.
-- Saved hash:
-  `8f6d9380976d31e07dbdf31633c993f18bdecd561ed91f7cccc1e684233ea898`.
-- Operation ledger сохранил `wpae-design-operation-v1`, `current_state=written`,
-  `selected_scope=page`, `retry_count=0`, `fallback_used=false` и
-  `render_review_pending=true`. Browser-side review прошел, но durable
-  `reviewed/completed` reconcile endpoint еще не добавлен.
+## Validation and release evidence
 
-### 23.2 Contracts and compiled result
+Commands and results:
 
-- `BriefIR v1`: `validation.ok=true`, locale `ru`, archetype `hero`, 4 content
-  items, 0 ambiguities, 0 parser warnings.
-- `DesignPlan v1`: `validation.ok=true`; requested and available widgets:
-  `heading`, `text-editor`, `button`, `image`; downgrade count `0`.
-- `ElementorIR v2`: `compiled=true`, `validation.ok=true`, native widget set
-  `container`, `heading`, `text-editor`, `button`, node count `7`.
-- Generated JSON сохранил exact text и URL, deterministic IDs и basis policy:
-  root `4979256`, copy `73401a9` basis `60/50/100`, eyebrow `9ecfafc`, title
-  `02c6816`, body `6ec284a`, CTA `a55f678` → `#contact`, media fallback `ee7fbe9`
-  basis `40/50/100`.
-- LayoutReport: `ok=true`, violations `[]`; desktop `1200→1168`, laptop
-  `960→928`, tablet `704→672`, mobile `326→195.6`, mobile policy
-  `copy_first_stack`.
-- Semantic contrast gate: `ok=true`; text/page `15.65`, muted/page `4.26`,
-  surface/primary `5.08`.
+```
+php -l includes/llm/brief-ir.php                         PASS
+php -l includes/llm/decision-engine.php                 PASS
+php -l includes/elementor/elementor-ir.php              PASS
+php -l wp-ai-executor.php                                PASS
+php tests/design-pipeline-contract.php                   PASS — 52 checks OK
+php tests/flex-generation-runtime.php                    PASS — 331 checks OK
+node --test tests/*.test.js                              PASS — 4 suites, 0 failures
+manifest SHA-256 verification                            PASS — files=90 mismatches=0
+git diff --check                                          PASS
+```
 
-### 23.3 Readback, DOM and screenshots
+Runtime release `a55824d` was pushed to `origin/main` and installed on the existing site through WP Pusher. The plugin page and the same Elementor editor reported `v02.11.128`. Source release, push, install and live evidence are separate facts; screenshot-file and completed-render gates remain blocked as stated above.
 
-- Editor desktop DOM: viewport `1010px`, generated root `1010×246px`, copy
-  `467.46px`, media `470.54px`; no zero-width node and no horizontal overflow.
-- Editor mobile DOM: viewport `345px`, generated root `345×493px`, copy and
-  media both `297px` wide, `flex-direction=column`, `scrollWidth=345px`.
-- Public page HTML после reload содержит exact `АРХИТЕКТУРА`, title, body и
-  `Начать проект`; generated root имеет class
-  `wpae-generated-root wpae-generated-hero elementor-element-4979256`.
-- Свежие captures получены для editor desktop, editor mobile и public desktop;
-  CUA показал их inline в этой сессии. Filesystem paths недоступны у текущего
-  Browser Use API, поэтому выдуманные ссылки на screenshot-файлы не указаны.
-- AI Vision: `score=88`, `confidence=95%`; copy, 60/40 split, fallback media
-  и CTA подтверждены. Единственная рекомендация — немного увеличить
-  vertical padding.
+## Matrix of acceptance
 
-### 23.4 Исправление найденного UX-дефекта
-
-После acceptance выяснилось, что pipeline badge оставлял `Рендер` в состоянии
-`active`, если provider response не содержал отдельный `render_cache` step,
-хотя preview уже painted и Vision review завершен. Finish-path в
-`assets/js/elementor-llm-chat.js` теперь переводит `render` в `done` после
-`waitForPreviewPaint`/`waitForPreviewRefresh`; plugin version поднята до
-`v02.11.126`, package manifest пересчитан (`90/90`). Это не меняет сохраненную
-страницу и не требует второй генерации.
-
-### 23.5 Warnings и следующий минимальный шаг
-
-- Media отсутствовала по prompt, поэтому compiler честно записал
-  `missing_media_explicit_fallback` и `media_fallback`; пользовательский asset
-  не подменялся.
-- Один border token пришел из `safe_default`; missing token не заблокировал
-  запись и был виден в diagnostics.
-- Routing diagnostics live operation пока показывают `input_tokens=0`,
-  `output_tokens=0`, `latency_ms=0`, `success=false`: provider telemetry
-  schema есть, но transport response metadata еще не прокинут в trace.
-- Durable ledger остается `written/render_review_pending`; следующий небольшой
-  архитектурный шаг — endpoint/browser reconcile, который после DOM+Vision
-  evidence переведет operation в `rendered → reviewed → completed` и безопасно
-  закроет unknown timeout.
-
-## 24. Current release metadata
-
-- Source release after the render-phase fix: `v02.11.126`.
-- Live evidence was collected on installed `v02.11.125`; v02.11.126 contains
-  только cache-visible version bump, manifest refresh и render-phase finish fix.
-- Before final push, working-tree checks were clean apart from the two intended
-  runtime files and manifest; no secrets, lockfiles, screenshots or test pages
-  were staged.
-
-## 25. Final push and live revision
-
-- Final source commit: `456fe7b2afacd912af9186617069d32f4c212e68`.
-- Push status: **успешен**, `origin/main` получил runtime `456fe7b` и
-  handoff metadata `251c2b2` после `f05c88e`.
-- WP Pusher/live plugins screen после push показал `WP AI Executor v02.11.126`
-  active.
-- LLM settings после обновления сохранили
-  `Deterministic Design Pipeline=active` и `Design Decision Engine=active`.
-- Новый live Elementor editor того же `post=5214` загрузил chat asset с
-  `Модель: openrouter/free · Версия: v02.11.126`; вторая WordPress page не
-  создавалась.
-- Active generation evidence относится к v02.11.125 до cache-visible
-  render-only patch; v02.11.126 не меняет compiled tree, transaction data или
-  public content, а только гарантирует корректное завершение UI-фазы `Рендер`.
-- Final status: архитектурная миграция и controlled live acceptance выполнены;
-  operation-ledger `reviewed/completed` reconcile и точные provider token/cost
-  fields остаются отдельными следующими шагами.
+| Area | Status | Evidence |
+|---|---|---|
+| BriefIR exact text/provenance/URLs | PASS | 52 contract checks and live v128 diagnostics |
+| DesignPlan/ElementorIR/native compiler | PASS | v128 root, native widget list and saved JSON |
+| Feature flag precedence | PASS | four-route matrix and live active/active route |
+| Idempotency/concurrency/state transitions | PASS | operation ledger contract checks |
+| Timeout/read-back duplicate protection | PASS (contract) / NOT RUN (forced live timeout) | reconcile guards and monotonic state tests |
+| Target conflict/stale acknowledgement | PASS (contract) / NOT RUN (forced live conflict) | endpoint checks and stale revision tests |
+| Contrast/unknown telemetry handling | PASS | ratios and `metrics_known` diagnostics |
+| LayoutReport mobile-axis semantics | PASS | regression plus v128 40/50/100 native settings |
+| Live v127 hero semantic result | FAIL/partial | root `1d846cc`, order/ratio mismatch |
+| Live v128 independent hero insert | PASS for source/DOM; BLOCKED for screenshot/completed gate | root `20e991c`, public AX, Vision 90 |
+| Public pricing preservation | PASS | public AX after reload |
+| Desktop/mobile filesystem screenshots | BLOCKED | documented browser limitation |
+| Manual unsaved neighboring edit scenario | NOT RUN | no controlled unsaved edit was introduced |
+| New page/draft creation | PASS | none created |
