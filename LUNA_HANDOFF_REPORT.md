@@ -231,6 +231,15 @@ B не является принятым дизайном и не получил
 - документированного writer/artifact API для записи этих bytes в файл в текущей browser session нет;
 - OS-level capture снимал foreground Chrome, а не embedded IAB; data-URL workaround запрещён средой.
 
+Свежий capture этой проверки выполнен 2026-09-21 21:13:17 +05:00 после открытия того же post=5214 в Elementor editor с cache-buster.
+
+- источник: embedded CUA editor, URL post=5214 action=elementor; новая WordPress page/draft не создавалась;
+- post ID: 5214; root: a9282de; operation: wpae-c8d8403f5579e2a3;
+- viewport screenshot: 1280×720;
+- exact title и обе CTA найдены в editor iframe; root count=1;
+- getScreenshot() вернул 61013 JPEG bytes и screenshot был показан inline;
+- требуемый PNG-файл и абсолютная ссылка не созданы: runtime не предоставляет документированный writer/artifact API для этих bytes, а public capture завершился Unable to capture screenshot.
+
 Галерея: SCREENSHOT BLOCKED. Inline desktop/mobile evidence было визуально проверено, но абсолютные filesystem links не создавались и не выдумывались.
 
 ## Долговечный ledger после live-операций
