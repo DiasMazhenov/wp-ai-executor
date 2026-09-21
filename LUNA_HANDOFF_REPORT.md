@@ -459,9 +459,10 @@ live evidence v02.11.124 на post=5214 остается действитель�
 ## 22. Commit, push и следующий шаг
 
 - Implementation commit: `2f97c8f`.
-- Documentation/context update: будет отдельным docs commit после этой записи.
-- Push: выполнить в разрешенный `origin/main` после финальной проверки staged
-  files; live WP Pusher deployment в этом этапе не выполняется.
+- Documentation/context commit: `47abcdc`.
+- Push: **успешен** в разрешенный `origin/main`; remote `refs/heads/main`
+  подтвержден на `47abcdc95e8aba1ed7ecae903fbbccc6d0f02b9b`.
+- Live WP Pusher deployment в этом этапе не выполнялся.
 - Следующий минимальный шаг: push `v02.11.125`, установить его через WP
   Pusher на уже открытую страницу `post=5214`, выполнить одну controlled
   active hero generation и собрать saved JSON, rendered HTML, DOM geometry,
