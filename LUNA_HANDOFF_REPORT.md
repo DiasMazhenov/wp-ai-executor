@@ -463,8 +463,8 @@ live evidence v02.11.124 на post=5214 остается действитель�
 - Push: **успешен** в разрешенный `origin/main`; remote `refs/heads/main`
   подтвержден на final `1e55868`.
 - Live WP Pusher deployment в этом этапе не выполнялся.
-- Следующий минимальный шаг: push `v02.11.125`, установить его через WP
-  Pusher на уже открытую страницу `post=5214`, выполнить одну controlled
+- Следующий минимальный шаг: установить уже отправленный `v02.11.125` через
+  WP Pusher на уже открытую страницу `post=5214`, выполнить одну controlled
   active hero generation и собрать saved JSON, rendered HTML, DOM geometry,
   desktop/mobile screenshots и Vision review. Только после этого можно
   переводить active acceptance из pending в completed.
