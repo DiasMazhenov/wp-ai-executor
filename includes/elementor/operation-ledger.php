@@ -17,13 +17,8 @@ function wpae_design_operation_state_rank( string $state ): int {
 	return (int) ( $rank[ sanitize_key( $state ) ] ?? -1 );
 }
 
-function wpae_design_operation_transition_allowed( string $from, string $to ): bool {
-	$from = sanitize_key( $from );
-	$to   = sanitize_key( $to );
-	if ( $from === $to ) {
-		return true;
-	}
-	$allowed = [
+function wpae_design_operation_transition_map(): array {
+	return [
 		'planned' => [ 'generated', 'failed', 'unknown' ],
 		'generated' => [ 'normalized', 'failed', 'unknown' ],
 		'normalized' => [ 'validated', 'failed', 'unknown' ],
@@ -36,7 +31,50 @@ function wpae_design_operation_transition_allowed( string $from, string $to ): b
 		'failed' => [ 'unknown' ],
 		'completed' => [],
 	];
+}
+
+function wpae_design_operation_transition_allowed( string $from, string $to ): bool {
+	$from = sanitize_key( $from );
+	$to   = sanitize_key( $to );
+	if ( $from === $to ) {
+		return true;
+	}
+	$allowed = wpae_design_operation_transition_map();
 	return in_array( $to, $allowed[ $from ] ?? [], true );
+}
+
+/**
+ * Return the shortest valid state path without weakening the state machine.
+ * Reconcile uses this while holding the operation lock so a reviewed ack cannot
+ * skip the rendered state through a series of unlocked read/update calls.
+ */
+function wpae_design_operation_transition_path( string $from, string $to ): array {
+	$from = sanitize_key( $from );
+	$to   = sanitize_key( $to );
+	if ( $from === $to ) {
+		return [];
+	}
+	$queue = [ [ $from, [] ] ];
+	$seen  = [ $from => true ];
+	$map   = wpae_design_operation_transition_map();
+	while ( ! empty( $queue ) ) {
+		$current = array_shift( $queue );
+		$state   = (string) ( $current[0] ?? '' );
+		$path    = (array) ( $current[1] ?? [] );
+		foreach ( (array) ( $map[ $state ] ?? [] ) as $next ) {
+			$next = sanitize_key( (string) $next );
+			if ( $next === '' || isset( $seen[ $next ] ) ) {
+				continue;
+			}
+			$next_path = array_merge( $path, [ $next ] );
+			if ( $next === $to ) {
+				return $next_path;
+			}
+			$seen[ $next ] = true;
+			$queue[] = [ $next, $next_path ];
+		}
+	}
+	return [];
 }
 
 function wpae_design_operation_store(): array {
@@ -169,6 +207,7 @@ function wpae_design_operation_create( array $input ): array {
 			'compiled_hash' => sanitize_text_field( (string) ( $input['compiled_hash'] ?? '' ) ),
 			'saved_hash' => sanitize_text_field( (string) ( $input['saved_hash'] ?? '' ) ),
 			'rendered_html_hash' => sanitize_text_field( (string) ( $input['rendered_html_hash'] ?? '' ) ),
+			'vision_report_id' => sanitize_text_field( (string) ( $input['vision_report_id'] ?? '' ) ),
 			'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $input['root_ids'] ?? [] ), 0, 12 ) ) ) ),
 			'target_fingerprint' => sanitize_text_field( (string) ( $input['target_fingerprint'] ?? '' ) ),
 			'provider' => sanitize_key( (string) ( $input['provider'] ?? '' ) ),
@@ -203,7 +242,7 @@ function wpae_design_operation_update( string $operation_id, array $patch ): ?ar
 			$current_state = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
 			$transition_rejected = false;
 			foreach ( $patch as $key => $value ) {
-				$allowed_keys = [ 'current_state', 'post_id', 'latency_ms', 'retry_count', 'fallback_used', 'brief_hash', 'plan_hash', 'compiled_hash', 'saved_hash', 'rendered_html_hash', 'provider', 'model', 'selected_scope', 'operation_identity', 'operation_type', 'root_ids', 'target_fingerprint', 'last_error', 'evidence_source', 'evidence_hash' ];
+				$allowed_keys = [ 'current_state', 'post_id', 'latency_ms', 'retry_count', 'fallback_used', 'brief_hash', 'plan_hash', 'compiled_hash', 'saved_hash', 'rendered_html_hash', 'vision_report_id', 'provider', 'model', 'selected_scope', 'operation_identity', 'operation_type', 'root_ids', 'target_fingerprint', 'last_error', 'evidence_source', 'evidence_hash' ];
 				if ( ! in_array( $key, $allowed_keys, true ) ) {
 					continue;
 				}
@@ -246,33 +285,78 @@ function wpae_design_operation_update( string $operation_id, array $patch ): ?ar
 }
 
 function wpae_design_operation_reconcile( string $operation_id, array $readback = [] ): ?array {
-	$operation = wpae_design_operation_find_by_id( $operation_id );
-	if ( ! is_array( $operation ) ) {
-		return null;
-	}
-	$requested = sanitize_key( (string) ( $readback['state'] ?? ( ! empty( $readback['ok'] ) ? 'written' : 'unknown' ) ) );
-	if ( ! in_array( $requested, wpae_design_operation_states(), true ) ) {
-		$requested = 'unknown';
-	}
-	if ( in_array( $requested, [ 'rendered', 'reviewed', 'completed' ], true ) && empty( $readback['server_verified'] ) ) {
-		$requested = 'written';
-	}
-	$current = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
-	if ( wpae_design_operation_state_rank( $current ) > wpae_design_operation_state_rank( $requested ) ) {
-		$requested = $current;
-	}
-	$patch = [
-		'current_state' => $requested,
-		'saved_hash' => sanitize_text_field( (string) ( $readback['saved_hash'] ?? '' ) ),
-		'rendered_html_hash' => sanitize_text_field( (string) ( $readback['rendered_html_hash'] ?? '' ) ),
-		'evidence_source' => sanitize_text_field( (string) ( $readback['evidence_source'] ?? '' ) ),
-		'evidence_hash' => sanitize_text_field( (string) ( $readback['evidence_hash'] ?? '' ) ),
-	];
-	if ( array_key_exists( 'root_ids', $readback ) ) {
-		$patch['root_ids'] = $readback['root_ids'];
-	}
-	if ( ! empty( $readback['conflict_reason'] ) ) {
-		$patch['last_error'] = sanitize_text_field( (string) $readback['conflict_reason'] );
-	}
-	return wpae_design_operation_update( $operation_id, $patch );
+	$result = wpae_design_operation_with_lock( static function () use ( $operation_id, $readback ): ?array {
+		$operations = wpae_design_operation_store();
+		$index      = null;
+		foreach ( $operations as $candidate_index => $candidate ) {
+			if ( is_array( $candidate ) && (string) ( $candidate['operation_id'] ?? '' ) === $operation_id ) {
+				$index = $candidate_index;
+				break;
+			}
+		}
+		if ( $index === null ) {
+			return null;
+		}
+		$operation = is_array( $operations[ $index ] ) ? $operations[ $index ] : [];
+		$requested = sanitize_key( (string) ( $readback['state'] ?? ( ! empty( $readback['ok'] ) ? 'written' : 'unknown' ) ) );
+		if ( ! in_array( $requested, wpae_design_operation_states(), true ) ) {
+			$requested = 'unknown';
+		}
+		if ( in_array( $requested, [ 'rendered', 'reviewed', 'completed' ], true ) && empty( $readback['server_verified'] ) ) {
+			$requested = 'written';
+		}
+		$current = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
+		if ( wpae_design_operation_state_rank( $current ) > wpae_design_operation_state_rank( $requested ) ) {
+			$requested = $current;
+		}
+		$path = wpae_design_operation_transition_path( $current, $requested );
+		if ( $current !== $requested && empty( $path ) ) {
+			$operation['last_error']          = 'invalid_state_transition';
+			$operation['transition_rejected'] = true;
+			$operation['updated_at']          = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
+			$operations[ $index ]             = $operation;
+			wpae_design_operation_save( $operations );
+			return $operation;
+		}
+		foreach ( $path as $state ) {
+			$operation['current_state'] = $state;
+		}
+		$changed = ! empty( $path );
+		$metadata = [
+			'saved_hash' => sanitize_text_field( (string) ( $readback['saved_hash'] ?? '' ) ),
+			'rendered_html_hash' => sanitize_text_field( (string) ( $readback['rendered_html_hash'] ?? '' ) ),
+			'vision_report_id' => sanitize_text_field( (string) ( $readback['vision_report_id'] ?? '' ) ),
+			'evidence_source' => sanitize_text_field( (string) ( $readback['evidence_source'] ?? '' ) ),
+			'evidence_hash' => sanitize_text_field( (string) ( $readback['evidence_hash'] ?? '' ) ),
+		];
+		foreach ( $metadata as $key => $value ) {
+			if ( $value !== '' && (string) ( $operation[ $key ] ?? '' ) !== $value ) {
+				$operation[ $key ] = $value;
+				$changed = true;
+			}
+		}
+		if ( array_key_exists( 'root_ids', $readback ) ) {
+			$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) $readback['root_ids'], 0, 12 ) ) ) );
+			if ( $root_ids !== (array) ( $operation['root_ids'] ?? [] ) ) {
+				$operation['root_ids'] = $root_ids;
+				$changed = true;
+			}
+		}
+		if ( ! empty( $readback['conflict_reason'] ) ) {
+			$error = sanitize_text_field( (string) $readback['conflict_reason'] );
+			if ( (string) ( $operation['last_error'] ?? '' ) !== $error ) {
+				$operation['last_error'] = $error;
+				$changed = true;
+			}
+		}
+		if ( ! $changed ) {
+			return $operation;
+		}
+		$operation['revision']   = max( 1, (int) ( $operation['revision'] ?? 1 ) + 1 );
+		$operation['updated_at'] = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
+		$operations[ $index ]     = $operation;
+		wpae_design_operation_save( $operations );
+		return $operation;
+	} );
+	return is_array( $result ) ? $result : null;
 }

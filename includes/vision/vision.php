@@ -172,6 +172,11 @@ function wpae_vision_render_context( $value ): array {
         'target_scroll_height' => max( 0, min( 10000, absint( $value['target_scroll_height'] ?? 0 ) ) ),
         'page_scroll_x' => max( - 10000, min( 10000, (int) ( $value['page_scroll_x'] ?? 0 ) ) ),
         'page_scroll_y' => max( - 10000, min( 10000, (int) ( $value['page_scroll_y'] ?? 0 ) ) ),
+        'operation_id' => sanitize_key( (string) ( $value['operation_id'] ?? '' ) ),
+        'operation_identity' => wpae_vision_trim_text( $value['operation_identity'] ?? '', 120 ),
+        'operation_revision' => absint( $value['operation_revision'] ?? 0 ),
+        'operation_saved_hash' => wpae_vision_trim_text( $value['operation_saved_hash'] ?? '', 128 ),
+        'operation_target_fingerprint' => wpae_vision_trim_text( $value['operation_target_fingerprint'] ?? '', 128 ),
     ];
     $target_rect = is_array( $value['target_rect'] ?? null ) ? $value['target_rect'] : [];
     $context['target_rect'] = [
@@ -198,6 +203,14 @@ function wpae_vision_render_context( $value ): array {
         }
     }
     $context['target_element_ids'] = array_values( array_unique( $target_ids ) );
+    $operation_root_ids = [];
+    foreach ( array_slice( (array) ( $value['operation_root_ids'] ?? [] ), 0, 12 ) as $id ) {
+        $id = sanitize_key( (string) $id );
+        if ( $id !== '' ) {
+            $operation_root_ids[] = $id;
+        }
+    }
+    $context['operation_root_ids'] = array_values( array_unique( $operation_root_ids ) );
     return array_filter( $context, static fn( $item ) => $item !== '' && $item !== 0 && $item !== null );
 }
 

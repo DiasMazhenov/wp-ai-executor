@@ -45,7 +45,7 @@ function wpae_read_package_manifest( ZipArchive $archive ): array {
     }
 
     $files = $decoded['files'];
-    if ( count( $files ) === 0 || count( $files ) > 80 || ! isset( $files['wp-ai-executor.php'] ) ) {
+    if ( count( $files ) === 0 || count( $files ) > 120 || ! isset( $files['wp-ai-executor.php'] ) ) {
         return [ 'ok' => false, 'error' => 'Package manifest has an invalid file set.' ];
     }
 

@@ -192,6 +192,14 @@ $independent_b = wpae_design_operation_create( [ 'operation_id' => 'op-independe
 $check( $independent_a['operation_id'] !== $independent_b['operation_id'], 'same brief with a new operation identity creates an independent insertion' );
 $check( wpae_design_operation_reconcile( 'op-independent-a', [ 'ok' => true, 'state' => 'rendered', 'server_verified' => false ] )['current_state'] === 'written', 'browser rendered claim cannot bypass server verification' );
 $check( wpae_design_operation_reconcile( 'op-independent-a', [ 'ok' => true, 'state' => 'unknown' ] )['current_state'] === 'written', 'stale unknown readback cannot degrade written operation' );
+$review_path = wpae_design_operation_transition_path( 'written', 'reviewed' );
+$check( $review_path === [ 'rendered', 'reviewed' ], 'reconcile traverses written to reviewed through rendered' );
+$review_operation = wpae_design_operation_create( [ 'operation_id' => 'op-review-path', 'idempotency_key' => 'review-path-key', 'post_id' => 5214, 'operation_identity' => 'review-path', 'current_state' => 'written', 'saved_hash' => 'saved-before' ] );
+$reviewed_operation = wpae_design_operation_reconcile( 'op-review-path', [ 'ok' => true, 'state' => 'reviewed', 'server_verified' => true, 'saved_hash' => 'saved-before', 'rendered_html_hash' => 'rendered-hash', 'vision_report_id' => 'vr-review-path', 'evidence_source' => 'preview', 'evidence_hash' => 'evidence-review-path' ] );
+$check( $reviewed_operation['current_state'] === 'reviewed' && $reviewed_operation['rendered_html_hash'] === 'rendered-hash' && $reviewed_operation['vision_report_id'] === 'vr-review-path', 'review reconcile applies the complete durable path atomically' );
+$reviewed_revision = (int) $reviewed_operation['revision'];
+$reviewed_again = wpae_design_operation_reconcile( 'op-review-path', [ 'ok' => true, 'state' => 'reviewed', 'server_verified' => true, 'saved_hash' => 'saved-before', 'rendered_html_hash' => 'rendered-hash', 'vision_report_id' => 'vr-review-path', 'evidence_source' => 'preview', 'evidence_hash' => 'evidence-review-path' ] );
+$check( (int) $reviewed_again['revision'] === $reviewed_revision && $reviewed_again['current_state'] === 'reviewed', 'repeated reconcile acknowledgement is idempotent' );
 $held_lock = wpae_design_operation_acquire_lock();
 $contended = wpae_design_operation_create( [ 'operation_id' => 'op-contended', 'idempotency_key' => 'contended-key', 'post_id' => 5214 ] );
 $check( $held_lock !== null && ! empty( $contended['lock_conflict'] ), 'concurrent operation capture is rejected by the atomic option lock' );

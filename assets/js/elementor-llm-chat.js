@@ -1448,14 +1448,36 @@
             return '';
         }
     }
-    function requestVisionReview(snapshotId, captureError, brief, editorSync) {
+    function buildVisionOperationContext(body, requestContext, editorSync) {
+        var ledger = body && body.diagnostics && body.diagnostics.operation_ledger ? body.diagnostics.operation_ledger : {};
+        var roots = editorSync && Array.isArray(editorSync.operation_owned_root_ids)
+            ? editorSync.operation_owned_root_ids.slice(0, 12)
+            : (Array.isArray(ledger.root_ids) ? ledger.root_ids.slice(0, 12) : liveGeneratedRootIds.slice(0, 12));
+        return {
+            operation_id: String(body && body.operation_id || ledger.operation_id || ''),
+            operation_identity: String(requestContext && requestContext.operation_identity || ledger.operation_identity || readOperationIdentity()).slice(0, 120),
+            operation_revision: Number(ledger.revision || 0),
+            operation_saved_hash: String(ledger.saved_hash || '').slice(0, 128),
+            operation_target_fingerprint: String(ledger.target_fingerprint || '').slice(0, 128),
+            operation_root_ids: roots
+        };
+    }
+    function withVisionOperationContext(renderContext, operationContext) {
+        var context = renderContext && typeof renderContext === 'object' ? Object.assign({}, renderContext) : {};
+        if (!operationContext || !operationContext.operation_id) return context;
+        Object.keys(operationContext).forEach(function (key) {
+            context[key] = operationContext[key];
+        });
+        return context;
+    }
+    function requestVisionReview(snapshotId, captureError, brief, editorSync, operationContext) {
         var reviewScope = visionReviewScope(editorSync);
         return postVisionReview({
             post_id: Number(config.postId) || 0,
             rollback_snapshot_id: snapshotId,
             vision_capture_error: captureError,
             brief: brief || '',
-            render_context: getPreviewRenderContext(getVisionSyncIds(editorSync), reviewScope),
+            render_context: withVisionOperationContext(getPreviewRenderContext(getVisionSyncIds(editorSync), reviewScope), operationContext),
             generated_json: getVisionGeneratedJson(editorSync)
         });
     }
@@ -1493,9 +1515,12 @@
         var operationId = String(body && body.operation_id || '');
         var ledger = body && body.diagnostics && body.diagnostics.operation_ledger ? body.diagnostics.operation_ledger : {};
         var endpoint = config.reconcileEndpoint || ((window.wpApiSettings && window.wpApiSettings.root) ? window.wpApiSettings.root + 'ai-executor/v1/design-operations/reconcile' : '/wp-json/ai-executor/v1/design-operations/reconcile');
-        if (!operationId || !endpoint) return Promise.resolve(null);
+        // Scoped patches and legacy repairs do not have a durable operation
+        // record. Do not send them to the design-operation reconcile endpoint;
+        // the absence of a ledger entry is a supported path, not a failure.
+        if (!operationId || !endpoint || !ledger || String(ledger.operation_id || '') !== operationId) return Promise.resolve({ skipped: true, reason: 'no_durable_ledger' });
         var report = review && review.report ? review.report : {};
-        var state = report.report_id ? 'reviewed' : (review && review.vision_unavailable ? 'written' : 'rendered');
+        var state = report.report_id ? 'completed' : (review && review.vision_unavailable ? 'written' : 'rendered');
         var roots = editorSync && Array.isArray(editorSync.operation_owned_root_ids) ? editorSync.operation_owned_root_ids.slice(0, 12) : liveGeneratedRootIds.slice(0, 12);
         var evidence = JSON.stringify({ operation_id: operationId, roots: roots, viewport: window.innerWidth || 0, state: state }).slice(0, 4000);
         return fetch(endpoint, {
@@ -1519,7 +1544,7 @@
             });
         });
     }
-    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync, rootSnapshot) {
+    function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync, rootSnapshot, operationContext) {
         var reviewScope = visionReviewScope(editorSync);
         var visionSyncIds = getVisionSyncIds(editorSync);
         addMessage('assistant', 'Выполняется: Обновляю preview и проверяю результат через AI Vision.');
@@ -1541,11 +1566,11 @@
                     mime_type: capture.mime_type,
                     viewport: capture.viewport,
                     brief: brief || '',
-                    render_context: capture.render_context,
+                    render_context: withVisionOperationContext(capture.render_context, operationContext),
                     generated_json: getVisionGeneratedJson(editorSync)
                 });
             }, function (error) {
-                return requestVisionReview(snapshotId, error.message, brief, editorSync);
+                return requestVisionReview(snapshotId, error.message, brief, editorSync, operationContext);
             });
         });
     }
@@ -1822,7 +1847,7 @@
                     });
                 }).then(function () {
                     if (!options.skipVision && config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
-                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData, requestContext.editor_root_snapshot).catch(function (error) {
+                        return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData, requestContext.editor_root_snapshot, buildVisionOperationContext(body, requestContext, editorSyncData)).catch(function (error) {
                             return { vision_unavailable: true, error: error && error.message ? error.message : 'Проверка Vision недоступна.' };
                         });
                     }
