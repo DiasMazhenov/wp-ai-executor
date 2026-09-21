@@ -189,7 +189,7 @@ function wpae_validate_restored_elementor_meta( int $post_id ): ?array {
     ];
 }
 
-function wpae_create_rollback_snapshot( string $label, array $post_ids = [], array $option_names = [], array $created_post_ids = [] ): ?array {
+function wpae_create_rollback_snapshot( string $label, array $post_ids = [], array $option_names = [], array $created_post_ids = [], array $metadata = [] ): ?array {
     $post_ids = wpae_sanitize_rollback_post_ids( $post_ids );
     $option_names = wpae_sanitize_rollback_option_names( $option_names );
     $created_post_ids = wpae_sanitize_rollback_post_ids( $created_post_ids );
@@ -211,6 +211,12 @@ function wpae_create_rollback_snapshot( string $label, array $post_ids = [], arr
         'posts' => [],
         'options' => [],
     ];
+	$operation_id = sanitize_key( (string) ( $metadata['operation_id'] ?? '' ) );
+	if ( $operation_id !== '' ) {
+		$snapshot['operation_id'] = $operation_id;
+		$snapshot['operation_identity'] = sanitize_text_field( (string) ( $metadata['operation_identity'] ?? '' ) );
+		$snapshot['root_ids'] = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $metadata['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	}
 
     foreach ( $all_post_ids as $post_id ) {
         $snapshot['posts'][ (string) $post_id ] = in_array( $post_id, $created_post_ids, true )

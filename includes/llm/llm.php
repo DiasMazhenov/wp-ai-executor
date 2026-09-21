@@ -9087,15 +9087,18 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
     $request->set_param( 'post_id', $post_id );
     $request->set_param( 'elementor_data', $next );
-    $request->set_param( 'template', 'elementor_canvas' );
-    $request->set_param( '_wpae_allow_initial_data', true );
-    $request->set_param( 'transaction_visual_regression', ! $initial_page );
+	$request->set_param( 'template', 'elementor_canvas' );
+	$request->set_param( '_wpae_allow_initial_data', true );
+	$request->set_param( 'transaction_visual_regression', ! $initial_page );
+	$request->set_param( 'operation_id', $operation_id );
+	$request->set_param( 'operation_identity', sanitize_text_field( (string) ( $operation_context['operation_identity'] ?? '' ) ) );
+	$request->set_param( 'operation_root_ids', array_values( array_filter( array_map( static fn( $element ): string => sanitize_key( (string) ( is_array( $element ) ? ( $element['id'] ?? '' ) : '' ) ), $elements ) ) ) );
     $preview_request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
     $preview_request->set_param( 'post_id', $post_id );
     $preview_request->set_param( 'elementor_data', $next );
     $preview_request->set_param( 'template', 'elementor_canvas' );
-    $preview_request->set_param( '_wpae_allow_initial_data', true );
-    $preview_request->set_param( 'dry_run', true );
+	$preview_request->set_param( '_wpae_allow_initial_data', true );
+	$preview_request->set_param( 'dry_run', true );
     $preview = wpae_elementor_update( $preview_request );
     $preview_data = $preview instanceof WP_REST_Response ? $preview->get_data() : [];
     $preview_status = $preview instanceof WP_REST_Response ? $preview->get_status() : 500;
@@ -9441,7 +9444,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'route' => 'local_deterministic',
 				'provider_calls' => 0,
 			];
-			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '' ] );
+			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '', 'operation_identity' => $operation_identity ] );
 			$design_pipeline_trace['status'] = ! empty( $active_execution['ok'] ) ? 'written' : 'failed';
 			if ( ! empty( $operation_ledger['operation_id'] ) && function_exists( 'wpae_design_operation_update' ) ) {
 				$saved_data = ! empty( $active_execution['ok'] ) && function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $selected_post_id ) : [];
@@ -10605,18 +10608,66 @@ function wpae_llm_undo( WP_REST_Request $request ): WP_REST_Response {
     if ( $post_id <= 0 || $snapshot_id === '' || ! current_user_can( 'edit_post', $post_id ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'Недостаточно прав или параметров для отмены операции.' ], 403 );
     }
+    $operation_id = sanitize_key( (string) $request->get_param( 'operation_id' ) );
+    $operation_identity = sanitize_text_field( (string) $request->get_param( 'operation_identity' ) );
+    $operation_revision = absint( $request->get_param( 'revision' ) );
+    $operation_event = sanitize_key( (string) ( $request->get_param( 'operation_event' ) ?: 'rollback' ) );
+    if ( ! in_array( $operation_event, [ 'vision_rejected', 'user_undo', 'rollback' ], true ) ) {
+        $operation_event = 'rollback';
+    }
+    $operation = null;
+    if ( $operation_id !== '' && function_exists( 'wpae_design_operation_find_by_id' ) ) {
+        $operation = wpae_design_operation_find_by_id( $operation_id );
+        if ( ! is_array( $operation ) || absint( $operation['post_id'] ?? 0 ) !== $post_id ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Операция не относится к этой странице.', 'code' => 'wpae_undo_operation_scope_mismatch' ], 409 );
+        }
+        $stored_identity = sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) );
+        if ( $stored_identity !== '' && ( $operation_identity === '' || ! hash_equals( $stored_identity, $operation_identity ) ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Устаревшее подтверждение относится к другой операции.', 'code' => 'wpae_undo_identity_mismatch' ], 409 );
+        }
+        if ( $operation_revision > 0 && $operation_revision !== absint( $operation['revision'] ?? 0 ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Состояние операции уже изменилось; старый rollback отклонён.', 'code' => 'wpae_undo_stale_revision' ], 409 );
+        }
+		$reported_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) $request->get_param( 'root_ids' ), 0, 12 ) ) ) );
+		$operation_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+		if ( ! empty( $reported_roots ) && array_diff( $reported_roots, $operation_roots ) ) {
+			return new WP_REST_Response( [ 'ok' => false, 'error' => 'Rollback содержит root вне области операции.', 'code' => 'wpae_undo_root_scope_mismatch' ], 409 );
+		}
+        if ( in_array( (string) ( $operation['current_state'] ?? '' ), [ 'failed', 'unknown' ], true )
+            && (string) ( $operation['rollback_snapshot_id'] ?? '' ) === $snapshot_id
+            && (string) ( $operation['rollback_event'] ?? '' ) === $operation_event ) {
+            return new WP_REST_Response( [ 'ok' => true, 'idempotent' => true, 'operation_id' => $operation_id, 'operation' => $operation ], 200 );
+        }
+    }
     $snapshots = function_exists( 'wpae_get_rollback_snapshots' ) ? wpae_get_rollback_snapshots() : [];
     $snapshot = is_array( $snapshots[ $snapshot_id ] ?? null ) ? $snapshots[ $snapshot_id ] : null;
     $snapshot_posts = array_map( 'absint', array_keys( (array) ( $snapshot['posts'] ?? [] ) ) );
     if ( $snapshot === null || ! in_array( $post_id, $snapshot_posts, true ) || count( $snapshot_posts ) !== 1 ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'Снимок отмены не найден или не относится к этой странице.', 'code' => 'wpae_undo_scope_mismatch' ], 404 );
     }
+    if ( $operation_id !== '' ) {
+        if ( sanitize_key( (string) ( $snapshot['operation_id'] ?? '' ) ) !== $operation_id ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Снимок не принадлежит указанной операции.', 'code' => 'wpae_undo_operation_snapshot_mismatch' ], 409 );
+        }
+        $snapshot_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $snapshot['root_ids'] ?? [] ), 0, 12 ) ) ) );
+        $operation_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+        if ( ! empty( $operation_roots ) && ( empty( $snapshot_roots ) || array_diff( $operation_roots, $snapshot_roots ) || array_diff( $snapshot_roots, $operation_roots ) ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Снимок не покрывает roots этой операции.', 'code' => 'wpae_undo_root_scope_mismatch' ], 409 );
+        }
+    }
     $after_hash = (string) ( $snapshot['after_hashes'][ $post_id ] ?? '' );
     if ( $after_hash === '' || ! hash_equals( $after_hash, wpae_rollback_post_fingerprint( $post_id ) ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'После этой операции страница была изменена или снимок создан старой версией плагина. Отмена остановлена, чтобы сохранить свежие правки.', 'code' => 'wpae_undo_conflict' ], 409 );
     }
     $rollback = wpae_restore_rollback_snapshot_by_id( $snapshot_id, true );
-    return new WP_REST_Response( [ 'ok' => ! empty( $rollback['ok'] ), 'operation_id' => wpae_llm_new_operation_id(), 'rollback' => $rollback ], (int) ( $rollback['status'] ?? 422 ) );
+    if ( ! empty( $rollback['ok'] ) && $operation_id !== '' && function_exists( 'wpae_design_operation_mark_rollback' ) ) {
+        $marked = wpae_design_operation_mark_rollback( $operation_id, $operation_identity, $operation_revision, $snapshot_id, $operation_event, sanitize_text_field( (string) $request->get_param( 'evidence_hash' ) ) );
+        if ( ! is_array( $marked ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Откат выполнен, но журнал операции не подтверждён; повторная запись заблокирована.', 'code' => 'wpae_undo_ledger_conflict', 'rollback' => $rollback ], 409 );
+        }
+        $operation = $marked;
+    }
+    return new WP_REST_Response( [ 'ok' => ! empty( $rollback['ok'] ), 'operation_id' => $operation_id !== '' ? $operation_id : null, 'operation' => $operation, 'rollback' => $rollback ], (int) ( $rollback['status'] ?? 422 ) );
 }
 
 function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
@@ -10684,6 +10735,8 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 		return new WP_Error( 'wpae_operation_stale_ack', 'Подтверждение устарело и не изменило журнал.', [ 'status' => 409, 'operation' => $operation ] );
 	}
 	$server_verified = true;
+	$render_unverified = false;
+	$render_details = null;
 	$report_id = sanitize_text_field( (string) ( $payload['vision_report_id'] ?? '' ) );
 	$evidence_source = sanitize_key( (string) ( $payload['evidence_source'] ?? '' ) );
 	$rendered_html_hash = sanitize_text_field( (string) ( $payload['rendered_html_hash'] ?? '' ) );
@@ -10693,9 +10746,15 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 		}
 		$rendered = function_exists( 'wpae_fetch_public_rendered_html' ) ? wpae_fetch_public_rendered_html( $post_id, 524288 ) : [ 'ok' => false, 'error' => 'Rendered HTML verifier is unavailable.' ];
 		if ( empty( $rendered['ok'] ) || empty( $rendered['sha1'] ) ) {
-			return new WP_Error( 'wpae_operation_render_unverified', 'Актуальный public render не подтверждён; операция оставлена в written.', [ 'status' => 409, 'details' => [ 'render' => $rendered, 'operation' => $operation ] ] );
+			// Keep the honest written state, but persist the scoped Vision evidence so
+			// a browser timeout cannot erase the only durable review reference.
+			$server_verified = false;
+			$render_unverified = true;
+			$render_details = is_array( $rendered ) ? array_intersect_key( $rendered, array_flip( [ 'ok', 'error', 'status', 'sha1' ] ) ) : [ 'error' => 'Rendered HTML verifier returned an invalid result.' ];
+			$rendered_html_hash = '';
+		} else {
+			$rendered_html_hash = sanitize_text_field( (string) $rendered['sha1'] );
 		}
-		$rendered_html_hash = sanitize_text_field( (string) $rendered['sha1'] );
 	}
 	if ( in_array( $requested_state, [ 'reviewed', 'completed' ], true ) ) {
 		$report = $report_id !== '' && function_exists( 'wpae_get_vision_report' ) ? wpae_get_vision_report( $report_id ) : null;
@@ -10724,9 +10783,10 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 			return new WP_Error( 'wpae_operation_vision_unverified', 'Vision report для этой страницы не подтверждён.', [ 'status' => 409 ] );
 		}
 	}
+	$persisted_state = $render_unverified ? 'written' : $requested_state;
 	$updated = wpae_design_operation_reconcile( $operation_id, [
 		'ok' => true,
-		'state' => $requested_state,
+		'state' => $persisted_state,
 		'server_verified' => $server_verified,
 		'saved_hash' => $current_saved_hash,
 		'rendered_html_hash' => $rendered_html_hash,
@@ -10734,11 +10794,12 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 		'evidence_source' => $evidence_source,
 		'evidence_hash' => $incoming_evidence_hash,
 		'root_ids' => $root_ids,
+		'conflict_reason' => $render_unverified ? 'render_unverified' : '',
 	] );
 	if ( ! is_array( $updated ) ) {
 		return new WP_Error( 'wpae_operation_reconcile_failed', 'Журнал операции не удалось обновить.', [ 'status' => 409 ] );
 	}
-	return new WP_REST_Response( [ 'ok' => true, 'operation' => $updated, 'saved_hash' => $current_saved_hash, 'state' => $updated['current_state'] ?? 'written' ], 200 );
+	return new WP_REST_Response( [ 'ok' => true, 'operation' => $updated, 'saved_hash' => $current_saved_hash, 'state' => $updated['current_state'] ?? 'written', 'render_unverified' => $render_unverified, 'render' => $render_details ], 200 );
 }
 
 function wpae_get_llm_guide(): array {

@@ -242,7 +242,7 @@ function wpae_design_operation_update( string $operation_id, array $patch ): ?ar
 			$current_state = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
 			$transition_rejected = false;
 			foreach ( $patch as $key => $value ) {
-				$allowed_keys = [ 'current_state', 'post_id', 'latency_ms', 'retry_count', 'fallback_used', 'brief_hash', 'plan_hash', 'compiled_hash', 'saved_hash', 'rendered_html_hash', 'vision_report_id', 'provider', 'model', 'selected_scope', 'operation_identity', 'operation_type', 'root_ids', 'target_fingerprint', 'last_error', 'evidence_source', 'evidence_hash' ];
+				$allowed_keys = [ 'current_state', 'post_id', 'latency_ms', 'retry_count', 'fallback_used', 'brief_hash', 'plan_hash', 'compiled_hash', 'saved_hash', 'rendered_html_hash', 'vision_report_id', 'provider', 'model', 'selected_scope', 'operation_identity', 'operation_type', 'root_ids', 'target_fingerprint', 'last_error', 'evidence_source', 'evidence_hash', 'rollback_snapshot_id', 'rollback_event' ];
 				if ( ! in_array( $key, $allowed_keys, true ) ) {
 					continue;
 				}
@@ -280,6 +280,55 @@ function wpae_design_operation_update( string $operation_id, array $patch ): ?ar
 			wpae_design_operation_save( $operations );
 		}
 		return $updated;
+	} );
+	return is_array( $result ) ? $result : null;
+}
+
+/**
+ * Record an operation-scoped rollback while holding the same lock as create/update.
+ * Browser retries must prove identity and revision before changing the ledger.
+ */
+function wpae_design_operation_mark_rollback( string $operation_id, string $operation_identity, int $revision, string $snapshot_id, string $event = 'rollback', string $evidence_hash = '' ): ?array {
+	$result = wpae_design_operation_with_lock( static function () use ( $operation_id, $operation_identity, $revision, $snapshot_id, $event, $evidence_hash ): ?array {
+		$operations = wpae_design_operation_store();
+		foreach ( $operations as $index => $operation ) {
+			if ( ! is_array( $operation ) || (string) ( $operation['operation_id'] ?? '' ) !== $operation_id ) {
+				continue;
+			}
+			$stored_identity = sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) );
+			if ( $stored_identity !== '' && ! hash_equals( $stored_identity, sanitize_text_field( $operation_identity ) ) ) {
+				return null;
+			}
+			$current_revision = max( 1, (int) ( $operation['revision'] ?? 1 ) );
+			if ( $revision > 0 && $revision !== $current_revision ) {
+				return null;
+			}
+			$event = sanitize_key( $event ) ?: 'rollback';
+			$snapshot_id = sanitize_text_field( $snapshot_id );
+			if ( (string) ( $operation['current_state'] ?? '' ) === 'failed'
+				&& (string) ( $operation['rollback_snapshot_id'] ?? '' ) === $snapshot_id
+				&& (string) ( $operation['rollback_event'] ?? '' ) === $event ) {
+				return $operation;
+			}
+			$current_state = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
+			$next_state = $event === 'user_undo' ? 'unknown' : 'failed';
+			if ( $current_state !== $next_state && ! wpae_design_operation_transition_allowed( $current_state, $next_state ) ) {
+				return null;
+			}
+			$operation['current_state'] = $next_state;
+			$operation['rollback_snapshot_id'] = $snapshot_id;
+			$operation['rollback_event'] = $event;
+			$operation['last_error'] = 'rollback_' . $event;
+			if ( $evidence_hash !== '' ) {
+				$operation['evidence_hash'] = sanitize_text_field( $evidence_hash );
+			}
+			$operation['revision'] = $current_revision + 1;
+			$operation['updated_at'] = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
+			$operations[ $index ] = $operation;
+			wpae_design_operation_save( $operations );
+			return $operation;
+		}
+		return null;
 	} );
 	return is_array( $result ) ? $result : null;
 }

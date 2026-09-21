@@ -1627,7 +1627,7 @@
             });
         });
     }
-    function addActionControls(write) {
+    function addActionControls(write, operationContext) {
         if (!write || !write.rollback_snapshot_id || !config.undoEndpoint) return;
         var row = document.createElement('div');
         row.className = 'wpae-llm-action-row';
@@ -1644,7 +1644,16 @@
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
-                body: JSON.stringify({ post_id: Number(config.postId) || 0, rollback_snapshot_id: write.rollback_snapshot_id })
+                body: JSON.stringify({
+                    post_id: Number(config.postId) || 0,
+                    rollback_snapshot_id: write.rollback_snapshot_id,
+                    operation_id: operationContext && operationContext.operation_id ? operationContext.operation_id : String(write.operation_id || ''),
+                    operation_identity: operationContext && operationContext.operation_identity ? operationContext.operation_identity : readOperationIdentity(),
+                    revision: operationContext && operationContext.operation_revision ? operationContext.operation_revision : 0,
+                    root_ids: operationContext && Array.isArray(operationContext.operation_root_ids) ? operationContext.operation_root_ids.slice(0, 12) : [],
+                    operation_event: 'user_undo',
+                    evidence_hash: 'user_undo:' + String(write.rollback_snapshot_id || '')
+                })
             }).then(function (response) {
                 return response.json().catch(function () { return {}; }).then(function (body) {
                     if (!response.ok || !body.ok) throw new Error(body.error || ('HTTP ' + response.status));
@@ -1674,13 +1683,23 @@
         var warning = gate.quality_warning || gate.score_below_floor ? ' Требуется дополнительная визуальная проверка.' : '';
         return 'AI Vision: score ' + (report.vision_score === undefined ? 'n/a' : report.vision_score) + '.' + confidence + warning + summary + (findings ? ' ' + findings : '');
     }
-    function rollbackVisionFailure(snapshotId) {
+    function rollbackVisionFailure(snapshotId, operationContext) {
         if (!snapshotId || !config.undoEndpoint) return Promise.resolve({ ok: false, error: 'Rollback endpoint or snapshot is unavailable.' });
+        var context = operationContext || {};
         return fetch(config.undoEndpoint, {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
-            body: JSON.stringify({ post_id: Number(config.postId) || 0, rollback_snapshot_id: snapshotId })
+            body: JSON.stringify({
+                post_id: Number(config.postId) || 0,
+                rollback_snapshot_id: snapshotId,
+                operation_id: String(context.operation_id || ''),
+                operation_identity: String(context.operation_identity || readOperationIdentity()),
+                revision: Number(context.operation_revision || 0),
+                root_ids: Array.isArray(context.operation_root_ids) ? context.operation_root_ids.slice(0, 12) : [],
+                operation_event: 'vision_rejected',
+                evidence_hash: 'vision_rejected:' + snapshotId
+            })
         }).then(function (response) {
             return response.json().catch(function () { return {}; }).then(function (body) {
                 return {
@@ -1931,7 +1950,7 @@
                     var targetedPatch = reviewTargetedPatch;
                     addMessage('assistant', describeVisionReview(review) + (targetedPatch ? ' Передаю анализ Vision агенту отдельным дополнительным промтом для повторной правки выбранного дерева.' : ' Передаю анализ Vision агенту отдельным дополнительным промтом для полной регенерации дизайна.'));
                     if (repairDepth >= 2) {
-                        return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
+                        return rollbackVisionFailure(body.write.rollback_snapshot_id, buildVisionOperationContext(body, requestContext, editorSyncDataForReview)).then(function (rollback) {
                             if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию: ' + rollback.error);
                             addMessage('assistant', targetedPatch ? 'Vision повторно обнаружил проблемы после двух точечных repair-проходов. Последняя правка отменена; перезагружаю Elementor из сохраненного состояния.' : 'Vision повторно обнаружил проблемы после двух bounded repair-проходов. Последняя неудачная версия отменена; перезагружаю Elementor из сохраненного состояния.');
                             status.textContent = strings.error;
@@ -1944,7 +1963,7 @@
                         });
                     }
                     addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
-                    return rollbackVisionFailure(body.write.rollback_snapshot_id).then(function (rollback) {
+                    return rollbackVisionFailure(body.write.rollback_snapshot_id, buildVisionOperationContext(body, requestContext, editorSyncDataForReview)).then(function (rollback) {
                         if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией: ' + rollback.error);
                         var repairOptions = { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), ownedRootIds: liveGeneratedRootIds.slice(0, 12), selectedElements: requestContext.selected_elements };
                         if (!scheduleVisionRepairAfterReload(originalBrief, repairOptions)) throw new Error('Не удалось сохранить Vision repair перед перезагрузкой Elementor.');
@@ -1959,7 +1978,7 @@
                 }
                 if (review && review.report) addMessage('assistant', describeVisionReview(review));
                 if (review && review.report) setPipelinePhase('review', 'done');
-                addActionControls(body.write);
+                addActionControls(body.write, buildVisionOperationContext(body, requestContext, editorSyncDataForReview));
                 addMessage('assistant', body.message || strings.error);
                 if (!review) setPipelinePhase('review', 'skipped');
                 status.textContent = strings.done;

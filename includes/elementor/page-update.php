@@ -2,6 +2,18 @@
 
 defined( 'ABSPATH' ) || exit;
 
+function wpae_elementor_rollback_metadata( WP_REST_Request $request ): array {
+	$operation_id = sanitize_key( (string) $request->get_param( 'operation_id' ) );
+	if ( $operation_id === '' ) {
+		return [];
+	}
+	return [
+		'operation_id' => $operation_id,
+		'operation_identity' => sanitize_text_field( (string) $request->get_param( 'operation_identity' ) ),
+		'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) $request->get_param( 'operation_root_ids' ), 0, 12 ) ) ) ),
+	];
+}
+
 function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     $post_id = absint( $request->get_param( 'post_id' ) );
     $template = sanitize_key( (string) ( $request->get_param( 'template' ) ?: 'elementor_canvas' ) );
@@ -92,7 +104,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     $visual_regression_baseline = ! empty( $existing_data ) && get_post_status( $post_id ) === 'publish' && (bool) $request->get_param( 'transaction_visual_regression' )
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
-    $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ] );
+	$rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ], [], [], wpae_elementor_rollback_metadata( $request ) );
     $transaction_context = [
         'allow_unchanged_legacy_top_level' => $existing_data,
         'expected_before_elementor_data' => $existing_data,
@@ -246,7 +258,7 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
     $visual_regression_baseline = get_post_status( $post_id ) === 'publish' && (bool) $request->get_param( 'transaction_visual_regression' )
         ? wpae_fetch_public_audit_snapshot_for_post( $post_id, 'visual_regression_before' )
         : null;
-    $rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . $post_id, [ $post_id ] );
+	$rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . $post_id, [ $post_id ], [], [], wpae_elementor_rollback_metadata( $request ) );
     $transaction_context = [
         'allow_unchanged_legacy_top_level' => $existing_data,
         'expected_before_elementor_data' => $existing_data,

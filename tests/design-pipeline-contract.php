@@ -200,6 +200,13 @@ $check( $reviewed_operation['current_state'] === 'reviewed' && $reviewed_operati
 $reviewed_revision = (int) $reviewed_operation['revision'];
 $reviewed_again = wpae_design_operation_reconcile( 'op-review-path', [ 'ok' => true, 'state' => 'reviewed', 'server_verified' => true, 'saved_hash' => 'saved-before', 'rendered_html_hash' => 'rendered-hash', 'vision_report_id' => 'vr-review-path', 'evidence_source' => 'preview', 'evidence_hash' => 'evidence-review-path' ] );
 $check( (int) $reviewed_again['revision'] === $reviewed_revision && $reviewed_again['current_state'] === 'reviewed', 'repeated reconcile acknowledgement is idempotent' );
+$rollback_operation = wpae_design_operation_create( [ 'operation_id' => 'op-rollback', 'idempotency_key' => 'rollback-key', 'post_id' => 5214, 'operation_identity' => 'rollback-identity', 'current_state' => 'written', 'revision' => 1, 'root_ids' => [ 'root-rollback' ] ] );
+$rollback_revision = (int) $rollback_operation['revision'];
+$rolled_back = wpae_design_operation_mark_rollback( 'op-rollback', 'rollback-identity', $rollback_revision, 'snapshot-rollback', 'vision_rejected', 'vision-evidence' );
+$check( is_array( $rolled_back ) && $rolled_back['current_state'] === 'failed' && $rolled_back['last_error'] === 'rollback_vision_rejected', 'vision rollback records a scoped failed operation' );
+$check( wpae_design_operation_mark_rollback( 'op-rollback', 'wrong-identity', $rollback_revision, 'snapshot-other', 'vision_rejected' ) === null, 'stale rollback identity cannot change the ledger' );
+$rollback_repeat = wpae_design_operation_mark_rollback( 'op-rollback', 'rollback-identity', (int) $rolled_back['revision'], 'snapshot-rollback', 'vision_rejected', 'vision-evidence' );
+$check( is_array( $rollback_repeat ) && (int) $rollback_repeat['revision'] === (int) $rolled_back['revision'], 'repeated rollback acknowledgement is idempotent' );
 $held_lock = wpae_design_operation_acquire_lock();
 $contended = wpae_design_operation_create( [ 'operation_id' => 'op-contended', 'idempotency_key' => 'contended-key', 'post_id' => 5214 ] );
 $check( $held_lock !== null && ! empty( $contended['lock_conflict'] ), 'concurrent operation capture is rejected by the atomic option lock' );

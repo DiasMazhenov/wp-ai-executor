@@ -53,6 +53,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
     $config = wp_json_encode( [
         'endpoint' => get_rest_url( null, 'ai-executor/v1/llm/chat' ),
         'undoEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/undo' ),
+		'reconcileEndpoint' => get_rest_url( null, 'ai-executor/v1/design-operations/reconcile' ),
         'pluginVersion' => defined( 'WPAE_VERSION' ) ? WPAE_VERSION : '',
         'requestTimeoutMs' => ( WPAE_LLM_ACTION_TIMEOUT_SECONDS + 60 ) * 1000,
         'providerLabel' => (string) ( $settings['provider_label'] ?? '' ),
