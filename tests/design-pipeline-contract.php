@@ -176,6 +176,15 @@ $pricing_card_nodes = (array) ( $pricing_cards['elements'] ?? [] );
 $check( (float) ( $pricing_compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing group is full-width when section has one child' );
 $check( ( $pricing_cards['settings']['flex_direction'] ?? '' ) === 'row' && count( $pricing_card_nodes ) === 3, 'pricing compiler emits a desktop card row' );
 $check( (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) > 30 && (float) ( $pricing_card_nodes[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'pricing cards use equal desktop columns and mobile stack' );
+$pricing_live_brief = wpae_brief_ir_parse( 'Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Для небольшой задачи с понятным объёмом». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы от идеи до результата». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач и развития проекта». Кнопка: «Подключить поддержку», ссылка #support.' );
+$pricing_live_ir = wpae_elementor_ir_from_design_plan( wpae_design_plan_from_brief( $pricing_live_brief ), $pricing_live_brief );
+$pricing_live_compiled = wpae_elementor_ir_compile( $pricing_live_ir, $pricing_live_brief, [], [ 'id_seed' => 'pricing-live-contract' ] );
+$pricing_live_root = $pricing_live_compiled['elementor_data'][0] ?? [];
+$pricing_live_group = $pricing_live_root['elements'][1] ?? [];
+$pricing_live_cards = (array) ( $pricing_live_group['elements'] ?? [] );
+$pricing_live_urls = array_values( array_filter( array_map( static fn( array $card ): string => (string) ( $card['elements'][3]['settings']['link']['url'] ?? '' ), $pricing_live_cards ) ) );
+$check( count( $pricing_live_root['elements'] ?? [] ) === 2 && (float) ( $pricing_live_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0 && (float) ( $pricing_live_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing intro and card group stay full-width in a stacked section' );
+$check( count( $pricing_live_cards ) === 3 && $pricing_live_urls === [ '#start', '#project', '#support' ], 'pricing parser/compiler preserves three card CTA URLs' );
 
 $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
 $check( $unknown['downgraded'] && $unknown['widget_type'] === 'text-editor', 'unavailable widget has native fallback' );

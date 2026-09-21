@@ -105,21 +105,55 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'process_steps', 'container', [], $token_refs, $step_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			} elseif ( $role === 'pricing_cards' ) {
+				$intro_widgets = [];
+				$card_refs = [];
+				foreach ( $content_refs as $content_ref ) {
+					$item = $content_map[ $content_ref ] ?? [];
+					$item_role = sanitize_key( (string) ( $item['role'] ?? '' ) );
+					if ( $item_role === 'eyebrow' ) {
+						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+					} elseif ( $item_role === 'title' ) {
+						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+					} else {
+						$card_refs[] = $content_ref;
+					}
+				}
+				if ( ! empty( $intro_widgets ) ) {
+					$section_children[] = wpae_elementor_ir_node( $child_id . '-intro', 'pricing_intro', 'container', [], [ 'color.text', 'color.muted', 'space.component' ], $intro_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+				}
 				$card_children = [];
-				foreach ( array_chunk( $content_refs, 4 ) as $card_index => $card_refs ) {
+				foreach ( array_chunk( $card_refs, 4 ) as $card_index => $card_refs ) {
 					$card_widgets = [];
 					foreach ( $card_refs as $card_ref ) {
 						$item = $content_map[ $card_ref ] ?? [];
 						$item_role = sanitize_key( (string) ( $item['role'] ?? 'text' ) );
 						$widget_type = str_starts_with( $item_role, 'cta' ) ? 'button' : ( in_array( $item_role, [ 'title', 'label' ], true ) ? 'heading' : 'text-editor' );
-						$card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index . '-' . count( $card_widgets ), $item_role, $widget_type, [ $card_ref ], [ $widget_type === 'button' ? 'color.primary' : 'color.text' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+						$layout = [ 'min_width' => 0, 'max_width' => 100 ];
+						if ( $widget_type === 'button' && empty( $item['url'] ) ) {
+							$fallback_url = '';
+							foreach ( $card_refs as $candidate_ref ) {
+								$candidate_url = trim( (string) ( $content_map[ $candidate_ref ]['url'] ?? '' ) );
+								if ( $candidate_url !== '' ) {
+									$fallback_url = $candidate_url;
+									break;
+								}
+							}
+							if ( $fallback_url !== '' ) {
+								$layout['fallback_url'] = $fallback_url;
+							}
+						}
+						$card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index . '-' . count( $card_widgets ), $item_role, $widget_type, [ $card_ref ], [ $widget_type === 'button' ? 'color.primary' : 'color.text' ], [], $layout, [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 					}
 					$card_children[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index, 'pricing_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'pricing_cards', 'container', [], $token_refs, $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			}
 		}
-		$nodes[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'section-' . $section_index ) ), sanitize_key( (string) ( $section['role'] ?? 'section' ) ), 'container', [], [ (string) ( $section['surface_token'] ?? 'color.page_bg' ), (string) ( $section['spacing_token'] ?? 'space.section' ) ], $section_children, [ 'composition' => $section['composition'] ?? 'stacked_left', 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => $plan['responsive']['mobile'] ?? 'stack' ] );
+		$section_composition = (string) ( $section['composition'] ?? 'stacked_left' );
+		if ( sanitize_key( (string) ( $section['role'] ?? '' ) ) === 'pricing' ) {
+			$section_composition = 'stacked_left';
+		}
+		$nodes[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'section-' . $section_index ) ), sanitize_key( (string) ( $section['role'] ?? 'section' ) ), 'container', [], [ (string) ( $section['surface_token'] ?? 'color.page_bg' ), (string) ( $section['spacing_token'] ?? 'space.section' ) ], $section_children, [ 'composition' => $section_composition, 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => $plan['responsive']['mobile'] ?? 'stack' ] );
 	}
 	return [
 		'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
@@ -222,7 +256,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	} elseif ( $widget_type === 'button' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['text'] = (string) ( $item['exact_text'] ?? '' );
-		$settings['link'] = [ 'url' => (string) ( $item['url'] ?? '' ), 'is_external' => '', 'nofollow' => '' ];
+		$settings['link'] = [ 'url' => (string) ( $item['url'] ?? ( $node['layout_constraints']['fallback_url'] ?? '' ) ), 'is_external' => '', 'nofollow' => '' ];
 		$settings['background_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 		$settings['button_text_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 	} elseif ( $widget_type === 'image' ) {
@@ -255,11 +289,12 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			'three_cards' => [ 33.333, 33.333, 33.333 ],
 		][ (string) ( $node['layout_constraints']['composition'] ?? '' ) ] ?? [];
 		$composition_matches_children = ! empty( $composition_basis ) && count( $composition_basis ) === count( $compiled_children );
+		$default_child_basis = ( $settings['flex_direction'] ?? 'column' ) === 'column' ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
 		foreach ( $compiled_children as $child_index => &$compiled_child ) {
 			if ( ! is_array( $compiled_child ) || ( $compiled_child['elType'] ?? '' ) !== 'container' || ! is_array( $compiled_child['settings'] ?? null ) ) {
 				continue;
 			}
-			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
+			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
 			$tablet_basis = count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100;
 			$child_settings = &$compiled_child['settings'];
 			// Elementor's native container controls use _element_custom_width and
