@@ -36,7 +36,9 @@ function wpae_llm_design_engine_schema(): array {
 function wpae_llm_design_engine_explicit_constraints( string $message ): array {
 	$message = sanitize_textarea_field( $message );
 	$constraints = [];
-	if ( preg_match( '~60\s*[/\\:]\s*40~iu', $message ) ) {
+	if ( preg_match( '/(?:текст|copy|контент)[^\.\n]{0,100}?(\d{2})\s*%[^\.\n]{0,100}?(?:визуаль\w*|visual|media|изображен\w*)[^\.\n]{0,100}?(\d{2})\s*%/iu', $message, $semantic_ratio ) && (int) $semantic_ratio[1] + (int) $semantic_ratio[2] === 100 ) {
+		$constraints['composition'] = 'split_' . (int) $semantic_ratio[1] . '_' . (int) $semantic_ratio[2];
+	} elseif ( preg_match( '~60\s*[/\\:]\s*40~iu', $message ) ) {
 		$constraints['composition'] = 'split_60_40';
 	} elseif ( preg_match( '~40\s*[/\\:]\s*60~iu', $message ) ) {
 		$constraints['composition'] = 'split_40_60';

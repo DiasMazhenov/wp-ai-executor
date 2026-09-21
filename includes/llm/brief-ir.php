@@ -205,6 +205,35 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			];
 		}
 	}
+	$semantic_ratio = [];
+	if ( preg_match( '/(?:текст|copy|контент)[^\.\n]{0,100}?(\d{2})\s*%[^\.\n]{0,100}?(?:визуаль\w*|visual|media|изображен\w*)[^\.\n]{0,100}?(\d{2})\s*%/iu', $source_text, $semantic_ratio, PREG_OFFSET_CAPTURE ) ) {
+		$first = (int) ( $semantic_ratio[1][0] ?? 0 );
+		$second = (int) ( $semantic_ratio[2][0] ?? 0 );
+		if ( $first + $second === 100 ) {
+			$start = (int) ( $semantic_ratio[0][1] ?? 0 );
+			$constraints[] = [
+				'id' => 'composition_semantic_' . $first . '_' . $second,
+				'kind' => 'composition',
+				'value' => 'split_' . $first . '_' . $second,
+				'source_span' => [ $start, $start + strlen( (string) $semantic_ratio[0][0] ) ],
+				'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+			];
+		}
+	}
+	if ( empty( $semantic_ratio ) && preg_match( '/(?:визуаль\w*|visual|media|изображен\w*)[^\.\n]{0,100}?(\d{2})\s*%[^\.\n]{0,100}?(?:текст|copy|контент)[^\.\n]{0,100}?(\d{2})\s*%/iu', $source_text, $semantic_ratio, PREG_OFFSET_CAPTURE ) ) {
+		$visual = (int) ( $semantic_ratio[1][0] ?? 0 );
+		$copy = (int) ( $semantic_ratio[2][0] ?? 0 );
+		if ( $visual + $copy === 100 ) {
+			$start = (int) ( $semantic_ratio[0][1] ?? 0 );
+			$constraints[] = [
+				'id' => 'composition_semantic_' . $copy . '_' . $visual,
+				'kind' => 'composition',
+				'value' => 'split_' . $copy . '_' . $visual,
+				'source_span' => [ $start, $start + strlen( (string) $semantic_ratio[0][0] ) ],
+				'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+			];
+		}
+	}
 	if ( preg_match( '/(?:мобильн\w*|mobile)[^\.\n]{0,120}(?:сначала|first)[^\.\n]{0,120}(?:текст|copy|контент)/iu', $source_text, $match, PREG_OFFSET_CAPTURE ) ) {
 		$constraints[] = [
 			'id' => 'responsive_copy_first',

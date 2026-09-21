@@ -115,6 +115,18 @@ $check( in_array( 'О нас', array_column( $hero['content'], 'exact_text' ), t
 $check( in_array( '7 шагов', array_column( $hero['content'], 'exact_text' ), true ), '7 шагов label retained' );
 $check( ! empty( $hero['content'][0]['provenance']['source_span'] ), 'content provenance present' );
 
+$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Текст слева занимает 40%, визуальная часть справа — 60%.' );
+$semantic_plan = wpae_design_plan_from_brief( $semantic_hero );
+$check( ( $semantic_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60', 'semantic side percentages preserve copy/media composition' );
+$semantic_ir = wpae_elementor_ir_from_design_plan( $semantic_plan, $semantic_hero );
+$semantic_compiled = wpae_elementor_ir_compile( $semantic_ir, $semantic_hero, [ 'palette' => [ 'page_bg' => '#f6f0e6', 'surface' => '#ffffff', 'text' => '#111827', 'muted' => '#4b5563', 'primary' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'semantic-hero' ] );
+$semantic_root = $semantic_compiled['elementor_data'][0] ?? [];
+$semantic_copy = $semantic_root['elements'][0] ?? [];
+$semantic_media = $semantic_root['elements'][1] ?? [];
+$semantic_copy_roles = array_column( (array) ( $semantic_copy['elements'] ?? [] ), 'widgetType' );
+$check( (float) ( $semantic_copy['settings']['flex_basis']['size'] ?? 0 ) === 40.0 && (float) ( $semantic_media['settings']['flex_basis']['size'] ?? 0 ) === 60.0, 'semantic hero compiler preserves 40/60 basis' );
+$check( $semantic_copy_roles === [ 'heading', 'heading', 'heading', 'text-editor', 'button', 'button' ], 'copy widgets keep brand, eyebrow, title order and both CTAs: ' . wp_json_encode( $semantic_copy_roles ) );
+
 $english = wpae_brief_ir_parse( 'hero title: "Launch faster" body: "A clear path." CTA: "Start now" -> https://example.com/go' );
 $check( $english['locale'] === 'en' && $english['intent']['archetype'] === 'hero', 'English hero classification' );
 $check( in_array( 'Launch faster', array_column( $english['content'], 'exact_text' ), true ), 'English exact copy retained' );

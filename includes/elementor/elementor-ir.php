@@ -60,9 +60,11 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				foreach ( $content_refs as $content_ref ) {
 					$item = $content_map[ $content_ref ] ?? [];
 					$item_role = sanitize_key( (string) ( $item['role'] ?? '' ) );
-					if ( $item_role === 'title' || ( $item_role === 'brand' && ! isset( $widgets['title'] ) ) ) {
+					if ( $item_role === 'brand' ) {
+						$widgets['brand'] = wpae_elementor_ir_node( $child_id . '-brand', 'brand', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+					} elseif ( $item_role === 'title' ) {
 						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
-					} elseif ( $item_role === 'eyebrow' || ( $item_role === 'brand' && ! isset( $widgets['eyebrow'] ) ) ) {
+					} elseif ( $item_role === 'eyebrow' ) {
 						$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'body' || $item_role === 'text' ) {
 						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
@@ -71,7 +73,18 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$widgets[ $button_key ] = wpae_elementor_ir_node( $child_id . '-' . $button_key, 'cta', 'button', [ $content_ref ], [ 'color.primary', 'color.text' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 					}
 				}
-				$section_children[] = wpae_elementor_ir_node( $child_id, 'copy_group', 'container', [], $token_refs, array_values( $widgets ), [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
+					$ordered_widgets = [];
+					foreach ( [ 'brand', 'eyebrow', 'title', 'body' ] as $widget_key ) {
+						if ( isset( $widgets[ $widget_key ] ) ) {
+							$ordered_widgets[] = $widgets[ $widget_key ];
+						}
+					}
+					foreach ( $widgets as $widget_key => $widget ) {
+						if ( str_starts_with( (string) $widget_key, 'cta_' ) ) {
+							$ordered_widgets[] = $widget;
+						}
+					}
+					$section_children[] = wpae_elementor_ir_node( $child_id, 'copy_group', 'container', [], $token_refs, $ordered_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				if ( empty( $widgets ) ) {
 					$warnings[] = $child_id . ':no_content_widgets';
 				}
@@ -185,8 +198,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['title'] = (string) ( $item['exact_text'] ?? '' );
-		$settings['header_size'] = $role === 'eyebrow' ? 'h6' : 'h1';
-		$settings['title_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
+		$settings['header_size'] = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : 'h1';
+		$settings['title_color'] = (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
 	} elseif ( $widget_type === 'text-editor' ) {
 		$values = [];
 		foreach ( (array) ( $node['content_refs'] ?? [] ) as $content_ref ) {
