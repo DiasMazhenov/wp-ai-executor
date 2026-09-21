@@ -10,7 +10,7 @@
 
 - Зафиксированный перед этапом в задании baseline: `d69d734`; последняя runtime-версия в приложенном handoff была v02.11.126.
 - Фактическое состояние checkout перед этим запуском: `2702845`, source/live v02.11.140.
-- Текущий HEAD: `905df45`; runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3` (`Harden parser surfaces and vision reconcile`).
+- Runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3` (`Harden parser surfaces and vision reconcile`); handoff documentation is tracked in subsequent commits.
 - Runtime version в исходниках и установленном WordPress: **v02.11.141**.
 - Установка v141 через штатный WP Pusher: **PASS**; Plugins page показала v02.11.141.
 - `git push origin main`: **PASS**, runtime push `2702845..d34e401`, documentation push `d34e401..905df45`.
@@ -182,10 +182,10 @@ No new WordPress page, post or draft was created. The accepted pricing root was 
 - Successful selected-element Vision during the patch: **score 100, confidence 100%**; source text and H6 tag matched.
 - Whole pending-operation Vision/reconcile: **BLOCKED** by `wpae_vision_capture_failed`; no durable Vision report id was created/accepted for that pending record.
 - Fresh inline CUA screenshots were emitted after v141 save/reload on the existing post:
-  - editor desktop: hero, FAQ top and native layout visible;
-  - public desktop: hero `a9282de` with exact copy and both CTA visible;
-  - editor mobile: Elementor mobile mode, copy-first stack, visual zone below CTA;
-  - editor tablet geometry was read-only checked at `753px`.
+  - editor desktop: v141, post=5214, root `a9282de`, operation `revision-5300 -> Elementor save` (no new AI operation), CUA viewport `1233x913`; hero and FAQ top visible;
+  - public desktop: v141, post=5214, root `a9282de`, operation `revision-5300 -> Elementor save`, public URL `https://mazhenov.kz/pricing-contract-live-v123/?wpae_check=final-v141-20260922`, viewport `1265x720`; exact copy and both CTA visible;
+  - editor mobile: v141, post=5214, root `a9282de`, operation `revision-5300 -> Elementor save`, Elementor mobile viewport `345px`; copy-first stack and visual zone below CTA;
+  - editor tablet geometry was read-only checked at `753px` for the same post/root/operation.
 
 Screenshot file status: **SCREENSHOT FILE BLOCKED**. The documented CUA surface returns screenshot bytes for inline `getScreenshot()`/`emitImage()`, but this environment exposes no documented PNG filesystem writer or screenshot artifact export. `tab.content.export()` exports page content, not PNG bytes. No fake absolute screenshot links are recorded.
 
@@ -232,7 +232,7 @@ New/updated contract coverage includes structural URL boundaries, UTF-8/newline 
 
 ## Commit, push and installation
 
-- Runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`; documentation commit: `905df45`.
+- Runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`; documentation commits include `905df45` and `8995672`.
 - Push status: **PASS** recorded for `2702845..d34e401 main -> main`.
 - Installation status: **PASS**, WordPress Plugins showed v02.11.141.
 - Package/hash status: **PASS**, 90 files and no mismatches.

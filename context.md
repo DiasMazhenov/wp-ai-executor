@@ -7,7 +7,7 @@ Target: **post=5214, Pricing Contract Live v123**. Новые pages/drafts не 
 
 ## Source/live
 
-- Current HEAD (documentation): `905df45`; runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`.
+- Runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`; handoff documentation is tracked in subsequent commits.
 - Runtime/live version: **v02.11.141**.
 - Live installation: **PASS** through WP Pusher; Plugins page showed v02.11.141.
 - Push: **PASS** recorded as runtime `2702845..d34e401` and documentation `d34e401..905df45`; current shell could not re-resolve GitHub DNS for a second remote check.
