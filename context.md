@@ -43,4 +43,4 @@
 - php docs/audits/2026-09-12/package-probe.php: PASS, 90 files, mismatches 0.
 - git diff --check: PASS.
 - Runtime push: PASS, origin/main at ad6bc5d.
-- Documentation commit follows this context update.
+- Documentation commit: f786e31; push PASS.

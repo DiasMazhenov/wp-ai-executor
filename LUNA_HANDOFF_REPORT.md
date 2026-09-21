@@ -13,7 +13,7 @@
 - Runtime version: v02.11.137.
 - Live установленная версия: v02.11.137; в WP Plugins отображается активный WP AI Executor, версия подтверждена через WP Pusher после update из origin/main.
 - Runtime push: PASS, origin/main содержит ad6bc5d.
-- Documentation push: выполняется отдельным commit после фиксации этого документа.
+- Documentation push: PASS, documentation commit f786e31.
 - Исходные live flags: Design Decision Engine=active, Deterministic Design Pipeline=active.
 - Итоговые live flags: те же значения; временных переключений, оставленных включёнными, не было.
 
@@ -199,6 +199,6 @@ git diff --check                                  PASS
 - Runtime commit: ad6bc5d326b78bfa74aef2f71212fbe5cdf19f53 (Keep pricing cards on one desktop row).
 - Runtime push: PASS to origin/main.
 - Live install: PASS, WP Pusher update from DiasMazhenov/wp-ai-executor, branch main; active plugin version v02.11.137.
-- Report and canonical context.md: updated in the documentation commit that follows the runtime release.
+- Report and canonical context.md: updated in documentation commit f786e31; push PASS.
 
 История предыдущих handoff-срезов сокращена; факты этого документа относятся к текущей source/live проверке и имеют приоритет над историческими snapshots.
