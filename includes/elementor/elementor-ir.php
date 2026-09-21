@@ -111,7 +111,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$item = $content_map[ $content_ref ] ?? [];
 					$item_role = sanitize_key( (string) ( $item['role'] ?? '' ) );
 					if ( $item_role === 'eyebrow' ) {
-						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} else {
@@ -196,6 +196,28 @@ function wpae_elementor_ir_setting_value( string $token, array $tokens, array &$
 	return function_exists( 'wpae_design_token_value' ) ? wpae_design_token_value( $token, $tokens, $token_report ) : null;
 }
 
+function wpae_elementor_ir_dimension_control( $value, string $fallback_unit, float $fallback_size, bool $linked = true ): array {
+	$raw = trim( (string) $value );
+	$unit = $fallback_unit;
+	$size = $fallback_size;
+	if ( preg_match( '/^(-?\d+(?:\.\d+)?)\s*(px|%|em|rem|vh|vw)?$/i', $raw, $matches ) ) {
+		$size = max( 0, (float) $matches[1] );
+		if ( ! empty( $matches[2] ) ) {
+			$unit = strtolower( $matches[2] );
+		}
+	}
+	return [
+		'unit' => $unit,
+		'size' => $size,
+		'top' => (string) $size,
+		'right' => (string) $size,
+		'bottom' => (string) $size,
+		'left' => (string) $size,
+		'isLinked' => $linked,
+		'sizes' => [],
+	];
+}
+
 function wpae_elementor_ir_compile_node( array $node, array $content_map, array $media_map, array $tokens, string $seed, array &$report ): array {
 	$resolved = function_exists( 'wpae_widget_capability_resolve' ) ? wpae_widget_capability_resolve( (string) ( $node['widget_type'] ?? 'container' ) ) : [ 'widget_type' => sanitize_key( (string) ( $node['widget_type'] ?? 'container' ) ), 'downgraded' => false ];
 	$widget_type = sanitize_key( (string) ( $resolved['widget_type'] ?? 'container' ) );
@@ -239,11 +261,44 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_wrap_tablet'] = 'wrap';
 			$settings['flex_wrap_mobile'] = 'wrap';
 		}
+		if ( $role === 'pricing_card' ) {
+			$settings['border_border'] = 'solid';
+			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( $token_values['radius.card'] ?? '0.5rem', 'rem', 0.5 );
+			$settings['padding'] = wpae_elementor_ir_dimension_control( $token_values['space.component'] ?? '1.5rem', 'rem', 1.5, false );
+			$settings['padding_tablet'] = $settings['padding'];
+			$settings['padding_mobile'] = wpae_elementor_ir_dimension_control( $token_values['space.component'] ?? '1.25rem', 'rem', 1.25, false );
+		}
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['title'] = (string) ( $item['exact_text'] ?? '' );
 		$settings['header_size'] = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : 'h1';
 		$settings['title_color'] = (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
+		if ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) {
+			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['background_background'] = 'classic';
+			$settings['background_color'] = $accent;
+			$settings['title_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['border_border'] = 'solid';
+			$settings['border_color'] = $accent;
+			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '999px', 'px', 999 );
+			$settings['_padding'] = [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => false, 'sizes' => [] ];
+			$settings['align_self'] = 'flex-start';
+			$settings['align_self_tablet'] = 'flex-start';
+			$settings['align_self_mobile'] = 'flex-start';
+			$settings['_element_width'] = 'initial';
+			$settings['_element_width_tablet'] = 'initial';
+			$settings['_element_width_mobile'] = 'initial';
+			$settings['_flex_grow'] = 0;
+			$settings['_flex_shrink'] = 0;
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 0.75, 'sizes' => [] ];
+			$settings['typography_font_weight'] = '600';
+			$settings['typography_text_transform'] = 'uppercase';
+			$settings['typography_letter_spacing'] = [ 'unit' => 'em', 'size' => 0.08, 'sizes' => [] ];
+		}
 	} elseif ( $widget_type === 'text-editor' ) {
 		$values = [];
 		foreach ( (array) ( $node['content_refs'] ?? [] ) as $content_ref ) {
