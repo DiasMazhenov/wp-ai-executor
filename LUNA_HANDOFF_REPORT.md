@@ -1,204 +1,237 @@
 # WP AI Executor — актуальный handoff report
 
-Дата и время фиксации: 2026-09-21 22:56:25 +05:00 (Asia/Almaty)
-Репозиторий: /Users/diasmazhenov/vibecode/wp-ai-executor
-Ветка: main
-Целевая страница: WordPress post=5214 (Pricing Contract Live v123)
-Новые pages, posts и drafts в этой сессии не создавались.
+Дата фиксации: **2026-09-21 23:40:12 +05:00 (Asia/Almaty)**
+Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`
+Ветка: `main`
+Целевая страница: **WordPress post=5214, Pricing Contract Live v123**
+Новые pages, posts и drafts в этой работе не создавались.
 
-## Release evidence
+## Итог текущего среза
 
-- Исходный HEAD текущей серии: aa92c93.
-- Runtime/source HEAD после исправления pricing: ad6bc5d326b78bfa74aef2f71212fbe5cdf19f53.
-- Runtime version: v02.11.137.
-- Live установленная версия: v02.11.137; в WP Plugins отображается активный WP AI Executor, версия подтверждена через WP Pusher после update из origin/main.
-- Runtime push: PASS, origin/main содержит ad6bc5d.
-- Documentation push: PASS, documentation commit f786e31.
-- Исходные live flags: Design Decision Engine=active, Deterministic Design Pipeline=active.
-- Итоговые live flags: те же значения; временных переключений, оставленных включёнными, не было.
+Предыдущий результат v139 был устаревшим для визуальной приёмки: на странице оставался старый pricing-root с тёплым `color.page_bg` и укороченной ссылкой `#sup`. Это не было корректным результатом. Старый root `11c9734` удалён через Elementor на той же странице и сохранён. После установки v140 создан один новый независимый pricing-root `b898e72`.
 
-## Архитектура и приоритет маршрутов
+На текущем live результате:
 
-Фактическая active-схема записи:
+- pricing-секция имеет белый фон `rgb(255, 255, 255)`, а не бежевый `#F6F0E6`;
+- надзаголовок — native pill с фоном `#4460EC`, белым текстом и radius `999px`;
+- три native-карточки стоят в одну строку на desktop;
+- каждая карточка имеет белый фон, border `1px solid #D1D5DB`, radius `8px` и padding `24px`;
+- на mobile карточки идут одной колонкой без горизонтального overflow;
+- CTA сохранены точно: `#start`, `#project`, `#support`;
+- hero `a9282de` и FAQ `13568dc` сохранены.
 
-~~~
+Бежевый фон `#F6F0E6` теперь виден только у существующего hero `a9282de`, где он является его исходной поверхностью. Pricing-root больше его не наследует.
+
+## Source/live release evidence
+
+- Предыдущий runtime HEAD: `0fd1235a3f654eebeafae6fd0ed695dd527248c5` (v02.11.139).
+- Текущий source HEAD: `5457b84c084505a6c6008c0c768921e415eda35d` — `Restore pricing surface and CTA fidelity`.
+- Runtime version в исходниках: **v02.11.140**.
+- Live version: **v02.11.140**, подтверждена в WordPress Plugins после WP Pusher update из `origin/main`.
+- Runtime push: **PASS** по результату установки v140 через WP Pusher.
+- Установочный источник: `DiasMazhenov/wp-ai-executor`, branch `main`.
+- Исходные и итоговые flags: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
+- Временные переключения после проверки не оставлялись.
+
+## Фактическая архитектура и routing
+
+```text
 prompt
   -> BriefIR v1
   -> typed DesignPlan v1
   -> WidgetCapabilityRegistry
   -> LayoutReport
   -> ElementorIR v2
-  -> native Elementor compiler
+  -> local native Elementor compiler
   -> structural/semantic/layout validation
-  -> существующий transaction/update/read-back boundary
+  -> existing transaction/update/read-back boundary
   -> editor/public render
   -> Vision/design review
-  -> bounded reconcile или patch
-~~~
+```
 
-При одновременных active deterministic pipeline имеет приоритет над EDDE. EDDE остаётся typed hero slice и не запускается вторым competing compiler-ом. Legacy provider tree сохранён для совместимых legacy routes; отдельного write path не добавлялось.
+При `pipeline=active` и `EDDE=active` первым выбирается deterministic pipeline. EDDE остаётся typed hero slice и вторым конкурирующим compiler-ом не запускается. В v140 live diagnostics:
 
-| Pipeline | EDDE | Фактический action path | Provider calls | Page writes | Результат |
+```json
+{
+  "action_path": "pipeline",
+  "provider_calls": 0,
+  "route": "local_deterministic",
+  "design_pipeline": {"mode": "active", "status": "written"}
+}
+```
+
+Contract/runtime matrix:
+
+| Pipeline | EDDE | Action path | Provider calls | Page writes | Status |
 |---|---|---|---:|---:|---|
-| off | off | legacy provider | 1 | 1 | PASS, contract harness |
-| off | active | EDDE | 0 | 1 | PASS, contract/runtime harness |
-| shadow | active | EDDE + shadow comparison | 0 | 1 | PASS, shadow не пишет второй раз |
-| active | active | local deterministic pipeline | 0 | 1 | PASS, live v137 |
+| off | off | legacy provider | 1 | 1 | PASS, harness |
+| off | active | EDDE | 0 | 1 | PASS, harness |
+| shadow | active | EDDE + shadow comparison | 0 | 1 | PASS, no second write |
+| active | active | local deterministic pipeline | 0 | 1 | PASS, live v140 |
 
-Live v137 diagnostics показали BriefIR → DesignPlan → registry → LayoutReport → ElementorIR → native compiler, один insert_elements write, operation_id=wpae-3b645647657433c0; provider JSON не был источником Elementor tree. Двойного запуска EDDE/pipeline и двойной записи не наблюдалось.
+The routing payload preserves unknown transport metrics as `null` with `metrics_known=false`; no zero cost, latency or success value was fabricated for a provider that was not called.
 
-## Воспроизведённый дефект pricing
+## Root causes and source fixes
 
-Старый live/editor результат v136 имел три карточки с native basis 33.333%, внутренней шириной группы 962px и двумя gap по 24px. Расчёт занимал 320.66 × 3 + 48 = 1010px, поэтому третья карточка переходила на следующую строку. Именно этот результат показан на пользовательском скриншоте.
+### 1. Pricing inherited the warm page surface
 
-Исправление:
+The pricing plan used `color.page_bg` for the section surface, so the live result inherited `#F6F0E6`. `includes/llm/design-plan.php` now assigns `color.surface` to the pricing section. The compiler resolves that token to `#FFFFFF`; the live computed background is white.
 
-- includes/elementor/elementor-ir.php: для роли pricing_cards с тремя детьми compiler резервирует gap-aware basis [31.5, 31.5, 31.5]; mobile policy остаётся 100% и column.
-- tests/design-pipeline-contract.php: regression проверяет desktop basis >30 && <32 и mobile 100.
-- wp-ai-executor.php: версия поднята до v02.11.137.
-- tests/llm-chat-contract.test.js: проверка runtime version обновлена.
-- wpae-package.json: SHA-256 manifest обновлён; stale hash не обнаружен.
+### 2. Three cards could wrap and the old visual was mistaken for acceptance
 
-Предыдущие v134–v136 fixes сохранили полную ширину intro/cards group и native row/wrap policy. Они не были заменены новым слоем.
+The previous v138/v139 compiler path was corrected for gap-aware card basis and native border/radius/padding. The current v140 live root has three cards at `303.023px` in the editor frame and `359.09375px` in the public frame; all share one row at desktop.
 
-## Operation ledger, idempotency и reconcile
+### 3. CTA URL was truncated
 
-Контрактные проверки текущего runtime покрывают:
+`includes/llm/brief-ir.php` previously inspected only a 160-byte look-ahead after a quoted value, turning `#support` into `#sup`. The look-ahead is now 512 bytes. A regression asserts the exact third link.
 
-| Сценарий | Результат |
+### 4. Release integrity
+
+`wp-ai-executor.php` and the version contract were bumped to v02.11.140. `wpae-package.json` hashes were regenerated and package verification reports no mismatches.
+
+Changed in source commit `5457b84`:
+
+- `includes/llm/brief-ir.php`
+- `includes/llm/design-plan.php`
+- `tests/design-pipeline-contract.php`
+- `tests/llm-chat-contract.test.js`
+- `wp-ai-executor.php`
+- `wpae-package.json`
+
+Legacy provider parsing, EDDE, transactions, page-update, read-back and retry/undo paths remain in place. No second write path or new token system was introduced.
+
+## Exact live operation
+
+Prompt used on post=5214:
+
+```text
+Добавь на текущую страницу только одну новую pricing-секцию. Не меняй существующие hero и FAQ и не добавляй другие roots. Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Для небольшой задачи с понятным объёмом». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы от идеи до результата». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач и развития проекта». Кнопка: «Подключить поддержку», ссылка #support. На desktop три отдельные native карточки в одну строку, каждая с белым фоном, заметной обводкой color.border 1px, radius.card и component padding; надзаголовок — компактный pill-бейдж color.primary с белым текстом; фон всей pricing-секции белый, без бежевого page_bg; на mobile карточки stack.
+```
+
+- Operation: `wpae-66b8db408b2372e5`.
+- Request type: new independent insert after the old pricing root was removed and saved; this was not a retry.
+- New pricing root: `b898e72`.
+- Intro: `132d92f`; pill badge: `f36e38b`; cards group: `dd8141d`.
+- Cards: `132d1dc`, `2dd156c`, `fbbd57a`.
+- Existing hero: `a9282de`; existing FAQ: `13568dc`.
+- Native widgets: `container`, `heading`, `text-editor`, `button`; 14 native widgets reported in the operation diagnostics.
+- Exact links in editor and public DOM: `#start`, `#project`, `#support`.
+
+## Operation ledger and reconcile evidence
+
+The operation UI and read-back confirmed the v140 write and current saved root. The durable server state is reported as `written`; a durable server-side `reviewed`/`completed` verifier ID was not exposed after reload, so this report does not promote the operation beyond `written/render_review_pending`.
+
+Existing ledger contract checks remain green for:
+
+| Scenario | Status |
 |---|---|
-| Повторная доставка одного запроса | PASS: существующая операция возвращается, duplicate root не создаётся |
-| Два конкурентных захвата | PASS: atomic option lock отдаёт lock_conflict/unknown, журнал не теряется |
-| Явная новая вставка с тем же brief | PASS: новая operation_identity допускает новую операцию |
-| Timeout после фактической записи | PASS в read-back contract: сохранённый root находится до retry |
-| Изменение target/page после операции | PASS: conflict/unknown, чужая запись не перезаписывается |
-| Stale browser acknowledgement | PASS: identity/revision/root/hash проверки не завершают другую операцию |
-| Недопустимый state transition | PASS: allowlist отклоняет переход |
-| Provider timeout в live | NOT RUN как искусственный изменяющий сценарий |
-| Unsaved user-authored neighbor probe | NOT RUN; соседние user roots не трогались |
+| Same request delivered again | PASS: same operation identity, no duplicate root |
+| Concurrent capture | PASS: lock conflict/unknown, journal is retained |
+| Explicit new insert with same brief | PASS: separate operation identity is allowed |
+| Timeout after a completed write | PASS in read-back contract; retry does not duplicate |
+| Target changed after operation | PASS: conflict/unknown, no overwrite of foreign changes |
+| Stale browser acknowledgement | PASS: operation/root/hash identity prevents cross-completion |
+| Invalid state transition | PASS: allowlist rejects it |
+| Artificial provider timeout live mutation | NOT RUN |
+| Unsaved user-authored neighbor probe | NOT RUN |
 
-operation-ledger.php использует lock-backed create/update; обычный read-then-update не объявляется атомарной защитой. reconcile сначала проверяет capability, post scope, operation identity, saved hash, target fingerprint, revision и root scope. Browser payload сам по себе не доказывает серверный read-back или Vision.
+Browser evidence is not treated as proof of server read-back or Vision success. `written`, `rendered`, `reviewed` and `completed` remain separate states.
 
-## Live operations на post=5214
+## LayoutReport versus live DOM
 
-### Existing hero A
+LayoutReport remains a preflight prediction; computed DOM is the acceptance evidence.
 
-- Root: a9282de.
-- Сохранён после удаления старого pricing root; публичный DOM после последнего reload содержит этот root.
-- Exact copy: Тихая форма, АРХИТЕКТУРА, Пространство для идей, Опишите задачу и получите понятный первый шаг.
-- CTA: Начать проект → #contact, Смотреть проекты → #projects.
-- Public root class: wpae-generated-hero.
+### Desktop editor after save/reload
 
-### Removed broken pricing v136
+- CUA frame viewport: `1280×720`; Elementor preview inner width: `1010px`.
+- Pricing root `b898e72`: width `1010px`, padding `0 24px`, background `rgb(255,255,255)`.
+- Cards: width `303.023px`, x positions `24`, `351.023`, `678.047`; same y; border `1px solid rgb(209,213,219)`; radius `8px`; padding `24px`.
+- Pill: `rgb(68,96,236)`, border `1px solid rgb(68,96,236)`, radius `999px`, padding `5.6px 12px`.
+- No desktop wrap or horizontal overflow.
 
-- Operation: wpae-c8a717fb6f3eb12c.
-- Root: cb8db62.
-- Defect: three 33.333% cards wrapped at desktop.
-- Reconcile before removal: saved write was retained as written/render-review-pending; Vision capture failed, automatic rollback did not execute.
-- Root was removed through the existing Elementor UI only after explicit user confirmation; hero A was preserved and the page was saved before the new independent insert.
+### Mobile editor after save/reload
 
-### Current independent pricing v137
+- Actual Elementor emulation frame: `innerWidth=345`, `scrollWidth=345`.
+- Pricing root: width `345px`, direction `column`, background white.
+- Cards: each width `297px`, height `233px`, x=`24px`, y=`557.34375`, `806.34375`, `1055.34375`; direction `column`.
+- Overflow query: no nodes outside the viewport.
+- Mobile card order is copy-first and CTA text remains usable.
 
-Exact user request:
+### Public page after save/reload
 
-~~~
-Добавь на текущую страницу новую pricing-секцию. Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Для небольшой задачи с понятным объёмом». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы от идеи до результата». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач и развития проекта». Кнопка: «Подключить поддержку», ссылка #support. Сохрани существующие roots и не добавляй другие тексты.
-~~~
+- Public viewport: `1280×720`; document content width `1265px` because of the scrollbar.
+- Pricing root `b898e72`: x=`0`, y=`679.203125` before scroll; width `1265px`, height `429.375px`, background white.
+- Public cards: each width `359.09375px`, x=`62.5`, `445.59375`, `828.6875`; same y=`827.578125`; border/radius/padding match editor.
+- `.wpae-generated-pricing` count: `1`, id `b898e72`.
+- Public CTA hrefs: `#start`, `#project`, `#support`.
 
-- Operation: wpae-3b645647657433c0.
-- Root after compiler/write/read-back: 39a8c89.
-- Request type: a new independent insert after the v136 root had been removed and saved; this was not a retry of v136.
-- Route: pipeline, local deterministic compiler; provider calls: 0; page writes: 1.
-- Native widgets observed: container, text-editor, heading, button; no invented widget type.
-- Exact CTA hrefs in editor and public DOM: #start, #project, #support.
-- Vision UI result: score 85, confidence 95%; finding was minor card padding balance. This is browser evidence, not a server-side proof of completed.
-- Durable state is not promoted to reviewed/completed by this report: the server-side rendered verifier/Vision report ID was not exposed after reload, so the honest state remains write/read-back confirmed with review pending.
+The LayoutReport breakpoints still cover desktop/laptop/tablet/mobile and returned `mobile_stack_result=stack` with no violations. Direct live captures above are the authoritative geometry for the tested viewport sizes; no claim is made that LayoutReport replaces computed CSS or screenshots.
 
-## LayoutReport against live DOM
-
-### Editor desktop after save/reload
-
-- Viewport frame: 1010px root width; content width 962px.
-- Root 39a8c89: x=0, y=406, w=1010, h=359.
-- Intro group 38d6155: x=24, w=962, gap=24px.
-- Cards group c0259fa: x=24, y=534, w=962, h=207, flex-direction=row, flex-wrap=wrap, gap=24px.
-- Cards: 412afab, 987aec5, f0f8be5; each w=303.023px, x positions 24, 351.023, 678.047, same y 534; no wrap occurred.
-- 303.023 × 3 + 24 × 2 = 957.07px <= 962px.
-
-### Editor mobile after save/reload
-
-- Browser editor mobile frame: innerWidth=360, scrollWidth=345.
-- Root width 345px, direction column.
-- Cards group c0259fa: x=24, y=732, w=297, h=581, direction column, gap 16px.
-- Card positions: y=732, 931, 1130; each w=297, no horizontal overflow.
-- Copy precedes media/remaining content according to mobile policy; CTA text remains usable.
-
-### Public DOM after save/reload
-
-- Public viewport observed: 1233×913; document scrollWidth=1233.
-- Pricing root 39a8c89: x=0, y=374, w=1233, h=359, class wpae-generated-pricing.
-- Cards group c0259fa: x=46.5, y=502, w=1140, h=207.
-- Public cards: 412afab, 987aec5, f0f8be5; each w=359.09375, x=46.5, 429.59375, 812.6875, same y 502; no public overflow.
-
-LayoutReport remains a preflight report. These DOM measurements are the separate live computed-geometry evidence; they do not claim that a PHP report alone proves visual acceptance.
-
-## Neighboring content preservation
+## Neighbor preservation
 
 - No new WordPress page, post or draft was created.
-- Hero A root a9282de and its exact links remained after removing cb8db62 and inserting v137 pricing.
-- Public read-back contains exactly one generated hero root and one generated pricing root; .wpae-generated-pricing count is 1 with id 39a8c89.
-- The requested unsaved-edit probe on a separate user-authored neighbor was not run. No evidence of a neighboring user root being modified was observed.
+- Hero `a9282de` and FAQ `13568dc` remained in editor and public DOM.
+- The old pricing root was operation-owned and removed through the existing Elementor UI; no foreign/autosave root was removed.
+- Current public DOM contains one generated pricing root only.
+- The requested artificial unsaved-edit probe on a separate user-authored neighbor was not run; no neighboring user root was changed in this operation.
 
-## Screenshot and render evidence
+## Vision and render evidence
 
-The current CUA screenshot documentation guarantees inline delivery, not a filesystem writer or artifact export for returned screenshot bytes. tab.content.export() is not a screenshot export in this environment, and no documented screenshot-file writer/artifact API is available. Therefore no fake filesystem links are recorded.
+Fresh UI Vision after the v140 operation reported **score 85, confidence 95%**. Its finding was minor: card spacing/wrapping could be polished for mid-range viewports. The finding does not contradict the live desktop/mobile computed geometry above. Because a durable server-side Vision report ID was not available after reload, the operation remains `written/render_review_pending` in this report.
 
-Fresh inline captures were made after v137 save/reload:
+Fresh inline CUA captures were made after v140 save/reload on the existing page:
 
-1. Editor desktop — post 5214, root 39a8c89, operation wpae-3b645647657433c0, viewport 1280×720, embedded Elementor editor. The image shows all three pricing cards in one row.
-2. Editor mobile — post 5214, root 39a8c89, operation wpae-3b645647657433c0, Elementor mobile mode (innerWidth=360, frame 1280×720), two inline frames cover the title and lower stacked cards.
-3. Public desktop — post 5214, root 39a8c89, operation wpae-3b645647657433c0, public URL https://mazhenov.kz/pricing-contract-live-v123/?wpae_check=hero-b-132-2039, viewport 1233×913; fresh CUA screenshot shows the corrected one-row pricing block and hero A.
+1. **Editor desktop** — post `5214`, root `b898e72`, operation `wpae-66b8db408b2372e5`, CUA viewport `1280×720`; white pricing surface, pill and three bordered cards visible.
+2. **Editor mobile** — same post/root/operation, Elementor mobile mode, actual preview width `345px`; stacked cards and no overflow visible.
+3. **Public desktop** — same post/root/operation, URL `https://mazhenov.kz/pricing-contract-live-v123/?wpae_check=pricing-v140-20260922`, public viewport `1280×720`; white pricing surface and three cards visible.
 
-Screenshot file gallery status: SCREENSHOT FILE BLOCKED. Inline screenshots were captured and displayed; an absolute PNG path cannot be truthfully supplied because this CUA session exposes no documented writer/artifact export for the returned bytes. Public inline capture itself succeeded.
+Screenshot file status: **SCREENSHOT FILE BLOCKED**. The documented CUA surface exposes screenshot bytes through `getScreenshot()` and inline `emitImage()`, but this session has no documented filesystem writer or screenshot artifact export. `tab.content.export()` is content export, not PNG capture. The three real screenshots were emitted inline; no fake absolute PNG links are recorded.
 
-## Validation commands
+## Validation
 
-All commands below passed against runtime commit ad6bc5d:
+All checks below passed after source v140 changes:
 
-~~~
-php -l wp-ai-executor.php                         PASS
-php -l includes/elementor/elementor-ir.php       PASS
-php tests/design-pipeline-contract.php            PASS (63 checks)
+```text
+php -l includes/llm/brief-ir.php
+php -l includes/llm/design-plan.php
+php -l wp-ai-executor.php
+php tests/design-pipeline-contract.php            PASS (68 checks)
 node --test tests/*.test.js                       PASS (4 suites; 331 flex runtime checks)
 php docs/audits/2026-09-12/package-probe.php     PASS (90 files; mismatches=0)
 git diff --check                                  PASS
-~~~
+```
+
+Additional live checks passed:
+
+- v02.11.140 visible in WordPress Plugins after WP Pusher installation;
+- save/reload retained exact copy, root IDs, borders, radius, pill and CTA hrefs;
+- public DOM contained one pricing root and no horizontal overflow in the tested editor mobile frame;
+- existing hero and FAQ content remained unchanged.
 
 ## Status matrix
 
 | Evidence | Status |
 |---|---|
-| Source fix and regression | PASS |
-| Package/hash validation | PASS |
-| Push runtime ad6bc5d | PASS |
-| WP Pusher install/activation v137 | PASS |
-| Active/active routing without double write | PASS |
-| Exact copy and CTA links | PASS |
-| Saved Elementor read-back root 39a8c89 | PASS |
+| Root cause identified (beige pricing surface) | PASS |
+| White pricing surface in saved public DOM | PASS |
+| Pill badge, card border and radius | PASS |
+| Exact copy and CTA URLs | PASS |
+| Active/active route without double write | PASS |
+| Saved Elementor read-back root `b898e72` | PASS |
 | Editor desktop geometry | PASS |
 | Editor mobile stack/overflow | PASS |
-| Public DOM geometry | PASS |
+| Public desktop DOM geometry | PASS |
 | Fresh inline screenshots | PASS |
-| PNG filesystem links | BLOCKED by CUA capability |
-| Server-side Vision reviewed/completed promotion | BLOCKED/PENDING; Vision UI score exists, verifier/report ID not confirmed after reload |
-| Unsaved user-authored neighbor probe | NOT RUN |
-| Artificial provider timeout live scenario | NOT RUN |
+| Filesystem PNG links | BLOCKED by CUA capability |
+| Durable reviewed/completed promotion | BLOCKED/PENDING |
+| Unsaved neighbor mutation probe | NOT RUN |
+| Artificial provider timeout mutation | NOT RUN |
 
-## Commit and installation status
+## Commit, push and installation
 
-- Runtime commit: ad6bc5d326b78bfa74aef2f71212fbe5cdf19f53 (Keep pricing cards on one desktop row).
-- Runtime push: PASS to origin/main.
-- Live install: PASS, WP Pusher update from DiasMazhenov/wp-ai-executor, branch main; active plugin version v02.11.137.
-- Report and canonical context.md: updated in documentation commit f786e31; push PASS.
+- Source/runtime commit: `5457b84c084505a6c6008c0c768921e415eda35d`.
+- Runtime push: **PASS** according to the v140 WP Pusher installation result.
+- Live installation: **PASS**, active version v02.11.140.
+- Documentation files are updated in this worktree after the runtime commit; they do not change the package hash manifest.
 
-История предыдущих handoff-срезов сокращена; факты этого документа относятся к текущей source/live проверке и имеют приоритет над историческими snapshots.
+Исторические v137/v139 snapshots были заменены этим актуальным срезом. Они не являются доказательством текущего live результата.
