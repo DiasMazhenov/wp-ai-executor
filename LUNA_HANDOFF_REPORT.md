@@ -131,7 +131,7 @@ Therefore this report does not claim that `v02.11.124` is installed, and it does
 |---|---|---|
 | EDDE active mode reported by live diagnostics | PASS (old live v123) | `mode=active`, `action_path=edde` visible in existing chat diagnostics. |
 | Fixed source compiles explicit 40/60 | PASS local | Runtime regression and compiler assertions; live v124 not installed. |
-| Fixed source compiles independent 60/40 | PASS by bounded compiler contract; live run NOT RUN | Enum/compiler path exists; no fresh live generation due deployment blocker. |
+| Fixed source compiles independent 60/40 | NOT RUN as a dedicated regression | The enum/compiler path supports it, but no dedicated 60/40 assertion or live generation was run. |
 | 40/60 live save/reload/render on v02.11.124 | NOT RUN | Current live remains v02.11.123. |
 | Independent 60/40 live save/reload/render | NOT RUN | Current live remains v02.11.123. |
 | Exact hero text and CTA links on prior v123 run | PASS for prior run | DOM/chat showed exact six requested slots and `#contact/#projects`; prior fallback geometry was wrong. |
