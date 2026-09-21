@@ -2,13 +2,14 @@
 
 ## Current release
 
-- Plugin source and installed live release: `v02.11.124`.
+- Plugin source release: `v02.11.125`; installed live release remains `v02.11.124` until a separate WP Pusher deployment and fresh browser acceptance.
 - Guide: `v02.05.99`.
 - Repository: `DiasMazhenov/wp-ai-executor`; checkout `/Users/diasmazhenov/vibecode/wp-ai-executor`; branch `main`.
-- Current runtime commit: `76829f92c9120bcd634f439dc16bf9910ca381bb` (`Fix labeled hero fallback copy extraction`), pushed to `origin/main` at `2026-09-21 14:58:04 +05`.
+- Current source commit: `2f97c8f` (`Introduce deterministic design pipeline contracts`); push and live installation are pending this source-only architecture handoff.
 - Scope is the existing WordPress page `post=5214` only. No new WordPress page or draft was created.
 - Live editor: `https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor`; after WP Pusher update it showed `Модель: openrouter/free · Версия: v02.11.124`. The WordPress plugins screen reported `WP AI Executor`, `v02.11.124`, active, with `Plugin was successfully updated.`
 - EDDE diagnostics remained active (`mode=active`, `action_path=edde`, provider `openrouter/free`). The hero-only decision state is compiled into native Elementor JSON and continues through the existing validation, transaction, read-back, and editor-refresh boundary.
+- Deterministic design pipeline v1 is present behind `design_pipeline_mode=off|shadow|active` (default `off`). BriefIR v1, typed DesignPlan v1, WidgetCapabilityRegistry, ReferenceSet, LayoutReport, ElementorIR v2, native compiler boundary, semantic token/contrast checks, routing policy and durable operation ledger are source-verified for hero/process/pricing. No new live active-mode generation was run in this release; post=5214 remains on v02.11.124.
 - First live hero operation: `wpae-20260921090807-8fa12ddb`; saved root `96b68e5`; exact brief used `split_40_60`, text left, visual right, outlined surface, `#F6F0E6`, two CTA links, and copy-first mobile stack. Public read-back showed background `#F6F0E6`, a row content shell, desktop copy/visual widths `38.4/57.6`, and mobile widths `100/100` with text before visual.
 - Pricing operation: `wpae-20260921094359-dc8fd3ea`; saved root `9f3bee7`, nested grid `f02313f`; the three existing pricing cards remained one responsive desktop row with their exact labels, amounts, descriptions, and `#start`, `#project`, `#support` links.
 - Second live hero operation: `wpae-20260921100000-cc191309`; saved root `9bdbc05`. The provider response was rejected for sparse composition, so the deterministic content-complete fallback was compiled through EDDE and saved. Public geometry read-back: root `#F6F0E6`, content shell row `1217px`, copy `701px` (about 60%), outlined visual panel `467px` (about 40%); mobile read-back and screenshot showed copy-first stacking.

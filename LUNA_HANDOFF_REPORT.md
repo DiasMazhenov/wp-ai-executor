@@ -281,3 +281,189 @@ Codex in-app browser does not support command "tab_content_export"
 ## 13. Финальное состояние
 
 На момент передачи source и live синхронизированы на v02.11.124; текущая страница post=5214 содержит исходный pricing, первый hero 40/60 и второй hero 60/40. EDDE остаётся hero-only, а запись проходит существующие native Elementor transaction/read-back boundaries. Итоговый исходник находится в 76829f9 и отправлен в origin/main.
+
+---
+
+# Архитектурное продолжение: deterministic design pipeline v1
+
+Дата фиксации: 2026-09-21, Asia/Almaty
+Рабочий clone: `/Users/diasmazhenov/vibecode/wp-ai-executor`
+Целевая страница: только существующая Elementor page `post=5214`
+Source release: `v02.11.125`
+Live release на момент отчета: `v02.11.124`
+Implementation commit: `2f97c8f` (`Introduce deterministic design pipeline contracts`)
+
+## 14. Что изменено
+
+Генератор получил versioned границу между пользовательским prompt, typed
+design decisions и native Elementor data:
+
+```text
+prompt
+  -> BriefIR v1
+  -> DesignPlan v1
+  -> deterministic LayoutReport / capability checks
+  -> ElementorIR v2
+  -> native compiler
+  -> existing Elementor preflight/transaction/readback
+```
+
+`BriefIR` сохраняет `exact_text`, нормализованный текст, URL CTA отдельно,
+source span, confidence и provenance. Парсер отдельно покрывает русские и
+английские prompts, короткие labels `FAQ`, `О нас`, `7 шагов`, несколько CTA,
+style-only и ambiguous prompts, длинный заголовок с переносом строки и явную
+медиа-ссылку. Он не создает content, metrics, claims или URL, которых нет в
+источнике.
+
+`DesignPlan v1` ограничен archetypes `hero`, `process` и `pricing`. Для каждого
+плана фиксируются composition, allowed native widgets, content refs, semantic
+token refs, responsive policy, media refs, quality gates и provenance. Остальные
+archetypes продолжают legacy compatibility path.
+
+`ElementorIR v2` не является provider JSON. Он содержит `node_id`, role,
+widget type, refs, constraints, responsive policy, media refs, editable fields
+и provenance. `native-compiler.php` предоставляет единственную стабильную
+границу компиляции в native Elementor data; compiler сам создает детерминированные
+IDs, разрешает semantic tokens, задает Flex basis/grow/shrink, mobile stack,
+responsive settings, exact copy, links и image metadata.
+
+`LayoutReport` проверяет 1440, 1024, 768 и 390 px: container/used/available
+width, gaps, basis, min/max, zero-width children, overflow, fixed text height,
+mobile stack и suggested patches. Добавлен contrast gate для text/muted/CTA
+semantic roles.
+
+## 15. Какие root causes исправлены
+
+1. Парсинг и layout decisions больше не смешаны с provider-generated tree.
+2. Второй CTA больше не теряет label, URL или provenance; UTF-8 prefix не
+   ломает распознавание `title`, `eyebrow` и CTA.
+3. Явный `hero` имеет приоритет над словом `шагов` внутри copy и не ошибочно
+   становится `process`.
+4. Многострочный quoted text сохраняется без потери переноса.
+5. Недоступный widget проходит через общий capability registry и получает
+   известный native fallback с downgrade diagnostic.
+6. Missing token и низкий contrast видны до записи; palette choices нового
+   слоя больше не зависят от произвольных цветов модели.
+7. Layout basis и mobile stack вычисляются локально, поэтому provider не может
+   самовольно создать zero-width child или fixed-height text block.
+8. Повторный active-запрос защищен idempotency key и operation ledger; новый
+   root не добавляется поверх pending/unknown операции без reconcile.
+
+## 16. Измененные файлы
+
+Новые runtime-модули:
+
+- `includes/llm/brief-ir.php`
+- `includes/llm/design-plan.php`
+- `includes/llm/routing.php`
+- `includes/design/token-resolution.php`
+- `includes/elementor/capability-registry.php`
+- `includes/elementor/reference-set.php`
+- `includes/elementor/layout-report.php`
+- `includes/elementor/elementor-ir.php`
+- `includes/elementor/native-compiler.php`
+- `includes/elementor/operation-ledger.php`
+
+Изменены existing boundaries и UX:
+
+- `includes/llm/llm.php` — feature-flagged shadow/active integration,
+  diagnostics, preflight summary, deterministic ID handoff и operation state.
+- `includes/llm/transport.php` — persisted `design_pipeline_mode`.
+- `includes/admin/dashboard.php` — настройки `off/shadow/active`.
+- `assets/js/elementor-llm-chat.js` и `assets/css/elementor-llm-chat.css` —
+  видимые фазы разбора, планирования, components, responsive, compile, write,
+  render и visual review; существующие retry/undo/session recovery сохранены.
+- `wp-ai-executor.php` — source version `v02.11.125`.
+- `wpae-package.json` — SHA-256 manifest обновлен с 80 до 90 runtime files.
+- `README.md`, `ERRORS.md` — описаны режимы pipeline и EJ-131.
+- `tests/design-pipeline-contract.php` и Node wrapper — новый contract harness.
+
+## 17. Сохраненные legacy paths
+
+- `includes/llm/decision-engine.php` остается узким EDDE hero slice и не
+  превращен в универсальный DSL.
+- Legacy provider action decode, fallback, recipes, blueprint, block library,
+  `includes/llm/design.php`, normalizers и content-fidelity guards не удалены.
+- `includes/elementor/transactions.php`, `page-update.php`, validation,
+  protected-zone checks, autosave ownership, rollback и saved `_elementor_data`
+  readback остаются единственной write boundary.
+- `design_pipeline_mode=off` сохраняет текущий provider path без изменения
+  поведения; `shadow` строит новый результат только в памяти и показывает
+  comparison diagnostics, а запись выполняет legacy path.
+- Existing user-authored roots, foreign/autosave roots, protected zones,
+  links и untouched content не удаляются новым слоем.
+
+## 18. Feature flags и operation states
+
+`design_pipeline_mode` принимает только:
+
+```text
+off     -> legacy path
+shadow  -> BriefIR/Plan/IR/compiler diagnostics, без нового write
+active  -> bounded native compiler для hero/process/pricing
+```
+
+Durable record использует `wpae-design-operation-v1` и states:
+`planned -> generated -> normalized -> validated -> written -> rendered ->
+reviewed -> revised -> completed`, плюс `failed` и `unknown`. Idempotency key
+строится из `post_id + brief_hash + selected_scope + operation_type`.
+
+## 19. Проверки
+
+Пройдены:
+
+- `php tests/design-pipeline-contract.php` — **32 checks OK**;
+- `php tests/flex-generation-runtime.php` — **331 checks OK**;
+- `node --test tests/design-pipeline-contract.test.js`;
+- `node --test tests/flex-generation-runtime.test.js tests/llm-chat-contract.test.js tests/vision-security-contract.test.js tests/design-pipeline-contract.test.js` — все **4 suites PASS**;
+- `node --check assets/js/elementor-llm-chat.js`;
+- PHP lint всех измененных PHP-файлов;
+- `git diff --check`;
+- package SHA-256 verification — **90/90 PASS**.
+
+Новый self-check отдельно проверяет short labels, RU/EN, hero/process/pricing,
+несколько CTA, URL fidelity, multiline title, style-only, ambiguity,
+capability downgrade, ReferenceSet focal point, deterministic IDs, native
+Flex basis, mobile stack, zero-width violation, contrast, idempotency и route
+policy.
+
+## 20. Browser/render evidence
+
+Новая версия пока не устанавливалась в WordPress и `design_pipeline_mode` не
+переключался в `active`. Поэтому для v02.11.125 нет свежих current generation,
+saved `_elementor_data` readback, rendered HTML, DOM geometry, desktop/mobile
+screenshots или Vision review. Это source-only architecture release; прежнее
+live evidence v02.11.124 на post=5214 остается действительным для уже
+установленного EDDE/legacy path и не является acceptance нового active compiler.
+
+В результате визуальная приемка v02.11.125 сознательно имеет статус
+**pending**, а не completed. Новые страницы и черновики для проверки не
+создавались.
+
+## 21. Остаточные предупреждения и limitations
+
+- Live `active` install/revision check еще не выполнены; source `v02.11.125`
+  и live `v02.11.124` намеренно разделены.
+- Operation ledger уже durable и idempotent, но отдельный REST reconcile UI
+  endpoint для unknown browser timeout остается следующим минимальным шагом;
+  существующий editor retry/undo path не удален.
+- Provider telemetry policy schema присутствует, однако точные input/output
+  tokens, latency и cost требуют подключения к фактическому transport response
+  metadata; в локальном compiler-only пути стоимость равна нулю.
+- Server-side LayoutReport не доказывает computed CSS, keyboard behavior,
+  animation timing или screenshot-level fidelity; это по-прежнему требуют
+  свежие browser screenshots и Vision review.
+- Legacy hardcoded colors в EDDE/fallback сохранены ради backward-compatible
+  path; новый compiler использует semantic refs и safe defaults.
+
+## 22. Commit, push и следующий шаг
+
+- Implementation commit: `2f97c8f`.
+- Documentation/context update: будет отдельным docs commit после этой записи.
+- Push: выполнить в разрешенный `origin/main` после финальной проверки staged
+  files; live WP Pusher deployment в этом этапе не выполняется.
+- Следующий минимальный шаг: push `v02.11.125`, установить его через WP
+  Pusher на уже открытую страницу `post=5214`, выполнить одну controlled
+  active hero generation и собрать saved JSON, rendered HTML, DOM geometry,
+  desktop/mobile screenshots и Vision review. Только после этого можно
+  переводить active acceptance из pending в completed.
