@@ -10,10 +10,10 @@
 
 - Зафиксированный перед этапом в задании baseline: `d69d734`; последняя runtime-версия в приложенном handoff была v02.11.126.
 - Фактическое состояние checkout перед этим запуском: `2702845`, source/live v02.11.140.
-- Текущий source HEAD: `d34e401e4c8c91581b14a9766a42f9e24faa87c3` (`Harden parser surfaces and vision reconcile`).
+- Текущий HEAD: `905df45`; runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3` (`Harden parser surfaces and vision reconcile`).
 - Runtime version в исходниках и установленном WordPress: **v02.11.141**.
 - Установка v141 через штатный WP Pusher: **PASS**; Plugins page показала v02.11.141.
-- `git push origin main`: **PASS**, зафиксирован результат `2702845..d34e401 main -> main`.
+- `git push origin main`: **PASS**, runtime push `2702845..d34e401`, documentation push `d34e401..905df45`.
 - Повторный `git ls-remote origin` в этом запуске: **BLOCKED** из-за DNS/network; локальная tracking-ref `origin/main` отсутствует.
 - Исходные и итоговые flags: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
 - Временные переключения после live-проверок не оставлялись.
@@ -232,10 +232,10 @@ New/updated contract coverage includes structural URL boundaries, UTF-8/newline 
 
 ## Commit, push and installation
 
-- Source/runtime commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`.
+- Runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`; documentation commit: `905df45`.
 - Push status: **PASS** recorded for `2702845..d34e401 main -> main`.
 - Installation status: **PASS**, WordPress Plugins showed v02.11.141.
 - Package/hash status: **PASS**, 90 files and no mismatches.
-- Current tracked worktree changes are documentation-only until the report/context commit; pre-existing untracked audit/history files were not staged.
+- После documentation commit tracked worktree clean; pre-existing untracked audit/history files не staged.
 
 Исторические v126/v140 snapshots и старые handoff addenda заменены этим актуальным срезом; они не являются доказательством текущего live состояния.

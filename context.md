@@ -7,10 +7,10 @@ Target: **post=5214, Pricing Contract Live v123**. Новые pages/drafts не 
 
 ## Source/live
 
-- Source HEAD: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`.
+- Current HEAD (documentation): `905df45`; runtime source commit: `d34e401e4c8c91581b14a9766a42f9e24faa87c3`.
 - Runtime/live version: **v02.11.141**.
 - Live installation: **PASS** through WP Pusher; Plugins page showed v02.11.141.
-- Push: **PASS** recorded as `2702845..d34e401 main -> main`; current shell could not re-resolve GitHub DNS for a second remote check.
+- Push: **PASS** recorded as runtime `2702845..d34e401` and documentation `d34e401..905df45`; current shell could not re-resolve GitHub DNS for a second remote check.
 - Feature flags: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
 - Active/active priority: local deterministic pipeline first; EDDE is not a competing compiler.
 
