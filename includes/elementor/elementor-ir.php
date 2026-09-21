@@ -111,7 +111,8 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$item = $content_map[ $content_ref ] ?? [];
 					$item_role = sanitize_key( (string) ( $item['role'] ?? '' ) );
 					if ( $item_role === 'eyebrow' ) {
-						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+						$badge_label = wpae_elementor_ir_node( $child_id . '-intro-eyebrow-label', 'eyebrow', 'heading', [ $content_ref ], [ 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'pricing_badge', 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} else {
@@ -270,6 +271,27 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['padding_tablet'] = $settings['padding'];
 			$settings['padding_mobile'] = wpae_elementor_ir_dimension_control( $token_values['space.component'] ?? '1.25rem', 'rem', 1.25, false );
 		}
+		if ( $role === 'pricing_badge' ) {
+			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['flex_direction'] = 'row';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_align_items'] = 'center';
+			$settings['background_color'] = $accent;
+			$settings['border_border'] = 'solid';
+			$settings['border_color'] = $accent;
+			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '999px', 'px', 999 );
+			$settings['padding'] = [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => false, 'sizes' => [] ];
+			$settings['align_self'] = 'flex-start';
+			$settings['align_self_tablet'] = 'flex-start';
+			$settings['align_self_mobile'] = 'flex-start';
+			$settings['_element_width'] = 'initial';
+			$settings['_element_width_tablet'] = 'initial';
+			$settings['_element_width_mobile'] = 'initial';
+			$settings['_flex_grow'] = 0;
+			$settings['_flex_shrink'] = 0;
+			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
+		}
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['title'] = (string) ( $item['exact_text'] ?? '' );
@@ -351,6 +373,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$default_child_basis = ( $settings['flex_direction'] ?? 'column' ) === 'column' ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
 		foreach ( $compiled_children as $child_index => &$compiled_child ) {
 			if ( ! is_array( $compiled_child ) || ( $compiled_child['elType'] ?? '' ) !== 'container' || ! is_array( $compiled_child['settings'] ?? null ) ) {
+				continue;
+			}
+			if ( ( $node['children'][ $child_index ]['role'] ?? '' ) === 'pricing_badge' ) {
 				continue;
 			}
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
