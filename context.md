@@ -1,28 +1,29 @@
 # WP AI Executor Context
 
-## Текущее состояние
+## Current state
 
-- Зафиксировано: 2026-09-21 20:52:00 +05:00 (Asia/Almaty).
-- Репозиторий: /Users/diasmazhenov/vibecode/wp-ai-executor, branch main.
-- Исходный HEAD live-сессии: bfdfc90038a48ca9b01c758d154027a99a46c0ac.
-- Итоговый runtime/source HEAD: a9d92d67379ae4c2a92b7f005a09694bc6bea478.
-- Source/live/install version: v02.11.132.
-- Целевая страница: post=5214 только; новые WordPress pages/posts/drafts не создавались.
-- Feature flags: Design Decision Engine=active, Deterministic Design Pipeline=active; при active/active precedence у pipeline.
-- Runtime pipeline: BriefIR -> DesignPlan -> capabilities/LayoutReport -> ElementorIR -> native compiler -> validation -> существующий transaction/read-back -> render -> Vision/reconcile.
-- Runtime install через WP Pusher: PASS, v02.11.132.
-- Runtime push: PASS; документационный commit/push выполняется отдельно.
+- Timestamp: 2026-09-21 22:56:25 +05:00 (Asia/Almaty).
+- Repository: /Users/diasmazhenov/vibecode/wp-ai-executor, branch main.
+- Runtime source commit: ad6bc5d326b78bfa74aef2f71212fbe5cdf19f53.
+- Runtime/live version: v02.11.137.
+- Target page: post=5214 only; no new WordPress pages, posts or drafts.
+- Live install: PASS through WP Pusher from DiasMazhenov/wp-ai-executor main.
+- Feature flags: Design Decision Engine=active, Deterministic Design Pipeline=active; active/active precedence is local deterministic pipeline.
+- Current pipeline: BriefIR → DesignPlan → WidgetCapabilityRegistry/LayoutReport → ElementorIR → native compiler → validation → existing transaction/read-back → render → Vision/reconcile.
 
-## Текущая live evidence
+## Current live evidence
 
-- Accepted A operation: wpae-c8d8403f5579e2a3, identity b7932c34-b562-4f2d-8c6c-7e57ac146731, root a9282de, route pipeline/local_deterministic, provider calls 0, one write.
-- A exact content: Тихая форма, АРХИТЕКТУРА, Пространство для идей, Опишите задачу и получите понятный первый шаг, CTA #contact and #projects.
-- A durable state: written/render_review_pending; rendered HTML hash and durable Vision report ID are empty. Editor Vision UI showed score 85/confidence 95%.
-- A editor geometry: desktop copy/media 375.140625/562.859375 with 24px gap; tablet 340.3984375/340.6015625; mobile root width 345, column, copy x24 y24 w297 h318, media x24 y358 w297 h198, scrollWidth 345, innerWidth 360.
-- A public geometry: viewport 1233x913, root a9282de width 1233 height 342, public child widths 446.3515625/669.6484375 with 24px gap, no horizontal overflow.
-- B was a distinct request: operation wpae-dff2acb7714d94ff, identity 6ba18eb7-1c1a-47f9-9246-191ee48c5fc0, root bb838fb. Vision found empty visual placeholder; provider repair timed out; deterministic fallback failed exact content fidelity. B root was removed from the editor autosave model and A was saved with native Elementor Update. After reload, editor/public show A only.
-- Final public readback has no bb838fb; specific pricing preservation and an unsaved-neighbor edit probe are not proven.
-- Screenshot bytes were shown inline from the existing editor after save/reload (A desktop and mobile), but no filesystem screenshot paths exist. Public capture failed; report status is SCREENSHOT BLOCKED. Never invent screenshot links.
+- Existing hero A root: a9282de. Exact copy and #contact/#projects links survived the pricing repair.
+- Removed broken v136 pricing root: cb8db62, operation wpae-c8a717fb6f3eb12c. It used 33.333% × 3 with two 24px gaps and wrapped the third card.
+- Current independent v137 pricing operation: wpae-3b645647657433c0, root 39a8c89.
+- v137 request was a new insert with the exact pricing brief recorded in LUNA_HANDOFF_REPORT.md; it was not a retry of v136.
+- v137 route: pipeline/local deterministic, provider calls 0, one page write.
+- Exact pricing CTA links: #start, #project, #support.
+- Editor desktop: cards 303.023px wide at x=24, 351.023, 678.047, same y, gap 24, no wrap.
+- Editor mobile: innerWidth 360, scrollWidth 345, cards width 297, column y=732/931/1130, no overflow.
+- Public DOM: viewport 1233×913, pricing root width 1233, cards width 359.09375 at x=46.5/429.59375/812.6875, one generated pricing root.
+- v137 Vision UI: score 85, confidence 95%; minor padding finding. Server-side reviewed/completed was not claimed after reload; review remains pending without durable verifier/report evidence.
+- Screenshots were captured fresh through embedded CUA and displayed inline for editor desktop, editor mobile and public desktop. CUA provides no documented writer/artifact export for screenshot bytes, so filesystem PNG links remain blocked; no fake path is recorded.
 
 ## Architecture constraints
 
@@ -31,7 +32,15 @@
 - Do not create SESSION_CONTEXT.md, CONTEXT.md duplicate, new pages/drafts, marketplace, embeddings, or a second token/write system.
 - Preserve foreign/autosave/user-authored roots and existing links; operation-owned failed roots may be removed only through ownership/read-back-safe flow.
 - Provider telemetry uses null plus metrics_known when a provider was not called; no fabricated cost or success.
+- Pricing compiler reserves gap-aware 31.5% desktop basis for three cards and 100% mobile stack.
 
-## Historical record
+## Validation
 
-Older release history is intentionally abbreviated here. Detailed historical changes remain in git history and prior report snapshots; current facts above override them.
+- php -l wp-ai-executor.php: PASS.
+- php -l includes/elementor/elementor-ir.php: PASS.
+- php tests/design-pipeline-contract.php: PASS, 63 checks.
+- node --test tests/*.test.js: PASS, 4 suites including 331 flex runtime checks.
+- php docs/audits/2026-09-12/package-probe.php: PASS, 90 files, mismatches 0.
+- git diff --check: PASS.
+- Runtime push: PASS, origin/main at ad6bc5d.
+- Documentation commit follows this context update.
