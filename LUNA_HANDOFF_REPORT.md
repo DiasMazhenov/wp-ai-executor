@@ -85,7 +85,7 @@ prompt
 }
 ```
 
-Актуальные roots post=5214: `a9282de`, `13568dc`, `b898e72`; root `1fa90e6` отсутствует. До v142 попытка штатного reconcile доходила до `wpae_vision_capture_failed` и оставляла `written/render_review_pending`. Это не было доказательством read-back или Vision.
+Актуальные roots post=5214: `a9282de`, `13568dc`, `b898e72`; root `1fa90e6` отсутствует. Проверенная причина этого whole-operation capture failure — stale target: capture запускался для отсутствующего root. `wpae_vision_capture_failed` был downstream-ошибкой capture, а не доказательством renderer/network failure; отдельная причина внутри renderer по этому устаревшему target не установлена. До v142 попытка штатного reconcile оставляла `written/render_review_pending` и не создавала принятого Vision report.
 
 После установки v142 и reload editor:
 
@@ -136,7 +136,7 @@ Editor responsive readback:
 
 ## Vision и screenshots
 
-- Whole-operation Vision report for stale root: **BLOCKED before v142** by `wpae_vision_capture_failed`; no accepted durable Vision report exists.
+- Whole-operation Vision report for stale root: **BLOCKED before v142** because the target root was absent; surfaced as `wpae_vision_capture_failed`; no accepted durable Vision report exists.
 - v142 guard prevents capture/provider call when target is absent; this is a truthful pending/unknown state, not visual acceptance.
 - Selected patch Vision: score `100`, confidence `100%`, scoped element only.
 - Fresh inline CUA screenshots after v142 editor reload/public preview were captured for editor desktop, editor mobile, public hero/FAQ, and public pricing. They correspond to post=5214, roots above, source/live v02.11.142.

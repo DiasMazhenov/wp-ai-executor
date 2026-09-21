@@ -42,7 +42,7 @@ BriefIR v1 -> DesignPlan v1 -> WidgetCapabilityRegistry/LayoutReport
 
 ## Durable pending record
 
-Operation `wpae-89007d964d7436ab`, identity `e12c2e08-2952-4906-8dbb-f66d3ed42eb1`, revision `5`, state `written`, root `1fa90e6`. Current roots do not contain `1fa90e6`. Before v142 reconcile returned `wpae_vision_capture_failed`; after v142 editor reload showed no `Проверить сохранённый результат` button and no page mutation. Record remains written/pending, not reviewed/completed.
+Operation `wpae-89007d964d7436ab`, identity `e12c2e08-2952-4906-8dbb-f66d3ed42eb1`, revision `5`, state `written`, root `1fa90e6`. Current roots do not contain `1fa90e6`; this stale target is the confirmed cause of the whole-operation capture failure, surfaced before v142 as `wpae_vision_capture_failed`. After v142 editor reload showed no `Проверить сохранённый результат` button and no page mutation. Record remains written/pending, not reviewed/completed.
 
 Selected patch evidence is separate: `wpae-20260921192047-21f06cd2`, element `bc09c44`, Vision `100/100`.
 
