@@ -569,7 +569,8 @@ live evidence v02.11.124 на post=5214 остается действитель�
 ## 25. Final push and live revision
 
 - Final source commit: `456fe7b2afacd912af9186617069d32f4c212e68`.
-- Push status: **успешен**, `origin/main` получил `456fe7b` после `f05c88e`.
+- Push status: **успешен**, `origin/main` получил runtime `456fe7b` и
+  handoff metadata `251c2b2` после `f05c88e`.
 - WP Pusher/live plugins screen после push показал `WP AI Executor v02.11.126`
   active.
 - LLM settings после обновления сохранили
