@@ -10,7 +10,7 @@ Assignment baseline: `d69d734`
 Source/live version: `v02.11.128`
 Runtime push: PASS, `origin/main`
 Runtime install: PASS, WP Pusher и Plugins page показали `WP AI Executor v02.11.128`
-Документационный commit: будет указан после фиксации этого файла.
+Документационный commit с отчётом и контекстом: `d334842ec65d4e31c4f0363bed065fe5c55141c2`.
 
 ## Итоговый статус
 
