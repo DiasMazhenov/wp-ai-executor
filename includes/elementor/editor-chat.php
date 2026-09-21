@@ -28,6 +28,28 @@ function wpae_enqueue_elementor_llm_chat(): void {
     $post_id = absint( $_GET['post'] ?? $_GET['post_id'] ?? 0 );
     $settings = wpae_llm_get_settings();
     $vision_status = wpae_get_vision_status();
+    $pending_operation = null;
+    if ( function_exists( 'wpae_design_operation_store' ) ) {
+        foreach ( array_reverse( wpae_design_operation_store() ) as $candidate ) {
+            if ( ! is_array( $candidate ) || absint( $candidate['post_id'] ?? 0 ) !== $post_id ) {
+                continue;
+            }
+            $state = sanitize_key( (string) ( $candidate['current_state'] ?? '' ) );
+            if ( ! in_array( $state, [ 'planned', 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'unknown' ], true ) ) {
+                continue;
+            }
+            $pending_operation = [
+                'operation_id' => sanitize_key( (string) ( $candidate['operation_id'] ?? '' ) ),
+                'operation_identity' => sanitize_text_field( (string) ( $candidate['operation_identity'] ?? '' ) ),
+                'revision' => absint( $candidate['revision'] ?? 1 ),
+                'saved_hash' => sanitize_text_field( (string) ( $candidate['saved_hash'] ?? '' ) ),
+                'target_fingerprint' => sanitize_text_field( (string) ( $candidate['target_fingerprint'] ?? '' ) ),
+                'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $candidate['root_ids'] ?? [] ), 0, 12 ) ) ) ),
+                'current_state' => $state,
+            ];
+            break;
+        }
+    }
     $config = wp_json_encode( [
         'endpoint' => get_rest_url( null, 'ai-executor/v1/llm/chat' ),
         'undoEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/undo' ),
@@ -42,6 +64,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
         ],
         'nonce' => wp_create_nonce( 'wp_rest' ),
         'postId' => $post_id,
+        'pendingOperation' => $pending_operation,
         'postStatus' => (string) get_post_status( $post_id ),
         'ready' => wpae_capability_enabled( 'llm_chat' ) && ! empty( $settings['has_api_key'] ) && $settings['base_url'] !== '',
         'strings' => [
@@ -62,6 +85,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
             'regenerate' => 'Перегенерировать последний запрос',
             'regenerateEmpty' => 'Нет предыдущего запроса для перегенерации.',
             'regenerateBusy' => 'Дождитесь завершения текущего запроса.',
+            'reviewPending' => 'Проверить сохранённый результат',
             'selectionEmpty' => 'Выделите элемент в Elementor и повторите.',
             'selectionCopyError' => 'Не удалось скопировать JSON выделенного.',
             'copyError' => 'Не удалось скопировать текст.',

@@ -70,6 +70,11 @@
     regenerate.className = 'wpae-llm-icon-button wpae-llm-regenerate';
     regenerate.type = 'button';
     addIcon(regenerate, 'eicon-sync', strings.regenerate || 'Перегенерировать последний запрос');
+    var reviewPending = document.createElement('button');
+    reviewPending.className = 'wpae-llm-icon-button wpae-llm-review-pending';
+    reviewPending.type = 'button';
+    addIcon(reviewPending, 'eicon-eye', strings.reviewPending || 'Проверить сохранённый результат');
+    reviewPending.title = strings.reviewPending || 'Проверить сохранённый результат';
     // The last brief also survives page reloads: after a final provider failure
     // the chat history is gone, and that is exactly when regeneration is needed.
     var lastBriefKey = 'wpae_llm_last_brief:' + String(config.postId || '0');
@@ -130,12 +135,31 @@
         }
         request(last, false, { retryCurrentOperation: true });
     });
+    reviewPending.addEventListener('click', function () {
+        if (send.disabled) { addMessage('assistant', strings.regenerateBusy || 'Дождитесь завершения текущего запроса.'); return; }
+        if (!config.pendingOperation || !config.pendingOperation.operation_id) {
+            addMessage('assistant', 'Для этой страницы нет незавершенной durable operation.');
+            return;
+        }
+        reviewPending.disabled = true;
+        setPipelinePhase('render', 'active');
+        reviewPendingOperation(config.pendingOperation, config.pendingOperation.brief_text || '').then(function (review) {
+            setPipelinePhase('render', 'done');
+            setPipelinePhase('review', review && review.report ? 'done' : 'skipped');
+            if (review && review.report) addMessage('assistant', describeVisionReview(review));
+            status.textContent = strings.done;
+        }).catch(function (error) {
+            addMessage('assistant', 'Операция сохранена, но reconcile оставлен pending: ' + error.message);
+            status.textContent = strings.error;
+        }).finally(function () { reviewPending.disabled = false; });
+    });
     var headActions = document.createElement('div');
     headActions.className = 'wpae-llm-head-actions';
     headActions.appendChild(copy);
     headActions.appendChild(copySelection);
     headActions.appendChild(copySelectionPasteReady);
     headActions.appendChild(regenerate);
+    if (config.pendingOperation && config.pendingOperation.operation_id) headActions.appendChild(reviewPending);
     headActions.appendChild(close);
     head.appendChild(heading);
     head.appendChild(headActions);
