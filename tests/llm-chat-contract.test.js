@@ -47,8 +47,8 @@ const blockLibrary = read('includes/elementor/block-library.php');
 assert.match(transport, /'openai'/);
 assert.match(transport, /'deepseek'/);
 assert.match(transport, /'openrouter'/);
-assert.match(bootstrap, /Version:\s+v02\.11\.124/);
-assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.124'/);
+assert.match(bootstrap, /Version:\s+v02\.11\.125/);
+assert.match(bootstrap, /const WPAE_VERSION = 'v02\.11\.125'/);
 assert.match(transport, /'model' => 'openrouter\/free'/);
 assert.match(transport, /'gemini'/);
 assert.match(transport, /generativelanguage\.googleapis\.com\/v1beta\/openai/);
@@ -120,6 +120,9 @@ assert.match(llm, /'retry_after' => max\( 15, min\( 60,/);
 assert.match(js, /function isProviderRateLimited/);
 assert.match(js, /isProviderRateLimited\(error\)\) \{ scheduleRateLimitedRetry/);
 assert.match(js, /wpae-llm-regenerate/);
+assert.match(js, /wpae-llm-pipeline/);
+assert.match(js, /Разбор запроса/);
+assert.match(js, /updatePipelineFromSteps/);
 assert.match(js, /strings\.regenerateEmpty \|\| 'Нет предыдущего запроса для перегенерации\.'/);
 // The last brief is persisted in sessionStorage so regeneration survives a
 // full editor reload after a final provider failure (v02.11.51).

@@ -2479,3 +2479,22 @@ before making a new change to the plugin.
   three Dividers. The first invalid-selection attempt created a duplicate via
   the ordinary fallback route; it was removed through Elementor UI and is not
   counted as a successful retry.
+
+## EJ-131: Generator architecture mixed prompt parsing with provider Elementor trees
+
+- **Confirmed (2026-09-21, source v02.11.125):** prompt extraction, typed
+  layout decisions and native Elementor compilation had no versioned boundary;
+  a valid provider tree could therefore lose exact labels, links or responsive
+  constraints in later normalizers.
+- **Fix:** BriefIR v1 preserves exact text, URLs, source spans and ambiguities;
+  DesignPlan v1 covers hero/process/pricing; capability and ReferenceSet
+  registries provide native fallbacks; LayoutReport checks four breakpoints;
+  ElementorIR v2 and the native compiler own widget IDs/settings; operation
+  ledger records idempotency and reconcile state. `off` is the safe default,
+  `shadow` is diagnostics-only, and `active` is bounded behind settings.
+- **Regression:** `php tests/design-pipeline-contract.php` (30 checks), the
+  Node wrapper, existing Flex/runtime, chat and Vision contract suites pass.
+- **Status:** source architecture is locally verified. No new live generation
+  was run in this release, so desktop/mobile screenshot and live DOM acceptance
+  for `active` remains pending; the existing v02.11.124 page 5214 state is not
+  changed by this source-only release.

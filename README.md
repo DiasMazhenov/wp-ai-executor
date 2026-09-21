@@ -178,6 +178,25 @@ PHP-сценарии используют реальные генератор, �
 transport и undo с подменой WordPress/HTTP. Они не заменяют проверку
 отрисованного блока в Elementor на компьютере и телефоне.
 
+#### Deterministic design pipeline
+
+Для генерации `hero`, `process` и `pricing` доступен отдельный флаг
+`design_pipeline_mode` в Settings -> AI Executor -> LLM-агенты:
+
+- `off` (значение по умолчанию) оставляет прежний provider/legacy path;
+- `shadow` строит BriefIR, DesignPlan, LayoutReport и ElementorIR в памяти,
+  сравнивает их с legacy-результатом и не передает новый tree в запись;
+- `active` применяет локальный native compiler после структурной проверки.
+
+Границы нового пути находятся в `includes/llm/brief-ir.php`,
+`includes/llm/design-plan.php`, `includes/elementor/elementor-ir.php` и
+`includes/elementor/native-compiler.php`. `WidgetCapabilityRegistry`,
+`ReferenceSet`, semantic token resolver, `LayoutReport` и durable operation
+ledger используются до существующего Elementor transaction/readback слоя.
+Provider-generated JSON остается legacy adapter-ом и не становится внутренним
+стандартом нового compiler-а. Для локальной проверки запустите
+`php tests/design-pipeline-contract.php`.
+
 ### Agent conformance scoring
 
 Mutating and verification endpoints return an `agent_conformance` object. It is

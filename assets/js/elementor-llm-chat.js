@@ -127,6 +127,54 @@
     head.appendChild(heading);
     head.appendChild(headActions);
 
+    var pipelinePhaseDefinitions = [
+        { id: 'parse', label: 'Разбор запроса' },
+        { id: 'plan', label: 'Планирование дизайна' },
+        { id: 'components', label: 'Подбор компонентов' },
+        { id: 'responsive', label: 'Проверка responsive' },
+        { id: 'compile', label: 'Сборка Elementor' },
+        { id: 'write', label: 'Запись' },
+        { id: 'render', label: 'Рендер' },
+        { id: 'review', label: 'Visual review' }
+    ];
+    var pipelinePhaseNodes = {};
+    var pipeline = document.createElement('ol');
+    pipeline.className = 'wpae-llm-pipeline';
+    pipeline.setAttribute('aria-label', 'Фазы генерации дизайна');
+    pipelinePhaseDefinitions.forEach(function (phase) {
+        var item = document.createElement('li');
+        item.className = 'wpae-llm-pipeline__phase wpae-llm-pipeline__phase--pending';
+        item.dataset.phase = phase.id;
+        item.textContent = phase.label;
+        pipeline.appendChild(item);
+        pipelinePhaseNodes[phase.id] = item;
+    });
+    function resetPipelinePhases() {
+        pipelinePhaseDefinitions.forEach(function (phase) {
+            var item = pipelinePhaseNodes[phase.id];
+            if (item) item.className = 'wpae-llm-pipeline__phase wpae-llm-pipeline__phase--pending';
+        });
+    }
+    function setPipelinePhase(id, state) {
+        var item = pipelinePhaseNodes[id];
+        if (!item) return;
+        item.className = 'wpae-llm-pipeline__phase wpae-llm-pipeline__phase--' + (state || 'pending');
+    }
+    function updatePipelineFromSteps(steps) {
+        (Array.isArray(steps) ? steps : []).forEach(function (step) {
+            var id = String(step && step.id || '');
+            var state = step && step.status === 'failed' ? 'failed' : (step && step.status === 'skipped' ? 'skipped' : 'done');
+            if (id === 'brief_ir') setPipelinePhase('parse', state);
+            if (id === 'design_plan') setPipelinePhase('plan', state);
+            if (id === 'capabilities') setPipelinePhase('components', state);
+            if (id === 'layout_report') setPipelinePhase('responsive', state);
+            if (id === 'elementor_ir') setPipelinePhase('compile', state);
+            if (id === 'elementor_update' || id === 'preview') setPipelinePhase('write', state);
+            if (id === 'render_cache') setPipelinePhase('render', state);
+            if (id === 'vision_review' || id === 'vision_feedback_prompt') setPipelinePhase('review', state);
+        });
+    }
+
     var messages = document.createElement('div');
     messages.className = 'wpae-llm-messages';
     var welcome = document.createElement('div');
@@ -148,6 +196,7 @@
     form.appendChild(input);
     form.appendChild(send);
     panel.appendChild(head);
+    panel.appendChild(pipeline);
     panel.appendChild(messages);
     panel.appendChild(form);
     root.appendChild(panel);
@@ -1548,6 +1597,8 @@
         });
         status.textContent = strings.sending;
         send.disabled = true;
+        resetPipelinePhases();
+        setPipelinePhase('parse', 'active');
         var progressMessages = [
             'Запрос принят. Проверяю текущий контекст Elementor.',
             'Отправляю задачу настроенному LLM-провайдеру.',
@@ -1655,7 +1706,10 @@
             throw error;
         }).then(function (body) {
             window.clearInterval(progressTimer);
-            if (Array.isArray(body.steps) && body.steps.length) addStepMessages(body.steps);
+            if (Array.isArray(body.steps) && body.steps.length) {
+                updatePipelineFromSteps(body.steps);
+                addStepMessages(body.steps);
+            }
             if (body.diagnostics && typeof body.diagnostics === 'object') addDiagnosticJsonMessage(body.diagnostics);
             var visionPromise = Promise.resolve(null);
                 if (body.ok && body.write && Number(body.write.post_id) === Number(config.postId)) {
@@ -1677,6 +1731,8 @@
                 visionPromise = Promise.resolve(editorSyncPromise).then(function (editorSynced) {
                     editorSyncedState = editorSynced;
                     if (editorSynced) {
+                        setPipelinePhase('write', 'done');
+                        setPipelinePhase('render', 'active');
                         var syncMessage = isTargetedEditorSync(editorSyncData)
                             ? 'Выбранный элемент обновлен в открытом Elementor без перезагрузки редактора.'
                             : 'Новые элементы добавлены в открытом Elementor без перезагрузки редактора.';
@@ -1749,13 +1805,16 @@
                     return;
                 }
                 if (review && review.report) addMessage('assistant', describeVisionReview(review));
+                if (review && review.report) setPipelinePhase('review', 'done');
                 addActionControls(body.write);
                 addMessage('assistant', body.message || strings.error);
+                if (!review) setPipelinePhase('review', 'skipped');
                 status.textContent = strings.done;
             });
         }).catch(function (error) {
             window.clearInterval(progressTimer);
             if (Array.isArray(error.steps) && error.steps.length) addStepMessages(error.steps);
+            if (Array.isArray(error.steps) && error.steps.length) updatePipelineFromSteps(error.steps);
             if (error.diagnostics) addDiagnosticJsonMessage(error.diagnostics);
             if (!retried && isProviderRateLimited(error)) { scheduleRateLimitedRetry(message, options, error.retryAfter); return; }
             if (!retried && isProviderUnavailable(error) && scheduleProviderRetry(message, options)) return;

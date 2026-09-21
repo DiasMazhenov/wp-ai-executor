@@ -109,6 +109,10 @@ function wpae_llm_get_settings(): array {
 	if ( ! in_array( $design_engine_mode, [ 'off', 'shadow', 'active' ], true ) ) {
 		$design_engine_mode = 'off';
 	}
+	$design_pipeline_mode = sanitize_key( (string) ( $stored['design_pipeline_mode'] ?? 'off' ) );
+	if ( ! in_array( $design_pipeline_mode, [ 'off', 'shadow', 'active' ], true ) ) {
+		$design_pipeline_mode = 'off';
+	}
 
     $api_key = wpae_vision_decrypt_api_key( (string) ( $stored['api_key_encrypted'] ?? '' ) );
     return [
@@ -117,8 +121,9 @@ function wpae_llm_get_settings(): array {
         'base_url' => $base_url,
         'model' => $model,
         'fallback_model' => $fallback_model,
-        'fallback_model_history' => wpae_llm_fallback_model_history( $stored ),
+		'fallback_model_history' => wpae_llm_fallback_model_history( $stored ),
 		'design_engine_mode' => $design_engine_mode,
+		'design_pipeline_mode' => $design_pipeline_mode,
         'has_api_key' => $api_key !== '',
         'api_key_hint' => $api_key !== '' ? 'Ключ сохранен' : 'Ключ не задан',
         'updated_at' => sanitize_text_field( (string) ( $stored['updated_at'] ?? '' ) ),
@@ -214,6 +219,11 @@ function wpae_update_llm_settings( array $input ) {
 		$design_engine_mode = 'off';
 	}
 	$stored['design_engine_mode'] = $design_engine_mode;
+	$design_pipeline_mode = sanitize_key( (string) ( $input['design_pipeline_mode'] ?? ( $stored['design_pipeline_mode'] ?? 'off' ) ) );
+	if ( ! in_array( $design_pipeline_mode, [ 'off', 'shadow', 'active' ], true ) ) {
+		$design_pipeline_mode = 'off';
+	}
+	$stored['design_pipeline_mode'] = $design_pipeline_mode;
     $history = is_array( $stored['fallback_model_history'] ?? null ) ? $stored['fallback_model_history'] : [];
     if ( $fallback_model !== '' && ! in_array( $fallback_model, $history, true ) ) {
         array_unshift( $history, $fallback_model );

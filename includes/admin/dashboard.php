@@ -982,6 +982,15 @@ function wpae_settings_page() {
                         <span class="wpae-section-note">EDDE возвращает ограниченный typed plan и компилирует его текущим native Elementor-пайплайном. Pricing, process и targeted edits остаются на прежних контрактах.</span>
                     </div>
                     <div class="wpae-form-field" style="margin-top:12px">
+                        <label for="wpae-llm-design-pipeline-mode">Deterministic Design Pipeline</label>
+                        <select class="wpae-input" id="wpae-llm-design-pipeline-mode" name="wpae_llm[design_pipeline_mode]">
+                            <option value="off" <?php selected( $llm_settings['design_pipeline_mode'] ?? 'off', 'off' ); ?>>Выключен</option>
+                            <option value="shadow" <?php selected( $llm_settings['design_pipeline_mode'] ?? 'off', 'shadow' ); ?>>Shadow: BriefIR/Plan/IR только в diagnostics</option>
+                            <option value="active" <?php selected( $llm_settings['design_pipeline_mode'] ?? 'off', 'active' ); ?>>Active: deterministic compiler для hero/process/pricing</option>
+                        </select>
+                        <span class="wpae-section-note">Модель ограничена BriefIR и typed DesignPlan. Elementor JSON собирается локальным compiler-ом; off оставляет legacy path, shadow не меняет страницу.</span>
+                    </div>
+                    <div class="wpae-form-field" style="margin-top:12px">
                         <label for="wpae-llm-api-key">API-ключ провайдера</label>
                         <input class="wpae-input" id="wpae-llm-api-key" name="wpae_llm[api_key]" type="password" value="" autocomplete="new-password" placeholder="<?php echo esc_attr( ! empty( $llm_settings['has_api_key'] ) ? '••••••••••••' : 'Введите API-ключ провайдера' ); ?>" />
                         <span class="wpae-section-note">Ключ шифруется перед сохранением в <code>wp_options</code>. Промпты и ответы в плагине не сохраняются.</span>
