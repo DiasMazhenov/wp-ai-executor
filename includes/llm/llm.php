@@ -6322,10 +6322,13 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
         return;
     }
 
+    $pricing_grid = $archetype === 'pricing' && count( $grid_cards ) === 3;
+
     $before = wp_json_encode( [ $settings, $children ] );
     $settings['container_type'] = 'flex';
     $settings['flex_direction'] = 'row';
-    $settings['flex_wrap'] = 'wrap';
+    $settings['flex_wrap'] = $pricing_grid ? 'nowrap' : 'wrap';
+    $settings['flex_wrap_mobile'] = 'wrap';
     $settings['flex_justify_content'] = 'space-between';
     $settings['flex_align_items'] = $archetype === 'testimonials' ? 'flex-start' : 'stretch';
     if ( $archetype === 'testimonials' ) {
@@ -6336,7 +6339,8 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
     $settings['background_background'] = 'classic';
     $settings['background_color'] = 'transparent';
     $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
-    foreach ( wpae_llm_variant_card_widths( 0, count( $grid_cards ) ) as $width_index => $width ) {
+    $widths = $pricing_grid ? array_fill( 0, count( $grid_cards ), 30 ) : wpae_llm_variant_card_widths( 0, count( $grid_cards ) );
+    foreach ( $widths as $width_index => $width ) {
         $grid_index = $grid_cards[ $width_index ] ?? null;
         if ( $grid_index === null ) {
             continue;
@@ -6348,6 +6352,12 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
         $card_settings['flex_wrap'] = 'nowrap';
         $card_settings['flex_align_items'] = 'flex-start';
         $card_settings['flex_align_items_mobile'] = 'flex-start';
+        if ( $pricing_grid ) {
+            $card_settings['background_background'] = 'classic';
+            $card_settings['background_color'] = '#ffffff';
+            $card_settings['border_border'] = 'solid';
+            $card_settings['border_color'] = '#e5e7eb';
+        }
         wpae_llm_set_flexible_bento_container_width( $card_settings, (float) $width );
         $children[ $grid_index ]['settings'] = $card_settings;
     }
@@ -6432,7 +6442,7 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
                 if ( $is_bento || $is_repeatable_group ) {
                     $settings['flex_direction'] = 'row';
                     $settings['flex_direction_mobile'] = 'column';
-                    $settings['flex_wrap'] = 'wrap';
+                    $settings['flex_wrap'] = $archetype === 'pricing' && count( $child_containers ) === 3 ? 'nowrap' : 'wrap';
                     $settings['flex_wrap_mobile'] = 'wrap';
                     $settings['flex_justify_content'] = 'space-between';
                     $settings['flex_align_items'] = 'stretch';
@@ -6444,7 +6454,8 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
                     if ( ! $is_bento ) {
                         $classes[] = 'wpae-bento-grid';
                     }
-                    foreach ( wpae_llm_variant_card_widths( 0, count( $child_containers ) ) as $width_index => $width ) {
+                    $widths = $archetype === 'pricing' && count( $child_containers ) === 3 ? array_fill( 0, count( $child_containers ), 30 ) : wpae_llm_variant_card_widths( 0, count( $child_containers ) );
+                    foreach ( $widths as $width_index => $width ) {
                         $child_index = $child_containers[ $width_index ] ?? null;
                         if ( $child_index === null ) {
                             continue;
@@ -6456,6 +6467,12 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
                         $child_settings['flex_wrap'] = 'nowrap';
                         $child_settings['flex_align_items'] = 'stretch';
                         $child_settings['flex_align_items_mobile'] = 'stretch';
+                        if ( $archetype === 'pricing' && count( $child_containers ) === 3 ) {
+                            $child_settings['background_background'] = 'classic';
+                            $child_settings['background_color'] = '#ffffff';
+                            $child_settings['border_border'] = 'solid';
+                            $child_settings['border_color'] = '#e5e7eb';
+                        }
                         wpae_llm_set_flexible_bento_container_width( $child_settings, (float) $width );
                         $children[ $child_index ]['settings'] = $child_settings;
                     }

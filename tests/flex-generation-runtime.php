@@ -707,6 +707,34 @@ $price_first_action = wpae_llm_build_fallback_action( $price_first_pricing_messa
 $price_first_plan = wpae_llm_content_plan( $price_first_pricing_message, 'pricing' );
 $price_first_audit = wpae_llm_content_plan_audit( $price_first_plan, $price_first_action['elements'] );
 check( ! empty( $price_first_audit['ok'] ) && ! empty( wpae_llm_content_fidelity( $price_first_pricing_message, $price_first_action['elements'] )['ok'] ), 'Price-first recovery fallback introduced unrelated semantics or lost requested pricing copy' );
+$price_first_visual_changed = 0;
+$price_first_native_changed = 0;
+$price_first_flex_changed = 0;
+$price_first_runtime_elements = wpae_llm_apply_generation_visual_grammar( $price_first_action['elements'], 'pricing', $price_first_visual_changed );
+$price_first_runtime_elements = wpae_llm_normalize_native_visual_contract( $price_first_runtime_elements, $price_first_pricing_message, 'pricing', $price_first_native_changed );
+$price_first_runtime_elements = wpae_llm_enforce_flex_layout_contract( $price_first_runtime_elements, 'pricing', $price_first_flex_changed );
+$price_first_runtime_grid = null;
+$find_price_first_runtime_grid = static function ( array $nodes ) use ( &$find_price_first_runtime_grid, &$price_first_runtime_grid ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		$classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) );
+		$child_cards = array_values( array_filter( (array) ( $node['elements'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' && in_array( 'wpae-pricing-card', preg_split( '/\s+/', trim( (string) ( $child['settings']['_css_classes'] ?? '' ) ) ), true ) ) );
+		if ( ( $node['elType'] ?? '' ) === 'container' && is_array( $classes ) && ( in_array( 'wpae-pricing-grid', $classes, true ) || ( in_array( 'wpae-bento-grid', $classes, true ) && count( $child_cards ) === 3 ) ) ) {
+			$price_first_runtime_grid = $node;
+			return;
+		}
+		$find_price_first_runtime_grid( (array) ( $node['elements'] ?? [] ) );
+		if ( is_array( $price_first_runtime_grid ) ) {
+			return;
+		}
+	}
+};
+$find_price_first_runtime_grid( $price_first_runtime_elements );
+$price_first_runtime_cards = array_values( array_filter( (array) ( $price_first_runtime_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
+check( count( $price_first_runtime_cards ) === 3 && ( $price_first_runtime_grid['settings']['flex_wrap'] ?? '' ) === 'nowrap' && ( $price_first_runtime_grid['settings']['flex_wrap_mobile'] ?? '' ) === 'wrap', 'Production pricing contract allowed the three-card grid to wrap on desktop' );
+check( count( array_filter( $price_first_runtime_cards, static fn( $card ): bool => ( $card['settings']['background_color'] ?? '' ) === '#ffffff' && (float) ( $card['settings']['width']['size'] ?? 0 ) === 30.0 ) ) === 3, 'Production pricing contract did not preserve neutral 30 percent cards' );
 
 $multiline_pricing_message = "Создай блок: «Выберите формат работы» с бейджем: «ТАРИФЫ».\n«Старт» — «Для небольшой задачи: быстро и понятно.» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка #start.\n«Проект» — «Для комплексной работы, от идеи до результата?» — «от 150 000 ₸» — кнопка «Обсудить проект», ссылка #project.\n«Поддержка» — «Для регулярных задач и развития проекта.» — «от 80 000 ₸/мес» — кнопка «Подключить поддержку», ссылка #support.";
 $multiline_pricing_contract = wpae_llm_extract_pricing_content( $multiline_pricing_message );
