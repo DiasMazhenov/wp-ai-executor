@@ -254,11 +254,12 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			'split_40_60' => [ 40, 60 ],
 			'three_cards' => [ 33.333, 33.333, 33.333 ],
 		][ (string) ( $node['layout_constraints']['composition'] ?? '' ) ] ?? [];
+		$composition_matches_children = ! empty( $composition_basis ) && count( $composition_basis ) === count( $compiled_children );
 		foreach ( $compiled_children as $child_index => &$compiled_child ) {
 			if ( ! is_array( $compiled_child ) || ( $compiled_child['elType'] ?? '' ) !== 'container' || ! is_array( $compiled_child['settings'] ?? null ) ) {
 				continue;
 			}
-			$basis = (float) ( $composition_basis[ $child_index ] ?? ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
+			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
 			$tablet_basis = count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100;
 			$child_settings = &$compiled_child['settings'];
 			// Elementor's native container controls use _element_custom_width and

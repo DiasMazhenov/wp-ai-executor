@@ -173,6 +173,7 @@ $pricing_ir = wpae_elementor_ir_from_design_plan( wpae_design_plan_from_brief( $
 $pricing_compiled = wpae_elementor_ir_compile( $pricing_ir, $pricing_brief, [], [ 'id_seed' => 'pricing-contract' ] );
 $pricing_cards = $pricing_compiled['elementor_data'][0]['elements'][0] ?? [];
 $pricing_card_nodes = (array) ( $pricing_cards['elements'] ?? [] );
+$check( (float) ( $pricing_compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing group is full-width when section has one child' );
 $check( ( $pricing_cards['settings']['flex_direction'] ?? '' ) === 'row' && count( $pricing_card_nodes ) === 3, 'pricing compiler emits a desktop card row' );
 $check( (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) > 30 && (float) ( $pricing_card_nodes[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'pricing cards use equal desktop columns and mobile stack' );
 
