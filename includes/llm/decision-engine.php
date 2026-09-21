@@ -46,11 +46,11 @@ function wpae_llm_design_engine_explicit_constraints( string $message ): array {
 		$constraints['composition'] = 'stacked_left';
 	}
 
-	if ( preg_match( '/(?:текст\w*|контент\w*|выравнив\w*|align\w*)[^.\n]{0,24}\b(?:справа|right)\b/iu', $message ) || preg_match( '/\b(?:по\s+правому\s+краю|right[- ]aligned)\b/iu', $message ) ) {
+	if ( preg_match( '/(?:текст\w*|контент\w*|выравнив\w*|align\w*)[^,.;\n]{0,24}\b(?:справа|right)\b/iu', $message ) || preg_match( '/\b(?:по\s+правому\s+краю|right[- ]aligned)\b/iu', $message ) ) {
 		$constraints['content_alignment'] = 'right';
 	} elseif ( preg_match( '/\b(?:по\s+центру|выровн\w*\s+по\s+центру|center)\b/iu', $message ) ) {
 		$constraints['content_alignment'] = 'center';
-	} elseif ( preg_match( '/(?:текст\w*|контент\w*|выравнив\w*|align\w*)[^.\n]{0,24}\b(?:слева|left)\b/iu', $message ) || preg_match( '/\b(?:по\s+левому\s+краю|left[- ]aligned)\b/iu', $message ) ) {
+	} elseif ( preg_match( '/(?:текст\w*|контент\w*|выравнив\w*|align\w*)[^,.;\n]{0,24}\b(?:слева|left)\b/iu', $message ) || preg_match( '/\b(?:по\s+левому\s+краю|left[- ]aligned)\b/iu', $message ) ) {
 		$constraints['content_alignment'] = 'left';
 	}
 	if ( preg_match( '/\b(?:компакт\w*|плотн\w*|compact)\b/iu', $message ) ) {

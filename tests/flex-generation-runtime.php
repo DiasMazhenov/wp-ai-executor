@@ -928,8 +928,32 @@ check( wpae_llm_design_engine_decode_plan( wp_json_encode( $edde_plan ), [ 'comp
 check( ! wpae_llm_design_engine_decode_plan( wp_json_encode( array_merge( $edde_plan, [ 'confidence' => 0.9 ] ) ) )['ok'], 'EDDE accepted an untyped confidence field' );
 $edde_constraints = wpae_llm_design_engine_explicit_constraints( $explicit_cta_message );
 check( ! array_key_exists( 'content_alignment', $edde_constraints ), 'EDDE mistook a right-side visual panel for right-aligned copy' );
+$split_constraint_message = 'Создай hero для архитектурной студии «Тихая форма». Композиция 40/60: текст слева, визуальная зона справа. Выровняй текст по левому краю.';
+$split_constraints = wpae_llm_design_engine_explicit_constraints( $split_constraint_message );
+check( ( $split_constraints['composition'] ?? '' ) === 'split_40_60' && ( $split_constraints['content_alignment'] ?? '' ) === 'left', 'EDDE treated a right-side visual zone as right-aligned copy' );
 $edde_color_action = wpae_llm_design_engine_compile_hero( wpae_llm_build_fallback_action( $message, 42 ), $edde_plan, 'Создай hero с фоном #123456.' );
 check( ( $edde_color_action['elements'][0]['settings']['background_color'] ?? '' ) === '#123456', 'EDDE compiler overrode an explicit user background color: ' . wp_json_encode( [ 'id' => $edde_color_action['elements'][0]['id'] ?? '', 'settings' => $edde_color_action['elements'][0]['settings'] ?? [] ] ) );
+$vision_regenerate_plan = array_merge(
+    [
+        'schema' => WPAE_LLM_DESIGN_ENGINE_SCHEMA,
+        'archetype' => 'hero',
+        'composition' => 'split_60_40',
+        'content_alignment' => 'left',
+        'vertical_alignment' => 'start',
+        'spacing_rhythm' => 'balanced',
+        'surface' => 'soft_panel',
+        'typography' => 'display',
+        'cta_hierarchy' => 'single_primary',
+        'responsive_strategy' => 'copy_first_stack',
+    ],
+    $split_constraints
+);
+$vision_regenerate_action = wpae_llm_design_engine_compile_hero( wpae_llm_build_fallback_action( $split_constraint_message, 42 ), $vision_regenerate_plan, $split_constraint_message . ' Фон #F6F0E6.' );
+$vision_regenerate_shell = $vision_regenerate_action['elements'][0]['elements'][1] ?? [];
+$vision_regenerate_copy = $vision_regenerate_shell['elements'][0] ?? [];
+$vision_regenerate_visual = $vision_regenerate_shell['elements'][1] ?? [];
+check( abs( (float) ( $vision_regenerate_copy['settings']['width']['size'] ?? 0 ) - 40 ) < 0.01 && abs( (float) ( $vision_regenerate_visual['settings']['width']['size'] ?? 0 ) - 60 ) < 0.01, 'Vision regeneration lost explicit 40/60 hero geometry' );
+check( ( $vision_regenerate_action['elements'][0]['settings']['background_color'] ?? '' ) === '#f6f0e6' && ( $vision_regenerate_copy['settings']['width_mobile']['size'] ?? 0 ) === 100 && ( $vision_regenerate_visual['settings']['width_mobile']['size'] ?? 0 ) === 100, 'Vision regeneration lost explicit hero background or mobile stack' );
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_engine_mode' => 'active' ];
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];

@@ -9852,6 +9852,23 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action = wpae_llm_build_fallback_action( $message, $post_id );
             $action_fallback = true;
             $vision_fallback_mode = true;
+            if ( $action_archetype === 'hero' && function_exists( 'wpae_llm_design_engine_explicit_constraints' ) && function_exists( 'wpae_llm_design_engine_compile_hero' ) ) {
+                $vision_plan = [
+                    'schema' => defined( 'WPAE_LLM_DESIGN_ENGINE_SCHEMA' ) ? WPAE_LLM_DESIGN_ENGINE_SCHEMA : 'wpae-edde-plan-v1',
+                    'archetype' => 'hero',
+                    'composition' => 'split_60_40',
+                    'content_alignment' => 'left',
+                    'vertical_alignment' => 'start',
+                    'spacing_rhythm' => 'balanced',
+                    'surface' => 'soft_panel',
+                    'typography' => 'display',
+                    'cta_hierarchy' => 'single_primary',
+                    'responsive_strategy' => 'copy_first_stack',
+                ];
+                $vision_plan = array_merge( $vision_plan, wpae_llm_design_engine_explicit_constraints( $message ) );
+                $action = wpae_llm_design_engine_compile_hero( $action, $vision_plan, $message );
+                $provider_action_diagnostics['vision_regenerate_design_plan'] = $vision_plan;
+            }
             $action_diagnostics = array_merge(
                 $provider_action_diagnostics,
                 [
