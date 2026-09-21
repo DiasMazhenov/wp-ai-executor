@@ -245,15 +245,48 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			'three_cards' => [ 33.333, 33.333, 33.333 ],
 		][ (string) ( $node['layout_constraints']['composition'] ?? '' ) ] ?? [];
 		foreach ( $compiled_children as $child_index => &$compiled_child ) {
-			if ( ! is_array( $compiled_child ) || ! is_array( $compiled_child['settings'] ?? null ) ) {
+			if ( ! is_array( $compiled_child ) || ( $compiled_child['elType'] ?? '' ) !== 'container' || ! is_array( $compiled_child['settings'] ?? null ) ) {
 				continue;
 			}
 			$basis = (float) ( $composition_basis[ $child_index ] ?? ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
-			$compiled_child['settings']['flex_basis'] = [ 'unit' => '%', 'size' => $basis ];
-			$compiled_child['settings']['flex_grow'] = 0;
-			$compiled_child['settings']['flex_shrink'] = 1;
-			$compiled_child['settings']['flex_basis_tablet'] = [ 'unit' => '%', 'size' => count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ];
-			$compiled_child['settings']['flex_basis_mobile'] = [ 'unit' => '%', 'size' => 100 ];
+			$tablet_basis = count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100;
+			$child_settings = &$compiled_child['settings'];
+			// Elementor's native container controls use _element_custom_width and
+			// _flex_*; generic flex_basis keys are persisted but ignored by the
+			// rendered CSS. Keep one width contract per main axis and let native
+			// flex-shrink account for the inter-column gap.
+			foreach ( [ 'flex_basis', 'flex_basis_tablet', 'flex_basis_mobile' ] as $key ) {
+				unset( $child_settings[ $key ] );
+			}
+			foreach ( [
+				'width' => $basis,
+				'width_tablet' => $tablet_basis,
+				'width_mobile' => 100,
+				'_element_custom_width' => $basis,
+				'_element_custom_width_tablet' => $tablet_basis,
+				'_element_custom_width_mobile' => 100,
+			] as $key => $size ) {
+				$child_settings[ $key ] = [ 'unit' => '%', 'size' => $size, 'sizes' => [] ];
+			}
+			$child_settings['_element_width'] = 'initial';
+			$child_settings['_element_width_tablet'] = 'initial';
+			$child_settings['_element_width_mobile'] = 'initial';
+			$child_settings['_flex_size'] = 'custom';
+			$child_settings['_flex_size_tablet'] = 'custom';
+			$child_settings['_flex_size_mobile'] = 'custom';
+			$child_settings['_flex_grow'] = 0;
+			$child_settings['_flex_grow_tablet'] = 0;
+			$child_settings['_flex_grow_mobile'] = 0;
+			$child_settings['_flex_shrink'] = 1;
+			$child_settings['_flex_shrink_tablet'] = 1;
+			$child_settings['_flex_shrink_mobile'] = 1;
+			$child_settings['flex_grow'] = 0;
+			$child_settings['flex_grow_tablet'] = 0;
+			$child_settings['flex_grow_mobile'] = 0;
+			$child_settings['flex_shrink'] = 1;
+			$child_settings['flex_shrink_tablet'] = 1;
+			$child_settings['flex_shrink_mobile'] = 1;
+			unset( $child_settings );
 		}
 		unset( $compiled_child );
 	}

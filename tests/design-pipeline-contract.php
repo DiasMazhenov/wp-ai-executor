@@ -124,7 +124,7 @@ $semantic_root = $semantic_compiled['elementor_data'][0] ?? [];
 $semantic_copy = $semantic_root['elements'][0] ?? [];
 $semantic_media = $semantic_root['elements'][1] ?? [];
 $semantic_copy_roles = array_column( (array) ( $semantic_copy['elements'] ?? [] ), 'widgetType' );
-$check( (float) ( $semantic_copy['settings']['flex_basis']['size'] ?? 0 ) === 40.0 && (float) ( $semantic_media['settings']['flex_basis']['size'] ?? 0 ) === 60.0, 'semantic hero compiler preserves 40/60 basis' );
+$check( (float) ( $semantic_copy['settings']['width']['size'] ?? 0 ) === 40.0 && (float) ( $semantic_media['settings']['width']['size'] ?? 0 ) === 60.0 && ! isset( $semantic_copy['settings']['flex_basis'] ) && ! isset( $semantic_media['settings']['flex_basis'] ), 'semantic hero compiler preserves native 40/60 width contract' );
 $check( $semantic_copy_roles === [ 'heading', 'heading', 'heading', 'text-editor', 'button', 'button' ], 'copy widgets keep brand, eyebrow, title order and both CTAs: ' . wp_json_encode( $semantic_copy_roles ) );
 
 $english = wpae_brief_ir_parse( 'hero title: "Launch faster" body: "A clear path." CTA: "Start now" -> https://example.com/go' );
@@ -158,7 +158,7 @@ $check( ! empty( $compiled['report']['contrast']['ok'] ), 'token contrast gate p
 $check( ! wpae_design_token_validate_contrast( [ 'palette' => [ 'paper' => '#f6f0e6', 'muted' => '#6b7280' ] ] )['ok'], 'small muted text below 4.5 contrast is rejected' );
 $check( wpae_design_token_validate_contrast( [ 'palette' => [ 'paper' => '#f6f0e6', 'muted' => '#6b7280' ] ], [ 'color.muted.font_size_px' => 24 ] )['ok'], 'large muted text uses the large-text threshold' );
 $check( $compiled['elementor_data'][0]['elType'] === 'container', 'compiler owns native root shape' );
-$check( $compiled['elementor_data'][0]['elements'][0]['settings']['flex_basis']['size'] === 60.0 && $compiled['elementor_data'][0]['elements'][1]['settings']['flex_basis_mobile']['size'] === 100, 'compiler applies split and mobile basis' );
+$check( $compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] === 60.0 && $compiled['elementor_data'][0]['elements'][1]['settings']['width_mobile']['size'] === 100 && ! isset( $compiled['elementor_data'][0]['elements'][0]['settings']['flex_basis'] ), 'compiler applies native split and mobile width settings' );
 
 $process = wpae_brief_ir_parse( "process\n«Step one»\n«Step two»\n«Step three»" );
 $process_plan = wpae_design_plan_from_brief( $process );
