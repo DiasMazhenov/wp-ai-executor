@@ -73,6 +73,7 @@
     // The last brief also survives page reloads: after a final provider failure
     // the chat history is gone, and that is exactly when regeneration is needed.
     var lastBriefKey = 'wpae_llm_last_brief:' + String(config.postId || '0');
+    var operationIdentityKey = 'wpae_llm_operation_identity:' + String(config.postId || '0');
     var operationRootsKey = 'wpae_llm_operation_roots:' + String(config.postId || '0');
     var operationRootsTtl = 600000;
     var readLastBrief = function () {
@@ -84,6 +85,18 @@
             return value.trim();
         } catch (error) { return ''; }
     };
+    function newOperationIdentity() {
+        try {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+        } catch (error) {}
+        return 'client-' + String(Date.now()) + '-' + String(Math.random()).slice(2, 12);
+    }
+    function readOperationIdentity() {
+        try { return String(window.sessionStorage.getItem(operationIdentityKey) || '').slice(0, 120); } catch (error) { return ''; }
+    }
+    function rememberOperationIdentity(identity) {
+        try { window.sessionStorage.setItem(operationIdentityKey, String(identity || '').slice(0, 120)); } catch (error) {}
+    }
     function readOperationRoots() {
         try {
             var raw = window.sessionStorage.getItem(operationRootsKey);
@@ -1476,6 +1489,36 @@
             });
         });
     }
+    function reconcileDesignOperation(body, requestContext, editorSync, review) {
+        var operationId = String(body && body.operation_id || '');
+        var ledger = body && body.diagnostics && body.diagnostics.operation_ledger ? body.diagnostics.operation_ledger : {};
+        var endpoint = config.reconcileEndpoint || ((window.wpApiSettings && window.wpApiSettings.root) ? window.wpApiSettings.root + 'ai-executor/v1/design-operations/reconcile' : '/wp-json/ai-executor/v1/design-operations/reconcile');
+        if (!operationId || !endpoint) return Promise.resolve(null);
+        var report = review && review.report ? review.report : {};
+        var state = report.report_id ? 'reviewed' : (review && review.vision_unavailable ? 'written' : 'rendered');
+        var roots = editorSync && Array.isArray(editorSync.operation_owned_root_ids) ? editorSync.operation_owned_root_ids.slice(0, 12) : liveGeneratedRootIds.slice(0, 12);
+        var evidence = JSON.stringify({ operation_id: operationId, roots: roots, viewport: window.innerWidth || 0, state: state }).slice(0, 4000);
+        return fetch(endpoint, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+            body: JSON.stringify({
+                post_id: Number(config.postId) || 0,
+                operation_id: operationId,
+                operation_identity: requestContext && requestContext.operation_identity ? requestContext.operation_identity : readOperationIdentity(),
+                revision: Number(ledger.revision || 0),
+                state: state,
+                evidence_source: state === 'written' ? 'server_readback' : 'preview',
+                evidence_hash: evidence,
+                vision_report_id: report.report_id || '',
+                root_ids: roots
+            })
+        }).then(function (response) {
+            return response.json().catch(function () { return {}; }).then(function (result) {
+                if (!response.ok) throw new Error(result.message || result.code || ('HTTP ' + response.status));
+                return result;
+            });
+        });
+    }
     function runVisionReview(snapshotId, minimumWidgetCount, alreadySynced, brief, editorSync, rootSnapshot) {
         var reviewScope = visionReviewScope(editorSync);
         var visionSyncIds = getVisionSyncIds(editorSync);
@@ -1579,16 +1622,23 @@
         editorSyncConflict = null;
         options = options || {};
         var repairDepth = Number(options.repairDepth) || 0;
+        var operationIdentity = readOperationIdentity();
         if (repairDepth === 0) {
             if (!options.retryCurrentOperation) {
                 liveGeneratedRootIds = [];
                 clearOperationRoots();
+                operationIdentity = newOperationIdentity();
+                rememberOperationIdentity(operationIdentity);
             }
             // Remember the original brief so the regenerate button can replay
             // it even after a full editor reload cleared the chat history.
             try {
                 window.sessionStorage.setItem(lastBriefKey, JSON.stringify({ message: String(message).slice(0, 4000), createdAt: Date.now() }));
             } catch (error) {}
+        }
+        if (!operationIdentity) {
+            operationIdentity = newOperationIdentity();
+            rememberOperationIdentity(operationIdentity);
         }
         var originalBrief = options.originalBrief || message;
         var beforeWidgetCount = getPreviewWidgetCount();
@@ -1617,7 +1667,8 @@
             selected_elements: options.selectedElements || selectedElements(),
             background_image_urls: getPreviewBackgroundImageUrls(),
             editor_root_snapshot: captureEditorRootSnapshot(),
-            operation_owned_root_ids: liveGeneratedRootIds.slice(0, 12)
+            operation_owned_root_ids: liveGeneratedRootIds.slice(0, 12),
+            operation_identity: operationIdentity
         };
         if (options.retryCurrentOperation) requestContext.retry_current_operation = true;
         if (options.visionRepair) requestContext.vision_repair = true;
@@ -1779,6 +1830,11 @@
                 });
             }
             return visionPromise.then(function (review) {
+				return reconcileDesignOperation(body, requestContext, editorSyncDataForReview, review).catch(function (error) {
+					addMessage('assistant', 'Ledger reconcile требует read-back: ' + error.message);
+					return null;
+				}).then(function () { return review; });
+            }).then(function (review) {
                 var reviewTargetedPatch = isTargetedEditorSync(editorSyncDataForReview);
                 if (review && review.vision_unavailable) {
                     addMessage('assistant', (reviewTargetedPatch ? 'AI Vision временно недоступен; точечная правка сохранена и требует ручной проверки: ' : 'AI Vision временно недоступен; новая генерация сохранена и требует ручной проверки: ') + review.error);

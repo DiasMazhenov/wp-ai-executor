@@ -270,6 +270,17 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 	}
 	$report = [ 'schema' => 'wpae-elementor-compile-report-v1', 'downgrades' => [], 'warnings' => (array) ( $ir['warnings'] ?? [] ), 'tokens' => [ 'resolved' => [], 'missing' => [], 'fallbacks' => [], 'collisions' => [] ], 'node_count' => 0 ];
 	$report['contrast'] = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $tokens ) : [ 'ok' => true, 'errors' => [] ];
+	if ( empty( $report['contrast']['ok'] ) && in_array( 'color.muted_on_color.page_bg', (array) ( $report['contrast']['errors'] ?? [] ), true ) ) {
+		// Preserve the site's palette globally, but keep generated small text
+		// readable when an inherited muted token is below the normal-text gate.
+		if ( ! isset( $tokens['palette'] ) || ! is_array( $tokens['palette'] ) ) {
+			$tokens['palette'] = [];
+		}
+		$tokens['palette']['muted'] = '#4b5563';
+		$report['warnings'][] = 'color.muted:contrast_safe_fallback';
+		$report['tokens']['fallbacks'][] = [ 'token' => 'color.muted', 'value' => '#4b5563', 'reason' => 'small_text_contrast' ];
+		$report['contrast'] = wpae_design_token_validate_contrast( $tokens );
+	}
 	$seed = sanitize_key( (string) ( $options['id_seed'] ?? 'wpae-ir-v2' ) );
 	$data = [];
 	foreach ( (array) ( $ir['nodes'] ?? [] ) as $node ) {

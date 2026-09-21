@@ -44,6 +44,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		$gap = $gap_override ?? ( $is_stack ? 16 : 32 );
 		$available_width = max( 0, $container_width - ( $is_stack ? 0 : $gap * max( 0, count( $children ) - 1 ) ) );
 		$basis = [];
+		$basis_percentages_for_report = [];
 		$min_width = [];
 		$max_width = [];
 		$zero_width_nodes = [];
@@ -57,16 +58,21 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			if ( array_key_exists( $node_id, $basis_overrides ) && is_numeric( $basis_overrides[ $node_id ] ) ) {
 				$percentage = (float) $basis_overrides[ $node_id ];
 			}
-			$child_basis = $is_stack ? $container_width * ( $percentage / 100 ) : $available_width * ( $percentage / 100 );
+			// A stacked column consumes the available width on the cross axis.
+			// Its desktop composition percentages describe the row only and must
+			// not be applied to the mobile column width.
+			$basis_percent = $is_stack ? 100.0 : $percentage;
+			$child_basis = $is_stack ? $available_width : $available_width * ( $percentage / 100 );
 			$basis[ $node_id ] = round( $child_basis, 2 );
+			$basis_percentages_for_report[ $node_id ] = $basis_percent;
 			$min_width[ $node_id ] = (float) ( $child['layout_constraints']['min_width'] ?? 0 );
 			$max_width[ $node_id ] = (float) ( $child['layout_constraints']['max_width'] ?? 100 );
 			$total += $child_basis;
-			if ( $percentage < $min_width[ $node_id ] ) {
-				$violations[] = [ 'breakpoint' => $breakpoint['id'], 'kind' => 'basis_below_min_width', 'node_id' => $node_id, 'basis_percent' => $percentage, 'min_width' => $min_width[ $node_id ] ];
+			if ( $basis_percent < $min_width[ $node_id ] ) {
+				$violations[] = [ 'breakpoint' => $breakpoint['id'], 'kind' => 'basis_below_min_width', 'node_id' => $node_id, 'basis_percent' => $basis_percent, 'min_width' => $min_width[ $node_id ] ];
 			}
-			if ( $percentage > $max_width[ $node_id ] ) {
-				$violations[] = [ 'breakpoint' => $breakpoint['id'], 'kind' => 'basis_above_max_width', 'node_id' => $node_id, 'basis_percent' => $percentage, 'max_width' => $max_width[ $node_id ] ];
+			if ( $basis_percent > $max_width[ $node_id ] ) {
+				$violations[] = [ 'breakpoint' => $breakpoint['id'], 'kind' => 'basis_above_max_width', 'node_id' => $node_id, 'basis_percent' => $basis_percent, 'max_width' => $max_width[ $node_id ] ];
 			}
 			if ( $child_basis <= 0 ) {
 				$zero_width_nodes[] = $node_id;
@@ -100,8 +106,10 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			'container_width' => $container_width,
 			'used_width' => round( $used_width, 2 ),
 			'available_width' => $available_width,
+			'layout_axis' => $is_stack ? 'column' : 'row',
 			'gaps' => $is_stack ? [ 'axis' => 'column', 'size' => $gap ] : [ 'axis' => 'row', 'size' => $gap, 'count' => max( 0, count( $children ) - 1 ) ],
 			'basis' => $basis,
+			'basis_percent' => $basis_percentages_for_report,
 			'min_width' => $min_width,
 			'max_width' => $max_width,
 			'zero_width_nodes' => $zero_width_nodes,

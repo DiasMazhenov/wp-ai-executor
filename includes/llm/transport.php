@@ -395,8 +395,12 @@ function wpae_llm_response_diagnostics( $body ): array {
     $message = is_array( $choice['message'] ?? null ) ? $choice['message'] : [];
     $content = $message['content'] ?? ( $choice['text'] ?? ( $body['output_text'] ?? null ) );
     $finish_reason = sanitize_text_field( (string) ( $choice['finish_reason'] ?? '' ) );
-    $content_text = is_string( $content ) ? $content : '';
-    return [
+	$content_text = is_string( $content ) ? $content : '';
+	$usage = is_array( $body['usage'] ?? null ) ? $body['usage'] : [];
+	$input_tokens = $usage['prompt_tokens'] ?? ( $usage['input_tokens'] ?? null );
+	$output_tokens = $usage['completion_tokens'] ?? ( $usage['output_tokens'] ?? null );
+	$total_tokens = $usage['total_tokens'] ?? null;
+	return [
         'choices_count' => count( $choices ),
         'finish_reason' => $finish_reason,
         'content_length' => strlen( $content_text ),
@@ -405,8 +409,14 @@ function wpae_llm_response_diagnostics( $body ): array {
         'has_reasoning' => ! empty( $message['reasoning'] ?? $choice['reasoning'] ?? false ),
         'has_refusal' => is_string( $message['refusal'] ?? null ) && trim( $message['refusal'] ) !== '',
         'provider_error_code' => sanitize_text_field( (string) ( $body['error']['code'] ?? $choice['error']['code'] ?? '' ) ),
-        'provider_message' => wpae_llm_provider_error_message( $body ),
-    ];
+		'provider_message' => wpae_llm_provider_error_message( $body ),
+		'usage' => [
+			'input_tokens' => is_numeric( $input_tokens ) ? max( 0, (int) $input_tokens ) : null,
+			'output_tokens' => is_numeric( $output_tokens ) ? max( 0, (int) $output_tokens ) : null,
+			'total_tokens' => is_numeric( $total_tokens ) ? max( 0, (int) $total_tokens ) : null,
+			'known' => is_numeric( $input_tokens ) || is_numeric( $output_tokens ) || is_numeric( $total_tokens ),
+		],
+	];
 }
 
 function wpae_llm_diagnostic_text( $value, int $limit = 300 ): string {

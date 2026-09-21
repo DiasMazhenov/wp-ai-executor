@@ -95,6 +95,12 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_llm_chat_permission',
     ] );
 
+	register_rest_route( 'ai-executor/v1', '/design-operations/reconcile', [
+		'methods'             => 'POST',
+		'callback'            => 'wpae_design_operation_reconcile_endpoint',
+		'permission_callback' => 'wpae_llm_chat_permission',
+	] );
+
     register_rest_route( 'ai-executor/v1', '/rollback', [
         'methods'             => 'POST',
         'callback'            => 'wpae_rollback',

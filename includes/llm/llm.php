@@ -8918,7 +8918,10 @@ function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
 }
 
 function wpae_llm_execute_action( array $action, int $post_id, string $archetype = '', int $variation_seed = -1, string $message = '', bool $preserve_provider_design = false, array $operation_context = [] ): array {
-    $operation_id = wpae_llm_new_operation_id();
+    $operation_id = sanitize_key( (string) ( $operation_context['operation_id'] ?? '' ) );
+    if ( $operation_id === '' ) {
+        $operation_id = wpae_llm_new_operation_id();
+    }
     $received_action = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
     $received_post_id = absint( $action['post_id'] ?? 0 );
     $received_elements = $action['elements'] ?? [];
@@ -9291,9 +9294,21 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )
         : [];
     $selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
+	$operation_identity = is_array( $editor_context_input )
+		? sanitize_text_field( (string) ( $editor_context_input['operation_identity'] ?? $editor_context_input['request_id'] ?? '' ) )
+		: '';
+	if ( $operation_identity === '' ) {
+		$operation_identity = 'client-' . substr( hash( 'sha256', $selected_post_id . '|' . microtime( true ) . '|' . wp_json_encode( $message ) ), 0, 24 );
+	}
+	$operation_identity = substr( $operation_identity, 0, 120 );
+	$design_pipeline_mode = function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off';
+	$edde_mode = function_exists( 'wpae_llm_design_engine_mode' ) ? wpae_llm_design_engine_mode() : 'off';
+	$deterministic_archetype = in_array( $action_archetype, [ 'hero', 'process', 'pricing' ], true );
+	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
     $design_pipeline_trace = [
         'schema' => 'wpae-design-pipeline-trace-v1',
-        'mode' => function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off',
+		'mode' => $design_pipeline_mode,
+		'route_decision' => $design_generation_route,
         'status' => 'skipped',
         'brief' => [],
         'plan' => [],
@@ -9336,7 +9351,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'breakpoints' => array_map( static fn( $item ): array => is_array( $item ) ? [ 'breakpoint' => $item['breakpoint'] ?? '', 'container_width' => $item['container_width'] ?? 0, 'used_width' => $item['used_width'] ?? 0, 'mobile_stack_result' => $item['mobile_stack_result'] ?? '' ] : [], (array) ( $layout_report['breakpoints'] ?? [] ) ),
 			],
 			'routing' => function_exists( 'wpae_llm_route_diagnostics' ) && function_exists( 'wpae_llm_route_policy' )
-				? wpae_llm_route_diagnostics( wpae_llm_route_policy( $action_request ? 'elementor_write' : 'draft', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ), [ 'success' => false ] )
+				? wpae_llm_route_diagnostics( wpae_llm_route_policy( $action_request ? 'elementor_write' : 'draft', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ), [ 'source' => 'not_called', 'provider_calls' => 0 ] )
 				: [],
 		];
         $design_pipeline_trace['status'] = empty( $brief_validation['ok'] ) || empty( $plan_validation['ok'] ) ? 'invalid_plan' : 'planned';
@@ -9368,13 +9383,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     if (
         $action_request
         && $design_pipeline_trace['mode'] === 'active'
+		&& ( $design_generation_route['action_path'] ?? '' ) === 'pipeline'
         && ! empty( $brief_ir )
         && ! empty( $design_plan_v1 )
         && ! $targeted_edit
         && ! $vision_repair
         && ! $vision_regenerate
-        && ! $retry_current_operation
-        && $selected_post_id > 0
+		&& $selected_post_id > 0
         && ( $design_plan_v1['archetype'] ?? '' ) !== 'unknown'
         && ! empty( $design_pipeline_trace['brief']['validation']['ok'] )
         && ! empty( $design_pipeline_trace['plan']['validation']['ok'] )
@@ -9383,7 +9398,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         && function_exists( 'wpae_native_elementor_compile' )
     ) {
         $elementor_ir = wpae_elementor_ir_from_design_plan( $design_plan_v1, $brief_ir, [ 'post_id' => $selected_post_id ] );
-        $ir_compiled = wpae_native_elementor_compile( $elementor_ir, $brief_ir, function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [], [ 'id_seed' => $selected_post_id . ':' . ( $design_pipeline_trace['brief']['hash'] ?? '' ) ] );
+		$ir_compiled = wpae_native_elementor_compile( $elementor_ir, $brief_ir, function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [], [ 'id_seed' => $selected_post_id . ':' . ( $design_pipeline_trace['brief']['hash'] ?? '' ) . ':' . hash( 'sha256', $operation_identity ) ] );
         $design_pipeline_trace['elementor_ir'] = [
             'schema' => $elementor_ir['schema'] ?? '',
             'validation' => function_exists( 'wpae_elementor_ir_validate' ) ? wpae_elementor_ir_validate( $elementor_ir ) : [],
@@ -9392,8 +9407,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         ];
         if ( ! empty( $ir_compiled['ok'] ) && ! empty( $ir_compiled['elementor_data'] ) ) {
 			$operation_ledger = function_exists( 'wpae_design_operation_create' ) ? wpae_design_operation_create( [
-                'operation_id' => 'wpae-' . substr( (string) ( $design_pipeline_trace['brief']['hash'] ?? '' ), 0, 16 ),
-                'idempotency_key' => function_exists( 'wpae_design_operation_idempotency_key' ) ? wpae_design_operation_idempotency_key( $selected_post_id, (string) ( $design_pipeline_trace['brief']['hash'] ?? '' ), 'page', 'design' ) : '',
+				'operation_id' => 'wpae-' . substr( hash( 'sha256', $operation_identity . '|' . (string) ( $design_pipeline_trace['brief']['hash'] ?? '' ) ), 0, 16 ),
+				'idempotency_key' => function_exists( 'wpae_design_operation_idempotency_key' ) ? wpae_design_operation_idempotency_key( $selected_post_id, (string) ( $design_pipeline_trace['brief']['hash'] ?? '' ), 'page', 'design', $operation_identity ) : '',
+				'operation_identity' => $operation_identity,
+				'operation_type' => 'design',
                 'post_id' => $selected_post_id,
                 'selected_scope' => 'page',
                 'brief_hash' => $design_pipeline_trace['brief']['hash'] ?? '',
@@ -9403,7 +9420,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'model' => $runtime['model'] ?? '',
 				'current_state' => 'generated',
 			] ) : [];
-			if ( ! empty( $operation_ledger['reconciled'] ) && in_array( (string) ( $operation_ledger['current_state'] ?? '' ), [ 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'completed', 'unknown' ], true ) ) {
+			if ( ! empty( $operation_ledger['reconciled'] ) && in_array( (string) ( $operation_ledger['current_state'] ?? '' ), [ 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'completed', 'failed', 'unknown' ], true ) ) {
 				return new WP_Error( 'wpae_design_operation_pending', 'Эта операция уже существует; сначала выполните reconcile/readback, новый root не добавлен.', [ 'status' => 409, 'details' => [ 'operation' => $operation_ledger, 'pipeline' => $design_pipeline_trace ] ] );
 			}
 			if ( ! empty( $operation_ledger['operation_id'] ) && function_exists( 'wpae_design_operation_update' ) ) {
@@ -9419,13 +9436,22 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'warnings' => array_values( array_unique( array_merge( (array) ( $design_plan_v1['warnings'] ?? [] ), (array) ( $ir_compiled['report']['warnings'] ?? [] ) ) ) ),
 				'provider' => (string) ( $runtime['provider'] ?? '' ),
 				'model' => (string) ( $runtime['model'] ?? '' ),
-				'estimated_cost' => 0,
-				'estimated_latency_ms' => 0,
+				'estimated_cost' => null,
+				'estimated_latency_ms' => null,
+				'route' => 'local_deterministic',
+				'provider_calls' => 0,
 			];
 			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '' ] );
 			$design_pipeline_trace['status'] = ! empty( $active_execution['ok'] ) ? 'written' : 'failed';
 			if ( ! empty( $operation_ledger['operation_id'] ) && function_exists( 'wpae_design_operation_update' ) ) {
-				$operation_ledger = wpae_design_operation_update( (string) $operation_ledger['operation_id'], [ 'current_state' => ! empty( $active_execution['ok'] ) ? 'written' : 'failed', 'saved_hash' => ! empty( $active_execution['ok'] ) ? hash( 'sha256', (string) wp_json_encode( $active_execution['editor_sync']['after_top_level_ids'] ?? [] ) ) : '' ] ) ?: $operation_ledger;
+				$saved_data = ! empty( $active_execution['ok'] ) && function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $selected_post_id ) : [];
+				$saved_hash = is_array( $saved_data ) ? hash( 'sha256', (string) wp_json_encode( $saved_data ) ) : '';
+				$operation_ledger = wpae_design_operation_update( (string) $operation_ledger['operation_id'], [
+					'current_state' => ! empty( $active_execution['ok'] ) ? 'written' : 'failed',
+					'saved_hash' => $saved_hash,
+					'root_ids' => $active_execution['editor_sync']['operation_owned_root_ids'] ?? [],
+					'target_fingerprint' => function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $selected_post_id ) : '',
+				] ) ?: $operation_ledger;
 			}
             $active_steps = [
                 [ 'id' => 'brief_ir', 'status' => 'ok', 'message' => 'Запрос разобран в BriefIR v1 без потери exact_text и URL.', 'details' => $design_pipeline_trace['brief'] ],
@@ -9446,7 +9472,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'action' => $active_action,
                 'write' => $active_execution,
                 'steps' => $active_steps,
-				'diagnostics' => [ 'design_pipeline' => $design_pipeline_trace, 'operation_ledger' => $operation_ledger, 'render_review_pending' => true ],
+				'diagnostics' => [
+					'action_path' => 'pipeline',
+					'provider_calls' => 0,
+					'route' => 'local_deterministic',
+					'design_pipeline' => $design_pipeline_trace,
+					'operation_ledger' => $operation_ledger,
+					'render_review_pending' => true,
+				],
                 'provider' => $runtime['provider'],
                 'model' => $runtime['model'],
             ], 200 );
@@ -9672,6 +9705,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'selection_scope' => ! empty( $selected_elements ) ? 'selected_element_and_descendants' : 'page',
             'selected_elements' => $selected_elements,
             'background_image_urls' => $live_background_image_urls,
+			'operation_identity' => substr( sanitize_text_field( (string) ( $context['operation_identity'] ?? $context['request_id'] ?? '' ) ), 0, 120 ),
         ];
         $messages[0]['content'] .= "\nКонтекст редактора: " . wp_json_encode( $context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     }
@@ -10474,13 +10508,30 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $execution_variation_seed = $library_applied || $provider_design ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
         $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $design_engine_active ? 'Typed EDDE-план скомпилирован существующим native Elementor-пайплайном.' : ( $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.' ), 'details' => [ 'source' => $design_engine_active ? 'edde' : ( $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ) ] ];
+		$resolved_action_path = $design_engine_active ? 'edde' : ( $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ) );
+		$response_diagnostics = wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] );
+		$usage = is_array( $response_diagnostics['usage'] ?? null ) ? $response_diagnostics['usage'] : [];
+		$routing_policy = function_exists( 'wpae_llm_route_policy' ) ? wpae_llm_route_policy( $action_request ? 'elementor_write' : 'draft', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ) : [];
+		$routing_telemetry = [
+			'source' => $design_engine_active ? 'local_edde' : 'provider_response',
+			'action_path' => $resolved_action_path,
+			'provider_calls' => $design_engine_active ? 0 : count( $provider_attempts ),
+			'input_tokens' => $usage['input_tokens'] ?? null,
+			'output_tokens' => $usage['output_tokens'] ?? null,
+			'latency_ms' => null,
+			'retry_count' => max( 0, count( $provider_attempts ) - 1 ),
+			'fallback_used' => $used_fallback_model !== '' || $provider_transport_fallback,
+			'success' => true,
+		];
+		$design_pipeline_trace['routing'] = function_exists( 'wpae_llm_route_diagnostics' ) ? wpae_llm_route_diagnostics( $routing_policy, $routing_telemetry ) : $routing_telemetry;
 		$generation_diagnostics = [
             'schema' => 'wpae-llm-generation-diagnostics-v1',
             'archetype' => $action_archetype,
-			'action_path' => $design_engine_active ? 'edde' : ( $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ) ),
+			'action_path' => $resolved_action_path,
+			'routing' => function_exists( 'wpae_llm_route_diagnostics' ) ? wpae_llm_route_diagnostics( $routing_policy, $routing_telemetry ) : $routing_telemetry,
 			'design_pipeline' => $design_pipeline_trace,
-            'design_engine' => (array) ( $design_engine_result['trace'] ?? [] ),
-            'provider_response' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ),
+			'design_engine' => (array) ( $design_engine_result['trace'] ?? [] ),
+			'provider_response' => $response_diagnostics,
             'command' => $action_diagnostics,
             'initial_validation' => $initial_validation,
             'repair_attempts' => $repair_attempts,
@@ -10566,6 +10617,90 @@ function wpae_llm_undo( WP_REST_Request $request ): WP_REST_Response {
     }
     $rollback = wpae_restore_rollback_snapshot_by_id( $snapshot_id, true );
     return new WP_REST_Response( [ 'ok' => ! empty( $rollback['ok'] ), 'operation_id' => wpae_llm_new_operation_id(), 'rollback' => $rollback ], (int) ( $rollback['status'] ?? 422 ) );
+}
+
+function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
+	$payload = $request->get_json_params();
+	$payload = is_array( $payload ) ? $payload : [];
+	if ( strlen( (string) wp_json_encode( $payload ) ) > 32768 ) {
+		return new WP_Error( 'wpae_operation_payload_too_large', 'Доказательство операции превышает допустимый размер.', [ 'status' => 413 ] );
+	}
+	$operation_id = sanitize_key( (string) ( $payload['operation_id'] ?? '' ) );
+	$post_id = absint( $payload['post_id'] ?? 0 );
+	if ( $operation_id === '' || $post_id <= 0 || ! current_user_can( 'edit_post', $post_id ) ) {
+		return new WP_Error( 'wpae_operation_reconcile_forbidden', 'Операция или право редактирования страницы не подтверждены.', [ 'status' => 403 ] );
+	}
+	$operation = function_exists( 'wpae_design_operation_find_by_id' ) ? wpae_design_operation_find_by_id( $operation_id ) : null;
+	if ( ! is_array( $operation ) ) {
+		return new WP_Error( 'wpae_operation_not_found', 'Операция не найдена.', [ 'status' => 404 ] );
+	}
+	if ( absint( $operation['post_id'] ?? 0 ) !== $post_id ) {
+		return new WP_Error( 'wpae_operation_scope_mismatch', 'Операция принадлежит другой странице.', [ 'status' => 409 ] );
+	}
+	$identity = sanitize_text_field( (string) ( $payload['operation_identity'] ?? '' ) );
+	if ( $identity !== '' && ! hash_equals( (string) ( $operation['operation_identity'] ?? '' ), $identity ) ) {
+		return new WP_Error( 'wpae_operation_identity_mismatch', 'Устаревшее подтверждение относится к другой операции.', [ 'status' => 409 ] );
+	}
+	$expected_revision = isset( $payload['revision'] ) ? absint( $payload['revision'] ) : 0;
+	if ( $expected_revision > 0 && $expected_revision < absint( $operation['revision'] ?? 1 ) ) {
+		return new WP_Error( 'wpae_operation_stale_ack', 'Подтверждение устарело и не изменило журнал.', [ 'status' => 409, 'operation' => $operation ] );
+	}
+	$elementor_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : new WP_Error( 'wpae_operation_readback_unavailable', 'Read-back Elementor недоступен.' );
+	if ( is_wp_error( $elementor_data ) || ! is_array( $elementor_data ) ) {
+		return new WP_Error( 'wpae_operation_readback_failed', 'Сохранённое состояние Elementor не подтверждено.', [ 'status' => 409 ] );
+	}
+	$current_saved_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
+	$expected_saved_hash = sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) );
+	if ( $expected_saved_hash !== '' && ! hash_equals( $expected_saved_hash, $current_saved_hash ) ) {
+		return new WP_Error( 'wpae_operation_target_changed', 'Страница изменилась после операции; чужие изменения сохранены.', [ 'status' => 409, 'operation' => $operation, 'saved_hash' => $current_saved_hash ] );
+	}
+	$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	$reported_root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $payload['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	if ( ! empty( $reported_root_ids ) && array_diff( $reported_root_ids, $root_ids ) ) {
+		return new WP_Error( 'wpae_operation_root_scope_mismatch', 'Подтверждение содержит root, не принадлежащий этой операции.', [ 'status' => 409 ] );
+	}
+	$current_root_ids = array_values( array_filter( array_map( static fn( $item ): string => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? '' ) ) : '', $elementor_data ) ) );
+	foreach ( $root_ids as $root_id ) {
+		if ( ! in_array( $root_id, $current_root_ids, true ) ) {
+			return new WP_Error( 'wpae_operation_root_missing', 'Целевой root отсутствует в сохранённом Elementor read-back.', [ 'status' => 409, 'root_id' => $root_id ] );
+		}
+	}
+	if ( ! empty( $operation['target_fingerprint'] ) && function_exists( 'wpae_rollback_post_fingerprint' ) ) {
+		$current_fingerprint = wpae_rollback_post_fingerprint( $post_id );
+		if ( ! hash_equals( (string) $operation['target_fingerprint'], (string) $current_fingerprint ) ) {
+			return new WP_Error( 'wpae_operation_fingerprint_conflict', 'Целевая страница изменилась после записи; подтверждение отклонено.', [ 'status' => 409 ] );
+		}
+	}
+	$requested_state = sanitize_key( (string) ( $payload['state'] ?? 'written' ) );
+	if ( ! in_array( $requested_state, [ 'written', 'rendered', 'reviewed', 'completed' ], true ) ) {
+		$requested_state = 'written';
+	}
+	$server_verified = true;
+	$report_id = sanitize_text_field( (string) ( $payload['vision_report_id'] ?? '' ) );
+	if ( in_array( $requested_state, [ 'reviewed', 'completed' ], true ) ) {
+		$report = $report_id !== '' && function_exists( 'wpae_get_vision_report' ) ? wpae_get_vision_report( $report_id ) : null;
+		if ( ! is_array( $report ) || (int) ( $report['post_id'] ?? 0 ) !== $post_id ) {
+			return new WP_Error( 'wpae_operation_vision_unverified', 'Vision report для этой страницы не подтверждён.', [ 'status' => 409 ] );
+		}
+	}
+	$evidence_source = sanitize_key( (string) ( $payload['evidence_source'] ?? '' ) );
+	if ( in_array( $requested_state, [ 'rendered', 'reviewed', 'completed' ], true ) && ! in_array( $evidence_source, [ 'preview', 'public_preview' ], true ) ) {
+		$requested_state = 'written';
+	}
+	$updated = wpae_design_operation_reconcile( $operation_id, [
+		'ok' => true,
+		'state' => $requested_state,
+		'server_verified' => $server_verified,
+		'saved_hash' => $current_saved_hash,
+		'rendered_html_hash' => sanitize_text_field( (string) ( $payload['rendered_html_hash'] ?? '' ) ),
+		'evidence_source' => $evidence_source,
+		'evidence_hash' => sanitize_text_field( (string) ( $payload['evidence_hash'] ?? '' ) ),
+		'root_ids' => $root_ids,
+	] );
+	if ( ! is_array( $updated ) ) {
+		return new WP_Error( 'wpae_operation_reconcile_failed', 'Журнал операции не удалось обновить.', [ 'status' => 409 ] );
+	}
+	return new WP_REST_Response( [ 'ok' => true, 'operation' => $updated, 'saved_hash' => $current_saved_hash, 'state' => $updated['current_state'] ?? 'written' ], 200 );
 }
 
 function wpae_get_llm_guide(): array {

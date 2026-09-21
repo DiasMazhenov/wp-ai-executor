@@ -6,9 +6,37 @@ defined( 'ABSPATH' ) || exit;
 
 const WPAE_DESIGN_OPERATION_SCHEMA = 'wpae-design-operation-v1';
 const WPAE_DESIGN_OPERATION_OPTION = 'wp_ai_executor_design_operations';
+const WPAE_DESIGN_OPERATION_LOCK_OPTION = 'wp_ai_executor_design_operations_lock';
 
 function wpae_design_operation_states(): array {
 	return [ 'planned', 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'completed', 'failed', 'unknown' ];
+}
+
+function wpae_design_operation_state_rank( string $state ): int {
+	$rank = [ 'planned' => 10, 'generated' => 20, 'normalized' => 30, 'validated' => 40, 'written' => 50, 'rendered' => 60, 'reviewed' => 70, 'revised' => 45, 'completed' => 80, 'failed' => 0, 'unknown' => 1 ];
+	return (int) ( $rank[ sanitize_key( $state ) ] ?? -1 );
+}
+
+function wpae_design_operation_transition_allowed( string $from, string $to ): bool {
+	$from = sanitize_key( $from );
+	$to   = sanitize_key( $to );
+	if ( $from === $to ) {
+		return true;
+	}
+	$allowed = [
+		'planned' => [ 'generated', 'failed', 'unknown' ],
+		'generated' => [ 'normalized', 'failed', 'unknown' ],
+		'normalized' => [ 'validated', 'failed', 'unknown' ],
+		'validated' => [ 'written', 'failed', 'unknown' ],
+		'written' => [ 'rendered', 'failed', 'unknown' ],
+		'rendered' => [ 'reviewed', 'failed', 'unknown' ],
+		'reviewed' => [ 'revised', 'completed', 'failed' ],
+		'revised' => [ 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'completed', 'failed' ],
+		'unknown' => [ 'written', 'rendered', 'reviewed', 'failed' ],
+		'failed' => [ 'unknown' ],
+		'completed' => [],
+	];
+	return in_array( $to, $allowed[ $from ] ?? [], true );
 }
 
 function wpae_design_operation_store(): array {
@@ -16,8 +44,13 @@ function wpae_design_operation_store(): array {
 	return is_array( $stored ) ? array_values( $stored ) : [];
 }
 
-function wpae_design_operation_idempotency_key( int $post_id, string $brief_hash, string $selected_scope, string $operation_type = 'design' ): string {
-	return hash( 'sha256', implode( '|', [ $post_id, $brief_hash, sanitize_key( $selected_scope ), sanitize_key( $operation_type ) ] ) );
+function wpae_design_operation_idempotency_key( int $post_id, string $brief_hash, string $selected_scope, string $operation_type = 'design', string $operation_identity = '' ): string {
+	$identity = sanitize_text_field( $operation_identity );
+	// Retries reuse the client identity; a new explicit insertion gets a new one.
+	if ( $identity === '' ) {
+		$identity = 'legacy-content-key';
+	}
+	return hash( 'sha256', implode( '|', [ $post_id, $brief_hash, sanitize_key( $selected_scope ), sanitize_key( $operation_type ), $identity ] ) );
 }
 
 function wpae_design_operation_find( string $idempotency_key ): ?array {
@@ -29,6 +62,80 @@ function wpae_design_operation_find( string $idempotency_key ): ?array {
 	return null;
 }
 
+function wpae_design_operation_find_by_id( string $operation_id ): ?array {
+	$operation_id = sanitize_key( $operation_id );
+	if ( $operation_id === '' ) {
+		return null;
+	}
+	foreach ( wpae_design_operation_store() as $operation ) {
+		if ( is_array( $operation ) && (string) ( $operation['operation_id'] ?? '' ) === $operation_id ) {
+			return $operation;
+		}
+	}
+	return null;
+}
+
+function wpae_design_operation_lock_token(): string {
+	$payload = [ microtime( true ), function_exists( 'getmypid' ) ? getmypid() : 0, mt_rand() ];
+	return substr( hash( 'sha256', function_exists( 'wp_json_encode' ) ? wp_json_encode( $payload ) : serialize( $payload ) ), 0, 32 );
+}
+
+function wpae_design_operation_acquire_lock( int $ttl = 20 ): ?string {
+	$token = wpae_design_operation_lock_token();
+	$lock  = [ 'token' => $token, 'expires' => time() + max( 5, $ttl ) ];
+	if ( function_exists( 'add_option' ) ) {
+		if ( add_option( WPAE_DESIGN_OPERATION_LOCK_OPTION, $lock, '', 'no' ) ) {
+			return $token;
+		}
+		$existing = function_exists( 'get_option' ) ? get_option( WPAE_DESIGN_OPERATION_LOCK_OPTION, [] ) : [];
+		if ( is_array( $existing ) && (int) ( $existing['expires'] ?? 0 ) < time() ) {
+			if ( function_exists( 'delete_option' ) ) {
+				delete_option( WPAE_DESIGN_OPERATION_LOCK_OPTION );
+			}
+			if ( add_option( WPAE_DESIGN_OPERATION_LOCK_OPTION, $lock, '', 'no' ) ) {
+				return $token;
+			}
+		}
+		return null;
+	}
+	// ponytail: single-process fallback only for the PHP contract harness; the
+	// WordPress path above uses the database's unique option insert.
+	global $wpae_design_operation_fallback_lock;
+	if ( ! empty( $wpae_design_operation_fallback_lock ) ) {
+		return null;
+	}
+	$wpae_design_operation_fallback_lock = true;
+	return $token;
+}
+
+function wpae_design_operation_release_lock( ?string $token ): void {
+	if ( $token === null ) {
+		return;
+	}
+	if ( function_exists( 'get_option' ) && function_exists( 'delete_option' ) && function_exists( 'add_option' ) ) {
+		$lock = get_option( WPAE_DESIGN_OPERATION_LOCK_OPTION, [] );
+		if ( is_array( $lock ) && hash_equals( (string) ( $lock['token'] ?? '' ), $token ) ) {
+			delete_option( WPAE_DESIGN_OPERATION_LOCK_OPTION );
+		}
+		return;
+	}
+	// fallback_lock is intentionally process-local and only used by tests.
+	global $wpae_design_operation_fallback_lock;
+	$wpae_design_operation_fallback_lock = false;
+}
+
+function wpae_design_operation_with_lock( callable $callback ) {
+	$token = wpae_design_operation_acquire_lock();
+	if ( $token === null ) {
+		return null;
+	}
+	try {
+		return $callback();
+	} finally {
+		wpae_design_operation_release_lock( $token );
+	}
+}
+
 function wpae_design_operation_save( array $operations ): void {
 	if ( function_exists( 'update_option' ) ) {
 		update_option( WPAE_DESIGN_OPERATION_OPTION, array_slice( array_values( $operations ), -100 ), false );
@@ -37,70 +144,135 @@ function wpae_design_operation_save( array $operations ): void {
 
 function wpae_design_operation_create( array $input ): array {
 	$idempotency_key = sanitize_text_field( (string) ( $input['idempotency_key'] ?? '' ) );
-	$existing = $idempotency_key !== '' ? wpae_design_operation_find( $idempotency_key ) : null;
-	if ( is_array( $existing ) ) {
-		$existing['reconciled'] = true;
-		return $existing;
+	$result = wpae_design_operation_with_lock( static function () use ( $input, $idempotency_key ): array {
+		$existing = $idempotency_key !== '' ? wpae_design_operation_find( $idempotency_key ) : null;
+		if ( is_array( $existing ) ) {
+			$existing['reconciled'] = true;
+			return $existing;
+		}
+		$identity = sanitize_text_field( (string) ( $input['operation_identity'] ?? '' ) );
+		$operation_id = sanitize_key( (string) ( $input['operation_id'] ?? '' ) );
+		if ( $operation_id === '' ) {
+			$operation_id = 'wpae-op-' . substr( hash( 'sha256', $idempotency_key . '|' . $identity . '|' . microtime( true ) ), 0, 16 );
+		}
+		$now = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
+		$operation = [
+			'schema' => WPAE_DESIGN_OPERATION_SCHEMA,
+			'operation_id' => $operation_id,
+			'operation_identity' => $identity,
+			'idempotency_key' => $idempotency_key,
+			'post_id' => absint( $input['post_id'] ?? 0 ),
+			'selected_scope' => sanitize_text_field( (string) ( $input['selected_scope'] ?? 'page' ) ),
+			'operation_type' => sanitize_key( (string) ( $input['operation_type'] ?? 'design' ) ),
+			'brief_hash' => sanitize_text_field( (string) ( $input['brief_hash'] ?? '' ) ),
+			'plan_hash' => sanitize_text_field( (string) ( $input['plan_hash'] ?? '' ) ),
+			'compiled_hash' => sanitize_text_field( (string) ( $input['compiled_hash'] ?? '' ) ),
+			'saved_hash' => sanitize_text_field( (string) ( $input['saved_hash'] ?? '' ) ),
+			'rendered_html_hash' => sanitize_text_field( (string) ( $input['rendered_html_hash'] ?? '' ) ),
+			'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $input['root_ids'] ?? [] ), 0, 12 ) ) ) ),
+			'target_fingerprint' => sanitize_text_field( (string) ( $input['target_fingerprint'] ?? '' ) ),
+			'provider' => sanitize_key( (string) ( $input['provider'] ?? '' ) ),
+			'model' => sanitize_text_field( (string) ( $input['model'] ?? '' ) ),
+			'latency_ms' => max( 0, (int) ( $input['latency_ms'] ?? 0 ) ),
+			'retry_count' => max( 0, (int) ( $input['retry_count'] ?? 0 ) ),
+			'fallback_used' => ! empty( $input['fallback_used'] ),
+			'current_state' => in_array( $input['current_state'] ?? 'planned', wpae_design_operation_states(), true ) ? (string) $input['current_state'] : 'planned',
+			'revision' => 1,
+			'created_at' => $now,
+			'updated_at' => $now,
+		];
+		$operations = wpae_design_operation_store();
+		$operations[] = $operation;
+		wpae_design_operation_save( $operations );
+		return $operation;
+	} );
+	if ( is_array( $result ) ) {
+		return $result;
 	}
-	$operation_id = sanitize_key( (string) ( $input['operation_id'] ?? '' ) );
-	if ( $operation_id === '' ) {
-		$operation_id = 'wpae-op-' . substr( hash( 'sha256', $idempotency_key . '|' . microtime( true ) ), 0, 16 );
-	}
-	$now = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
-	$operation = [
-		'schema' => WPAE_DESIGN_OPERATION_SCHEMA,
-		'operation_id' => $operation_id,
-		'idempotency_key' => $idempotency_key,
-		'post_id' => absint( $input['post_id'] ?? 0 ),
-		'selected_scope' => sanitize_text_field( (string) ( $input['selected_scope'] ?? 'page' ) ),
-		'brief_hash' => sanitize_text_field( (string) ( $input['brief_hash'] ?? '' ) ),
-		'plan_hash' => sanitize_text_field( (string) ( $input['plan_hash'] ?? '' ) ),
-		'compiled_hash' => sanitize_text_field( (string) ( $input['compiled_hash'] ?? '' ) ),
-		'saved_hash' => sanitize_text_field( (string) ( $input['saved_hash'] ?? '' ) ),
-		'rendered_html_hash' => sanitize_text_field( (string) ( $input['rendered_html_hash'] ?? '' ) ),
-		'provider' => sanitize_key( (string) ( $input['provider'] ?? '' ) ),
-		'model' => sanitize_text_field( (string) ( $input['model'] ?? '' ) ),
-		'latency_ms' => max( 0, (int) ( $input['latency_ms'] ?? 0 ) ),
-		'retry_count' => max( 0, (int) ( $input['retry_count'] ?? 0 ) ),
-		'fallback_used' => ! empty( $input['fallback_used'] ),
-		'current_state' => in_array( $input['current_state'] ?? 'planned', wpae_design_operation_states(), true ) ? (string) $input['current_state'] : 'planned',
-		'created_at' => $now,
-		'updated_at' => $now,
-	];
-	$operations = wpae_design_operation_store();
-	$operations[] = $operation;
-	wpae_design_operation_save( $operations );
-	return $operation;
+	return [ 'schema' => WPAE_DESIGN_OPERATION_SCHEMA, 'idempotency_key' => $idempotency_key, 'current_state' => 'unknown', 'reconciled' => true, 'lock_conflict' => true, 'conflict_reason' => 'operation_lock_busy' ];
 }
 
 function wpae_design_operation_update( string $operation_id, array $patch ): ?array {
-	$operations = wpae_design_operation_store();
-	$updated = null;
-	foreach ( $operations as &$operation ) {
-		if ( ! is_array( $operation ) || (string) ( $operation['operation_id'] ?? '' ) !== $operation_id ) {
-			continue;
-		}
-		foreach ( $patch as $key => $value ) {
-			if ( in_array( $key, [ 'current_state', 'post_id', 'latency_ms', 'retry_count', 'fallback_used', 'brief_hash', 'plan_hash', 'compiled_hash', 'saved_hash', 'rendered_html_hash', 'provider', 'model', 'selected_scope' ], true ) ) {
-				$operation[ $key ] = $key === 'current_state' && ! in_array( $value, wpae_design_operation_states(), true ) ? 'unknown' : $value;
+	$result = wpae_design_operation_with_lock( static function () use ( $operation_id, $patch ): ?array {
+		$operations = wpae_design_operation_store();
+		$updated = null;
+		foreach ( $operations as &$operation ) {
+			if ( ! is_array( $operation ) || (string) ( $operation['operation_id'] ?? '' ) !== $operation_id ) {
+				continue;
 			}
+			$current_state = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
+			$transition_rejected = false;
+			foreach ( $patch as $key => $value ) {
+				$allowed_keys = [ 'current_state', 'post_id', 'latency_ms', 'retry_count', 'fallback_used', 'brief_hash', 'plan_hash', 'compiled_hash', 'saved_hash', 'rendered_html_hash', 'provider', 'model', 'selected_scope', 'operation_identity', 'operation_type', 'root_ids', 'target_fingerprint', 'last_error', 'evidence_source', 'evidence_hash' ];
+				if ( ! in_array( $key, $allowed_keys, true ) ) {
+					continue;
+				}
+				if ( $key === 'current_state' ) {
+					$next_state = sanitize_key( (string) $value );
+					if ( ! in_array( $next_state, wpae_design_operation_states(), true ) || ! wpae_design_operation_transition_allowed( $current_state, $next_state ) ) {
+						$transition_rejected = true;
+						continue;
+					}
+					$operation[ $key ] = $next_state;
+					$current_state = $next_state;
+					continue;
+				}
+				if ( $key === 'root_ids' ) {
+					$operation[ $key ] = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) $value, 0, 12 ) ) ) );
+				} elseif ( in_array( $key, [ 'post_id', 'latency_ms', 'retry_count' ], true ) ) {
+					$operation[ $key ] = max( 0, (int) $value );
+				} elseif ( $key === 'fallback_used' ) {
+					$operation[ $key ] = ! empty( $value );
+				} else {
+					$operation[ $key ] = sanitize_text_field( (string) $value );
+				}
+			}
+			if ( $transition_rejected ) {
+				$operation['last_error'] = 'invalid_state_transition';
+				$operation['transition_rejected'] = true;
+			}
+			$operation['revision'] = max( 1, (int) ( $operation['revision'] ?? 1 ) + 1 );
+			$operation['updated_at'] = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
+			$updated = $operation;
+			break;
 		}
-		$operation['updated_at'] = function_exists( 'current_time' ) ? current_time( 'mysql', true ) : gmdate( 'c' );
-		$updated = $operation;
-		break;
-	}
-	unset( $operation );
-	if ( $updated !== null ) {
-		wpae_design_operation_save( $operations );
-	}
-	return $updated;
+		unset( $operation );
+		if ( $updated !== null ) {
+			wpae_design_operation_save( $operations );
+		}
+		return $updated;
+	} );
+	return is_array( $result ) ? $result : null;
 }
 
 function wpae_design_operation_reconcile( string $operation_id, array $readback = [] ): ?array {
-	$state = ! empty( $readback['ok'] ) ? 'written' : 'unknown';
-	return wpae_design_operation_update( $operation_id, [
-		'current_state' => $state,
+	$operation = wpae_design_operation_find_by_id( $operation_id );
+	if ( ! is_array( $operation ) ) {
+		return null;
+	}
+	$requested = sanitize_key( (string) ( $readback['state'] ?? ( ! empty( $readback['ok'] ) ? 'written' : 'unknown' ) ) );
+	if ( ! in_array( $requested, wpae_design_operation_states(), true ) ) {
+		$requested = 'unknown';
+	}
+	if ( in_array( $requested, [ 'rendered', 'reviewed', 'completed' ], true ) && empty( $readback['server_verified'] ) ) {
+		$requested = 'written';
+	}
+	$current = sanitize_key( (string) ( $operation['current_state'] ?? 'planned' ) );
+	if ( wpae_design_operation_state_rank( $current ) > wpae_design_operation_state_rank( $requested ) ) {
+		$requested = $current;
+	}
+	$patch = [
+		'current_state' => $requested,
 		'saved_hash' => sanitize_text_field( (string) ( $readback['saved_hash'] ?? '' ) ),
 		'rendered_html_hash' => sanitize_text_field( (string) ( $readback['rendered_html_hash'] ?? '' ) ),
-	] );
+		'evidence_source' => sanitize_text_field( (string) ( $readback['evidence_source'] ?? '' ) ),
+		'evidence_hash' => sanitize_text_field( (string) ( $readback['evidence_hash'] ?? '' ) ),
+	];
+	if ( array_key_exists( 'root_ids', $readback ) ) {
+		$patch['root_ids'] = $readback['root_ids'];
+	}
+	if ( ! empty( $readback['conflict_reason'] ) ) {
+		$patch['last_error'] = sanitize_text_field( (string) $readback['conflict_reason'] );
+	}
+	return wpae_design_operation_update( $operation_id, $patch );
 }
