@@ -2494,7 +2494,24 @@ before making a new change to the plugin.
   `shadow` is diagnostics-only, and `active` is bounded behind settings.
 - **Regression:** `php tests/design-pipeline-contract.php` (30 checks), the
   Node wrapper, existing Flex/runtime, chat and Vision contract suites pass.
-- **Status:** source architecture is locally verified. No new live generation
-  was run in this release, so desktop/mobile screenshot and live DOM acceptance
-  for `active` remains pending; the existing v02.11.124 page 5214 state is not
-  changed by this source-only release.
+- **Status at source-only handoff:** local architecture verification passed;
+  the initial report correctly left active acceptance pending. That status was
+  superseded by the controlled live run documented in EJ-132 on the existing
+  page 5214.
+
+## EJ-132: Active pipeline render badge stayed active after preview paint
+
+- **Confirmed (2026-09-21, live post 5214, installed v02.11.125):** active
+  BriefIR/DesignPlan/ElementorIR generation wrote operation
+  `wpae-20260921110642-50ed0529`, passed HTTP 200 preflight/update, and Vision
+  returned `88/100` with `95%` confidence. The browser phase list still showed
+  `render=active` because this response had no separate `render_cache` step.
+- **Root cause:** the chat finish path set `render=active` before waiting for
+  preview paint but only `updatePipelineFromSteps()` could mark it done.
+- **Fix (source v02.11.126):** both successful and refresh-fallback paint paths
+  set `render=done`; the plugin version bump makes the asset cache-visible.
+- **Live evidence:** editor desktop/mobile DOM and screenshots plus public
+  HTML confirmed exact copy, `#contact`, mobile copy-first stack and no
+  horizontal overflow. The browser-side Vision review is complete; the durable
+  operation record remains `written/render_review_pending` until a reconcile UI
+  endpoint is added.

@@ -468,3 +468,100 @@ live evidence v02.11.124 на post=5214 остается действитель�
   active hero generation и собрать saved JSON, rendered HTML, DOM geometry,
   desktop/mobile screenshots и Vision review. Только после этого можно
   переводить active acceptance из pending в completed.
+
+## 23. Addendum: live active acceptance на post=5214
+
+Этот раздел supersedes the source-only status in sections 20–22. Проверка
+выполнена 2026-09-21, Asia/Almaty, на существующей странице `post=5214`;
+новая WordPress-страница или draft не создавались.
+
+### 23.1 Live operation
+
+- В live settings сохранены `Design Decision Engine=active` и
+  `Deterministic Design Pipeline=active`.
+- На текущей странице выполнен один контролируемый запрос hero с exact copy:
+  `АРХИТЕКТУРА`, `Пространство для идей`, `Опишите задачу и получите понятный
+  первый шаг.`, CTA `Начать проект` → `#contact`.
+- Operation ID: `wpae-20260921110642-50ed0529`.
+- Elementor preflight и update вернули `HTTP 200`; transaction записала root
+  `4979256` и четыре native widgets.
+- Brief hash:
+  `12fedfafa6bd4c37272c7759a93018387c42f91a15527f4598a9f6c3892976af`.
+- DesignPlan hash:
+  `7949b74904a674f848ef9fb1decd89fd5b7aa585417e1bf4ab7c2afb0d7c4f6b`.
+- Compiled hash:
+  `296dfc784545c9fff30b1ba0cdbe724afe1a34fdb104eb57b4d28fe7d72620f5`.
+- Saved hash:
+  `8f6d9380976d31e07dbdf31633c993f18bdecd561ed91f7cccc1e684233ea898`.
+- Operation ledger сохранил `wpae-design-operation-v1`, `current_state=written`,
+  `selected_scope=page`, `retry_count=0`, `fallback_used=false` и
+  `render_review_pending=true`. Browser-side review прошел, но durable
+  `reviewed/completed` reconcile endpoint еще не добавлен.
+
+### 23.2 Contracts and compiled result
+
+- `BriefIR v1`: `validation.ok=true`, locale `ru`, archetype `hero`, 4 content
+  items, 0 ambiguities, 0 parser warnings.
+- `DesignPlan v1`: `validation.ok=true`; requested and available widgets:
+  `heading`, `text-editor`, `button`, `image`; downgrade count `0`.
+- `ElementorIR v2`: `compiled=true`, `validation.ok=true`, native widget set
+  `container`, `heading`, `text-editor`, `button`, node count `7`.
+- Generated JSON сохранил exact text и URL, deterministic IDs и basis policy:
+  root `4979256`, copy `73401a9` basis `60/50/100`, eyebrow `9ecfafc`, title
+  `02c6816`, body `6ec284a`, CTA `a55f678` → `#contact`, media fallback `ee7fbe9`
+  basis `40/50/100`.
+- LayoutReport: `ok=true`, violations `[]`; desktop `1200→1168`, laptop
+  `960→928`, tablet `704→672`, mobile `326→195.6`, mobile policy
+  `copy_first_stack`.
+- Semantic contrast gate: `ok=true`; text/page `15.65`, muted/page `4.26`,
+  surface/primary `5.08`.
+
+### 23.3 Readback, DOM and screenshots
+
+- Editor desktop DOM: viewport `1010px`, generated root `1010×246px`, copy
+  `467.46px`, media `470.54px`; no zero-width node and no horizontal overflow.
+- Editor mobile DOM: viewport `345px`, generated root `345×493px`, copy and
+  media both `297px` wide, `flex-direction=column`, `scrollWidth=345px`.
+- Public page HTML после reload содержит exact `АРХИТЕКТУРА`, title, body и
+  `Начать проект`; generated root имеет class
+  `wpae-generated-root wpae-generated-hero elementor-element-4979256`.
+- Свежие captures получены для editor desktop, editor mobile и public desktop;
+  CUA показал их inline в этой сессии. Filesystem paths недоступны у текущего
+  Browser Use API, поэтому выдуманные ссылки на screenshot-файлы не указаны.
+- AI Vision: `score=88`, `confidence=95%`; copy, 60/40 split, fallback media
+  и CTA подтверждены. Единственная рекомендация — немного увеличить
+  vertical padding.
+
+### 23.4 Исправление найденного UX-дефекта
+
+После acceptance выяснилось, что pipeline badge оставлял `Рендер` в состоянии
+`active`, если provider response не содержал отдельный `render_cache` step,
+хотя preview уже painted и Vision review завершен. Finish-path в
+`assets/js/elementor-llm-chat.js` теперь переводит `render` в `done` после
+`waitForPreviewPaint`/`waitForPreviewRefresh`; plugin version поднята до
+`v02.11.126`, package manifest пересчитан (`90/90`). Это не меняет сохраненную
+страницу и не требует второй генерации.
+
+### 23.5 Warnings и следующий минимальный шаг
+
+- Media отсутствовала по prompt, поэтому compiler честно записал
+  `missing_media_explicit_fallback` и `media_fallback`; пользовательский asset
+  не подменялся.
+- Один border token пришел из `safe_default`; missing token не заблокировал
+  запись и был виден в diagnostics.
+- Routing diagnostics live operation пока показывают `input_tokens=0`,
+  `output_tokens=0`, `latency_ms=0`, `success=false`: provider telemetry
+  schema есть, но transport response metadata еще не прокинут в trace.
+- Durable ledger остается `written/render_review_pending`; следующий небольшой
+  архитектурный шаг — endpoint/browser reconcile, который после DOM+Vision
+  evidence переведет operation в `rendered → reviewed → completed` и безопасно
+  закроет unknown timeout.
+
+## 24. Current release metadata
+
+- Source release after the render-phase fix: `v02.11.126`.
+- Live evidence was collected on installed `v02.11.125`; v02.11.126 contains
+  только cache-visible version bump, manifest refresh и render-phase finish fix.
+- Before final push, working-tree checks were clean apart from the two intended
+  runtime files and manifest; no secrets, lockfiles, screenshots or test pages
+  were staged.

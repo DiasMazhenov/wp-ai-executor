@@ -1739,11 +1739,17 @@
                         var paintPromise = isTargetedEditorSync(editorSyncData)
                             ? waitForPreviewPaint()
                             : waitForPreviewRefresh(Promise.resolve(true), expectedWidgetCount);
-                        return paintPromise.then(function () { return focusEditorSync(editorSyncData); }).then(function () {
+                        return paintPromise.then(function () {
+                            setPipelinePhase('render', 'done');
+                            return focusEditorSync(editorSyncData);
+                        }).then(function () {
                             addMessage('assistant', syncMessage);
                             return true;
                         }).catch(function () {
-                            return waitForPreviewRefresh(refreshElementorPreviewSafely(requestContext.editor_root_snapshot, editorSyncData), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
+                            return waitForPreviewRefresh(refreshElementorPreviewSafely(requestContext.editor_root_snapshot, editorSyncData), expectedWidgetCount).then(function () {
+                                setPipelinePhase('render', 'done');
+                                return focusEditorSync(editorSyncData);
+                            }).then(function () {
                                 addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Canvas не подтвердил realtime-правку, preview обновлен из сохраненных данных.' : 'Canvas не подтвердил realtime-вставку, preview обновлен из сохраненных данных.');
                                 return false;
                             });
@@ -1753,7 +1759,10 @@
                         addMessage('assistant', editorSyncConflict.message);
                         return false;
                     }
-                    return waitForPreviewRefresh(refreshElementorPreviewSafely(requestContext.editor_root_snapshot, editorSyncData), expectedWidgetCount).then(function () { return focusEditorSync(editorSyncData); }).then(function () {
+                    return waitForPreviewRefresh(refreshElementorPreviewSafely(requestContext.editor_root_snapshot, editorSyncData), expectedWidgetCount).then(function () {
+                        setPipelinePhase('render', 'done');
+                        return focusEditorSync(editorSyncData);
+                    }).then(function () {
                         addMessage('assistant', isTargetedEditorSync(editorSyncData) ? 'Предпросмотр измененного элемента обновлен из сохраненных данных.' : 'Предпросмотр Elementor обновлен из сохраненных данных.');
                         return false;
                     }).catch(function (error) {
