@@ -565,3 +565,21 @@ live evidence v02.11.124 на post=5214 остается действитель�
 - Before final push, working-tree checks were clean apart from the two intended
   runtime files and manifest; no secrets, lockfiles, screenshots or test pages
   were staged.
+
+## 25. Final push and live revision
+
+- Final source commit: `456fe7b2afacd912af9186617069d32f4c212e68`.
+- Push status: **успешен**, `origin/main` получил `456fe7b` после `f05c88e`.
+- WP Pusher/live plugins screen после push показал `WP AI Executor v02.11.126`
+  active.
+- LLM settings после обновления сохранили
+  `Deterministic Design Pipeline=active` и `Design Decision Engine=active`.
+- Новый live Elementor editor того же `post=5214` загрузил chat asset с
+  `Модель: openrouter/free · Версия: v02.11.126`; вторая WordPress page не
+  создавалась.
+- Active generation evidence относится к v02.11.125 до cache-visible
+  render-only patch; v02.11.126 не меняет compiled tree, transaction data или
+  public content, а только гарантирует корректное завершение UI-фазы `Рендер`.
+- Final status: архитектурная миграция и controlled live acceptance выполнены;
+  operation-ledger `reviewed/completed` reconcile и точные provider token/cost
+  fields остаются отдельными следующими шагами.
