@@ -1719,6 +1719,20 @@ function wpae_llm_extract_pricing_content( string $message ): array {
 		];
 	};
 
+	// Recovery prompts often put the amount before the description:
+	// «Старт» — «от 50 000 ₸» — «Для небольшой задачи». Keep that order
+	// separate from the legacy label-description-price form below.
+	if ( preg_match_all( '/(?:«([^»]{2,80})»|"([^"\n]{2,80})")\s*[—–-]\s*(?:«([^»]{2,160}(?:₸|\$|€|₽)[^»]{0,24})»|"([^"\n]{2,160}(?:₸|\$|€|₽)[^"\n]{0,24})")\s*[—–-]\s*(?:«([^»]{2,240})»|"([^"\n]{2,240})")/u', $message, $price_first_matches, PREG_SET_ORDER ) ) {
+		foreach ( $price_first_matches as $match ) {
+			$label = (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) );
+			$price = (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) );
+			$description = (string) ( $match[5] !== '' ? $match[5] : ( $match[6] ?? '' ) );
+			if ( preg_match( '/\d[\d\s]*(?:₸|\$|€|₽)/u', $price ) ) {
+				$append_pair( $pairs, $label, $price, $description );
+			}
+		}
+	}
+
     // Inline briefs may keep all tiers in one sentence and quote the amount,
     // for example «Старт» — «Описание» — «от 50 000 ₸» — кнопка ... .
     // Capture only quoted triples whose third field contains a numeric price;
@@ -4956,7 +4970,7 @@ function wpae_llm_extract_section_title( string $message ): string {
 	if ( preg_match( '/(?:блок|секция|раздел)\s*:?\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
 		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
 	}
-	if ( preg_match( '/(?:заголовок|название)\s*:\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+	if ( preg_match( '/(?<!над)(?:заголовок|название)\s*:?\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
 		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
 	}
 	foreach ( wpae_llm_content_units( $message ) as $unit ) {
@@ -4970,7 +4984,7 @@ function wpae_llm_extract_section_title( string $message ): string {
 }
 
 function wpae_llm_extract_section_badge( string $message ): string {
-	if ( preg_match( '/(?:бейдж\w*|badge)\s*:?\s*[«"]([^»"\n]{2,80})[»"]/iu', $message, $match ) ) {
+	if ( preg_match( '/(?:надзаголовок|бейдж\w*|badge)\s*:?\s*[«"]([^»"\n]{2,80})[»"]/iu', $message, $match ) ) {
 		return trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
 	}
 	return '';

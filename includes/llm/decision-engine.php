@@ -332,7 +332,7 @@ function wpae_llm_design_engine_compile_hero( array $action, array $plan, string
 					$stats['buttons_styled']++;
 				}
 			}
-			if ( $is_shell || $is_copy || $is_visual || $is_explicit_root ) {
+			if ( $is_shell || $is_copy || $is_visual || $is_explicit_root || ( $node['elType'] ?? '' ) === 'widget' ) {
 				$node['settings'] = $settings;
 				$stats['nodes_updated']++;
 			}

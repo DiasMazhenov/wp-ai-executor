@@ -698,6 +698,15 @@ check( strpos( $inline_pricing_json, '"title":"от 150 000 ₸"' ) !== false, '
 check( strpos( $inline_pricing_json, '"title":"Выберите формат работы"' ) !== false, 'Inline quoted pricing fallback lost the requested section title' );
 check( strpos( $inline_pricing_json, '"title":"ТАРИФЫ"' ) !== false, 'Inline quoted pricing fallback lost the requested badge label' );
 check( strpos( $inline_pricing_json, '"title":"от 80 000 ₸/мес"' ) !== false && strpos( $inline_pricing_json, '"editor":"Для регулярных задач и развития проекта"' ) !== false, 'Inline quoted pricing fallback merged the monthly price and description' );
+$price_first_pricing_message = 'Добавь отдельный pricing-блок в конец текущей страницы, не удаляй существующие элементы. Точные тексты: надзаголовок «ТАРИФЫ», заголовок «Выберите формат работы». Три карточки: «Старт» — «от 50 000 ₸» — «Для небольшой задачи с понятным объёмом» — кнопка «Выбрать Старт» со ссылкой #start; «Проект» — «от 150 000 ₸» — «Для комплексной работы от идеи до результата» — кнопка «Обсудить проект» со ссылкой #project; «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач и развития проекта» — кнопка «Подключить поддержку» со ссылкой #support. Используй native Elementor Flexbox и сохрани остальные элементы страницы.';
+$price_first_contract = wpae_llm_extract_pricing_content( $price_first_pricing_message );
+$price_first_items = (array) ( $price_first_contract['items'] ?? [] );
+check( count( $price_first_items ) === 3 && ( $price_first_contract['heading'] ?? '' ) === 'Выберите формат работы' && ( $price_first_contract['badge'] ?? '' ) === 'ТАРИФЫ', 'Price-first recovery prompt did not preserve the explicit pricing heading and eyebrow' );
+check( $price_first_items[0]['price_text'] === 'от 50 000 ₸' && $price_first_items[1]['description'] === 'Для комплексной работы от идеи до результата' && array_column( $price_first_items, 'cta_url' ) === [ '#start', '#project', '#support' ], 'Price-first recovery prompt lost a price, description, or paired CTA URL' );
+$price_first_action = wpae_llm_build_fallback_action( $price_first_pricing_message, 42 );
+$price_first_plan = wpae_llm_content_plan( $price_first_pricing_message, 'pricing' );
+$price_first_audit = wpae_llm_content_plan_audit( $price_first_plan, $price_first_action['elements'] );
+check( ! empty( $price_first_audit['ok'] ) && ! empty( wpae_llm_content_fidelity( $price_first_pricing_message, $price_first_action['elements'] )['ok'] ), 'Price-first recovery fallback introduced unrelated semantics or lost requested pricing copy' );
 
 $multiline_pricing_message = "Создай блок: «Выберите формат работы» с бейджем: «ТАРИФЫ».\n«Старт» — «Для небольшой задачи: быстро и понятно.» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка #start.\n«Проект» — «Для комплексной работы, от идеи до результата?» — «от 150 000 ₸» — кнопка «Обсудить проект», ссылка #project.\n«Поддержка» — «Для регулярных задач и развития проекта.» — «от 80 000 ₸/мес» — кнопка «Подключить поддержку», ссылка #support.";
 $multiline_pricing_contract = wpae_llm_extract_pricing_content( $multiline_pricing_message );
@@ -972,6 +981,60 @@ $edde_copy = $edde_shell['elements'][0] ?? [];
 $edde_visual = $edde_shell['elements'][1] ?? [];
 check( abs( (float) ( $edde_copy['settings']['width']['size'] ?? 0 ) - 38.4 ) < 0.01 && abs( (float) ( $edde_visual['settings']['width']['size'] ?? 0 ) - 57.6 ) < 0.01, 'EDDE compiler did not preserve the typed 40/60 composition at the native 96% layout budget' );
 check( ( $edde_shell['settings']['flex_justify_content'] ?? '' ) === 'center' && ( $edde_visual['settings']['border_border'] ?? '' ) === 'solid', 'EDDE compiler lost vertical or outlined surface decisions' );
+$sixty_message = 'Создай второй hero для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ», заголовок «Пространство для вашей жизни», описание «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Основная кнопка «Обсудить проект» со ссылкой #contact; вторичная «Смотреть проекты» со ссылкой #projects. Сделай композицию 60/40: текст слева, визуальная зона справа, компактные отступы, нейтральный размер заголовка, тонкая рамка визуальной зоны, фон #F6F0E6 и mobile copy-first stack.';
+$sixty_plan = [
+	'schema' => WPAE_LLM_DESIGN_ENGINE_SCHEMA,
+	'archetype' => 'hero',
+	'composition' => 'split_60_40',
+	'content_alignment' => 'left',
+	'vertical_alignment' => 'start',
+	'spacing_rhythm' => 'compact',
+	'surface' => 'outlined',
+	'typography' => 'neutral',
+	'cta_hierarchy' => 'primary_secondary',
+	'responsive_strategy' => 'copy_first_stack',
+];
+$sixty_constraints = wpae_llm_design_engine_explicit_constraints( $sixty_message );
+check( ( $sixty_constraints['composition'] ?? '' ) === 'split_60_40' && ( $sixty_constraints['spacing_rhythm'] ?? '' ) === 'compact' && ( $sixty_constraints['typography'] ?? '' ) === 'neutral', 'EDDE did not decode the independent 60/40 layout constraints' );
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'active';
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $sixty_plan ) ) ];
+$sixty_request = new WP_REST_Request();
+$sixty_request->set_param( 'message', $sixty_message );
+$sixty_request->set_param( 'context', [ 'post_id' => 42 ] );
+$sixty_response = wpae_llm_chat_request( $sixty_request );
+check( $sixty_response instanceof WP_REST_Response && ! empty( $sixty_response->get_data()['ok'] ), 'EDDE active 60/40 hero did not use the existing write boundary' );
+$sixty_data = $sixty_response->get_data();
+check( ( $sixty_data['diagnostics']['action_path'] ?? '' ) === 'edde' && ( $sixty_data['diagnostics']['design_engine']['status'] ?? '' ) === 'ok', 'EDDE active 60/40 diagnostics did not report the typed path' );
+check( ( $sixty_data['diagnostics']['design_engine']['plan']['composition'] ?? '' ) === 'split_60_40' && ( $sixty_data['diagnostics']['design_engine']['plan']['spacing_rhythm'] ?? '' ) === 'compact', 'EDDE active 60/40 lost the validated plan before compilation' );
+check( count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'EDDE active 60/40 exceeded its bounded decision or write budget' );
+$sixty_saved = $GLOBALS['page_data'][2] ?? [];
+$sixty_shell = $sixty_saved['elements'][1] ?? [];
+$sixty_copy = $sixty_shell['elements'][0] ?? [];
+$sixty_visual = $sixty_shell['elements'][1] ?? [];
+check( abs( (float) ( $sixty_copy['settings']['width']['size'] ?? 0 ) - 57.6 ) < 0.01 && abs( (float) ( $sixty_visual['settings']['width']['size'] ?? 0 ) - 38.4 ) < 0.01, 'EDDE production path did not preserve the typed 60/40 ratio at the native 96% layout budget' );
+check( ( $sixty_shell['settings']['flex_gap']['size'] ?? 0 ) === 1.25 && ( $sixty_copy['elements'][1]['settings']['typography_font_size']['size'] ?? 0 ) === 2.75, 'EDDE production path lost compact spacing or neutral heading typography' );
+check( ( $sixty_saved['settings']['background_color'] ?? '' ) === '#f6f0e6' && ( $sixty_visual['settings']['border_border'] ?? '' ) === 'solid', 'EDDE production path lost the explicit background or visual outline' );
+check( ( $sixty_copy['settings']['width_mobile']['size'] ?? 0 ) === 100 && ( $sixty_visual['settings']['width_mobile']['size'] ?? 0 ) === 100, 'EDDE production path did not preserve the mobile copy-first stack' );
+$sixty_json = (string) wp_json_encode( $sixty_saved, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $sixty_json, 'Пространство для вашей жизни' ) !== false && strpos( $sixty_json, 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали' ) !== false, 'EDDE production 60/40 lost exact hero copy' );
+$sixty_buttons = [];
+$collect_sixty_buttons = static function ( array $nodes ) use ( &$collect_sixty_buttons, &$sixty_buttons ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'button' ) {
+			$sixty_buttons[] = $node;
+		}
+		if ( is_array( $node['elements'] ?? null ) ) {
+			$collect_sixty_buttons( $node['elements'] );
+		}
+	}
+};
+$collect_sixty_buttons( [ $sixty_saved ] );
+check( count( $sixty_buttons ) === 2 && ( $sixty_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $sixty_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects', 'EDDE production 60/40 lost the two native CTA links' );
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'shadow';
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
