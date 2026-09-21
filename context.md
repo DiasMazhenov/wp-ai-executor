@@ -2,26 +2,28 @@
 
 ## Current release
 
-- Plugin: `v02.11.123`
-- Guide: `v02.05.99`
-- Repository: `DiasMazhenov/wp-ai-executor`
-- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, EDDE vertical-slice commit `e549f64` pushed to `origin/main`.
-- Installed site version: `v02.11.123`, confirmed by WP Pusher success and the fresh Elementor editor header/config on draft `post=5214`.
-- v02.11.123 introduces one shared pricing contract (`heading`, `badge`, ordered `items` with `label`, `description`, `price_text`, `cta_text`, `cta_url`). The parser, fallback, library path, final rebuild and content-fidelity checks consume the same structured fields; the shared fallback CTA repair now exits for a complete pricing contract so labels cannot shift between cards and the badge.
-- Live inline pricing draft `post=5214` (`Pricing Contract Live v123`) saved through deterministic fallback twice: `wpae-20260920212451-0354fc7b` and one retry `wpae-20260920212634-8ac26eb7`. Public preview after reload contains exact `ТАРИФЫ`, heading, three cards, descriptions, prices and `#start/#project/#support`; desktop width/scroll width `1280/1280`, mobile `390/390`.
-- Live multiline pricing draft `post=5216` (`Pricing Contract Multiline v123`) saved through deterministic fallback twice: `wpae-20260920213428-bb3207af` and one retry `wpae-20260920213611-d154514e`. Public preview preserves punctuation and the same three CTA pairs; mobile viewport `390/390` has no horizontal overflow.
-- Live process neighbor `post=5197` (`Live Process v113`) used the local canonical horizontal timeline path: operation `wpae-20260920213810-13934c79`, 17 native widgets, HTTP 200, Vision `92/98`; public root `elementor-element-365eb83` contains `ПРОЦЕСС`, `Как мы работаем`, four requested labels/descriptions and responsive no-overflow at `390px`.
-- Open Design principles were adapted as boundaries only: functional skill/design-template/design-system separation, data-shaped adapter contracts, and explicit filesystem/text-artifact execution profiles. Sources: [architecture.md](https://github.com/nexu-io/open-design/blob/main/docs/architecture.md), [skills-protocol.md](https://github.com/nexu-io/open-design/blob/main/docs/skills-protocol.md), [agent-adapters.md](https://github.com/nexu-io/open-design/blob/main/docs/agent-adapters.md), [execution-profile.ts](https://github.com/nexu-io/open-design/blob/main/packages/contracts/src/execution-profile.ts). These sources do not define this Elementor pricing contract.
-- EDDE hero vertical slice is shipped behind the existing LLM settings flag `design_engine_mode` (`off` default, `shadow`, `active`). The typed `wpae-edde-plan-v1` is validated and compiled into the existing native fallback/`wpae_llm_execute_action` boundary; pricing, process, targeted edits, content fidelity and provider-independent routes remain unchanged. Active mode uses one bounded decision stage with an internal transport retry ceiling of two calls; provider failure falls back to the existing provider/fallback path. Live active-mode editor/render acceptance is pending because the default remains `off` and no fresh browser screenshot evidence was available in this run.
-- v02.11.121 separates a monthly price such as `от 80 000 ₸/мес` from its description and preserves the requested pricing section heading.
-- v02.11.120 parses inline quoted pricing tiers, `от` amounts and CTA syntax `кнопка «…», ссылка #…`.
-- v02.11.119 classifies `Создай отдельный блок…` as an independent insert, so the exact second process prompt does not enter the selected-root retry route.
-- v02.11.118 keeps meaningful process descriptions in the canonical builder/fallback. Explicit user copy is preserved; generated descriptions explain the step and are not generic `Этап N: название` text.
-- Prior live process and pricing evidence remains historical context; the current post IDs and operation IDs above are the v02.11.123 acceptance records.
-- v02.11.117 ownership proof remains valid: owned retry operation `wpae-20260920194049-0ba44b51`; foreign generated-root retry safely refused without a new duplicate. The unsaved marker `USER_BLOCK_KEEP_5197_UNSAVED` survived the v122 save/reload.
-- Runtime checks: `305` PHP checks; all 3 Node suites pass; PHP lint, `git diff --check` and 80-file package hashes pass.
-- Screenshot files were not produced by the available CUA API. In-session desktop/mobile images were visually reviewed, but the report marks the screenshot gallery `SCREENSHOT BLOCKED`. Separate live Vision incomplete-capture A/B scenarios remain NOT RUN.
+- Plugin source release: `v02.11.124`; live Elementor editor remains `v02.11.123`.
+- Guide: `v02.05.99`.
+- Repository: `DiasMazhenov/wp-ai-executor`.
+- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
+- Current runtime commit: `511dbd0af26347c6ec1b500f9b2e3a015c205cba` (`Preserve EDDE constraints during vision regeneration`), pushed to `origin/main` at 2026-09-21 05:42:35 +05.
+- Scope remained the existing WordPress page `post=5214` only. No new page was created.
+- Live editor was confirmed on `https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor`; chat diagnostics reported EDDE `mode=active`, `action_path=edde`, provider `openrouter/free`.
+- The live fixed release is not installed yet: the editor still shows `Модель: openrouter/free · Версия: v02.11.123` after reload. Direct navigation from the single in-app browser tab to `/wp-admin/plugins.php`, `/wp-admin/post.php?post=5214`, and plugin settings was rejected with `net::ERR_ABORTED`; no second tab/page was opened.
+- v02.11.124 architecture fix: Vision regeneration now recompiles a hero fallback through the EDDE compiler with explicit user constraints, preserving composition, alignment, surface, typography, CTA hierarchy, responsive stack, and explicit background instead of reverting to the generic 58/38 fallback. Alignment parsing now stops at comma/semicolon boundaries, so `текст слева, визуальная зона справа` cannot be misread as right-aligned copy.
+- Local release checks after the fix: PHP lint passed for `includes/llm/llm.php`, `includes/llm/decision-engine.php`, and `wp-ai-executor.php`; `php tests/flex-generation-runtime.php` passed with `313 checks OK`; all 3 Node contract suites passed; direct 80-file manifest SHA-256 verification passed; `git diff --check` passed.
+- The untracked historical `docs/audits/2026-09-12/package-probe.php` was also invoked but failed its own unsafe-path assertion; this result is kept separate from the passing direct manifest verification and was not added to the runtime commit.
+- Previous live hero run, on v02.11.123 before this fix, saved EDDE operation `wpae-20260921003314-b7099337`, then Vision rejected the first render at score `68` and regenerated operation `wpae-20260921003459-e0d55742` at score `88`; the regeneration used the generic 58/38 fallback and therefore does not prove v02.11.124.
+- Live pricing root `86b0aea` and its exact three CTA pairs remained visible in the existing editor preview. Current `ElementorConfig.initial_document` read-back after reload contained one saved pricing root; no final fixed-code hero read-back is claimed.
+- Fresh live acceptance of fixed v02.11.124 EDDE 40/60 and independent 60/40, a fresh Vision screenshot gallery, and the two requested Vision A/B scenarios remain pending because deployment could not be completed through the single browser tab.
+- Screenshot files were not produced by the available CUA API: `targetPageTab.screenshot()` returned bytes without a path, and `targetPageTab.content.export()` rejected with `Codex in-app browser does not support command "tab_content_export"`. Inline observations are not reported as downloadable gallery files.
 - `context.md` is the only canonical context journal; `SESSION_CONTEXT.md` is intentionally not used.
+
+## Architecture handoff
+
+- EDDE remains a hero-only vertical slice. Pricing, process, targeted edits, and existing transaction/write boundaries are outside EDDE.
+- EDDE state is typed (`wpae-edde-state-v1`), provider decisions are validated against `wpae-edde-plan-v1`, and native Elementor JSON is compiled by the existing fallback/write path.
+- Explicit constraints are applied after provider decoding and again during Vision regeneration. No EDDE layer writes WordPress meta directly.
 
 - v02.11.76: Adds the missing standard `ПРОЦЕСС` badge and section heading to
   the horizontal reference timeline, keeping the four reference cards inside
