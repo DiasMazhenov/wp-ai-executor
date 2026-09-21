@@ -114,6 +114,66 @@ function wpae_design_operation_find_by_id( string $operation_id ): ?array {
 }
 
 /**
+ * Compare a pending operation with the currently saved Elementor target.
+ * This is read-only: stale history stays in the ledger, but cannot be used
+ * as capture or review evidence.
+ */
+function wpae_design_operation_target_status( array $operation, int $post_id, ?array $elementor_data = null ): array {
+	if ( absint( $operation['post_id'] ?? 0 ) !== $post_id ) {
+		return [ 'reviewable' => false, 'status' => 'scope_mismatch', 'reason' => 'post_mismatch' ];
+	}
+	$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	if ( empty( $root_ids ) ) {
+		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'missing_root_scope' ];
+	}
+	if ( $elementor_data === null && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+		$elementor_data = wpae_get_elementor_data_for_post( $post_id );
+	}
+	if ( ! is_array( $elementor_data ) ) {
+		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'readback_unavailable' ];
+	}
+	$current_root_ids = array_values( array_filter( array_map( static fn( $item ): string => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? '' ) ) : '', $elementor_data ) ) );
+	$missing_root_ids = array_values( array_diff( $root_ids, $current_root_ids ) );
+	if ( ! empty( $missing_root_ids ) ) {
+		$class = 'unknown_target_change';
+		$snapshot_id = sanitize_text_field( (string) ( $operation['rollback_snapshot_id'] ?? '' ) );
+		if ( $snapshot_id !== '' && function_exists( 'wpae_get_rollback_snapshots' ) && function_exists( 'wpae_rollback_post_fingerprint' ) ) {
+			$snapshot = wpae_get_rollback_snapshots()[ $snapshot_id ] ?? null;
+			$after_hash = is_array( $snapshot ) ? sanitize_text_field( (string) ( $snapshot['after_hashes'][ $post_id ] ?? '' ) ) : '';
+			if ( $after_hash !== '' && hash_equals( $after_hash, wpae_rollback_post_fingerprint( $post_id ) ) ) {
+				$class = 'confirmed_rollback';
+			}
+		}
+		return [
+			'reviewable' => false,
+			'status' => 'stale_target',
+			'reason' => 'root_missing',
+			'class' => $class,
+			'root_ids' => $root_ids,
+			'missing_root_ids' => $missing_root_ids,
+		];
+	}
+	$expected_saved_hash = sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) );
+	$current_saved_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
+	if ( $expected_saved_hash === '' ) {
+		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'missing_saved_hash', 'root_ids' => $root_ids ];
+	}
+	if ( ! hash_equals( $expected_saved_hash, $current_saved_hash ) ) {
+		return [ 'reviewable' => false, 'status' => 'stale_target', 'reason' => 'saved_hash_mismatch', 'root_ids' => $root_ids, 'current_saved_hash' => $current_saved_hash ];
+	}
+	$expected_fingerprint = sanitize_text_field( (string) ( $operation['target_fingerprint'] ?? '' ) );
+	if ( $expected_fingerprint !== '' ) {
+		if ( ! function_exists( 'wpae_rollback_post_fingerprint' ) ) {
+			return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'fingerprint_unavailable', 'root_ids' => $root_ids ];
+		}
+		if ( ! hash_equals( $expected_fingerprint, (string) wpae_rollback_post_fingerprint( $post_id ) ) ) {
+			return [ 'reviewable' => false, 'status' => 'stale_target', 'reason' => 'fingerprint_mismatch', 'root_ids' => $root_ids ];
+		}
+	}
+	return [ 'reviewable' => true, 'status' => 'current', 'reason' => 'target_matches_saved_snapshot', 'root_ids' => $root_ids ];
+}
+
+/**
  * Verify that a persisted Vision report belongs to this exact operation
  * snapshot. Browser evidence may point at a report, but cannot establish this
  * relationship without the server-side ledger values below.

@@ -9424,6 +9424,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'current_state' => 'generated',
 			] ) : [];
 			if ( ! empty( $operation_ledger['reconciled'] ) && in_array( (string) ( $operation_ledger['current_state'] ?? '' ), [ 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'completed', 'failed', 'unknown' ], true ) ) {
+				if ( function_exists( 'wpae_design_operation_target_status' ) && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+					$pending_data = wpae_get_elementor_data_for_post( $selected_post_id );
+					$operation_ledger['target_status'] = wpae_design_operation_target_status( $operation_ledger, $selected_post_id, is_array( $pending_data ) ? $pending_data : null );
+				}
 				return new WP_Error( 'wpae_design_operation_pending', 'Эта операция уже существует; сначала выполните reconcile/readback, новый root не добавлен.', [ 'status' => 409, 'details' => [ 'operation' => $operation_ledger, 'pipeline' => $design_pipeline_trace ] ] );
 			}
 			if ( ! empty( $operation_ledger['operation_id'] ) && function_exists( 'wpae_design_operation_update' ) ) {
@@ -10703,26 +10707,20 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 		return new WP_Error( 'wpae_operation_readback_failed', 'Сохранённое состояние Elementor не подтверждено.', [ 'status' => 409 ] );
 	}
 	$current_saved_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
-	$expected_saved_hash = sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) );
-	if ( $expected_saved_hash !== '' && ! hash_equals( $expected_saved_hash, $current_saved_hash ) ) {
-		return new WP_Error( 'wpae_operation_target_changed', 'Страница изменилась после операции; чужие изменения сохранены.', [ 'status' => 409, 'operation' => $operation, 'saved_hash' => $current_saved_hash ] );
-	}
 	$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
 	$reported_root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $payload['root_ids'] ?? [] ), 0, 12 ) ) ) );
 	if ( ! empty( $reported_root_ids ) && array_diff( $reported_root_ids, $root_ids ) ) {
 		return new WP_Error( 'wpae_operation_root_scope_mismatch', 'Подтверждение содержит root, не принадлежащий этой операции.', [ 'status' => 409 ] );
 	}
-	$current_root_ids = array_values( array_filter( array_map( static fn( $item ): string => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? '' ) ) : '', $elementor_data ) ) );
-	foreach ( $root_ids as $root_id ) {
-		if ( ! in_array( $root_id, $current_root_ids, true ) ) {
-			return new WP_Error( 'wpae_operation_root_missing', 'Целевой root отсутствует в сохранённом Elementor read-back.', [ 'status' => 409, 'root_id' => $root_id ] );
-		}
-	}
-	if ( ! empty( $operation['target_fingerprint'] ) && function_exists( 'wpae_rollback_post_fingerprint' ) ) {
-		$current_fingerprint = wpae_rollback_post_fingerprint( $post_id );
-		if ( ! hash_equals( (string) $operation['target_fingerprint'], (string) $current_fingerprint ) ) {
-			return new WP_Error( 'wpae_operation_fingerprint_conflict', 'Целевая страница изменилась после записи; подтверждение отклонено.', [ 'status' => 409 ] );
-		}
+	$target_status = function_exists( 'wpae_design_operation_target_status' ) ? wpae_design_operation_target_status( $operation, $post_id, $elementor_data ) : [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'target_guard_unavailable' ];
+	if ( empty( $target_status['reviewable'] ) ) {
+		$target_errors = [
+			'root_missing' => [ 'code' => 'wpae_operation_root_missing', 'message' => 'Целевой root отсутствует в сохранённом Elementor read-back.' ],
+			'saved_hash_mismatch' => [ 'code' => 'wpae_operation_target_changed', 'message' => 'Страница изменилась после операции; чужие изменения сохранены.' ],
+			'fingerprint_mismatch' => [ 'code' => 'wpae_operation_fingerprint_conflict', 'message' => 'Целевая страница изменилась после записи; подтверждение отклонено.' ],
+		];
+		$target_error = $target_errors[ (string) ( $target_status['reason'] ?? '' ) ] ?? [ 'code' => 'wpae_operation_target_unknown', 'message' => 'Актуальность target операции не подтверждена; reconcile остановлен.' ];
+		return new WP_Error( $target_error['code'], $target_error['message'], [ 'status' => 409, 'target_status' => $target_status, 'operation' => $operation, 'saved_hash' => $current_saved_hash ] );
 	}
 	$expected_revision = isset( $payload['revision'] ) ? absint( $payload['revision'] ) : 0;
 	$incoming_evidence_hash = sanitize_text_field( (string) ( $payload['evidence_hash'] ?? '' ) );

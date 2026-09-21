@@ -253,6 +253,14 @@ $held_lock = wpae_design_operation_acquire_lock();
 $contended = wpae_design_operation_create( [ 'operation_id' => 'op-contended', 'idempotency_key' => 'contended-key', 'post_id' => 5214 ] );
 $check( $held_lock !== null && ! empty( $contended['lock_conflict'] ), 'concurrent operation capture is rejected by the atomic option lock' );
 wpae_design_operation_release_lock( $held_lock );
+$saved_tree = [ [ 'id' => 'kept-root', 'elType' => 'container' ] ];
+$current_target = [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => hash( 'sha256', wp_json_encode( $saved_tree ) ) ];
+$target_status = wpae_design_operation_target_status( $current_target, 5214, $saved_tree );
+$check( ! empty( $target_status['reviewable'] ) && $target_status['status'] === 'current', 'current saved target is eligible for capture' );
+$stale_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'missing-root' ], 'saved_hash' => 'old-hash' ], 5214, $saved_tree );
+$check( empty( $stale_status['reviewable'] ) && $stale_status['reason'] === 'root_missing' && $stale_status['class'] === 'unknown_target_change', 'missing pending root is rejected before capture without claiming rollback' );
+$changed_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash' ], 5214, $saved_tree );
+$check( empty( $changed_status['reviewable'] ) && $changed_status['reason'] === 'saved_hash_mismatch', 'changed saved target is rejected before capture' );
 $route = wpae_llm_route_policy( 'elementor_write', 'openrouter', 'openrouter/free' );
 $check( $route['critical_write'] && $route['requires_structured_output'] && $route['retry_budget'] === 1 && ! $route['fallback_allowed'], 'critical route policy is bounded' );
 $matrix = [

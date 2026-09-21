@@ -141,6 +141,11 @@
             addMessage('assistant', 'Для этой страницы нет незавершенной durable operation.');
             return;
         }
+        if (config.pendingOperation.reviewable === false) {
+            var staleStatus = config.pendingOperation.target_status || {};
+            addMessage('assistant', 'Проверка остановлена: сохранённая operation больше не соответствует текущему root (' + String(staleStatus.reason || 'stale_target') + '). Новый capture не запускался.');
+            return;
+        }
         reviewPending.disabled = true;
         setPipelinePhase('render', 'active');
         reviewPendingOperation(config.pendingOperation, config.pendingOperation.brief_text || '').then(function (review) {
@@ -159,7 +164,7 @@
     headActions.appendChild(copySelection);
     headActions.appendChild(copySelectionPasteReady);
     headActions.appendChild(regenerate);
-    if (config.pendingOperation && config.pendingOperation.operation_id) headActions.appendChild(reviewPending);
+    if (config.pendingOperation && config.pendingOperation.operation_id && config.pendingOperation.reviewable !== false) headActions.appendChild(reviewPending);
     headActions.appendChild(close);
     head.appendChild(heading);
     head.appendChild(headActions);
@@ -1344,7 +1349,9 @@
             var target = findPreviewTarget(doc, targetElementIds);
             if (Array.isArray(targetElementIds) && targetElementIds.length && !target) {
                 hidden.forEach(function (item) { item.element.style.display = item.display; });
-                throw new Error('Новый блок не найден в preview Elementor для Vision screenshot.');
+                var missingTargetError = new Error('Целевой root не найден в актуальном preview Elementor для Vision screenshot.');
+                missingTargetError.code = 'wpae_vision_target_missing';
+                throw missingTargetError;
             }
             var captureTarget = target || doc.body || doc.documentElement;
             var targetRect = captureTarget.getBoundingClientRect();
@@ -1540,6 +1547,11 @@
         var operationId = String(operation.operation_id || '');
         var roots = Array.isArray(operation.root_ids) ? operation.root_ids.map(String).filter(Boolean).slice(0, 12) : [];
         if (!operationId || !roots.length) return Promise.reject(new Error('Для pending operation не найден сохраненный operation_id или root.'));
+        if (operation.reviewable === false || (operation.target_status && operation.target_status.reviewable === false)) {
+            var staleError = new Error('Сохранённый target pending operation больше не существует в актуальном Elementor read-back. Capture не запускался.');
+            staleError.code = 'wpae_vision_target_stale';
+            return Promise.reject(staleError);
+        }
         var editorSync = {
             mode: 'insert',
             elements: roots.map(function (id) { return { id: id }; }),
@@ -1634,6 +1646,7 @@
                     generated_json: getVisionGeneratedJson(editorSync)
                 });
             }, function (error) {
+                if (error && (error.code === 'wpae_vision_target_missing' || error.code === 'wpae_vision_target_stale')) return Promise.reject(error);
                 return requestVisionReview(snapshotId, error.message, brief, editorSync, operationContext);
             });
         });
