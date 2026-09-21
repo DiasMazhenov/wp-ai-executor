@@ -9453,6 +9453,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 					'current_state' => ! empty( $active_execution['ok'] ) ? 'written' : 'failed',
 					'saved_hash' => $saved_hash,
 					'root_ids' => $active_execution['editor_sync']['operation_owned_root_ids'] ?? [],
+					'rollback_snapshot_id' => $active_execution['rollback_snapshot_id'] ?? '',
 					'target_fingerprint' => function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $selected_post_id ) : '',
 				] ) ?: $operation_ledger;
 			}

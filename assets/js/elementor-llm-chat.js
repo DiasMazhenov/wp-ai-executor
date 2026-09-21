@@ -1557,8 +1557,19 @@
         rememberOperationRoots(roots);
         return runVisionReview('', 1, true, brief || '', editorSync, requestContext.editor_root_snapshot, operationContext).then(function (review) {
             return reconcileDesignOperation(body, requestContext, editorSync, review).then(function (reconciled) {
+                var durableOperation = reconciled && reconciled.operation ? reconciled.operation : operation;
                 if (reconciled && reconciled.operation) {
+                    body.diagnostics.operation_ledger = reconciled.operation;
                     addMessage('assistant', 'Актуальный preview и Vision привязаны к существующей операции. Состояние журнала: ' + String(reconciled.operation.current_state || 'written') + '.');
+                }
+                if (review && review.gate && review.gate.quality_failed && !review.gate.advisory && durableOperation.rollback_snapshot_id) {
+                    var durableContext = buildVisionOperationContext(body, requestContext, editorSync);
+                    return rollbackVisionFailure(durableOperation.rollback_snapshot_id, durableContext).then(function (rollback) {
+                        if (!rollback.ok) throw new Error('Не удалось откатить неудачный pending результат: ' + rollback.error);
+                        addMessage('assistant', 'Vision подтвердил критический дефект; pending-операция откатена в рамках её snapshot.');
+                        review.rolled_back = true;
+                        return review;
+                    });
                 }
                 return review;
             });

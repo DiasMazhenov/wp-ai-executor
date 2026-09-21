@@ -168,6 +168,13 @@ $check( count( $process_children ) === 5, 'process connector count is n-1' );
 $pricing = wpae_brief_ir_parse( 'pricing: «Basic» «Pro» «Team»' );
 $pricing_plan = wpae_design_plan_from_brief( $pricing );
 $check( $pricing_plan['archetype'] === 'pricing' && wpae_design_plan_validate( $pricing_plan )['ok'], 'pricing typed plan validates' );
+$pricing_brief = wpae_brief_ir_parse( 'pricing. «Старт» — «от 50 000 ₸» — «Для небольшой задачи». «Проект» — «от 150 000 ₸» — «Для комплексной работы». «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач».' );
+$pricing_ir = wpae_elementor_ir_from_design_plan( wpae_design_plan_from_brief( $pricing_brief ), $pricing_brief );
+$pricing_compiled = wpae_elementor_ir_compile( $pricing_ir, $pricing_brief, [], [ 'id_seed' => 'pricing-contract' ] );
+$pricing_cards = $pricing_compiled['elementor_data'][0]['elements'][0] ?? [];
+$pricing_card_nodes = (array) ( $pricing_cards['elements'] ?? [] );
+$check( ( $pricing_cards['settings']['flex_direction'] ?? '' ) === 'row' && count( $pricing_card_nodes ) === 3, 'pricing compiler emits a desktop card row' );
+$check( (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) > 30 && (float) ( $pricing_card_nodes[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'pricing cards use equal desktop columns and mobile stack' );
 
 $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
 $check( $unknown['downgraded'] && $unknown['widget_type'] === 'text-editor', 'unavailable widget has native fallback' );

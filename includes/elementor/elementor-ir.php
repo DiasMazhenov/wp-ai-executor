@@ -195,6 +195,16 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['min_height'] = [ 'unit' => 'rem', 'size' => 12 ];
 			$report['warnings'][] = (string) ( $node['node_id'] ?? '' ) . ':media_fallback';
 		}
+		if ( $role === 'pricing_cards' ) {
+			// Pricing cards are a row on wide viewports and a stack on mobile.
+			// The child width contract below then supplies equal desktop columns.
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'row';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'wrap';
+			$settings['flex_wrap_tablet'] = 'wrap';
+			$settings['flex_wrap_mobile'] = 'wrap';
+		}
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['title'] = (string) ( $item['exact_text'] ?? '' );

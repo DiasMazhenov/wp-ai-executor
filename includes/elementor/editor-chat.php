@@ -45,8 +45,20 @@ function wpae_enqueue_elementor_llm_chat(): void {
                 'saved_hash' => sanitize_text_field( (string) ( $candidate['saved_hash'] ?? '' ) ),
                 'target_fingerprint' => sanitize_text_field( (string) ( $candidate['target_fingerprint'] ?? '' ) ),
                 'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $candidate['root_ids'] ?? [] ), 0, 12 ) ) ) ),
+				'rollback_snapshot_id' => sanitize_text_field( (string) ( $candidate['rollback_snapshot_id'] ?? '' ) ),
                 'current_state' => $state,
             ];
+			if ( $pending_operation['rollback_snapshot_id'] === '' && function_exists( 'wpae_get_rollback_snapshots' ) ) {
+				foreach ( wpae_get_rollback_snapshots() as $snapshot_id => $snapshot ) {
+					if ( sanitize_key( (string) ( $snapshot['operation_id'] ?? '' ) ) !== $pending_operation['operation_id'] ) {
+						continue;
+					}
+					if ( in_array( $post_id, array_map( 'absint', array_keys( (array) ( $snapshot['posts'] ?? [] ) ) ), true ) ) {
+						$pending_operation['rollback_snapshot_id'] = sanitize_text_field( (string) $snapshot_id );
+						break;
+					}
+				}
+			}
             break;
         }
     }
