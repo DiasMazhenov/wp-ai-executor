@@ -288,6 +288,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			'split_40_60' => [ 40, 60 ],
 			'three_cards' => [ 33.333, 33.333, 33.333 ],
 		][ (string) ( $node['layout_constraints']['composition'] ?? '' ) ] ?? [];
+		if ( $role === 'pricing_cards' && count( $compiled_children ) === 3 ) {
+			// Three percentage columns plus two native gaps otherwise wrap at common desktop widths.
+			$composition_basis = [ 31.5, 31.5, 31.5 ];
+		}
 		$composition_matches_children = ! empty( $composition_basis ) && count( $composition_basis ) === count( $compiled_children );
 		$default_child_basis = ( $settings['flex_direction'] ?? 'column' ) === 'column' ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
 		foreach ( $compiled_children as $child_index => &$compiled_child ) {
