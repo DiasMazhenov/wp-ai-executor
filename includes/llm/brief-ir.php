@@ -151,7 +151,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		$role = wpae_brief_ir_label_role( $prefix );
 		$url = null;
-		$after = substr( $source_text, $start + strlen( $full ), 160 );
+		// Keep the look-ahead long enough for a target after a long quoted value.
+		// A byte-limited 160-char window previously cut `#support` into `#sup`.
+		$after = substr( $source_text, $start + strlen( $full ), 512 );
 		if ( preg_match( '/(?:ссылк\w*|url|link)\s*[:\-]?\s*(https?:\/\/[^\s,;]+|#[A-Za-z0-9_\-]+)/iu', $after, $url_match ) ) {
 			$url = trim( (string) $url_match[1] );
 		} elseif ( preg_match( '/^\s*(?:->|—|-|:)\s*(https?:\/\/[^\s,;]+|#[A-Za-z0-9_\-]+)/u', $after, $url_match ) ) {

@@ -188,6 +188,9 @@ $pricing_live_cards = (array) ( $pricing_live_group['elements'] ?? [] );
 $pricing_live_eyebrow = (array) ( $pricing_live_root['elements'][0]['elements'][0] ?? [] );
 $pricing_live_urls = array_values( array_filter( array_map( static fn( array $card ): string => (string) ( $card['elements'][3]['settings']['link']['url'] ?? '' ), $pricing_live_cards ) ) );
 $check( count( $pricing_live_root['elements'] ?? [] ) === 2 && (float) ( $pricing_live_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0 && (float) ( $pricing_live_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing intro and card group stay full-width in a stacked section' );
+$pricing_live_price = array_values( array_filter( (array) ( $pricing_live_brief['content'] ?? [] ), static fn( array $item ): bool => ( $item['exact_text'] ?? '' ) === 'от 80 000 ₸/мес' ) )[0] ?? [];
+$check( ( $pricing_live_price['url'] ?? '' ) === '#support', 'long quoted pricing values preserve the complete following CTA URL' );
+$check( ( $pricing_live_root['settings']['background_color'] ?? '' ) === '#ffffff', 'pricing section uses the surface token instead of the warm page background' );
 $check( count( $pricing_live_cards ) === 3 && $pricing_live_urls === [ '#start', '#project', '#support' ], 'pricing parser/compiler preserves three card CTA URLs' );
 $check( ( $pricing_live_eyebrow['settings']['background_color'] ?? '' ) === '#4460EC' && ( $pricing_live_eyebrow['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $pricing_live_eyebrow['settings']['border_radius']['size'] ?? 0 ) >= 999, 'pricing eyebrow compiles as a native pill badge' );
 

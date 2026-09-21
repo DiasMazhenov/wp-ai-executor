@@ -80,7 +80,9 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'id' => $archetype,
 		'role' => $archetype,
 		'composition' => $composition,
-		'surface_token' => 'color.page_bg',
+		// Pricing owns a white surface so the card borders remain visible and the
+		// section does not inherit the site's warm page background.
+		'surface_token' => $archetype === 'pricing' ? 'color.surface' : 'color.page_bg',
 		'spacing_token' => 'space.section',
 		'children' => [],
 	];
