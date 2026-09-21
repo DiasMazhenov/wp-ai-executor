@@ -188,11 +188,23 @@ $pricing_live_cards = (array) ( $pricing_live_group['elements'] ?? [] );
 $pricing_live_eyebrow = (array) ( $pricing_live_root['elements'][0]['elements'][0] ?? [] );
 $pricing_live_urls = array_values( array_filter( array_map( static fn( array $card ): string => (string) ( $card['elements'][3]['settings']['link']['url'] ?? '' ), $pricing_live_cards ) ) );
 $check( count( $pricing_live_root['elements'] ?? [] ) === 2 && (float) ( $pricing_live_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0 && (float) ( $pricing_live_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing intro and card group stay full-width in a stacked section' );
-$pricing_live_price = array_values( array_filter( (array) ( $pricing_live_brief['content'] ?? [] ), static fn( array $item ): bool => ( $item['exact_text'] ?? '' ) === 'от 80 000 ₸/мес' ) )[0] ?? [];
-$check( ( $pricing_live_price['url'] ?? '' ) === '#support', 'long quoted pricing values preserve the complete following CTA URL' );
+$pricing_live_cta = array_values( array_filter( (array) ( $pricing_live_brief['content'] ?? [] ), static fn( array $item ): bool => ( $item['exact_text'] ?? '' ) === 'Подключить поддержку' ) )[0] ?? [];
+$check( ( $pricing_live_cta['url'] ?? '' ) === '#support', 'long quoted pricing values preserve the complete CTA URL on the CTA slot' );
 $check( ( $pricing_live_root['settings']['background_color'] ?? '' ) === '#ffffff', 'pricing section uses the surface token instead of the warm page background' );
 $check( count( $pricing_live_cards ) === 3 && $pricing_live_urls === [ '#start', '#project', '#support' ], 'pricing parser/compiler preserves three card CTA URLs' );
 $check( ( $pricing_live_eyebrow['settings']['background_color'] ?? '' ) === '#4460EC' && ( $pricing_live_eyebrow['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $pricing_live_eyebrow['settings']['border_radius']['size'] ?? 0 ) >= 999, 'pricing eyebrow compiles as a native pill badge' );
+
+$boundary_url_a = 'https://example.com/cta/' . str_repeat( 'длинный-сегмент-', 18 ) . 'финал';
+$boundary_prompt = "pricing\nКнопка: «Начать проект», описание: " . str_repeat( 'Длинное описание с переносом строки. ', 14 ) . "\nссылка {$boundary_url_a}.\nКнопка: «Вторая кнопка», ссылка #second.";
+$boundary_brief = wpae_brief_ir_parse( $boundary_prompt );
+$boundary_ctas = array_values( array_filter( (array) ( $boundary_brief['content'] ?? [] ), static fn( array $item ): bool => str_starts_with( (string) ( $item['role'] ?? '' ), 'cta' ) ) );
+$check( count( $boundary_ctas ) === 2 && ( $boundary_ctas[0]['url'] ?? '' ) === $boundary_url_a && ( $boundary_ctas[1]['url'] ?? '' ) === '#second', 'URL extraction crosses long UTF-8/newline segments without stealing the adjacent CTA target' );
+$explicit_surface_brief = wpae_brief_ir_parse( 'pricing: white cards on background #123456' );
+$explicit_surface_plan = wpae_design_plan_from_brief( $explicit_surface_brief );
+$explicit_surface_ir = wpae_elementor_ir_from_design_plan( $explicit_surface_plan, $explicit_surface_brief );
+$explicit_surface_compiled = wpae_elementor_ir_compile( $explicit_surface_ir, $explicit_surface_brief, [ 'palette' => [ 'page_bg' => '#f6f0e6', 'surface' => '#ffffff', 'text' => '#111827', 'muted' => '#4b5563', 'primary' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'explicit-surface' ] );
+$check( ( $explicit_surface_plan['sections'][0]['surface_override'] ?? '' ) === '#123456', 'explicit background is retained in the typed plan' );
+$check( ( $explicit_surface_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#123456', 'explicit background overrides the semantic surface token only at the compiled section' );
 
 $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
 $check( $unknown['downgraded'] && $unknown['widget_type'] === 'text-editor', 'unavailable widget has native fallback' );
@@ -225,6 +237,11 @@ $check( $reviewed_operation['current_state'] === 'reviewed' && $reviewed_operati
 $reviewed_revision = (int) $reviewed_operation['revision'];
 $reviewed_again = wpae_design_operation_reconcile( 'op-review-path', [ 'ok' => true, 'state' => 'reviewed', 'server_verified' => true, 'saved_hash' => 'saved-before', 'rendered_html_hash' => 'rendered-hash', 'vision_report_id' => 'vr-review-path', 'evidence_source' => 'preview', 'evidence_hash' => 'evidence-review-path' ] );
 $check( (int) $reviewed_again['revision'] === $reviewed_revision && $reviewed_again['current_state'] === 'reviewed', 'repeated reconcile acknowledgement is idempotent' );
+$scope_operation = [ 'operation_id' => 'op-scope', 'operation_identity' => 'scope-identity', 'post_id' => 5214, 'revision' => 3, 'saved_hash' => 'scope-saved', 'target_fingerprint' => 'scope-fingerprint', 'root_ids' => [ 'scope-root' ] ];
+$scope_report = [ 'post_id' => 5214, 'source' => 'provider', 'render_context' => [ 'operation_id' => 'op-scope', 'operation_identity' => 'scope-identity', 'operation_revision' => 3, 'operation_saved_hash' => 'scope-saved', 'operation_target_fingerprint' => 'scope-fingerprint', 'operation_root_ids' => [ 'scope-root' ] ] ];
+$check( wpae_design_operation_report_scope_matches( $scope_operation, $scope_report, 5214, 3, [ 'scope-root' ] ), 'Vision report scope binds to operation, revision, root, saved hash and fingerprint' );
+$scope_report['render_context']['operation_revision'] = 2;
+$check( ! wpae_design_operation_report_scope_matches( $scope_operation, $scope_report, 5214, 3, [ 'scope-root' ] ), 'stale Vision report revision is rejected by the shared scope guard' );
 $rollback_operation = wpae_design_operation_create( [ 'operation_id' => 'op-rollback', 'idempotency_key' => 'rollback-key', 'post_id' => 5214, 'operation_identity' => 'rollback-identity', 'current_state' => 'written', 'revision' => 1, 'root_ids' => [ 'root-rollback' ] ] );
 $rollback_revision = (int) $rollback_operation['revision'];
 $rolled_back = wpae_design_operation_mark_rollback( 'op-rollback', 'rollback-identity', $rollback_revision, 'snapshot-rollback', 'vision_rejected', 'vision-evidence' );

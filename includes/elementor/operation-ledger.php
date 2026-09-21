@@ -113,6 +113,35 @@ function wpae_design_operation_find_by_id( string $operation_id ): ?array {
 	return null;
 }
 
+/**
+ * Verify that a persisted Vision report belongs to this exact operation
+ * snapshot. Browser evidence may point at a report, but cannot establish this
+ * relationship without the server-side ledger values below.
+ */
+function wpae_design_operation_report_scope_matches( array $operation, array $report, int $post_id, int $revision, array $root_ids = [] ): bool {
+	$context = is_array( $report['render_context'] ?? null ) ? $report['render_context'] : [];
+	$stored_identity = sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) );
+	$report_identity = sanitize_text_field( (string) ( $context['operation_identity'] ?? '' ) );
+	$operation_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	$report_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $context['operation_root_ids'] ?? [] ), 0, 12 ) ) ) );
+	$reported_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( $root_ids, 0, 12 ) ) ) );
+	$report_operation_id = sanitize_key( (string) ( $context['operation_id'] ?? '' ) );
+	$report_revision = absint( $context['operation_revision'] ?? 0 );
+	$report_saved_hash = sanitize_text_field( (string) ( $context['operation_saved_hash'] ?? '' ) );
+	$report_fingerprint = sanitize_text_field( (string) ( $context['operation_target_fingerprint'] ?? '' ) );
+	if ( ! is_array( $report ) || (int) ( $report['post_id'] ?? 0 ) !== $post_id
+		|| $report_operation_id === '' || ! hash_equals( sanitize_key( (string) ( $operation['operation_id'] ?? '' ) ), $report_operation_id )
+		|| $stored_identity === '' || $report_identity === '' || ! hash_equals( $stored_identity, $report_identity )
+		|| $report_revision !== max( 1, $revision )
+		|| empty( $operation_roots ) || array_diff( $operation_roots, $report_roots )
+		|| ( ! empty( $reported_roots ) && array_diff( $reported_roots, $operation_roots ) )
+		|| $report_saved_hash === '' || ! hash_equals( (string) ( $operation['saved_hash'] ?? '' ), $report_saved_hash )
+		|| $report_fingerprint === '' || ! hash_equals( (string) ( $operation['target_fingerprint'] ?? '' ), $report_fingerprint ) ) {
+		return false;
+	}
+	return true;
+}
+
 function wpae_design_operation_lock_token(): string {
 	$payload = [ microtime( true ), function_exists( 'getmypid' ) ? getmypid() : 0, mt_rand() ];
 	return substr( hash( 'sha256', function_exists( 'wp_json_encode' ) ? wp_json_encode( $payload ) : serialize( $payload ) ), 0, 32 );

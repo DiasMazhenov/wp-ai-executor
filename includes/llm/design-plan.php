@@ -62,6 +62,10 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		];
 	}
 	$composition = (string) wpae_design_plan_constraint_value( $brief, 'composition', $archetype === 'hero' ? 'split_60_40' : ( $archetype === 'pricing' ? 'three_cards' : 'linear' ) );
+	$surface_override = strtolower( trim( (string) wpae_design_plan_constraint_value( $brief, 'surface_color', '' ) ) );
+	if ( ! preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
+		$surface_override = '';
+	}
 	$cta_refs = wpae_design_plan_content_refs( $brief, [ 'cta', 'cta_2', 'cta_3' ] );
 	$tokens = [
 		'color.page_bg' => 'color.page_bg',
@@ -85,7 +89,14 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'surface_token' => $archetype === 'pricing' ? 'color.surface' : 'color.page_bg',
 		'spacing_token' => 'space.section',
 		'children' => [],
+		'provenance' => [ 'source' => 'brief' ],
 	];
+	if ( $surface_override !== '' ) {
+		// Explicit prompt colour wins at the section boundary; the compiler still
+		// records the semantic token for the default/reference path.
+		$section['surface_override'] = $surface_override;
+		$section['provenance']['surface_override'] = [ 'source' => 'prompt', 'constraint' => 'surface_color' ];
+	}
 	if ( $archetype === 'hero' ) {
 		$section['children'] = [
 			[

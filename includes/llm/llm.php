@@ -10739,6 +10739,18 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 	$render_unverified = false;
 	$render_details = null;
 	$report_id = sanitize_text_field( (string) ( $payload['vision_report_id'] ?? '' ) );
+	$report = null;
+	if ( $report_id !== '' ) {
+		$report = function_exists( 'wpae_get_vision_report' ) ? wpae_get_vision_report( $report_id ) : null;
+		if ( ! is_array( $report ) ) {
+			return new WP_Error( 'wpae_operation_vision_unverified', 'Указанный Vision report не найден или истёк.', [ 'status' => 409 ] );
+		}
+		// The shared guard checks operation_saved_hash and operation_target_fingerprint
+		// in addition to post, identity, revision and root scope.
+		if ( function_exists( 'wpae_design_operation_report_scope_matches' ) && ! wpae_design_operation_report_scope_matches( $operation, $report, $post_id, $current_revision, $reported_root_ids ) ) {
+			return new WP_Error( 'wpae_operation_vision_unverified', 'Vision report для этой операции не подтверждён.', [ 'status' => 409 ] );
+		}
+	}
 	$evidence_source = sanitize_key( (string) ( $payload['evidence_source'] ?? '' ) );
 	$rendered_html_hash = sanitize_text_field( (string) ( $payload['rendered_html_hash'] ?? '' ) );
 	if ( in_array( $requested_state, [ 'rendered', 'reviewed', 'completed' ], true ) ) {
@@ -10758,29 +10770,7 @@ function wpae_design_operation_reconcile_endpoint( WP_REST_Request $request ) {
 		}
 	}
 	if ( in_array( $requested_state, [ 'reviewed', 'completed' ], true ) ) {
-		$report = $report_id !== '' && function_exists( 'wpae_get_vision_report' ) ? wpae_get_vision_report( $report_id ) : null;
-		$render_context = is_array( $report['render_context'] ?? null ) ? $report['render_context'] : [];
-		$operation_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
-		$report_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $render_context['operation_root_ids'] ?? [] ), 0, 12 ) ) ) );
-		$report_operation_id = sanitize_key( (string) ( $render_context['operation_id'] ?? '' ) );
-		$report_identity = sanitize_text_field( (string) ( $render_context['operation_identity'] ?? '' ) );
-		$report_revision = absint( $render_context['operation_revision'] ?? 0 );
-		$report_saved_hash = sanitize_text_field( (string) ( $render_context['operation_saved_hash'] ?? '' ) );
-		$report_fingerprint = sanitize_text_field( (string) ( $render_context['operation_target_fingerprint'] ?? '' ) );
-		$vision_scope_ok = is_array( $report )
-			&& (int) ( $report['post_id'] ?? 0 ) === $post_id
-			&& $report_operation_id !== ''
-			&& hash_equals( $operation_id, $report_operation_id )
-			&& $report_identity !== ''
-			&& hash_equals( $stored_identity, $report_identity )
-			&& $report_revision === $current_revision
-			&& ! empty( $operation_roots )
-			&& ! array_diff( $operation_roots, $report_roots )
-			&& $report_saved_hash !== ''
-			&& hash_equals( (string) ( $operation['saved_hash'] ?? '' ), $report_saved_hash )
-			&& $report_fingerprint !== ''
-			&& hash_equals( (string) ( $operation['target_fingerprint'] ?? '' ), $report_fingerprint );
-		if ( ! $vision_scope_ok ) {
+		if ( ! is_array( $report ) || (string) ( $report['source'] ?? '' ) !== 'provider' ) {
 			return new WP_Error( 'wpae_operation_vision_unverified', 'Vision report для этой страницы не подтверждён.', [ 'status' => 409 ] );
 		}
 	}

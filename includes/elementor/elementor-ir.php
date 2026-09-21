@@ -154,7 +154,12 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 		if ( sanitize_key( (string) ( $section['role'] ?? '' ) ) === 'pricing' ) {
 			$section_composition = 'stacked_left';
 		}
-		$nodes[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'section-' . $section_index ) ), sanitize_key( (string) ( $section['role'] ?? 'section' ) ), 'container', [], [ (string) ( $section['surface_token'] ?? 'color.page_bg' ), (string) ( $section['spacing_token'] ?? 'space.section' ) ], $section_children, [ 'composition' => $section_composition, 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => $plan['responsive']['mobile'] ?? 'stack' ] );
+		$section_layout = [ 'composition' => $section_composition, 'min_width' => 0, 'max_width' => 100 ];
+		$surface_override = strtolower( trim( (string) ( $section['surface_override'] ?? '' ) ) );
+		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
+			$section_layout['surface_override'] = $surface_override;
+		}
+		$nodes[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'section-' . $section_index ) ), sanitize_key( (string) ( $section['role'] ?? 'section' ) ), 'container', [], [ (string) ( $section['surface_token'] ?? 'color.page_bg' ), (string) ( $section['spacing_token'] ?? 'space.section' ) ], $section_children, $section_layout, [ 'strategy' => $plan['responsive']['mobile'] ?? 'stack' ] );
 	}
 	return [
 		'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
@@ -244,6 +249,11 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['flex_gap_mobile'] = [ 'unit' => 'rem', 'size' => 1, 'column' => '1', 'row' => '1', 'isLinked' => true ];
 		if ( isset( $token_values['color.surface'] ) ) {
 			$settings['background_color'] = $token_values['color.surface'];
+		}
+		$surface_override = strtolower( trim( (string) ( $node['layout_constraints']['surface_override'] ?? '' ) ) );
+		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
+			$settings['background_color'] = $surface_override;
+			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
 		}
 		if ( $role === 'media_fallback' ) {
 			$settings['_css_classes'] = 'wpae-ir-media-fallback';

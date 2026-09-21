@@ -151,13 +151,18 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		$role = wpae_brief_ir_label_role( $prefix );
 		$url = null;
-		// Keep the look-ahead long enough for a target after a long quoted value.
-		// A byte-limited 160-char window previously cut `#support` into `#sup`.
-		$after = substr( $source_text, $start + strlen( $full ), 512 );
+		// Scope URL association to the structural segment between this quoted
+		// value and the next quoted value. A fixed look-ahead can steal a CTA
+		// target from the next card when the current description is long.
+		$after_start = $start + strlen( $full );
+		$next_quote_start = isset( $quote_matches[0][ $match_index + 1 ][1] )
+			? (int) $quote_matches[0][ $match_index + 1 ][1]
+			: strlen( $source_text );
+		$after = substr( $source_text, $after_start, max( 0, $next_quote_start - $after_start ) );
 		if ( preg_match( '/(?:ссылк\w*|url|link)\s*[:\-]?\s*(https?:\/\/[^\s,;]+|#[A-Za-z0-9_\-]+)/iu', $after, $url_match ) ) {
-			$url = trim( (string) $url_match[1] );
+			$url = trim( (string) $url_match[1], " \t\n\r.,;:)]}>" );
 		} elseif ( preg_match( '/^\s*(?:->|—|-|:)\s*(https?:\/\/[^\s,;]+|#[A-Za-z0-9_\-]+)/u', $after, $url_match ) ) {
-			$url = trim( (string) $url_match[1] );
+			$url = trim( (string) $url_match[1], " \t\n\r.,;:)]}>" );
 		}
 		if ( $role === 'cta' ) {
 			$role = $cta_index === 0 ? 'cta' : 'cta_' . ( $cta_index + 1 );
@@ -233,6 +238,20 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				'value' => 'split_' . $copy . '_' . $visual,
 				'source_span' => [ $start, $start + strlen( (string) $semantic_ratio[0][0] ) ],
 				'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+			];
+		}
+	}
+	$surface_color = [];
+	if ( preg_match( '/(?:фон|background(?:[-\s]?color)?|surface)[^\n]{0,120}?(#[0-9a-f]{6}(?:[0-9a-f]{2})?)(?![0-9a-f])/iu', $source_text, $surface_color, PREG_OFFSET_CAPTURE ) ) {
+		$surface = strtolower( (string) ( $surface_color[1][0] ?? '' ) );
+		$surface_start = (int) ( $surface_color[1][1] ?? 0 );
+		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface ) ) {
+			$constraints[] = [
+				'id' => 'surface_color_' . ltrim( $surface, '#' ),
+				'kind' => 'surface_color',
+				'value' => $surface,
+				'source_span' => [ $surface_start, $surface_start + strlen( $surface ) ],
+				'provenance' => [ 'source' => 'prompt', 'source_span' => [ $surface_start, $surface_start + strlen( $surface ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
 			];
 		}
 	}
