@@ -198,6 +198,23 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	}
 
 	$constraints = [];
+	$media_forbidden_match = [];
+	$media_required_match = [];
+	$media_forbidden = preg_match( '/\b(?:без\s+(?:любых?\s+)?(?:изображен\w*|фото)|(?:не\s+)?(?:добавляй|добавлять|используй|использовать|нужн\w*|требу\w*)\s+(?:изображен\w*|фото)|(?:изображен\w*|фото)\s+не\s+(?:добавляй|добавлять|используй|использовать)|no\s+(?:image|images|photo|photos)|without\s+(?:an?\s+)?(?:image|photo)|do\s+not\s+(?:add|use|include)\s+(?:an?\s+)?(?:image|photo)|don.t\s+(?:add|use|include)\s+(?:an?\s+)?(?:image|photo))\b/iu', $source_text, $media_forbidden_match, PREG_OFFSET_CAPTURE );
+	$media_required = preg_match( '/\b(?:обязательн\w*\s+(?:изображен\w*|фото)|добавь\s+(?:изображен\w*|фото)|с\s+(?:изображен\w*|фото)|изображен\w*\s+(?:обязательн\w*|нужн\w*)|include\s+(?:an?\s+)?(?:image|photo)|with\s+(?:an?\s+)?(?:image|photo)|(?:image|photo)\s+required)\b/iu', $source_text, $media_required_match, PREG_OFFSET_CAPTURE );
+	$media_intent = $media_forbidden && $media_required ? 'conflict' : ( $media_forbidden ? 'forbidden' : ( $media_required ? 'required' : 'unspecified' ) );
+	$media_match = $media_forbidden ? $media_forbidden_match : $media_required_match;
+	$media_match_span = isset( $media_match[0][0][1] ) ? [ (int) $media_match[0][0][1], (int) $media_match[0][0][1] + strlen( (string) $media_match[0][0][0] ) ] : [ 0, 0 ];
+	$constraints[] = [
+		'id' => 'media_intent',
+		'kind' => 'media_intent',
+		'value' => $media_intent,
+		'source_span' => $media_match_span,
+		'provenance' => [ 'source' => 'prompt', 'source_span' => $media_match_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+	];
+	if ( $media_intent === 'conflict' ) {
+		$ambiguities[] = [ 'kind' => 'conflicting_media_intent', 'source_span' => $media_match_span, 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
+	}
 	$ratio_matches = [];
 	if ( preg_match_all( '~\b(\d{2})\s*[/\:]\s*(\d{2})\b~u', $source_text, $ratio_matches, PREG_OFFSET_CAPTURE ) ) {
 		foreach ( $ratio_matches[0] as $ratio_match ) {
@@ -293,6 +310,20 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					'provenance' => [ 'source' => 'prompt', 'source_span' => [ (int) $url_match[1], (int) $url_match[1] + strlen( $url ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
 				];
 			}
+		}
+	}
+	if ( ! empty( $media_references ) ) {
+		$media_intent = $media_intent === 'forbidden' ? 'conflict' : ( $media_intent === 'unspecified' ? 'required' : $media_intent );
+		foreach ( $constraints as &$constraint ) {
+			if ( ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
+				$constraint['value'] = $media_intent;
+				$constraint['provenance']['asset_refs'] = array_column( $media_references, 'asset_id' );
+				break;
+			}
+		}
+		unset( $constraint );
+		if ( $media_intent === 'conflict' && ! in_array( 'conflicting_media_intent', array_column( $ambiguities, 'kind' ), true ) ) {
+			$ambiguities[] = [ 'kind' => 'conflicting_media_intent', 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
 		}
 	}
 	if ( $source_text === '' ) {

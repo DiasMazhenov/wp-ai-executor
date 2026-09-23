@@ -9324,7 +9324,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, [ 'post_id' => $selected_post_id ] );
         $brief_validation = function_exists( 'wpae_brief_ir_validate' ) ? wpae_brief_ir_validate( $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
         $plan_validation = function_exists( 'wpae_design_plan_validate' ) ? wpae_design_plan_validate( $design_plan_v1 ) : [ 'ok' => true, 'errors' => [] ];
-        $layout_report = function_exists( 'wpae_layout_report_for_plan' ) ? wpae_layout_report_for_plan( $design_plan_v1 ) : [];
+        $layout_tokens = function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [];
+        $layout_report = function_exists( 'wpae_layout_report_for_plan' ) ? wpae_layout_report_for_plan( $design_plan_v1, [ 'tokens' => $layout_tokens ] ) : [];
         $layout_validation = function_exists( 'wpae_layout_report_validate' ) ? wpae_layout_report_validate( $layout_report ) : [ 'ok' => true, 'errors' => [] ];
 		$design_pipeline_trace = [
             'schema' => 'wpae-design-pipeline-trace-v1',
@@ -9375,6 +9376,16 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		return new WP_Error( 'wpae_widget_capability_unavailable', 'Доступность обязательного Elementor-компонента не подтверждена; запись остановлена.', [
 			'status' => 422,
 			'details' => [ 'capabilities' => $design_pipeline_trace['plan']['validation']['capabilities']['failures'] ],
+		] );
+	}
+	if ( $active_pipeline_eligible && ( empty( $design_pipeline_trace['brief']['validation']['ok'] ) || empty( $design_pipeline_trace['plan']['validation']['ok'] ) || empty( $design_pipeline_trace['layout']['ok'] ) ) ) {
+		return new WP_Error( 'wpae_design_plan_rejected', 'Запрос не прошёл проверку плана дизайна; запись и переход в legacy-путь остановлены.', [
+			'status' => 422,
+			'details' => [
+				'brief' => $design_pipeline_trace['brief']['validation'] ?? [],
+				'plan' => $design_pipeline_trace['plan']['validation'] ?? [],
+				'layout' => $design_pipeline_trace['layout'],
+			],
 		] );
 	}
 	$shadow_compiled = [];

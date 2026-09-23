@@ -1083,12 +1083,33 @@ check( ( $shadow_data['diagnostics']['action_path'] ?? '' ) === 'provider' && ( 
 check( count( $GLOBALS['http_calls'] ) === 2 && count( $GLOBALS['writes'] ) === 1, 'EDDE shadow mode did not stay within decision plus provider call budget' );
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'off';
 
+$hero_cta_classifier = 'Создай hero для архитектурной студии. Надзаголовок: «АРХИТЕКТУРА». Заголовок: «Пространство для идей». Описание: «Опишите задачу». Основная кнопка «К тарифам», ссылка #contact.';
+check( wpae_llm_detect_block_archetype( $hero_cta_classifier ) === 'hero', 'CTA label "К тарифам" does not override an explicitly requested hero in the primary runtime classifier' );
+
+if ( ! class_exists( '\\Elementor\\Plugin' ) ) {
+	eval( 'namespace Elementor; class Plugin { public static $types = [ "heading", "text-editor", "button", "image", "icon-list", "divider" ]; public $widgets_manager; public static function instance() { return new self(); } public function __construct() { $this->widgets_manager = new Widgets_Manager(); } } class Widgets_Manager { public function get_widget_types() { return array_fill_keys( Plugin::$types, new \\stdClass() ); } }' );
+}
+if ( function_exists( 'did_action' ) ) {
+	$GLOBALS['test_actions']['elementor/widgets/register'] = 1;
+}
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active' ];
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$missing_required_image = new WP_REST_Request();
+$missing_required_image->set_param( 'message', 'Создай hero. Изображение обязательно. Заголовок: «Комната для идей».' );
+$missing_required_image->set_param( 'context', [ 'post_id' => 42 ] );
+$missing_required_response = wpae_llm_chat_request( $missing_required_image );
+check( is_wp_error( $missing_required_response ) && $missing_required_response->get_error_code() === 'wpae_design_plan_rejected', 'active pipeline rejects a required image without an asset before write' );
+check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0, 'required missing asset makes zero provider calls and zero page writes' );
+
 // An active deterministic request must stop at the capability gate when the
 // runtime cannot confirm its widgets; it must not fall through to provider JSON.
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active' ];
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [];
 $capability_request = new WP_REST_Request();
+\Elementor\Plugin::$types = [];
 $capability_request->set_param( 'message', 'Создай hero. Надзаголовок: «ПРОВЕРКА». Заголовок: «Runtime-компоненты». Описание: «Проверяем доступность виджетов». Кнопка: «К тарифам», ссылка #start.' );
 $capability_request->set_param( 'context', [ 'post_id' => 42 ] );
 $capability_response = wpae_llm_chat_request( $capability_request );

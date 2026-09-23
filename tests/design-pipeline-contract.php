@@ -129,7 +129,7 @@ class Widgets_Manager {
 \Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
 $check( $wpae_no_elementor_probe['state'] === 'unavailable' && $wpae_no_elementor_probe['reason'] === 'elementor_runtime_missing', 'absent Elementor runtime is reported as unavailable before test double registration' );
 
-$hero_prompt = "hero\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nFAQ\nО нас\n7 шагов";
+$hero_prompt = "hero\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nImage: https://example.com/contract.png\nFAQ\nО нас\n7 шагов";
 $hero = wpae_brief_ir_parse( $hero_prompt );
 $check( $hero['schema'] === 'wpae-brief-v1', 'BriefIR schema' );
 $check( wpae_brief_ir_validate( $hero )['ok'], 'BriefIR validates' );
@@ -144,9 +144,44 @@ $check( in_array( 'О нас', array_column( $hero['content'], 'exact_text' ), t
 $check( in_array( '7 шагов', array_column( $hero['content'], 'exact_text' ), true ), '7 шагов label retained' );
 $check( ! empty( $hero['content'][0]['provenance']['source_span'] ), 'content provenance present' );
 
-$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Текст слева занимает 40%, визуальная часть справа — 60%.' );
+$forbidden_ru = wpae_brief_ir_parse( 'Создай hero без изображения. Заголовок: «Комната для идей».' );
+$forbidden_en = wpae_brief_ir_parse( 'Create a hero with no image. Title: "Room for ideas".' );
+$forbidden_plan = wpae_design_plan_from_brief( $forbidden_ru );
+$forbidden_ir = wpae_elementor_ir_from_design_plan( $forbidden_plan, $forbidden_ru );
+$forbidden_compiled = wpae_elementor_ir_compile( $forbidden_ir, $forbidden_ru, [], [ 'id_seed' => 'no-media-contract' ] );
+$check( ( $forbidden_ru['layout_constraints'][0]['value'] ?? '' ) === 'forbidden' && ( $forbidden_en['layout_constraints'][0]['value'] ?? '' ) === 'forbidden', 'Russian and English image prohibition becomes an explicit BriefIR constraint' );
+$check( empty( array_filter( $forbidden_plan['sections'][0]['children'], static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'media' ) ) && $forbidden_plan['sections'][0]['composition'] === 'stacked_left', 'image prohibition compiles as a full-width copy composition' );
+$check( $forbidden_compiled['ok'] && ! str_contains( wp_json_encode( $forbidden_compiled['elementor_data'] ), 'media_fallback' ) && ! str_contains( wp_json_encode( $forbidden_compiled['elementor_data'] ), 'min_height' ), 'forbidden media emits no empty placeholder or reserved column' );
+$check( ( $forbidden_compiled['elementor_data'][0]['settings']['flex_direction'] ?? '' ) === 'column' && (float) ( $forbidden_compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0, 'no-media hero has a full-width desktop text column' );
+$forbidden_layout = wpae_layout_report_for_plan( $forbidden_plan );
+$check( ( $forbidden_layout['evidence'] ?? '' ) === 'static_plan' && empty( $forbidden_layout['visual_render_verified'] ), 'static LayoutReport does not claim browser visual acceptance' );
+$check( array_column( $forbidden_layout['breakpoints'], 'layout_axis' ) === [ 'column', 'column', 'column', 'column' ] && array_reduce( $forbidden_layout['breakpoints'], static fn( bool $ok, array $row ): bool => $ok && (float) ( $row['basis_percent']['copy_group'] ?? 0 ) === 100.0, true ), 'no-media LayoutReport agrees with the single full-width column at 1440/1024/768/390 assumptions' );
+$unspecified_media = wpae_brief_ir_parse( 'Create a hero with title: "Room for ideas".' );
+$unspecified_plan = wpae_design_plan_from_brief( $unspecified_media );
+$check( ( $unspecified_plan['media_intent'] ?? '' ) === 'unspecified' && wpae_design_plan_validate( $unspecified_plan )['ok'] && empty( array_filter( $unspecified_plan['sections'][0]['children'], static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'media' ) ), 'missing URL stays unspecified and does not become an explicit prohibition or an empty image column' );
+
+$required_missing = wpae_brief_ir_parse( 'Create a hero with an image required. Title: "Room for ideas".' );
+$required_missing_plan = wpae_design_plan_from_brief( $required_missing );
+$check( ( $required_missing['layout_constraints'][0]['value'] ?? '' ) === 'required' && ! wpae_design_plan_validate( $required_missing_plan )['ok'] && in_array( 'required_media_asset_missing', wpae_design_plan_validate( $required_missing_plan )['errors'], true ), 'required image without a usable asset is rejected before compilation' );
+$required_with_asset = wpae_brief_ir_parse( 'Create a hero with an image required. Title: "Room for ideas". Image: https://example.com/required.jpg' );
+$required_with_asset_plan = wpae_design_plan_from_brief( $required_with_asset );
+$check( wpae_design_plan_validate( $required_with_asset_plan )['ok'] && count( array_filter( $required_with_asset_plan['sections'][0]['children'], static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'media' ) ) === 1, 'required image with a valid asset continues through the hero plan' );
+$invalid_asset = $required_with_asset;
+$invalid_asset['media_references'][0]['source_url'] = 'javascript:alert(1)';
+$invalid_asset_plan = wpae_design_plan_from_brief( $invalid_asset );
+$check( ! wpae_design_plan_validate( $invalid_asset_plan )['ok'] && in_array( 'required_media_asset_missing', wpae_design_plan_validate( $invalid_asset_plan )['errors'], true ), 'required image with an invalid source is rejected before write' );
+$contradictory = wpae_brief_ir_parse( 'Hero без изображения, но сделай split 60/40 с изображением.' );
+$contradictory_plan = wpae_design_plan_from_brief( $contradictory );
+$contradictory_validation = wpae_design_plan_validate( $contradictory_plan );
+$check( ( $contradictory['layout_constraints'][0]['value'] ?? '' ) === 'conflict' && empty( $contradictory_validation['ok'] ) && in_array( 'media_intent_conflict', $contradictory_validation['errors'], true ), 'conflicting image requirements are visible and rejected' );
+$forbidden_with_asset = wpae_brief_ir_parse( 'Create a hero with no image, but keep this supplied image URL: https://example.com/hero.jpg' );
+$check( ( $forbidden_with_asset['layout_constraints'][0]['value'] ?? '' ) === 'conflict', 'explicit prohibition and an image asset URL are treated as a visible conflict' );
+
+$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Текст слева занимает 40%, визуальная часть справа — 60%. Изображение: https://example.com/hero.png' );
 $semantic_plan = wpae_design_plan_from_brief( $semantic_hero );
-$check( ( $semantic_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60', 'semantic side percentages preserve copy/media composition' );
+$check( ( $semantic_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60' && ( $semantic_plan['media_intent'] ?? '' ) === 'required', 'explicit image URL is treated as a required media reference and preserves copy/media composition' );
+$semantic_layout = wpae_layout_report_for_plan( $semantic_plan );
+$check( (float) ( $semantic_layout['breakpoints'][0]['basis_percent']['copy_group'] ?? 0 ) === 40.0 && (float) ( $semantic_layout['breakpoints'][1]['basis_percent']['copy_group'] ?? 0 ) === 50.0 && (float) ( $semantic_layout['breakpoints'][3]['basis_percent']['media'] ?? 0 ) === 100.0, '40/60 LayoutReport mirrors compiled desktop/tablet/mobile widths' );
 $semantic_ir = wpae_elementor_ir_from_design_plan( $semantic_plan, $semantic_hero );
 $semantic_compiled = wpae_elementor_ir_compile( $semantic_ir, $semantic_hero, [ 'palette' => [ 'page_bg' => '#f6f0e6', 'surface' => '#ffffff', 'text' => '#111827', 'muted' => '#4b5563', 'primary' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'semantic-hero' ] );
 $semantic_root = $semantic_compiled['elementor_data'][0] ?? [];
@@ -155,6 +190,14 @@ $semantic_media = $semantic_root['elements'][1] ?? [];
 $semantic_copy_roles = array_column( (array) ( $semantic_copy['elements'] ?? [] ), 'widgetType' );
 $check( (float) ( $semantic_copy['settings']['width']['size'] ?? 0 ) === 40.0 && (float) ( $semantic_media['settings']['width']['size'] ?? 0 ) === 60.0 && ! isset( $semantic_copy['settings']['flex_basis'] ) && ! isset( $semantic_media['settings']['flex_basis'] ), 'semantic hero compiler preserves native 40/60 width contract' );
 $check( $semantic_copy_roles === [ 'heading', 'heading', 'heading', 'text-editor', 'button', 'button' ], 'copy widgets keep brand, eyebrow, title order and both CTAs: ' . wp_json_encode( $semantic_copy_roles ) );
+$semantic_title = $semantic_copy['elements'][2]['settings'] ?? [];
+$semantic_body = $semantic_copy['elements'][3]['settings'] ?? [];
+$semantic_primary = $semantic_copy['elements'][4]['settings'] ?? [];
+$semantic_secondary = $semantic_copy['elements'][5]['settings'] ?? [];
+$check( ( $semantic_media['elements'][0]['widgetType'] ?? '' ) === 'image' && ( $semantic_media['elements'][0]['settings']['image']['url'] ?? '' ) === 'https://example.com/hero.png', 'explicit media asset is preserved as an editable native image widget inside a sized native container' );
+$check( ( $semantic_title['header_size'] ?? '' ) === 'h1' && ( $semantic_title['typography_font_size_mobile']['size'] ?? 0 ) > 0 && ( $semantic_title['typography_line_height']['size'] ?? 0 ) > 0 && ( $semantic_body['typography_font_size']['size'] ?? 0 ) > 0, 'display and body typography tokens become native responsive settings' );
+$check( (float) ( $semantic_compiled['elementor_data'][0]['settings']['padding']['size'] ?? 0 ) === 4.5 && (float) ( $semantic_compiled['elementor_data'][0]['settings']['padding_mobile']['size'] ?? 0 ) === 2.0, 'section spacing tokens become native desktop/mobile padding settings' );
+$check( ( $semantic_primary['background_color'] ?? '' ) !== ( $semantic_secondary['background_color'] ?? '' ) && ( $semantic_secondary['border_border'] ?? '' ) === 'solid' && ( $semantic_primary['text'] ?? '' ) === 'Начать проект' && ( $semantic_primary['link']['url'] ?? '' ) === '#contact' && ( $semantic_secondary['text'] ?? '' ) === 'Смотреть проекты' && ( $semantic_secondary['link']['url'] ?? '' ) === '#projects', 'two CTA widgets preserve exact order/URLs and compile primary/secondary native visual hierarchy' );
 
 $english = wpae_brief_ir_parse( 'hero title: "Launch faster" body: "A clear path." CTA: "Start now" -> https://example.com/go' );
 $check( $english['locale'] === 'en' && $english['intent']['archetype'] === 'hero', 'English hero classification' );
@@ -170,6 +213,8 @@ $check( $plan['schema'] === 'wpae-design-plan-v1' && $plan_validation['ok'], 'he
 $check( $plan['sections'][0]['children'][0]['allowed_widgets'] === [ 'heading', 'text-editor', 'button' ], 'hero plan restricts widgets' );
 $layout = wpae_layout_report_for_plan( $plan );
 $check( $layout['schema'] === 'wpae-layout-report-v1' && count( $layout['breakpoints'] ) === 4 && $layout['ok'], 'hero LayoutReport covers four breakpoints' );
+$check( array_column( $layout['breakpoints'], 'layout_axis' ) === [ 'row', 'row', 'row', 'column' ] && (float) ( $layout['breakpoints'][3]['basis_percent']['copy_group'] ?? 0 ) === 100.0 && (float) ( $layout['breakpoints'][3]['basis_percent']['media'] ?? 0 ) === 100.0, 'split hero report agrees with compiled desktop/tablet row and mobile 100% stack assumptions' );
+$check( (float) ( $layout['breakpoints'][0]['basis_percent']['copy_group'] ?? 0 ) === 60.0 && (float) ( $layout['breakpoints'][1]['basis_percent']['copy_group'] ?? 0 ) === 50.0 && (float) ( $layout['breakpoints'][2]['basis_percent']['media'] ?? 0 ) === 50.0, 'LayoutReport uses desktop 60/40 and compiler tablet 50/50 compositions at 1440/1024/768' );
 $bad_layout = wpae_layout_report_for_plan( $plan, [ 'basis_overrides' => [ 'copy_group' => 0 ] ] );
 $check( ! $bad_layout['ok'] && ! empty( $bad_layout['breakpoints'][0]['zero_width_nodes'] ), 'zero-width regression is rejected' );
 
@@ -188,6 +233,8 @@ $check( ! wpae_design_token_validate_contrast( [ 'palette' => [ 'paper' => '#f6f
 $check( wpae_design_token_validate_contrast( [ 'palette' => [ 'paper' => '#f6f0e6', 'muted' => '#6b7280' ] ], [ 'color.muted.font_size_px' => 24 ] )['ok'], 'large muted text uses the large-text threshold' );
 $check( $compiled['elementor_data'][0]['elType'] === 'container', 'compiler owns native root shape' );
 $check( $compiled['elementor_data'][0]['elements'][0]['settings']['width']['size'] === 60.0 && $compiled['elementor_data'][0]['elements'][1]['settings']['width_mobile']['size'] === 100 && ! isset( $compiled['elementor_data'][0]['elements'][0]['settings']['flex_basis'] ), 'compiler applies native split and mobile width settings' );
+$compiled_copy = $compiled['elementor_data'][0]['elements'][0]['elements'] ?? [];
+$check( ( $compiled_copy[1]['settings']['title'] ?? '' ) === "Соберите сильную страницу\nза один день" && ( $compiled_copy[1]['settings']['header_size'] ?? '' ) === 'h1' && ( $compiled_copy[1]['settings']['typography_font_size_mobile']['size'] ?? 0 ) > 0 && ! isset( $compiled_copy[1]['settings']['min_height'] ), 'multiline long title keeps exact copy, responsive native type and intrinsic text height' );
 
 $process = wpae_brief_ir_parse( "process\n«Step one»\n«Step two»\n«Step three»" );
 $process_plan = wpae_design_plan_from_brief( $process );

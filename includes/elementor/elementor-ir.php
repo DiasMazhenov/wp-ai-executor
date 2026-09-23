@@ -69,8 +69,10 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					} elseif ( $item_role === 'body' || $item_role === 'text' ) {
 						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( str_starts_with( $item_role, 'cta' ) || $item_role === 'button' ) {
-						$button_key = 'cta_' . count( array_filter( array_keys( $widgets ), static fn( string $key ): bool => str_starts_with( $key, 'cta_' ) ) );
-						$widgets[ $button_key ] = wpae_elementor_ir_node( $child_id . '-' . $button_key, 'cta', 'button', [ $content_ref ], [ 'color.primary', 'color.text' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
+						$cta_count = count( array_filter( array_keys( $widgets ), static fn( string $key ): bool => str_starts_with( $key, 'cta_' ) ) );
+						$button_key = 'cta_' . $cta_count;
+						$button_role = $cta_count === 0 ? 'cta_primary' : 'cta_secondary';
+						$widgets[ $button_key ] = wpae_elementor_ir_node( $child_id . '-' . $button_key, $button_role, 'button', [ $content_ref ], [ 'color.primary', 'color.text', 'color.surface' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 					}
 				}
 					$ordered_widgets = [];
@@ -90,11 +92,13 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				}
 			} elseif ( $role === 'media' ) {
 				$media_refs = array_values( array_filter( array_map( 'sanitize_key', (array) ( $child['media_refs'] ?? [] ) ) ) );
-				$media_type = empty( $media_refs ) ? 'container' : ( in_array( 'image', $allowed, true ) ? 'image' : ( $allowed[0] ?? 'container' ) );
 				if ( empty( $media_refs ) ) {
-					$warnings[] = $child_id . ':missing_media_explicit_fallback';
+					$warnings[] = $child_id . ':missing_media_asset_omitted';
+					continue;
 				}
-				$section_children[] = wpae_elementor_ir_node( $child_id, empty( $media_refs ) ? 'media_fallback' : 'media', $media_type, [], $token_refs, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'media_refs' => $media_refs, 'editable_fields' => [ 'media', 'alt' ] ] );
+				$media_type = in_array( 'image', $allowed, true ) ? 'image' : ( $allowed[0] ?? 'image' );
+				$image = wpae_elementor_ir_node( $child_id . '-asset', 'media_image', $media_type, [], $token_refs, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'media_refs' => $media_refs, 'editable_fields' => [ 'media', 'alt' ] ] );
+				$section_children[] = wpae_elementor_ir_node( $child_id, 'media_group', 'container', [], $token_refs, [ $image ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'media', 'alt' ] ] );
 			} elseif ( $role === 'process_steps' ) {
 				$step_children = [];
 				foreach ( $content_refs as $content_ref_index => $content_ref ) {
@@ -164,6 +168,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 	return [
 		'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
 		'archetype' => sanitize_key( (string) ( $plan['archetype'] ?? 'unknown' ) ),
+		'media_intent' => sanitize_key( (string) ( $plan['media_intent'] ?? 'unspecified' ) ),
 		'nodes' => $nodes,
 		'provenance' => [ 'plan_hash' => function_exists( 'wpae_design_plan_hash' ) ? wpae_design_plan_hash( $plan ) : '', 'source' => 'design-plan' ],
 		'warnings' => array_values( array_unique( $warnings ) ),
@@ -187,6 +192,26 @@ function wpae_elementor_ir_validate( array $ir ): array {
 		$errors[] = 'schema';
 	}
 	$walk( (array) ( $ir['nodes'] ?? [] ) );
+	if ( ( $ir['archetype'] ?? '' ) === 'hero' ) {
+		$media_nodes = [];
+		$find_media = static function ( array $nodes ) use ( &$find_media, &$media_nodes ): void {
+			foreach ( $nodes as $node ) {
+				if ( is_array( $node ) && str_starts_with( (string) ( $node['role'] ?? '' ), 'media' ) && ( $node['widget_type'] ?? '' ) === 'image' ) {
+					$media_nodes[] = $node;
+				}
+				if ( is_array( $node ) ) {
+					$find_media( (array) ( $node['children'] ?? [] ) );
+				}
+			}
+		};
+		$find_media( (array) ( $ir['nodes'] ?? [] ) );
+		if ( ( $ir['media_intent'] ?? 'unspecified' ) === 'forbidden' && ! empty( $media_nodes ) ) {
+			$errors[] = 'forbidden_media_in_ir';
+		}
+		if ( ( $ir['media_intent'] ?? 'unspecified' ) === 'required' && empty( $media_nodes ) ) {
+			$errors[] = 'required_media_asset_missing';
+		}
+	}
 	$capabilities = function_exists( 'wpae_widget_capability_report' ) ? wpae_widget_capability_report( $widgets ) : [ 'ok' => true, 'unavailable' => [], 'downgrades' => [] ];
 	if ( empty( $capabilities['ok'] ) ) {
 		foreach ( (array) ( $capabilities['failures'] ?? [] ) as $failure ) {
@@ -226,6 +251,26 @@ function wpae_elementor_ir_dimension_control( $value, string $fallback_unit, flo
 	];
 }
 
+function wpae_elementor_ir_type_settings( array $type ): array {
+	$dimension = static function ( $value, string $fallback_unit ): array {
+		if ( preg_match( '/^(-?\d+(?:\.\d+)?)\s*(px|%|em|rem|vh|vw)?$/i', trim( (string) $value ), $matches ) ) {
+			return [ 'unit' => strtolower( (string) ( ( $matches[2] ?? '' ) ?: $fallback_unit ) ), 'size' => (float) $matches[1], 'sizes' => [] ];
+		}
+		return [ 'unit' => $fallback_unit, 'size' => 1, 'sizes' => [] ];
+	};
+	$settings = [
+		'typography_typography' => 'custom',
+		'typography_font_family' => sanitize_text_field( (string) ( $type['font_family'] ?? 'inherit' ) ),
+		'typography_font_size' => $dimension( $type['desktop'] ?? '1rem', 'rem' ),
+		'typography_font_size_tablet' => $dimension( $type['tablet'] ?? $type['desktop'] ?? '1rem', 'rem' ),
+		'typography_font_size_mobile' => $dimension( $type['mobile'] ?? $type['tablet'] ?? $type['desktop'] ?? '1rem', 'rem' ),
+		'typography_font_weight' => (string) ( $type['weight'] ?? '400' ),
+		'typography_line_height' => $dimension( $type['line_height'] ?? '1.5', 'em' ),
+	];
+	$settings['typography_line_height']['unit'] = 'em';
+	return $settings;
+}
+
 function wpae_elementor_ir_compile_node( array $node, array $content_map, array $media_map, array $tokens, string $seed, array &$report ): array {
 	$requested_widget_type = sanitize_key( (string) ( $node['widget_type'] ?? 'container' ) );
 	$resolved = function_exists( 'wpae_widget_capability_resolve' ) ? wpae_widget_capability_resolve( $requested_widget_type, $node ) : [ 'ok' => false, 'widget_type' => null, 'from' => $requested_widget_type, 'downgraded' => false, 'reason' => 'capability_registry_unavailable' ];
@@ -252,8 +297,19 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['container_type'] = 'flex';
 		$settings['flex_direction'] = in_array( (string) ( $node['layout_constraints']['composition'] ?? '' ), [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ? 'row' : 'column';
 		$settings['flex_direction_mobile'] = 'column';
-		$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 1.5, 'column' => '1.5', 'row' => '1.5', 'isLinked' => true ];
-		$settings['flex_gap_mobile'] = [ 'unit' => 'rem', 'size' => 1, 'column' => '1', 'row' => '1', 'isLinked' => true ];
+		$component_gap = $token_values['space.component'] ?? ( $tokens['native_tokens']['spacing']['gap'] ?? '1.5rem' );
+		$gap_control = wpae_elementor_ir_dimension_control( $component_gap, 'rem', 1.5 );
+		$settings['flex_gap'] = [ 'unit' => $gap_control['unit'], 'size' => $gap_control['size'], 'column' => (string) $gap_control['size'], 'row' => (string) $gap_control['size'], 'isLinked' => true ];
+		$settings['flex_gap_mobile'] = $settings['flex_gap'];
+		if ( in_array( $role, [ 'hero', 'process', 'pricing' ], true ) ) {
+			$desktop_padding = wpae_elementor_ir_dimension_control( $token_values['space.section'] ?? ( $tokens['native_tokens']['spacing']['section_desktop'] ?? '4.5rem' ), 'rem', 4.5, false );
+			$mobile_padding = wpae_elementor_ir_dimension_control( $tokens['native_tokens']['spacing']['section_mobile'] ?? '2rem', 'rem', 2, false );
+			$desktop_padding['left'] = $desktop_padding['right'] = '2';
+			$mobile_padding['left'] = $mobile_padding['right'] = '1';
+			$settings['padding'] = $desktop_padding;
+			$settings['padding_tablet'] = $desktop_padding;
+			$settings['padding_mobile'] = $mobile_padding;
+		}
 		if ( isset( $token_values['color.surface'] ) ) {
 			$settings['background_color'] = $token_values['color.surface'];
 		}
@@ -261,13 +317,6 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 			$settings['background_color'] = $surface_override;
 			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
-		}
-		if ( $role === 'media_fallback' ) {
-			$settings['_css_classes'] = 'wpae-ir-media-fallback';
-			$settings['border_border'] = 'solid';
-			$settings['border_color'] = $token_values['color.border'] ?? '#d1d5db';
-			$settings['min_height'] = [ 'unit' => 'rem', 'size' => 12 ];
-			$report['warnings'][] = (string) ( $node['node_id'] ?? '' ) . ':media_fallback';
 		}
 		if ( $role === 'pricing_cards' ) {
 			// Pricing cards are a row on wide viewports and a stack on mobile.
@@ -312,8 +361,12 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['title'] = (string) ( $item['exact_text'] ?? '' );
-		$settings['header_size'] = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : 'h1';
+		$settings['header_size'] = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
 		$settings['title_color'] = (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
+		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
+		if ( is_array( $type_token ) ) {
+			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
+		}
 		if ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) {
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['background_background'] = 'classic';
@@ -354,16 +407,34 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		} else {
 			$settings['editor'] = $text;
 			$settings['text_color'] = (string) ( $token_values['color.muted'] ?? '#6b7280' );
+			if ( is_array( $token_values['type.body'] ?? null ) ) {
+				$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $token_values['type.body'] ) );
+			}
 		}
 	} elseif ( $widget_type === 'button' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['text'] = (string) ( $item['exact_text'] ?? '' );
 		$settings['link'] = [ 'url' => (string) ( $item['url'] ?? ( $node['layout_constraints']['fallback_url'] ?? '' ) ), 'is_external' => '', 'nofollow' => '' ];
-		$settings['background_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
-		$settings['button_text_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+		if ( $role === 'cta_secondary' ) {
+			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['button_text_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['border_border'] = 'solid';
+			$settings['border_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+		} else {
+			$settings['background_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['button_text_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+		}
 	} elseif ( $widget_type === 'image' ) {
 		$media = $media_map[ sanitize_key( (string) ( $node['media_refs'][0] ?? '' ) ) ] ?? [];
-		$settings['image'] = [ 'url' => (string) ( $media['source_url'] ?? '' ), 'id' => absint( $media['attachment_id'] ?? 0 ), 'alt' => (string) ( $media['alt'] ?? '' ) ];
+		$source_url = trim( (string) ( $media['source_url'] ?? '' ) );
+		$source_parts = parse_url( $source_url );
+		$valid_source = absint( $media['attachment_id'] ?? 0 ) > 0 || ( is_array( $source_parts ) && in_array( strtolower( (string) ( $source_parts['scheme'] ?? '' ) ), [ 'http', 'https' ], true ) && trim( (string) ( $source_parts['host'] ?? '' ) ) !== '' );
+		if ( ! $valid_source ) {
+			$report['errors'][] = [ 'node_id' => sanitize_key( (string) ( $node['node_id'] ?? '' ) ), 'widget_type' => 'image', 'reason' => 'media_asset_missing_or_invalid' ];
+			return [];
+		}
+		$settings['image'] = [ 'url' => $source_url, 'id' => absint( $media['attachment_id'] ?? 0 ), 'alt' => (string) ( $media['alt'] ?? '' ) ];
 		$settings['image_size'] = 'full';
 	} elseif ( $widget_type === 'icon-list' ) {
 		$settings['icon_list'] = [];

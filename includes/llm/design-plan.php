@@ -47,6 +47,18 @@ function wpae_design_plan_content_refs( array $brief, array $roles = [] ): array
 	return array_values( array_filter( array_unique( $refs ) ) );
 }
 
+function wpae_design_plan_media_reference_valid( array $media ): bool {
+	if ( absint( $media['attachment_id'] ?? 0 ) > 0 ) {
+		return true;
+	}
+	$url = trim( (string) ( $media['source_url'] ?? '' ) );
+	$parts = parse_url( $url );
+	if ( ! is_array( $parts ) || ! in_array( strtolower( (string) ( $parts['scheme'] ?? '' ) ), [ 'http', 'https' ], true ) || trim( (string) ( $parts['host'] ?? '' ) ) === '' ) {
+		return false;
+	}
+	return ! function_exists( 'wp_http_validate_url' ) || (bool) wp_http_validate_url( $url );
+}
+
 function wpae_design_plan_from_brief( array $brief, array $context = [] ): array {
 	$archetype = sanitize_key( (string) ( $brief['intent']['archetype'] ?? 'unknown' ) );
 	if ( ! in_array( $archetype, [ 'hero', 'process', 'pricing' ], true ) ) {
@@ -61,7 +73,14 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			'warnings' => [ 'unsupported_archetype' ],
 		];
 	}
-	$composition = (string) wpae_design_plan_constraint_value( $brief, 'composition', $archetype === 'hero' ? 'split_60_40' : ( $archetype === 'pricing' ? 'three_cards' : 'linear' ) );
+	$media_intent = (string) wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' );
+	$explicit_composition = wpae_design_plan_constraint_value( $brief, 'composition' );
+	$composition = (string) ( $explicit_composition ?? ( $archetype === 'hero' ? 'split_60_40' : ( $archetype === 'pricing' ? 'three_cards' : 'linear' ) ) );
+	$media_references = array_values( array_filter( (array) ( $brief['media_references'] ?? [] ), static fn( $media ): bool => is_array( $media ) && wpae_design_plan_media_reference_valid( $media ) ) );
+	$hero_has_media = $archetype === 'hero' && ! empty( $media_references ) && $media_intent !== 'forbidden' && $media_intent !== 'conflict';
+	if ( $archetype === 'hero' && ! $hero_has_media && $explicit_composition === null && $media_intent !== 'conflict' ) {
+		$composition = 'stacked_left';
+	}
 	$surface_override = strtolower( trim( (string) wpae_design_plan_constraint_value( $brief, 'surface_color', '' ) ) );
 	if ( ! preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 		$surface_override = '';
@@ -98,6 +117,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$section['provenance']['surface_override'] = [ 'source' => 'prompt', 'constraint' => 'surface_color' ];
 	}
 	if ( $archetype === 'hero' ) {
+		$section['media_intent'] = $media_intent;
 		$section['children'] = [
 			[
 				'role' => 'copy_group',
@@ -110,18 +130,20 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'editable_fields' => [ 'text', 'url' ],
 				'provenance' => [ 'source' => 'brief', 'roles' => [ 'brand', 'eyebrow', 'title', 'body', 'cta' ] ],
 			],
-			[
+		];
+		if ( $hero_has_media ) {
+			$section['children'][] = [
 				'role' => 'media',
 				'allowed_widgets' => [ 'image' ],
 				'content_refs' => [],
 				'token_refs' => [ 'color.surface', 'color.border' ],
 				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
 				'responsive_policy' => 'copy_first_stack',
-				'media_refs' => array_values( array_map( static fn( $item ): string => sanitize_key( (string) ( $item['asset_id'] ?? '' ) ), (array) ( $brief['media_references'] ?? [] ) ) ),
+				'media_refs' => array_values( array_map( static fn( $item ): string => sanitize_key( (string) ( $item['asset_id'] ?? '' ) ), $media_references ) ),
 				'editable_fields' => [ 'media', 'alt' ],
 				'provenance' => [ 'source' => 'brief', 'roles' => [ 'media' ] ],
-			],
-		];
+			];
+		}
 	} elseif ( $archetype === 'process' ) {
 		$section['children'] = [
 			[
@@ -157,8 +179,8 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'sections' => [ $section ],
 		'responsive' => [
 			'desktop' => $composition,
-			'tablet' => $archetype === 'hero' ? 'split_50_50' : 'stack',
-			'mobile' => $archetype === 'hero' ? 'copy_first_stack' : 'stack',
+			'tablet' => $archetype === 'hero' && $hero_has_media ? 'split_50_50' : 'stack',
+			'mobile' => $archetype === 'hero' && $hero_has_media ? 'copy_first_stack' : 'stack',
 		],
 		'tokens' => $tokens,
 		'quality_gates' => [ 'brief_fidelity', 'capabilities', 'layout_report', 'readback', 'render_review' ],
@@ -167,7 +189,9 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			'planner' => 'wpae-design-plan-v1',
 			'source' => 'brief-ir',
 		],
-		'warnings' => empty( $brief['ambiguities'] ) ? [] : [ 'brief_has_ambiguities' ],
+		'warnings' => array_values( array_unique( array_merge( empty( $brief['ambiguities'] ) ? [] : [ 'brief_has_ambiguities' ], $archetype === 'hero' && $media_intent === 'unspecified' && ! $hero_has_media ? [ 'media_unspecified_no_asset_text_only' ] : [] ) ) ),
+		'media_intent' => $media_intent,
+		'media_asset_count' => count( $media_references ),
 	];
 }
 
@@ -182,6 +206,27 @@ function wpae_design_plan_validate( array $plan ): array {
 	}
 	if ( empty( $plan['sections'] ) || ! is_array( $plan['sections'] ) ) {
 		$errors[] = 'sections';
+	}
+	if ( ( $plan['archetype'] ?? '' ) === 'hero' ) {
+		$media_intent = sanitize_key( (string) ( $plan['media_intent'] ?? 'unspecified' ) );
+		$section = is_array( $plan['sections'][0] ?? null ) ? $plan['sections'][0] : [];
+		$has_media_node = (bool) array_filter( (array) ( $section['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media' );
+		$split = in_array( (string) ( $section['composition'] ?? '' ), [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
+		if ( $media_intent === 'conflict' ) {
+			$errors[] = 'media_intent_conflict';
+		}
+		if ( $media_intent === 'forbidden' && $has_media_node ) {
+			$errors[] = 'forbidden_media_in_plan';
+		}
+		if ( $media_intent === 'forbidden' && $split ) {
+			$errors[] = 'media_forbidden_split_conflict';
+		}
+		if ( $media_intent === 'required' && ! $has_media_node ) {
+			$errors[] = 'required_media_asset_missing';
+		}
+		if ( $split && ! $has_media_node && $media_intent !== 'forbidden' ) {
+			$errors[] = 'split_composition_media_asset_missing';
+		}
 	}
 	$requested_widgets = [];
 	foreach ( (array) ( $plan['sections'] ?? [] ) as $section_index => $section ) {

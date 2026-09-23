@@ -26,22 +26,39 @@ function wpae_layout_report_composition_basis( string $composition ): array {
 	][ $composition ] ?? [ 100 ];
 }
 
+function wpae_layout_report_length_px( $value, int $viewport, float $fallback ): float {
+	if ( ! preg_match( '/^(-?\d+(?:\.\d+)?)\s*(px|rem|em|vw|%)?$/i', trim( (string) $value ), $matches ) ) {
+		return $fallback;
+	}
+	$size = (float) $matches[1];
+	$unit = strtolower( (string) ( $matches[2] ?? 'px' ) );
+	return $unit === 'rem' || $unit === 'em' ? $size * 16 : ( $unit === 'vw' || $unit === '%' ? $viewport * $size / 100 : $size );
+}
+
 function wpae_layout_report_for_plan( array $plan, array $options = [] ): array {
 	$reports = [];
 	$violations = [];
 	$basis_overrides = is_array( $options['basis_overrides'] ?? null ) ? $options['basis_overrides'] : [];
 	$gap_override = isset( $options['gap'] ) && is_numeric( $options['gap'] ) ? max( 0, (float) $options['gap'] ) : null;
+	$tokens = is_array( $options['tokens'] ?? null ) ? $options['tokens'] : [];
+	$gap_token = function_exists( 'wpae_design_token_value' ) ? wpae_design_token_value( 'space.component', $tokens ) : '1.5rem';
 	$archetype = sanitize_key( (string) ( $plan['archetype'] ?? 'unknown' ) );
 	$section = is_array( $plan['sections'][0] ?? null ) ? $plan['sections'][0] : [];
 	$composition = sanitize_key( (string) ( $section['composition'] ?? 'stacked_left' ) );
-	$basis_percentages = wpae_layout_report_composition_basis( $composition );
 	$children = (array) ( $section['children'] ?? [] );
+	$has_media_child = (bool) array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media' );
 	foreach ( wpae_layout_report_breakpoints() as $breakpoint ) {
 		$viewport = (int) $breakpoint['width'];
-		$container_width = max( 0, min( 1200, $viewport - 64 ) );
-		$is_mobile = $viewport <= 390;
-		$is_stack = $is_mobile || ( $archetype !== 'hero' && $viewport <= 768 ) || ( $archetype === 'hero' && ( $plan['responsive']['mobile'] ?? '' ) === 'copy_first_stack' && $is_mobile );
-		$gap = $gap_override ?? ( $is_stack ? 16 : 32 );
+		$is_mobile = $viewport <= 767;
+		$horizontal_padding = $is_mobile ? 16 : 32;
+		$container_width = max( 0, $viewport - ( $horizontal_padding * 2 ) );
+		$breakpoint_composition = $breakpoint['id'] === 'mobile'
+			? sanitize_key( (string) ( $plan['responsive']['mobile'] ?? 'stack' ) )
+			: ( in_array( $breakpoint['id'], [ 'laptop', 'tablet' ], true ) ? sanitize_key( (string) ( $plan['responsive']['tablet'] ?? $composition ) ) : $composition );
+		$is_split_composition = in_array( $breakpoint_composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
+		$is_stack = ! $is_split_composition || ( $is_mobile && ( $breakpoint_composition === 'copy_first_stack' || ( $plan['responsive']['mobile'] ?? '' ) === 'copy_first_stack' ) );
+		$basis_percentages = $is_split_composition ? wpae_layout_report_composition_basis( $breakpoint_composition ) : [];
+		$gap = $gap_override ?? wpae_layout_report_length_px( $gap_token, $viewport, 24 );
 		$available_width = max( 0, $container_width - ( $is_stack ? 0 : $gap * max( 0, count( $children ) - 1 ) ) );
 		$basis = [];
 		$basis_percentages_for_report = [];
@@ -61,8 +78,8 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			// A stacked column consumes the available width on the cross axis.
 			// Its desktop composition percentages describe the row only and must
 			// not be applied to the mobile column width.
-			$basis_percent = $is_stack ? 100.0 : $percentage;
-			$child_basis = $is_stack ? $available_width : $available_width * ( $percentage / 100 );
+			$basis_percent = $is_stack && ! array_key_exists( $node_id, $basis_overrides ) ? 100.0 : $percentage;
+			$child_basis = $available_width * ( $basis_percent / 100 );
 			$basis[ $node_id ] = round( $child_basis, 2 );
 			$basis_percentages_for_report[ $node_id ] = $basis_percent;
 			$min_width[ $node_id ] = (float) ( $child['layout_constraints']['min_width'] ?? 0 );
@@ -102,6 +119,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		}
 		$reports[] = [
 			'breakpoint' => $breakpoint['id'],
+			'composition' => $breakpoint_composition,
 			'viewport_width' => $viewport,
 			'container_width' => $container_width,
 			'used_width' => round( $used_width, 2 ),
@@ -115,7 +133,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			'zero_width_nodes' => $zero_width_nodes,
 			'overflow_nodes' => $overflow_nodes,
 			'fixed_text_heights' => $fixed_text_heights,
-			'mobile_stack_result' => $is_stack ? ( $archetype === 'hero' ? 'copy_first_stack' : 'stack' ) : 'not_applicable',
+			'mobile_stack_result' => $is_stack ? ( $archetype === 'hero' ? ( $has_media_child ? 'copy_first_stack' : 'text_only_single_column' ) : 'stack' ) : 'not_applicable',
 			'violations' => array_values( array_filter( $violations, static fn( array $violation ): bool => ( $violation['breakpoint'] ?? '' ) === $breakpoint['id'] ) ),
 			'suggested_patches' => $suggested_patches,
 		];
@@ -123,6 +141,9 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 	return [
 		'schema' => WPAE_LAYOUT_REPORT_SCHEMA,
 		'archetype' => $archetype,
+		'evidence' => 'static_plan',
+		'visual_render_verified' => false,
+		'breakpoint_source' => 'static_assumptions; runtime Elementor breakpoints must be checked in browser',
 		'breakpoints' => $reports,
 		'violations' => $violations,
 		'ok' => empty( $violations ),
