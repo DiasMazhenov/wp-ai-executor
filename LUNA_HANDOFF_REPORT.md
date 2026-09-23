@@ -13,7 +13,7 @@ Targeted live repair root `cd4da23` **не запускался**: после у
 - Repository: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
 - Исходный HEAD: `74bbc8fa178b324eb5590f0248bbb7533e0b171d`, source v02.11.144.
 - Release commit: `359c2a9` (`fix: repair generated hero without duplicate roots`), source v02.11.145.
-- Итоговый HEAD после отчёта/context: `003a923543c5bcc1a5e86f5bf4b49c6f9b63b620` (`docs: record v02.11.145 repair evidence`), также отправлен в `origin/main`.
+- Handoff/context опубликованы отдельными documentation commits `003a923` и `2d30047`, оба pushed; последний runtime/source commit остаётся `359c2a9`.
 - `git push origin main`: **PASS**, `74bbc8f..359c2a9 main -> main`.
 - WP Pusher показывает для `DiasMazhenov/wp-ai-executor` branch `main`, Push-to-Deploy enabled. Кнопка `Update plugin` вернула «Plugin was successfully updated»; Plugins UI подтвердил активный WPAE **v02.11.145**. Hook URL был вызван отдельно, но браузерная навигация завершилась timeout, поэтому результат hook не подтверждён. Версия была подтверждена независимо через Plugins UI и свежий Elementor editor.
 - Текущий editor UI на `post=5214` показал версию v02.11.145. Повторно открыть editor с cache-bust на второй вкладке один раз не удалось (`net::ERR_ABORTED`); свежая загрузка из существующей вкладки прошла и показала v145.

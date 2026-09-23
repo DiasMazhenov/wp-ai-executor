@@ -7,7 +7,7 @@
 - Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
 - Предыдущий source/docs baseline: `74bbc8fa178b324eb5590f0248bbb7533e0b171d`, source v02.11.144.
 - Runtime release commit: `359c2a9` (`fix: repair generated hero without duplicate roots`), source v02.11.145; push `origin/main` прошёл успешно.
-- Итоговый HEAD после документации: `003a923543c5bcc1a5e86f5bf4b49c6f9b63b620`; документационный commit также pushed.
+- Handoff/context опубликованы отдельными documentation commits `003a923` и `2d30047`, оба pushed; runtime source remains `359c2a9`.
 - WP Pusher `Update plugin` подтвердил успешное обновление; Plugins UI и свежий editor на существующем `post=5214` показывают активную v02.11.145. Отдельный hook navigation timed out, его completion не подтверждён.
 - Единственный проектный context файл — `context.md`; `SESSION_CONTEXT.md` не используется.
 
