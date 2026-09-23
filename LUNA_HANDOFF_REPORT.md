@@ -1,187 +1,102 @@
-# WP AI Executor — актуальный handoff report
+# WP AI Executor — handoff report v02.11.143
 
-Дата фиксации: **2026-09-22 01:33:54 +05:00 (Asia/Almaty)**
+Дата фиксации: **2026-09-24 02:20 +05:00 (Asia/Almaty)**
+
 Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`
+
 Ветка: `main`
-Целевая страница: **WordPress post=5214, Pricing Contract Live v123**
-Новые pages, posts, drafts и новые Elementor roots в этом этапе не создавались.
+Live target: существующая страница **post=5214, Pricing Contract Live v123**.
 
-## Срез исходников и live
+## Итог
 
-- Baseline перед этапом: HEAD `438e5d9`; runtime commit `d34e401`; source/live `v02.11.141`.
-- Итоговый source HEAD: `4ae6f71cbdc0692efc1136f5766b7e0b6e2b1083` (`Guard stale operation Vision captures`).
-- Runtime/source version: **v02.11.142**.
-- WP Pusher update активного плагина: **PASS**; Plugins page показывает активный `WP AI Executor v02.11.142`.
-- Первая ZIP-загрузка создала одну неактивную копию `v02.11.142`; она не активна и ожидает удаления из списка плагинов. Это не страница и не post.
-- `git push origin main`: **PASS**, `438e5d9..4ae6f71`.
-- Исходные и итоговые flags: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`.
-- Рабочий tree содержит только ранее существовавшие untracked audit/history файлы; они не включались в commit.
+Fail-open доступности Elementor widgets исправлен в source v02.11.143 и runtime установлен на существующий сайт. Одна контролируемая операция прошла через deterministic pipeline и live runtime registry. Сохранённый тестовый root прошёл save/reload, после доказательств удалён как временный; итоговая страница снова содержит только исходные hero, FAQ и pricing. Визуальный тест не принят: Vision оценил результат в 68/100 из-за пустого media placeholder, хотя запрос явно запрещал изображение. Свежие desktop/mobile screenshots получены inline через CUA, но PNG-файлы не сохранены.
 
-## Фактическая схема и routing
+## Исходники и release
 
-```text
-prompt
-  -> BriefIR v1
-  -> typed DesignPlan v1
-  -> WidgetCapabilityRegistry / LayoutReport
-  -> ElementorIR v2
-  -> native Elementor compiler
-  -> structural/semantic/layout validation
-  -> existing transaction/update/read-back boundary
-  -> editor/public render
-  -> scoped Vision/reconcile
-```
+- Исходный HEAD перед изменениями: `093ffc3eecead2fd70eac7150f4e47b270079812`; source version `v02.11.142`.
+- Runtime commit: `af76edb8a84bf75ba21c6ea545967bd80f1695fb` (`fix: fail closed on unavailable Elementor widgets`).
+- Итоговая source/runtime version: **v02.11.143**.
+- `origin/main` push: **PASS**, `093ffc3..af76edb main -> main`.
+- WP Pusher install: **PASS**. Editor chat показывает установленную активную `v02.11.143`.
+- В списке плагинов также остаётся неактивная старая копия `v02.11.142`; она не использовалась операцией.
+- Перед и после live-теста: `Design Decision Engine=active`, `Deterministic Design Pipeline=active`. Контракт active/active выбирает local deterministic pipeline; live trace также показывает `action_path=pipeline`, `provider_calls=0`.
+- Рабочее дерево до этого отчёта содержало существующие untracked audit/history artifacts. Они не входили в runtime commit. `context.md` — единственный tracked context-файл; case-insensitive `CONTEXT.md` не создавался отдельно. `SESSION_CONTEXT.md` не создавался.
 
-При `pipeline=active` и `EDDE=active` первым выбирается local deterministic pipeline. EDDE не запускается вторым конкурирующим compiler-ом и не создаёт второй write path. Legacy provider JSON, EDDE hero slice, transaction/rollback, page-update, retry/undo и browser sync сохранены.
+## Причина дефекта и исправление
 
-| Pipeline | EDDE | Фактический action path | Provider calls | Page writes | Статус |
-|---|---|---|---:|---:|---|
-| off | off | legacy provider | 1 | 1 | PASS, contract harness |
-| off | active | EDDE | 0 | 1 | PASS, contract harness |
-| shadow | active | EDDE + shadow comparison | 0 | 1 | PASS; shadow не пишет |
-| active | active | local deterministic pipeline | 0 | 1 | PASS, v140 live trace |
+Ранее `wpae_widget_capability()` объединял runtime lookup и статическое значение через `isset($types[$widget_type]) || static_available`. Поэтому успешный probe списка Elementor widgets не делал отсутствие типа отрицательным результатом: static `available=true` продолжал пропускать неподдерживаемый widget.
 
-Для установленного v142 на уже сохранённой странице новый write не запускался; live install проверялся read-only. В active/active trace нет двойной записи.
+Изменения v02.11.143:
 
-## Изменения v142
+- `includes/elementor/capability-registry.php`: runtime result отделён от static defaults; возвращаются состояния подтверждённого типа, отсутствующего типа и недоступного/ошибочного probe. Обычные widgets сверяются с готовым Elementor manager. `container` проверяется отдельно как структурный Elementor element. Явные registry/filter запреты сохраняются.
+- Fallback принимается только если target существует в текущем runtime, поддержан compiler-ом и сохраняет требуемое поведение. Проверяются fallback chains и cycles. Безопасный heading→text-editor переносит heading semantics и settings; CTA без URL-preserving замены и explicit media без asset-preserving замены завершаются ошибкой, а не теряют данные.
+- `includes/llm/design-plan.php`, `includes/elementor/elementor-ir.php`, `includes/llm/llm.php`: capability/compile failure останавливает active pipeline до write; он не уходит в legacy provider write fallback.
+- `tests/design-pipeline-contract.php` и `tests/flex-generation-runtime.php`: production functions проверяются через явные Elementor runtime doubles и write counters. Покрыты подтверждённый/отсутствующий/unavailable/error runtime, structural container, безопасный/недоступный/циклический fallback, CTA/media fidelity, отказ до записи и нормальные hero/pricing compilation.
+- `tests/llm-chat-contract.test.js`, `wp-ai-executor.php`, `wpae-package.json`: версия и package hashes обновлены до v02.11.143.
 
-### Единый target guard для stale pending
+В изменении не затрагивались operation-ledger/routing policy, transport, LayoutReport и существующие сохранённые дизайн-блоки. Аудит архитектурных gaps не переписывался.
 
-`includes/elementor/operation-ledger.php` получил общий read-only `wpae_design_operation_target_status()`. Он проверяет post scope, root IDs, наличие корней в актуальном `_elementor_data`, `saved_hash` и `target_fingerprint`. Для отсутствующего root возвращается `stale_target/root_missing/class=unknown_target_change`; rollback классифицируется отдельно как `confirmed_rollback`, если snapshot действительно совпадает.
+## Проверки
 
-`includes/elementor/editor-chat.php` локализует `target_status` и `reviewable`.
-`includes/llm/llm.php` не переводит stale operation и mismatched target в reconcile/review state и возвращает scoped conflict codes.
-`assets/js/elementor-llm-chat.js` скрывает кнопку проверки stale pending, не снимает screenshot с отсутствующего target и не отправляет такой target в общий Vision fallback.
-
-### Контракт и package
-
-- Добавлены checks для current target, missing root и saved-hash mismatch.
-- Добавлены JS contract checks для stale review guard.
-- `wp-ai-executor.php` поднят до v02.11.142.
-- `wpae-package.json` пересобран: 90 tracked runtime files, hash mismatches `0`.
-
-## Историческое удаление hero
-
-Историческая причина удаления не установлена. Подтверждены только факты WordPress revisions:
-
-- revision `5303` удаляет из diff `Тихая форма`, `АРХИТЕКТУРА`, `Пространство для идей`, body и обе CTA;
-- revision `5300` содержит hero и сохраняет pricing/FAQ.
-
-На том же post=5214 штатно восстановлена revision `5300`, затем восстановленная Elementor model сохранена штатной кнопкой Elementor. После save/reload public `_elementor_data` и DOM снова содержат hero `a9282de`. Pricing `b898e72` и FAQ `13568dc` не пересобирались и не удалялись.
-
-## Текущая операция и reconcile
-
-После reload до v142 localized pending metadata содержала:
-
-```json
-{
-  "operation_id": "wpae-89007d964d7436ab",
-  "operation_identity": "e12c2e08-2952-4906-8dbb-f66d3ed42eb1",
-  "revision": 5,
-  "root_ids": ["1fa90e6"],
-  "current_state": "written",
-  "saved_hash": "present",
-  "target_fingerprint": "present"
-}
-```
-
-Актуальные roots post=5214: `a9282de`, `13568dc`, `b898e72`; root `1fa90e6` отсутствует. Проверенная причина этого whole-operation capture failure — stale target: capture запускался для отсутствующего root. `wpae_vision_capture_failed` был downstream-ошибкой capture, а не доказательством renderer/network failure; отдельная причина внутри renderer по этому устаревшему target не установлена. До v142 попытка штатного reconcile оставляла `written/render_review_pending` и не создавала принятого Vision report.
-
-После установки v142 и reload editor:
-
-- кнопка `Проверить сохранённый результат` отсутствует (`pendingCount=0`);
-- missing target не отправляется в screenshot capture и provider Vision fallback;
-- операция не переводится в `reviewed`/`completed` и не деградирует старым acknowledgement;
-- текущие page roots и saved content не изменены.
-
-Successful selected-scope patch остаётся отдельным evidence layer: operation `wpae-20260921192047-21f06cd2`, element `bc09c44`, Vision score `100`, confidence `100%`. Он не является доказательством whole-operation reconcile.
-
-## Ledger/idempotency checks
-
-Production helper и contract harness проверяют:
-
-- повтор delivery того же idempotency key: одна operation;
-- конкурентный захват: один owner, без двойной записи/потери ledger;
-- явная независимая вставка с тем же brief: новый operation допустим;
-- timeout после write: read-back находит сохранённый result, duplicate root не создаётся;
-- post/root/fingerprint change: conflict/unknown без перезаписи чужих данных;
-- stale acknowledgement: не завершает другую operation и не откатывает её;
-- допустимые state transitions; terminal state не понижается старым сообщением.
-
-Искусственный live provider-timeout с мутацией страницы не запускался: **NOT RUN**. Live stale pending проверен read-only на post=5214 и не вызвал новую запись.
-
-## Live roots, copy и DOM
-
-После v142 reload public preview `https://mazhenov.kz/pricing-contract-live-v123/?wpae_check=hero-b-132-2039` содержит:
-
-- hero `a9282de`, background `rgb(246,240,230)`, copy `Тихая форма`, `АРХИТЕКТУРА`, `Пространство для идей`, `Опишите задачу и получите понятный первый шаг`;
-- CTA `Начать проект` → `#contact`, `Смотреть проекты` → `#projects`;
-- FAQ `13568dc` с исходным copy;
-- pricing `b898e72`, background `rgb(255,255,255)`, три native cards и CTA `#start`, `#project`, `#support`;
-- duplicate generated pricing root и временный `WPAE-UNSAVED-NEIGHBOR-*` marker отсутствуют.
-
-Public DOM readback после v142:
-
-| Root | Viewport/content width | Height | Background | Overflow |
-|---|---:|---:|---|---|
-| hero `a9282de` | `1265px` | `342px` | `rgb(246,240,230)` | false |
-| FAQ `13568dc` | `1265px` | `305.203125px` | transparent | false |
-| pricing `b898e72` | `1265px` | `429.375px` | `rgb(255,255,255)` | false |
-
-Editor responsive readback:
-
-- desktop inner width `1010px`: hero/pricing visible, no overflow;
-- tablet `753px`: hero `flex-direction=column`, no overflow;
-- mobile `345px`: copy first, visual zone second, both CTA usable, no horizontal overflow.
-
-## Vision и screenshots
-
-- Whole-operation Vision report for stale root: **BLOCKED before v142** because the target root was absent; surfaced as `wpae_vision_capture_failed`; no accepted durable Vision report exists.
-- v142 guard prevents capture/provider call when target is absent; this is a truthful pending/unknown state, not visual acceptance.
-- Selected patch Vision: score `100`, confidence `100%`, scoped element only.
-- Fresh inline CUA screenshots after v142 editor reload/public preview were captured for editor desktop, editor mobile, public hero/FAQ, and public pricing. They correspond to post=5214, roots above, source/live v02.11.142.
-- Filesystem PNG export: **SCREENSHOT BLOCKED**. Documented CUA exposes screenshot bytes through `getScreenshot()`/`emitImage()` only; no documented PNG writer or artifact export is available, and `tab.content.export()` is content export rather than screenshot bytes. No fake file links were created.
-
-## Validation
-
-```text
-php -l includes/elementor/operation-ledger.php          PASS
-php -l includes/elementor/editor-chat.php               PASS
-php -l includes/llm/llm.php                             PASS
-php -l wp-ai-executor.php                               PASS
-php tests/design-pipeline-contract.php                  PASS (76 checks)
-php tests/flex-generation-runtime.php                    PASS (331 checks)
-node --test tests/*.test.js                             PASS (4 suites)
-php docs/audits/2026-09-12/package-probe.php            PASS (90 files; mismatches=0)
-git diff --check                                        PASS
-```
-
-## Status matrix
-
-| Evidence | Status |
+| Проверка | Результат |
 |---|---|
-| v02.11.142 source | PASS |
-| v02.11.142 active in WordPress | PASS |
-| active/active routing without double write | PASS, harness + v140 trace |
-| stale target classified before capture | PASS, editor pending button hidden |
-| stale operation promoted to reviewed/completed | PASS prevention; remains written/pending |
-| historical hero recovery and current copy | PASS |
-| FAQ/pricing neighbor preservation | PASS |
-| DOM desktop/tablet/mobile geometry | PASS |
-| selected-scope Vision | PASS, 100/100 |
-| whole-operation Vision | BLOCKED, no valid target/report |
-| inline CUA screenshots | PASS |
-| filesystem PNG links | BLOCKED by CUA capability |
-| live artificial provider timeout | NOT RUN |
-| cleanup of accidental inactive duplicate plugin | PENDING action-time confirmation |
+| `php -l` для изменённых PHP runtime/test файлов | PASS |
+| `php tests/design-pipeline-contract.php` | PASS, 94 checks |
+| `php tests/flex-generation-runtime.php` | PASS, 333 checks |
+| `node --test tests/*.test.js` | PASS, 4 suites |
+| `php docs/audits/2026-09-12/package-probe.php` | PASS, 90 файлов, 0 hash mismatches |
+| `git diff --check` | PASS |
 
-## Commit, push and installation
+Package probe сохраняет диагностическое предупреждение: полный JSON encoding одного diagnostic payload не прошёл из-за malformed UTF-8; compact summary закодировался, проверка package hashes завершилась успешно. Причина payload в этой задаче не исследовалась.
 
-- Final source commit: `4ae6f71cbdc0692efc1136f5766b7e0b6e2b1083`.
-- Push: **PASS**, `438e5d9..4ae6f71 main -> main`.
-- Active installation: **PASS**, WP Pusher updated active plugin to v02.11.142.
-- Inactive duplicate installation: present from first malformed ZIP upload; no page/content data attached.
-- Package/hash: **PASS**, 90 files, zero mismatches.
-- Report/context updates are tracked separately; pre-existing untracked files are not staged.
+## Live операция на post=5214
 
-Исторические v126/v140/v141 snapshots не являются доказательством текущего live состояния; этот документ содержит актуальный v142 срез.
+До запуска в редакторе были видны три исходных блока. Их точный текст после операции и после финального reload остался: hero `Тихая форма` / `АРХИТЕКТУРА` / `Пространство для идей`, описание и ссылки `#contact`, `#projects`; исходные FAQ-вопросы; три исходные pricing-карточки и ссылки `#start`, `#project`, `#support`. Видимые исходные root IDs совпадают с историческими `a9282de`, `13568dc`, `b898e72` по содержанию, но IDs через доступное CUA accessibility дерево не отображались и в этом live-тесте независимо не подтверждены.
+
+Единственная отправленная пользователем генерация:
+
+> Добавь в самый низ текущей страницы одну временную hero-секцию для проверки компонентов WPAE v143. Используй только native Elementor Container, Heading, Text Editor и Button; изображение не добавляй. Надзаголовок: «ТЕХНИЧЕСКАЯ ПРОВЕРКА WPAE 143». Заголовок: «Проверка виджетов». Описание: «Временный блок для проверки native Elementor-компонентов». Одна кнопка: «К тарифам», ссылка #start. Не изменяй существующие hero, FAQ, pricing, их содержимое, стили или порядок. Сгенерируй отдельную новую секцию в конце.
+
+Live evidence из diagnostics:
+
+- post `5214`, scope `page`, operation `wpae-09bd755ba2f4fed1`, operation identity `6cb68b2b-37c8-4a18-8912-84c2845d17ea`;
+- idempotency key `61de370bcba014450e068e75e9b6e3cc268ed68ff82e3f7da8b0f226e7297bdf`;
+- новый root `9f48ce3`; BriefIR hash `c0bb2f24ad1989aa3a7d419b14170529bd4020c5ac8ae170d66849b36c49cbc0`; DesignPlan hash `da72c8b312b2d74eea71e508ee703145e3bff3e8589a44b9041f37aac9b000c8`;
+- `action_path=pipeline`, `route=local_deterministic`, `provider_calls=0`; provider metadata указывает `openrouter/openrouter/free`, source `not_called`;
+- runtime подтвердил `container` как `structural`; `heading`, `text-editor`, `button`, `image` — как `present`. Для ElementorIR скомпилированы container, heading, text-editor и button; compiler report: compiled=true, errors=0, downgrades=0;
+- preflight: один новый root, 7 nodes, 0 layout violations. Сохранённый текст и ссылка `К тарифам` → `#start` присутствовали после write и после save/reload;
+- operation ledger при записи: `written`, revision `4`, root `9f48ce3`, saved hash присутствовал; rendered hash и durable Vision report ID были пусты.
+
+Vision вернул score **68**, confidence **95%**, и не принял результат: hero compiler добавил пустую bordered media-зону справа, несмотря на явное «изображение не добавляй». В diagnostics это связано с `hero-media-1:missing_media_explicit_fallback` и `hero-media-1:media_fallback`. Это подтверждённый live дефект без исправления в этом ограниченном изменении. Встроенный UI инициировал автоматический repair/rollback путь; rollback отклонён сообщением «Состояние операции уже изменилось». Второй успешной записи не наблюдалось. Durable Vision report не появился. Визуальный результат не помечается как reviewed/completed.
+
+После save/reload тестовый root был выбран отдельно, затем удалён в Elementor и сохранение подтверждено отключённой кнопкой Publish. Финальный reload показывает ровно три исходных roots и прежний hero/FAQ/pricing copy/links; временный root отсутствует. После ручной очистки reconcile operation ledger не запускался: сохранённая диагностика `written` относится к write до очистки, а не доказывает текущую цель операции.
+
+В desktop screenshot тестовая секция показана при browser capture raster `1233×918`; в mobile screenshot выбран Elementor preset «Мобильный — книжная ориентация (до 767px)», capture raster `1233×918`. На видимых кадрах горизонтального overflow не заметно. CUA не предоставил exact CSS ширину iframe и computed DOM geometry; они не заявляются. Источник снимков — Elementor editor preview после первого save/reload, выбранный root `9f48ce3`, operation `wpae-09bd755ba2f4fed1`, установленный v02.11.143. Кадры выведены inline в сессии, но PNG files не созданы.
+
+### Screenshot status
+
+**SCREENSHOT BLOCKED (filesystem PNG export).** Документированные возможности CUA дают in-memory screenshot bytes и inline `emitImage`; у доступного CUA API нет записи этих bytes по абсолютному пути. Попытка открыть Preview через доступный app binding завершилась timeout, поэтому открыть/проверить PNG-файл и дать достоверную ссылку невозможно. Inline screenshots выше в browser tool outputs являются настоящими captures; файловые ссылки намеренно не выдуманы.
+
+## Live status matrix
+
+| Требование | Статус | Доказательство / предел |
+|---|---|---|
+| v02.11.143 установлен и активен | PASS | WPAE editor chat показывает v02.11.143; WP Pusher update successful |
+| Runtime fail-closed pipeline path | PASS | Live `action_path=pipeline`; runtime capability trace присутствует |
+| Runtime widgets действительно доступны | PASS | Runtime result `present` для requested widgets; `container=structural` |
+| Exact copy и CTA test root | PASS | Editor preview DOM после write/reload; root `9f48ce3` |
+| Отсутствие media при явном запрете | FAIL | Пустая fallback media zone; Vision 68/100 |
+| Desktop/mobile save-reload screenshot | PARTIAL | Свежие inline CUA captures; файл PNG blocked, точная iframe width недоступна |
+| DOM computed geometry / no overflow | NOT VERIFIED | Только видимый editor preview; computed DOM geometry не снималась |
+| Сохранность hero/FAQ/pricing | PASS | Exact copy/links видны до и после; root IDs не доступны в AX |
+| Временный test root удалён | PASS | Финальный save/reload показывает исходные три roots |
+| Durable Vision reviewed/completed | NOT PASS | Score 68, `vision_report_id` пуст; ledger observed `written` до cleanup |
+| Создание pages/drafts/новых tabs | PASS | Работал один существующий browser tab и post=5214 |
+
+## Release metadata
+
+- Runtime commit `af76edb8a84bf75ba21c6ea545967bd80f1695fb`: **COMMITTED**.
+- Push `origin/main`: **PASS**.
+- Установка v02.11.143: **PASS**.
+- Report/context documentation update: записаны после live-проверки; их git commit/push фиксируются отдельно от runtime release.
+- Остаточное наблюдаемое ограничение: hero без image source всё ещё получает пустую визуальную media fallback-зону; live Vision это обнаружил, а операция оставлена в `written` без принятого review.
