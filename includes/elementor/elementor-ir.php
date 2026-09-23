@@ -65,7 +65,12 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					} elseif ( $item_role === 'title' ) {
 						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'eyebrow' ) {
-						$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						if ( ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) {
+							$badge_label = wpae_elementor_ir_node( $child_id . '-eyebrow-badge-label', 'eyebrow_badge_label', 'heading', [ $content_ref ], [ 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow-badge', 'hero_badge', 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						} else {
+							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						}
 					} elseif ( $item_role === 'body' || $item_role === 'text' ) {
 						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( str_starts_with( $item_role, 'cta' ) || $item_role === 'button' ) {
@@ -229,6 +234,48 @@ function wpae_elementor_ir_setting_value( string $token, array $tokens, array &$
 	return function_exists( 'wpae_design_token_value' ) ? wpae_design_token_value( $token, $tokens, $token_report ) : null;
 }
 
+function wpae_elementor_ir_missing_cta_urls( array $elements, array $brief ): array {
+	$expected = [];
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( ! is_array( $item ) || ! str_starts_with( (string) ( $item['role'] ?? '' ), 'cta' ) ) {
+			continue;
+		}
+		$url = trim( (string) ( $item['url'] ?? '' ) );
+		if ( empty( $item['url_requested'] ) && $url === '' ) {
+			continue;
+		}
+		$expected[] = [ 'text' => (string) ( $item['exact_text'] ?? '' ), 'url' => $url ];
+	}
+	$actual = [];
+	$walk = static function ( array $nodes ) use ( &$walk, &$actual ): void {
+		foreach ( $nodes as $node ) {
+			if ( ! is_array( $node ) ) {
+				continue;
+			}
+			if ( ( $node['widgetType'] ?? '' ) === 'button' ) {
+				$actual[] = [ 'text' => (string) ( $node['settings']['text'] ?? '' ), 'url' => (string) ( $node['settings']['link']['url'] ?? '' ) ];
+			}
+			$walk( (array) ( $node['elements'] ?? [] ) );
+		}
+	};
+	$walk( $elements );
+	$missing = [];
+	foreach ( $expected as $item ) {
+		$matched = false;
+		foreach ( $actual as $index => $candidate ) {
+			if ( $candidate === $item ) {
+				unset( $actual[ $index ] );
+				$matched = true;
+				break;
+			}
+		}
+		if ( ! $matched ) {
+			$missing[] = [ 'reason' => 'explicit_cta_url_lost', 'text' => $item['text'], 'expected_url' => $item['url'] ];
+		}
+	}
+	return array_values( $missing );
+}
+
 function wpae_elementor_ir_dimension_control( $value, string $fallback_unit, float $fallback_size, bool $linked = true ): array {
 	$raw = trim( (string) $value );
 	$unit = $fallback_unit;
@@ -337,7 +384,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['padding_tablet'] = $settings['padding'];
 			$settings['padding_mobile'] = wpae_elementor_ir_dimension_control( $token_values['space.component'] ?? '1.25rem', 'rem', 1.25, false );
 		}
-		if ( $role === 'pricing_badge' ) {
+		if ( in_array( $role, [ 'pricing_badge', 'hero_badge' ], true ) ) {
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['flex_direction'] = 'row';
 			$settings['flex_wrap'] = 'nowrap';
@@ -357,6 +404,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['_flex_grow'] = 0;
 			$settings['_flex_shrink'] = 0;
 			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
+			$settings['_css_classes'] = 'wpae-generated-badge';
 		}
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
@@ -367,7 +415,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( is_array( $type_token ) ) {
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
 		}
-		if ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) {
+		if ( $role === 'eyebrow_badge_label' || ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) ) {
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['background_background'] = 'classic';
 			$settings['background_color'] = $accent;
@@ -390,6 +438,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['typography_font_weight'] = '600';
 			$settings['typography_text_transform'] = 'uppercase';
 			$settings['typography_letter_spacing'] = [ 'unit' => 'em', 'size' => 0.08, 'sizes' => [] ];
+			if ( $role === 'eyebrow_badge_label' ) {
+				$settings['_css_classes'] = 'wpae-generated-badge-label';
+			}
 		}
 	} elseif ( $widget_type === 'text-editor' ) {
 		$values = [];
@@ -471,7 +522,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			if ( ! is_array( $compiled_child ) || ( $compiled_child['elType'] ?? '' ) !== 'container' || ! is_array( $compiled_child['settings'] ?? null ) ) {
 				continue;
 			}
-			if ( ( $node['children'][ $child_index ]['role'] ?? '' ) === 'pricing_badge' ) {
+			if ( in_array( (string) ( $node['children'][ $child_index ]['role'] ?? '' ), [ 'pricing_badge', 'hero_badge' ], true ) ) {
 				continue;
 			}
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
@@ -529,6 +580,11 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 }
 
 function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [], array $options = [] ): array {
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( is_array( $item ) && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
+			return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => [ 'explicit_cta_url_invalid:' . sanitize_key( (string) ( $item['id'] ?? 'cta' ) ) ] ];
+		}
+	}
 	$validation = wpae_elementor_ir_validate( $ir );
 	if ( empty( $validation['ok'] ) ) {
 		return [ 'ok' => false, 'errors' => $validation['errors'], 'validation' => $validation ];
@@ -568,6 +624,10 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 		return $count;
 	};
 	$report['node_count'] = $counter( $data );
+	$missing_cta_urls = wpae_elementor_ir_missing_cta_urls( $data, $brief );
+	if ( ! empty( $missing_cta_urls ) ) {
+		$report['errors'] = array_merge( $report['errors'], $missing_cta_urls );
+	}
 	if ( ! empty( $report['errors'] ) ) {
 		return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => $report['errors'], 'report' => $report, 'validation' => $validation ];
 	}

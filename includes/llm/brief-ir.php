@@ -25,6 +25,29 @@ function wpae_brief_ir_normalize_text( string $text ): string {
 	return trim( $text, " \t\n\r\0\x0B.,;:" );
 }
 
+function wpae_brief_ir_normalize_url( $value ): string {
+	$value = trim( (string) $value );
+	$value = trim( $value, " \t\n\r\0\x0B.,;)]}" );
+	if ( $value === '' || preg_match( '/[\x00-\x1F\x7F]/', $value ) ) {
+		return '';
+	}
+	if ( preg_match( '/^#[A-Za-z][A-Za-z0-9_:\-]*$/', $value ) || preg_match( '#^/(?!/)[^\s<>"\']+$#', $value ) ) {
+		return $value;
+	}
+	if ( ! preg_match( '#^(?:https?://|mailto:|tel:)#i', $value ) ) {
+		return '';
+	}
+	$safe = function_exists( 'esc_url_raw' ) ? esc_url_raw( $value ) : $value;
+	$parts = function_exists( 'wp_parse_url' ) ? wp_parse_url( $safe ) : parse_url( $safe );
+	if ( ! is_array( $parts ) || ! in_array( strtolower( (string) ( $parts['scheme'] ?? '' ) ), [ 'http', 'https', 'mailto', 'tel' ], true ) ) {
+		return '';
+	}
+	if ( in_array( strtolower( (string) $parts['scheme'] ), [ 'http', 'https' ], true ) && empty( $parts['host'] ) ) {
+		return '';
+	}
+	return $safe;
+}
+
 function wpae_brief_ir_locale( string $source_text ): string {
 	if ( preg_match( '/[А-Яа-яЁё]/u', $source_text ) ) {
 		return 'ru';
@@ -100,7 +123,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$ambiguities = [];
 	$seen = [];
 	$role_counts = [];
-	$add_content = static function ( string $role, string $exact_text, int $start, int $length, ?string $url = null, float $confidence = 0.8, bool $required = false ) use ( &$content, &$seen, &$role_counts ): void {
+	$add_content = static function ( string $role, string $exact_text, int $start, int $length, ?string $url = null, float $confidence = 0.8, bool $required = false, bool $url_requested = false ) use ( &$content, &$seen, &$role_counts ): void {
 		$exact_text = trim( $exact_text );
 		if ( $exact_text === '' ) {
 			return;
@@ -110,6 +133,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			if ( $url !== null && $content[ $seen[ $key ] ]['url'] === null ) {
 				$content[ $seen[ $key ] ]['url'] = $url;
 			}
+			$content[ $seen[ $key ] ]['url_requested'] = ! empty( $content[ $seen[ $key ] ]['url_requested'] ) || $url_requested;
 			return;
 		}
 		$index = (int) ( $role_counts[ $role ] ?? 0 );
@@ -121,6 +145,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			'exact_text' => $exact_text,
 			'normalized_text' => wpae_brief_ir_normalize_text( $exact_text ),
 			'url' => $url,
+			'url_requested' => $url_requested,
 			'source_span' => [ $start, $start + $length ],
 			'confidence' => max( 0.0, min( 1.0, $confidence ) ),
 			'required' => $required,
@@ -151,6 +176,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		$role = wpae_brief_ir_label_role( $prefix );
 		$url = null;
+		$url_requested = false;
 		// Scope URL association to the structural segment between this quoted
 		// value and the next quoted value. A fixed look-ahead can steal a CTA
 		// target from the next card when the current description is long.
@@ -159,10 +185,13 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			? (int) $quote_matches[0][ $match_index + 1 ][1]
 			: strlen( $source_text );
 		$after = substr( $source_text, $after_start, max( 0, $next_quote_start - $after_start ) );
-		if ( preg_match( '/(?:ссылк\w*|url|link)\s*[:\-]?\s*(https?:\/\/[^\s,;]+|#[A-Za-z0-9_\-]+)/iu', $after, $url_match ) ) {
-			$url = trim( (string) $url_match[1], " \t\n\r.,;:)]}>" );
-		} elseif ( preg_match( '/^\s*(?:->|—|-|:)\s*(https?:\/\/[^\s,;]+|#[A-Za-z0-9_\-]+)/u', $after, $url_match ) ) {
-			$url = trim( (string) $url_match[1], " \t\n\r.,;:)]}>" );
+		$url_pattern = '([A-Za-z][A-Za-z0-9+.\-]*:[^\s,;]+|#[A-Za-z][A-Za-z0-9_:\-]*|\/(?!\/)[^\s,;]+)';
+		if ( preg_match( '/(?:ссылк\w*|url|link)\s*[:\-]?\s*' . $url_pattern . '/iu', $after, $url_match ) ) {
+			$url_requested = true;
+			$url = wpae_brief_ir_normalize_url( (string) $url_match[1] );
+		} elseif ( preg_match( '/^\s*(?:->|→|—|-|:)\s*' . $url_pattern . '/u', $after, $url_match ) ) {
+			$url_requested = true;
+			$url = wpae_brief_ir_normalize_url( (string) $url_match[1] );
 		}
 		if ( $role === 'cta' ) {
 			$role = $cta_index === 0 ? 'cta' : 'cta_' . ( $cta_index + 1 );
@@ -170,7 +199,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$required = in_array( $role, [ 'title', 'body', 'cta' ], true ) || str_starts_with( $role, 'cta_' );
 		$confidence = $role === 'text' ? 0.62 : 0.98;
-		$add_content( $role, $inner, $start, strlen( $full ), $url, $confidence, $required );
+		$add_content( $role, $inner, $start, strlen( $full ), $url_requested ? $url : null, $confidence, $required, $url_requested );
 		if ( $role === 'text' ) {
 			$ambiguities[] = [
 				'kind' => 'unlabeled_quote',
@@ -212,6 +241,16 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		'source_span' => $media_match_span,
 		'provenance' => [ 'source' => 'prompt', 'source_span' => $media_match_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
 	];
+	if ( preg_match( '/\b(?:pill(?:[-\s]?badge)?|бейдж|пилюл\w*)\b/iu', $source_text, $badge_match, PREG_OFFSET_CAPTURE ) ) {
+		$badge_span = [ (int) $badge_match[0][1], (int) $badge_match[0][1] + strlen( (string) $badge_match[0][0] ) ];
+		$constraints[] = [
+			'id' => 'eyebrow_presentation_pill',
+			'kind' => 'eyebrow_presentation',
+			'value' => 'pill',
+			'source_span' => $badge_span,
+			'provenance' => [ 'source' => 'prompt', 'source_span' => $badge_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+		];
+	}
 	if ( $media_intent === 'conflict' ) {
 		$ambiguities[] = [ 'kind' => 'conflicting_media_intent', 'source_span' => $media_match_span, 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
 	}
@@ -377,6 +416,9 @@ function wpae_brief_ir_validate( array $brief ): array {
 	foreach ( (array) ( $brief['content'] ?? [] ) as $index => $item ) {
 		if ( ! is_array( $item ) || trim( (string) ( $item['exact_text'] ?? '' ) ) === '' || ! is_array( $item['source_span'] ?? null ) || ! is_array( $item['provenance'] ?? null ) ) {
 			$errors[] = 'content_' . (int) $index;
+		}
+		if ( is_array( $item ) && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
+			$errors[] = 'content_' . (int) $index . '_invalid_explicit_url';
 		}
 	}
 	return [ 'ok' => empty( $errors ), 'errors' => array_values( $errors ) ];

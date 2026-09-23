@@ -485,8 +485,14 @@
                 visionRegenerate: Boolean(options.visionRegenerate),
                 visionFindings: String(options.visionFindings || '').slice(0, 3600),
                 ownedRootIds: Array.isArray(options.ownedRootIds) ? options.ownedRootIds.map(String).filter(Boolean).slice(0, 12) : liveGeneratedRootIds.slice(0, 12),
-                selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined
+                selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined,
+                replaceExistingRoot: Boolean(options.replaceExistingRoot),
+                replacesOperation: options.replacesOperation && typeof options.replacesOperation === 'object' ? options.replacesOperation : undefined
             } : {};
+            if (repairOptions.replaceExistingRoot) {
+                repairOptions.operationIdentity = newOperationIdentity();
+                rememberOperationIdentity(repairOptions.operationIdentity);
+            }
             window.sessionStorage.setItem(visionRepairKey, JSON.stringify({ message: String(message).slice(0, 4000), options: repairOptions, createdAt: Date.now() }));
         } catch (error) {
             return false;
@@ -519,11 +525,11 @@
         // Embedded editors may ignore window.location.reload(); refresh the
         // preview first so rolled-back roots cannot survive into the repair.
         window.setTimeout(function () {
-            refreshSavedElementorPreview().catch(function () { return false; }).then(function () {
-                return clearEditorRoots(true);
-            }).then(function () {
-                request(pending.message, false, pending.options || {});
-            });
+            var repair = pending.options || {};
+            var ready = repair.replaceExistingRoot
+                ? Promise.resolve(true)
+                : refreshSavedElementorPreview().catch(function () { return false; }).then(function () { return clearEditorRoots(true); });
+            ready.then(function () { request(pending.message, false, repair); });
         }, 0);
     }
     function copyText(text) {
@@ -1568,7 +1574,10 @@
         liveGeneratedRootIds = roots.slice();
         rememberOperationRoots(roots);
         return runVisionReview('', 1, true, brief || '', editorSync, requestContext.editor_root_snapshot, operationContext).then(function (review) {
-            return reconcileDesignOperation(body, requestContext, editorSync, review).then(function (reconciled) {
+			var reconcile = review && review.gate && review.gate.quality_failed
+				? Promise.resolve({ skipped: true, reason: 'vision_quality_failed', operation: operation })
+				: reconcileDesignOperation(body, requestContext, editorSync, review);
+			return reconcile.then(function (reconciled) {
                 var durableOperation = reconciled && reconciled.operation ? reconciled.operation : operation;
                 if (reconciled && reconciled.operation) {
                     body.diagnostics.operation_ledger = reconciled.operation;
@@ -1596,6 +1605,7 @@
         // the absence of a ledger entry is a supported path, not a failure.
         if (!operationId || !endpoint || !ledger || String(ledger.operation_id || '') !== operationId) return Promise.resolve({ skipped: true, reason: 'no_durable_ledger' });
         var report = review && review.report ? review.report : {};
+		if ( review && review.gate && review.gate.quality_failed ) return Promise.resolve({ skipped: true, reason: 'vision_quality_failed' });
         var state = report.report_id ? 'completed' : (review && review.vision_unavailable ? 'written' : 'rendered');
         var roots = editorSync && Array.isArray(editorSync.operation_owned_root_ids) ? editorSync.operation_owned_root_ids.slice(0, 12) : liveGeneratedRootIds.slice(0, 12);
         var evidence = JSON.stringify({ operation_id: operationId, roots: roots, viewport: window.innerWidth || 0, state: state }).slice(0, 4000);
@@ -1796,6 +1806,9 @@
             operation_owned_root_ids: liveGeneratedRootIds.slice(0, 12),
             operation_identity: operationIdentity
         };
+        if (options.replaceExistingRoot && options.replacesOperation) {
+            requestContext.replaces_operation = options.replacesOperation;
+        }
         if (options.retryCurrentOperation) requestContext.retry_current_operation = true;
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
@@ -1961,6 +1974,7 @@
                 });
             }
             return visionPromise.then(function (review) {
+				if (review && review.gate && review.gate.quality_failed) return review;
 				return reconcileDesignOperation(body, requestContext, editorSyncDataForReview, review).catch(function (error) {
 					addMessage('assistant', 'Ledger reconcile требует read-back: ' + error.message);
 					return null;
@@ -1986,7 +2000,28 @@
                             });
                         });
                     }
-                    addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Откатываю неудачную версию и заново генерирую полноценный дизайн по исходному запросу.');
+					addMessage('assistant', targetedPatch ? 'Выполняется: Откатываю неудачную точечную правку и повторяю ее в выбранном дереве.' : 'Выполняется: Проверяю ownership и заменяю только текущий сгенерированный root.');
+                    if (!targetedPatch) {
+                        var parentLedger = body.diagnostics && body.diagnostics.operation_ledger ? body.diagnostics.operation_ledger : {};
+                        var replacementOptions = {
+                            visionRepair: true,
+                            visionRegenerate: true,
+                            repairDepth: repairDepth + 1,
+                            originalBrief: originalBrief,
+                            visionFindings: buildVisionRepairMessage(review, originalBrief, false),
+                            ownedRootIds: liveGeneratedRootIds.slice(0, 12),
+                            replaceExistingRoot: true,
+                            replacesOperation: {
+                                operation_id: String(parentLedger.operation_id || ''),
+                                operation_identity: String(parentLedger.operation_identity || requestContext.operation_identity || '').slice(0, 120),
+                                revision: Number(parentLedger.revision || 0),
+                                root_ids: Array.isArray(parentLedger.root_ids) ? parentLedger.root_ids.slice(0, 12) : []
+                            }
+                        };
+                        addMessage('assistant', 'Текущий root остаётся на странице. Запускаю deterministic replacement с проверкой operation ownership и saved fingerprint.');
+                        if (!scheduleVisionRepairAfterReload(originalBrief, replacementOptions)) throw new Error('Не удалось сохранить Vision repair перед перезагрузкой Elementor.');
+                        return true;
+                    }
                     return rollbackVisionFailure(body.write.rollback_snapshot_id, buildVisionOperationContext(body, requestContext, editorSyncDataForReview)).then(function (rollback) {
                         if (!rollback.ok) throw new Error('Не удалось откатить неудачную версию перед повторной генерацией: ' + rollback.error);
                         var repairOptions = { visionRepair: true, visionRegenerate: !targetedPatch, repairDepth: repairDepth + 1, originalBrief: originalBrief, visionFindings: buildVisionRepairMessage(review, originalBrief, targetedPatch), ownedRootIds: liveGeneratedRootIds.slice(0, 12), selectedElements: requestContext.selected_elements };

@@ -199,6 +199,53 @@ $check( ( $semantic_title['header_size'] ?? '' ) === 'h1' && ( $semantic_title['
 $check( (float) ( $semantic_compiled['elementor_data'][0]['settings']['padding']['size'] ?? 0 ) === 4.5 && (float) ( $semantic_compiled['elementor_data'][0]['settings']['padding_mobile']['size'] ?? 0 ) === 2.0, 'section spacing tokens become native desktop/mobile padding settings' );
 $check( ( $semantic_primary['background_color'] ?? '' ) !== ( $semantic_secondary['background_color'] ?? '' ) && ( $semantic_secondary['border_border'] ?? '' ) === 'solid' && ( $semantic_primary['text'] ?? '' ) === 'Начать проект' && ( $semantic_primary['link']['url'] ?? '' ) === '#contact' && ( $semantic_secondary['text'] ?? '' ) === 'Смотреть проекты' && ( $semantic_secondary['link']['url'] ?? '' ) === '#projects', 'two CTA widgets preserve exact order/URLs and compile primary/secondary native visual hierarchy' );
 
+$live_hero_prompt = 'Создай ОДНУ новую hero-секцию на текущей странице. Для архитектурной студии «Тихая форма». Используй строго этот текст: надзаголовок «АРХИТЕКТУРА»; заголовок «Пространство для идей»; описание «Опишите задачу и получите понятный первый шаг»; основная кнопка «Начать проект» → #contact; вторичная кнопка «Смотреть проекты» → #projects. Явно не используй изображение: без image widget и без пустой визуальной/media-колонки или плейсхолдера. Текстовая композиция должна выглядеть законченной. Добавь аккуратный pill-бейдж над заголовком, карточную/визуальную обводку только если она не создаёт пустую media-зону. Не меняй ничего кроме добавления этой одной секции.';
+$live_hero = wpae_brief_ir_parse( $live_hero_prompt );
+$live_ctas = array_values( array_filter( $live_hero['content'], static fn( array $item ): bool => str_starts_with( (string) $item['role'], 'cta' ) ) );
+$check( count( $live_ctas ) === 2 && $live_ctas[0]['url'] === '#contact' && $live_ctas[1]['url'] === '#projects', 'live prompt Unicode arrows preserve both CTA URL pairs in BriefIR' );
+$check( count( array_filter( $live_hero['layout_constraints'], static fn( array $item ): bool => ( $item['kind'] ?? '' ) === 'eyebrow_presentation' && ( $item['value'] ?? '' ) === 'pill' ) ) === 1, 'explicit pill badge request is represented as a typed BriefIR constraint' );
+$live_plan = wpae_design_plan_from_brief( $live_hero );
+$live_ir = wpae_elementor_ir_from_design_plan( $live_plan, $live_hero );
+$live_compiled = wpae_elementor_ir_compile( $live_ir, $live_hero, [], [ 'id_seed' => 'live-hero-regression' ] );
+$live_root = $live_compiled['elementor_data'][0] ?? [];
+$live_copy = $live_root['elements'][0] ?? [];
+$live_nodes = (array) ( $live_copy['elements'] ?? [] );
+$live_json = wp_json_encode( $live_root, JSON_UNESCAPED_UNICODE );
+$live_buttons = array_values( array_filter( $live_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+$check( ! empty( $live_compiled['ok'] ) && count( $live_buttons ) === 2 && ( $live_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $live_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects', 'live BriefIR CTA links survive DesignPlan, ElementorIR, and native compilation' );
+$check( str_contains( $live_json, 'wpae-generated-badge' ) && str_contains( $live_json, 'АРХИТЕКТУРА' ) && str_contains( $live_json, 'widgetType":"heading' ), 'explicit hero pill compiles as a native editable badge containing exact eyebrow copy' );
+$check( ( $live_root['settings']['background_color'] ?? '' ) === '#f6f0e6' && ( $live_compiled['report']['tokens']['resolved'][0]['source'] ?? '' ) === 'safe_default', 'built-in paper fallback remains allowed and its provenance is not mislabeled as project input' );
+$separated_ctas = wpae_brief_ir_parse( 'hero primary button «One» → #one; secondary button «Two» → https://example.com/two' );
+$separated_links = array_values( array_filter( $separated_ctas['content'], static fn( array $item ): bool => str_starts_with( (string) $item['role'], 'cta' ) ) );
+$multiline_ctas = wpae_brief_ir_parse( "hero\nbutton: «First» → #first\nsecondary button: «Second» → https://example.com/second" );
+$multiline_links = array_values( array_filter( $multiline_ctas['content'], static fn( array $item ): bool => str_starts_with( (string) $item['role'], 'cta' ) ) );
+$check( count( $separated_links ) === 2 && $separated_links[0]['url'] === '#one' && $separated_links[1]['url'] === 'https://example.com/two', 'CTA URL association stays within each quoted CTA when separated by punctuation' );
+$check( count( $multiline_links ) === 2 && $multiline_links[0]['url'] === '#first' && $multiline_links[1]['url'] === 'https://example.com/second', 'CTA URL association preserves pairs across line breaks' );
+$invalid_cta = wpae_brief_ir_parse( 'hero button «Unsafe» → javascript:alert(1)' );
+$check( ! wpae_brief_ir_validate( $invalid_cta )['ok'], 'explicit but unsafe CTA URL fails BriefIR validation instead of becoming a fake link' );
+$pill_widgets = [];
+$pill_walk = static function ( array $nodes ) use ( &$pill_walk, &$pill_widgets ): void {
+	foreach ( $nodes as $node ) {
+		if ( is_array( $node ) ) {
+			$pill_widgets[] = $node;
+			$pill_walk( (array) ( $node['elements'] ?? [] ) );
+		}
+	}
+};
+$pill_walk( [ $live_root ] );
+$pill_label = array_values( array_filter( $pill_widgets, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' && ( $node['settings']['title'] ?? '' ) === 'АРХИТЕКТУРА' ) )[0] ?? [];
+$check( ! empty( $pill_label ) && ( $pill_label['settings']['title_color'] ?? '' ) === '#ffffff' && ( $pill_label['settings']['border_radius']['size'] ?? 0 ) >= 999 && ( $pill_label['settings']['_element_width'] ?? '' ) === 'initial' && ( $pill_label['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge-label', 'hero pill label stays editable, content-width and high-contrast in native Elementor settings' );
+$default_tokens = [ 'design_prohibitions' => [], 'button_style' => [], 'palette' => [ 'paper' => '#f6f0e6' ] ];
+$default_report = [];
+wpae_design_token_value( 'color.page_bg', $default_tokens, $default_report );
+$check( ( $default_report['resolved'][0]['source'] ?? '' ) === 'safe_default' && ( $default_report['resolved'][0]['value'] ?? '' ) === '#f6f0e6', 'sanitized but unstored project defaults keep honest safe-default provenance' );
+$wpae_test_options['wp_ai_executor_design_tokens'] = [ 'palette' => [ 'paper' => '#eeeeee' ] ];
+$project_report = [];
+$project_tokens = [ 'design_prohibitions' => [], 'button_style' => [], 'palette' => [ 'paper' => '#eeeeee' ] ];
+wpae_design_token_value( 'color.page_bg', $project_tokens, $project_report );
+$check( ( $project_report['resolved'][0]['source'] ?? '' ) === 'project' && ( $project_report['resolved'][0]['value'] ?? '' ) === '#eeeeee', 'explicitly stored project color keeps project provenance and value' );
+$wpae_test_options['wp_ai_executor_design_tokens'] = [];
+
 $english = wpae_brief_ir_parse( 'hero title: "Launch faster" body: "A clear path." CTA: "Start now" -> https://example.com/go' );
 $check( $english['locale'] === 'en' && $english['intent']['archetype'] === 'hero', 'English hero classification' );
 $check( in_array( 'Launch faster', array_column( $english['content'], 'exact_text' ), true ), 'English exact copy retained' );
@@ -415,6 +462,17 @@ $stale_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_
 $check( empty( $stale_status['reviewable'] ) && $stale_status['reason'] === 'root_missing' && $stale_status['class'] === 'unknown_target_change', 'missing pending root is rejected before capture without claiming rollback' );
 $changed_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash' ], 5214, $saved_tree );
 $check( empty( $changed_status['reviewable'] ) && $changed_status['reason'] === 'saved_hash_mismatch', 'changed saved target is rejected before capture' );
+$owned_tree = [ [ 'id' => 'owned-root', 'elType' => 'container', 'settings' => [ '_css_classes' => 'wpae-generated-root wpae-generated-hero' ], 'elements' => [] ], [ 'id' => 'neighbor-root', 'elType' => 'container', 'settings' => [], 'elements' => [] ] ];
+$owned_operation = [ 'operation_id' => 'op-owned', 'operation_identity' => 'owned-identity', 'post_id' => 5214, 'revision' => 4, 'current_state' => 'written', 'root_ids' => [ 'owned-root' ], 'saved_hash' => hash( 'sha256', wp_json_encode( $owned_tree ) ) ];
+$owned_guard = wpae_design_operation_replacement_target( $owned_operation, 5214, 'owned-identity', 4, [ 'owned-root' ], $owned_tree );
+$check( ! empty( $owned_guard['ok'] ) && $owned_guard['root_ids'] === [ 'owned-root' ], 'replacement accepts the exact current plugin-owned root and saved snapshot' );
+$check( empty( wpae_design_operation_replacement_target( $owned_operation, 5214, 'owned-identity', 3, [ 'owned-root' ], $owned_tree )['ok'] ), 'replacement rejects a stale operation revision' );
+$check( empty( wpae_design_operation_replacement_target( $owned_operation, 5214, 'owned-identity', 4, [ 'neighbor-root' ], $owned_tree )['ok'] ), 'replacement rejects a neighboring non-owned root' );
+$changed_owned_tree = $owned_tree;
+$changed_owned_tree[1]['settings']['title'] = 'user edit';
+$check( empty( wpae_design_operation_replacement_target( $owned_operation, 5214, 'owned-identity', 4, [ 'owned-root' ], $changed_owned_tree )['ok'] ), 'replacement blocks when any saved page content changed after generation' );
+$repair_operation = wpae_design_operation_create( [ 'operation_id' => 'op-repair-transition', 'idempotency_key' => 'repair-transition-key', 'post_id' => 5214, 'current_state' => 'written' ] );
+$check( wpae_design_operation_update( 'op-repair-transition', [ 'current_state' => 'revised' ] )['current_state'] === 'revised', 'successful owned-root replacement can mark its former operation revised' );
 $route = wpae_llm_route_policy( 'elementor_write', 'openrouter', 'openrouter/free' );
 $check( $route['critical_write'] && $route['requires_structured_output'] && $route['retry_budget'] === 1 && ! $route['fallback_allowed'], 'critical route policy is bounded' );
 $matrix = [

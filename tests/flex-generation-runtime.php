@@ -1102,6 +1102,12 @@ $missing_required_image->set_param( 'context', [ 'post_id' => 42 ] );
 $missing_required_response = wpae_llm_chat_request( $missing_required_image );
 check( is_wp_error( $missing_required_response ) && $missing_required_response->get_error_code() === 'wpae_design_plan_rejected', 'active pipeline rejects a required image without an asset before write' );
 check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0, 'required missing asset makes zero provider calls and zero page writes' );
+$unscoped_vision_repair = new WP_REST_Request();
+$unscoped_vision_repair->set_param( 'message', 'Создай hero с заголовком «Комната для идей» и описанием «Понятный первый шаг».' );
+$unscoped_vision_repair->set_param( 'context', [ 'post_id' => 42, 'vision_repair' => true, 'vision_regenerate' => true ] );
+$unscoped_vision_response = wpae_llm_chat_request( $unscoped_vision_repair );
+check( is_wp_error( $unscoped_vision_response ) && $unscoped_vision_response->get_error_code() === 'wpae_vision_replacement_scope_required', 'active Vision regeneration without an owned-root snapshot is refused instead of appending' );
+check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0, 'unscoped Vision regeneration performs zero provider calls and writes' );
 
 // An active deterministic request must stop at the capability gate when the
 // runtime cannot confirm its widgets; it must not fall through to provider JSON.

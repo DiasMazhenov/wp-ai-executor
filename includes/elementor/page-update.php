@@ -377,6 +377,10 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
                 'details' => $existing_data->get_error_data(),
             ], 422 );
         }
+		$expected_before = $request->get_param( 'expected_before_elementor_data' );
+		if ( is_array( $expected_before ) && ! wpae_elementor_data_matches( $expected_before, $existing_data ) ) {
+			return new WP_REST_Response( [ 'ok' => false, 'code' => 'wpae_elementor_write_conflict', 'error' => 'Elementor data changed while the replacement was preparing; newer saved content was preserved.' ], 409 );
+		}
         $protected_zone_guard = wpae_validate_elementor_protected_zones( $existing_data, $elementor_data, $request );
         if ( ! $protected_zone_guard['ok'] ) {
             return new WP_REST_Response( [

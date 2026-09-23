@@ -23,8 +23,8 @@ function wpae_design_operation_transition_map(): array {
 		'generated' => [ 'normalized', 'failed', 'unknown' ],
 		'normalized' => [ 'validated', 'failed', 'unknown' ],
 		'validated' => [ 'written', 'failed', 'unknown' ],
-		'written' => [ 'rendered', 'failed', 'unknown' ],
-		'rendered' => [ 'reviewed', 'failed', 'unknown' ],
+		'written' => [ 'rendered', 'revised', 'failed', 'unknown' ],
+		'rendered' => [ 'reviewed', 'revised', 'failed', 'unknown' ],
 		'reviewed' => [ 'revised', 'completed', 'failed' ],
 		'revised' => [ 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'completed', 'failed' ],
 		'unknown' => [ 'written', 'rendered', 'reviewed', 'failed' ],
@@ -171,6 +171,38 @@ function wpae_design_operation_target_status( array $operation, int $post_id, ?a
 		}
 	}
 	return [ 'reviewable' => true, 'status' => 'current', 'reason' => 'target_matches_saved_snapshot', 'root_ids' => $root_ids ];
+}
+
+function wpae_design_operation_replacement_target( array $operation, int $post_id, string $identity, int $revision, array $root_ids, ?array $elementor_data = null ): array {
+	$owned_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( $root_ids, 0, 12 ) ) ) );
+	if ( absint( $operation['post_id'] ?? 0 ) !== $post_id || $post_id <= 0 ) {
+		return [ 'ok' => false, 'reason' => 'post_mismatch' ];
+	}
+	$stored_identity = sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) );
+	if ( $stored_identity === '' || ! hash_equals( $stored_identity, sanitize_text_field( $identity ) ) ) {
+		return [ 'ok' => false, 'reason' => 'identity_mismatch' ];
+	}
+	if ( $revision <= 0 || $revision !== absint( $operation['revision'] ?? 0 ) ) {
+		return [ 'ok' => false, 'reason' => 'stale_revision' ];
+	}
+	if ( ! in_array( sanitize_key( (string) ( $operation['current_state'] ?? '' ) ), [ 'written', 'rendered', 'reviewed' ], true ) || count( $owned_roots ) !== 1 || $root_ids !== $owned_roots ) {
+		return [ 'ok' => false, 'reason' => 'root_scope_or_state_mismatch' ];
+	}
+	$target = wpae_design_operation_target_status( $operation, $post_id, $elementor_data );
+	if ( empty( $target['reviewable'] ) ) {
+		return [ 'ok' => false, 'reason' => (string) ( $target['reason'] ?? 'target_not_current' ), 'target_status' => $target ];
+	}
+	foreach ( (array) $elementor_data as $root ) {
+		if ( ! is_array( $root ) || sanitize_key( (string) ( $root['id'] ?? '' ) ) !== $owned_roots[0] ) {
+			continue;
+		}
+		$classes = preg_split( '/\s+/', trim( (string) ( $root['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( in_array( 'wpae-generated-root', $classes, true ) ) {
+			return [ 'ok' => true, 'root_ids' => $owned_roots, 'target_status' => $target ];
+		}
+	}
+	return [ 'ok' => false, 'reason' => 'root_not_plugin_generated' ];
 }
 
 /**

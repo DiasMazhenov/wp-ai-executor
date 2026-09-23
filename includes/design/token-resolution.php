@@ -61,6 +61,22 @@ function wpae_design_token_value( string $token, array $tokens = [], ?array &$re
 		if ( ( is_scalar( $cursor ) && (string) $cursor !== '' ) || ( is_array( $cursor ) && ! empty( $cursor ) ) ) {
 			$value = $cursor;
 			$source = 'project';
+			// wpae_get_project_design_tokens() fills omitted settings with bundled
+			// defaults. Keep their value, but do not claim the site owner supplied it.
+			if ( isset( $tokens['design_prohibitions'], $tokens['button_style'] ) && function_exists( 'get_option' ) ) {
+				$stored = get_option( 'wp_ai_executor_design_tokens', [] );
+				$stored_cursor = is_array( $stored ) ? $stored : [];
+				foreach ( $path as $segment ) {
+					if ( ! is_array( $stored_cursor ) || ! array_key_exists( $segment, $stored_cursor ) ) {
+						$stored_cursor = null;
+						break;
+					}
+					$stored_cursor = $stored_cursor[ $segment ];
+				}
+				if ( $stored_cursor === null ) {
+					$source = 'safe_default';
+				}
+			}
 		}
 	}
 	if ( $value === null && isset( $defaults[ $token ] ) ) {
@@ -76,6 +92,9 @@ function wpae_design_token_value( string $token, array $tokens = [], ?array &$re
 		return null;
 	}
 	if ( is_array( $report ) ) {
+		if ( $source === 'safe_default' && isset( $path ) && ! in_array( $token, array_column( (array) ( $report['fallbacks'] ?? [] ), 'token' ), true ) ) {
+			$report['fallbacks'][] = [ 'token' => $token, 'value' => $value, 'reason' => 'missing_project_token' ];
+		}
 		$report['resolved'][] = [ 'token' => $token, 'value' => $value, 'source' => $source ];
 	}
 	return $value;

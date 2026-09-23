@@ -85,6 +85,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 	if ( ! preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 		$surface_override = '';
 	}
+	$eyebrow_presentation = (string) wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', '' );
 	$cta_refs = wpae_design_plan_content_refs( $brief, [ 'cta', 'cta_2', 'cta_3' ] );
 	$tokens = [
 		'color.page_bg' => 'color.page_bg',
@@ -116,6 +117,10 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$section['surface_override'] = $surface_override;
 		$section['provenance']['surface_override'] = [ 'source' => 'prompt', 'constraint' => 'surface_color' ];
 	}
+	if ( $archetype === 'hero' && $eyebrow_presentation === 'pill' ) {
+		$eyebrow_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow' ] );
+		$section['badge_content_ref'] = $eyebrow_refs[0] ?? '';
+	}
 	if ( $archetype === 'hero' ) {
 		$section['media_intent'] = $media_intent;
 		$section['children'] = [
@@ -124,7 +129,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
 				'content_refs' => array_values( array_unique( array_merge( wpae_design_plan_content_refs( $brief, [ 'brand', 'eyebrow', 'title', 'body' ] ), $cta_refs ) ) ),
 				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.body', 'space.component' ],
-				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
+				'layout_constraints' => array_merge( [ 'min_width' => 0, 'max_width' => 100 ], $eyebrow_presentation === 'pill' ? [ 'eyebrow_presentation' => 'pill' ] : [] ),
 				'responsive_policy' => 'copy_first_stack',
 				'media_refs' => [],
 				'editable_fields' => [ 'text', 'url' ],
@@ -190,6 +195,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			'source' => 'brief-ir',
 		],
 		'warnings' => array_values( array_unique( array_merge( empty( $brief['ambiguities'] ) ? [] : [ 'brief_has_ambiguities' ], $archetype === 'hero' && $media_intent === 'unspecified' && ! $hero_has_media ? [ 'media_unspecified_no_asset_text_only' ] : [] ) ) ),
+		'explicit_badge' => $archetype === 'hero' && $eyebrow_presentation === 'pill',
 		'media_intent' => $media_intent,
 		'media_asset_count' => count( $media_references ),
 	];
@@ -212,6 +218,9 @@ function wpae_design_plan_validate( array $plan ): array {
 		$section = is_array( $plan['sections'][0] ?? null ) ? $plan['sections'][0] : [];
 		$has_media_node = (bool) array_filter( (array) ( $section['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media' );
 		$split = in_array( (string) ( $section['composition'] ?? '' ), [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
+		if ( ! empty( $plan['explicit_badge'] ) && trim( (string) ( $section['badge_content_ref'] ?? '' ) ) === '' ) {
+			$errors[] = 'explicit_pill_badge_missing_eyebrow';
+		}
 		if ( $media_intent === 'conflict' ) {
 			$errors[] = 'media_intent_conflict';
 		}
