@@ -1,25 +1,29 @@
 # WP AI Executor Context
 
-Последний срез: **2026-09-24 03:17 +05:00 (Asia/Almaty)**.
+Последний срез: **2026-09-24 04:24 +05:00 (Asia/Almaty)**.
 
-## Git и versions
+## Git и runtime
 
-- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, local HEAD `d5053167765159cd10d4b6d77141e1d5f92ff099`.
-- Source v02.11.144: runtime commit `8cd065f`; documentation commit `d505316` уже создан локально. В handoff заменено ранее неверное утверждение, что documentation commit ещё ожидает.
-- Remote `main`, прочитанный через GitHub connector: `24b488dce1939a31014d28a6a924138a6bd38fd8`. Локальные commits не pushed; shell DNS к GitHub не разрешился.
-- В WordPress активен WP AI Executor v02.11.143, старый v02.11.142 неактивен; v144 не устанавливалась.
-- Единственный канонический context-файл — `context.md`; SESSION_CONTEXT не создавался.
+- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
+- Предыдущий source/docs baseline: `74bbc8fa178b324eb5590f0248bbb7533e0b171d`, source v02.11.144.
+- Runtime release commit: `359c2a9` (`fix: repair generated hero without duplicate roots`), source v02.11.145; push `origin/main` прошёл успешно.
+- WP Pusher `Update plugin` подтвердил успешное обновление; Plugins UI и свежий editor на существующем `post=5214` показывают активную v02.11.145. Отдельный hook navigation timed out, его completion не подтверждён.
+- Единственный проектный context файл — `context.md`; `SESSION_CONTEXT.md` не используется.
 
-## v144 source
+## v02.11.145 changes and checks
 
-Локальные изменения исправляют BriefIR media intent, no-image hero planning, empty-media fallback, native token application, responsive static LayoutReport и fail-closed active pipeline. Локальные проверки на release: PHP lint, `php tests/design-pipeline-contract.php` (114), `php tests/flex-generation-runtime.php` (336), `node --test tests/*.test.js` (4 suites), package probe (90/0 hash mismatches), `git diff --check`. Это не подтверждает live behavior.
+- BriefIR captures explicit CTA URLs across `→`/`->`/other existing delimiters; compiler rejects URL loss before write.
+- Explicit hero pill request maps to a native content-fit container and editable heading; unmarked eyebrow and pricing badge remain supported.
+- Token provenance separates missing safe defaults from stored project values and explicit user values.
+- Vision repair targets only a verified plugin-owned root and exact current saved snapshot, replacing through the existing transaction boundary; stale/foreign target is refused.
+- PHP lint passed; `design-pipeline-contract.php` 130 checks; `flex-generation-runtime.php` 338 checks; `node --test tests/*.test.js` 4 suites passed; package probe 90 files/0 mismatches; `git diff --check` passed.
 
-## Текущая existing page `post=5214`
+## Existing target `post=5214`
 
-WordPress UI подтверждает Published, permalink `/pricing-contract-live-v123/`, template Elementor Canvas, 75 revisions, last change 2026-09-24 02:34. Актуальный Elementor editor для того же post загрузил пустую модель (0 видимых roots); public render в CUA выглядит пустым. Точный raw `_elementor_data`, response status/body, computed CSS, network/console errors и PHP logs недоступны в текущей среде (shell DNS failure; CUA даёт AX/screenshot без этих каналов).
+- Current existing page `/pricing-contract-live-v123/`, one visible generated root `cd4da23`; no new pages/drafts/roots were created in this run.
+- Last visible operation diagnostics: `wpae-642778ef2b64e486`, identity `d1e611fe-6f12-46e7-9683-986aea4108c7`, state `written`, revision 4, root `cd4da23`, review pending, no persisted Vision report id. This is the last recorded diagnostics readback, not a fresh direct server-ledger query.
+- New v145 chat UI did not expose a reviewable pending operation; no targeted repair was attempted because current target ownership/fingerprint could not be confirmed through the live UI.
+- Current public DOM at 1440×900 and 390×844 still has both CTA hrefs missing, `АРХИТЕКТУРА` as plain H6, beige safe-default background `#f6f0e6`, no media placeholder, and no horizontal overflow. No fresh Vision was run after deployment.
+- CUA showed fresh desktop and mobile screenshot captures inline. PNG file export is blocked: documented CUA exposes inline screenshot bytes but no workspace file/artifact writer.
 
-WordPress revision diff `#5360` от 02:34 показывает удаление прежнего hero/CTA/FAQ/pricing copy из post content. Read-only Elementor revision preview `#5357` от 02:20 снова показывает прежний hero, обе CTA, FAQ и три pricing карточки. Preview закрыт через «Отказ»; ничего не применялось и страница не сохранялась. Временная корреляция с прежним v143 acceptance не доказывает причинность.
-
-Live generation, revision restore, post save, settings/plugins changes не выполнялись. Revision `#5357` — найденный recovery candidate, не утверждение об одобренном восстановлении. Не запускать v144 acceptance поверх пустого текущего editor model без решения владельца.
-
-Подробный read-only evidence, статусы, ограничения и release evidence находятся в `LUNA_HANDOFF_REPORT.md`.
+Detailed evidence and PASS/FAIL/BLOCKED matrix: `LUNA_HANDOFF_REPORT.md`.
