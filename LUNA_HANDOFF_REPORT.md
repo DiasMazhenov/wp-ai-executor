@@ -15,7 +15,8 @@
 ## Исходное и итоговое состояние
 
 - Исходный HEAD: `24b488dce1939a31014d28a6a924138a6bd38fd8`, ветка `main`, source `v02.11.143`.
-- На момент отчёта HEAD остаётся тем же; локальные изменения не закоммичены из-за отказа sandbox создать `.git/index.lock` (`Operation not permitted`).
+- Runtime/source commit: `8cd065f` (`fix: honor deterministic hero media intent`).
+- Документационные изменения этого handoff/context будут зафиксированы отдельным commit после runtime commit.
 - Итоговая локальная source version: `v02.11.144`.
 - Установленная/live версия: **не проверена**. Исходная handoff сообщала v02.11.143, но текущий пустой editor/public результат не подтверждает фактическую активную версию.
 - Проверка `origin/main` через `git ls-remote` завершилась DNS ошибкой `Could not resolve host: github.com`; актуальность remote и push status неизвестны.
@@ -80,8 +81,8 @@
 
 ## Release metadata
 
-- Source v02.11.144: локальные изменения готовы к проверке, **не закоммичены**.
-- Commit: **BLOCKED** — `git add` остановлен ОС на создании `.git/index.lock` с `Operation not permitted`; sandbox разрешает чтение `.git`, но не запись.
+- Source v02.11.144: **COMMITTED** локально как `8cd065f`.
+- Commit: runtime source закоммичен; documentation commit ожидает фиксации.
 - Push: **BLOCKED / NOT RUN** — remote проверка DNS не прошла; коммита нет.
 - Установка: **NOT RUN**.
 - Live acceptance: **BLOCKED**, не считать визуально принятой.
