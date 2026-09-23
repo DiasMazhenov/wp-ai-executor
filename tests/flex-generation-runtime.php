@@ -1083,6 +1083,18 @@ check( ( $shadow_data['diagnostics']['action_path'] ?? '' ) === 'provider' && ( 
 check( count( $GLOBALS['http_calls'] ) === 2 && count( $GLOBALS['writes'] ) === 1, 'EDDE shadow mode did not stay within decision plus provider call budget' );
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'off';
 
+// An active deterministic request must stop at the capability gate when the
+// runtime cannot confirm its widgets; it must not fall through to provider JSON.
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active' ];
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$capability_request = new WP_REST_Request();
+$capability_request->set_param( 'message', 'Создай hero. Надзаголовок: «ПРОВЕРКА». Заголовок: «Runtime-компоненты». Описание: «Проверяем доступность виджетов». Кнопка: «К тарифам», ссылка #start.' );
+$capability_request->set_param( 'context', [ 'post_id' => 42 ] );
+$capability_response = wpae_llm_chat_request( $capability_request );
+check( is_wp_error( $capability_response ) && $capability_response->get_error_code() === 'wpae_widget_capability_unavailable', 'unverified runtime fails active pipeline before provider fallback' );
+check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0, 'active capability failure makes zero provider calls and zero writes' );
+
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );
 $permission->set_param( 'context', [ 'post_id' => 99 ] );

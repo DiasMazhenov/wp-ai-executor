@@ -188,8 +188,10 @@ function wpae_elementor_ir_validate( array $ir ): array {
 	}
 	$walk( (array) ( $ir['nodes'] ?? [] ) );
 	$capabilities = function_exists( 'wpae_widget_capability_report' ) ? wpae_widget_capability_report( $widgets ) : [ 'ok' => true, 'unavailable' => [], 'downgrades' => [] ];
-	if ( ! empty( $capabilities['unavailable'] ) ) {
-		$errors[] = 'unavailable_widgets:' . implode( ',', $capabilities['unavailable'] );
+	if ( empty( $capabilities['ok'] ) ) {
+		foreach ( (array) ( $capabilities['failures'] ?? [] ) as $failure ) {
+			$errors[] = 'widget_capability:' . sanitize_key( (string) ( $failure['from'] ?? 'unknown' ) ) . ':' . sanitize_key( (string) ( $failure['reason'] ?? 'unavailable' ) );
+		}
 	}
 	return [ 'ok' => empty( $errors ), 'errors' => array_values( $errors ), 'widgets' => array_values( array_unique( $widgets ) ), 'capabilities' => $capabilities ];
 }
@@ -225,7 +227,12 @@ function wpae_elementor_ir_dimension_control( $value, string $fallback_unit, flo
 }
 
 function wpae_elementor_ir_compile_node( array $node, array $content_map, array $media_map, array $tokens, string $seed, array &$report ): array {
-	$resolved = function_exists( 'wpae_widget_capability_resolve' ) ? wpae_widget_capability_resolve( (string) ( $node['widget_type'] ?? 'container' ) ) : [ 'widget_type' => sanitize_key( (string) ( $node['widget_type'] ?? 'container' ) ), 'downgraded' => false ];
+	$requested_widget_type = sanitize_key( (string) ( $node['widget_type'] ?? 'container' ) );
+	$resolved = function_exists( 'wpae_widget_capability_resolve' ) ? wpae_widget_capability_resolve( $requested_widget_type, $node ) : [ 'ok' => false, 'widget_type' => null, 'from' => $requested_widget_type, 'downgraded' => false, 'reason' => 'capability_registry_unavailable' ];
+	if ( empty( $resolved['ok'] ) ) {
+		$report['errors'][] = [ 'node_id' => sanitize_key( (string) ( $node['node_id'] ?? '' ) ), 'widget_type' => $requested_widget_type, 'reason' => sanitize_key( (string) ( $resolved['reason'] ?? 'capability_unavailable' ) ), 'runtime_result' => $resolved['trace'][0]['runtime_result'] ?? 'unknown', 'trace' => $resolved['trace'] ?? [] ];
+		return [];
+	}
 	$widget_type = sanitize_key( (string) ( $resolved['widget_type'] ?? 'container' ) );
 	if ( ! empty( $resolved['downgraded'] ) ) {
 		$report['downgrades'][] = $resolved;
@@ -338,8 +345,16 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 				$values[] = (string) $content_map[ sanitize_key( (string) $content_ref ) ]['exact_text'];
 			}
 		}
-		$settings['editor'] = implode( "\n", $values );
-		$settings['text_color'] = (string) ( $token_values['color.muted'] ?? '#6b7280' );
+		$text = implode( "\n", $values );
+		if ( $requested_widget_type === 'heading' && $text !== '' ) {
+			$tag = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : 'h1';
+			$settings['editor'] = '<' . $tag . '>' . nl2br( htmlspecialchars( $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' ), false ) . '</' . $tag . '>';
+			$heading_color = $role === 'brand' ? 'color.muted' : ( $role === 'eyebrow' ? 'color.primary' : 'color.text' );
+			$settings['text_color'] = (string) ( $token_values[ $heading_color ] ?? '#111827' );
+		} else {
+			$settings['editor'] = $text;
+			$settings['text_color'] = (string) ( $token_values['color.muted'] ?? '#6b7280' );
+		}
 	} elseif ( $widget_type === 'button' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['text'] = (string) ( $item['exact_text'] ?? '' );
@@ -454,7 +469,7 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 			$media_map[ sanitize_key( (string) ( $media['asset_id'] ?? '' ) ) ] = $media;
 		}
 	}
-	$report = [ 'schema' => 'wpae-elementor-compile-report-v1', 'downgrades' => [], 'warnings' => (array) ( $ir['warnings'] ?? [] ), 'tokens' => [ 'resolved' => [], 'missing' => [], 'fallbacks' => [], 'collisions' => [] ], 'node_count' => 0 ];
+	$report = [ 'schema' => 'wpae-elementor-compile-report-v1', 'downgrades' => [], 'errors' => [], 'warnings' => (array) ( $ir['warnings'] ?? [] ), 'tokens' => [ 'resolved' => [], 'missing' => [], 'fallbacks' => [], 'collisions' => [] ], 'node_count' => 0 ];
 	$report['contrast'] = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $tokens ) : [ 'ok' => true, 'errors' => [] ];
 	if ( empty( $report['contrast']['ok'] ) && in_array( 'color.muted_on_color.page_bg', (array) ( $report['contrast']['errors'] ?? [] ), true ) ) {
 		// Preserve the site's palette globally, but keep generated small text
@@ -482,6 +497,9 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 		return $count;
 	};
 	$report['node_count'] = $counter( $data );
+	if ( ! empty( $report['errors'] ) ) {
+		return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => $report['errors'], 'report' => $report, 'validation' => $validation ];
+	}
 	if ( empty( $report['contrast']['ok'] ) ) {
 		return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => [ 'contrast:' . implode( ',', (array) ( $report['contrast']['errors'] ?? [] ) ) ], 'report' => $report, 'validation' => $validation ];
 	}

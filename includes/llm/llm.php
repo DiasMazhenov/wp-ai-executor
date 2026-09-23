@@ -9359,6 +9359,24 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		];
         $design_pipeline_trace['status'] = empty( $brief_validation['ok'] ) || empty( $plan_validation['ok'] ) ? 'invalid_plan' : 'planned';
     }
+	$active_pipeline_eligible = $action_request
+		&& $design_pipeline_trace['mode'] === 'active'
+		&& ( $design_generation_route['action_path'] ?? '' ) === 'pipeline'
+		&& ! $targeted_edit
+		&& ! $vision_repair
+		&& ! $vision_regenerate
+		&& $selected_post_id > 0
+		&& in_array( (string) ( $design_plan_v1['archetype'] ?? '' ), [ 'hero', 'process', 'pricing' ], true );
+	if (
+		$active_pipeline_eligible
+		&& ! empty( $design_pipeline_trace['brief']['validation']['ok'] )
+		&& ! empty( $design_pipeline_trace['plan']['validation']['capabilities']['failures'] )
+	) {
+		return new WP_Error( 'wpae_widget_capability_unavailable', 'Доступность обязательного Elementor-компонента не подтверждена; запись остановлена.', [
+			'status' => 422,
+			'details' => [ 'capabilities' => $design_pipeline_trace['plan']['validation']['capabilities']['failures'] ],
+		] );
+	}
 	$shadow_compiled = [];
 	if (
 		$action_request
@@ -9493,6 +9511,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             ], 200 );
         }
         $design_pipeline_trace['status'] = 'compile_invalid';
+		return new WP_Error( 'wpae_design_pipeline_compile_failed', 'Сборка Elementor отклонена; legacy-запись не запускалась.', [
+			'status' => 422,
+			'details' => [ 'pipeline' => $design_pipeline_trace ],
+		] );
     }
     if ( $targeted_edit && ! $vision_repair && $selected_post_id > 0 && wpae_llm_is_process_structure_repair_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_process_timeline_repair' ) ) {
         $selected_existing = wpae_get_elementor_data_for_post( $selected_post_id );

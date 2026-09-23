@@ -200,8 +200,10 @@ function wpae_design_plan_validate( array $plan ): array {
 		}
 	}
 	$capabilities = function_exists( 'wpae_widget_capability_report' ) ? wpae_widget_capability_report( $requested_widgets ) : [ 'ok' => true, 'unavailable' => [], 'downgrades' => [] ];
-	if ( ! empty( $capabilities['unavailable'] ) ) {
-		$errors[] = 'unavailable_widgets:' . implode( ',', $capabilities['unavailable'] );
+	if ( empty( $capabilities['ok'] ) ) {
+		foreach ( (array) ( $capabilities['failures'] ?? [] ) as $failure ) {
+			$errors[] = 'widget_capability:' . sanitize_key( (string) ( $failure['from'] ?? 'unknown' ) ) . ':' . sanitize_key( (string) ( $failure['reason'] ?? 'unavailable' ) );
+		}
 	}
 	$token_report = function_exists( 'wpae_design_token_validate_refs' ) ? wpae_design_token_validate_refs( array_keys( (array) ( $plan['tokens'] ?? [] ) ) ) : [ 'ok' => true, 'missing' => [] ];
 	if ( ! empty( $token_report['missing'] ) ) {

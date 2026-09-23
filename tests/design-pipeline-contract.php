@@ -34,8 +34,17 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 	}
 }
 if ( ! function_exists( 'apply_filters' ) ) {
-	function apply_filters( $tag, $value ) {
-		return $value;
+	function apply_filters( $tag, $value, ...$args ) {
+		global $wpae_test_filters;
+		return isset( $wpae_test_filters[ $tag ] ) && is_callable( $wpae_test_filters[ $tag ] )
+			? $wpae_test_filters[ $tag ]( $value, ...$args )
+			: $value;
+	}
+}
+if ( ! function_exists( 'did_action' ) ) {
+	function did_action( $tag ): int {
+		global $wpae_test_actions;
+		return (int) ( $wpae_test_actions[ $tag ] ?? 0 );
 	}
 }
 if ( ! function_exists( 'get_option' ) ) {
@@ -82,6 +91,7 @@ if ( ! function_exists( 'current_time' ) ) {
 
 require_once __DIR__ . '/../includes/design/token-resolution.php';
 require_once __DIR__ . '/../includes/elementor/capability-registry.php';
+$wpae_no_elementor_probe = wpae_widget_runtime_probe();
 require_once __DIR__ . '/../includes/elementor/reference-set.php';
 require_once __DIR__ . '/../includes/llm/brief-ir.php';
 require_once __DIR__ . '/../includes/llm/design-plan.php';
@@ -99,6 +109,25 @@ $check = static function ( bool $condition, string $message ) use ( &$checks ): 
 	}
 	$checks++;
 };
+
+$wpae_test_actions = [ 'elementor/widgets/register' => 1 ];
+eval( 'namespace Elementor;
+class Plugin {
+	public static $mode = "ready";
+	public static $types = [];
+	public $widgets_manager;
+	public static function instance() { return self::$mode === "missing_instance" ? null : new self(); }
+	public function __construct() { $this->widgets_manager = new Widgets_Manager(); }
+}
+class Widgets_Manager {
+	public function get_widget_types() {
+		if ( Plugin::$mode === "throw" ) { throw new \\RuntimeException( "private test detail" ); }
+		if ( Plugin::$mode === "manager_unavailable" ) { return null; }
+		return array_fill_keys( Plugin::$types, new \\stdClass() );
+	}
+}' );
+\Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
+$check( $wpae_no_elementor_probe['state'] === 'unavailable' && $wpae_no_elementor_probe['reason'] === 'elementor_runtime_missing', 'absent Elementor runtime is reported as unavailable before test double registration' );
 
 $hero_prompt = "hero\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nFAQ\nО нас\n7 шагов";
 $hero = wpae_brief_ir_parse( $hero_prompt );
@@ -207,7 +236,85 @@ $check( ( $explicit_surface_plan['sections'][0]['surface_override'] ?? '' ) === 
 $check( ( $explicit_surface_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#123456', 'explicit background overrides the semantic surface token only at the compiled section' );
 
 $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
-$check( $unknown['downgraded'] && $unknown['widget_type'] === 'text-editor', 'unavailable widget has native fallback' );
+$check( empty( $unknown['ok'] ) && $unknown['reason'] === 'not_in_capability_registry', 'unknown widget is rejected instead of guessed into a fallback' );
+$heading_capability = wpae_widget_capability( 'heading' );
+$check( $heading_capability['available'] && $heading_capability['runtime_result'] === 'present', 'runtime confirms heading availability' );
+$unsupported_compiler_widget = wpae_widget_capability( 'accordion' );
+$check( ! $unsupported_compiler_widget['available'] && $unsupported_compiler_widget['reason'] === 'not_supported_by_compiler', 'runtime registration alone cannot authorize a widget the native compiler does not implement' );
+$wpae_test_filters['wpae_widget_capability_registry'] = static function ( array $registry ): array {
+	$registry['heading']['available'] = false;
+	return $registry;
+};
+$restricted_heading = wpae_widget_capability( 'heading' );
+$check( ! $restricted_heading['available'] && $restricted_heading['static_policy'] === 'denied', 'runtime presence cannot override an explicit registry restriction' );
+$wpae_test_filters['wpae_widget_capability_registry'] = static function ( array $registry ): array {
+	$registry['heading']['available'] = true;
+	return $registry;
+};
+\Elementor\Plugin::$types = array_values( array_diff( \Elementor\Plugin::$types, [ 'heading' ] ) );
+$missing_heading = wpae_widget_capability( 'heading' );
+$check( empty( $missing_heading['available'] ) && $missing_heading['runtime_result'] === 'missing', 'runtime omission defeats static available=true' );
+$wpae_test_filters = [];
+\Elementor\Plugin::$types = [];
+$container_capability = wpae_widget_capability( 'container' );
+$check( $container_capability['available'] && $container_capability['runtime_result'] === 'structural', 'container is resolved as a structural element outside the widget list' );
+$wpae_test_actions['elementor/widgets/register'] = 0;
+$not_ready = wpae_widget_capability( 'heading' );
+$check( ! $not_ready['available'] && $not_ready['runtime_result'] === 'unknown' && $not_ready['reason'] === 'widget_registration_not_ready', 'unregistered Elementor runtime remains unknown and unavailable' );
+$wpae_test_actions['elementor/widgets/register'] = 1;
+\Elementor\Plugin::$mode = 'manager_unavailable';
+$no_manager = wpae_widget_capability_report( [ 'heading' ] );
+$check( empty( $no_manager['ok'] ) && $no_manager['unknown'] === [ 'heading' ], 'missing runtime manager is reported as unknown, not available' );
+\Elementor\Plugin::$mode = 'throw';
+$probe_error = wpae_widget_capability( 'heading' );
+$check( ! $probe_error['available'] && $probe_error['runtime_result'] === 'unknown' && $probe_error['reason'] === 'widget_probe_failed', 'runtime exception is redacted and fails closed' );
+\Elementor\Plugin::$mode = 'ready';
+\Elementor\Plugin::$types = [ 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
+$safe_heading_fallback = wpae_widget_capability_resolve( 'heading', [ 'role' => 'title', 'content_refs' => [ 'hero_title' ] ] );
+$check( ! empty( $safe_heading_fallback['ok'] ) && $safe_heading_fallback['widget_type'] === 'text-editor' && $safe_heading_fallback['downgraded'], 'available compiler-supported heading fallback is selected with probe trace' );
+$fallback_ir = wpae_elementor_ir_from_design_plan( $plan, $hero );
+$fallback_compiled = wpae_native_elementor_compile( $fallback_ir, $hero, [], [ 'id_seed' => 'heading-fallback' ] );
+$fallback_widgets = [];
+$fallback_walk = static function ( array $nodes ) use ( &$fallback_walk, &$fallback_widgets ): void {
+	foreach ( $nodes as $node ) {
+		if ( is_array( $node ) ) {
+			$fallback_widgets[] = $node;
+			$fallback_walk( (array) ( $node['elements'] ?? [] ) );
+		}
+	}
+};
+$fallback_walk( (array) ( $fallback_compiled['elementor_data'] ?? [] ) );
+$fallback_heading_node = array_values( array_filter( $fallback_widgets, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' && str_contains( (string) ( $node['settings']['editor'] ?? '' ), '<h1>' ) ) );
+$check( ! empty( $fallback_compiled['ok'] ) && ! empty( $fallback_heading_node ) && str_contains( $fallback_heading_node[0]['settings']['editor'], 'Соберите сильную страницу' ), 'heading fallback keeps semantic heading markup and exact copy in the native text editor' );
+$check( ( $fallback_compiled['report']['downgrades'][0]['from'] ?? '' ) === 'heading' && ( $fallback_compiled['report']['downgrades'][0]['widget_type'] ?? '' ) === 'text-editor' && ( $fallback_compiled['report']['downgrades'][0]['trace'][0]['runtime_result'] ?? '' ) === 'missing', 'compile diagnostics identify source, runtime result and selected fallback' );
+\Elementor\Plugin::$types = [ 'button', 'image' ];
+$missing_fallback = wpae_widget_capability_resolve( 'heading' );
+$check( empty( $missing_fallback['ok'] ) && $missing_fallback['reason'] === 'fallback_unavailable', 'heading fallback is rejected when text-editor is not registered' );
+$wpae_test_filters['wpae_widget_capability_registry'] = static function ( array $registry ): array {
+	$registry['heading']['fallback_widget'] = 'text-editor';
+	$registry['text-editor']['fallback_widget'] = 'heading';
+	return $registry;
+};
+\Elementor\Plugin::$types = [ 'button', 'image' ];
+$fallback_cycle = wpae_widget_capability_resolve( 'heading' );
+$check( empty( $fallback_cycle['ok'] ) && $fallback_cycle['reason'] === 'fallback_cycle', 'fallback cycle is stopped with a bounded diagnostic' );
+$wpae_test_filters = [ 'wpae_widget_capability_registry' => static function ( array $registry ): array {
+	$registry['button']['fallback_widget'] = 'text-editor';
+	$registry['image']['fallback_widget'] = 'container';
+	return $registry;
+} ];
+\Elementor\Plugin::$types = [ 'text-editor', 'container' ];
+$cta_fallback = wpae_widget_capability_resolve( 'button', [ 'role' => 'cta', 'content_refs' => [ 'hero_cta_1' ], 'url' => '#contact' ] );
+$media_fallback = wpae_widget_capability_resolve( 'image', [ 'role' => 'media', 'media_refs' => [ 'hero_image' ] ] );
+$check( empty( $cta_fallback['ok'] ) && $cta_fallback['reason'] === 'fallback_would_drop_cta_behavior', 'button fallback cannot silently discard CTA URL/behavior' );
+$check( empty( $media_fallback['ok'] ) && $media_fallback['reason'] === 'fallback_would_drop_media', 'image fallback cannot silently discard explicit media' );
+$wpae_test_filters = [];
+\Elementor\Plugin::$types = [ 'text-editor', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
+$blocked_button_ir = [ 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'archetype' => 'hero', 'nodes' => [ wpae_elementor_ir_node( 'blocked-cta', 'cta', 'button', [ 'hero_cta_1' ] ) ] ];
+$blocked_button_compile = wpae_native_elementor_compile( $blocked_button_ir, $hero, [], [ 'id_seed' => 'blocked-cta' ] );
+$check( empty( $blocked_button_compile['ok'] ) && empty( $blocked_button_compile['elementor_data'] ), 'unresolved component stops compilation before the caller can write' );
+$check( ( $blocked_button_compile['validation']['capabilities']['failures'][0]['from'] ?? '' ) === 'button' && ( $blocked_button_compile['validation']['capabilities']['failures'][0]['runtime_result'] ?? '' ) === 'missing' && ( $blocked_button_compile['validation']['capabilities']['failures'][0]['reason'] ?? '' ) === 'no_cta_preserving_fallback', 'pre-write validation explains the refused widget, runtime probe and CTA-preserving reason' );
+\Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
 $reference = wpae_reference_set_normalize( [ 'asset_id' => 'hero-image', 'source_url' => 'https://example.com/hero.jpg', 'role' => 'hero', 'focal_point' => [ 'x' => 2, 'y' => -1 ], 'alt' => 'Hero' ] );
 $check( wpae_reference_set_validate( [ $reference ] )['ok'] && (float) $reference['focal_point']['x'] === 1.0 && (float) $reference['focal_point']['y'] === 0.0, 'ReferenceSet metadata validates and clamps focal point' );
 
