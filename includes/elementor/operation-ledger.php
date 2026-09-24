@@ -132,6 +132,8 @@ function wpae_design_operation_target_status( array $operation, int $post_id, ?a
 	if ( ! is_array( $elementor_data ) ) {
 		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'readback_unavailable' ];
 	}
+	$expected_saved_hash = sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) );
+	$current_saved_hash  = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
 	$current_root_ids = array_values( array_filter( array_map( static fn( $item ): string => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? '' ) ) : '', $elementor_data ) ) );
 	$missing_root_ids = array_values( array_diff( $root_ids, $current_root_ids ) );
 	if ( ! empty( $missing_root_ids ) ) {
@@ -151,26 +153,58 @@ function wpae_design_operation_target_status( array $operation, int $post_id, ?a
 			'class' => $class,
 			'root_ids' => $root_ids,
 			'missing_root_ids' => $missing_root_ids,
+			'expected_saved_hash' => $expected_saved_hash,
+			'current_saved_hash' => $current_saved_hash,
 		];
 	}
-	$expected_saved_hash = sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) );
-	$current_saved_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
 	if ( $expected_saved_hash === '' ) {
-		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'missing_saved_hash', 'root_ids' => $root_ids ];
+		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'missing_saved_hash', 'root_ids' => $root_ids, 'current_saved_hash' => $current_saved_hash ];
 	}
 	if ( ! hash_equals( $expected_saved_hash, $current_saved_hash ) ) {
-		return [ 'reviewable' => false, 'status' => 'stale_target', 'reason' => 'saved_hash_mismatch', 'root_ids' => $root_ids, 'current_saved_hash' => $current_saved_hash ];
+		return [ 'reviewable' => false, 'status' => 'stale_target', 'reason' => 'saved_hash_mismatch', 'root_ids' => $root_ids, 'expected_saved_hash' => $expected_saved_hash, 'current_saved_hash' => $current_saved_hash ];
 	}
 	$expected_fingerprint = sanitize_text_field( (string) ( $operation['target_fingerprint'] ?? '' ) );
 	if ( $expected_fingerprint !== '' ) {
 		if ( ! function_exists( 'wpae_rollback_post_fingerprint' ) ) {
-			return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'fingerprint_unavailable', 'root_ids' => $root_ids ];
+			return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'fingerprint_unavailable', 'root_ids' => $root_ids, 'expected_saved_hash' => $expected_saved_hash, 'current_saved_hash' => $current_saved_hash ];
 		}
-		if ( ! hash_equals( $expected_fingerprint, (string) wpae_rollback_post_fingerprint( $post_id ) ) ) {
-			return [ 'reviewable' => false, 'status' => 'stale_target', 'reason' => 'fingerprint_mismatch', 'root_ids' => $root_ids ];
+		$current_fingerprint = sanitize_text_field( (string) wpae_rollback_post_fingerprint( $post_id ) );
+		if ( ! hash_equals( $expected_fingerprint, $current_fingerprint ) ) {
+			return [ 'reviewable' => false, 'status' => 'stale_target', 'reason' => 'fingerprint_mismatch', 'root_ids' => $root_ids, 'expected_saved_hash' => $expected_saved_hash, 'current_saved_hash' => $current_saved_hash, 'expected_fingerprint' => $expected_fingerprint, 'current_fingerprint' => $current_fingerprint ];
+		}
+	} else {
+		$current_fingerprint = '';
+	}
+	return [ 'reviewable' => true, 'status' => 'current', 'reason' => 'target_matches_saved_snapshot', 'root_ids' => $root_ids, 'expected_saved_hash' => $expected_saved_hash, 'current_saved_hash' => $current_saved_hash, 'expected_fingerprint' => $expected_fingerprint, 'current_fingerprint' => $current_fingerprint ];
+}
+
+/**
+ * Prefer the newest unfinished operation whose saved target still matches.
+ * A newer stale ledger entry must not hide an older, independently current root.
+ */
+function wpae_design_operation_editor_candidate( int $post_id, ?array $elementor_data = null ): ?array {
+	if ( $elementor_data === null && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+		$elementor_data = wpae_get_elementor_data_for_post( $post_id );
+	}
+	$latest_candidate = null;
+	foreach ( array_reverse( wpae_design_operation_store() ) as $candidate ) {
+		if ( ! is_array( $candidate ) || absint( $candidate['post_id'] ?? 0 ) !== $post_id ) {
+			continue;
+		}
+		$state = sanitize_key( (string) ( $candidate['current_state'] ?? '' ) );
+		if ( ! in_array( $state, [ 'planned', 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'unknown' ], true ) ) {
+			continue;
+		}
+		$candidate['target_status'] = wpae_design_operation_target_status( $candidate, $post_id, is_array( $elementor_data ) ? $elementor_data : null );
+		$candidate['reviewable'] = ! empty( $candidate['target_status']['reviewable'] );
+		if ( $latest_candidate === null ) {
+			$latest_candidate = $candidate;
+		}
+		if ( $candidate['reviewable'] ) {
+			return $candidate;
 		}
 	}
-	return [ 'reviewable' => true, 'status' => 'current', 'reason' => 'target_matches_saved_snapshot', 'root_ids' => $root_ids ];
+	return $latest_candidate;
 }
 
 function wpae_design_operation_replacement_target( array $operation, int $post_id, string $identity, int $revision, array $root_ids, ?array $elementor_data = null ): array {

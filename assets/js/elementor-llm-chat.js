@@ -148,7 +148,8 @@
         }
         reviewPending.disabled = true;
         setPipelinePhase('render', 'active');
-        reviewPendingOperation(config.pendingOperation, config.pendingOperation.brief_text || '').then(function (review) {
+        var pending = config.pendingOperation;
+        reviewPendingOperation(pending, String(pending.brief_text || '')).then(function (review) {
             setPipelinePhase('render', 'done');
             setPipelinePhase('review', review && review.report ? 'done' : 'skipped');
             if (review && review.report) addMessage('assistant', describeVisionReview(review));
@@ -1550,6 +1551,8 @@
     }
     function reviewPendingOperation(operation, brief) {
         operation = operation && typeof operation === 'object' ? operation : {};
+        brief = String(brief || '').trim();
+        if (!brief && operation.operation_identity && readOperationIdentity() === String(operation.operation_identity)) brief = readLastBrief();
         var operationId = String(operation.operation_id || '');
         var roots = Array.isArray(operation.root_ids) ? operation.root_ids.map(String).filter(Boolean).slice(0, 12) : [];
         if (!operationId || !roots.length) return Promise.reject(new Error('Для pending operation не найден сохраненный operation_id или root.'));
@@ -1583,14 +1586,31 @@
                     body.diagnostics.operation_ledger = reconciled.operation;
                     addMessage('assistant', 'Актуальный preview и Vision привязаны к существующей операции. Состояние журнала: ' + String(reconciled.operation.current_state || 'written') + '.');
                 }
-                if (review && review.gate && review.gate.quality_failed && !review.gate.advisory && durableOperation.rollback_snapshot_id) {
-                    var durableContext = buildVisionOperationContext(body, requestContext, editorSync);
-                    return rollbackVisionFailure(durableOperation.rollback_snapshot_id, durableContext).then(function (rollback) {
-                        if (!rollback.ok) throw new Error('Не удалось откатить неудачный pending результат: ' + rollback.error);
-                        addMessage('assistant', 'Vision подтвердил критический дефект; pending-операция откатена в рамках её snapshot.');
-                        review.rolled_back = true;
+                if (review && review.gate && review.gate.quality_failed && !review.gate.advisory) {
+                    if (!brief) {
+                        addMessage('assistant', 'Vision нашёл дефект, но исходный запрос этой операции недоступен; root оставлен без изменений, targeted repair не запускался.');
+                        review.repair_blocked = 'original_brief_unavailable';
                         return review;
-                    });
+                    }
+                    var parent = durableOperation || operation;
+                    var replacementOptions = {
+                        visionRepair: true,
+                        visionRegenerate: true,
+                        repairDepth: 1,
+                        originalBrief: brief,
+                        visionFindings: buildVisionRepairMessage(review, brief, false),
+                        ownedRootIds: roots.slice(),
+                        replaceExistingRoot: true,
+                        replacesOperation: {
+                            operation_id: String(parent.operation_id || operationId),
+                            operation_identity: String(parent.operation_identity || operation.operation_identity || '').slice(0, 120),
+                            revision: Number(parent.revision || operation.revision || 0),
+                            root_ids: Array.isArray(parent.root_ids) ? parent.root_ids.slice(0, 12) : roots.slice()
+                        }
+                    };
+                    addMessage('assistant', 'Vision подтвердил дефект. Сохраняю точечную замену существующего root; сервер повторно проверит operation identity, revision и fingerprint перед записью.');
+                    if (!scheduleVisionRepairAfterReload(brief, replacementOptions)) throw new Error('Не удалось сохранить targeted repair перед перезагрузкой Elementor.');
+                    review.repair_scheduled = true;
                 }
                 return review;
             });

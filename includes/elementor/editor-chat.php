@@ -29,15 +29,11 @@ function wpae_enqueue_elementor_llm_chat(): void {
     $settings = wpae_llm_get_settings();
     $vision_status = wpae_get_vision_status();
     $pending_operation = null;
-    if ( function_exists( 'wpae_design_operation_store' ) ) {
-        foreach ( array_reverse( wpae_design_operation_store() ) as $candidate ) {
-            if ( ! is_array( $candidate ) || absint( $candidate['post_id'] ?? 0 ) !== $post_id ) {
-                continue;
-            }
+    if ( function_exists( 'wpae_design_operation_editor_candidate' ) ) {
+        $pending_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : null;
+        $candidate = wpae_design_operation_editor_candidate( $post_id, is_array( $pending_data ) ? $pending_data : null );
+        if ( is_array( $candidate ) ) {
             $state = sanitize_key( (string) ( $candidate['current_state'] ?? '' ) );
-            if ( ! in_array( $state, [ 'planned', 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'unknown' ], true ) ) {
-                continue;
-            }
             $pending_operation = [
                 'operation_id' => sanitize_key( (string) ( $candidate['operation_id'] ?? '' ) ),
                 'operation_identity' => sanitize_text_field( (string) ( $candidate['operation_identity'] ?? '' ) ),
@@ -48,23 +44,19 @@ function wpae_enqueue_elementor_llm_chat(): void {
                 'rollback_snapshot_id' => sanitize_text_field( (string) ( $candidate['rollback_snapshot_id'] ?? '' ) ),
                 'current_state' => $state,
             ];
-			$pending_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : null;
-			if ( function_exists( 'wpae_design_operation_target_status' ) ) {
-				$pending_operation['target_status'] = wpae_design_operation_target_status( $candidate, $post_id, is_array( $pending_data ) ? $pending_data : null );
-				$pending_operation['reviewable'] = ! empty( $pending_operation['target_status']['reviewable'] );
-			}
-			if ( $pending_operation['rollback_snapshot_id'] === '' && function_exists( 'wpae_get_rollback_snapshots' ) ) {
-				foreach ( wpae_get_rollback_snapshots() as $snapshot_id => $snapshot ) {
-					if ( sanitize_key( (string) ( $snapshot['operation_id'] ?? '' ) ) !== $pending_operation['operation_id'] ) {
-						continue;
-					}
-					if ( in_array( $post_id, array_map( 'absint', array_keys( (array) ( $snapshot['posts'] ?? [] ) ) ), true ) ) {
-						$pending_operation['rollback_snapshot_id'] = sanitize_text_field( (string) $snapshot_id );
-						break;
-					}
-				}
-			}
-            break;
+            $pending_operation['target_status'] = is_array( $candidate['target_status'] ?? null ) ? $candidate['target_status'] : [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'target_status_unavailable' ];
+            $pending_operation['reviewable'] = ! empty( $candidate['reviewable'] );
+            if ( $pending_operation['rollback_snapshot_id'] === '' && function_exists( 'wpae_get_rollback_snapshots' ) ) {
+                foreach ( wpae_get_rollback_snapshots() as $snapshot_id => $snapshot ) {
+                    if ( sanitize_key( (string) ( $snapshot['operation_id'] ?? '' ) ) !== $pending_operation['operation_id'] ) {
+                        continue;
+                    }
+                    if ( in_array( $post_id, array_map( 'absint', array_keys( (array) ( $snapshot['posts'] ?? [] ) ) ), true ) ) {
+                        $pending_operation['rollback_snapshot_id'] = sanitize_text_field( (string) $snapshot_id );
+                        break;
+                    }
+                }
+            }
         }
     }
     $config = wp_json_encode( [
