@@ -172,11 +172,66 @@ function wpae_design_operation_target_diagnostics( int $post_id, string $root_id
 	];
 }
 
+/** Read one operation without exposing records from another post or mutating the ledger. */
+function wpae_design_operation_lookup_diagnostics( int $post_id, string $operation_id, ?array $elementor_data = null ): array {
+	$post_id      = absint( $post_id );
+	$operation_id = sanitize_key( $operation_id );
+	if ( $post_id <= 0 || $operation_id === '' ) {
+		return [ 'ok' => false, 'found' => false, 'reason' => 'invalid_scope' ];
+	}
+	$store = wpae_design_operation_store();
+	$operation = null;
+	$post_operation_count = 0;
+	foreach ( $store as $stored_operation ) {
+		if ( ! is_array( $stored_operation ) || absint( $stored_operation['post_id'] ?? 0 ) !== $post_id ) {
+			continue;
+		}
+		$post_operation_count++;
+		if ( (string) ( $stored_operation['operation_id'] ?? '' ) === $operation_id ) {
+			$operation = $stored_operation;
+		}
+	}
+	if ( ! is_array( $operation ) || absint( $operation['post_id'] ?? 0 ) !== $post_id ) {
+		return [
+			'ok' => true,
+			'found' => false,
+			'reason' => 'operation_not_found_for_post',
+			'post_id' => $post_id,
+			'operation_id' => $operation_id,
+			'post_operation_count' => $post_operation_count,
+			'store_retention_limit' => 100,
+		];
+	}
+	if ( $elementor_data === null && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+		$elementor_data = wpae_get_elementor_data_for_post( $post_id );
+	}
+	if ( ! is_array( $elementor_data ) ) {
+		return [ 'ok' => false, 'found' => true, 'reason' => 'readback_unavailable', 'post_id' => $post_id, 'operation_id' => $operation_id ];
+	}
+	$target_status = wpae_design_operation_target_status( $operation, $post_id, $elementor_data );
+	return [
+		'ok' => true,
+		'found' => true,
+		'post_id' => $post_id,
+		'operation_id' => $operation_id,
+		'operation_identity' => sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) ),
+		'current_state' => sanitize_key( (string) ( $operation['current_state'] ?? '' ) ),
+		'revision' => max( 1, absint( $operation['revision'] ?? 1 ) ),
+		'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) ),
+		'saved_hash' => sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) ),
+		'target_fingerprint' => sanitize_text_field( (string) ( $operation['target_fingerprint'] ?? '' ) ),
+		'target_status' => $target_status,
+		'post_operation_count' => $post_operation_count,
+		'store_retention_limit' => 100,
+	];
+}
+
 function wpae_design_operation_target_diagnostics_endpoint( WP_REST_Request $request ) {
 	$post_id = absint( $request->get_param( 'post_id' ) );
 	$root_id = sanitize_key( (string) $request->get_param( 'root_id' ) );
-	if ( $post_id <= 0 || $root_id === '' ) {
-		return new WP_Error( 'wpae_operation_target_scope_invalid', 'Post и root обязательны для диагностики.', [ 'status' => 400 ] );
+	$operation_id = sanitize_key( (string) $request->get_param( 'operation_id' ) );
+	if ( $post_id <= 0 || ( $root_id === '' ) === ( $operation_id === '' ) ) {
+		return new WP_Error( 'wpae_operation_target_scope_invalid', 'Укажите post и ровно один параметр: root_id или operation_id.', [ 'status' => 400 ] );
 	}
 	if ( ! current_user_can( 'edit_post', $post_id ) ) {
 		return new WP_Error( 'wpae_operation_target_forbidden', 'Нет разрешения читать операции этой страницы.', [ 'status' => 403 ] );
@@ -184,6 +239,9 @@ function wpae_design_operation_target_diagnostics_endpoint( WP_REST_Request $req
 	$elementor_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : null;
 	if ( ! is_array( $elementor_data ) ) {
 		return new WP_Error( 'wpae_operation_readback_unavailable', 'Сохранённый Elementor target недоступен для безопасного сравнения.', [ 'status' => 503 ] );
+	}
+	if ( $operation_id !== '' ) {
+		return wpae_design_operation_lookup_diagnostics( $post_id, $operation_id, $elementor_data );
 	}
 	return wpae_design_operation_target_diagnostics( $post_id, $root_id, $elementor_data );
 }

@@ -107,7 +107,8 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => 'wpae_llm_chat_permission',
 		'args'                => [
 			'post_id' => [ 'required' => true, 'type' => 'integer', 'sanitize_callback' => 'absint' ],
-			'root_id' => [ 'required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_key' ],
+			'root_id' => [ 'required' => false, 'type' => 'string', 'sanitize_callback' => 'sanitize_key' ],
+			'operation_id' => [ 'required' => false, 'type' => 'string', 'sanitize_callback' => 'sanitize_key' ],
 		],
 	] );
 

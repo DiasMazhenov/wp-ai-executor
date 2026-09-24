@@ -110,6 +110,12 @@ if ( ! function_exists( 'current_user_can' ) ) {
 		return $capability === 'edit_post' && ! empty( $wpae_test_can_edit_post );
 	}
 }
+if ( ! function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+	function wpae_get_elementor_data_for_post( int $post_id ): array {
+		global $wpae_test_readback;
+		return (array) ( $wpae_test_readback[ $post_id ] ?? [] );
+	}
+}
 if ( ! function_exists( 'wpae_rollback_post_fingerprint' ) ) {
 	function wpae_rollback_post_fingerprint( int $post_id ): string {
 		global $wpae_test_fingerprints;
@@ -503,13 +509,38 @@ $diagnostic_operation = wpae_design_operation_create( [
 	'current_state' => 'written',
 ] );
 $diagnostic_store_before = wpae_design_operation_store();
+$wpae_test_readback[5214] = $diagnostic_tree;
 $target_diagnostic = wpae_design_operation_target_diagnostics( 5214, 'diagnostic-root', $diagnostic_tree );
 $check( count( $target_diagnostic['operations'] ) === 1 && $target_diagnostic['operations'][0]['operation_id'] === 'op-target-diagnostic' && $target_diagnostic['operations'][0]['operation_identity'] === 'target-diagnostic-identity' && $target_diagnostic['operations'][0]['revision'] === $diagnostic_operation['revision'] && ! empty( $target_diagnostic['operations'][0]['target_status']['reviewable'] ), 'read-only target diagnostic binds operation identity, revision, root and saved readback' );
 $check( $diagnostic_store_before === wpae_design_operation_store(), 'read-only target diagnostic leaves the durable ledger unchanged' );
+$operation_diagnostic = wpae_design_operation_lookup_diagnostics( 5214, 'op-target-diagnostic', $diagnostic_tree );
+$check( ! empty( $operation_diagnostic['found'] ) && $operation_diagnostic['current_state'] === 'written' && $operation_diagnostic['revision'] === $diagnostic_operation['revision'] && $operation_diagnostic['root_ids'] === [ 'diagnostic-root' ] && ! empty( $operation_diagnostic['target_status']['reviewable'] ), 'operation diagnostic reads one exact post-scoped operation against saved Elementor data' );
+$post_operation_count = count( array_filter( $diagnostic_store_before, static fn( $item ): bool => is_array( $item ) && (int) ( $item['post_id'] ?? 0 ) === 5214 ) );
+$check( $operation_diagnostic['store_retention_limit'] === 100 && $operation_diagnostic['post_operation_count'] === $post_operation_count, 'operation diagnostic reports post-scoped bounded ledger counts without implying why older records are absent' );
+$check( $diagnostic_store_before === wpae_design_operation_store(), 'operation-ID lookup leaves every durable ledger record unchanged' );
+$unknown_operation = wpae_design_operation_lookup_diagnostics( 5214, 'op-unknown', $diagnostic_tree );
+$check( empty( $unknown_operation['found'] ) && $unknown_operation['reason'] === 'operation_not_found_for_post', 'unknown operation returns an explicit post-scoped absence result' );
+$changed_diagnostic_tree = $diagnostic_tree;
+$changed_diagnostic_tree[0]['settings']['title'] = 'manual edit';
+$changed_operation_diagnostic = wpae_design_operation_lookup_diagnostics( 5214, 'op-target-diagnostic', $changed_diagnostic_tree );
+$check( ! empty( $changed_operation_diagnostic['found'] ) && $changed_operation_diagnostic['target_status']['reason'] === 'saved_hash_mismatch', 'operation lookup distinguishes a manually changed root from a missing operation' );
+$missing_operation_root = wpae_design_operation_lookup_diagnostics( 5214, 'op-target-diagnostic', [ [ 'id' => 'another-root' ] ] );
+$check( $missing_operation_root['target_status']['reason'] === 'root_missing', 'operation lookup distinguishes a missing owned root from a changed saved root' );
 $check( wpae_design_operation_target_diagnostics( 5214, 'foreign-root', $diagnostic_tree )['operations'] === [], 'target diagnostic never returns operations for a different root' );
 $wpae_test_can_edit_post = false;
 $diagnostic_forbidden = wpae_design_operation_target_diagnostics_endpoint( new WP_REST_Request( [ 'post_id' => 5214, 'root_id' => 'diagnostic-root' ] ) );
 $check( $diagnostic_forbidden instanceof WP_Error && $diagnostic_forbidden->get_error_code() === 'wpae_operation_target_forbidden' && ( $diagnostic_forbidden->get_error_data()['status'] ?? 0 ) === 403, 'target diagnostic denies users without edit_post capability' );
+$operation_diagnostic_forbidden = wpae_design_operation_target_diagnostics_endpoint( new WP_REST_Request( [ 'post_id' => 5214, 'operation_id' => 'op-target-diagnostic' ] ) );
+$check( $operation_diagnostic_forbidden instanceof WP_Error && $operation_diagnostic_forbidden->get_error_code() === 'wpae_operation_target_forbidden', 'operation-ID diagnostics retain the edit_post guard' );
+$diagnostic_foreign_operation = wpae_design_operation_create( [ 'operation_id' => 'op-foreign-post', 'idempotency_key' => 'foreign-post-key', 'post_id' => 5215, 'root_ids' => [ 'diagnostic-root' ], 'current_state' => 'planned' ] );
+$check( empty( wpae_design_operation_lookup_diagnostics( 5214, $diagnostic_foreign_operation['operation_id'], $diagnostic_tree )['found'] ), 'operation lookup does not disclose an operation owned by another post' );
+$wpae_test_can_edit_post = true;
+$diagnostic_by_id_endpoint = wpae_design_operation_target_diagnostics_endpoint( new WP_REST_Request( [ 'post_id' => 5214, 'operation_id' => 'op-target-diagnostic' ] ) );
+$check( ! empty( $diagnostic_by_id_endpoint['found'] ), 'protected read-only endpoint accepts a concrete operation ID without requiring a root guess' );
+$unknown_by_id_endpoint = wpae_design_operation_target_diagnostics_endpoint( new WP_REST_Request( [ 'post_id' => 5214, 'operation_id' => 'op-not-retained' ] ) );
+$check( empty( $unknown_by_id_endpoint['found'] ) && $unknown_by_id_endpoint['reason'] === 'operation_not_found_for_post', 'protected endpoint returns an explicit scoped result for a missing operation ID' );
+$invalid_diagnostic_scope = wpae_design_operation_target_diagnostics_endpoint( new WP_REST_Request( [ 'post_id' => 5214, 'operation_id' => 'op-target-diagnostic', 'root_id' => 'diagnostic-root' ] ) );
+$check( $invalid_diagnostic_scope instanceof WP_Error && $invalid_diagnostic_scope->get_error_data()['status'] === 400, 'diagnostic endpoint rejects ambiguous operation and root scope' );
 $wpae_test_fingerprints[5214] = 'current-target-fingerprint';
 $changed_hashes = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash', 'target_fingerprint' => 'expected-target-fingerprint' ], 5214, $saved_tree );
 $check( $changed_hashes['reason'] === 'saved_hash_mismatch' && $changed_hashes['expected_fingerprint'] === 'expected-target-fingerprint' && $changed_hashes['current_fingerprint'] === 'current-target-fingerprint', 'stale target diagnostics preserve expected and current page fingerprints alongside saved hashes' );
