@@ -301,6 +301,37 @@ function wpae_design_plan_validate( array $plan ): array {
 			$errors[] = 'split_composition_media_asset_missing';
 		}
 	}
+	if ( ( $plan['archetype'] ?? '' ) === 'process' ) {
+		$process_children = [];
+		foreach ( (array) ( $plan['sections'] ?? [] ) as $section ) {
+			if ( ! is_array( $section ) || ( $section['role'] ?? '' ) !== 'process' ) {
+				continue;
+			}
+			foreach ( (array) ( $section['children'] ?? [] ) as $child ) {
+				if ( is_array( $child ) && ( $child['role'] ?? '' ) === 'process_steps' ) {
+					$process_children[] = $child;
+				}
+			}
+		}
+		$steps = [];
+		$content_refs = [];
+		foreach ( $process_children as $child ) {
+			$steps = array_merge( $steps, array_values( (array) ( $child['steps'] ?? [] ) ) );
+			$content_refs = array_merge( $content_refs, (array) ( $child['content_refs'] ?? [] ) );
+		}
+		$content_refs = array_fill_keys( array_map( 'sanitize_key', $content_refs ), true );
+		if ( empty( $steps ) ) {
+			$errors[] = 'process_steps_missing_source_content';
+		} else {
+			foreach ( $steps as $index => $step ) {
+				$label_ref = sanitize_key( (string) ( $step['label_ref'] ?? '' ) );
+				$text_ref = sanitize_key( (string) ( $step['text_ref'] ?? '' ) );
+				if ( $label_ref === '' || ! isset( $content_refs[ $label_ref ] ) || ( $text_ref !== '' && ! isset( $content_refs[ $text_ref ] ) ) ) {
+					$errors[] = 'process_step_content_ref_invalid_' . ( (int) $index + 1 );
+				}
+			}
+		}
+	}
 	$requested_widgets = [];
 	foreach ( (array) ( $plan['sections'] ?? [] ) as $section_index => $section ) {
 		if ( ! is_array( $section ) || trim( (string) ( $section['id'] ?? '' ) ) === '' ) {

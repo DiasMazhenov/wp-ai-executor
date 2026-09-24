@@ -208,6 +208,9 @@ function wpae_elementor_ir_validate( array $ir ): array {
 				continue;
 			}
 			$widgets[] = sanitize_key( (string) $node['widget_type'] );
+			if ( ( $node['role'] ?? '' ) === 'process_steps' && empty( $node['children'] ) ) {
+				$errors[] = 'process_steps_empty';
+			}
 			$walk( (array) ( $node['children'] ?? [] ) );
 		}
 	};

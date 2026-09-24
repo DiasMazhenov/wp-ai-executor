@@ -1853,6 +1853,8 @@
                     var errorData = body.data || {};
                     var errorCode = body.code || errorData.code || '';
                     var diagnostics = body.details || errorData.details || {};
+                    var writeDiagnostics = diagnostics && diagnostics.write && typeof diagnostics.write === 'object' ? diagnostics.write : {};
+                    var errorSteps = Array.isArray(diagnostics.steps) ? diagnostics.steps : (Array.isArray(writeDiagnostics.steps) ? writeDiagnostics.steps : []);
                     var providerDiagnostics = errorData.diagnostics || body.diagnostics || (diagnostics && typeof diagnostics === 'object' ? diagnostics.diagnostics : null);
                     if (typeof errorData.details === 'string' && errorData.details !== detail) detail += ': ' + errorData.details;
                     if (typeof diagnostics === 'string' && diagnostics !== detail && diagnostics !== errorData.details) detail += ': ' + diagnostics;
@@ -1867,11 +1869,11 @@
                     var failedChecks = diagnostics.failed_checks || (diagnostics.details && diagnostics.details.failed_checks) || (diagnostics.details && diagnostics.details.transaction && diagnostics.details.transaction.failed_checks) || [];
                     if (Array.isArray(failedChecks) && failedChecks.length) detail += ' (непройденные проверки: ' + failedChecks.join(', ') + ')';
                     if (Array.isArray(diagnostics.failure_details) && diagnostics.failure_details.length) detail += ' ' + diagnostics.failure_details.map(function (item) { return (item.code || 'check') + ': ' + (item.message || 'проверка не пройдена'); }).join('; ');
-                    if (Array.isArray(diagnostics.steps) && diagnostics.steps.length) {
+                    if (errorSteps.length) {
                         var stepError = new Error(detail);
                         stepError.wpaeCode = errorCode;
                         stepError.httpStatus = response.status;
-                        stepError.steps = diagnostics.steps;
+                        stepError.steps = errorSteps;
                         // Preserve the complete sanitized REST diagnostics for
                         // semantic/contract failures. Provider-only metadata
                         // hides the actual failed plan and makes live repair
@@ -1890,7 +1892,7 @@
                     requestError.httpStatus = response.status;
                     requestError.providerStatus = Number(errorData.provider_status || diagnostics.provider_status || errorData.status || diagnostics.status || 0);
                     requestError.retryAfter = Number(errorData.retry_after || diagnostics.retry_after || 0);
-                    requestError.diagnostics = providerDiagnostics;
+                    requestError.diagnostics = providerDiagnostics || (diagnostics && typeof diagnostics === 'object' && Object.keys(diagnostics).length ? diagnostics : null);
                     requestError.pendingOperation = (diagnostics && diagnostics.operation)
                         || (diagnostics && diagnostics.details && diagnostics.details.operation)
                         || (body && body.details && body.details.operation)

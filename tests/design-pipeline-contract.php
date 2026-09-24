@@ -329,6 +329,14 @@ $process_card_nodes = (array) ( $process_group['elements'] ?? [] );
 $check( ! empty( $process_compiled['ok'] ) && ( $process_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $process_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $process_group['settings']['flex_direction_tablet'] ?? '' ) === 'column', 'active process compiler emits a horizontal desktop row and stacked tablet/mobile cards' );
 $check( count( $process_card_nodes ) === 3 && ( $process_card_nodes[0]['elements'][0]['elements'][0]['settings']['_css_classes'] ?? '' ) === 'wpae-process-marker' && ( $process_card_nodes[0]['elements'][0]['elements'][1]['widgetType'] ?? '' ) === 'divider', 'process reference divider remains inside the marker row after its marker' );
 
+$empty_process_brief = wpae_brief_ir_parse( 'сделай стандартный таймлайн' );
+$empty_process_plan = wpae_design_plan_from_brief( $empty_process_brief );
+$empty_process_validation = wpae_design_plan_validate( $empty_process_plan );
+$empty_process_ir = wpae_elementor_ir_from_design_plan( $empty_process_plan, $empty_process_brief );
+$empty_process_compiled = wpae_elementor_ir_compile( $empty_process_ir, $empty_process_brief, [], [ 'id_seed' => 'empty-process-contract' ] );
+$check( empty( $empty_process_validation['ok'] ) && in_array( 'process_steps_missing_source_content', $empty_process_validation['errors'], true ), 'empty process request is rejected before it can produce a write plan' );
+$check( empty( $empty_process_compiled['ok'] ) && in_array( 'process_steps_empty', $empty_process_compiled['errors'], true ), 'ElementorIR compiler refuses a process section with no native step widgets' );
+
 $process_reference = json_decode( (string) file_get_contents( __DIR__ . '/fixtures/process-card-reference-v1.json' ), true );
 $qa_process_prompt = 'Добавь отдельным новым root блок процесса «Процесс · QA» с тремя шагами: «01. Заявка» — «QA: запрос поступил»; «02. Уточнение» — «QA: детали проверены»; «03. Старт» — «QA: следующий шаг согласован». Свяжи шаги последовательными connector линиями; на mobile stack вертикально.';
 $qa_process_brief = wpae_brief_ir_parse( $qa_process_prompt );
