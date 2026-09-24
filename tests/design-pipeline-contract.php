@@ -88,6 +88,12 @@ if ( ! function_exists( 'current_time' ) ) {
 		return gmdate( 'c' );
 	}
 }
+if ( ! function_exists( 'wpae_rollback_post_fingerprint' ) ) {
+	function wpae_rollback_post_fingerprint( int $post_id ): string {
+		global $wpae_test_fingerprints;
+		return (string) ( $wpae_test_fingerprints[ $post_id ] ?? '' );
+	}
+}
 
 require_once __DIR__ . '/../includes/design/token-resolution.php';
 require_once __DIR__ . '/../includes/elementor/capability-registry.php';
@@ -463,6 +469,9 @@ $stale_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_
 $check( empty( $stale_status['reviewable'] ) && $stale_status['reason'] === 'root_missing' && $stale_status['class'] === 'unknown_target_change', 'missing pending root is rejected before capture without claiming rollback' );
 $changed_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash' ], 5214, $saved_tree );
 $check( empty( $changed_status['reviewable'] ) && $changed_status['reason'] === 'saved_hash_mismatch', 'changed saved target is rejected before capture' );
+$wpae_test_fingerprints[5214] = 'current-target-fingerprint';
+$changed_hashes = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash', 'target_fingerprint' => 'expected-target-fingerprint' ], 5214, $saved_tree );
+$check( $changed_hashes['reason'] === 'saved_hash_mismatch' && $changed_hashes['expected_fingerprint'] === 'expected-target-fingerprint' && $changed_hashes['current_fingerprint'] === 'current-target-fingerprint', 'stale target diagnostics preserve expected and current page fingerprints alongside saved hashes' );
 $editor_tree = [ [ 'id' => 'cd4da23', 'elType' => 'container' ] ];
 $editor_hash = hash( 'sha256', wp_json_encode( $editor_tree ) );
 $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [
@@ -472,9 +481,13 @@ $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [
 $editor_candidate = wpae_design_operation_editor_candidate( 5214, $editor_tree );
 $check( $editor_candidate['operation_id'] === 'wpae-current-root' && ! empty( $editor_candidate['reviewable'] ), 'newer stale operation does not hide an older operation whose exact root and saved hash remain current' );
 $check( $editor_candidate['target_status']['expected_saved_hash'] === $editor_candidate['target_status']['current_saved_hash'], 'editor candidate exposes equal saved/readback hashes for review evidence' );
-$wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [ end( $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] ) ];
+$wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [
+	[ 'operation_id' => 'wpae-current-root-stale', 'operation_identity' => 'current-root-identity', 'post_id' => 5214, 'revision' => 6, 'current_state' => 'written', 'root_ids' => [ 'cd4da23' ], 'saved_hash' => 'old-page-hash', 'target_fingerprint' => 'expected-page-fingerprint' ],
+	end( $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] ),
+];
 $stale_editor_candidate = wpae_design_operation_editor_candidate( 5214, $editor_tree );
-$check( $stale_editor_candidate['operation_id'] === 'wpae-newer-stale' && empty( $stale_editor_candidate['reviewable'] ), 'when no operation is current, editor config retains only a non-reviewable diagnostic candidate' );
+$check( $stale_editor_candidate['operation_id'] === 'wpae-current-root-stale' && empty( $stale_editor_candidate['reviewable'] ), 'when no operation is current, editor config prefers the stale operation whose owned root still exists for diagnostics' );
+$check( $stale_editor_candidate['target_status']['expected_fingerprint'] === 'expected-page-fingerprint' && $stale_editor_candidate['target_status']['current_fingerprint'] === 'current-target-fingerprint', 'stale present-root candidate exposes both fingerprints without becoming reviewable' );
 $owned_tree = [ [ 'id' => 'owned-root', 'elType' => 'container', 'settings' => [ '_css_classes' => 'wpae-generated-root wpae-generated-hero' ], 'elements' => [] ], [ 'id' => 'neighbor-root', 'elType' => 'container', 'settings' => [], 'elements' => [] ] ];
 $owned_operation = [ 'operation_id' => 'op-owned', 'operation_identity' => 'owned-identity', 'post_id' => 5214, 'revision' => 4, 'current_state' => 'written', 'root_ids' => [ 'owned-root' ], 'saved_hash' => hash( 'sha256', wp_json_encode( $owned_tree ) ) ];
 $owned_guard = wpae_design_operation_replacement_target( $owned_operation, 5214, 'owned-identity', 4, [ 'owned-root' ], $owned_tree );
