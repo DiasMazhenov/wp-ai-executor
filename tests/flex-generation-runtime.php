@@ -562,6 +562,14 @@ check( strpos( $faq_json, 'Можно работать дистанционно'
 check( strpos( $faq_json, 'Что входит в проект' ) !== false && strpos( $faq_json, 'Планировка, концепция и согласованный комплект материалов' ) !== false, 'FAQ fallback lost the third exact question or answer' );
 check( empty( wpae_llm_content_fidelity( $faq_message, $faq_action['elements'] )['missing'] ), 'FAQ fallback failed final content fidelity' );
 
+$faq_live_qa_message = 'Создай FAQ «FAQ · QA». «Это настоящие данные компании?» — «Нет, это синтетический QA-текст только для проверки виджета Accordion». «Как проверить раскрытие?» — «Нажмите на вопрос: ответ должен открываться и закрываться». «Что нужно увидеть после перезагрузки?» — «Те же три вопроса в том же порядке внутри одного native Accordion». Дизайн только для этого нового корня: чистая белая поверхность, тонкая светло-серая обводка и скругление 12px; не задавай глобальные цвета сайта. Существующие элементы страницы не меняй.';
+$faq_live_qa_requested = wpae_llm_extract_requested_content( $faq_live_qa_message );
+check( in_array( 'FAQ · QA', $faq_live_qa_requested, true ) && in_array( 'Это настоящие данные компании', $faq_live_qa_requested, true ) && in_array( 'Те же три вопроса в том же порядке внутри одного native Accordion', $faq_live_qa_requested, true ), 'FAQ content-fidelity fixture lost the title or explicit question/answer copy' );
+check( ! in_array( 'Дизайн только для этого нового корня: чистая белая поверхность, тонкая светло-серая обводка и скругление 12px; не задавай глобальные цвета сайта', $faq_live_qa_requested, true ) && ! in_array( 'Существующие элементы страницы не меняй', $faq_live_qa_requested, true ), 'FAQ content-fidelity fixture treated styling or preservation instructions as visible content' );
+$faq_live_qa_action = wpae_llm_build_fallback_action( $faq_live_qa_message, 42 );
+$faq_live_qa_widget = (array) ( $faq_live_qa_action['elements'][0]['elements'][1] ?? [] );
+check( ( $faq_live_qa_widget['widgetType'] ?? '' ) === 'accordion' && count( (array) ( $faq_live_qa_widget['settings']['tabs'] ?? [] ) ) === 3 && empty( wpae_llm_content_fidelity( $faq_live_qa_message, $faq_live_qa_action['elements'] )['missing'] ), 'FAQ live QA fallback did not pass content fidelity with one native three-item Accordion' );
+
 $portfolio_message = 'Создай блок «Наши проекты» с тремя работами: «Квартира у парка» — «Светлый интерьер для семьи»; «Дом у озера» — «Природные материалы и открытые пространства»; «Городская студия» — «Компактная планировка для одного человека». Сохрани три работы, точные описания и порядок. Используй редактируемые элементы Elementor. Не выдумывай фотографии выполненных проектов. Адаптируй для телефона.';
 $portfolio_pairs = wpae_llm_extract_labeled_content( $portfolio_message );
 check( count( $portfolio_pairs ) === 3, 'Portfolio parser did not extract three quoted title/description pairs' );
