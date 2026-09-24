@@ -547,6 +547,12 @@ check( empty( $faq_plan['explicit_cta'] ?? [] ) && empty( $faq_plan['cta_require
 $faq_action = wpae_llm_build_fallback_action( $faq_message, 42 );
 $faq_ctas = wpae_llm_extract_requested_ctas( $faq_message );
 check( empty( $faq_ctas ), 'FAQ answer text was incorrectly inferred as an explicit CTA requirement' );
+$faq_widget = (array) ( $faq_action['elements'][0]['elements'][1] ?? [] );
+$faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
+check( ( $faq_widget['widgetType'] ?? '' ) === 'accordion' && count( $faq_tabs ) === 3, 'FAQ fallback did not use one native Accordion with three items' );
+check( ( $faq_tabs[0]['tab_title'] ?? '' ) === 'Как начать?' && ( $faq_tabs[0]['tab_content'] ?? '' ) === 'Оставьте заявку, и мы согласуем встречу', 'FAQ Accordion changed the first question or answer' );
+check( ( $faq_tabs[2]['tab_title'] ?? '' ) === 'Что входит в проект?' && ( $faq_tabs[2]['tab_content'] ?? '' ) === 'Планировка, концепция и согласованный комплект материалов', 'FAQ Accordion changed the last question, answer, or order' );
+check( ! empty( wpae_llm_provider_composition_quality( $faq_message, $faq_action['elements'], 'faq' )['ok'] ), 'Native FAQ Accordion failed the provider composition-quality gate' );
 $faq_cleanup_changed = 0;
 wpae_llm_remove_unrequested_buttons( $faq_action['elements'], $faq_message, $faq_cleanup_changed );
 $faq_json = (string) wp_json_encode( $faq_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );

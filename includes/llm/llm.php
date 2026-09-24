@@ -218,6 +218,7 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
         'headings' => 0,
         'text_editors' => 0,
         'buttons' => 0,
+        'accordion_items' => 0,
         'special_widgets' => [],
         'has_badge' => false,
         'has_bento_grid' => false,
@@ -260,6 +261,9 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
                 if ( in_array( $widget_type, [ 'icon-list', 'accordion', 'price-list', 'testimonial', 'image', 'divider' ], true ) ) {
                     $counts['special_widgets'][ $widget_type ] = (int) ( $counts['special_widgets'][ $widget_type ] ?? 0 ) + 1;
                 }
+                if ( $widget_type === 'accordion' ) {
+                    $counts['accordion_items'] += count( (array) ( $settings['tabs'] ?? [] ) );
+                }
             }
             if ( is_array( $node['elements'] ?? null ) ) {
                 $walk( $node['elements'], $depth + 1 );
@@ -272,7 +276,8 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
     $cta_requirements = wpae_llm_extract_requested_ctas( $message );
     $non_cta_units = array_values( array_filter( $units, static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit ) ) );
     $expected_copy_slots = count( $non_cta_units ) + count( $cta_requirements );
-    if ( ! empty( $units ) && $counts['widgets'] < 3 ) {
+    $faq_accordion_covers_content = $archetype === 'faq' && $counts['accordion_items'] >= 2;
+    if ( ! empty( $units ) && $counts['widgets'] < 3 && ! $faq_accordion_covers_content ) {
         $failures[] = 'provider returned too few native widgets';
     }
 
@@ -4650,7 +4655,14 @@ function wpae_llm_apply_fallback_faq_content( array &$elements, string $message,
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             $settings['tabs'] = [];
             foreach ( array_slice( $pairs, 0, 6 ) as $pair ) {
-                $settings['tabs'][] = [ 'tab_title' => $pair['label'], 'tab_content' => $pair['content'] ];
+                $question = trim( (string) ( $pair['label'] ?? '' ) );
+                $answer = trim( (string) ( $pair['content'] ?? '' ) );
+                if ( $question !== '' && $answer !== '' ) {
+                    if ( ! preg_match( '/[?؟]$/u', $question ) ) {
+                        $question .= '?';
+                    }
+                    $settings['tabs'][] = [ 'tab_title' => $question, 'tab_content' => $answer ];
+                }
             }
             $element['settings'] = $settings;
             $changed += count( $settings['tabs'] );
@@ -7969,26 +7981,21 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                 [ 'label' => 'Будет ли версия для мобильных?', 'content' => 'Да, композиция и spacing задаются с учетом mobile-first.' ],
             ];
         }
-        $faq_cards = [];
+        $faq_tabs = [];
         foreach ( $faq_pairs as $index => $pair ) {
             $question = trim( (string) ( $pair['label'] ?? '' ) );
             if ( $question !== '' && ! preg_match( '/[?؟]$/u', $question ) ) {
                 $question .= '?';
             }
-            $faq_card_id = 'llm-faq-' . (string) ( $index + 1 );
-            $faq_heading = wpae_llm_card_heading_widget(
-                $faq_card_id . '-title',
-                $widget( $faq_card_id . '-source', 'heading', [ 'title' => $question, 'header_size' => 'h4' ] )
-            );
-            $faq_cards[] = $card( $faq_card_id, [
-                $faq_heading,
-                $widget( $faq_card_id . '-answer', 'text-editor', [ 'editor' => trim( (string) ( $pair['content'] ?? '' ) ) ] ),
-            ] );
+            $answer = trim( (string) ( $pair['content'] ?? '' ) );
+            if ( $question === '' || $answer === '' ) {
+                continue;
+            }
+            $faq_tabs[] = [ 'tab_title' => $question, 'tab_content' => $answer ];
         }
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Частые вопросы', 'header_size' => 'h2' ] ),
-            $grid( 'llm-faq-grid', $faq_cards ),
-            $widget( 'llm-button', 'button', [ 'text' => 'Задать вопрос', 'link' => [ 'url' => '#contact' ] ] ),
+            $widget( 'llm-faq-accordion', 'accordion', [ 'tabs' => $faq_tabs ] ),
         ];
     } elseif ( $archetype === 'process' ) {
         $elements = [
