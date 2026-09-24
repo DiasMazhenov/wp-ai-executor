@@ -101,6 +101,16 @@ add_action( 'rest_api_init', function () {
 		'permission_callback' => 'wpae_llm_chat_permission',
 	] );
 
+	register_rest_route( 'ai-executor/v1', '/design-operations/target', [
+		'methods'             => 'GET',
+		'callback'            => 'wpae_design_operation_target_diagnostics_endpoint',
+		'permission_callback' => 'wpae_llm_chat_permission',
+		'args'                => [
+			'post_id' => [ 'required' => true, 'type' => 'integer', 'sanitize_callback' => 'absint' ],
+			'root_id' => [ 'required' => true, 'type' => 'string', 'sanitize_callback' => 'sanitize_key' ],
+		],
+	] );
+
     register_rest_route( 'ai-executor/v1', '/rollback', [
         'methods'             => 'POST',
         'callback'            => 'wpae_rollback',

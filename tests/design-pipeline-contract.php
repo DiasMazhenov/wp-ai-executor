@@ -88,6 +88,28 @@ if ( ! function_exists( 'current_time' ) ) {
 		return gmdate( 'c' );
 	}
 }
+if ( ! class_exists( 'WP_Error' ) ) {
+	class WP_Error {
+		public $code;
+		public $data;
+		public function __construct( string $code, string $message = '', array $data = [] ) { $this->code = $code; $this->data = $data; }
+		public function get_error_code(): string { return $this->code; }
+		public function get_error_data(): array { return $this->data; }
+	}
+}
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {
+		private $params;
+		public function __construct( array $params = [] ) { $this->params = $params; }
+		public function get_param( string $name ) { return $this->params[ $name ] ?? null; }
+	}
+}
+if ( ! function_exists( 'current_user_can' ) ) {
+	function current_user_can( string $capability, ...$args ): bool {
+		global $wpae_test_can_edit_post;
+		return $capability === 'edit_post' && ! empty( $wpae_test_can_edit_post );
+	}
+}
 if ( ! function_exists( 'wpae_rollback_post_fingerprint' ) ) {
 	function wpae_rollback_post_fingerprint( int $post_id ): string {
 		global $wpae_test_fingerprints;
@@ -469,6 +491,25 @@ $stale_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_
 $check( empty( $stale_status['reviewable'] ) && $stale_status['reason'] === 'root_missing' && $stale_status['class'] === 'unknown_target_change', 'missing pending root is rejected before capture without claiming rollback' );
 $changed_status = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash' ], 5214, $saved_tree );
 $check( empty( $changed_status['reviewable'] ) && $changed_status['reason'] === 'saved_hash_mismatch', 'changed saved target is rejected before capture' );
+$diagnostic_tree = [ [ 'id' => 'diagnostic-root', 'elType' => 'container', 'settings' => [ '_css_classes' => 'wpae-generated-root' ] ] ];
+$diagnostic_hash = hash( 'sha256', wp_json_encode( $diagnostic_tree ) );
+$diagnostic_operation = wpae_design_operation_create( [
+	'operation_id' => 'op-target-diagnostic',
+	'operation_identity' => 'target-diagnostic-identity',
+	'idempotency_key' => 'target-diagnostic-key',
+	'post_id' => 5214,
+	'root_ids' => [ 'diagnostic-root' ],
+	'saved_hash' => $diagnostic_hash,
+	'current_state' => 'written',
+] );
+$diagnostic_store_before = wpae_design_operation_store();
+$target_diagnostic = wpae_design_operation_target_diagnostics( 5214, 'diagnostic-root', $diagnostic_tree );
+$check( count( $target_diagnostic['operations'] ) === 1 && $target_diagnostic['operations'][0]['operation_id'] === 'op-target-diagnostic' && $target_diagnostic['operations'][0]['operation_identity'] === 'target-diagnostic-identity' && $target_diagnostic['operations'][0]['revision'] === $diagnostic_operation['revision'] && ! empty( $target_diagnostic['operations'][0]['target_status']['reviewable'] ), 'read-only target diagnostic binds operation identity, revision, root and saved readback' );
+$check( $diagnostic_store_before === wpae_design_operation_store(), 'read-only target diagnostic leaves the durable ledger unchanged' );
+$check( wpae_design_operation_target_diagnostics( 5214, 'foreign-root', $diagnostic_tree )['operations'] === [], 'target diagnostic never returns operations for a different root' );
+$wpae_test_can_edit_post = false;
+$diagnostic_forbidden = wpae_design_operation_target_diagnostics_endpoint( new WP_REST_Request( [ 'post_id' => 5214, 'root_id' => 'diagnostic-root' ] ) );
+$check( $diagnostic_forbidden instanceof WP_Error && $diagnostic_forbidden->get_error_code() === 'wpae_operation_target_forbidden' && ( $diagnostic_forbidden->get_error_data()['status'] ?? 0 ) === 403, 'target diagnostic denies users without edit_post capability' );
 $wpae_test_fingerprints[5214] = 'current-target-fingerprint';
 $changed_hashes = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash', 'target_fingerprint' => 'expected-target-fingerprint' ], 5214, $saved_tree );
 $check( $changed_hashes['reason'] === 'saved_hash_mismatch' && $changed_hashes['expected_fingerprint'] === 'expected-target-fingerprint' && $changed_hashes['current_fingerprint'] === 'current-target-fingerprint', 'stale target diagnostics preserve expected and current page fingerprints alongside saved hashes' );

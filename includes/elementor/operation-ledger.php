@@ -114,6 +114,81 @@ function wpae_design_operation_find_by_id( string $operation_id ): ?array {
 }
 
 /**
+ * Read-only, post-scoped diagnostic for operations that claim one target root.
+ * Never returns prompt content or changes the operation ledger.
+ */
+function wpae_design_operation_target_diagnostics( int $post_id, string $root_id, ?array $elementor_data = null ): array {
+	$post_id = absint( $post_id );
+	$root_id = sanitize_key( $root_id );
+	if ( $post_id <= 0 || $root_id === '' ) {
+		return [ 'ok' => false, 'reason' => 'invalid_scope', 'operations' => [] ];
+	}
+	if ( $elementor_data === null && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+		$elementor_data = wpae_get_elementor_data_for_post( $post_id );
+	}
+	if ( ! is_array( $elementor_data ) ) {
+		return [ 'ok' => false, 'reason' => 'readback_unavailable', 'post_id' => $post_id, 'root_id' => $root_id, 'operations' => [] ];
+	}
+	$current_root_ids = array_values( array_filter( array_map( static fn( $item ): string => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? '' ) ) : '', $elementor_data ) ) );
+	$operations = [];
+	$truncated = false;
+	foreach ( array_reverse( wpae_design_operation_store() ) as $operation ) {
+		if ( ! is_array( $operation ) || absint( $operation['post_id'] ?? 0 ) !== $post_id ) {
+			continue;
+		}
+		$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+		if ( ! in_array( $root_id, $root_ids, true ) ) {
+			continue;
+		}
+		if ( count( $operations ) >= 10 ) {
+			$truncated = true;
+			break;
+		}
+		$operations[] = [
+			'operation_id' => sanitize_key( (string) ( $operation['operation_id'] ?? '' ) ),
+			'operation_identity' => sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) ),
+			'idempotency_key' => sanitize_text_field( (string) ( $operation['idempotency_key'] ?? '' ) ),
+			'post_id' => $post_id,
+			'root_ids' => $root_ids,
+			'revision' => max( 1, absint( $operation['revision'] ?? 1 ) ),
+			'current_state' => sanitize_key( (string) ( $operation['current_state'] ?? '' ) ),
+			'operation_type' => sanitize_key( (string) ( $operation['operation_type'] ?? '' ) ),
+			'selected_scope' => sanitize_text_field( (string) ( $operation['selected_scope'] ?? '' ) ),
+			'saved_hash' => sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) ),
+			'target_fingerprint' => sanitize_text_field( (string) ( $operation['target_fingerprint'] ?? '' ) ),
+			'created_at' => sanitize_text_field( (string) ( $operation['created_at'] ?? '' ) ),
+			'updated_at' => sanitize_text_field( (string) ( $operation['updated_at'] ?? '' ) ),
+			'target_status' => wpae_design_operation_target_status( $operation, $post_id, $elementor_data ),
+		];
+	}
+	return [
+		'ok' => true,
+		'post_id' => $post_id,
+		'root_id' => $root_id,
+		'current_root_present' => in_array( $root_id, $current_root_ids, true ),
+		'current_saved_hash' => hash( 'sha256', (string) wp_json_encode( $elementor_data ) ),
+		'operations' => $operations,
+		'truncated' => $truncated,
+	];
+}
+
+function wpae_design_operation_target_diagnostics_endpoint( WP_REST_Request $request ) {
+	$post_id = absint( $request->get_param( 'post_id' ) );
+	$root_id = sanitize_key( (string) $request->get_param( 'root_id' ) );
+	if ( $post_id <= 0 || $root_id === '' ) {
+		return new WP_Error( 'wpae_operation_target_scope_invalid', 'Post и root обязательны для диагностики.', [ 'status' => 400 ] );
+	}
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return new WP_Error( 'wpae_operation_target_forbidden', 'Нет разрешения читать операции этой страницы.', [ 'status' => 403 ] );
+	}
+	$elementor_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : null;
+	if ( ! is_array( $elementor_data ) ) {
+		return new WP_Error( 'wpae_operation_readback_unavailable', 'Сохранённый Elementor target недоступен для безопасного сравнения.', [ 'status' => 503 ] );
+	}
+	return wpae_design_operation_target_diagnostics( $post_id, $root_id, $elementor_data );
+}
+
+/**
  * Compare a pending operation with the currently saved Elementor target.
  * This is read-only: stale history stays in the ledger, but cannot be used
  * as capture or review evidence.

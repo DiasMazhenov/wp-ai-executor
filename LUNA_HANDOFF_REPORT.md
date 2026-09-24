@@ -1,120 +1,110 @@
-# WP AI Executor — актуальный handoff
+# WP AI Executor — текущий live handoff
 
-Обновлено: **2026-09-24 04:24 +05:00 (Asia/Almaty)**.
+Обновлено: **2026-09-24 23:43 +05:00 (Asia/Almaty)**.
 
-## Краткий результат
+## Итог
 
-Исправления CTA URL, явного pill-бейджа, provenance цветов и безопасного Vision-repair реализованы в source **v02.11.145**, проверены локально, закоммичены и отправлены в `origin/main`. Активный WP AI Executor подтверждён как **v02.11.145** на странице плагинов; свежий Elementor editor той же существующей страницы также показал v02.11.145.
+Установленный runtime остаётся **v02.11.147**, commit **6c0abc8**. В исходниках подготовлен v02.11.148 с защищённым read-only GET target diagnostic; live installation пока не подтверждена.
 
-Targeted live repair root `cd4da23` **не запускался**: после установки новый editor не предложил reviewable pending operation. Сохранённый root нельзя безопасно заменить, пока сервер не подтвердил operation ownership и неизменность сохранённого снимка. Повторную генерацию не запускали, новых roots не создавали. Текущий public render остаётся исходным неудачным вариантом; acceptance — **FAIL/BLOCKED**, а не PASS.
+Свежая проверка существующей public страницы `post=5214` подтверждает: в root `cd4da23` сейчас видны pill «АРХИТЕКТУРА» и загруженное архитектурное фото, а обе CTA ведут на правильные ссылки. Сохранён один generated root. Новый PNG снят Browser Use с текущей вкладки public, открыт и визуально проверен.
+
+Стили и фото остались в сохранённом root после предыдущего Elementor save/reload; в этом запуске страницу не записывал и новые roots/pages/drafts не создавал. Текущий editor config выбирает unrelated operation `wpae-89007d964d7436ab` для root `1fa90e6`, `reviewable=false`, поэтому review action скрыто. Текущую запись ledger для `cd4da23` ещё нельзя подтвердить: v148 diagnostic route пока не установлена. Targeted pipeline repair и привязанный Vision review не выполнялись; fail-closed защита от чужих правок сохранена.
 
 ## Исходное состояние и выпуск
 
-- Repository: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
-- Исходный HEAD: `74bbc8fa178b324eb5590f0248bbb7533e0b171d`, source v02.11.144.
-- Release commit: `359c2a9` (`fix: repair generated hero without duplicate roots`), source v02.11.145.
-- Handoff/context опубликованы отдельными documentation commits `003a923` и `2d30047`, оба pushed; последний runtime/source commit остаётся `359c2a9`.
-- `git push origin main`: **PASS**, `74bbc8f..359c2a9 main -> main`.
-- WP Pusher показывает для `DiasMazhenov/wp-ai-executor` branch `main`, Push-to-Deploy enabled. Кнопка `Update plugin` вернула «Plugin was successfully updated»; Plugins UI подтвердил активный WPAE **v02.11.145**. Hook URL был вызван отдельно, но браузерная навигация завершилась timeout, поэтому результат hook не подтверждён. Версия была подтверждена независимо через Plugins UI и свежий Elementor editor.
-- Текущий editor UI на `post=5214` показал версию v02.11.145. Повторно открыть editor с cache-bust на второй вкладке один раз не удалось (`net::ERR_ABORTED`); свежая загрузка из существующей вкладки прошла и показала v145.
-- Файлы и значения hook не сохранены в отчёте.
-- В репозитории не найден `AGENTS.md`; прочитаны канонический `context.md` и текущий `LUNA_HANDOFF_REPORT.md`. Case-variant и `SESSION_CONTEXT.md` не создавались.
+- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
+- HEAD на начало проверки: `6c0abc8512be4e29bd0dfd22b4225de9c2189c3c`.
+- Установленная source/live версия: **v02.11.147**. Свежий inline editor config на `post=5214` сообщает v02.11.147.
+- Версия в текущем исходнике: **v02.11.148**; новая commit/push/installation в этой проверке не подтверждены.
+- Использовалась только существующая страница `post=5214`, public URL `/pricing-contract-live-v123/`. Новые страницы, drafts и roots не создавались. В Elementor изменены стили/медиа только внутри существующего root `cd4da23`; root count остался 1.
+- Рабочее дерево содержит ранее существовавшие unrelated untracked-файлы. Для v148 изменены только operation ledger, REST routes, bootstrap version, contract test и соответствующие package hashes; screenshot evidence не предназначены для коммита.
 
-## Целевая страница и durable operation
+## Цепочка ledger → editor config → target status → UI action
 
-- Использовалась только существующая опубликованная страница `post=5214`, permalink `/pricing-contract-live-v123/`. Новые WordPress pages/drafts не создавались.
-- Перед установкой editor и public readback показывали один root `cd4da23` с текстами «Тихая форма», «АРХИТЕКТУРА», «Пространство для идей», описанием и двумя CTA; другие Elementor roots не видны.
-- Последняя фактически прочитанная operation из сохранённой generation diagnostics: `wpae-642778ef2b64e486`, identity `d1e611fe-6f12-46e7-9683-986aea4108c7`, `post_id=5214`, root `cd4da23`, state `written`, revision `4`, `render_review_pending=true`, `vision_report_id` и `rendered_html_hash` пусты. Это readback старой diagnostics записи, не новый прямой серверный ledger query.
-- Исходная operation имела route `pipeline` / `local_deterministic`, `provider_calls=0`, action `insert_elements`, `roots_to_add=1`. Повторной operation для repair не создано.
-- После установки v145 head-actions в свежем chat UI не содержали «Проверить сохранённый результат»; pending operation не представилась как reviewable. Причина отсутствия кнопки (нет записи в config либо target-status не прошёл) через доступный UI не различима. Точное saved hash/fingerprint после v145 напрямую не прочитано. Поэтому targeted write остановлен по правилу fail-closed.
-- Не нажимались `Перегенерировать последний запрос`, `Опубликовать` или ручное изменение Elementor controls. Ни rollback, ни manual repair, ни новый generation request в этом запуске не выполнялись.
+1. **Server ledger.** `wpae_design_operation_editor_candidate()` в `includes/elementor/operation-ledger.php` читает operation store, пропускает terminal states, вычисляет `target_status` и сначала возвращает reviewable operation; когда такой нет — stale operation с присутствующим owned root, иначе последнюю eligible operation.
+2. **Editor config.** `wpae_enqueue_elementor_llm_chat()` в `includes/elementor/editor-chat.php` встраивает один выбранный результат как `pendingOperation`, включая operation id/identity, revision, root IDs, saved hash, fingerprint и target status.
+3. **Актуальный config после reload.** Для `postId=5214` он сообщает:
+   - operation `wpae-89007d964d7436ab`;
+   - identity `e12c2e08-2952-4906-8dbb-f66d3ed42eb1`;
+   - revision `5`, state `written`;
+   - owned root `1fa90e6`;
+   - target status `stale_target / root_missing`, class `unknown_target_change`, `reviewable=false`.
 
-## Исправления v02.11.145
+   В свежем inline config этой другой operation expected/current saved hashes равны соответственно `da514185bafb1ee0afe059b0625b745dfda64b0f11c11ed4befeb76da7be165a` и `8654f86b2596a4b53e543d9d4d229f150c684403ffe182a79204b3d72437fb7e`; expected/current fingerprints — `8af7f9445cf403f139abd738b4a9e3ab2c8915e5cb67316c2f3161903a425fe1` и `5d51b07086e6e154b58af142943e3435efe9e12a901f16230c6f048ee08e6d68`. **Эти значения принадлежат operation для root `1fa90e6`, а не `cd4da23`.**
+4. **Проверка UI.** В `assets/js/elementor-llm-chat.js` действие «Проверить сохранённый результат» создаётся только когда `pendingOperation.reviewable !== false`. Поэтому для полученного stale target действие не показывается. Это соответствует fail-closed защите.
+5. **Целевой root.** Свежий public DOM содержит один `.wpae-generated-root` с `data-id=cd4da23`. Однако конфигурация не содержит operation для этого root. Историческая запись `wpae-642778ef2b64e486` / identity `d1e611fe-6f12-46e7-9683-986aea4108c7` / revision 4 известна только из предыдущих generation diagnostics и не является текущим серверным ledger readback.
 
-| Дефект | Реализация | Behavioral evidence |
-|---|---|---|
-| CTA URL терялись на unicode `→` | `includes/llm/brief-ir.php`: общий URL parser/validator поддерживает `→`, `->`, `—`, `-`, `:`, ссылки в пределах сегмента CTA; отмечает явно запрошенный, но невалидный URL. `includes/llm/llm.php` использует тот же validator. | `tests/design-pipeline-contract.php`: production BriefIR → DesignPlan → ElementorIR → compiler проверяет два независимых назначения `#contact`/`#projects`, URL в одной фразе, разделитель `;`, перенос строки, безопасные абсолютные/fragment URL и отказ на `javascript:`. |
-| Сборка могла молча потерять CTA | `includes/elementor/elementor-ir.php`: до возврата compiled output сверяются текст CTA и сохранённый URL; отсутствующая пара становится compile error до write. | Production compiler regression проверяет exact URLs, а не только наличие parser поля. |
-| Запрошенный pill оставался обычным heading | `includes/llm/brief-ir.php` сохраняет явный pill constraint; `includes/llm/design-plan.php` передаёт его для hero; `includes/elementor/elementor-ir.php` компилирует native container + editable native heading, content-fit ширину, padding/radius, contrast tokens и отсутствие grow. Обычный eyebrow не становится pill автоматически. | Contract check проходит BriefIR→Plan→IR→native JSON и проверяет текст, редактируемость, pill styles; pricing badge входит в совместный regression harness. |
-| Цветовые defaults выдавались за проектные токены | `includes/design/token-resolution.php`: отсутствующее сохранённое project значение остаётся provenance `safe_default`; сохранённые project token и явные user values имеют приоритет. Beige safe default не заменялся глобально. | Regression различает missing/default token и явно сохранённый project token; explicit overrides проверяются через компилятор. |
-| Vision repair терял актуальный operation revision и откатывал не ту запись | `assets/js/elementor-llm-chat.js`: после quality-failed Vision исходный root остаётся до замены; repair получает parent operation ID/identity/revision/root IDs и свежую operation identity; stale reconcile не выставляет reviewed/completed. `includes/llm/llm.php` повторно проверяет parent и закрывает путь без owned-root контекста; передаёт exact expected-before snapshot. `includes/elementor/operation-ledger.php` допускает `written/rendered → revised` при успешной замене. `includes/elementor/page-update.php` сравнивает expected-before с readback и использует существующий transaction/write boundary. | Runtime tests проверяют production owned-root replace ровно одного существующего root, blocking unscoped Vision regeneration до provider/write, отказ на stale revision/foreign root/изменённой странице, и переход former operation в revised. На live root repair не выполнялся. |
+В live v147 нет read-only REST метода для чтения operation по root: `/design-operations/reconcile` — POST и изменяет ledger. Поэтому вызов reconcile не использовался как диагностика. В source v148 добавлен ограниченный GET `/design-operations/target?post_id=…&root_id=…`: он требует `wpae_llm_chat_permission` и повторно проверяет `current_user_can('edit_post', $post_id)`, возвращает не более 10 совпадающих записей без prompt text и ничего не меняет. Helper локально проверен; live route не установлена, поэтому текущие identity/revision/hash/fingerprint для `cd4da23` остаются **не проверены live**.
+
+## Минимальные runtime-исправления
+
+- **v02.11.146 / `3325b54`.** `wpae_design_operation_editor_candidate()` сканирует операции и предпочитает более старую reviewable/current target, если новая запись stale. Клиентский Vision repair использует brief только при совпадающем operation identity и сохраняет ограничение на точечный replacement exact operation-owned root.
+- **v02.11.147 / `6c0abc8`.** Если reviewable operation нет, helper предпочитает stale запись, чей owned root всё ещё присутствует, чтобы дать диагностику реального target; mismatch response сохраняет expected/current saved hashes и fingerprints.
+- **v02.11.148 source-only.** Добавлен защищённый GET read-only target diagnostic и regression на root/post scope, operation identity/revision, saved readback и отсутствие изменений ledger. Не устанавливался на сайт.
+- В этом визуальном проходе parser, compiler, write boundary и WordPress settings не менялись. Стили/медиа внутри существующего root были сохранены Elementor editor.
+- Поведенческие regression tests подтверждают выбор кандидата при stale/missing root и возврат hashes/fingerprints. Они не подтверждают, что текущая server ledger запись `cd4da23` существует.
+
+## Live DOM и соответствие текущему результату
+
+Текущий сохранённый результат проверен на существующей public странице; в этом запуске не выполнялась новая запись:
+
+- root count: **1**, ID `cd4da23`; соседние roots не добавлялись и не редактировались.
+- Exact copy сохранён: «Тихая форма», «АРХИТЕКТУРА», «Пространство для идей», «Опишите задачу и получите понятный первый шаг», «Начать проект», «Смотреть проекты».
+- CTA в public DOM: `Начать проект → #contact`, `Смотреть проекты → #projects`.
+- Pill реализован стилями native Heading widget: контейнер `#fffdfa`, border `1px solid #161e33`, radius `999px`, padding `6px 12px`; сам H6 расположен внутри стилизованного `.elementor-widget-container`.
+- Native Image widget ID `e5e26ab` загружен (`naturalWidth=1800`, `naturalHeight=1200`), `object-fit: cover`, размер после reload при public viewport 911 px — **412×460 px**. Alt пустой (`alt=""`), поэтому описательный alt сейчас не подтверждён.
+- Public DOM при `innerWidth=911`, `DPR=2`: copy и image widgets примерно **412/412 px**; `scrollWidth=clientWidth=911`, горизонтального overflow нет. Это public 911 px breakpoint observation, не замер public desktop 1440 px.
+- Elementor desktop preview: iframe viewport `1025×870`, root width 1010 px, inner width 946 px; copy `368.8 px`, image widget `553.2 px` — фактическое соотношение **40/60** в editor preview.
+- Elementor mobile preview: viewport `360×736`, root width 345 px, direction `column`; copy расположен перед Image widget, оба занимают 313 px; изображение `313×300 px`; `scrollWidth=clientWidth=345`, горизонтального overflow нет.
+- Background root: `#f6f0e6`, как было указано для существующего hero. Ниже hero в текущем public capture показана пустая область и плавающий чат; pricing-карточки в этом viewport не наблюдались, и никакой соседний root не изменялся.
+- В актуальном DOM pill «АРХИТЕКТУРА» имеет фон `rgb(255, 253, 250)`, `1px solid rgb(22, 30, 51)`, `border-radius: 999px`, padding `6px 12px`; он виден в свежем кадре.
+- Свежая Vision-проверка не проводилась: нет подтверждённой текущей operation identity, к которой можно безопасно привязать review.
+
+Это подтверждённый current visual state после ручного сохранения через Elementor UI, но не результат targeted repair через operation pipeline. Проверку 390 px из старого handoff нельзя считать свежей геометрией этого запуска.
+
+## PNG evidence
+
+Все упомянутые кадры сняты Browser Use `screenshot({fullPage:false})` в уже существующих вкладках. Свежий public кадр в этом запуске содержит 911×933 px, записан в PNG, проверен `file`/`sips` и открыт визуально. Ранее созданные editor desktop/mobile PNG также открывались и проверялись. Operation identity визуального save не подтверждена.
+
+| Снимок | Файл и привязка |
+|---|---|
+| Fresh public current | [Public PNG, 911×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-public-current-20260924.png) · public source, post 5214, root `cd4da23`, viewport 911×933 CSS px, DPR 2. Видны pill, обе CTA и фото; это не 1440 px capture. |
+| Elementor desktop preview after reload | [Desktop editor PNG, 1253×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-desktop-editor-after-reload-20260924.png) · source editor, post 5214, root `cd4da23`, outer screenshot 1253×933, desktop preset; editor Structure panel перекрывает часть правого края изображения. |
+| Elementor mobile preview after reload — верх блока | [Mobile editor PNG, 1253×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-mobile-editor-after-reload-20260924.png) · source editor, mobile portrait preset, iframe 360×736, post 5214, root `cd4da23`; кадр показывает pill, copy, CTA и верх фото.
+| Elementor mobile preview after scroll | [Mobile photo PNG, 1253×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-mobile-editor-photo-after-reload-20260924.png) · тот же post/root/viewport; кадр прокручен внутри preview, полностью показывает фото. |
 
 ## Проверки
 
-Команды выполнены на release source до commit:
+Проверки source v148 и текущего live visual состояния v147:
 
-- `php -l` изменённых runtime PHP files — **PASS**.
-- `php tests/design-pipeline-contract.php` — **130 checks OK**.
+- `php -l wp-ai-executor.php`, `includes/elementor/operation-ledger.php`, `includes/rest/routes.php`, `tests/design-pipeline-contract.php` — **PASS**.
+- `php tests/design-pipeline-contract.php` — **140 checks OK**, including target-scope immutability and denial without `edit_post`.
 - `php tests/flex-generation-runtime.php` — **338 checks OK**.
-- `node --test tests/*.test.js` — **4/4 suites pass**, 0 fail.
-- `php docs/audits/2026-09-12/package-probe.php` — **PASS**, 90 packaged files, 0 hash mismatches; valid/corrupt/missing/unsafe archive cases exercised.
-- `git diff --check` и `git diff --cached --check` — **PASS**.
-- Hashes `wpae-package.json` пересчитаны для текущего списка 90 runtime/package files.
-- В commit включены только 13 перечисленных runtime, test, entrypoint и package-файлов. Существующие несвязанные untracked-файлы не staged.
-
-## Live saved/rendered evidence после обновления
-
-После подтверждения активной v145 публичный URL той же страницы был заново открыт без изменения содержимого. В DOM при viewport **1440×900**:
-
-- единственный `.wpae-generated-root` имеет ID `cd4da23`, ширина 1440 px, высота 479.6 px, computed background `rgb(246, 240, 230)`;
-- 6 native Elementor widgets: три `heading.default`, `text-editor.default`, два `button.default`;
-- обе ссылки CTA имеют отсутствующий `href` (в DOM `null`): «Начать проект» и «Смотреть проекты»;
-- у заголовков `АРХИТЕКТУРА` и `Тихая форма` нет pill background/radius; оба отображаются как обычные H6;
-- изображений внутри root: 0; media placeholder отсутствует;
-- `documentElement.scrollWidth=1440`, `clientWidth=1440`: горизонтального overflow нет.
-
-При явном mobile viewport **390×844**:
-
-- тот же root `cd4da23`, ширина 390 px, высота 442 px, beige computed background;
-- две CTA по-прежнему имеют `href=null`;
-- `scrollWidth=390`, `clientWidth=390`: горизонтального overflow нет.
-
-Визуальный результат не принят: pill отсутствует, CTA links потеряны, safe-default beige заметен, содержимое остаётся одноколоночным. Отсутствие media соответствует исходному prompt. Текст и root сохранились после повторной загрузки editor и public страницы; отдельный прямой `_elementor_data` database export недоступен.
-
-Старая Vision diagnostics из предыдущей operation: score 45/100, confidence 95%; review не прикреплён к durable ledger (`vision_report_id` пуст). В текущем запуске новый Vision не делался: operation не появилась как reviewable, и не было безопасного подтверждения scope для fresh capture/repair. Static LayoutReport не считается заменой DOM или Vision.
-
-## Screenshot evidence
-
-Свежие inline CUA captures public render той же страницы были показаны в ходе этого запуска: **1440×900** desktop и **390×844** mobile. Они отражают текущий неотремонтированный root после установки v145; это не screenshot успешного repair.
-
-**SCREENSHOT BLOCKED — файл PNG и абсолютная ссылка.** Прочитанная документация CUA разрешает получить screenshot bytes и показать их inline (`getScreenshot`/`emitImage`), но не документирует запись этих bytes в workspace или создание локального artifact. Доступного screenshot-file/artifact writer tool нет. Base64 не печатался, фальшивая ссылка не создана. Inline screenshots присутствуют в выводе этого запуска; доступного пути для проверки открытием локального PNG нет.
+- `node --test tests/*.test.js` — **4 passed, 0 failed**.
+- `php docs/audits/2026-09-12/package-probe.php` — **PASS**, 90 packaged files, 0 hash mismatches; valid/corrupt/missing/unsafe manifest scenarios checked.
+- `git diff --check` — **PASS** до обновления этого отчёта; требуется повторить перед commit.
+- Fresh screenshot `file` сообщает PNG 911×933; изображение открыто и визуально проверено.
 
 ## Acceptance matrix
 
-| Проверка | Статус | Доказательство |
+| Область | Статус | Доказательство |
 |---|---|---|
-| CTA URLs через production pipeline | PASS local | BriefIR→Plan→IR→compiler contract tests |
-| Explicit pill native compilation | PASS local | Native JSON contract regression; runtime suites |
-| Safe-default color provenance | PASS local | Token resolution regression |
-| Owned-root replacement guards | PASS local | Stale/foreign/conflict tests; zero write/provider for unscoped Vision regenerate |
-| PHP, Node, package, whitespace checks | PASS local | Команды и результаты выше |
-| Push `main` | PASS | `359c2a9` на `origin/main` |
-| WP Pusher Update plugin | PASS | UI подтвердил success и installed v02.11.145 |
-| Push-to-Deploy hook completion | BLOCKED | Hook URL вызван, browser navigation timed out; completion отдельно не подтверждён |
-| Installed editor runtime v02.11.145 | PASS | Plugins UI + fresh editor chat UI |
-| Существующая страница/root после reload | PASS read-only | public DOM и editor показывают `post=5214`, root `cd4da23` |
-| Live repair of `cd4da23` with v145 | BLOCKED | свежий UI не показал reviewable pending operation; server saved target fingerprint не был прочитан напрямую |
-| Live CTA URLs/pill acceptance | FAIL | DOM: `href=null`, H6 pill style absent |
-| Live background | FAIL (user-facing expectation) | computed `#f6f0e6`, resolved source safe default; пользователь его не задавал |
-| Mobile overflow | PASS at 390×844 | DOM scroll width equals client width |
-| Fresh Vision after update | NOT RUN | repair scope was not reviewable; old score 45 is historical |
-| File-backed screenshot PNGs/links | BLOCKED | documented CUA has inline capture only; no file writer |
-| New pages/drafts/roots/manual page edits | PASS (none created) | No live write request sent in this run |
+| v147 в live editor | PASS | inline editor config сообщает v02.11.147 |
+| v148 source diagnostic endpoint and `edit_post` guard | PASS local / NOT RUN live | helper, immutable-ledger behavior and forbidden-user response tested; endpoint пока не установлен |
+| Выбор reviewable/stale ledger candidate | PASS local | 136 production contract checks, включая regressions v146/v147 |
+| Проследить актуальный выбранный ledger candidate до UI | PASS live | config → `root_missing` → `reviewable=false` → кнопка скрыта |
+| Public pill styling | PASS | wrapper background `#fffdfa`, 1px border, radius 999px, 6×12px padding |
+| Image widget/photo after save/reload | PASS | native widget `e5e26ab`, image loaded 1800×1200; public rendered 412×460 px |
+| CTA links | PASS | public DOM `#contact` and `#projects` |
+| Existing root scope | PASS | root count 1, same ID `cd4da23`; no new pages/drafts/roots |
+| Desktop 40/60 composition | PASS, editor preview | inner 946 px → copy 368.8 px / image 553.2 px |
+| Mobile copy-first stack | PASS, editor preview | 360×736; copy above image, 313 px each; no horizontal overflow |
+| Public 911 px horizontal overflow | PASS | `scrollWidth=clientWidth=911` |
+| Связь ledger operation с `cd4da23` | BLOCKED live | в v147 нет read-only target endpoint; v148 GET не установлен |
+| Targeted repair через deterministic operation pipeline | NOT RUN | сохранённый root уже содержит pill/photo; ownership/fingerprint для операции этого root не подтверждены, guard write не обходился |
+| Fresh Vision review bound to this result | NOT RUN | no verified operation identity or screenshot-bound server review record |
+| Fresh Browser Use PNG of current public state | PASS | public screenshot saved, opened and visually checked; prior editor desktop/mobile frames are linked above |
 
-## Изменённые файлы release commit
+## Историческая сводка
 
-- `assets/js/elementor-llm-chat.js`
-- `includes/design/token-resolution.php`
-- `includes/elementor/elementor-ir.php`
-- `includes/elementor/operation-ledger.php`
-- `includes/elementor/page-update.php`
-- `includes/llm/brief-ir.php`
-- `includes/llm/design-plan.php`
-- `includes/llm/llm.php`
-- `tests/design-pipeline-contract.php`
-- `tests/flex-generation-runtime.php`
-- `tests/llm-chat-contract.test.js`
-- `wp-ai-executor.php`
-- `wpae-package.json`
-
-На момент обновления этого handoff документа screenshot PNG отсутствует; внешняя страница не изменялась, соседи не изменялись, source release v02.11.145 установлен.
+Релизы v02.11.145–147 являются историческим контекстом: исправляли CTA/pill compilation и выбор stale/reviewable operation candidate. В текущем live DOM pill/photo и CTA присутствуют; ledger ownership именно для `cd4da23` остаётся не подтверждённой до установки read-only v148 диагностики.
