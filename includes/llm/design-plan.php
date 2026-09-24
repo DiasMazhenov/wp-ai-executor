@@ -47,6 +47,61 @@ function wpae_design_plan_content_refs( array $brief, array $roles = [] ): array
 	return array_values( array_filter( array_unique( $refs ) ) );
 }
 
+function wpae_design_plan_process_content( array $brief ): array {
+	$items = array_values( array_filter( (array) ( $brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && trim( (string) ( $item['id'] ?? '' ) ) !== '' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== '' ) );
+	$source = (string) ( $brief['source_text'] ?? '' );
+	$steps = [];
+	$unpaired = [];
+	for ( $index = 0, $count = count( $items ); $index < $count; ) {
+		$current = $items[ $index ];
+		$next = $items[ $index + 1 ] ?? null;
+		$current_span = (array) ( $current['source_span'] ?? [] );
+		$next_span = is_array( $next ) ? (array) ( $next['source_span'] ?? [] ) : [];
+		$gap = is_array( $next ) && isset( $current_span[1], $next_span[0] )
+			? substr( $source, (int) $current_span[1], max( 0, (int) $next_span[0] - (int) $current_span[1] ) )
+			: '';
+		if ( is_array( $next ) && preg_match( '/^\s*(?:[—–]|->|→)\s*$/u', $gap ) ) {
+			$steps[] = [
+				'label_ref' => sanitize_key( (string) $current['id'] ),
+				'text_ref' => sanitize_key( (string) $next['id'] ),
+				'provenance' => [ 'source' => 'brief', 'source_spans' => [ $current_span, $next_span ] ],
+			];
+			$index += 2;
+			continue;
+		}
+		$unpaired[] = $current;
+		$index++;
+	}
+	$badge_ref = '';
+	if ( ! empty( $steps ) ) {
+		foreach ( $unpaired as $unpaired_index => $item ) {
+			$span = (array) ( $item['source_span'] ?? [] );
+			$prefix = isset( $span[0] ) ? substr( $source, 0, (int) $span[0] ) : '';
+			if ( preg_match( '/(?:блок\s+процесс\w*|process\s+block)\s*$/iu', $prefix ) ) {
+				$badge_ref = sanitize_key( (string) $item['id'] );
+				unset( $unpaired[ $unpaired_index ] );
+				break;
+			}
+		}
+	}
+	foreach ( $unpaired as $item ) {
+		$span = (array) ( $item['source_span'] ?? [] );
+		$steps[] = [
+			'label_ref' => sanitize_key( (string) $item['id'] ),
+			'text_ref' => '',
+			'provenance' => [ 'source' => 'brief', 'source_spans' => [ $span ] ],
+		];
+	}
+	$starts = [];
+	foreach ( $items as $item ) {
+		$starts[ sanitize_key( (string) ( $item['id'] ?? '' ) ) ] = (int) ( $item['source_span'][0] ?? 0 );
+	}
+	usort( $steps, static function ( array $left, array $right ) use ( $starts ): int {
+		return ( $starts[ $left['label_ref'] ] ?? 0 ) <=> ( $starts[ $right['label_ref'] ] ?? 0 );
+	} );
+	return [ 'badge_content_ref' => $badge_ref, 'steps' => array_values( $steps ) ];
+}
+
 function wpae_design_plan_media_reference_valid( array $media ): bool {
 	if ( absint( $media['attachment_id'] ?? 0 ) > 0 ) {
 		return true;
@@ -150,11 +205,20 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			];
 		}
 	} elseif ( $archetype === 'process' ) {
+		$process_content = wpae_design_plan_process_content( $brief );
+		$process_refs = [];
+		foreach ( (array) $process_content['steps'] as $step ) {
+			$process_refs = array_merge( $process_refs, array_filter( [ $step['label_ref'] ?? '', $step['text_ref'] ?? '' ] ) );
+		}
+		if ( (string) $process_content['badge_content_ref'] !== '' ) {
+			$section['badge_content_ref'] = $process_content['badge_content_ref'];
+		}
 		$section['children'] = [
 			[
 				'role' => 'process_steps',
-				'allowed_widgets' => [ 'heading', 'icon-list', 'divider' ],
-				'content_refs' => wpae_design_plan_content_refs( $brief ),
+				'allowed_widgets' => [ 'heading', 'text-editor', 'divider' ],
+				'content_refs' => array_values( array_unique( $process_refs ) ),
+				'steps' => $process_content['steps'],
 				'token_refs' => [ 'color.text', 'color.muted', 'color.border', 'space.component' ],
 				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'connector' => true ],
 				'responsive_policy' => 'stack',

@@ -1,43 +1,49 @@
 # WP AI Executor Context
 
-Последний срез: **2026-09-24 23:43 +05:00 (Asia/Almaty)**.
+Срез: **2026-09-25 01:56 +05:00 (Asia/Almaty)**.
 
-## Repository/runtime
+## Source и runtime
 
 - Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
-- Starting HEAD: `6c0abc8512be4e29bd0dfd22b4225de9c2189c3c`.
-- Live/editor runtime: **v02.11.147**. Source now declares **v02.11.148**, not yet confirmed installed.
-- A fresh `git fetch` could not write `.git/FETCH_HEAD`; `git ls-remote` could not resolve `github.com`. Remote freshness, push and installation remain unverified.
-- Canonical project context is this lowercase `context.md`. Do not create `SESSION_CONTEXT.md` or a casing duplicate.
+- HEAD: `8c9a89aef1be430c37e93ad36ef47ea916314031`, runtime version **v02.11.151**.
+- Этот runtime commit ранее отправлен в `origin/main`; WP Pusher сообщил об успешном обновлении, а редактор Elementor на `post=5214` показывает v02.11.151.
+- Канонический контекст — lowercase `context.md`. На текущей macOS `CONTEXT.md` разрешается в тот же inode; не создавай отдельную копию и не используй `SESSION_CONTEXT.md`.
 
-## Current target and visual evidence
+## Live-проверка `post=5214`
 
-- Work only on existing WordPress page `post=5214`, public `/pricing-contract-live-v123/`. No pages, drafts, or roots were created.
-- Fresh public DOM has one `.wpae-generated-root`, ID `cd4da23`. Exact copy, CTA links `#contact` and `#projects`, pill «АРХИТЕКТУРА», and loaded architectural photo are present.
-- Pill computed style: background `rgb(255,253,250)`, border `1px solid rgb(22,30,51)`, radius `999px`, padding `6px 12px`. Image widget `e5e26ab` loads 1800×1200 with `object-fit:cover`; `alt` remains empty. Root background is `#f6f0e6`.
-- Current public viewport 911×933, DPR 2: copy and image each about 412px; image 411.5×460px; no horizontal overflow. Previous editor checks: desktop inner 946px → 368.8/553.2px (40/60); mobile preview 360×736 → copy-first stack, 313px children, image 313×300px.
-- Fresh Browser Use public screenshot, visually checked: `/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-public-current-20260924.png` (911×933). Earlier editor screenshots remain in the repository; links and source details are in `LUNA_HANDOFF_REPORT.md`.
-- This turn made no WordPress/page write. Visual properties were saved in the earlier Elementor editor session, not through the deterministic operation pipeline.
+- Существующая страница: `https://mazhenov.kz/pricing-contract-live-v123/`, WordPress post `5214`. Новые pages и drafts не создавались.
+- Пользователь сообщил, что очистил прежнее содержимое страницы перед тестами. Сейчас в сохранённом editor preview и public DOM видны два QA-root: FAQ `82b88e5` и процесс `de395b6`. Прежний hero-root `cd4da23` в текущем DOM отсутствует.
+- FAQ: operation `wpae-20260924203054-838965f0`; native Accordion widget `7ccf10b`. После save/reload сохранены три заданных синтетических вопроса и ответа. Public interaction раскрывала ответы; Vision оценил результат в 85/95, с minor finding о тесном отступе над badge.
+- Процесс: operation `wpae-803141a1fa8a0c3f`; root `de395b6`. После save/reload видны три этапа, собранные из текстовых виджетов и горизонтальных Divider. Vision 68/95: слабая типографическая иерархия и однообразные интервалы; результат не принят как качественный timeline. Автоматическая замена остановлена защитой ownership: сохранённый target не принадлежал этой операции/изменился.
+- Старый дизайн доступен только как историческое изображение `wpae-post-5214-public-check-20260925.png`; оно показывает прежний root `cd4da23` с pill badge, двумя CTA и фотографией. Этот кадр не является текущим live-состоянием.
 
-## Operation review/repair status
+## Проверенные артефакты
 
-- Reloaded editor config selects unrelated operation `wpae-89007d964d7436ab`, identity `e12c2e08-2952-4906-8dbb-f66d3ed42eb1`, revision 5, state `written`, root `1fa90e6`.
-- Its target status is `stale_target / root_missing`, `reviewable=false`; current config hides «Проверить сохранённый результат». Its saved hashes and fingerprints belong to `1fa90e6`, not `cd4da23`.
-- Current ledger operation identity/revision/saved hash/fingerprint for `cd4da23` remain unverified live. Historical diagnostic `wpae-642778ef2b64e486` is not a server ledger readback. Do not infer owner from the editor's selected candidate.
-- Source v148 adds protected GET `/ai-executor/v1/design-operations/target` to read at most 10 records claiming a given root. It uses existing `wpae_llm_chat_permission`, rechecks `current_user_can('edit_post', $post_id)`, returns no prompt text, calls the existing saved-target guard, and does not mutate the ledger. This route is not installed/live-verified yet.
-- No targeted repair write or Vision review was performed. Do not bypass saved-hash/fingerprint ownership guards; existing reconcile is POST and can mutate state.
+- `wpae-faq-qa-v151-public-desktop-20260925.png` — FAQ, public, 1253×933.
+- `wpae-faq-qa-v151-editor-mobile-20260925.png` — FAQ, Elementor mobile preview canvas 360×736; внешний editor screenshot 1253×933. Отдельный public mobile viewport не подтверждён.
+- `wpae-process-qa-v151-public-desktop-20260925.png` — процесс QA-root, public, 1238×922; визуальная проверка fail.
+- Все перечисленные актуальные PNG проверены по сигнатуре и открыты для визуальной проверки. При Browser Use capture сверяй фактический формат bytes; JPEG конвертируй в настоящий PNG до сохранения с расширением `.png`.
 
-## Checks for source v02.11.148
+## Правило screenshot для live Elementor-приёмки
 
-- PHP lint: `wp-ai-executor.php`, `includes/elementor/operation-ledger.php`, `includes/rest/routes.php`, and `tests/design-pipeline-contract.php` — passed.
-- `php tests/design-pipeline-contract.php` — 140 checks, including target scoping, immutable ledger read, and edit capability denial.
-- `php tests/flex-generation-runtime.php` — 338 checks.
-- `node --test tests/*.test.js` — 4 passed, 0 failed.
-- `php docs/audits/2026-09-12/package-probe.php` — passed, 90 files, 0 hash mismatches; invalid hash, missing file, and unsafe path were rejected.
-- Repeat `git diff --check` before commit; current report/context edits followed the last check.
+1. Только существующая страница и существующая вкладка встроенного браузера; новых pages/drafts не создавать.
+2. После save/reload используй Browser Use через `node_repl`: импортируй `setupBrowserRuntime` из актуального `browser-client.mjs`, вызови setup, выбери browser с `type === "iab"`, найди нужную вкладку по URL и сними `screenshot({ fullPage: false })`.
+3. Сохрани bytes в абсолютный путь внутри workspace. Проверь реальную сигнатуру и, если требуется, конвертируй в PNG штатной системной утилитой.
+4. Открой PNG и проверь, что на нём именно нужная страница/root и состояние после reload; выведи screenshot inline через `nodeRepl.emitImage()`.
+5. В финале дай inline Markdown-изображение и кликабельную абсолютную ссылку на файл, укажи post/root/operation IDs, viewport и editor/public источник. Не печатай base64 и не выдумывай путь. Если файл сохранить или проверить нельзя — укажи `SCREENSHOT BLOCKED` и конкретный технический блокер.
 
-## Screenshot procedure
+## Локальные проверки v02.11.152
 
-Use only the existing in-app Browser Use tab: import `setupBrowserRuntime` from the current `browser-client.mjs`, choose the `iab` browser and existing tab for post 5214, capture `screenshot({fullPage:false})`, save bytes to an allowed absolute workspace path, inspect actual file type, convert JPEG to PNG with `sips` if needed, open with `view_image`, verify the requested target, then embed the absolute image and give a clickable link. Do not print base64, invent paths, create tabs/pages/drafts, or claim unseen content is present. Record post/root/operation identity only when verified, viewport, and editor/public source.
+- `php -l wp-ai-executor.php includes/llm/llm.php tests/flex-generation-runtime.php` — PASS.
+- `php tests/flex-generation-runtime.php` — 345 checks OK.
+- `php tests/design-pipeline-contract.php` — 151 checks OK.
+- `node --test tests/*.test.js` — 4/4 PASS.
+- `php docs/audits/2026-09-12/package-probe.php` — 90 files, 0 hash mismatches.
+- `git diff --check` — PASS для runtime-релиза до публикации. Текущие локальные изменения этого среза — документация и screenshot artifacts.
 
-Полный текущий handoff и evidence: `LUNA_HANDOFF_REPORT.md`.
+## Закреплённый process timeline reference
+
+- Источник: пользовательский Elementor selection JSON, post `4556`, element `5a52297`.
+- Эталонный контракт закреплён в `tests/fixtures/process-card-reference-v1.json`; active pipeline должен собирать его как native Elementor: карточка белая, border `1px solid #dbe3f0`, radius `20px`, reference padding; marker `#4460EC` круглый, `3rem` desktop / `2.5rem` mobile; marker row содержит native Divider `1px`, `100%`, gap `15px`.
+- Desktop cards: горизонтальный ряд с basis `22%` для четырёх карточек; tablet/mobile: вертикальный stack, каждая карточка `100%`. Явная подпись блока отображается одной компактной pill перед рядом карточек.
+- Не менять этот эталон на линейный список текстов/Divider. Regression должна проверять собранный native tree, стили маркера и карточки, точные label/body slots и responsive widths.

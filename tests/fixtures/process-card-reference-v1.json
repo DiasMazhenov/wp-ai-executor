@@ -1,0 +1,27 @@
+{
+  "schema": "wpae-process-card-reference-v1",
+  "source": "user-supplied Elementor selection, post 4556, captured 2026-09-07",
+  "card": {
+    "widget_structure": ["marker_row", "heading", "text-editor"],
+    "desktop_width_percent": 22,
+    "mobile_width_percent": 100,
+    "background_color": "#ffffff",
+    "border_color": "#dbe3f0",
+    "border_width_px": 1,
+    "border_radius_px": 20,
+    "padding_rem": {"top": 1, "right": 0.75, "bottom": 1.25, "left": 0.75},
+    "marker_background_color": "#4460EC",
+    "marker_label_css_class": "wpae-process-marker-label",
+    "marker_radius_px": 999,
+    "marker_width_rem": 3,
+    "marker_width_mobile_rem": 2.5,
+    "divider": {
+      "widget_type": "divider",
+      "style": "solid",
+      "weight_px": 1,
+      "width_percent": 100,
+      "gap_px": 15,
+      "color": "#000"
+    }
+  }
+}

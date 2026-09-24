@@ -46,6 +46,11 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 			continue;
 		}
 		$section_children = [];
+		$badge_ref = sanitize_key( (string) ( $section['badge_content_ref'] ?? '' ) );
+		if ( sanitize_key( (string) ( $section['role'] ?? '' ) ) === 'process' && $badge_ref !== '' && isset( $content_map[ $badge_ref ] ) ) {
+			$badge_label = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'process' ) ) . '-badge-label', 'process_badge_label', 'heading', [ $badge_ref ], [ 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+			$section_children[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'process' ) ) . '-badge', 'process_badge', 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+		}
 		foreach ( (array) ( $section['children'] ?? [] ) as $child_index => $child ) {
 			if ( ! is_array( $child ) ) {
 				continue;
@@ -106,11 +111,24 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'media_group', 'container', [], $token_refs, [ $image ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'media', 'alt' ] ] );
 			} elseif ( $role === 'process_steps' ) {
 				$step_children = [];
-				foreach ( $content_refs as $content_ref_index => $content_ref ) {
-					$step_children[] = wpae_elementor_ir_node( $child_id . '-step-' . count( $step_children ), 'step', 'text-editor', [ $content_ref ], [ 'color.text', 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
-					if ( $content_ref_index < count( $content_refs ) - 1 ) {
-						$step_children[] = wpae_elementor_ir_node( $child_id . '-divider-' . count( $step_children ), 'connector', 'divider', [], [ 'color.border' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack' ] );
+				$steps = array_values( array_filter( (array) ( $child['steps'] ?? [] ), static fn( $step ): bool => is_array( $step ) && sanitize_key( (string) ( $step['label_ref'] ?? '' ) ) !== '' ) );
+				foreach ( $steps as $step_index => $step ) {
+					$step_number = $step_index + 1;
+					$marker_number = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-number', 'process_number', 'heading', [], [ 'color.surface', 'type.body' ], [], [ 'literal_text' => sprintf( '%02d', $step_number ) ], [ 'strategy' => 'stack', 'editable_fields' => [] ] );
+					$marker = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-marker', 'process_marker', 'container', [], [ 'color.primary' ], [ $marker_number ], [ 'width_rem' => 3, 'width_mobile_rem' => 2.5 ], [ 'strategy' => 'stack', 'editable_fields' => [] ] );
+					$marker_row_children = [ $marker ];
+					if ( $step_index < count( $steps ) - 1 ) {
+						$marker_row_children[] = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-connector', 'connector', 'divider', [], [ 'color.border' ], [], [ 'reference' => 'process-card-v1' ], [ 'strategy' => 'stack' ] );
 					}
+					$card_children = [
+						wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-marker-row', 'process_marker_row', 'container', [], [], $marker_row_children, [], [ 'strategy' => 'stack', 'editable_fields' => [] ] ),
+						wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-title', 'process_card_title', 'heading', [ sanitize_key( (string) $step['label_ref'] ) ], [ 'color.text', 'type.display' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
+					];
+					$text_ref = sanitize_key( (string) ( $step['text_ref'] ?? '' ) );
+					if ( $text_ref !== '' ) {
+						$card_children[] = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-copy', 'process_card_copy', 'text-editor', [ $text_ref ], [ 'color.muted', 'type.body' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+					}
+					$step_children[] = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-card', 'process_card', 'container', [], [ 'color.surface', 'color.border', 'space.component' ], $card_children, [ 'reference' => 'process-card-v1' ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'process_steps', 'container', [], $token_refs, $step_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			} elseif ( $role === 'pricing_cards' ) {
@@ -375,6 +393,85 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_wrap_tablet'] = 'wrap';
 			$settings['flex_wrap_mobile'] = 'wrap';
 		}
+		if ( $role === 'process' ) {
+			$settings['_css_classes'] = 'wpae-process-timeline wpae-process-timeline-horizontal';
+			$settings['flex_direction'] = 'column';
+			$settings['flex_direction_tablet'] = 'column';
+			$settings['flex_direction_mobile'] = 'column';
+		}
+		if ( $role === 'process_steps' ) {
+			$settings['_css_classes'] = 'wpae-process-items';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'column';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_wrap_tablet'] = 'nowrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
+			$settings['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
+			$settings['flex_gap_tablet'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap_tablet'];
+		}
+		if ( $role === 'process_card' ) {
+			$settings['_css_classes'] = 'wpae-process-content';
+			$settings['flex_direction'] = 'column';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
+			$settings['flex_gap_mobile'] = [ 'column' => '0.4', 'row' => '0.4', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.4' ];
+			$settings['background_color'] = '#ffffff';
+			$settings['border_border'] = 'solid';
+			$settings['border_color'] = '#dbe3f0';
+			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+			$settings['border_radius'] = [ 'unit' => 'px', 'size' => 0.75, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ];
+			$settings['padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ];
+			$settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ];
+		}
+		if ( $role === 'process_marker_row' ) {
+			$settings['flex_direction'] = 'row';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_align_items'] = 'center';
+			$settings['flex_justify_content'] = 'flex-start';
+			$settings['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
+			$settings['flex_gap_mobile'] = [ 'column' => '0.4', 'row' => '0.4', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.4' ];
+		}
+		if ( $role === 'process_marker' ) {
+			$settings['_css_classes'] = 'wpae-process-marker';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_justify_content'] = 'center';
+			$settings['flex_align_items'] = 'center';
+			$settings['background_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['border_radius'] = [ 'unit' => 'px', 'size' => 999, 'top' => '999', 'right' => '999', 'bottom' => '999', 'left' => '999', 'isLinked' => true ];
+			$marker_width = (float) ( $node['layout_constraints']['width_rem'] ?? 3 );
+			$marker_mobile_width = (float) ( $node['layout_constraints']['width_mobile_rem'] ?? 2.5 );
+			$settings['width'] = [ 'unit' => 'rem', 'size' => $marker_width, 'sizes' => [] ];
+			$settings['width_mobile'] = [ 'unit' => 'rem', 'size' => $marker_mobile_width, 'sizes' => [] ];
+			$settings['min_height'] = [ 'unit' => 'rem', 'size' => $marker_width ];
+			$settings['min_height_mobile'] = [ 'unit' => 'rem', 'size' => $marker_mobile_width ];
+			$settings['_element_width'] = 'initial';
+			$settings['_element_custom_width'] = $settings['width'];
+			$settings['_element_custom_width_mobile'] = $settings['width_mobile'];
+			$settings['_flex_size'] = 'custom';
+			$settings['_flex_grow'] = 0;
+			$settings['_flex_shrink'] = 0;
+		}
+		if ( $role === 'process_badge' ) {
+			$settings['_css_classes'] = 'wpae-generated-badge';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_align_items'] = 'center';
+			$settings['background_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['border_border'] = 'solid';
+			$settings['border_color'] = $settings['background_color'];
+			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '999px', 'px', 999 );
+			$settings['padding'] = [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => false, 'sizes' => [] ];
+			$settings['align_self'] = 'flex-start';
+			$settings['_element_width'] = 'initial';
+			$settings['_flex_grow'] = 0;
+			$settings['_flex_shrink'] = 0;
+			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
+		}
 		if ( $role === 'pricing_card' ) {
 			$settings['border_border'] = 'solid';
 			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
@@ -408,14 +505,27 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
-		$settings['title'] = (string) ( $item['exact_text'] ?? '' );
-		$settings['header_size'] = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
-		$settings['title_color'] = (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
-		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
+		$settings['title'] = (string) ( $item['exact_text'] ?? $node['layout_constraints']['literal_text'] ?? '' );
+		$settings['header_size'] = in_array( $role, [ 'process_number', 'process_badge_label', 'brand', 'eyebrow' ], true ) ? 'h6' : ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
+		$settings['title_color'] = in_array( $role, [ 'process_number', 'process_badge_label' ], true ) ? (string) ( $token_values['color.surface'] ?? '#ffffff' ) : (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
+		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'process_number', 'process_badge_label' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
 		if ( is_array( $type_token ) ) {
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
 		}
-		if ( $role === 'eyebrow_badge_label' || ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) ) {
+		if ( $role === 'process_number' ) {
+			$settings['_css_classes'] = 'wpae-process-marker-label';
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 0.875, 'sizes' => [] ];
+			$settings['typography_font_weight'] = '600';
+			$settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1, 'sizes' => [] ];
+		} elseif ( $role === 'process_badge_label' ) {
+			$settings['_css_classes'] = 'wpae-generated-badge-label';
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 0.75, 'sizes' => [] ];
+			$settings['typography_font_weight'] = '600';
+			$settings['typography_text_transform'] = 'uppercase';
+			$settings['typography_letter_spacing'] = [ 'unit' => 'em', 'size' => 0.08, 'sizes' => [] ];
+		} elseif ( $role === 'eyebrow_badge_label' || ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) ) {
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['background_background'] = 'classic';
 			$settings['background_color'] = $accent;
@@ -497,7 +607,16 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		$settings['text_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
 	} elseif ( $widget_type === 'divider' ) {
-		$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+		if ( ( $node['layout_constraints']['reference'] ?? '' ) === 'process-card-v1' ) {
+			$settings['style'] = 'solid';
+			$settings['weight'] = [ 'unit' => 'px', 'size' => 1, 'sizes' => [] ];
+			$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+			$settings['align'] = 'left';
+			$settings['color'] = '#000000';
+			$settings['gap'] = [ 'unit' => 'px', 'size' => 15, 'sizes' => [] ];
+		} else {
+			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+		}
 	}
 	$compiled_children = [];
 	foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
@@ -512,6 +631,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			'split_40_60' => [ 40, 60 ],
 			'three_cards' => [ 33.333, 33.333, 33.333 ],
 		][ (string) ( $node['layout_constraints']['composition'] ?? '' ) ] ?? [];
+		if ( $role === 'process_steps' && count( $compiled_children ) > 0 ) {
+			$card_basis = count( $compiled_children ) === 4 ? 22 : min( 32, 92 / count( $compiled_children ) );
+			$composition_basis = array_fill( 0, count( $compiled_children ), round( $card_basis, 3 ) );
+		}
 		if ( $role === 'pricing_cards' && count( $compiled_children ) === 3 ) {
 			// Three percentage columns plus two native gaps otherwise wrap at common desktop widths.
 			$composition_basis = [ 31.5, 31.5, 31.5 ];
@@ -522,11 +645,13 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			if ( ! is_array( $compiled_child ) || ( $compiled_child['elType'] ?? '' ) !== 'container' || ! is_array( $compiled_child['settings'] ?? null ) ) {
 				continue;
 			}
-			if ( in_array( (string) ( $node['children'][ $child_index ]['role'] ?? '' ), [ 'pricing_badge', 'hero_badge' ], true ) ) {
+			$child_role = (string) ( $node['children'][ $child_index ]['role'] ?? '' );
+			if ( in_array( $child_role, [ 'pricing_badge', 'hero_badge', 'process_badge' ], true ) || $role === 'process_marker_row' ) {
 				continue;
 			}
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
-			$tablet_basis = count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100;
+			$tablet_is_stack = ( $settings['flex_direction_tablet'] ?? '' ) === 'column';
+			$tablet_basis = $tablet_is_stack ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
 			$child_settings = &$compiled_child['settings'];
 			// Elementor's native container controls use _element_custom_width and
 			// _flex_*; generic flex_basis keys are persisted but ignored by the
