@@ -18,6 +18,11 @@ if ( ! function_exists( 'sanitize_textarea_field' ) ) {
 		return trim( preg_replace( '/\r\n?/', "\n", strip_tags( (string) $value ) ) ?? '' );
 	}
 }
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( $value ): string {
+		return strip_tags( (string) $value );
+	}
+}
 if ( ! function_exists( 'esc_url_raw' ) ) {
 	function esc_url_raw( $value ): string {
 		return trim( (string) $value );
@@ -127,8 +132,7 @@ require_once __DIR__ . '/../includes/design/token-resolution.php';
 require_once __DIR__ . '/../includes/elementor/capability-registry.php';
 $wpae_no_elementor_probe = wpae_widget_runtime_probe();
 require_once __DIR__ . '/../includes/elementor/reference-set.php';
-require_once __DIR__ . '/../includes/llm/brief-ir.php';
-require_once __DIR__ . '/../includes/llm/design-plan.php';
+require_once __DIR__ . '/../includes/llm/llm.php';
 require_once __DIR__ . '/../includes/elementor/layout-report.php';
 require_once __DIR__ . '/../includes/elementor/elementor-ir.php';
 require_once __DIR__ . '/../includes/elementor/native-compiler.php';
@@ -193,6 +197,12 @@ $check( array_column( $forbidden_layout['breakpoints'], 'layout_axis' ) === [ 'c
 $unspecified_media = wpae_brief_ir_parse( 'Create a hero with title: "Room for ideas".' );
 $unspecified_plan = wpae_design_plan_from_brief( $unspecified_media );
 $check( ( $unspecified_plan['media_intent'] ?? '' ) === 'unspecified' && wpae_design_plan_validate( $unspecified_plan )['ok'] && empty( array_filter( $unspecified_plan['sections'][0]['children'], static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'media' ) ), 'missing URL stays unspecified and does not become an explicit prohibition or an empty image column' );
+$text_hero_prompt = 'Создай hero. Надзаголовок: «ТИХАЯ ФОРМА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
+$text_hero_brief = wpae_brief_ir_parse( $text_hero_prompt );
+$text_hero_plan = wpae_design_plan_from_brief( $text_hero_brief );
+$text_hero_compiled = wpae_elementor_ir_compile( wpae_elementor_ir_from_design_plan( $text_hero_plan, $text_hero_brief ), $text_hero_brief, [], [ 'id_seed' => 'text-hero-contract' ] );
+$check( ( $text_hero_plan['media_intent'] ?? '' ) === 'unspecified' && empty( array_filter( $text_hero_plan['sections'][0]['children'] ?? [], static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'media' ) ), 'historical text-only hero brief does not invent an image requirement or placeholder' );
+$check( ! empty( $text_hero_compiled['ok'] ) && str_contains( wp_json_encode( $text_hero_compiled['elementor_data'], JSON_UNESCAPED_UNICODE ), 'Пространство для идей' ) && str_contains( wp_json_encode( $text_hero_compiled['elementor_data'], JSON_UNESCAPED_UNICODE ), '#contact' ), 'historical text-only hero keeps its exact title and CTA through native compilation' );
 
 $required_missing = wpae_brief_ir_parse( 'Create a hero with an image required. Title: "Room for ideas".' );
 $required_missing_plan = wpae_design_plan_from_brief( $required_missing );
@@ -367,7 +377,7 @@ $marker_label = $first_marker['elements'][0] ?? [];
 $check( ( $first_marker['settings']['background_color'] ?? '' ) === $reference_card['marker_background_color'] && ( $first_marker['settings']['border_radius']['top'] ?? '' ) === '999' && (float) ( $first_marker['settings']['width']['size'] ?? 0 ) === (float) $reference_card['marker_width_rem'] && (float) ( $first_marker['settings']['width_mobile']['size'] ?? 0 ) === (float) $reference_card['marker_width_mobile_rem'] && ( $marker_label['settings']['_css_classes'] ?? '' ) === $reference_card['marker_label_css_class'], 'reference card preserves the blue circular numbered marker size and heading at desktop and mobile' );
 $check( ( $first_divider['widgetType'] ?? '' ) === 'divider' && (float) ( $first_divider['settings']['weight']['size'] ?? 0 ) === (float) $reference_card['divider']['weight_px'] && (float) ( $first_divider['settings']['gap']['size'] ?? 0 ) === (float) $reference_card['divider']['gap_px'] && (float) ( $first_divider['settings']['width']['size'] ?? 0 ) === (float) $reference_card['divider']['width_percent'], 'reference card uses its native Divider connector geometry' );
 $check( (float) ( $qa_cards[0]['settings']['width']['size'] ?? 0 ) > 30 && (float) ( $qa_cards[0]['settings']['width_mobile']['size'] ?? 0 ) === (float) $reference_card['mobile_width_percent'], 'three process cards expand evenly while mobile cards use the reference full width' );
-$pricing = wpae_brief_ir_parse( 'pricing: «Basic» «Pro» «Team»' );
+$pricing = wpae_brief_ir_parse( 'pricing. «Basic» — «10 000 ₸» — «Base description». «Pro» — «20 000 ₸» — «Team description». «Team» — «30 000 ₸» — «Team description».' );
 $pricing_plan = wpae_design_plan_from_brief( $pricing );
 $check( $pricing_plan['archetype'] === 'pricing' && wpae_design_plan_validate( $pricing_plan )['ok'], 'pricing typed plan validates' );
 $pricing_brief = wpae_brief_ir_parse( 'pricing. «Старт» — «от 50 000 ₸» — «Для небольшой задачи». «Проект» — «от 150 000 ₸» — «Для комплексной работы». «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач».' );
@@ -381,27 +391,48 @@ $check( (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) > 3
 $pricing_card_settings = (array) ( $pricing_card_nodes[0]['settings'] ?? [] );
 $check( ( $pricing_card_settings['border_border'] ?? '' ) === 'solid' && ( $pricing_card_settings['border_color'] ?? '' ) !== '', 'pricing cards keep a native semantic border' );
 $check( ( $pricing_card_settings['border_radius']['unit'] ?? '' ) === 'rem' && (float) ( $pricing_card_settings['border_radius']['size'] ?? 0 ) > 0 && (float) ( $pricing_card_settings['padding']['size'] ?? 0 ) > 0, 'pricing cards compile token radius and component padding' );
-$pricing_live_brief = wpae_brief_ir_parse( 'Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Для небольшой задачи с понятным объёмом». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы от идеи до результата». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач и развития проекта». Кнопка: «Подключить поддержку», ссылка #support.' );
+$pricing_live_brief = wpae_brief_ir_parse( 'Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Одинаковое описание для проверки каждой карточки». Кнопка: «Выбрать тариф», ссылка #start. «Проект» — «от 150 000 ₸/мес» — «Одинаковое описание для проверки каждой карточки». Кнопка: «Выбрать тариф», ссылка #project. «Поддержка» — «от 80 000 ₸/год» — «Одинаковое описание для проверки каждой карточки». Кнопка: «Выбрать тариф», ссылка #support.' );
 $pricing_live_ir = wpae_elementor_ir_from_design_plan( wpae_design_plan_from_brief( $pricing_live_brief ), $pricing_live_brief );
 $pricing_live_compiled = wpae_elementor_ir_compile( $pricing_live_ir, $pricing_live_brief, [], [ 'id_seed' => 'pricing-live-contract' ] );
 $pricing_live_root = $pricing_live_compiled['elementor_data'][0] ?? [];
 $pricing_live_group = $pricing_live_root['elements'][1] ?? [];
 $pricing_live_cards = (array) ( $pricing_live_group['elements'] ?? [] );
 $pricing_live_eyebrow = (array) ( $pricing_live_root['elements'][0]['elements'][0] ?? [] );
-$pricing_live_urls = array_values( array_filter( array_map( static fn( array $card ): string => (string) ( $card['elements'][3]['settings']['link']['url'] ?? '' ), $pricing_live_cards ) ) );
+$pricing_live_rows = array_map( static function ( array $card ): array {
+	$headings = [];
+	$texts = [];
+	$button = [];
+	foreach ( (array) ( $card['elements'] ?? [] ) as $node ) {
+		if ( ( $node['widgetType'] ?? '' ) === 'heading' ) {
+			$headings[] = (string) ( $node['settings']['title'] ?? '' );
+		} elseif ( ( $node['widgetType'] ?? '' ) === 'text-editor' ) {
+			$texts[] = (string) ( $node['settings']['editor'] ?? '' );
+		} elseif ( ( $node['widgetType'] ?? '' ) === 'button' ) {
+			$button = [ 'text' => (string) ( $node['settings']['text'] ?? '' ), 'url' => (string) ( $node['settings']['link']['url'] ?? '' ) ];
+		}
+	}
+	return [ 'name' => $headings[0] ?? '', 'price' => $headings[1] ?? '', 'period' => count( $texts ) > 1 ? $texts[0] : '', 'description' => end( $texts ) ?: '', 'cta' => $button['text'] ?? '', 'url' => $button['url'] ?? '' ];
+}, $pricing_live_cards );
+$pricing_live_urls = array_column( $pricing_live_rows, 'url' );
 $check( count( $pricing_live_root['elements'] ?? [] ) === 2 && (float) ( $pricing_live_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0 && (float) ( $pricing_live_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing intro and card group stay full-width in a stacked section' );
-$pricing_live_cta = array_values( array_filter( (array) ( $pricing_live_brief['content'] ?? [] ), static fn( array $item ): bool => ( $item['exact_text'] ?? '' ) === 'Подключить поддержку' ) )[0] ?? [];
+$pricing_live_cta = array_values( array_filter( (array) ( $pricing_live_brief['content'] ?? [] ), static fn( array $item ): bool => ( $item['id'] ?? '' ) === 'pricing_3_cta' ) )[0] ?? [];
 $check( ( $pricing_live_cta['url'] ?? '' ) === '#support', 'long quoted pricing values preserve the complete CTA URL on the CTA slot' );
 $check( ( $pricing_live_root['settings']['background_color'] ?? '' ) === '#ffffff', 'pricing section uses the surface token instead of the warm page background' );
 $check( count( $pricing_live_cards ) === 3 && $pricing_live_urls === [ '#start', '#project', '#support' ], 'pricing parser/compiler preserves three card CTA URLs' );
+$check( $pricing_live_rows === [
+	[ 'name' => 'Старт', 'price' => 'от 50 000 ₸', 'period' => '', 'description' => 'Одинаковое описание для проверки каждой карточки', 'cta' => 'Выбрать тариф', 'url' => '#start' ],
+	[ 'name' => 'Проект', 'price' => 'от 150 000 ₸', 'period' => '/мес', 'description' => 'Одинаковое описание для проверки каждой карточки', 'cta' => 'Выбрать тариф', 'url' => '#project' ],
+	[ 'name' => 'Поддержка', 'price' => 'от 80 000 ₸', 'period' => '/год', 'description' => 'Одинаковое описание для проверки каждой карточки', 'cta' => 'Выбрать тариф', 'url' => '#support' ],
+], 'pricing compiler keeps all six fields bound to each card when descriptions repeat' );
 $check( ( $pricing_live_eyebrow['settings']['background_color'] ?? '' ) === '#4460EC' && ( $pricing_live_eyebrow['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $pricing_live_eyebrow['settings']['border_radius']['size'] ?? 0 ) >= 999, 'pricing eyebrow compiles as a native pill badge' );
 
-$faq_prompt = "FAQ\nЗаголовок: «Ответы на вопросы»\nВопрос 1: «Как проходит работа?»\nОтвет 1: «Сначала согласуем задачу, затем соберём страницу.»\nВопрос 2: «Можно ли изменить содержание?»\nОтвет 2: «Да, каждый текст остаётся редактируемым.»\nКнопка: «Задать вопрос», ссылка #contact.";
+$faq_prompt = "FAQ\nЗаголовок: «Ответы на вопросы»\nВопрос 1: «Как проходит работа?»\nОтвет 1: «Сначала согласуем задачу, затем соберём страницу.»\nВопрос 2: «Можно ли изменить содержание?»\nОтвет 2: «Да, каждый текст остаётся редактируемым.»\nКнопка: «Задать вопрос», ссылка #contact. Дизайн: чистая белая поверхность, тонкая светло-серая обводка и скругление 12px.";
 $faq_brief = wpae_brief_ir_parse( $faq_prompt );
 $faq_plan = wpae_design_plan_from_brief( $faq_brief );
 $faq_ir = wpae_elementor_ir_from_design_plan( $faq_plan, $faq_brief );
-$faq_compiled = wpae_native_elementor_compile( $faq_ir, $faq_brief, [], [ 'id_seed' => 'faq-native-accordion' ] );
-$faq_widget = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
+$faq_compiled = wpae_native_elementor_compile( $faq_ir, $faq_brief, [ 'palette' => [ 'paper' => '#f6f0e6', 'surface' => '#ffffff', 'ink' => '#111827', 'muted' => '#4b5563', 'accent' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'faq-native-accordion' ] );
+$faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
+$faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
 $check( $faq_brief['parser_version'] === 'wpae-brief-parser-v2', 'BriefIR provenance version tracks the expanded native section roles' );
@@ -409,6 +440,9 @@ $check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['
 $check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
 $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ 'Сначала согласуем задачу, затем соберём страницу.', 'Да, каждый текст остаётся редактируемым.' ], 'Accordion preserves exact questions and answers in source order' );
 $check( count( array_unique( array_column( $faq_tabs, '_id' ) ) ) === 2 && ( $faq_widget['settings']['selected_icon']['value'] ?? '' ) === 'fas fa-angle-down', 'Accordion tabs receive unique stable IDs and native toggle icon settings' );
+$check( ( $faq_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#f6f0e6', 'FAQ white surface stays scoped to the rounded inner surface instead of flattening the entire page section' );
+$check( ( $faq_surface['settings']['background_color'] ?? '' ) === '#ffffff' && ( $faq_surface['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $faq_surface['settings']['border_radius']['size'] ?? 0 ) === 12.0 && ( $faq_surface['settings']['border_border'] ?? '' ) === 'solid' && (float) ( $faq_surface['settings']['border_width']['size'] ?? 0 ) === 1.0, 'explicit FAQ white surface, light border and 12px radius compile onto the native container' );
+$check( ( $faq_widget['settings']['title_background'] ?? '' ) === '#ffffff' && ( $faq_widget['settings']['content_background_color'] ?? '' ) === '#ffffff' && (float) ( $faq_widget['settings']['border_width']['size'] ?? 0 ) === 1.0 && ( $faq_widget['settings']['border_color'] ?? '' ) !== '', 'native Accordion preserves white title/answer surfaces and a 1px semantic border' );
 $faq_action = $faq_compiled['elementor_data'][0]['elements'][2]['elements'][0] ?? [];
 $check( ( $faq_action['widgetType'] ?? '' ) === 'button' && ( $faq_action['settings']['text'] ?? '' ) === 'Задать вопрос' && ( $faq_action['settings']['link']['url'] ?? '' ) === '#contact', 'FAQ keeps an optional explicit CTA after the native Accordion' );
 $incomplete_faq = wpae_design_plan_from_brief( wpae_brief_ir_parse( 'FAQ\nВопрос: «Есть ли поддержка?»' ) );
@@ -439,6 +473,8 @@ foreach ( (array) ( $two_benefits_tree['elementor_data'][0]['elements'] ?? [] ) 
 	}
 }
 $check( count( (array) ( $two_benefits_group['elements'] ?? [] ) ) === 2 && ( $two_benefits_group['elements'][0]['elements'][2]['settings']['editor'] ?? '' ) === trim( str_repeat( 'The written scope keeps each approval visible. ', 5 ) ), 'feature compiler adapts to two cards and preserves long exact copy' );
+$check( ( $two_benefits_group['settings']['flex_direction'] ?? '' ) === 'row' && (float) ( $two_benefits_group['elements'][0]['settings']['width']['size'] ?? 0 ) === 48.0 && (float) ( $two_benefits_group['elements'][1]['settings']['width']['size'] ?? 0 ) === 48.0, 'two benefits cards keep a desktop row with gap-safe native widths' );
+$check( ( $two_benefits_group['elements'][0]['elements'][1]['settings']['header_size'] ?? '' ) === 'h3' && (float) ( $two_benefits_group['elements'][0]['elements'][1]['settings']['typography_font_size']['size'] ?? 0 ) === 1.125, 'benefit card title uses component typography rather than hero display type' );
 $unpaired_benefits = wpae_design_plan_from_brief( wpae_brief_ir_parse( "Features\nFeature: «Structured pages»\nFeature: «Editable content»\nFeature description: «Only the first item has an explicit description.»" ) );
 $unpaired_validation = wpae_design_plan_validate( $unpaired_benefits );
 $check( ! $unpaired_validation['ok'] && in_array( 'benefits_unpaired_feature_title', $unpaired_validation['errors'], true ), 'unpaired feature content is rejected instead of assigned to a different card' );

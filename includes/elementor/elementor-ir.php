@@ -135,7 +135,6 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'process_steps', 'container', [], $token_refs, $step_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			} elseif ( $role === 'pricing_cards' ) {
 				$intro_widgets = [];
-				$card_refs = [];
 				foreach ( $content_refs as $content_ref ) {
 					$item = $content_map[ $content_ref ] ?? [];
 					$item_role = sanitize_key( (string) ( $item['role'] ?? '' ) );
@@ -144,41 +143,39 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'pricing_badge', 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
-					} else {
-						$card_refs[] = $content_ref;
 					}
 				}
 				if ( ! empty( $intro_widgets ) ) {
 					$section_children[] = wpae_elementor_ir_node( $child_id . '-intro', 'pricing_intro', 'container', [], [ 'color.text', 'color.muted', 'space.component' ], $intro_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 				}
 				$card_children = [];
-				foreach ( array_chunk( $card_refs, 4 ) as $card_index => $card_refs ) {
+				foreach ( array_values( (array) ( $child['items'] ?? [] ) ) as $card_index => $tier ) {
+					if ( ! is_array( $tier ) ) {
+						continue;
+					}
 					$card_widgets = [];
-					foreach ( $card_refs as $card_ref ) {
-						$item = $content_map[ $card_ref ] ?? [];
-						$item_role = sanitize_key( (string) ( $item['role'] ?? 'text' ) );
-						$widget_type = str_starts_with( $item_role, 'cta' ) ? 'button' : ( in_array( $item_role, [ 'title', 'label' ], true ) ? 'heading' : 'text-editor' );
-						$layout = [ 'min_width' => 0, 'max_width' => 100 ];
-						if ( $widget_type === 'button' && empty( $item['url'] ) ) {
-							$fallback_url = '';
-							foreach ( $card_refs as $candidate_ref ) {
-								$candidate_url = trim( (string) ( $content_map[ $candidate_ref ]['url'] ?? '' ) );
-								if ( $candidate_url !== '' ) {
-									$fallback_url = $candidate_url;
-									break;
-								}
-							}
-							if ( $fallback_url !== '' ) {
-								$layout['fallback_url'] = $fallback_url;
-							}
+					$card_number = $card_index + 1;
+					$add_tier_widget = static function ( string $field, string $node_role, string $widget_type, array $tokens ) use ( &$card_widgets, $tier, $content_map, $child_id, $card_number ): void {
+						$ref = sanitize_key( (string) ( $tier[ $field ] ?? '' ) );
+						if ( $ref === '' || empty( $content_map[ $ref ]['exact_text'] ) ) {
+							return;
 						}
-						$card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index . '-' . count( $card_widgets ), $item_role, $widget_type, [ $card_ref ], [ $widget_type === 'button' ? 'color.primary' : 'color.text' ], [], $layout, [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+						$card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-' . str_replace( '_ref', '', $field ), $node_role, $widget_type, [ $ref ], $tokens, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+					};
+					$add_tier_widget( 'label_ref', 'pricing_label', 'heading', [ 'color.text', 'type.body' ] );
+					$add_tier_widget( 'price_ref', 'pricing_price', 'heading', [ 'color.text', 'type.display' ] );
+					$add_tier_widget( 'period_ref', 'pricing_period', 'text-editor', [ 'color.muted', 'type.body' ] );
+					$add_tier_widget( 'description_ref', 'pricing_description', 'text-editor', [ 'color.muted', 'type.body' ] );
+					$add_tier_widget( 'cta_ref', 'cta_primary', 'button', [ 'color.primary', 'color.text', 'color.surface' ] );
+					if ( count( $card_widgets ) < 3 ) {
+						$warnings[] = $child_id . ':pricing_tier_' . $card_number . '_incomplete';
 					}
 					$card_children[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index, 'pricing_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'pricing_cards', 'container', [], $token_refs, $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
-			} elseif ( $role === 'faq_accordion' ) {
-				$section_children[] = wpae_elementor_ir_node( $child_id, 'faq_accordion', 'accordion', $content_refs, $token_refs, [], [ 'items' => array_values( (array) ( $child['items'] ?? [] ) ) ], [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
+			} elseif ( $role === 'faq_surface' ) {
+				$accordion = wpae_elementor_ir_node( $child_id . '-accordion', 'faq_accordion', 'accordion', $content_refs, $token_refs, [], [ 'items' => array_values( (array) ( $child['items'] ?? [] ) ) ], [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
+				$section_children[] = wpae_elementor_ir_node( $child_id, 'faq_surface', 'container', [], $token_refs, [ $accordion ], (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
 			} elseif ( $role === 'feature_cards' ) {
 				$cards = [];
 				foreach ( array_values( (array) ( $child['items'] ?? [] ) ) as $card_index => $item ) {
@@ -188,7 +185,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$card_number = $card_index + 1;
 					$card_children = [
 						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-icon', 'feature_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle' ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ),
-						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-title', 'feature_title', 'heading', [ sanitize_key( (string) ( $item['title_ref'] ?? '' ) ) ], [ 'color.text', 'type.display' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
+						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-title', 'feature_title', 'heading', [ sanitize_key( (string) ( $item['title_ref'] ?? '' ) ) ], [ 'color.text', 'type.body' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
 						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-body', 'feature_body', 'text-editor', [ sanitize_key( (string) ( $item['body_ref'] ?? '' ) ) ], [ 'color.muted', 'type.body' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
 					];
 					$cards[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number, 'feature_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
@@ -405,6 +402,18 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['background_color'] = $surface_override;
 			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
 		}
+		if ( $role === 'faq_surface' ) {
+			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( (string) ( $node['layout_constraints']['border_radius'] ?? '12px' ), 'px', 12 );
+			$settings['border_border'] = 'solid';
+			$settings['border_width'] = wpae_elementor_ir_dimension_control( '1px', 'px', 1 );
+			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+			$settings['padding'] = wpae_elementor_ir_dimension_control( $token_values['space.component'] ?? '1rem', 'rem', 1, false );
+			$settings['padding_mobile'] = $settings['padding'];
+			if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
+				$settings['background_color'] = $surface_override;
+			}
+		}
 		if ( $role === 'pricing_cards' ) {
 			// Pricing cards are a row on wide viewports and a stack on mobile.
 			// The child width contract below then supplies equal desktop columns.
@@ -537,11 +546,26 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	} elseif ( $widget_type === 'heading' ) {
 		$item = $content_map[ sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) ) ] ?? [];
 		$settings['title'] = (string) ( $item['exact_text'] ?? $node['layout_constraints']['literal_text'] ?? '' );
-		$settings['header_size'] = in_array( $role, [ 'process_number', 'process_badge_label', 'brand', 'eyebrow' ], true ) ? 'h6' : ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
+		$settings['header_size'] = in_array( $role, [ 'process_number', 'process_badge_label', 'brand', 'eyebrow' ], true ) ? 'h6' : ( $role === 'pricing_label' ? 'h4' : ( $role === 'pricing_price' ? 'h2' : ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' ) ) );
 		$settings['title_color'] = in_array( $role, [ 'process_number', 'process_badge_label' ], true ) ? (string) ( $token_values['color.surface'] ?? '#ffffff' ) : (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
-		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'process_number', 'process_badge_label' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
+		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'feature_title', 'pricing_label', 'process_number', 'process_badge_label' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
 		if ( is_array( $type_token ) ) {
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
+		}
+		if ( $role === 'feature_title' ) {
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.125, 'sizes' => [] ];
+			$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
+			$settings['typography_font_size_mobile'] = $settings['typography_font_size'];
+			$settings['typography_font_weight'] = '600';
+		} elseif ( $role === 'pricing_label' ) {
+			$settings['typography_font_weight'] = '700';
+		} elseif ( $role === 'pricing_price' ) {
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 2, 'sizes' => [] ];
+			$settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1.8, 'sizes' => [] ];
+			$settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 1.6, 'sizes' => [] ];
+			$settings['typography_font_weight'] = '800';
 		}
 		if ( $role === 'process_number' ) {
 			$settings['_css_classes'] = 'wpae-process-marker-label';
@@ -670,6 +694,11 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['title_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
 		$settings['content_color'] = (string) ( $token_values['color.muted'] ?? '#4b5563' );
 		$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+		$settings['border_width'] = [ 'unit' => 'px', 'size' => 1, 'sizes' => [] ];
+		$settings['title_background'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+		$settings['content_background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+		$settings['title_padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1.25', 'bottom' => '1', 'left' => '1.25', 'isLinked' => false, 'sizes' => [] ];
+		$settings['content_padding'] = [ 'unit' => 'rem', 'top' => '0.75', 'right' => '1.25', 'bottom' => '1', 'left' => '1.25', 'isLinked' => false, 'sizes' => [] ];
 	} elseif ( $widget_type === 'icon' ) {
 		$settings['selected_icon'] = [ 'value' => 'fas fa-' . sanitize_key( (string) ( $node['layout_constraints']['icon_name'] ?? 'check-circle' ) ), 'library' => 'fa-solid' ];
 		$settings['view'] = 'stacked';
@@ -698,6 +727,14 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'pricing_cards' && count( $compiled_children ) === 3 ) {
 			// Three percentage columns plus two native gaps otherwise wrap at common desktop widths.
 			$composition_basis = [ 31.5, 31.5, 31.5 ];
+		}
+		if ( $role === 'feature_cards' && count( $compiled_children ) === 2 ) {
+			// Two 50% widths plus the native gap exceed the content width and wrap into a column.
+			$composition_basis = [ 48, 48 ];
+		} elseif ( $role === 'feature_cards' && count( $compiled_children ) === 3 ) {
+			$composition_basis = [ 31.5, 31.5, 31.5 ];
+		} elseif ( $role === 'feature_cards' && count( $compiled_children ) >= 4 ) {
+			$composition_basis = array_fill( 0, count( $compiled_children ), 48 );
 		}
 		$composition_matches_children = ! empty( $composition_basis ) && count( $composition_basis ) === count( $compiled_children );
 		$default_child_basis = ( $settings['flex_direction'] ?? 'column' ) === 'column' ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );

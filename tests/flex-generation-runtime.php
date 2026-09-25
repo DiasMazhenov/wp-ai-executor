@@ -1174,6 +1174,50 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	check( in_array( $expected_widget, $case_widgets, true ) && ( $case_tree[0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), $case_name . ' compiles its native widget and keeps the existing first root' );
 }
 
+// Negative insertion language stays a selected-root edit; an explicit new
+// root request is rejected only when it conflicts with that same edit scope.
+$negative_root_prompt = 'Измени выбранный процессный таймлайн: добавь нативные разделители между шагами, не добавляй новый root.';
+check( ! wpae_llm_has_explicit_root_insert_intent( $negative_root_prompt ), 'negated "не добавляй новый root" is not classified as an insert command' );
+check( wpae_llm_is_targeted_edit_request( $negative_root_prompt ) && wpae_llm_is_process_structure_repair_request( $negative_root_prompt, 'process' ), 'selected-root negative-insert phrase is recognized as a process structural edit' );
+check( wpae_llm_is_process_structure_repair_request( $negative_root_prompt, wpae_llm_detect_block_archetype( $negative_root_prompt ) ), 'production archetype classification keeps the selected timeline on the deterministic repair path: ' . wpae_llm_detect_block_archetype( $negative_root_prompt ) );
+$process_root = wpae_llm_build_process_timeline( [
+	[ 'label' => '01. Заявка', 'content' => 'QA step one.' ],
+	[ 'label' => '02. Уточнение', 'content' => 'QA step two.' ],
+], 'selected-process-root', 'left', 'Процесс QA' );
+$process_root['settings']['_css_classes'] = 'wpae-generated-root wpae-process-timeline wpae-system-test';
+$process_neighbor = container_node( 'neighbor-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-system-test' ], [ widget( 'neighbor-title', 'heading', [ 'title' => 'Соседний пользовательский root' ] ) ] );
+$GLOBALS['page_data'] = [ $process_neighbor, $process_root ];
+$before_route_roots = array_column( $GLOBALS['page_data'], 'id' );
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$targeted_process = new WP_REST_Request();
+$targeted_process->set_param( 'message', $negative_root_prompt );
+$targeted_process->set_param( 'context', [ 'post_id' => 42, 'selected_elements' => [ [ 'id' => 'selected-process-root' ] ] ] );
+$targeted_process_response = wpae_llm_chat_request( $targeted_process );
+$after_route_roots = array_column( $GLOBALS['page_data'], 'id' );
+check( $targeted_process_response instanceof WP_REST_Response && ( $targeted_process_response->get_data()['action'] ?? '' ) === 'patch_elements', 'targeted process edit with a negated insert phrase uses the selected-root repair route' );
+check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1 && $after_route_roots === $before_route_roots, 'negative insert wording performs one existing-root write, no provider call, and no append/duplicate' );
+check( ( $GLOBALS['page_data'][0]['id'] ?? '' ) === 'neighbor-root', 'targeted process repair preserves the unrelated neighboring root' );
+$conflicting_insert = new WP_REST_Request();
+$conflicting_insert->set_param( 'message', 'Измени выбранный таймлайн и создай отдельный новый root процесса.' );
+$conflicting_insert->set_param( 'context', [ 'post_id' => 42, 'selected_elements' => [ [ 'id' => 'selected-process-root' ] ] ] );
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$conflict_response = wpae_llm_chat_request( $conflicting_insert );
+check( is_wp_error( $conflict_response ) && $conflict_response->get_error_code() === 'wpae_llm_conflicting_scope', 'contradictory selected edit plus separate root is rejected before generation' );
+check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0 && array_column( $GLOBALS['page_data'], 'id' ) === $before_route_roots, 'conflicting scopes perform no provider call, no write, and preserve both roots' );
+check( wpae_llm_has_explicit_root_insert_intent( 'Добавь отдельный новый root процесса.' ), 'explicit independent root insertion remains detectable' );
+$independent_insert_prompt = 'Создай новый таймлайн процесса: шаг «Заявка» — описание «Получить вводные»; шаг «Уточнение» — описание «Согласовать детали». Добавь отдельным блоком в конец страницы.';
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$independent_insert = new WP_REST_Request();
+$independent_insert->set_param( 'message', $independent_insert_prompt );
+$independent_insert->set_param( 'context', [ 'post_id' => 42, 'selected_elements' => [ [ 'id' => 'selected-process-root' ] ] ] );
+$independent_insert_response = wpae_llm_chat_request( $independent_insert );
+$independent_ids = array_column( $GLOBALS['page_data'], 'id' );
+check( $independent_insert_response instanceof WP_REST_Response && ( $independent_insert_response->get_data()['diagnostics']['action_path'] ?? '' ) === 'pipeline', 'a distinct new timeline request remains a valid insert even while an old element is selected' );
+check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1 && $independent_ids[0] === 'neighbor-root' && $independent_ids[1] === 'selected-process-root' && count( $independent_ids ) === 3, 'independent selected-page insert appends exactly one root without replacing selected or neighboring content' );
+
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );
 $permission->set_param( 'context', [ 'post_id' => 99 ] );

@@ -891,9 +891,9 @@ assert.match(llm, /selection_scope.*! empty\( \$selected_elements \).*selected_e
 assert.match(llm, /decoded_patch_count/);
 assert.match(llm, /selected_scope_count/);
 assert.match(llm, /selected_scope_ids/);
-assert.match(llm, /\$insert_signal/);
-assert.match(llm, /\$embedded_process_addition/);
-assert.match(llm, /if \( \$insert_signal && ! \$embedded_process_addition \)/);
+assert.match(llm, /function wpae_llm_has_explicit_root_insert_intent/);
+assert.match(llm, /\$insert_signal = wpae_llm_has_explicit_root_insert_intent\( \$message \)/);
+assert.match(llm, /wpae_llm_conflicting_scope/);
 assert.match(llm, /array_diff\( \$patch_ids, \$scope_ids \)/);
 assert.match(llm, /selected_element_ids/);
 assert.match(llm, /dry_run', true/);

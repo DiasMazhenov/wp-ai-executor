@@ -151,22 +151,22 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$ambiguities = [];
 	$seen = [];
 	$role_counts = [];
-	$add_content = static function ( string $role, string $exact_text, int $start, int $length, ?string $url = null, float $confidence = 0.8, bool $required = false, bool $url_requested = false ) use ( &$content, &$seen, &$role_counts ): void {
+	$add_content = static function ( string $role, string $exact_text, int $start, int $length, ?string $url = null, float $confidence = 0.8, bool $required = false, bool $url_requested = false, string $id_override = '', bool $deduplicate = true ) use ( &$content, &$seen, &$role_counts ): string {
 		$exact_text = trim( $exact_text );
 		if ( $exact_text === '' ) {
-			return;
+			return '';
 		}
 		$key = $role . '|' . wpae_brief_ir_normalize_text( $exact_text );
-		if ( isset( $seen[ $key ] ) ) {
+		if ( $deduplicate && isset( $seen[ $key ] ) ) {
 			if ( $url !== null && $content[ $seen[ $key ] ]['url'] === null ) {
 				$content[ $seen[ $key ] ]['url'] = $url;
 			}
 			$content[ $seen[ $key ] ]['url_requested'] = ! empty( $content[ $seen[ $key ] ]['url_requested'] ) || $url_requested;
-			return;
+			return (string) $content[ $seen[ $key ] ]['id'];
 		}
 		$index = (int) ( $role_counts[ $role ] ?? 0 );
 		$role_counts[ $role ] = $index + 1;
-		$id = wpae_brief_ir_id_for_role( $role, $index );
+		$id = $id_override !== '' ? sanitize_key( $id_override ) : wpae_brief_ir_id_for_role( $role, $index );
 		$content[] = [
 			'id' => $id,
 			'role' => $role,
@@ -183,7 +183,10 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				'parser' => WPAE_BRIEF_IR_PARSER_VERSION,
 			],
 		];
-		$seen[ $key ] = count( $content ) - 1;
+		if ( $deduplicate ) {
+			$seen[ $key ] = count( $content ) - 1;
+		}
+		return $id;
 	};
 
 	$quote_pattern = '~«([^»]{1,500})»|“([^”]{1,500})”|"([^"]{1,500})"~su';
@@ -252,6 +255,61 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			];
 		}
 		$plain_line_offset += $line_length + 1;
+	}
+
+	$pricing_items = [];
+	if ( $archetype === 'pricing' && function_exists( 'wpae_llm_extract_pricing_content' ) ) {
+		$pricing_contract = wpae_llm_extract_pricing_content( $source_text );
+		$occurrences = [];
+		$find_span = static function ( string $value ) use ( $source_text, &$occurrences ): array {
+			if ( $value === '' ) {
+				return [ 0, 0 ];
+			}
+			$cursor = (int) ( $occurrences[ $value ] ?? 0 );
+			$position = strpos( $source_text, $value, $cursor );
+			if ( $position === false ) {
+				$position = strpos( $source_text, $value );
+			}
+			if ( $position === false ) {
+				return [ 0, 0 ];
+			}
+			$occurrences[ $value ] = $position + strlen( $value );
+			return [ $position, $position + strlen( $value ) ];
+		};
+		foreach ( array_values( (array) ( $pricing_contract['items'] ?? [] ) ) as $tier_index => $tier ) {
+			if ( ! is_array( $tier ) ) {
+				continue;
+			}
+			$tier_number = $tier_index + 1;
+			$label = trim( (string) ( $tier['label'] ?? '' ) );
+			$price_text = trim( (string) ( $tier['price_text'] ?? '' ) );
+			$description = trim( (string) ( $tier['description'] ?? '' ) );
+			$cta_text = trim( (string) ( $tier['cta_text'] ?? '' ) );
+			$cta_url = wpae_brief_ir_normalize_url( $tier['cta_url'] ?? '' );
+			$price_amount = $price_text;
+			$period_text = '';
+			if ( preg_match( '/^(.*?)(\s*\/\s*[\p{L}\w]+)$/u', $price_text, $period_match ) ) {
+				$price_amount = trim( (string) $period_match[1] );
+				$period_text = trim( (string) $period_match[2] );
+			}
+			$label_span = $find_span( $label );
+			$price_span = $find_span( $price_text );
+			$description_span = $find_span( $description );
+			$cta_span = $find_span( $cta_text );
+			$refs = [
+				'label_ref' => $add_content( 'pricing_label', $label, $label_span[0], $label_span[1] - $label_span[0], null, 0.98, true, false, 'pricing_' . $tier_number . '_label', false ),
+				'price_ref' => $add_content( 'pricing_price', $price_amount, $price_span[0], min( strlen( $price_amount ), max( 0, $price_span[1] - $price_span[0] ) ), null, 0.98, true, false, 'pricing_' . $tier_number . '_price', false ),
+				'period_ref' => $period_text !== '' ? $add_content( 'pricing_period', $period_text, $price_span[0] + max( 0, strpos( $price_text, $period_text ) ), strlen( $period_text ), null, 0.98, false, false, 'pricing_' . $tier_number . '_period', false ) : '',
+				'description_ref' => $add_content( 'pricing_description', $description, $description_span[0], $description_span[1] - $description_span[0], null, 0.98, false, false, 'pricing_' . $tier_number . '_description', false ),
+				'cta_ref' => $cta_text !== '' ? $add_content( 'pricing_cta', $cta_text, $cta_span[0], $cta_span[1] - $cta_span[0], $cta_url !== '' ? $cta_url : null, 0.98, false, $cta_url !== '', 'pricing_' . $tier_number . '_cta', false ) : '',
+			];
+			if ( $label !== '' && $price_amount !== '' ) {
+				$pricing_items[] = $refs + [
+					'price_text' => $price_text,
+					'provenance' => [ 'source' => 'prompt', 'source_spans' => [ 'label' => $label_span, 'price' => $price_span, 'description' => $description_span, 'cta' => $cta_span ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+				];
+			}
+		}
 	}
 
 	$constraints = [];
@@ -326,7 +384,12 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 	}
 	$surface_color = [];
-	if ( preg_match( '/(?:фон|background(?:[-\s]?color)?|surface)[^\n]{0,120}?(#[0-9a-f]{6}(?:[0-9a-f]{2})?)(?![0-9a-f])/iu', $source_text, $surface_color, PREG_OFFSET_CAPTURE ) ) {
+	$surface_found = (bool) preg_match( '/(?:фон|background(?:[-\s]?color)?|surface)[^\n]{0,120}?(#[0-9a-f]{6}(?:[0-9a-f]{2})?)(?![0-9a-f])/iu', $source_text, $surface_color, PREG_OFFSET_CAPTURE );
+	if ( ! $surface_found && preg_match( '/(?:бел(?:ая|ый|ое)\s+поверхност\w*|чист\w*\s+бел\w*\s+поверхност\w*|white\s+surface)/iu', $source_text, $surface_color, PREG_OFFSET_CAPTURE ) ) {
+		$surface_color[1] = [ '#ffffff', (int) $surface_color[0][1] ];
+		$surface_found = true;
+	}
+	if ( $surface_found ) {
 		$surface = strtolower( (string) ( $surface_color[1][0] ?? '' ) );
 		$surface_start = (int) ( $surface_color[1][1] ?? 0 );
 		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface ) ) {
@@ -338,6 +401,16 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				'provenance' => [ 'source' => 'prompt', 'source_span' => [ $surface_start, $surface_start + strlen( $surface ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
 			];
 		}
+	}
+	if ( preg_match( '/(?:скругление|скругления|радиус|border[\s-]*radius)\D{0,40}(\d+(?:\.\d+)?)\s*(px|rem|em)?/iu', $source_text, $radius_match, PREG_OFFSET_CAPTURE ) ) {
+		$radius = (float) $radius_match[1][0];
+		$unit = strtolower( (string) ( $radius_match[2][0] ?? 'px' ) );
+		$radius_span = [ (int) $radius_match[0][1], (int) $radius_match[0][1] + strlen( (string) $radius_match[0][0] ) ];
+		$constraints[] = [ 'id' => 'border_radius', 'kind' => 'border_radius', 'value' => $radius . $unit, 'source_span' => $radius_span, 'provenance' => [ 'source' => 'prompt', 'source_span' => $radius_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
+	}
+	if ( preg_match( '/(?:тонк\w*\s+)?(?:светло[-\s]?сер\w*\s+)?(?:обводк\w*|границ\w*)|(?:light[-\s]?gr[ae]y\s+border)/iu', $source_text, $border_match, PREG_OFFSET_CAPTURE ) ) {
+		$border_span = [ (int) $border_match[0][1], (int) $border_match[0][1] + strlen( (string) $border_match[0][0] ) ];
+		$constraints[] = [ 'id' => 'border_color_token', 'kind' => 'border_color_token', 'value' => 'color.border', 'source_span' => $border_span, 'provenance' => [ 'source' => 'prompt', 'source_span' => $border_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
 	}
 	if ( preg_match( '/(?:мобильн\w*|mobile)[^\.\n]{0,120}(?:сначала|first)[^\.\n]{0,120}(?:текст|copy|контент)/iu', $source_text, $match, PREG_OFFSET_CAPTURE ) ) {
 		$constraints[] = [
@@ -419,6 +492,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			'audience' => sanitize_text_field( (string) ( $context['audience'] ?? '' ) ),
 		],
 		'content' => array_values( $content ),
+		'pricing_items' => array_values( $pricing_items ),
 		'style_references' => array_values( $style_references ),
 		'layout_constraints' => array_values( $constraints ),
 		'media_references' => array_values( $media_references ),

@@ -344,6 +344,11 @@ function wpae_llm_is_action_request( string $message ): bool {
     return (bool) preg_match( '/\b(сделай|создай|добавь|собери|сверстай|измени|поменяй|исправь|поставь|замени|обнови|скругл\w*|закругл\w*|округл\w*|радиус\w*|верст|hero|хиро|лендинг)\b/ui', $message ) || wpae_llm_is_content_composition_request( $message );
 }
 
+function wpae_llm_has_explicit_root_insert_intent( string $message ): bool {
+	$positive = preg_replace( '/\b(?:не\s+(?:надо\s+|нужно\s+|следует\s+)?|нельзя\s+|do\s+not\s+|don[\x27’]t\s+)[^.!?;\n]{0,80}\b(?:добав\w*|созда\w*|встав\w*|сформир\w*|add\w*|create\w*|insert\w*)\b[^.!?;\n]{0,60}\b(?:нов\w*\s+)?(?:root|корен\w*|блок\w*|секци\w*|section\w*|block\w*)\b/iu', ' ', $message );
+	return (bool) preg_match( '/\b(?:добав\w*|созда\w*|встав\w*|сформир\w*|add\w*|create\w*|insert\w*)\b[^.!?;\n]{0,60}\b(?:(?:нов\w*|отдельн\w*|ещ[её]\s+один|separate|new)\s+)*(?:root|корен\w*|блок\w*|секци\w*|section\w*|block\w*)\b/iu', (string) $positive );
+}
+
 function wpae_llm_is_targeted_edit_request( string $message ): bool {
     if ( ! preg_match( '/\b(измени|поменяй|поставь|сделай|увеличь|уменьши|замени|настрой|улучши|обнови|оформи|перестрой|скругл\w*|закругл\w*|округл\w*)\b/iu', $message ) ) {
         return false;
@@ -351,7 +356,7 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
 
 	$property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус\w*|скругл\w*|угл\w*|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
 	$selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран\w*|выделен\w*|текущ\w*|внутри|содержим|дочерн\w*)/iu', $message );
-	$insert_signal = (bool) preg_match( '/\b(добавь|создай|собери|вставь|новый|новую|новое)\b/iu', $message );
+	$insert_signal = wpae_llm_has_explicit_root_insert_intent( $message );
 	// A selected process timeline may need native children added inside its
 	// existing root (for example the standard badge, section heading, or
 	// Divider connectors). Treat that as a targeted structural edit instead of
@@ -359,7 +364,7 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
 	$embedded_process_addition = $selection_signal
 		&& wpae_llm_is_process_request( $message )
 		&& (bool) preg_match( '/\b(бейдж\w*|заголов\w*|разделител\w*|divider|коннектор\w*|карточ\w*|этап\w*)\b/iu', $message );
-	if ( $insert_signal && ! $embedded_process_addition ) {
+	if ( $insert_signal && ! $selection_signal && ! $property_signal && ! $embedded_process_addition ) {
 		return false;
 	}
 	return $selection_signal || $property_signal;
@@ -9296,6 +9301,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )
         : [];
     $selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
+	if ( $targeted_edit && wpae_llm_has_explicit_root_insert_intent( $message ) ) {
+		return new WP_Error( 'wpae_llm_conflicting_scope', 'Запрос одновременно изменяет выбранный элемент и просит добавить отдельный root. Уточните одну цель; запись не выполнялась.', [ 'status' => 409, 'details' => [ 'selected_element_ids' => array_slice( $selected_element_ids, 0, 8 ), 'write_count' => 0 ] ] );
+	}
 	$operation_identity = is_array( $editor_context_input )
 		? sanitize_text_field( (string) ( $editor_context_input['operation_identity'] ?? $editor_context_input['request_id'] ?? '' ) )
 		: '';

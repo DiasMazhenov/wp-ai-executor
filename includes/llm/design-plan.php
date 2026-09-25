@@ -190,12 +190,12 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'composition' => $composition,
 		// Pricing owns a white surface so the card borders remain visible and the
 		// section does not inherit the site's warm page background.
-		'surface_token' => $archetype === 'pricing' ? 'color.surface' : 'color.page_bg',
+		'surface_token' => in_array( $archetype, [ 'pricing' ], true ) ? 'color.surface' : 'color.page_bg',
 		'spacing_token' => 'space.section',
 		'children' => [],
 		'provenance' => [ 'source' => 'brief' ],
 	];
-	if ( $surface_override !== '' ) {
+	if ( $surface_override !== '' && $archetype !== 'faq' ) {
 		// Explicit prompt colour wins at the section boundary; the compiler still
 		// records the semantic token for the default/reference path.
 		$section['surface_override'] = $surface_override;
@@ -257,11 +257,20 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			],
 		];
 	} elseif ( $archetype === 'pricing' ) {
+		$pricing_refs = [];
+		foreach ( (array) ( $brief['pricing_items'] ?? [] ) as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$pricing_refs[] = array_intersect_key( $item, array_flip( [ 'label_ref', 'price_ref', 'period_ref', 'description_ref', 'cta_ref', 'price_text', 'provenance' ] ) );
+		}
+		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title' ] );
 		$section['children'] = [
 			[
 				'role' => 'pricing_cards',
 				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
-				'content_refs' => wpae_design_plan_content_refs( $brief ),
+				'content_refs' => $intro_refs,
+				'items' => $pricing_refs,
 				'token_refs' => [ 'color.surface', 'color.text', 'color.muted', 'color.primary', 'color.border', 'radius.card', 'space.component' ],
 				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
 				'responsive_policy' => 'stack',
@@ -287,15 +296,16 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'provenance' => [ 'source' => 'brief', 'roles' => [ 'eyebrow', 'title' ] ],
 			];
 		}
+		$radius = (string) wpae_design_plan_constraint_value( $brief, 'border_radius', '12px' );
 		$section['children'][] = [
-			'role' => 'faq_accordion',
+			'role' => 'faq_surface',
 			'allowed_widgets' => [ 'accordion' ],
 			'content_refs' => array_values( array_reduce( $qa['items'], static function ( array $refs, array $item ): array {
 				return array_merge( $refs, [ $item['question_ref'], $item['answer_ref'] ] );
 			}, [] ) ),
 			'items' => $qa['items'],
-			'token_refs' => [ 'color.text', 'color.muted', 'color.border', 'space.component' ],
-			'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
+			'token_refs' => [ 'color.surface', 'color.text', 'color.muted', 'color.border', 'radius.card', 'space.component' ],
+			'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'surface_override' => $surface_override !== '' ? $surface_override : '#ffffff', 'border_radius' => $radius ],
 			'responsive_policy' => 'stack',
 			'editable_fields' => [ 'question', 'answer' ],
 			'provenance' => [ 'source' => 'brief', 'roles' => [ 'faq_question', 'faq_answer' ] ],
@@ -436,11 +446,29 @@ function wpae_design_plan_validate( array $plan ): array {
 			}
 		}
 	}
+	if ( ( $plan['archetype'] ?? '' ) === 'pricing' ) {
+		$items = [];
+		foreach ( (array) ( $plan['sections'][0]['children'] ?? [] ) as $child ) {
+			if ( is_array( $child ) && ( $child['role'] ?? '' ) === 'pricing_cards' ) {
+				$items = array_values( (array) ( $child['items'] ?? [] ) );
+			}
+		}
+		if ( count( $items ) < 2 ) {
+			$errors[] = 'pricing_tiers_required';
+		}
+		foreach ( $items as $index => $item ) {
+			foreach ( [ 'label_ref', 'price_ref' ] as $field ) {
+				if ( trim( (string) ( $item[ $field ] ?? '' ) ) === '' ) {
+					$errors[] = 'pricing_tier_' . ( $index + 1 ) . '_missing_' . $field;
+				}
+			}
+		}
+	}
 	if ( ( $plan['archetype'] ?? '' ) === 'faq' ) {
 		$section = is_array( $plan['sections'][0] ?? null ) ? $plan['sections'][0] : [];
 		$accordion = null;
 		foreach ( (array) ( $section['children'] ?? [] ) as $child ) {
-			if ( is_array( $child ) && ( $child['role'] ?? '' ) === 'faq_accordion' ) {
+			if ( is_array( $child ) && ( $child['role'] ?? '' ) === 'faq_surface' ) {
 				$accordion = $child;
 				break;
 			}
