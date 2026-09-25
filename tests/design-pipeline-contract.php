@@ -391,27 +391,31 @@ $check( (float) ( $pricing_card_nodes[0]['settings']['width']['size'] ?? 0 ) > 3
 $pricing_card_settings = (array) ( $pricing_card_nodes[0]['settings'] ?? [] );
 $check( ( $pricing_card_settings['border_border'] ?? '' ) === 'solid' && ( $pricing_card_settings['border_color'] ?? '' ) !== '', 'pricing cards keep a native semantic border' );
 $check( ( $pricing_card_settings['border_radius']['unit'] ?? '' ) === 'rem' && (float) ( $pricing_card_settings['border_radius']['size'] ?? 0 ) > 0 && (float) ( $pricing_card_settings['padding']['size'] ?? 0 ) > 0, 'pricing cards compile token radius and component padding' );
-$pricing_live_brief = wpae_brief_ir_parse( 'Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Одинаковое описание для проверки каждой карточки». Кнопка: «Выбрать тариф», ссылка #start. «Проект» — «от 150 000 ₸/мес» — «Одинаковое описание для проверки каждой карточки». Кнопка: «Выбрать тариф», ссылка #project. «Поддержка» — «от 80 000 ₸/год» — «Одинаковое описание для проверки каждой карточки». Кнопка: «Выбрать тариф», ссылка #support.' );
+$pricing_card_details = (array) ( $pricing_card_nodes[0]['elements'][0] ?? [] );
+$pricing_price_group = (array) ( $pricing_card_details['elements'][1] ?? [] );
+$check( ( $pricing_cards['settings']['flex_align_items'] ?? '' ) === 'stretch' && ( $pricing_card_settings['flex_justify_content'] ?? '' ) === 'space-between' && ( $pricing_card_settings['flex_justify_content_mobile'] ?? '' ) === 'flex-start' && ! isset( $pricing_card_settings['height'], $pricing_card_settings['min_height'] ), 'pricing uses native flex to equalize row cards while preserving natural mobile card height' );
+$check( ( $pricing_price_group['settings']['flex_direction'] ?? '' ) === 'row' && count( $pricing_price_group['elements'] ?? [] ) === 1, 'pricing amount and optional period share a compact native row when period is absent' );
+$pricing_live_brief = wpae_brief_ir_parse( 'Надзаголовок: «ТАРИФЫ». Заголовок: «Выберите формат работы». «Старт» — «от 50 000 ₸» — «Для небольшой задачи». Кнопка: «Выбрать тариф», ссылка #start. «Проект» — «от 150 000 ₸/мес» — «Для комплексной работы с несколькими этапами, согласованием материалов и поддержкой команды на протяжении всего проекта». Кнопка: «Выбрать тариф», ссылка #project. «Поддержка» — «от 80 000 ₸/год» — «Для регулярного сопровождения». Кнопка: «Выбрать тариф», ссылка #support.' );
 $pricing_live_ir = wpae_elementor_ir_from_design_plan( wpae_design_plan_from_brief( $pricing_live_brief ), $pricing_live_brief );
 $pricing_live_compiled = wpae_elementor_ir_compile( $pricing_live_ir, $pricing_live_brief, [], [ 'id_seed' => 'pricing-live-contract' ] );
 $pricing_live_root = $pricing_live_compiled['elementor_data'][0] ?? [];
 $pricing_live_group = $pricing_live_root['elements'][1] ?? [];
 $pricing_live_cards = (array) ( $pricing_live_group['elements'] ?? [] );
+$pricing_live_card_settings = (array) ( $pricing_live_cards[0]['settings'] ?? [] );
+$check( count( $pricing_live_cards[0]['elements'] ?? [] ) === 2 && ( $pricing_live_cards[0]['elements'][1]['widgetType'] ?? '' ) === 'button' && ( $pricing_live_card_settings['flex_justify_content'] ?? '' ) === 'space-between', 'pricing CTA remains the final native flex child and aligns to the common card baseline on desktop' );
 $pricing_live_eyebrow = (array) ( $pricing_live_root['elements'][0]['elements'][0] ?? [] );
 $pricing_live_rows = array_map( static function ( array $card ): array {
-	$headings = [];
-	$texts = [];
-	$button = [];
-	foreach ( (array) ( $card['elements'] ?? [] ) as $node ) {
-		if ( ( $node['widgetType'] ?? '' ) === 'heading' ) {
-			$headings[] = (string) ( $node['settings']['title'] ?? '' );
-		} elseif ( ( $node['widgetType'] ?? '' ) === 'text-editor' ) {
-			$texts[] = (string) ( $node['settings']['editor'] ?? '' );
-		} elseif ( ( $node['widgetType'] ?? '' ) === 'button' ) {
-			$button = [ 'text' => (string) ( $node['settings']['text'] ?? '' ), 'url' => (string) ( $node['settings']['link']['url'] ?? '' ) ];
-		}
-	}
-	return [ 'name' => $headings[0] ?? '', 'price' => $headings[1] ?? '', 'period' => count( $texts ) > 1 ? $texts[0] : '', 'description' => end( $texts ) ?: '', 'cta' => $button['text'] ?? '', 'url' => $button['url'] ?? '' ];
+	$details = (array) ( $card['elements'][0]['elements'] ?? [] );
+	$price_widgets = (array) ( $details[1]['elements'] ?? [] );
+	$button = (array) ( $card['elements'][1] ?? [] );
+	return [
+		'name' => (string) ( $details[0]['settings']['title'] ?? '' ),
+		'price' => (string) ( $price_widgets[0]['settings']['title'] ?? '' ),
+		'period' => (string) ( $price_widgets[1]['settings']['editor'] ?? '' ),
+		'description' => (string) ( $details[2]['settings']['editor'] ?? '' ),
+		'cta' => (string) ( $button['settings']['text'] ?? '' ),
+		'url' => (string) ( $button['settings']['link']['url'] ?? '' ),
+	];
 }, $pricing_live_cards );
 $pricing_live_urls = array_column( $pricing_live_rows, 'url' );
 $check( count( $pricing_live_root['elements'] ?? [] ) === 2 && (float) ( $pricing_live_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 100.0 && (float) ( $pricing_live_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 100.0, 'pricing intro and card group stay full-width in a stacked section' );
@@ -420,10 +424,10 @@ $check( ( $pricing_live_cta['url'] ?? '' ) === '#support', 'long quoted pricing 
 $check( ( $pricing_live_root['settings']['background_color'] ?? '' ) === '#ffffff', 'pricing section uses the surface token instead of the warm page background' );
 $check( count( $pricing_live_cards ) === 3 && $pricing_live_urls === [ '#start', '#project', '#support' ], 'pricing parser/compiler preserves three card CTA URLs' );
 $check( $pricing_live_rows === [
-	[ 'name' => 'Старт', 'price' => 'от 50 000 ₸', 'period' => '', 'description' => 'Одинаковое описание для проверки каждой карточки', 'cta' => 'Выбрать тариф', 'url' => '#start' ],
-	[ 'name' => 'Проект', 'price' => 'от 150 000 ₸', 'period' => '/мес', 'description' => 'Одинаковое описание для проверки каждой карточки', 'cta' => 'Выбрать тариф', 'url' => '#project' ],
-	[ 'name' => 'Поддержка', 'price' => 'от 80 000 ₸', 'period' => '/год', 'description' => 'Одинаковое описание для проверки каждой карточки', 'cta' => 'Выбрать тариф', 'url' => '#support' ],
-], 'pricing compiler keeps all six fields bound to each card when descriptions repeat' );
+   [ 'name' => 'Старт', 'price' => 'от 50 000 ₸', 'period' => '', 'description' => 'Для небольшой задачи', 'cta' => 'Выбрать тариф', 'url' => '#start' ],
+	[ 'name' => 'Проект', 'price' => 'от 150 000 ₸', 'period' => '/мес', 'description' => 'Для комплексной работы с несколькими этапами, согласованием материалов и поддержкой команды на протяжении всего проекта', 'cta' => 'Выбрать тариф', 'url' => '#project' ],
+	[ 'name' => 'Поддержка', 'price' => 'от 80 000 ₸', 'period' => '/год', 'description' => 'Для регулярного сопровождения', 'cta' => 'Выбрать тариф', 'url' => '#support' ],
+], 'pricing compiler preserves different exact descriptions and the optional period without changing CTA bindings' );
 $check( ( $pricing_live_eyebrow['settings']['background_color'] ?? '' ) === '#4460EC' && ( $pricing_live_eyebrow['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $pricing_live_eyebrow['settings']['border_radius']['size'] ?? 0 ) >= 999, 'pricing eyebrow compiles as a native pill badge' );
 
 $faq_prompt = "FAQ\nЗаголовок: «Ответы на вопросы»\nВопрос 1: «Как проходит работа?»\nОтвет 1: «Сначала согласуем задачу, затем соберём страницу.»\nВопрос 2: «Можно ли изменить содержание?»\nОтвет 2: «Да, каждый текст остаётся редактируемым.»\nКнопка: «Задать вопрос», ссылка #contact. Дизайн: чистая белая поверхность, тонкая светло-серая обводка и скругление 12px.";
@@ -442,7 +446,8 @@ $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит р
 $check( count( array_unique( array_column( $faq_tabs, '_id' ) ) ) === 2 && ( $faq_widget['settings']['selected_icon']['value'] ?? '' ) === 'fas fa-angle-down', 'Accordion tabs receive unique stable IDs and native toggle icon settings' );
 $check( ( $faq_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#f6f0e6', 'FAQ white surface stays scoped to the rounded inner surface instead of flattening the entire page section' );
 $check( ( $faq_surface['settings']['background_color'] ?? '' ) === '#ffffff' && ( $faq_surface['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $faq_surface['settings']['border_radius']['size'] ?? 0 ) === 12.0 && ( $faq_surface['settings']['border_border'] ?? '' ) === 'solid' && (float) ( $faq_surface['settings']['border_width']['size'] ?? 0 ) === 1.0, 'explicit FAQ white surface, light border and 12px radius compile onto the native container' );
-$check( ( $faq_widget['settings']['title_background'] ?? '' ) === '#ffffff' && ( $faq_widget['settings']['content_background_color'] ?? '' ) === '#ffffff' && (float) ( $faq_widget['settings']['border_width']['size'] ?? 0 ) === 1.0 && ( $faq_widget['settings']['border_color'] ?? '' ) !== '', 'native Accordion preserves white title/answer surfaces and a 1px semantic border' );
+$check( ( $faq_widget['settings']['title_background'] ?? '' ) === '#ffffff' && ( $faq_widget['settings']['content_background_color'] ?? '' ) === '#ffffff' && (float) ( $faq_widget['settings']['border_width']['size'] ?? -1 ) === 0.0 && ( $faq_widget['settings']['border_color'] ?? '' ) !== '' && str_contains( (string) ( $faq_widget['settings']['custom_css'] ?? '' ), 'border-bottom: 1px solid' ), 'native Accordion drops its duplicate frame but retains token-backed separators inside the outer card' );
+$check( ( $faq_widget['settings']['title_color'] ?? '' ) === '#111827' && ( $faq_widget['settings']['title_active_color'] ?? '' ) === '#111827' && str_contains( (string) ( $faq_widget['settings']['custom_css'] ?? '' ), ':hover' ) && str_contains( (string) ( $faq_widget['settings']['custom_css'] ?? '' ), ':focus-visible' ) && str_contains( (string) ( $faq_widget['settings']['custom_css'] ?? '' ), '#2563eb' ), 'Accordion hover, active and keyboard focus colors use semantic text and focus tokens' );
 $faq_action = $faq_compiled['elementor_data'][0]['elements'][2]['elements'][0] ?? [];
 $check( ( $faq_action['widgetType'] ?? '' ) === 'button' && ( $faq_action['settings']['text'] ?? '' ) === 'Задать вопрос' && ( $faq_action['settings']['link']['url'] ?? '' ) === '#contact', 'FAQ keeps an optional explicit CTA after the native Accordion' );
 $incomplete_faq = wpae_design_plan_from_brief( wpae_brief_ir_parse( 'FAQ\nВопрос: «Есть ли поддержка?»' ) );
@@ -460,6 +465,8 @@ $check( count( $benefits_cards ) === 3 && array_column( array_map( static fn( ar
 $benefits_cta = $benefits_compiled['elementor_data'][0]['elements'][0]['elements'][1] ?? [];
 $check( ( $benefits_cta['widgetType'] ?? '' ) === 'button' && ( $benefits_cta['settings']['text'] ?? '' ) === 'Узнать больше' && ( $benefits_cta['settings']['link']['url'] ?? '' ) === '#details', 'feature grid keeps an optional explicit CTA and URL' );
 $check( ( $benefits_cards[0]['elements'][0]['widgetType'] ?? '' ) === 'icon' && ( $benefits_cards[0]['elements'][0]['settings']['selected_icon']['value'] ?? '' ) === 'fas fa-check-circle' && ( $benefits_cards[0]['settings']['border_border'] ?? '' ) === 'solid', 'feature cards use native Icon widgets and token-backed bordered surfaces' );
+$check( ! isset( $benefits_group['settings']['background_color'] ) && ( $benefits_cards[0]['settings']['background_color'] ?? '' ) === '#ffffff', 'benefits gap stays transparent while each card keeps its own white surface' );
+$check( ( $benefits_cards[0]['settings']['flex_align_items'] ?? '' ) === 'stretch' && ( $benefits_cards[0]['elements'][0]['settings']['align'] ?? '' ) === 'left' && ( $benefits_cards[0]['elements'][1]['settings']['align'] ?? '' ) === 'left' && ( $benefits_cards[0]['elements'][2]['settings']['align'] ?? '' ) === 'left', 'benefit icon, heading and body align left inside full-width card content' );
 $check( ( $benefits_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && (float) ( $benefits_cards[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'feature cards stack to full width at mobile breakpoint' );
 $two_benefits_prompt = "Features\nFeature 1: \"Clear scope\"\nFeature description 1: \"" . str_repeat( 'The written scope keeps each approval visible. ', 5 ) . "\"\nFeature 2: \"Native editing\"\nFeature description 2: \"Text stays editable in Elementor.\"";
 $two_benefits_brief = wpae_brief_ir_parse( $two_benefits_prompt );

@@ -153,28 +153,36 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					if ( ! is_array( $tier ) ) {
 						continue;
 					}
-					$card_widgets = [];
+					$details_widgets = [];
+					$price_widgets = [];
 					$card_number = $card_index + 1;
-					$add_tier_widget = static function ( string $field, string $node_role, string $widget_type, array $tokens ) use ( &$card_widgets, $tier, $content_map, $child_id, $card_number ): void {
+					$add_tier_widget = static function ( array &$widgets, string $field, string $node_role, string $widget_type, array $tokens ) use ( $tier, $content_map, $child_id, $card_number ): void {
 						$ref = sanitize_key( (string) ( $tier[ $field ] ?? '' ) );
 						if ( $ref === '' || empty( $content_map[ $ref ]['exact_text'] ) ) {
 							return;
 						}
-						$card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-' . str_replace( '_ref', '', $field ), $node_role, $widget_type, [ $ref ], $tokens, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+						$widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-' . str_replace( '_ref', '', $field ), $node_role, $widget_type, [ $ref ], $tokens, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 					};
-					$add_tier_widget( 'label_ref', 'pricing_label', 'heading', [ 'color.text', 'type.body' ] );
-					$add_tier_widget( 'price_ref', 'pricing_price', 'heading', [ 'color.text', 'type.display' ] );
-					$add_tier_widget( 'period_ref', 'pricing_period', 'text-editor', [ 'color.muted', 'type.body' ] );
-					$add_tier_widget( 'description_ref', 'pricing_description', 'text-editor', [ 'color.muted', 'type.body' ] );
-					$add_tier_widget( 'cta_ref', 'cta_primary', 'button', [ 'color.primary', 'color.text', 'color.surface' ] );
-					if ( count( $card_widgets ) < 3 ) {
+					$add_tier_widget( $details_widgets, 'label_ref', 'pricing_label', 'heading', [ 'color.text', 'type.body' ] );
+					$add_tier_widget( $price_widgets, 'price_ref', 'pricing_price', 'heading', [ 'color.text', 'type.display' ] );
+					$add_tier_widget( $price_widgets, 'period_ref', 'pricing_period', 'text-editor', [ 'color.muted', 'type.body' ] );
+					$price_group = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-price-group', 'pricing_price_group', 'container', [], [ 'space.component' ], $price_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+					$details_widgets[] = $price_group;
+					$add_tier_widget( $details_widgets, 'description_ref', 'pricing_description', 'text-editor', [ 'color.muted', 'type.body' ] );
+					$card_widgets = [
+						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-details', 'pricing_details', 'container', [], [ 'space.component' ], $details_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
+					];
+					$cta_widgets = [];
+					$add_tier_widget( $cta_widgets, 'cta_ref', 'cta_primary', 'button', [ 'color.primary', 'color.text', 'color.surface' ] );
+					$card_widgets = array_merge( $card_widgets, $cta_widgets );
+					if ( count( $details_widgets ) + count( $cta_widgets ) < 3 ) {
 						$warnings[] = $child_id . ':pricing_tier_' . $card_number . '_incomplete';
 					}
 					$card_children[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index, 'pricing_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'pricing_cards', 'container', [], $token_refs, $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			} elseif ( $role === 'faq_surface' ) {
-				$accordion = wpae_elementor_ir_node( $child_id . '-accordion', 'faq_accordion', 'accordion', $content_refs, $token_refs, [], [ 'items' => array_values( (array) ( $child['items'] ?? [] ) ) ], [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
+				$accordion = wpae_elementor_ir_node( $child_id . '-accordion', 'faq_accordion', 'accordion', $content_refs, array_merge( $token_refs, [ 'color.focus' ] ), [], [ 'items' => array_values( (array) ( $child['items'] ?? [] ) ) ], [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'faq_surface', 'container', [], $token_refs, [ $accordion ], (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
 			} elseif ( $role === 'feature_cards' ) {
 				$cards = [];
@@ -414,12 +422,16 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 				$settings['background_color'] = $surface_override;
 			}
 		}
+		if ( $role === 'feature_cards' ) {
+			unset( $settings['background_color'], $settings['background_background'] );
+		}
 		if ( $role === 'pricing_cards' ) {
 			// Pricing cards are a row on wide viewports and a stack on mobile.
 			// The child width contract below then supplies equal desktop columns.
 			$settings['flex_direction'] = 'row';
 			$settings['flex_direction_tablet'] = 'row';
 			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
 			$settings['flex_wrap'] = 'wrap';
 			$settings['flex_wrap_tablet'] = 'wrap';
 			$settings['flex_wrap_mobile'] = 'wrap';
@@ -521,6 +533,28 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['padding_tablet'] = $settings['padding'];
 			$settings['padding_mobile'] = wpae_elementor_ir_dimension_control( $token_values['space.component'] ?? '1.25rem', 'rem', 1.25, false );
 		}
+		if ( $role === 'pricing_card' ) {
+			$settings['flex_direction'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_justify_content'] = 'space-between';
+			$settings['flex_justify_content_mobile'] = 'flex-start';
+		}
+		if ( $role === 'feature_card' ) {
+			$settings['flex_direction'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
+		}
+		if ( $role === 'pricing_details' ) {
+			$settings['flex_direction'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.75, 'column' => '0.75', 'row' => '0.75', 'isLinked' => true ];
+		}
+		if ( $role === 'pricing_price_group' ) {
+			$settings['flex_direction'] = 'row';
+			$settings['flex_wrap'] = 'wrap';
+			$settings['flex_align_items'] = 'center';
+			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.25, 'column' => '0.25', 'row' => '0.25', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
+		}
 		if ( in_array( $role, [ 'pricing_badge', 'hero_badge' ], true ) ) {
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['flex_direction'] = 'row';
@@ -553,6 +587,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
 		}
 		if ( $role === 'feature_title' ) {
+			$settings['align'] = 'left';
 			$settings['typography_typography'] = 'custom';
 			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.125, 'sizes' => [] ];
 			$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
@@ -623,6 +658,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		} else {
 			$settings['editor'] = $text;
 			$settings['text_color'] = (string) ( $token_values['color.muted'] ?? '#6b7280' );
+			if ( in_array( $role, [ 'feature_body', 'pricing_description' ], true ) ) {
+				$settings['align'] = 'left';
+			}
 			if ( is_array( $token_values['type.body'] ?? null ) ) {
 				$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $token_values['type.body'] ) );
 			}
@@ -692,13 +730,21 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['selected_icon'] = [ 'value' => 'fas fa-angle-down', 'library' => 'fa-solid' ];
 		$settings['selected_active_icon'] = [ 'value' => 'fas fa-angle-up', 'library' => 'fa-solid' ];
 		$settings['title_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
+		$settings['title_active_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
 		$settings['content_color'] = (string) ( $token_values['color.muted'] ?? '#4b5563' );
+		$settings['icon_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
+		$settings['icon_active_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
 		$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
-		$settings['border_width'] = [ 'unit' => 'px', 'size' => 1, 'sizes' => [] ];
+		$settings['border_width'] = [ 'unit' => 'px', 'size' => 0, 'sizes' => [] ];
 		$settings['title_background'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 		$settings['content_background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 		$settings['title_padding'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1.25', 'bottom' => '1', 'left' => '1.25', 'isLinked' => false, 'sizes' => [] ];
 		$settings['content_padding'] = [ 'unit' => 'rem', 'top' => '0.75', 'right' => '1.25', 'bottom' => '1', 'left' => '1.25', 'isLinked' => false, 'sizes' => [] ];
+		$border_color = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+		$text_color = (string) ( $token_values['color.text'] ?? '#111827' );
+		$focus_color = (string) ( $token_values['color.focus'] ?? '#2563eb' );
+		$settings['_css_classes'] = 'wpae-faq-accordion';
+		$settings['custom_css'] = "selector .elementor-accordion-item { border: 0 !important; border-bottom: 1px solid {$border_color} !important; }\nselector .elementor-accordion-item:last-child { border-bottom: 0 !important; }\nselector .elementor-tab-content { border-top: 0 !important; }\nselector .elementor-tab-title:hover, selector .elementor-tab-title:hover .elementor-accordion-icon, selector .elementor-tab-title.elementor-active, selector .elementor-tab-title.elementor-active .elementor-accordion-icon { color: {$text_color} !important; }\nselector .elementor-tab-title:focus-visible { outline: 2px solid {$focus_color} !important; outline-offset: 2px; border-radius: 2px; }";
 	} elseif ( $widget_type === 'icon' ) {
 		$settings['selected_icon'] = [ 'value' => 'fas fa-' . sanitize_key( (string) ( $node['layout_constraints']['icon_name'] ?? 'check-circle' ) ), 'library' => 'fa-solid' ];
 		$settings['view'] = 'stacked';
@@ -706,6 +752,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['size'] = [ 'unit' => 'px', 'size' => 28, 'sizes' => [] ];
 		$settings['primary_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 		$settings['secondary_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+		if ( $role === 'feature_icon' ) {
+			$settings['align'] = 'left';
+		}
 	}
 	$compiled_children = [];
 	foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
