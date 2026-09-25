@@ -1,6 +1,6 @@
 # WP AI Executor — аудит и адаптация Elementor-композиций
 
-Обновлено: **2026-09-25 19:41 +05:00 (Asia/Almaty)**. Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`. Целевая существующая страница: `post=5214`. Live-приёмка не завершена: сохранённый server document не подтверждён, поэтому запись блокирована защитой от потери roots.
+Обновлено: **2026-09-25 19:43 +05:00 (Asia/Almaty)**. Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`. Целевая существующая страница: `post=5214`. Live-приёмка не завершена: сохранённый server document не подтверждён, поэтому запись блокирована защитой от потери roots.
 
 ## Результат
 
@@ -74,6 +74,7 @@
 - `php -l` для всех 8 изменённых PHP-файлов — **без syntax errors**.
 - `git diff --check` — **PASS**.
 - `wpae-package.json` пересобран; проверка SHA-256 — **90/90 файлов совпали**.
+- `php docs/audits/2026-09-12/package-probe.php` — **PASS**, 4 сценария, 90 packaged files; корректный архив принят, corrupted hash, missing required file и unsafe path отклонены. Дополнительная serialization probe выявила malformed UTF-8 в полном диагностическом JSON; compact summary сериализуется. Это диагностическое предупреждение не меняет результат проверки package hashes.
 
 Исходный checkout был branch `main`, base HEAD `898d20b6a6ac8a465298d2a0709d709bd43ba592`, live installed version snapshot `v02.11.153`. Runtime release создан коммитом `4fd7839` (`Add native FAQ and benefits design plans`, source `v02.11.154`); перед push `origin/main` совпадал с base HEAD, push выполнен успешно fast-forward `898d20b..4fd7839`. После обновления существующая Plugins UI показывает активный `WP AI Executor v02.11.154`. Editor tab не перезагружалась и её inline config/JS version после установки не подтверждены. WP Pusher action показал expired-link notice; это не используется как доказательство, установленная версия подтверждена отдельной Plugins UI строкой. Source, remote, installed plugin и editor-loaded runtime остаются разными слоями доказательств.
 

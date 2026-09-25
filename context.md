@@ -1,6 +1,6 @@
 # WP AI Executor — context
 
-Последнее обновление: **2026-09-25 19:41 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-25 19:43 +05:00 (Asia/Almaty)**.
 
 ## Текущее состояние
 
@@ -39,5 +39,6 @@
 - `node --test tests/*.test.js` — 4 passed, 0 failed.
 - `php -l` для 8 изменённых PHP-файлов — без syntax errors.
 - Package integrity — 90/90 SHA-256 hashes valid после пересборки `wpae-package.json`.
+- `php docs/audits/2026-09-12/package-probe.php` — PASS, 4 scenarios, 90 packaged files; invalid/corrupt/missing/unsafe cases отклонены. В дополнительной диагностике полного JSON результата найден malformed UTF-8; компактный summary сериализуется.
 - `git diff --check` — PASS.
 - `git push origin main` — PASS; установленный Plugins UI row — active `v02.11.154`. Editor runtime после установки — NOT RECHECKED, чтобы не перезагружать вкладку с неподтверждённым editor state.
