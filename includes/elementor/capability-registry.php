@@ -25,7 +25,7 @@ function wpae_widget_capability_registry(): array {
 }
 
 function wpae_widget_compiler_supported_types(): array {
-	return [ 'container', 'heading', 'text-editor', 'button', 'image', 'icon-list', 'divider' ];
+	return [ 'container', 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
 }
 
 function wpae_widget_runtime_probe(): array {

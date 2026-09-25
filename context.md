@@ -1,49 +1,43 @@
-# WP AI Executor Context
+# WP AI Executor — context
 
-Срез: **2026-09-25 01:56 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-25 19:37 +05:00 (Asia/Almaty)**.
 
-## Source и runtime
+## Текущее состояние
 
-- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
-- HEAD: `8c9a89aef1be430c37e93ad36ef47ea916314031`, runtime version **v02.11.151**.
-- Этот runtime commit ранее отправлен в `origin/main`; WP Pusher сообщил об успешном обновлении, а редактор Elementor на `post=5214` показывает v02.11.151.
-- Канонический контекст — lowercase `context.md`. На текущей macOS `CONTEXT.md` разрешается в тот же inode; не создавай отдельную копию и не используй `SESSION_CONTEXT.md`.
+- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, base HEAD `898d20b6a6ac8a465298d2a0709d709bd43ba592`.
+- Source version в рабочем дереве: `v02.11.154`; ранее установленный live source/version snapshot — `v02.11.153`. Live editor version в этом запуске не проверялась.
+- `origin/main` нельзя было проверить: `git ls-remote origin refs/heads/main` завершился `Could not resolve host: github.com`. Commit/push/install не подтверждены.
+- Runtime изменения этого запуска: `BriefIR` FAQ/benefits roles, FAQ/benefits typed plans в существующем `DesignPlan v1`, native Accordion/Icon compilation и widget capability, active pipeline eligibility. Новый write path, плагины и библиотеки не добавлялись.
+- Четыре вида — hero, pricing, FAQ, преимущества — проходят production functions в локальном in-memory harness. Это не live acceptance.
 
-## Live-проверка `post=5214`
+## Kit sources
 
-- Существующая страница: `https://mazhenov.kz/pricing-contract-live-v123/`, WordPress post `5214`. Новые pages и drafts не создавались.
-- Пользователь сообщил, что очистил прежнее содержимое страницы перед тестами. Сейчас в сохранённом editor preview и public DOM видны два QA-root: FAQ `82b88e5` и процесс `de395b6`. Прежний hero-root `cd4da23` в текущем DOM отсутствует.
-- FAQ: operation `wpae-20260924203054-838965f0`; native Accordion widget `7ccf10b`. После save/reload сохранены три заданных синтетических вопроса и ответа. Public interaction раскрывала ответы; Vision оценил результат в 85/95, с minor finding о тесном отступе над badge.
-- Процесс: operation `wpae-803141a1fa8a0c3f`; root `de395b6`. После save/reload видны три этапа, собранные из текстовых виджетов и горизонтальных Divider. Vision 68/95: слабая типографическая иерархия и однообразные интервалы; результат не принят как качественный timeline. Автоматическая замена остановлена защитой ownership: сохранённый target не принадлежал этой операции/изменился.
-- Старый дизайн доступен только как историческое изображение `wpae-post-5214-public-check-20260925.png`; оно показывает прежний root `cd4da23` с pill badge, двумя CTA и фотографией. Этот кадр не является текущим live-состоянием.
+`/Users/diasmazhenov/Downloads/elementorpro-temp` содержит 16 ZIP и 15 уникальных архивов (Aquassi ZIP повторён). Десять kit совпадают с ElemKits catalog entries: 18Holes, Adopt, Akademy, Alaya, Alcor, Apper, Apprista, Apptom, Aquassi, Aquavist. Пять архивов не сопоставлены с локальными записями: Albion, Aleos, EasyLanding/Applanding, AppRaxx, Aquila.
 
-## Проверенные артефакты
+Использованные только как source patterns: 18Holes Homepage hero и FAQ; Akademy Feature Boxes и Pricing Boxes. Локальный ElemKits README заявляет CC0 1.0 для kits на сайте, но сами ZIP не содержат отдельного license field; сторонние фото/шрифты/внешние assets не переносились. Не включай source ZIP/JSON в plugin package.
 
-- `wpae-faq-qa-v151-public-desktop-20260925.png` — FAQ, public, 1253×933.
-- `wpae-faq-qa-v151-editor-mobile-20260925.png` — FAQ, Elementor mobile preview canvas 360×736; внешний editor screenshot 1253×933. Отдельный public mobile viewport не подтверждён.
-- `wpae-process-qa-v151-public-desktop-20260925.png` — процесс QA-root, public, 1238×922; визуальная проверка fail.
-- Все перечисленные актуальные PNG проверены по сигнатуре и открыты для визуальной проверки. При Browser Use capture сверяй фактический формат bytes; JPEG конвертируй в настоящий PNG до сохранения с расширением `.png`.
+Подробная матрица источников, адаптации, полей и live safety — в [LUNA_HANDOFF_REPORT.md](/Users/diasmazhenov/vibecode/wp-ai-executor/LUNA_HANDOFF_REPORT.md).
 
-## Правило screenshot для live Elementor-приёмки
+## Live safety и screenshot rule
 
-1. Только существующая страница и существующая вкладка встроенного браузера; новых pages/drafts не создавать.
-2. После save/reload используй Browser Use через `node_repl`: импортируй `setupBrowserRuntime` из актуального `browser-client.mjs`, вызови setup, выбери browser с `type === "iab"`, найди нужную вкладку по URL и сними `screenshot({ fullPage: false })`.
-3. Сохрани bytes в абсолютный путь внутри workspace. Проверь реальную сигнатуру и, если требуется, конвертируй в PNG штатной системной утилитой.
-4. Открой PNG и проверь, что на нём именно нужная страница/root и состояние после reload; выведи screenshot inline через `nodeRepl.emitImage()`.
-5. В финале дай inline Markdown-изображение и кликабельную абсолютную ссылку на файл, укажи post/root/operation IDs, viewport и editor/public источник. Не печатай base64 и не выдумывай путь. Если файл сохранить или проверить нельзя — укажи `SCREENSHOT BLOCKED` и конкретный технический блокер.
+Работать только с существующим `post=5214`; новые WordPress pages/drafts не создавать. Последний известный editor preview был пуст, а public DOM показывал `82b88e5`, `de395b6`, `d729d84`; это прежние DOM snapshots, не saved server document. Актуальный `_elementor_data` readback не подтверждён. До получения разрешённого read-only saved document и согласования roots не сохранять editor model и не делать live generation: это может потерять содержимое соседних/старых roots.
 
-## Локальные проверки v02.11.152
+Для каждой фактически созданной и принятой live секции после save/reload:
+1. Снимок текущей вкладки существующей страницы через документированный Browser Use/CUA.
+2. Сохранить именно возвращённые bytes в абсолютный workspace path; не печатать base64 и не выдумывать API/path.
+3. Проверить signature/format; при JPEG преобразовать в PNG через `sips`.
+4. Открыть файл и проверить, что на нём нужный post/block и выбранный viewport.
+5. Вставить inline `![описание](/absolute/path/file.png)` и кликабельную ссылку на тот же абсолютный путь; указывать CSS viewport, source editor/public, post/root/operation IDs.
 
-- `php -l wp-ai-executor.php includes/llm/llm.php tests/flex-generation-runtime.php` — PASS.
-- `php tests/flex-generation-runtime.php` — 345 checks OK.
-- `php tests/design-pipeline-contract.php` — 151 checks OK.
-- `node --test tests/*.test.js` — 4/4 PASS.
-- `php docs/audits/2026-09-12/package-probe.php` — 90 files, 0 hash mismatches.
-- `git diff --check` — PASS для runtime-релиза до публикации. Текущие локальные изменения этого среза — документация и screenshot artifacts.
+Не показывать baseline, source preview или реконструированный HTML как screenshot принятого live-дизайна. Если live block не был сохранён/принят, screenshot status — `NOT RUN`; если захват нужного результата фактически невозможен — `SCREENSHOT BLOCKED` с конкретной технической причиной.
 
-## Закреплённый process timeline reference
+## Проверки последнего прохода
 
-- Источник: пользовательский Elementor selection JSON, post `4556`, element `5a52297`.
-- Эталонный контракт закреплён в `tests/fixtures/process-card-reference-v1.json`; active pipeline должен собирать его как native Elementor: карточка белая, border `1px solid #dbe3f0`, radius `20px`, reference padding; marker `#4460EC` круглый, `3rem` desktop / `2.5rem` mobile; marker row содержит native Divider `1px`, `100%`, gap `15px`.
-- Desktop cards: горизонтальный ряд с basis `22%` для четырёх карточек; tablet/mobile: вертикальный stack, каждая карточка `100%`. Явная подпись блока отображается одной компактной pill перед рядом карточек.
-- Не менять этот эталон на линейный список текстов/Divider. Regression должна проверять собранный native tree, стили маркера и карточки, точные label/body slots и responsive widths.
+- `php tests/design-pipeline-contract.php` — 181 checks OK.
+- `php tests/flex-generation-runtime.php` — 357 checks OK.
+- В production-path harness при `pipeline=active` и EDDE `active`: четыре archetypes выбрали `diagnostics.action_path=pipeline`, 0 provider calls, 1 write каждый. Записи выполнялись только в in-memory harness `post_id=42`.
+- `node --test tests/*.test.js` — 4 passed, 0 failed.
+- `php -l` для 8 изменённых PHP-файлов — без syntax errors.
+- Package integrity — 90/90 SHA-256 hashes valid после пересборки `wpae-package.json`.
+- `git diff --check` — PASS.
+- Commit/push/install пока не подтверждены; remote DNS-запрос ранее завершился `Could not resolve host: github.com`.

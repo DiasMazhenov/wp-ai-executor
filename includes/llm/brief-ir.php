@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v1';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v2';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -61,9 +61,15 @@ function wpae_brief_ir_locale( string $source_text ): string {
 function wpae_brief_ir_archetype( string $source_text ): string {
 	if ( function_exists( 'wpae_llm_detect_block_archetype' ) ) {
 		$detected = sanitize_key( (string) wpae_llm_detect_block_archetype( $source_text ) );
-		if ( in_array( $detected, [ 'hero', 'process', 'pricing' ], true ) ) {
+		if ( in_array( $detected, [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true ) ) {
 			return $detected;
 		}
+	}
+	if ( preg_match( '/^\s*(?:faq|accordion|аккордеон|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*)\b/iu', $source_text ) ) {
+		return 'faq';
+	}
+	if ( preg_match( '/^\s*(?:benefits?|features?|преимуществ\w*|выгод\w*)\b/iu', $source_text ) ) {
+		return 'benefits';
 	}
 	if ( preg_match( '/\b(?:pricing|price|тариф\w*|пакет\w*|цен\w*|стоимост\w*)\b/iu', $source_text ) ) {
 		return 'pricing';
@@ -74,11 +80,29 @@ function wpae_brief_ir_archetype( string $source_text ): string {
 	if ( preg_match( '/\b(?:process|steps?|timeline|процесс\w*|этап\w*|шаг\w*|таймлайн\w*)\b/iu', $source_text ) ) {
 		return 'process';
 	}
+	if ( preg_match( '/\b(?:faq|accordion|аккордеон|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*)\b/iu', $source_text ) ) {
+		return 'faq';
+	}
+	if ( preg_match( '/\b(?:benefits?|features?|преимуществ\w*|выгод\w*)\b/iu', $source_text ) ) {
+		return 'benefits';
+	}
 	return 'unknown';
 }
 
 function wpae_brief_ir_label_role( string $prefix ): string {
 	$prefix = trim( $prefix );
+	if ( preg_match( '/(?:вопрос\w*|question\w*)\s*(?:\#?\d+)?\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'faq_question';
+	}
+	if ( preg_match( '/(?:ответ\w*|answer\w*)\s*(?:\#?\d+)?\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'faq_answer';
+	}
+	if ( preg_match( '/(?:описани\w*\s+(?:преимуществ\w*|выгод\w*|features?|benefits?)|(?:description(?:\s+of)?\s+(?:features?|benefits?)|(?:features?|benefits?)\s+description))\s*(?:\#?\d+)?\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'feature_body';
+	}
+	if ( preg_match( '/(?:преимуществ\w*|выгод\w*|features?|benefits?)\s*(?:\#?\d+)?\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'feature_title';
+	}
 	if ( preg_match( '/(?:надзаголов\w*|eyebrow|overline|kicker|надпис\w*|слоган)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'eyebrow';
 	}
@@ -107,6 +131,10 @@ function wpae_brief_ir_id_for_role( string $role, int $index = 0 ): string {
 		'eyebrow' => 'hero_eyebrow',
 		'title' => 'hero_title',
 		'body' => 'hero_body',
+		'faq_question' => 'faq_question',
+		'faq_answer' => 'faq_answer',
+		'feature_title' => 'feature_title',
+		'feature_body' => 'feature_body',
 		'label' => 'label',
 		'text' => 'text',
 	];

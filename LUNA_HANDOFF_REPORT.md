@@ -1,110 +1,106 @@
-# WP AI Executor — текущий live handoff
+# WP AI Executor — аудит и адаптация Elementor-композиций
 
-Обновлено: **2026-09-24 23:43 +05:00 (Asia/Almaty)**.
+Обновлено: **2026-09-25 19:37 +05:00 (Asia/Almaty)**. Репозиторий: `/Users/diasmazhenov/vibecode/wp-ai-executor`. Целевая существующая страница: `post=5214`. Live-приёмка не завершена: сохранённый server document не подтверждён, поэтому запись блокирована защитой от потери roots.
 
-## Итог
+## Результат
 
-Установленный runtime остаётся **v02.11.147**, commit **6c0abc8**. В исходниках подготовлен v02.11.148 с защищённым read-only GET target diagnostic; live installation пока не подтверждена.
+В `/Users/diasmazhenov/Downloads/elementorpro-temp` найдено 16 ZIP-файлов, из них 15 уникальных: второй Aquassi ZIP совпадает по SHA-256 с первым (`5a7509519da3caf4ba8438219fe1420ed2c73192a4c7e3be6dafb9c51ad8378a`). Все разобранные архивы содержат реальные Elementor JSON exports. Десять уникальных kit сопоставлены по названию и template manifest с записями в `/Users/diasmazhenov/Downloads/ElemKits-main`; пять оставшихся архивов такой связи в локальном каталоге не имеют.
 
-Свежая проверка существующей public страницы `post=5214` подтверждает: в root `cd4da23` сейчас видны pill «АРХИТЕКТУРА» и загруженное архитектурное фото, а обе CTA ведут на правильные ссылки. Сохранён один generated root. Новый PNG снят Browser Use с текущей вкладки public, открыт и визуально проверен.
+Для четырёх семейств — hero, преимущества, pricing и FAQ — исходные композиции адаптированы к уже существующим `BriefIR → DesignPlan → ElementorIR → native compiler`, без импорта чужих JSON/медиа, нового write path или новой библиотеки. Четыре exact prompt-fixtures прошли локальный production `wpae_llm_chat_request()` при обоих flags `active`: route `pipeline`, 0 provider calls, 1 write в in-memory WordPress harness на фейковом `post_id=42`. Local write не изменял сайт.
 
-Стили и фото остались в сохранённом root после предыдущего Elementor save/reload; в этом запуске страницу не записывал и новые roots/pages/drafts не создавал. Текущий editor config выбирает unrelated operation `wpae-89007d964d7436ab` для root `1fa90e6`, `reviewable=false`, поэтому review action скрыто. Текущую запись ledger для `cd4da23` ещё нельзя подтвердить: v148 diagnostic route пока не установлена. Targeted pipeline repair и привязанный Vision review не выполнялись; fail-closed защита от чужих правок сохранена.
+На `post=5214` не запускалась генерация: последнее доступное наблюдение было editor preview `[]` при public DOM с roots `82b88e5`, `de395b6`, `d729d84`; свежий авторитетный `_elementor_data` readback отсутствует. Сохранение пустой/неполной editor model могло бы удалить видимые roots. Поэтому live roots, operation/root IDs новых дизайнов, save/reload, DOM review, Vision и их desktop/mobile screenshots отсутствуют. Live-блоки и страницы этим запуском не создавались.
 
-## Исходное состояние и выпуск
+## Источники и лицензия
 
-- Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`.
-- HEAD на начало проверки: `6c0abc8512be4e29bd0dfd22b4225de9c2189c3c`.
-- Установленная source/live версия: **v02.11.147**. Свежий inline editor config на `post=5214` сообщает v02.11.147.
-- Версия в текущем исходнике: **v02.11.148**; новая commit/push/installation в этой проверке не подтверждены.
-- Использовалась только существующая страница `post=5214`, public URL `/pricing-contract-live-v123/`. Новые страницы, drafts и roots не создавались. В Elementor изменены стили/медиа только внутри существующего root `cd4da23`; root count остался 1.
-- Рабочее дерево содержит ранее существовавшие unrelated untracked-файлы. Для v148 изменены только operation ledger, REST routes, bootstrap version, contract test и соответствующие package hashes; screenshot evidence не предназначены для коммита.
+Локальный [README ElemKits](</Users/diasmazhenov/Downloads/ElemKits-main/README.md>) утверждает, что Elementor kits, доступные на сайте, распространяются по **CC0 1.0**. У отдельных ZIP `manifest.json` нет поля лицензии; связь архива с сайтом-каталогом подтверждена совпадающими названием kit, template names и каталоговой download metadata, а сама CC0-атрибуция остаётся заявлением README, не отдельной подписью каждого ZIP. См. [CC0 1.0 deed](https://creativecommons.org/publicdomain/zero/1.0/) и [официальный legal code](https://creativecommons.org/publicdomain/zero/1.0/legalcode.en).
 
-## Цепочка ledger → editor config → target status → UI action
+Даже при этом исходящие фотографии, шрифты и другие внешние assets не переносились: их отдельные права в этих архивах не установлены. В плагин не добавлены чужие JSON, фотографии, шрифты, tracking, IDs, внешние ссылки или глобальные Elementor references.
 
-1. **Server ledger.** `wpae_design_operation_editor_candidate()` в `includes/elementor/operation-ledger.php` читает operation store, пропускает terminal states, вычисляет `target_status` и сначала возвращает reviewable operation; когда такой нет — stale operation с присутствующим owned root, иначе последнюю eligible operation.
-2. **Editor config.** `wpae_enqueue_elementor_llm_chat()` в `includes/elementor/editor-chat.php` встраивает один выбранный результат как `pendingOperation`, включая operation id/identity, revision, root IDs, saved hash, fingerprint и target status.
-3. **Актуальный config после reload.** Для `postId=5214` он сообщает:
-   - operation `wpae-89007d964d7436ab`;
-   - identity `e12c2e08-2952-4906-8dbb-f66d3ed42eb1`;
-   - revision `5`, state `written`;
-   - owned root `1fa90e6`;
-   - target status `stale_target / root_missing`, class `unknown_target_change`, `reviewable=false`.
+| Адаптированное семейство | Источник и найденная композиция | Структура и зависимости исходника | Что использует WPAE |
+|---|---|---|---|
+| Hero | [18Holes catalog record](https://elemkits.lemonsqueezy.com/checkout/buy/8027ec69-b28d-4b73-9089-b937728a4ef8), [homepage preview](https://templatekits.themewarrior.com/18holes/template-kit/homepage/), `18holes...zip`, `templates/homepage.json`, секция `Section: Hero` | Legacy Sections/Columns; native `divider`, `heading`, `button`; remote golf background photo, parallax/motion effects и global color/typography refs. В manifest homepage помечена Elementor Pro required; responsive values есть для tablet/mobile. | Используется порядок eyebrow/divider → heading → CTA. Фото, motion effects, global refs и legacy IDs удалены; итог компилируется существующим Hero-путём в native Flex и использует только точный prompt и project tokens. Media отсутствует, если пользователь не дал собственный asset. |
+| Преимущества | [Akademy catalog record](https://elemkits.lemonsqueezy.com/checkout/buy/3fa78633-b5d5-4a4c-9684-b30f099b97e3), [feature boxes preview](https://a.catand.us/akademy/template-kit/block-feature-boxes/), `akademy...zip`, `templates/block-feature-boxes.json` | Legacy Sections/Columns; `icon`, `heading`, `text-editor`, `button`, `spacer`; manifest `elementor_pro_required=false`, tablet/mobile values; в выбранном блоке нет внешних фото, custom CSS, dynamic tags или global refs. | Новый typed `benefits` plan: 2–6 явных пар «преимущество + описание», опциональные label/title/body и CTA. Native Flex cards с Icon/Heading/Text Editor/Button; мобильная колонка. Незакрытая пара отклоняется, текст/факты из prompt не дополняются. |
+| Pricing | [Akademy catalog record](https://elemkits.lemonsqueezy.com/checkout/buy/3fa78633-b5d5-4a4c-9684-b30f099b97e3), [pricing boxes preview](https://a.catand.us/akademy/template-kit/block-pricing-boxes/), `akademy...zip`, `templates/block-pricing-boxes.json` | Legacy Sections/Columns; native `heading`, `divider`, `button`, `spacer`; три карточки, Pro не требуется, tablet/mobile значения есть, внешних медиа/динамики/custom CSS/global refs в блоке не найдено. | Сохранён существующий pricing plan/compiler. Тестируются три повторяемые карточки; суммы, подписи и CTA/URL должны прийти из запроса. Desktop row, mobile stack. Содержимое/цены исходного kit не копируются. |
+| FAQ | [18Holes catalog record](https://elemkits.lemonsqueezy.com/checkout/buy/8027ec69-b28d-4b73-9089-b937728a4ef8), [FAQ preview](https://templatekits.themewarrior.com/18holes/template-kit/faq/), `18holes...zip`, `templates/faq.json` | Legacy Sections/Columns; два native `accordion`, headings, dividers и spacers; manifest FAQ `elementor_pro_required=false`, responsive tablet/mobile controls есть. Обнаружены global color/typography refs; внешних URL, custom CSS и dynamic tags не найдено. | Новый typed `faq` plan собирает один native Elementor Accordion только из полных точных Q/A-пар, сохраняет короткий label `FAQ`, optional title и CTA/URL. Global refs не импортируются; недостающий ответ отклоняется, а не генерируется. |
 
-   В свежем inline config этой другой operation expected/current saved hashes равны соответственно `da514185bafb1ee0afe059b0625b745dfda64b0f11c11ed4befeb76da7be165a` и `8654f86b2596a4b53e543d9d4d229f150c684403ffe182a79204b3d72437fb7e`; expected/current fingerprints — `8af7f9445cf403f139abd738b4a9e3ab2c8915e5cb67316c2f3161903a425fe1` и `5d51b07086e6e154b58af142943e3435efe9e12a901f16230c6f048ee08e6d68`. **Эти значения принадлежат operation для root `1fa90e6`, а не `cd4da23`.**
-4. **Проверка UI.** В `assets/js/elementor-llm-chat.js` действие «Проверить сохранённый результат» создаётся только когда `pendingOperation.reviewable !== false`. Поэтому для полученного stale target действие не показывается. Это соответствует fail-closed защите.
-5. **Целевой root.** Свежий public DOM содержит один `.wpae-generated-root` с `data-id=cd4da23`. Однако конфигурация не содержит operation для этого root. Историческая запись `wpae-642778ef2b64e486` / identity `d1e611fe-6f12-46e7-9683-986aea4108c7` / revision 4 известна только из предыдущих generation diagnostics и не является текущим серверным ledger readback.
+Структура выбранных исходников не переносится как Elementor tree: все четыре используют legacy Section/Column exports; новый результат формирует уже имеющийся local native compiler. В тестовом выходе нет чужих element IDs или library/global references.
 
-В live v147 нет read-only REST метода для чтения operation по root: `/design-operations/reconcile` — POST и изменяет ledger. Поэтому вызов reconcile не использовался как диагностика. В source v148 добавлен ограниченный GET `/design-operations/target?post_id=…&root_id=…`: он требует `wpae_llm_chat_permission` и повторно проверяет `current_user_can('edit_post', $post_id)`, возвращает не более 10 совпадающих записей без prompt text и ничего не меняет. Helper локально проверен; live route не установлена, поэтому текущие identity/revision/hash/fingerprint для `cd4da23` остаются **не проверены live**.
+## Матрица кандидатов
 
-## Минимальные runtime-исправления
-
-- **v02.11.146 / `3325b54`.** `wpae_design_operation_editor_candidate()` сканирует операции и предпочитает более старую reviewable/current target, если новая запись stale. Клиентский Vision repair использует brief только при совпадающем operation identity и сохраняет ограничение на точечный replacement exact operation-owned root.
-- **v02.11.147 / `6c0abc8`.** Если reviewable operation нет, helper предпочитает stale запись, чей owned root всё ещё присутствует, чтобы дать диагностику реального target; mismatch response сохраняет expected/current saved hashes и fingerprints.
-- **v02.11.148 source-only.** Добавлен защищённый GET read-only target diagnostic и regression на root/post scope, operation identity/revision, saved readback и отсутствие изменений ledger. Не устанавливался на сайт.
-- В этом визуальном проходе parser, compiler, write boundary и WordPress settings не менялись. Стили/медиа внутри существующего root были сохранены Elementor editor.
-- Поведенческие regression tests подтверждают выбор кандидата при stale/missing root и возврат hashes/fingerprints. Они не подтверждают, что текущая server ledger запись `cd4da23` существует.
-
-## Live DOM и соответствие текущему результату
-
-Текущий сохранённый результат проверен на существующей public странице; в этом запуске не выполнялась новая запись:
-
-- root count: **1**, ID `cd4da23`; соседние roots не добавлялись и не редактировались.
-- Exact copy сохранён: «Тихая форма», «АРХИТЕКТУРА», «Пространство для идей», «Опишите задачу и получите понятный первый шаг», «Начать проект», «Смотреть проекты».
-- CTA в public DOM: `Начать проект → #contact`, `Смотреть проекты → #projects`.
-- Pill реализован стилями native Heading widget: контейнер `#fffdfa`, border `1px solid #161e33`, radius `999px`, padding `6px 12px`; сам H6 расположен внутри стилизованного `.elementor-widget-container`.
-- Native Image widget ID `e5e26ab` загружен (`naturalWidth=1800`, `naturalHeight=1200`), `object-fit: cover`, размер после reload при public viewport 911 px — **412×460 px**. Alt пустой (`alt=""`), поэтому описательный alt сейчас не подтверждён.
-- Public DOM при `innerWidth=911`, `DPR=2`: copy и image widgets примерно **412/412 px**; `scrollWidth=clientWidth=911`, горизонтального overflow нет. Это public 911 px breakpoint observation, не замер public desktop 1440 px.
-- Elementor desktop preview: iframe viewport `1025×870`, root width 1010 px, inner width 946 px; copy `368.8 px`, image widget `553.2 px` — фактическое соотношение **40/60** в editor preview.
-- Elementor mobile preview: viewport `360×736`, root width 345 px, direction `column`; copy расположен перед Image widget, оба занимают 313 px; изображение `313×300 px`; `scrollWidth=clientWidth=345`, горизонтального overflow нет.
-- Background root: `#f6f0e6`, как было указано для существующего hero. Ниже hero в текущем public capture показана пустая область и плавающий чат; pricing-карточки в этом viewport не наблюдались, и никакой соседний root не изменялся.
-- В актуальном DOM pill «АРХИТЕКТУРА» имеет фон `rgb(255, 253, 250)`, `1px solid rgb(22, 30, 51)`, `border-radius: 999px`, padding `6px 12px`; он виден в свежем кадре.
-- Свежая Vision-проверка не проводилась: нет подтверждённой текущей operation identity, к которой можно безопасно привязать review.
-
-Это подтверждённый current visual state после ручного сохранения через Elementor UI, но не результат targeted repair через operation pipeline. Проверку 390 px из старого handoff нельзя считать свежей геометрией этого запуска.
-
-## PNG evidence
-
-Все упомянутые кадры сняты Browser Use `screenshot({fullPage:false})` в уже существующих вкладках. Свежий public кадр в этом запуске содержит 911×933 px, записан в PNG, проверен `file`/`sips` и открыт визуально. Ранее созданные editor desktop/mobile PNG также открывались и проверялись. Operation identity визуального save не подтверждена.
-
-| Снимок | Файл и привязка |
-|---|---|
-| Fresh public current | [Public PNG, 911×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-public-current-20260924.png) · public source, post 5214, root `cd4da23`, viewport 911×933 CSS px, DPR 2. Видны pill, обе CTA и фото; это не 1440 px capture. |
-| Elementor desktop preview after reload | [Desktop editor PNG, 1253×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-desktop-editor-after-reload-20260924.png) · source editor, post 5214, root `cd4da23`, outer screenshot 1253×933, desktop preset; editor Structure panel перекрывает часть правого края изображения. |
-| Elementor mobile preview after reload — верх блока | [Mobile editor PNG, 1253×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-mobile-editor-after-reload-20260924.png) · source editor, mobile portrait preset, iframe 360×736, post 5214, root `cd4da23`; кадр показывает pill, copy, CTA и верх фото.
-| Elementor mobile preview after scroll | [Mobile photo PNG, 1253×933](/Users/diasmazhenov/vibecode/wp-ai-executor/wpae-post-5214-cd4da23-mobile-editor-photo-after-reload-20260924.png) · тот же post/root/viewport; кадр прокручен внутри preview, полностью показывает фото. |
-
-## Проверки
-
-Проверки source v148 и текущего live visual состояния v147:
-
-- `php -l wp-ai-executor.php`, `includes/elementor/operation-ledger.php`, `includes/rest/routes.php`, `tests/design-pipeline-contract.php` — **PASS**.
-- `php tests/design-pipeline-contract.php` — **140 checks OK**, including target-scope immutability and denial without `edit_post`.
-- `php tests/flex-generation-runtime.php` — **338 checks OK**.
-- `node --test tests/*.test.js` — **4 passed, 0 failed**.
-- `php docs/audits/2026-09-12/package-probe.php` — **PASS**, 90 packaged files, 0 hash mismatches; valid/corrupt/missing/unsafe manifest scenarios checked.
-- `git diff --check` — **PASS** до обновления этого отчёта; требуется повторить перед commit.
-- Fresh screenshot `file` сообщает PNG 911×933; изображение открыто и визуально проверено.
-
-## Acceptance matrix
-
-| Область | Статус | Доказательство |
+| Кандидат/семейство | Статус | Подтверждённая причина |
 |---|---|---|
-| v147 в live editor | PASS | inline editor config сообщает v02.11.147 |
-| v148 source diagnostic endpoint and `edit_post` guard | PASS local / NOT RUN live | helper, immutable-ledger behavior and forbidden-user response tested; endpoint пока не установлен |
-| Выбор reviewable/stale ledger candidate | PASS local | 136 production contract checks, включая regressions v146/v147 |
-| Проследить актуальный выбранный ledger candidate до UI | PASS live | config → `root_missing` → `reviewable=false` → кнопка скрыта |
-| Public pill styling | PASS | wrapper background `#fffdfa`, 1px border, radius 999px, 6×12px padding |
-| Image widget/photo after save/reload | PASS | native widget `e5e26ab`, image loaded 1800×1200; public rendered 412×460 px |
-| CTA links | PASS | public DOM `#contact` and `#projects` |
-| Existing root scope | PASS | root count 1, same ID `cd4da23`; no new pages/drafts/roots |
-| Desktop 40/60 composition | PASS, editor preview | inner 946 px → copy 368.8 px / image 553.2 px |
-| Mobile copy-first stack | PASS, editor preview | 360×736; copy above image, 313 px each; no horizontal overflow |
-| Public 911 px horizontal overflow | PASS | `scrollWidth=clientWidth=911` |
-| Связь ledger operation с `cd4da23` | BLOCKED live | в v147 нет read-only target endpoint; v148 GET не установлен |
-| Targeted repair через deterministic operation pipeline | NOT RUN | сохранённый root уже содержит pill/photo; ownership/fingerprint для операции этого root не подтверждены, guard write не обходился |
-| Fresh Vision review bound to this result | NOT RUN | no verified operation identity or screenshot-bound server review record |
-| Fresh Browser Use PNG of current public state | PASS | public screenshot saved, opened and visually checked; prior editor desktop/mobile frames are linked above |
+| 18Holes hero | Адаптирован локально | Композиция из core widgets полезна; Pro motion и внешний background asset исключены. |
+| Akademy feature boxes | Адаптирован локально | Реальный native повторяемый grid; поля переведены в typed content pairs. |
+| Akademy pricing boxes | Использован текущим plan/compiler | Реальные карточки подтверждают семейство; существующий pipeline уже поддерживает pricing. |
+| 18Holes FAQ | Адаптирован локально | В archive есть native Accordion; содержание и ссылки берутся только из запроса. |
+| Akademy testimonial boxes | Отклонён как готовый source | В export четыре внешних портрета и текст отзывов; отдельные права на фото и подтверждённость отзывов отсутствуют. Эти assets/copy не использовались. |
+| Alcor Block Hero | Отклонён | JSON содержит пустые legacy section/column nodes с внешними фоновыми фото и motion effects, без native copy widgets. |
+| EasyLanding / App Showcase – How It Works | Отклонён | Export есть в папке, но kit не сопоставлен с ElemKits catalog/license; manifest требует Pro, внутри есть external media URLs. |
+| AppRaxx blocks | Отклонены | Встречаются `stax-*` widgets; каталоговая/license связь локально не подтверждена. |
+| Остальные совпавшие/unmatched kits | Не переносились | Формы/сторонние widgets, внешние фото или неподходящий компонентный scope; полный набор ZIP сохранён без изменений. |
 
-## Историческая сводка
+Из десяти каталоговых совпадений: 18Holes, Adopt, Akademy, Alaya, Alcor, Apper, Apprista, Apptom, Aquassi, Aquavist. Без подтверждённой локальной ElemKits-записи: Albion, Aleos, EasyLanding/Applanding, AppRaxx, Aquila. Пять unmatched архивов не объявлялись CC0-источниками.
 
-Релизы v02.11.145–147 являются историческим контекстом: исправляли CTA/pill compilation и выбор stale/reviewable operation candidate. В текущем live DOM pill/photo и CTA присутствуют; ledger ownership именно для `cd4da23` остаётся не подтверждённой до установки read-only v148 диагностики.
+## Production route и реализованные исправления
+
+`wpae_llm_chat_request()` получает archetype существующим classifier-ом и выбирает route через `wpae_design_generation_route()`. `pipeline=active` имеет приоритет над EDDE: при `pipeline=active / EDDE=active` один запрос не запускает параллельно EDDE и provider; он строится детерминированно локально. В тестах для каждого из четырёх блоков фактические diagnostics были `action_path=pipeline`, provider calls — 0, writes — 1; существующий transaction/write boundary не менялся.
+
+Подтверждённые изменения:
+
+- `includes/llm/brief-ir.php`: новые FAQ/benefits roles; точное извлечение английского `Feature description`; explicit section heading больше не теряется за словом «этапы» из описания; parser provenance version увеличен до `wpae-brief-parser-v2`.
+- `includes/llm/design-plan.php`: FAQ и benefits подключены к существующему `DesignPlan v1`; Q/A и feature pairs связываются по source order. Неполные Q/A, непарные features и менее 2/более 6 feature cards отвергаются. Optional CTA refs проходят через существующий button compiler.
+- `includes/elementor/elementor-ir.php`: новые планы собираются native Accordion/Icon и существующими Heading/Text Editor/Button/Flex. Короткий label отображается как редактируемый eyebrow; explicit CTA/URL сохраняются.
+- `includes/elementor/capability-registry.php`: `accordion` и `icon` допускаются только как явно поддерживаемые compiler widget types и всё равно проходят runtime availability gate.
+- `includes/llm/llm.php`: faq/benefits подключены к eligibility существующего active pipeline; единственный write path остался прежним.
+- `tests/design-pipeline-contract.php`, `tests/flex-generation-runtime.php`: production path проверяется реальными функциями плагина на in-memory WP/Elementor harness; локальный runtime не равен live WordPress.
+- `wp-ai-executor.php`: source version `v02.11.154`; `wpae-package.json` hashes пересчитаны после изменений.
+
+### Exact local harness requests
+
+Это inputs behavioral tests, не live пользовательские генерации:
+
+- Hero: `Создай hero. Надзаголовок: «ТИХАЯ ФОРМА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.`
+- Pricing: `Создай pricing. «Старт» — «от 50 000 ₸» — «Для небольшой задачи». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач». Кнопка: «Подключить поддержку», ссылка #support.`
+- FAQ: `Создай FAQ`, две полные Q/A-пары, label `FAQ`, кнопка `Задать вопрос` со ссылкой `#contact`.
+- Преимущества: `Создай блок преимуществ`, три пары exact title/description и кнопка `Узнать больше` со ссылкой `#details`.
+
+Для всех строковых fixtures local compiler сохранил native widget content; новый WordPress root ID и постоянный operation ID не выдавались. In-memory вызовы используют фиктивную страницу harness (`post_id=42`) и не являются live page acceptance.
+
+## Проверки и release evidence
+
+- `php tests/design-pipeline-contract.php` — **181 checks OK**.
+- `php tests/flex-generation-runtime.php` — **357 checks OK**.
+- `node --test tests/*.test.js` — **4 passed, 0 failed** после финальных изменений.
+- `php -l` для всех 8 изменённых PHP-файлов — **без syntax errors**.
+- `git diff --check` — **PASS**.
+- `wpae-package.json` пересобран; проверка SHA-256 — **90/90 файлов совпали**.
+
+Исходный checkout был branch `main`, base HEAD `898d20b6a6ac8a465298d2a0709d709bd43ba592`, source/live version `v02.11.153`. После локальных runtime-изменений source version — `v02.11.154`. `git ls-remote origin refs/heads/main` завершился `Could not resolve host: github.com`; актуальный remote HEAD поэтому неизвестен. Commit/push/install ещё не подтверждены; Plugins UI ранее показывал установленный `v02.11.153`, а текущая editor version не перепроверялась. Source, remote и live считаются отдельными слоями доказательств.
+
+## Live safety, roots и screenshots
+
+Последнее доступное read-only наблюдение `post=5214` от **2026-09-25 около 11:26 +05** было вкладочным, не свежим server readback:
+
+| Источник | Последний известный набор | Ограничение |
+|---|---|---|
+| Editor preview DOM | `[]` | Это preview snapshot, не экспорт editor model и не saved document. |
+| Public DOM | `82b88e5`, `de395b6`, `d729d84` | HTML/DOM не доказывает, что public отдаёт текущий `_elementor_data`. |
+| Saved server document | Не подтверждён | Прямой актуальный readback не получен. |
+| Ledger operation `wpae-66bff35d6058d8fc` / new process root `d729d84` | Ранее known state `written`, revision 4; current state не перечитан | Не использовать старый state как текущий. |
+
+Существующий GET `/wp-json/ai-executor/v1/design-operations/target` ранее один раз завершился `net::ERR_BLOCKED_BY_CLIENT` до HTTP; status/body неизвестны. Запрос не повторялся другим транспортом. Это не доказывает HTTP endpoint rejection. На момент этой реализации новый свежий server snapshot не получен, и пустой editor source нельзя безопасно сохранить поверх документа с тремя видимыми public roots. Поэтому `post=5214` не сохранялся, не перезагружался и не менялся; FAQ, оба process roots и pricing не трогались. Новые pages/drafts/roots отсутствуют.
+
+| Приёмка | Статус |
+|---|---|
+| Реальный kit JSON/metadata и структура исходных exports | PASS — выбранные ZIP разобраны локально |
+| Четыре typed native compositions проходят production pipeline harness | PASS — local, in-memory |
+| Сохранение в live Elementor, saved readback, операция/root IDs | BLOCKED — page source roots/revision не подтверждены |
+| Editor/public save-reload, DOM geometry и соседний контент | NOT RUN — live write не происходила |
+| Desktop/mobile screenshot, operation-bound Vision/design review | NOT RUN — принятых live designs не создано |
+| Сохранность страницы агентом | PASS — этот запуск не выполнял WordPress mutations |
+
+Для каждого дизайна screenshots являются **NOT RUN**, поскольку live generation остановлена до записи. Ни один baseline screenshot и source template preview не предъявляется как acceptance. Нет PNG-ссылок на созданные дизайны, так как их нет. Screenshots для реальной live-приёмки следует получать только после сохранённого результата, через текущую вкладку Browser Use, сохраняя реальные bytes в PNG, открывая каждый файл и указывая CSS viewport, source, post/root/operation IDs.
+
+## Историческая запись
+
+Снимки roots, подписи editor version и состояние ledger из более ранних запусков остаются историческими. В этом актуальном отчёте нет утверждения, что public/editor snapshots являются текущим серверным документом, и нет утверждения о завершённой визуальной приёмке.

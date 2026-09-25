@@ -9324,7 +9324,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	}
 	$design_pipeline_mode = function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off';
 	$edde_mode = function_exists( 'wpae_llm_design_engine_mode' ) ? wpae_llm_design_engine_mode() : 'off';
-	$deterministic_archetype = in_array( $action_archetype, [ 'hero', 'process', 'pricing' ], true );
+	$deterministic_archetype = in_array( $action_archetype, [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	if ( $vision_regenerate && $design_pipeline_mode === 'active' && ( $design_generation_route['action_path'] ?? '' ) === 'pipeline' && $selected_post_id > 0 && $deterministic_archetype && ! $replacement_requested ) {
 		return new WP_Error( 'wpae_vision_replacement_scope_required', 'У Vision regeneration отсутствует подтверждённый operation-owned root; добавление нового root запрещено.', [ 'status' => 409 ] );
@@ -9391,7 +9391,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ( ! $vision_repair || $replacement_requested )
 		&& ( ! $vision_regenerate || $replacement_requested )
 		&& $selected_post_id > 0
-		&& in_array( (string) ( $design_plan_v1['archetype'] ?? '' ), [ 'hero', 'process', 'pricing' ], true );
+		&& in_array( (string) ( $design_plan_v1['archetype'] ?? '' ), [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
 	if (
 		$active_pipeline_eligible
 		&& ! empty( $design_pipeline_trace['brief']['validation']['ok'] )

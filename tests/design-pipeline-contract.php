@@ -396,6 +396,53 @@ $check( ( $pricing_live_root['settings']['background_color'] ?? '' ) === '#fffff
 $check( count( $pricing_live_cards ) === 3 && $pricing_live_urls === [ '#start', '#project', '#support' ], 'pricing parser/compiler preserves three card CTA URLs' );
 $check( ( $pricing_live_eyebrow['settings']['background_color'] ?? '' ) === '#4460EC' && ( $pricing_live_eyebrow['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $pricing_live_eyebrow['settings']['border_radius']['size'] ?? 0 ) >= 999, 'pricing eyebrow compiles as a native pill badge' );
 
+$faq_prompt = "FAQ\nЗаголовок: «Ответы на вопросы»\nВопрос 1: «Как проходит работа?»\nОтвет 1: «Сначала согласуем задачу, затем соберём страницу.»\nВопрос 2: «Можно ли изменить содержание?»\nОтвет 2: «Да, каждый текст остаётся редактируемым.»\nКнопка: «Задать вопрос», ссылка #contact.";
+$faq_brief = wpae_brief_ir_parse( $faq_prompt );
+$faq_plan = wpae_design_plan_from_brief( $faq_brief );
+$faq_ir = wpae_elementor_ir_from_design_plan( $faq_plan, $faq_brief );
+$faq_compiled = wpae_native_elementor_compile( $faq_ir, $faq_brief, [], [ 'id_seed' => 'faq-native-accordion' ] );
+$faq_widget = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
+$faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
+$check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v2', 'BriefIR provenance version tracks the expanded native section roles' );
+$check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['ok'] ) && ( $faq_widget['widgetType'] ?? '' ) === 'accordion', 'FAQ uses the existing typed pipeline and compiles to Elementor Accordion' );
+$check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
+$check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ 'Сначала согласуем задачу, затем соберём страницу.', 'Да, каждый текст остаётся редактируемым.' ], 'Accordion preserves exact questions and answers in source order' );
+$check( count( array_unique( array_column( $faq_tabs, '_id' ) ) ) === 2 && ( $faq_widget['settings']['selected_icon']['value'] ?? '' ) === 'fas fa-angle-down', 'Accordion tabs receive unique stable IDs and native toggle icon settings' );
+$faq_action = $faq_compiled['elementor_data'][0]['elements'][2]['elements'][0] ?? [];
+$check( ( $faq_action['widgetType'] ?? '' ) === 'button' && ( $faq_action['settings']['text'] ?? '' ) === 'Задать вопрос' && ( $faq_action['settings']['link']['url'] ?? '' ) === '#contact', 'FAQ keeps an optional explicit CTA after the native Accordion' );
+$incomplete_faq = wpae_design_plan_from_brief( wpae_brief_ir_parse( 'FAQ\nВопрос: «Есть ли поддержка?»' ) );
+$check( ! wpae_design_plan_validate( $incomplete_faq )['ok'] && in_array( 'faq_questions_and_answers_required', wpae_design_plan_validate( $incomplete_faq )['errors'], true ), 'FAQ without an explicit answer is rejected before compilation' );
+
+$benefits_prompt = "Преимущества\nЗаголовок: «Понятный процесс»\nПреимущество 1: «Прозрачные этапы»\nОписание преимущества 1: «Каждый шаг согласован до начала работы.»\nПреимущество 2: «Удобное редактирование»\nОписание преимущества 2: «Содержание доступно в native Elementor widgets.»\nПреимущество 3: «Адаптация под экран»\nОписание преимущества 3: «Карточки складываются в одну колонку на телефоне.»\nКнопка: «Узнать больше», ссылка #details.";
+$benefits_brief = wpae_brief_ir_parse( $benefits_prompt );
+$benefits_plan = wpae_design_plan_from_brief( $benefits_brief );
+$benefits_ir = wpae_elementor_ir_from_design_plan( $benefits_plan, $benefits_brief );
+$benefits_compiled = wpae_native_elementor_compile( $benefits_ir, $benefits_brief, [], [ 'id_seed' => 'benefits-native-cards' ] );
+$benefits_group = $benefits_compiled['elementor_data'][0]['elements'][1] ?? [];
+$benefits_cards = (array) ( $benefits_group['elements'] ?? [] );
+$check( $benefits_brief['intent']['archetype'] === 'benefits' && wpae_design_plan_validate( $benefits_plan )['ok'] && ! empty( $benefits_compiled['ok'] ), 'feature-card brief passes typed plan and native compiler validation' );
+$check( count( $benefits_cards ) === 3 && array_column( array_map( static fn( array $card ): array => [ 'title' => $card['elements'][1]['settings']['title'] ?? '' ], $benefits_cards ), 'title' ) === [ 'Прозрачные этапы', 'Удобное редактирование', 'Адаптация под экран' ], 'feature grid keeps explicit content pairs in order' );
+$benefits_cta = $benefits_compiled['elementor_data'][0]['elements'][0]['elements'][1] ?? [];
+$check( ( $benefits_cta['widgetType'] ?? '' ) === 'button' && ( $benefits_cta['settings']['text'] ?? '' ) === 'Узнать больше' && ( $benefits_cta['settings']['link']['url'] ?? '' ) === '#details', 'feature grid keeps an optional explicit CTA and URL' );
+$check( ( $benefits_cards[0]['elements'][0]['widgetType'] ?? '' ) === 'icon' && ( $benefits_cards[0]['elements'][0]['settings']['selected_icon']['value'] ?? '' ) === 'fas fa-check-circle' && ( $benefits_cards[0]['settings']['border_border'] ?? '' ) === 'solid', 'feature cards use native Icon widgets and token-backed bordered surfaces' );
+$check( ( $benefits_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && (float) ( $benefits_cards[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'feature cards stack to full width at mobile breakpoint' );
+$two_benefits_prompt = "Features\nFeature 1: \"Clear scope\"\nFeature description 1: \"" . str_repeat( 'The written scope keeps each approval visible. ', 5 ) . "\"\nFeature 2: \"Native editing\"\nFeature description 2: \"Text stays editable in Elementor.\"";
+$two_benefits_brief = wpae_brief_ir_parse( $two_benefits_prompt );
+$two_benefits_plan = wpae_design_plan_from_brief( $two_benefits_brief );
+$two_benefits_tree = wpae_native_elementor_compile( wpae_elementor_ir_from_design_plan( $two_benefits_plan, $two_benefits_brief ), $two_benefits_brief, [], [ 'id_seed' => 'two-benefits-long-copy' ] );
+$two_benefits_group = [];
+foreach ( (array) ( $two_benefits_tree['elementor_data'][0]['elements'] ?? [] ) as $compiled_child ) {
+	if ( ( $compiled_child['settings']['_css_classes'] ?? '' ) === 'wpae-feature-cards' ) {
+		$two_benefits_group = $compiled_child;
+		break;
+	}
+}
+$check( count( (array) ( $two_benefits_group['elements'] ?? [] ) ) === 2 && ( $two_benefits_group['elements'][0]['elements'][2]['settings']['editor'] ?? '' ) === trim( str_repeat( 'The written scope keeps each approval visible. ', 5 ) ), 'feature compiler adapts to two cards and preserves long exact copy' );
+$unpaired_benefits = wpae_design_plan_from_brief( wpae_brief_ir_parse( "Features\nFeature: «Structured pages»\nFeature: «Editable content»\nFeature description: «Only the first item has an explicit description.»" ) );
+$unpaired_validation = wpae_design_plan_validate( $unpaired_benefits );
+$check( ! $unpaired_validation['ok'] && in_array( 'benefits_unpaired_feature_title', $unpaired_validation['errors'], true ), 'unpaired feature content is rejected instead of assigned to a different card' );
+
 $boundary_url_a = 'https://example.com/cta/' . str_repeat( 'длинный-сегмент-', 18 ) . 'финал';
 $boundary_prompt = "pricing\nКнопка: «Начать проект», описание: " . str_repeat( 'Длинное описание с переносом строки. ', 14 ) . "\nссылка {$boundary_url_a}.\nКнопка: «Вторая кнопка», ссылка #second.";
 $boundary_brief = wpae_brief_ir_parse( $boundary_prompt );
@@ -412,8 +459,8 @@ $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
 $check( empty( $unknown['ok'] ) && $unknown['reason'] === 'not_in_capability_registry', 'unknown widget is rejected instead of guessed into a fallback' );
 $heading_capability = wpae_widget_capability( 'heading' );
 $check( $heading_capability['available'] && $heading_capability['runtime_result'] === 'present', 'runtime confirms heading availability' );
-$unsupported_compiler_widget = wpae_widget_capability( 'accordion' );
-$check( ! $unsupported_compiler_widget['available'] && $unsupported_compiler_widget['reason'] === 'not_supported_by_compiler', 'runtime registration alone cannot authorize a widget the native compiler does not implement' );
+$supported_native_widgets = wpae_widget_capability_report( [ 'accordion', 'icon' ] );
+$check( ! empty( $supported_native_widgets['ok'] ) && $supported_native_widgets['available'] === [ 'accordion', 'icon' ], 'native compiler and runtime registry both confirm Accordion and Icon support' );
 $wpae_test_filters['wpae_widget_capability_registry'] = static function ( array $registry ): array {
 	$registry['heading']['available'] = false;
 	return $registry;

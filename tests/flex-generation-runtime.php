@@ -1136,6 +1136,44 @@ $capability_response = wpae_llm_chat_request( $capability_request );
 check( is_wp_error( $capability_response ) && $capability_response->get_error_code() === 'wpae_widget_capability_unavailable', 'unverified runtime fails active pipeline before provider fallback' );
 check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0, 'active capability failure makes zero provider calls and zero writes' );
 
+// FAQ and benefits must use the production deterministic route, even with
+// EDDE active, and preserve all pre-existing roots through the one writer.
+\Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$production_design_cases = [
+	[ 'hero', 'Создай hero. Надзаголовок: «ТИХАЯ ФОРМА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.', 'heading' ],
+	[ 'pricing', 'Создай pricing. «Старт» — «от 50 000 ₸» — «Для небольшой задачи». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач». Кнопка: «Подключить поддержку», ссылка #support.', 'button' ],
+	[ 'faq', "Создай FAQ\nВопрос 1: «Как начать?»\nОтвет 1: «Сначала согласуем задачу.»\nВопрос 2: «Можно ли редактировать?»\nОтвет 2: «Да, тексты остаются native Elementor.»", 'accordion' ],
+	[ 'benefits', "Создай блок преимуществ\nПреимущество 1: «Прозрачный план»\nОписание преимущества 1: «Каждый этап согласован заранее.»\nПреимущество 2: «Редактируемый сайт»\nОписание преимущества 2: «Команда меняет тексты внутри Elementor.»", 'icon' ],
+];
+foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widget ] ) {
+	$GLOBALS['page_data'] = $legacy_page;
+	$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+	$GLOBALS['responses'] = [];
+	$case_request = new WP_REST_Request();
+	$case_request->set_param( 'message', $case_prompt );
+	$case_request->set_param( 'context', [ 'post_id' => 42 ] );
+	$case_response = wpae_llm_chat_request( $case_request );
+	$case_data = $case_response instanceof WP_REST_Response ? $case_response->get_data() : [];
+	check( ! empty( $case_data['ok'] ) && ( $case_data['diagnostics']['action_path'] ?? '' ) === 'pipeline', $case_name . ' takes the active production pipeline when EDDE is also active' );
+	check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, $case_name . ' performs no provider call and exactly one page write' );
+	$case_tree = (array) ( $GLOBALS['page_data'] ?? [] );
+	$case_widgets = [];
+	$collect_case_widgets = static function ( array $nodes ) use ( &$collect_case_widgets, &$case_widgets ): void {
+		foreach ( $nodes as $node ) {
+			if ( ! is_array( $node ) ) {
+				continue;
+			}
+			if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+				$case_widgets[] = (string) ( $node['widgetType'] ?? '' );
+			}
+			$collect_case_widgets( (array) ( $node['elements'] ?? [] ) );
+		}
+	};
+	$collect_case_widgets( $case_tree );
+	check( in_array( $expected_widget, $case_widgets, true ) && ( $case_tree[0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), $case_name . ' compiles its native widget and keeps the existing first root' );
+}
+
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );
 $permission->set_param( 'context', [ 'post_id' => 99 ] );

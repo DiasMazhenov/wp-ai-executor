@@ -76,6 +76,8 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						} else {
 							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 						}
+					} elseif ( $item_role === 'label' ) {
+						$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-label', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'body' || $item_role === 'text' ) {
 						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( str_starts_with( $item_role, 'cta' ) || $item_role === 'button' ) {
@@ -175,6 +177,23 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$card_children[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_index, 'pricing_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'pricing_cards', 'container', [], $token_refs, $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+			} elseif ( $role === 'faq_accordion' ) {
+				$section_children[] = wpae_elementor_ir_node( $child_id, 'faq_accordion', 'accordion', $content_refs, $token_refs, [], [ 'items' => array_values( (array) ( $child['items'] ?? [] ) ) ], [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
+			} elseif ( $role === 'feature_cards' ) {
+				$cards = [];
+				foreach ( array_values( (array) ( $child['items'] ?? [] ) ) as $card_index => $item ) {
+					if ( ! is_array( $item ) ) {
+						continue;
+					}
+					$card_number = $card_index + 1;
+					$card_children = [
+						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-icon', 'feature_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle' ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ),
+						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-title', 'feature_title', 'heading', [ sanitize_key( (string) ( $item['title_ref'] ?? '' ) ) ], [ 'color.text', 'type.display' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
+						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-body', 'feature_body', 'text-editor', [ sanitize_key( (string) ( $item['body_ref'] ?? '' ) ) ], [ 'color.muted', 'type.body' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
+					];
+					$cards[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number, 'feature_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+				}
+				$section_children[] = wpae_elementor_ir_node( $child_id, 'feature_cards', 'container', [], $token_refs, $cards, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			}
 		}
 		$section_composition = (string) ( $section['composition'] ?? 'stacked_left' );
@@ -369,7 +388,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$gap_control = wpae_elementor_ir_dimension_control( $component_gap, 'rem', 1.5 );
 		$settings['flex_gap'] = [ 'unit' => $gap_control['unit'], 'size' => $gap_control['size'], 'column' => (string) $gap_control['size'], 'row' => (string) $gap_control['size'], 'isLinked' => true ];
 		$settings['flex_gap_mobile'] = $settings['flex_gap'];
-		if ( in_array( $role, [ 'hero', 'process', 'pricing' ], true ) ) {
+		if ( in_array( $role, [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true ) ) {
 			$desktop_padding = wpae_elementor_ir_dimension_control( $token_values['space.section'] ?? ( $tokens['native_tokens']['spacing']['section_desktop'] ?? '4.5rem' ), 'rem', 4.5, false );
 			$mobile_padding = wpae_elementor_ir_dimension_control( $tokens['native_tokens']['spacing']['section_mobile'] ?? '2rem', 'rem', 2, false );
 			$desktop_padding['left'] = $desktop_padding['right'] = '2';
@@ -395,6 +414,15 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_wrap'] = 'wrap';
 			$settings['flex_wrap_tablet'] = 'wrap';
 			$settings['flex_wrap_mobile'] = 'wrap';
+		}
+		if ( $role === 'feature_cards' ) {
+			$settings['_css_classes'] = 'wpae-feature-cards';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'column';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'wrap';
+			$settings['flex_wrap_tablet'] = 'nowrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
 		}
 		if ( $role === 'process' ) {
 			$settings['_css_classes'] = 'wpae-process-timeline wpae-process-timeline-horizontal';
@@ -475,7 +503,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['_flex_shrink'] = 0;
 			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
 		}
-		if ( $role === 'pricing_card' ) {
+		if ( in_array( $role, [ 'pricing_card', 'feature_card' ], true ) ) {
 			$settings['border_border'] = 'solid';
 			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
 			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
@@ -620,6 +648,35 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		} else {
 			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
 		}
+	} elseif ( $widget_type === 'accordion' ) {
+		$settings['tabs'] = [];
+		foreach ( (array) ( $node['layout_constraints']['items'] ?? [] ) as $index => $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$question = $content_map[ sanitize_key( (string) ( $item['question_ref'] ?? '' ) ) ] ?? [];
+			$answer = $content_map[ sanitize_key( (string) ( $item['answer_ref'] ?? '' ) ) ] ?? [];
+			if ( trim( (string) ( $question['exact_text'] ?? '' ) ) === '' || trim( (string) ( $answer['exact_text'] ?? '' ) ) === '' ) {
+				continue;
+			}
+			$settings['tabs'][] = [
+				'tab_title' => (string) $question['exact_text'],
+				'tab_content' => (string) $answer['exact_text'],
+				'_id' => wpae_elementor_ir_id( (string) $node['node_id'] . '-tab-' . ( (int) $index + 1 ), $seed ),
+			];
+		}
+		$settings['selected_icon'] = [ 'value' => 'fas fa-angle-down', 'library' => 'fa-solid' ];
+		$settings['selected_active_icon'] = [ 'value' => 'fas fa-angle-up', 'library' => 'fa-solid' ];
+		$settings['title_color'] = (string) ( $token_values['color.text'] ?? '#111827' );
+		$settings['content_color'] = (string) ( $token_values['color.muted'] ?? '#4b5563' );
+		$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+	} elseif ( $widget_type === 'icon' ) {
+		$settings['selected_icon'] = [ 'value' => 'fas fa-' . sanitize_key( (string) ( $node['layout_constraints']['icon_name'] ?? 'check-circle' ) ), 'library' => 'fa-solid' ];
+		$settings['view'] = 'stacked';
+		$settings['shape'] = 'circle';
+		$settings['size'] = [ 'unit' => 'px', 'size' => 28, 'sizes' => [] ];
+		$settings['primary_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+		$settings['secondary_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 	}
 	$compiled_children = [];
 	foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
