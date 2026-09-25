@@ -1,12 +1,12 @@
 # WP AI Executor — context
 
-Последнее обновление: **2026-09-25 19:37 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-25 19:41 +05:00 (Asia/Almaty)**.
 
 ## Текущее состояние
 
 - Checkout: `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, base HEAD `898d20b6a6ac8a465298d2a0709d709bd43ba592`.
-- Source version в рабочем дереве: `v02.11.154`; ранее установленный live source/version snapshot — `v02.11.153`. Live editor version в этом запуске не проверялась.
-- `origin/main` нельзя было проверить: `git ls-remote origin refs/heads/main` завершился `Could not resolve host: github.com`. Commit/push/install не подтверждены.
+- Runtime release commit: `4fd7839` (`Add native FAQ and benefits design plans`), source version `v02.11.154`; push в `origin/main` выполнен успешно с fast-forward от `898d20b`.
+- Installed Plugins UI показывает активный WP AI Executor `v02.11.154`. Live editor вкладка после установки не перезагружалась; её inline config/current JS version в этом срезе не подтверждены.
 - Runtime изменения этого запуска: `BriefIR` FAQ/benefits roles, FAQ/benefits typed plans в существующем `DesignPlan v1`, native Accordion/Icon compilation и widget capability, active pipeline eligibility. Новый write path, плагины и библиотеки не добавлялись.
 - Четыре вида — hero, pricing, FAQ, преимущества — проходят production functions в локальном in-memory harness. Это не live acceptance.
 
@@ -40,4 +40,4 @@
 - `php -l` для 8 изменённых PHP-файлов — без syntax errors.
 - Package integrity — 90/90 SHA-256 hashes valid после пересборки `wpae-package.json`.
 - `git diff --check` — PASS.
-- Commit/push/install пока не подтверждены; remote DNS-запрос ранее завершился `Could not resolve host: github.com`.
+- `git push origin main` — PASS; установленный Plugins UI row — active `v02.11.154`. Editor runtime после установки — NOT RECHECKED, чтобы не перезагружать вкладку с неподтверждённым editor state.
