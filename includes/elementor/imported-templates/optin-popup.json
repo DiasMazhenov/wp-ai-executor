@@ -1,0 +1,219 @@
+{
+    "version": "0.4",
+    "title": "Optin Popup",
+    "type": "popup",
+    "metadata": {
+        "template_type": "section-popup",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "elementor_library_type": "popup",
+        "elementor_pro_conditions": [
+            "include\/general"
+        ],
+        "additional_template_information": [
+            "This is a \"Popup\" template for Elementor Pro.",
+            "This template will display on: Entire Site."
+        ],
+        "wp_page_template": "default"
+    },
+    "content": [
+        {
+            "id": "340e02b9",
+            "settings": [],
+            "elements": [
+                {
+                    "id": "7132e37c",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null,
+                        "align": "center",
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "4ad1c3ca",
+                            "settings": {
+                                "image": {
+                                    "id": 3271,
+                                    "url": "https:\/\/elementor.detheme.com\/aquila\/wp-content\/uploads\/sites\/53\/2021\/09\/banner-cover-page-of-rear-view-of-audience-listeni-JDEDAGV.jpg",
+                                    "alt": "",
+                                    "source": "library"
+                                },
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "6994c6af",
+                            "settings": {
+                                "padding": {
+                                    "unit": "px",
+                                    "top": "24",
+                                    "right": "48",
+                                    "bottom": "48",
+                                    "left": "48",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "4104f918",
+                                    "settings": {
+                                        "_column_size": 100,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "1eb13ba8",
+                                            "settings": {
+                                                "title": "Subscribe to get 15% discount",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "_margin": {
+                                                    "unit": "px",
+                                                    "top": "0",
+                                                    "right": "0",
+                                                    "bottom": "24",
+                                                    "left": "0",
+                                                    "isLinked": false
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "2fb2069c",
+                                            "settings": {
+                                                "form_name": "Subscribe",
+                                                "form_fields": [
+                                                    {
+                                                        "custom_id": "email",
+                                                        "field_type": "email",
+                                                        "required": "true",
+                                                        "field_label": "Email",
+                                                        "placeholder": "Email",
+                                                        "width": "66",
+                                                        "_id": "1737d1b",
+                                                        "previous_button": "",
+                                                        "next_button": "",
+                                                        "file_sizes": "",
+                                                        "file_types": "",
+                                                        "allow_multiple_upload": "",
+                                                        "max_files": "",
+                                                        "acceptance_text": "",
+                                                        "checked_by_default": "",
+                                                        "field_min": "",
+                                                        "field_max": "",
+                                                        "min_date": "",
+                                                        "max_date": "",
+                                                        "use_native_date": "",
+                                                        "use_native_time": ""
+                                                    }
+                                                ],
+                                                "step_next_label": "Next",
+                                                "step_previous_label": "Previous",
+                                                "button_text": "Subscribe",
+                                                "submit_actions": [
+                                                    "email",
+                                                    "mailchimp"
+                                                ],
+                                                "email_content": "[all-fields]",
+                                                "email_content_2": "[all-fields]",
+                                                "success_message": "The form was sent successfully.",
+                                                "error_message": "An error occured.",
+                                                "required_field_message": "This field is required.",
+                                                "invalid_message": "There's something wrong. The form is invalid.",
+                                                "show_labels": "",
+                                                "button_width": "33",
+                                                "_element_width": "initial",
+                                                "_element_custom_width": {
+                                                    "unit": "px",
+                                                    "size": 500,
+                                                    "sizes": []
+                                                },
+                                                "button_text_padding": {
+                                                    "unit": "px",
+                                                    "top": "21",
+                                                    "right": "21",
+                                                    "bottom": "21",
+                                                    "left": "21",
+                                                    "isLinked": true
+                                                },
+                                                "input_size": "lg"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "form",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ],
+    "page_settings": {
+        "entrance_animation": "slideInUp",
+        "exit_animation": "fadeIn",
+        "entrance_animation_duration": {
+            "unit": "px",
+            "size": 0.6,
+            "sizes": []
+        },
+        "close_button_color": "#FFFFFF",
+        "margin": {
+            "unit": "px",
+            "top": "24",
+            "right": "24",
+            "bottom": "24",
+            "left": "24",
+            "isLinked": true
+        },
+        "padding": {
+            "unit": "px",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0",
+            "isLinked": true
+        },
+        "margin_mobile": {
+            "unit": "px",
+            "top": "0",
+            "right": "0",
+            "bottom": "0",
+            "left": "0",
+            "isLinked": true
+        }
+    }
+}

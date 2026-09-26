@@ -1,0 +1,2214 @@
+{
+    "version": "0.4",
+    "title": "Adopt a Pet",
+    "type": "page",
+    "metadata": {
+        "template_type": "single-page",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "47e5e4df",
+            "settings": {
+                "content_width": {
+                    "unit": "px",
+                    "size": 1400,
+                    "sizes": []
+                },
+                "height": "min-height",
+                "custom_height": {
+                    "unit": "px",
+                    "size": 300,
+                    "sizes": []
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "80",
+                    "bottom": "0",
+                    "left": "80",
+                    "isLinked": false
+                },
+                "background_background": "gradient",
+                "background_overlay_background": "classic",
+                "background_overlay_image": {
+                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-29-min.png",
+                    "id": 207
+                },
+                "background_overlay_position": "center center",
+                "background_overlay_repeat": "no-repeat",
+                "background_overlay_size": "cover",
+                "shape_divider_bottom": "waves",
+                "shape_divider_bottom_height": {
+                    "unit": "px",
+                    "size": 30,
+                    "sizes": []
+                },
+                "shape_divider_bottom_negative": "yes",
+                "animation": "none",
+                "__globals__": {
+                    "background_color": "globals\/colors?id=8803734",
+                    "background_color_b": "globals\/colors?id=0657b85"
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "20",
+                    "bottom": "0",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "678205a8",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "66d34de",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-08-min.png",
+                                    "id": 113
+                                },
+                                "_element_width": "initial",
+                                "_element_custom_width": {
+                                    "unit": "px",
+                                    "size": 280,
+                                    "sizes": []
+                                },
+                                "_position": "absolute",
+                                "_offset_x": {
+                                    "size": 4,
+                                    "unit": "px"
+                                },
+                                "_offset_y": {
+                                    "size": 103,
+                                    "unit": "px"
+                                },
+                                "_offset_x_mobile": {
+                                    "size": 2,
+                                    "unit": "px"
+                                },
+                                "_offset_y_mobile": {
+                                    "size": 102,
+                                    "unit": "px"
+                                },
+                                "_animation": "fadeInUp",
+                                "animation_duration": "fast"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "668eb80b",
+                            "settings": {
+                                "title": "Adopt a Pet",
+                                "typography_typography": "custom",
+                                "header_size": "h1",
+                                "align": "center",
+                                "title_color": "#FFFFFF",
+                                "_z_index_mobile": 5,
+                                "_animation": "fadeInUp"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "43e96dd6",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-06-min.png",
+                                    "id": 111
+                                },
+                                "_element_width": "initial",
+                                "_element_custom_width": {
+                                    "unit": "px",
+                                    "size": 140,
+                                    "sizes": []
+                                },
+                                "_position": "absolute",
+                                "_offset_orientation_h": "end",
+                                "_animation": "rotateInDownLeft"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "6e8225ac",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-07-min.png",
+                                    "id": 112
+                                },
+                                "_element_width": "initial",
+                                "_element_custom_width": {
+                                    "unit": "px",
+                                    "size": 100,
+                                    "sizes": []
+                                },
+                                "_position": "absolute",
+                                "_offset_orientation_h": "end",
+                                "_offset_x_end": {
+                                    "size": 166.6,
+                                    "unit": "px"
+                                },
+                                "_offset_y": {
+                                    "size": -74,
+                                    "unit": "px"
+                                },
+                                "_animation": "zoomInUp",
+                                "animation_duration": "slow"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "46bfa156",
+            "settings": {
+                "background_overlay_background": "classic",
+                "background_overlay_image": {
+                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-19-min.png",
+                    "id": 190
+                },
+                "background_overlay_position": "center center",
+                "background_overlay_repeat": "no-repeat",
+                "background_overlay_size": "initial",
+                "shape_divider_top": "waves",
+                "shape_divider_top_width": {
+                    "unit": "%",
+                    "size": 100,
+                    "sizes": []
+                },
+                "shape_divider_top_height": {
+                    "unit": "px",
+                    "size": 45,
+                    "sizes": []
+                },
+                "shape_divider_top_negative": "yes",
+                "shape_divider_bottom": "waves",
+                "shape_divider_bottom_width": {
+                    "unit": "%",
+                    "size": 100,
+                    "sizes": []
+                },
+                "shape_divider_bottom_height": {
+                    "unit": "px",
+                    "size": 36,
+                    "sizes": []
+                },
+                "shape_divider_bottom_negative": "yes",
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "80",
+                    "bottom": "100",
+                    "left": "80",
+                    "isLinked": false
+                },
+                "__globals__": {
+                    "background_color": "",
+                    "background_color_b": ""
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "60",
+                    "right": "20",
+                    "bottom": "60",
+                    "left": "20",
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                },
+                "content_width": {
+                    "unit": "px",
+                    "size": 1200,
+                    "sizes": []
+                },
+                "background_color_b": "",
+                "background_position": "center center",
+                "background_repeat": "no-repeat",
+                "background_size": "contain"
+            },
+            "elements": [
+                {
+                    "id": "5d207b5a",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "51f9c0b3",
+                            "settings": {
+                                "content_width": {
+                                    "unit": "px",
+                                    "size": 800,
+                                    "sizes": []
+                                },
+                                "margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": 0,
+                                    "bottom": "0",
+                                    "left": 0,
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "58d0899f",
+                                    "settings": {
+                                        "_column_size": 100,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "35116052",
+                                            "settings": {
+                                                "title": "Adopt a pet or help save everyone",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=bccedde"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "b56f702",
+                                            "settings": {
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "text_color": "globals\/colors?id=bccedde"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        },
+                        {
+                            "id": "2fba48a8",
+                            "settings": {
+                                "structure": "40",
+                                "padding": {
+                                    "unit": "px",
+                                    "top": "30",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "layout": "full_width",
+                                "padding_mobile": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "2bcdbfd0",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=8803734",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "5686ed9a",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-61-min.jpg",
+                                                    "id": 798
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_background_position": "center center",
+                                                "_background_repeat": "no-repeat",
+                                                "_background_size": "initial"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "8b5242",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-56-min.png",
+                                                    "id": 791
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "5efce204",
+                                            "settings": {
+                                                "title": "Charlie",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=daf9735"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "61460e78",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center",
+                                                "text_color": "#FFFFFF"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "5c1d6497",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "globals\/colors?id=daf9735",
+                                                    "button_text_color": "globals\/colors?id=bccedde",
+                                                    "hover_color": "globals\/colors?id=bccedde",
+                                                    "button_background_hover_color": "globals\/colors?id=95b1126"
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "32934fdb",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=daf9735",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "2a85437d",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-59-min.jpg",
+                                                    "id": 796
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "7aadbea5",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-55-min.png",
+                                                    "id": 792
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "28623c1",
+                                            "settings": {
+                                                "title": "Lucy",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "618b8e60",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "3c2e8e89",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "",
+                                                    "button_text_color": ""
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "78aba66e",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=8803734",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "79fe507c",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-57-min.jpg",
+                                                    "id": 794
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "4c872113",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-56-min.png",
+                                                    "id": 791
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "6d658dc4",
+                                            "settings": {
+                                                "title": "Max",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=daf9735"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "6a45cd0d",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center",
+                                                "text_color": "#FFFFFF"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "a1fabc5",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "globals\/colors?id=daf9735",
+                                                    "button_text_color": "globals\/colors?id=bccedde",
+                                                    "hover_color": "globals\/colors?id=bccedde",
+                                                    "button_background_hover_color": "globals\/colors?id=95b1126"
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "446f8c23",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=daf9735",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "3384015f",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-60-min.jpg",
+                                                    "id": 797
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "5d23e600",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-55-min.png",
+                                                    "id": 792
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "7f7d1d7f",
+                                            "settings": {
+                                                "title": "Bailey",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "28aaec10",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "118a91",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "",
+                                                    "button_text_color": ""
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        },
+                        {
+                            "id": "170d678c",
+                            "settings": {
+                                "structure": "40",
+                                "padding": {
+                                    "unit": "px",
+                                    "top": "30",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "reverse_order_mobile": "reverse-mobile",
+                                "margin_tablet": {
+                                    "unit": "px",
+                                    "top": "",
+                                    "right": 0,
+                                    "bottom": "",
+                                    "left": 0,
+                                    "isLinked": true
+                                },
+                                "layout": "full_width",
+                                "padding_mobile": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "5803db4c",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=daf9735",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "6a8fd079",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-64-min.jpg",
+                                                    "id": 801
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "237d44db",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-55-min.png",
+                                                    "id": 792
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "4b6c7899",
+                                            "settings": {
+                                                "title": "Daisy",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "309797c6",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "22b2f091",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "",
+                                                    "button_text_color": ""
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "106b85b5",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=8803734",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "3b6696c9",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-58-min.jpg",
+                                                    "id": 795
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "22ddfec",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-56-min.png",
+                                                    "id": 791
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "1e9fce5f",
+                                            "settings": {
+                                                "title": "Cooper",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=daf9735"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "67189de1",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center",
+                                                "text_color": "#FFFFFF"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "57581be3",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "globals\/colors?id=daf9735",
+                                                    "button_text_color": "globals\/colors?id=bccedde",
+                                                    "hover_color": "globals\/colors?id=bccedde",
+                                                    "button_background_hover_color": "globals\/colors?id=95b1126"
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "7744bcdd",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=daf9735",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "22ec564b",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-63-min.jpg",
+                                                    "id": 800
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "19e90b0c",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-55-min.png",
+                                                    "id": 792
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "673f7a43",
+                                            "settings": {
+                                                "title": "Tucker",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "4edb3e15",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "2a5a09b3",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "",
+                                                    "button_text_color": ""
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "69d6097f",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "__globals__": {
+                                            "background_color": "globals\/colors?id=8803734",
+                                            "background_color_b": "globals\/colors?id=95b1126",
+                                            "background_hover_color": ""
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "background_background": "classic",
+                                        "background_color": "#FFC131",
+                                        "background_color_b": "#FFE433",
+                                        "background_hover_color_b": "",
+                                        "background_hover_transition": {
+                                            "unit": "px",
+                                            "size": "",
+                                            "sizes": []
+                                        },
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "30",
+                                            "bottom": "10",
+                                            "left": "10",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "67dee366",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-62-min.jpg",
+                                                    "id": 799
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "7f09a056",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/10\/image-section-56-min.png",
+                                                    "id": 791
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 70,
+                                                    "sizes": []
+                                                },
+                                                "_element_width": "auto",
+                                                "_position": "absolute"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "2ca1b93d",
+                                            "settings": {
+                                                "title": "Piper",
+                                                "header_size": "h5",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=daf9735"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "6e2e2c8e",
+                                            "settings": {
+                                                "editor": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.<\/p>",
+                                                "align": "center",
+                                                "text_color": "#FFFFFF"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "2f7b8810",
+                                            "settings": {
+                                                "text": "Adopt Pet",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "background_color": "globals\/colors?id=daf9735",
+                                                    "button_text_color": "globals\/colors?id=bccedde",
+                                                    "hover_color": "globals\/colors?id=bccedde",
+                                                    "button_background_hover_color": "globals\/colors?id=95b1126"
+                                                },
+                                                "align_mobile": "justify"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "button",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "1447ab40",
+            "settings": {
+                "background_background": "gradient",
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "80",
+                    "bottom": "100",
+                    "left": "80",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "60",
+                    "right": "20",
+                    "bottom": "60",
+                    "left": "20",
+                    "isLinked": false
+                },
+                "content_width": {
+                    "unit": "px",
+                    "size": 1200,
+                    "sizes": []
+                },
+                "background_overlay_background": "classic",
+                "background_overlay_image": {
+                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-29-min.png",
+                    "id": 207
+                },
+                "background_overlay_position": "center center",
+                "background_overlay_repeat": "no-repeat",
+                "background_overlay_size": "initial",
+                "background_overlay_opacity": {
+                    "unit": "px",
+                    "size": 0.25,
+                    "sizes": []
+                },
+                "shape_divider_top": "waves",
+                "shape_divider_top_width": {
+                    "unit": "%",
+                    "size": 100,
+                    "sizes": []
+                },
+                "shape_divider_top_height": {
+                    "unit": "px",
+                    "size": 45,
+                    "sizes": []
+                },
+                "shape_divider_top_negative": "yes",
+                "shape_divider_bottom": "waves",
+                "shape_divider_bottom_width": {
+                    "unit": "%",
+                    "size": 100,
+                    "sizes": []
+                },
+                "shape_divider_bottom_height": {
+                    "unit": "px",
+                    "size": 36,
+                    "sizes": []
+                },
+                "shape_divider_bottom_negative": "yes",
+                "__globals__": {
+                    "background_color": "globals\/colors?id=daf9735",
+                    "background_color_b": "globals\/colors?id=95b1126"
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "185b506c",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "2ce45008",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-04-min.png",
+                                    "id": 109
+                                },
+                                "_element_width": "initial",
+                                "_element_custom_width": {
+                                    "unit": "px",
+                                    "size": 300,
+                                    "sizes": []
+                                },
+                                "_position": "absolute",
+                                "_offset_x": {
+                                    "size": -140,
+                                    "unit": "px"
+                                },
+                                "_offset_y": {
+                                    "size": -182,
+                                    "unit": "px"
+                                },
+                                "_animation": "fadeInLeft",
+                                "_element_width_mobile": "initial",
+                                "_element_custom_width_mobile": {
+                                    "unit": "px",
+                                    "size": 200,
+                                    "sizes": []
+                                },
+                                "_offset_x_mobile": {
+                                    "size": -176,
+                                    "unit": "px"
+                                },
+                                "_offset_y_mobile": {
+                                    "size": -172,
+                                    "unit": "px"
+                                },
+                                "_element_width_tablet": "initial",
+                                "_element_custom_width_tablet": {
+                                    "unit": "px",
+                                    "size": 220,
+                                    "sizes": []
+                                },
+                                "_offset_x_tablet": {
+                                    "size": -154,
+                                    "unit": "px"
+                                },
+                                "_offset_y_tablet": {
+                                    "size": -198,
+                                    "unit": "px"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "25da4ae7",
+                            "settings": {
+                                "content_width": {
+                                    "unit": "px",
+                                    "size": 800,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "73601746",
+                                    "settings": {
+                                        "_column_size": 100,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "6cff99e7",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-icon-03-min-1.png",
+                                                    "id": 121
+                                                },
+                                                "width": {
+                                                    "unit": "%",
+                                                    "size": 4,
+                                                    "sizes": []
+                                                },
+                                                "width_mobile": {
+                                                    "unit": "%",
+                                                    "size": 15,
+                                                    "sizes": []
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "6074d91d",
+                                            "settings": {
+                                                "title": "Steps to adopt a pet",
+                                                "align": "center"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "641fe20d",
+                                            "settings": {
+                                                "editor": "<p>Help us to complete our goals by contributing a donation.<\/p>",
+                                                "align": "center"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        },
+                        {
+                            "id": "15d19777",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/bimberonline.com\/adopt\/wp-content\/uploads\/sites\/73\/2020\/06\/image-section-03-min.png",
+                                    "id": 108
+                                },
+                                "_element_width": "initial",
+                                "_element_custom_width": {
+                                    "unit": "px",
+                                    "size": 250,
+                                    "sizes": []
+                                },
+                                "_position": "absolute",
+                                "_offset_orientation_h": "end",
+                                "_offset_x_end": {
+                                    "size": 1,
+                                    "unit": "px"
+                                },
+                                "_offset_y": {
+                                    "size": -150,
+                                    "unit": "px"
+                                },
+                                "_animation": "rotateInDownLeft",
+                                "_element_width_mobile": "initial",
+                                "_element_custom_width_mobile": {
+                                    "unit": "px",
+                                    "size": 130,
+                                    "sizes": []
+                                },
+                                "_offset_x_end_mobile": {
+                                    "size": -8.6,
+                                    "unit": "px"
+                                },
+                                "_offset_y_mobile": {
+                                    "size": -120,
+                                    "unit": "px"
+                                },
+                                "_element_width_tablet": "initial",
+                                "_element_custom_width_tablet": {
+                                    "unit": "px",
+                                    "size": 200,
+                                    "sizes": []
+                                },
+                                "_offset_x_end_tablet": {
+                                    "size": 32.8,
+                                    "unit": "px"
+                                },
+                                "_offset_y_tablet": {
+                                    "size": -203,
+                                    "unit": "px"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "1470ef2",
+                            "settings": {
+                                "structure": "40",
+                                "margin_mobile": {
+                                    "unit": "px",
+                                    "top": "",
+                                    "right": 0,
+                                    "bottom": "",
+                                    "left": 0,
+                                    "isLinked": true
+                                },
+                                "layout": "full_width",
+                                "margin": {
+                                    "unit": "px",
+                                    "top": "30",
+                                    "right": 0,
+                                    "bottom": "0",
+                                    "left": 0,
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "5c37821d",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "box_shadow_box_shadow_type": "yes",
+                                        "box_shadow_box_shadow": {
+                                            "horizontal": 0,
+                                            "vertical": 0,
+                                            "blur": 30,
+                                            "spread": 0,
+                                            "color": "rgba(191, 191, 191, 0.15)"
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "20",
+                                            "right": "20",
+                                            "bottom": "20",
+                                            "left": "20",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "align": "center",
+                                        "__globals__": {
+                                            "background_color": "",
+                                            "background_color_b": "globals\/colors?id=0657b85"
+                                        },
+                                        "background_color": "#FFFFFF",
+                                        "background_color_b": "#AD77FF",
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "50",
+                                            "isLinked": false
+                                        },
+                                        "margin_mobile": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "0",
+                                            "bottom": "30",
+                                            "left": "0",
+                                            "isLinked": false
+                                        },
+                                        "padding_mobile": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "margin_tablet": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "10",
+                                            "bottom": "0",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "border_radius_tablet": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "0",
+                                            "bottom": "40",
+                                            "left": "0",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "77fde9ba",
+                                            "settings": {
+                                                "title": "Do your homework",
+                                                "header_size": "h4",
+                                                "align": "center",
+                                                "typography_typography": "custom",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "40006d43",
+                                            "settings": {
+                                                "editor": "Imperdiet nulla malesuada pellentesque elit eget.",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "text_color": ""
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "73e3110b",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "box_shadow_box_shadow_type": "yes",
+                                        "box_shadow_box_shadow": {
+                                            "horizontal": 0,
+                                            "vertical": 0,
+                                            "blur": 30,
+                                            "spread": 0,
+                                            "color": "rgba(191, 191, 191, 0.15)"
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "20",
+                                            "right": "20",
+                                            "bottom": "20",
+                                            "left": "20",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "align": "center",
+                                        "__globals__": {
+                                            "background_color": "",
+                                            "background_color_b": "globals\/colors?id=0657b85"
+                                        },
+                                        "background_color": "#FFFFFF",
+                                        "background_color_b": "#AD77FF",
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "50",
+                                            "isLinked": false
+                                        },
+                                        "margin_mobile": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "0",
+                                            "bottom": "30",
+                                            "left": "0",
+                                            "isLinked": false
+                                        },
+                                        "padding_mobile": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "margin_tablet": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "10",
+                                            "bottom": "0",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "border_radius_tablet": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "0",
+                                            "bottom": "0",
+                                            "left": "40",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "6a6594e4",
+                                            "settings": {
+                                                "title": "Visit our Adoptions",
+                                                "header_size": "h4",
+                                                "align": "center",
+                                                "typography_typography": "custom",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "72388c7d",
+                                            "settings": {
+                                                "editor": "Morbi tincidunt augue interdum velit euismod in.",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "text_color": ""
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "294e512a",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "box_shadow_box_shadow_type": "yes",
+                                        "box_shadow_box_shadow": {
+                                            "horizontal": 0,
+                                            "vertical": 0,
+                                            "blur": 30,
+                                            "spread": 0,
+                                            "color": "rgba(191, 191, 191, 0.15)"
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "20",
+                                            "right": "20",
+                                            "bottom": "20",
+                                            "left": "20",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "align": "center",
+                                        "__globals__": {
+                                            "background_color": "",
+                                            "background_color_b": "globals\/colors?id=0657b85"
+                                        },
+                                        "background_color": "#FFFFFF",
+                                        "background_color_b": "#AD77FF",
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "50",
+                                            "isLinked": false
+                                        },
+                                        "margin_mobile": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "0",
+                                            "bottom": "30",
+                                            "left": "0",
+                                            "isLinked": false
+                                        },
+                                        "padding_mobile": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "margin_tablet": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "10",
+                                            "bottom": "0",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "border_radius_tablet": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "40",
+                                            "bottom": "0",
+                                            "left": "0",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "584d2ffb",
+                                            "settings": {
+                                                "title": "Get your Pet Licence",
+                                                "header_size": "h4",
+                                                "align": "center",
+                                                "typography_typography": "custom",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "2a031c6e",
+                                            "settings": {
+                                                "editor": "Adipiscing elit ut aliquam purus sit amet luctus.",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "text_color": ""
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "1a29b375",
+                                    "settings": {
+                                        "_column_size": 25,
+                                        "_inline_size": null,
+                                        "background_background": "classic",
+                                        "box_shadow_box_shadow_type": "yes",
+                                        "box_shadow_box_shadow": {
+                                            "horizontal": 0,
+                                            "vertical": 0,
+                                            "blur": 30,
+                                            "spread": 0,
+                                            "color": "rgba(191, 191, 191, 0.15)"
+                                        },
+                                        "margin": {
+                                            "unit": "px",
+                                            "top": "20",
+                                            "right": "20",
+                                            "bottom": "20",
+                                            "left": "20",
+                                            "isLinked": true
+                                        },
+                                        "padding": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "align": "center",
+                                        "__globals__": {
+                                            "background_color": "",
+                                            "background_color_b": "globals\/colors?id=0657b85"
+                                        },
+                                        "background_color": "#FFFFFF",
+                                        "background_color_b": "#AD77FF",
+                                        "border_radius": {
+                                            "unit": "px",
+                                            "top": "10",
+                                            "right": "10",
+                                            "bottom": "10",
+                                            "left": "50",
+                                            "isLinked": false
+                                        },
+                                        "margin_mobile": {
+                                            "unit": "px",
+                                            "top": "0",
+                                            "right": "0",
+                                            "bottom": "30",
+                                            "left": "0",
+                                            "isLinked": false
+                                        },
+                                        "padding_mobile": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "30",
+                                            "bottom": "30",
+                                            "left": "30",
+                                            "isLinked": true
+                                        },
+                                        "margin_tablet": {
+                                            "unit": "px",
+                                            "top": "30",
+                                            "right": "10",
+                                            "bottom": "0",
+                                            "left": "10",
+                                            "isLinked": false
+                                        },
+                                        "_inline_size_tablet": 50,
+                                        "border_radius_tablet": {
+                                            "unit": "px",
+                                            "top": "40",
+                                            "right": "0",
+                                            "bottom": "0",
+                                            "left": "0",
+                                            "isLinked": false
+                                        }
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "70408c97",
+                                            "settings": {
+                                                "title": "Prepare your home",
+                                                "header_size": "h4",
+                                                "align": "center",
+                                                "typography_typography": "custom",
+                                                "__globals__": {
+                                                    "title_color": "globals\/colors?id=8803734"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "2cffd3c4",
+                                            "settings": {
+                                                "editor": "Porttitor rhoncus dolor purus non enim praesent.",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "text_color": ""
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "text-editor",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

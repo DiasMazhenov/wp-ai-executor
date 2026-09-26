@@ -1,0 +1,136 @@
+{
+    "version": "0.4",
+    "title": "Block Hero",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-hero",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "494e59da",
+            "settings": {
+                "layout": "full_width",
+                "background_image": {
+                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/5e5cc74c2089e5c615995f1d_architecture-1477041.jpg",
+                    "id": 71
+                },
+                "background_position": "center center",
+                "background_motion_fx_motion_fx_scrolling": "yes",
+                "background_motion_fx_translateY_speed": {
+                    "unit": "px",
+                    "size": 2,
+                    "sizes": []
+                },
+                "background_motion_fx_scale_direction": "in-out",
+                "background_motion_fx_scale_speed": {
+                    "unit": "px",
+                    "size": 2,
+                    "sizes": []
+                },
+                "margin": {
+                    "unit": "px",
+                    "top": "30",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "32",
+                    "bottom": "0",
+                    "left": "32",
+                    "isLinked": false
+                },
+                "_title": "Hero"
+            },
+            "elements": [
+                {
+                    "id": "2626450d",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "6190418f",
+                            "settings": {
+                                "layout": "full_width",
+                                "height_inner": "min-height",
+                                "custom_height_inner": {
+                                    "unit": "px",
+                                    "size": 800,
+                                    "sizes": []
+                                },
+                                "structure": "20",
+                                "background_background": "classic",
+                                "background_image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-PWH4FPG.jpg",
+                                    "id": 91
+                                },
+                                "background_position": "center center",
+                                "background_attachment": "fixed",
+                                "background_motion_fx_motion_fx_scrolling": "yes",
+                                "background_motion_fx_translateY_effect": "yes",
+                                "background_motion_fx_translateY_speed": {
+                                    "unit": "px",
+                                    "size": 3,
+                                    "sizes": []
+                                },
+                                "background_motion_fx_scale_effect": "yes",
+                                "background_motion_fx_scale_direction": "in-out",
+                                "background_motion_fx_scale_speed": {
+                                    "unit": "px",
+                                    "size": 2,
+                                    "sizes": []
+                                },
+                                "custom_height_inner_tablet": {
+                                    "unit": "px",
+                                    "size": 600,
+                                    "sizes": []
+                                },
+                                "custom_height_inner_mobile": {
+                                    "unit": "px",
+                                    "size": 300,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "49e7b0aa",
+                                    "settings": {
+                                        "_column_size": 50,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "2e542a55",
+                                    "settings": {
+                                        "_column_size": 50,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

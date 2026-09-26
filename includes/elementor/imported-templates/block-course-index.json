@@ -1,0 +1,428 @@
+{
+    "version": "0.4",
+    "title": "Block &#8211; Course Index",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-other",
+        "include_in_zip": "1",
+        "elementor_pro_required": null,
+        "wp_page_template": "default"
+    },
+    "content": [
+        {
+            "id": "1ef87929",
+            "settings": {
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "150",
+                    "right": "0",
+                    "bottom": "150",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "structure": "20",
+                "background_background": "classic",
+                "shape_divider_top": "waves",
+                "shape_divider_top_width": {
+                    "unit": "%",
+                    "size": 200,
+                    "sizes": []
+                },
+                "shape_divider_top_height": {
+                    "unit": "px",
+                    "size": 50,
+                    "sizes": []
+                },
+                "shape_divider_top_flip": "yes",
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "120",
+                    "right": "0",
+                    "bottom": "120",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "90",
+                    "right": "0",
+                    "bottom": "90",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "__globals__": {
+                    "background_color": "globals\/colors?id=99b82ae"
+                },
+                "_title": "Course Index"
+            },
+            "elements": [
+                {
+                    "id": "437719c8",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": 60,
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "50",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding_tablet": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "40",
+                            "bottom": "0",
+                            "left": "30",
+                            "isLinked": false
+                        },
+                        "padding_mobile": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "30",
+                            "bottom": "0",
+                            "left": "30",
+                            "isLinked": false
+                        },
+                        "animation": "fadeInLeft"
+                    },
+                    "elements": [
+                        {
+                            "id": "47e4849a",
+                            "settings": {
+                                "title": "About",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=primary"
+                                },
+                                "align": "left",
+                                "_animation": "fadeInLeft",
+                                "align_mobile": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "5da72c15",
+                            "settings": {
+                                "title": "the course",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=text"
+                                },
+                                "align": "left",
+                                "_animation": "fadeInLeft",
+                                "_animation_delay": 200,
+                                "align_mobile": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "2b011162",
+                            "settings": {
+                                "width": {
+                                    "unit": "px",
+                                    "size": 80,
+                                    "sizes": []
+                                },
+                                "text": "Divider",
+                                "weight": {
+                                    "unit": "px",
+                                    "size": 3,
+                                    "sizes": []
+                                },
+                                "gap": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                },
+                                "__globals__": {
+                                    "color": "globals\/colors?id=primary"
+                                },
+                                "align": "left",
+                                "_animation": "fadeInLeft",
+                                "_animation_delay": 400,
+                                "align_mobile": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "divider",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "8fd2051",
+                            "settings": {
+                                "space": {
+                                    "unit": "px",
+                                    "size": 30,
+                                    "sizes": []
+                                },
+                                "space_tablet": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "spacer",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "22e432b5",
+                            "settings": {
+                                "editor": "Nam finibus ipsum eu elit scelerisque, vitae blandit purus sollicitudin. Vestibulum turpis ligula, vestibulum eu sapien vulputate, maximus dictum lacus. Mauris aliquet viverra ipsum ut dapibus.",
+                                "align_mobile": "justify",
+                                "__globals__": {
+                                    "text_color": "globals\/colors?id=accent"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "58b2282e",
+                            "settings": {
+                                "space": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                },
+                                "space_tablet": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "spacer",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "5ed4aa71",
+                            "settings": {
+                                "editor": "Proin ut porttitor dolor. Curabitur nunc nisi, pellentesque ac tortor a, accumsan iaculis leo. Ut tristique massa a mauris lobortis scelerisque. Vivamus semper odio ut metus euismod, id hendrerit mi pellentesque. In hac habitasse platea dictumst. Sed pulvinar sagittis tellus sed placerat.",
+                                "align_mobile": "justify",
+                                "__globals__": {
+                                    "text_color": "globals\/colors?id=accent"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "251053b7",
+                            "settings": {
+                                "space_tablet": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "spacer",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "86433ec",
+                            "settings": {
+                                "text": "Start Learning",
+                                "align_mobile": "center",
+                                "_animation": "fadeInLeft",
+                                "_animation_delay": 600,
+                                "__globals__": {
+                                    "button_text_color": "globals\/colors?id=bffb171",
+                                    "background_color": "globals\/colors?id=primary",
+                                    "hover_color": "globals\/colors?id=bffb171",
+                                    "button_background_hover_color": "globals\/colors?id=text"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "button",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "3dd2cb6a",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": 40,
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding_tablet": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "20",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding_mobile": {
+                            "unit": "px",
+                            "top": "50",
+                            "right": "30",
+                            "bottom": "0",
+                            "left": "30",
+                            "isLinked": false
+                        },
+                        "animation": "fadeInRight",
+                        "animation_delay": 800
+                    },
+                    "elements": [
+                        {
+                            "id": "405ac44c",
+                            "settings": {
+                                "title": "Lessons:",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=primary"
+                                },
+                                "align": "left",
+                                "_animation": "fadeInRight",
+                                "_animation_delay": 200,
+                                "align_mobile": "center",
+                                "header_size": "h3"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "3147ed0a",
+                            "settings": {
+                                "space": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                },
+                                "space_tablet": {
+                                    "unit": "px",
+                                    "size": 20,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "spacer",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "2b140ebf",
+                            "settings": {
+                                "tabs": [
+                                    {
+                                        "tab_title": "Chapter 1 - Introduction",
+                                        "tab_content": "<ol>\n<li><a href=\"#\">Course Introduction<\/a><\/li>\n<li><a href=\"#\">About the Training Architect<\/a><\/li>\n<\/ol>\n",
+                                        "_id": "4e2c038"
+                                    },
+                                    {
+                                        "tab_title": "Chapter 2 - Introduction to the Cloud",
+                                        "tab_content": "<ol>\n<li><a href=\"#\">What Is the Cloud?<\/a><\/li>\n<li><a href=\"#\">Where Did Cloud Computing Come From?<\/a><\/li>\n<li><a href=\"#\">Why Do We Use the Cloud?<\/a><\/li>\n<li><a href=\"#\">Why Should I Care about the Cloud?<\/a><\/li>\n<li><a href=\"#\">Who Are the Different Cloud Vendors?<\/a><\/li>\n<\/ol>",
+                                        "_id": "257d6ac"
+                                    },
+                                    {
+                                        "tab_title": "Chapter 3 - Understanding Cloud Computing",
+                                        "tab_content": "<ol>\n<li><a href=\"#\">Isn't the Cloud Just Storage?<\/a><\/li>\n<li><a href=\"#\">What Is PaaS?<\/a><\/li>\n<li><a href=\"#\">What Is SaaS?<\/a><\/li>\n<li><a href=\"#\">What Is IaaS?<\/a><\/li>\n<li><a href=\"#\">What Is FaaS?<\/a><\/li>\n<li><a href=\"#\">What Is a Server?<\/a><\/li>\n<li><a href=\"#\">What Is Serverless?<\/a><\/li>\n<li><a href=\"#\">What Are Some Cloud Computing Jobs?<\/a><\/li>\n<\/ol>",
+                                        "_id": "5d40c8c"
+                                    },
+                                    {
+                                        "tab_title": "Chapter 4 - Conclusion",
+                                        "tab_content": "<ol>\n<li><a href=\"#\">Course Summary and What's Next?<\/a><\/li>\n<\/ol>",
+                                        "_id": "b1a04bf"
+                                    }
+                                ],
+                                "selected_icon": {
+                                    "value": "fas fa-angle-down",
+                                    "library": "fa-solid"
+                                },
+                                "selected_active_icon": {
+                                    "value": "fas fa-angle-up",
+                                    "library": "fa-solid"
+                                },
+                                "border_width": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "icon_align": "right",
+                                "content_padding": {
+                                    "unit": "px",
+                                    "top": "20",
+                                    "right": "20",
+                                    "bottom": "20",
+                                    "left": "20",
+                                    "isLinked": true
+                                },
+                                "__globals__": {
+                                    "border_color": "globals\/colors?id=primary",
+                                    "title_background": "globals\/colors?id=bffb171",
+                                    "title_color": "globals\/colors?id=primary",
+                                    "content_background_color": "globals\/colors?id=bffb171",
+                                    "content_color": "globals\/colors?id=primary",
+                                    "tab_active_color": "globals\/colors?id=primary",
+                                    "icon_color": "globals\/colors?id=primary",
+                                    "icon_active_color": "globals\/colors?id=primary"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "accordion",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ],
+    "page_settings": {
+        "eael_ext_toc_title": "Table of Contents"
+    }
+}

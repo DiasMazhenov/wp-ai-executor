@@ -1,0 +1,674 @@
+{
+    "version": "0.4",
+    "title": "Shop",
+    "type": "page",
+    "metadata": {
+        "template_type": "single-page",
+        "include_in_zip": "1",
+        "elementor_pro_required": null,
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "633627bf",
+            "settings": {
+                "background_background": "classic",
+                "background_image": {
+                    "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/girl-looking-on-fishes-in-aquarium-pet-store-JNUHWU6.jpg",
+                    "id": 1542
+                },
+                "background_position": "center center",
+                "background_size": "cover",
+                "background_overlay_background": "classic",
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "200",
+                    "right": "0",
+                    "bottom": "200",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "__globals__": {
+                    "background_overlay_color": "globals\/colors?id=0fd9f58"
+                },
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "margin_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "6e1b2291",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "781b18c9",
+                            "settings": {
+                                "title": "Shop",
+                                "header_size": "h1",
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "447a6d2c",
+                            "settings": {
+                                "editor": "<p>Lorem ipsum dolor sit amet.<\/p>",
+                                "align": "center",
+                                "__globals__": {
+                                    "text_color": "globals\/colors?id=primary"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "45fae03d",
+            "settings": {
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "margin_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "54e5d92c",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null,
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "5941e68a",
+                            "settings": {
+                                "title": "Aquatic Plant",
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "68639c94",
+                            "settings": {
+                                "eael_product_grid_excerpt_expanison_indicator": "...",
+                                "add_to_cart_simple_product_button_text": "Buy Now",
+                                "add_to_cart_variable_product_button_text": "Select options",
+                                "add_to_cart_grouped_product_button_text": "View products",
+                                "add_to_cart_external_product_button_text": "Buy Now",
+                                "add_to_cart_default_product_button_text": "Read More",
+                                "show_load_more_text": "Load More",
+                                "pagination_prev_label": "\u2190",
+                                "pagination_next_label": "\u2192",
+                                "ribbon": "New",
+                                "table_title": "Compare Products",
+                                "fields": [
+                                    {
+                                        "field_type": "image",
+                                        "field_label": "Image",
+                                        "_id": "bede7bd"
+                                    },
+                                    {
+                                        "field_label": "Title",
+                                        "_id": "16f410a"
+                                    },
+                                    {
+                                        "field_type": "price",
+                                        "field_label": "Price",
+                                        "_id": "3caf88f"
+                                    },
+                                    {
+                                        "field_type": "description",
+                                        "field_label": "Description",
+                                        "_id": "573f13b"
+                                    },
+                                    {
+                                        "field_type": "add-to-cart",
+                                        "field_label": "Add to cart",
+                                        "_id": "8fb7c85"
+                                    },
+                                    {
+                                        "field_type": "sku",
+                                        "field_label": "SKU",
+                                        "_id": "9f4f374"
+                                    },
+                                    {
+                                        "field_type": "stock",
+                                        "field_label": "Availability",
+                                        "_id": "27f4954"
+                                    },
+                                    {
+                                        "field_type": "weight",
+                                        "field_label": "Weight",
+                                        "_id": "251fe52"
+                                    },
+                                    {
+                                        "field_type": "dimension",
+                                        "field_label": "Dimension",
+                                        "_id": "a103e4c"
+                                    },
+                                    {
+                                        "field_type": "pa_color",
+                                        "field_label": "Color",
+                                        "_id": "ee5f607"
+                                    },
+                                    {
+                                        "field_type": "pa_size",
+                                        "field_label": "Size",
+                                        "_id": "f2a242a"
+                                    }
+                                ],
+                                "no_products_found_text": "No products are added to Compare. Please add products to compare.",
+                                "eael_product_grid_categories": [
+                                    "plant"
+                                ],
+                                "eael_product_grid_style_preset": "eael-product-overlay",
+                                "__globals__": {
+                                    "eael_product_grid_add_to_cart_background": "globals\/colors?id=accent",
+                                    "eael_product_grid_add_to_cart_hover_background": "globals\/colors?id=5bb640f",
+                                    "eael_product_grid_product_title_typography_typography": "globals\/typography?id=b1869a7",
+                                    "eael_product_grid_product_price_typography_typography": "globals\/typography?id=text"
+                                },
+                                "eael_product_grid_column_tablet": "2"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "eicon-woocommerce",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "70e28843",
+            "settings": {
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "margin_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "24ff4007",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null,
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "39321e2d",
+                            "settings": {
+                                "title": "Fish and Shrimp",
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "13310891",
+                            "settings": {
+                                "eael_product_grid_excerpt_expanison_indicator": "...",
+                                "add_to_cart_simple_product_button_text": "Buy Now",
+                                "add_to_cart_variable_product_button_text": "Select options",
+                                "add_to_cart_grouped_product_button_text": "View products",
+                                "add_to_cart_external_product_button_text": "Buy Now",
+                                "add_to_cart_default_product_button_text": "Read More",
+                                "show_load_more_text": "Load More",
+                                "pagination_prev_label": "\u2190",
+                                "pagination_next_label": "\u2192",
+                                "ribbon": "New",
+                                "table_title": "Compare Products",
+                                "fields": [
+                                    {
+                                        "field_type": "image",
+                                        "field_label": "Image",
+                                        "_id": "bede7bd"
+                                    },
+                                    {
+                                        "field_label": "Title",
+                                        "_id": "16f410a"
+                                    },
+                                    {
+                                        "field_type": "price",
+                                        "field_label": "Price",
+                                        "_id": "3caf88f"
+                                    },
+                                    {
+                                        "field_type": "description",
+                                        "field_label": "Description",
+                                        "_id": "573f13b"
+                                    },
+                                    {
+                                        "field_type": "add-to-cart",
+                                        "field_label": "Add to cart",
+                                        "_id": "8fb7c85"
+                                    },
+                                    {
+                                        "field_type": "sku",
+                                        "field_label": "SKU",
+                                        "_id": "9f4f374"
+                                    },
+                                    {
+                                        "field_type": "stock",
+                                        "field_label": "Availability",
+                                        "_id": "27f4954"
+                                    },
+                                    {
+                                        "field_type": "weight",
+                                        "field_label": "Weight",
+                                        "_id": "251fe52"
+                                    },
+                                    {
+                                        "field_type": "dimension",
+                                        "field_label": "Dimension",
+                                        "_id": "a103e4c"
+                                    },
+                                    {
+                                        "field_type": "pa_color",
+                                        "field_label": "Color",
+                                        "_id": "ee5f607"
+                                    },
+                                    {
+                                        "field_type": "pa_size",
+                                        "field_label": "Size",
+                                        "_id": "f2a242a"
+                                    }
+                                ],
+                                "no_products_found_text": "No products are added to Compare. Please add products to compare.",
+                                "eael_product_grid_categories": [
+                                    "fish"
+                                ],
+                                "eael_product_grid_style_preset": "eael-product-overlay",
+                                "__globals__": {
+                                    "eael_product_grid_add_to_cart_background": "globals\/colors?id=accent",
+                                    "eael_product_grid_add_to_cart_hover_background": "globals\/colors?id=5bb640f",
+                                    "eael_product_grid_product_title_typography_typography": "globals\/typography?id=b1869a7",
+                                    "eael_product_grid_product_price_typography_typography": "globals\/typography?id=text"
+                                },
+                                "eael_product_grid_layout": "grid",
+                                "eael_product_grid_column_tablet": "2"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "eicon-woocommerce",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "5b7bff6",
+            "settings": {
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "margin_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "3582ed59",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null,
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "29119898",
+                            "settings": {
+                                "title": "Tools",
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "3925ecaf",
+                            "settings": {
+                                "eael_product_grid_excerpt_expanison_indicator": "...",
+                                "add_to_cart_simple_product_button_text": "Buy Now",
+                                "add_to_cart_variable_product_button_text": "Select options",
+                                "add_to_cart_grouped_product_button_text": "View products",
+                                "add_to_cart_external_product_button_text": "Buy Now",
+                                "add_to_cart_default_product_button_text": "Read More",
+                                "show_load_more_text": "Load More",
+                                "pagination_prev_label": "\u2190",
+                                "pagination_next_label": "\u2192",
+                                "ribbon": "New",
+                                "table_title": "Compare Products",
+                                "fields": [
+                                    {
+                                        "field_type": "image",
+                                        "field_label": "Image",
+                                        "_id": "bede7bd"
+                                    },
+                                    {
+                                        "field_label": "Title",
+                                        "_id": "16f410a"
+                                    },
+                                    {
+                                        "field_type": "price",
+                                        "field_label": "Price",
+                                        "_id": "3caf88f"
+                                    },
+                                    {
+                                        "field_type": "description",
+                                        "field_label": "Description",
+                                        "_id": "573f13b"
+                                    },
+                                    {
+                                        "field_type": "add-to-cart",
+                                        "field_label": "Add to cart",
+                                        "_id": "8fb7c85"
+                                    },
+                                    {
+                                        "field_type": "sku",
+                                        "field_label": "SKU",
+                                        "_id": "9f4f374"
+                                    },
+                                    {
+                                        "field_type": "stock",
+                                        "field_label": "Availability",
+                                        "_id": "27f4954"
+                                    },
+                                    {
+                                        "field_type": "weight",
+                                        "field_label": "Weight",
+                                        "_id": "251fe52"
+                                    },
+                                    {
+                                        "field_type": "dimension",
+                                        "field_label": "Dimension",
+                                        "_id": "a103e4c"
+                                    },
+                                    {
+                                        "field_type": "pa_color",
+                                        "field_label": "Color",
+                                        "_id": "ee5f607"
+                                    },
+                                    {
+                                        "field_type": "pa_size",
+                                        "field_label": "Size",
+                                        "_id": "f2a242a"
+                                    }
+                                ],
+                                "no_products_found_text": "No products are added to Compare. Please add products to compare.",
+                                "eael_product_grid_categories": [
+                                    "tool"
+                                ],
+                                "eael_product_grid_style_preset": "eael-product-overlay",
+                                "__globals__": {
+                                    "eael_product_grid_add_to_cart_background": "globals\/colors?id=accent",
+                                    "eael_product_grid_add_to_cart_hover_background": "globals\/colors?id=5bb640f",
+                                    "eael_product_grid_product_title_typography_typography": "globals\/typography?id=b1869a7",
+                                    "eael_product_grid_product_price_typography_typography": "globals\/typography?id=text"
+                                },
+                                "eael_product_grid_layout": "grid",
+                                "eael_product_grid_column": "3",
+                                "eael_product_grid_column_tablet": "3"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "eicon-woocommerce",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ],
+    "page_settings": {
+        "eael_ext_toc_title": "Table of Contents",
+        "template": "elementor_header_footer"
+    }
+}

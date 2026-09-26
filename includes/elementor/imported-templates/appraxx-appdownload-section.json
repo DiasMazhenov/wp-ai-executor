@@ -1,0 +1,292 @@
+{
+    "version": "0.4",
+    "title": "AppRaxx &#8211; AppDownload Section",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-other",
+        "include_in_zip": "1",
+        "elementor_pro_required": null,
+        "wp_page_template": "elementor_canvas"
+    },
+    "content": [
+        {
+            "id": "544dcbf2",
+            "settings": {
+                "gap": "no",
+                "structure": "20",
+                "background_background": "classic",
+                "background_color": "#F6F6F6",
+                "padding": {
+                    "unit": "px",
+                    "top": "80",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "34ced392",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": null,
+                        "_inline_size_tablet": 100,
+                        "padding_tablet": {
+                            "unit": "px",
+                            "top": "15",
+                            "right": "15",
+                            "bottom": "15",
+                            "left": "15",
+                            "isLinked": true
+                        },
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "69ddeb48",
+                            "settings": {
+                                "title": "Get {{Application}} Now!",
+                                "subtitle": "It is {{free}} and you will love it.",
+                                "description": "<p>Lorem ipsum dolor amet consectetur adipisicing eiusmod. Lorem consectetur adipisicing eiusmod.<\/p>",
+                                "show_separator": "",
+                                "content_align": "left",
+                                "title_typography_typography": "custom",
+                                "title_typography_font_size": {
+                                    "unit": "px",
+                                    "size": 48,
+                                    "sizes": []
+                                },
+                                "title_color": "#000000",
+                                "description_color": "rgba(0, 0, 0, 0.702)",
+                                "description_typography_typography": "custom",
+                                "description_typography_font_size": {
+                                    "unit": "px",
+                                    "size": 16,
+                                    "sizes": []
+                                },
+                                "description_typography_font_weight": "400",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": true
+                                },
+                                "_margin_tablet": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "_margin_mobile": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "10",
+                                    "bottom": "0",
+                                    "left": "10",
+                                    "isLinked": false
+                                },
+                                "_padding_tablet": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": true
+                                },
+                                "subtitle_show": "",
+                                "description_section_show": "",
+                                "title_typography_font_weight": "400",
+                                "highlighted_title_typography_typography": "custom",
+                                "highlighted_title_typography_font_weight": "600"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "stax-el-heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "42b1c4b3",
+                            "settings": {
+                                "title": "It is {{free}} and you will love it.",
+                                "subtitle": "It is {{free}} and you will love it.",
+                                "description": "<p>Lorem ipsum dolor amet consectetur adipisicing eiusmod. Lorem consectetur adipisicing eiusmod.<\/p>",
+                                "show_separator": "",
+                                "content_align": "left",
+                                "title_typography_typography": "custom",
+                                "title_typography_font_size": {
+                                    "unit": "px",
+                                    "size": 30,
+                                    "sizes": []
+                                },
+                                "title_color": "#000000",
+                                "description_color": "rgba(0, 0, 0, 0.702)",
+                                "description_typography_typography": "custom",
+                                "description_typography_font_size": {
+                                    "unit": "px",
+                                    "size": 16,
+                                    "sizes": []
+                                },
+                                "description_typography_font_weight": "400",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": true
+                                },
+                                "_margin_tablet": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "_margin_mobile": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "10",
+                                    "bottom": "0",
+                                    "left": "10",
+                                    "isLinked": false
+                                },
+                                "_padding_tablet": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": true
+                                },
+                                "subtitle_show": "",
+                                "description_section_show": "",
+                                "title_typography_font_weight": "400",
+                                "highlighted_title_typography_typography": "custom",
+                                "highlighted_title_typography_font_weight": "600"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "stax-el-heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "115664c8",
+                            "settings": {
+                                "editor": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever when an unknown printer took a galley of type and scrambled it to make a type specimen book has been the industry's standard.<\/p>"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "1fbd8709",
+                            "settings": {
+                                "editor": "<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever when an unknown.<\/p>"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "17c4a394",
+                            "settings": {
+                                "structure": "20"
+                            },
+                            "elements": [
+                                {
+                                    "id": "5d62a3ae",
+                                    "settings": {
+                                        "_column_size": 50,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "e1b75ac",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "http:\/\/templatekits-demo.envalab.com\/appraxx\/wp-content\/uploads\/sites\/4\/2020\/07\/apple-store.png",
+                                                    "id": 52
+                                                },
+                                                "align": "left"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                },
+                                {
+                                    "id": "4a724e9e",
+                                    "settings": {
+                                        "_column_size": 50,
+                                        "_inline_size": null
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "2ba1b29a",
+                                            "settings": {
+                                                "image": {
+                                                    "url": "http:\/\/templatekits-demo.envalab.com\/appraxx\/wp-content\/uploads\/sites\/4\/2020\/07\/play-store.png",
+                                                    "id": 53
+                                                },
+                                                "align": "left"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "image",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": true,
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": true,
+                            "elType": "section"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "3fe2a33a",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": null,
+                        "_inline_size_tablet": 100
+                    },
+                    "elements": [
+                        {
+                            "id": "549318d9",
+                            "settings": {
+                                "image": {
+                                    "url": "http:\/\/templatekits-demo.envalab.com\/appraxx\/wp-content\/uploads\/sites\/4\/2020\/07\/iphone-hand.png",
+                                    "id": 50
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

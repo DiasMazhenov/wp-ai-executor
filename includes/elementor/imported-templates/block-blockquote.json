@@ -1,0 +1,130 @@
+{
+    "version": "0.4",
+    "title": "Block Blockquote",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-testimonial",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "34832c17",
+            "settings": {
+                "content_width": {
+                    "unit": "px",
+                    "size": 850,
+                    "sizes": []
+                },
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "140",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "_title": "Blockquote"
+            },
+            "elements": [
+                {
+                    "id": "38b6cae4",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "4c5beeea",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/confident-mature-businessmen-wearing-a-suit-standi-UEJTRBL.jpg",
+                                    "id": 159
+                                },
+                                "image_size": "medium",
+                                "width": {
+                                    "unit": "px",
+                                    "size": 110,
+                                    "sizes": []
+                                },
+                                "image_border_border": "solid",
+                                "image_border_width": {
+                                    "unit": "px",
+                                    "top": "5",
+                                    "right": "5",
+                                    "bottom": "5",
+                                    "left": "5",
+                                    "isLinked": true
+                                },
+                                "image_border_color": "#4A4444",
+                                "image_border_radius": {
+                                    "unit": "%",
+                                    "top": "50",
+                                    "right": "50",
+                                    "bottom": "50",
+                                    "left": "50",
+                                    "isLinked": true
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "1662298c",
+                            "settings": {
+                                "title": "\u201cWe creating lasting impressions through architecture design. The highest quality of our works based on experience. We build the house of your dream.\u201d",
+                                "header_size": "h3",
+                                "align": "center",
+                                "typography_typography": "custom",
+                                "typography_line_height": {
+                                    "unit": "em",
+                                    "size": 1.3000000000000000444089209850062616169452667236328125,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "3c8348b0",
+                            "settings": {
+                                "title": "Jamie Taylor",
+                                "header_size": "h4",
+                                "align": "center",
+                                "typography_typography": "custom",
+                                "typography_font_family": "Mrs Saint Delafield",
+                                "typography_font_size": {
+                                    "unit": "px",
+                                    "size": 68,
+                                    "sizes": []
+                                },
+                                "typography_font_weight": "300",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "15",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

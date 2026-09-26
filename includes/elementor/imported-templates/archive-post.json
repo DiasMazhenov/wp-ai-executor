@@ -1,0 +1,274 @@
+{
+    "version": "0.4",
+    "title": "Archive Post",
+    "type": "archive",
+    "metadata": {
+        "template_type": "archive-blog",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "elementor_library_type": "archive",
+        "elementor_pro_conditions": [
+            "include\/archive"
+        ],
+        "additional_template_information": [
+            "This is a \"Archive\" template for Elementor Pro.",
+            "This template will display on: All Archives."
+        ],
+        "wp_page_template": "default"
+    },
+    "content": [
+        {
+            "id": "4fe3d70b",
+            "settings": {
+                "gap": "no",
+                "custom_height": {
+                    "unit": "px",
+                    "size": "500",
+                    "sizes": []
+                },
+                "custom_height_tablet": {
+                    "unit": "px",
+                    "size": "320",
+                    "sizes": []
+                },
+                "custom_height_mobile": {
+                    "unit": "px",
+                    "size": "400",
+                    "sizes": []
+                },
+                "content_position": "middle",
+                "overflow": "hidden",
+                "background_background": "classic",
+                "background_image": {
+                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/hero-blog.jpg",
+                    "id": "323",
+                    "alt": "",
+                    "source": "library"
+                },
+                "background_position": "center center",
+                "background_repeat": "no-repeat",
+                "background_size": "cover",
+                "background_overlay_background": "classic",
+                "background_overlay_opacity": {
+                    "unit": "px",
+                    "size": "0.3",
+                    "sizes": []
+                },
+                "__globals__": {
+                    "background_overlay_color": "globals\/colors?id=text"
+                },
+                "_title": "Section: Hero Page",
+                "padding": {
+                    "unit": "px",
+                    "top": "246",
+                    "right": "0",
+                    "bottom": "126",
+                    "left": "0",
+                    "isLinked": ""
+                }
+            },
+            "elements": [
+                {
+                    "id": "329404bb",
+                    "settings": {
+                        "_column_size": "100",
+                        "space_between_widgets_tablet": "16",
+                        "space_between_widgets_mobile": "8"
+                    },
+                    "elements": [
+                        {
+                            "id": "63409b38",
+                            "settings": {
+                                "width": {
+                                    "unit": "px",
+                                    "size": "185",
+                                    "sizes": []
+                                },
+                                "align": "center",
+                                "look": "line_text",
+                                "text": "blog",
+                                "html_tag": "h5",
+                                "gap": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "text_spacing": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "__globals__": {
+                                    "color": "globals\/colors?id=secondary",
+                                    "text_color": "globals\/colors?id=499d99e",
+                                    "typography_typography": "globals\/typography?id=ab19678"
+                                },
+                                "_animation": "fadeInLeft"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "divider",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "2b6f693b",
+                            "settings": {
+                                "title": "ARCHIVE",
+                                "header_size": "h1",
+                                "align": "center",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=499d99e",
+                                    "typography_typography": "globals\/typography?id=43362a1"
+                                },
+                                "_animation": "fadeInUp",
+                                "__dynamic__": {
+                                    "title": "[elementor-tag id=\"1d8ea6b\" name=\"archive-title\" settings=\"%7B%7D\"]"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": "",
+                    "elType": "column"
+                }
+            ],
+            "isInner": "",
+            "elType": "section"
+        },
+        {
+            "id": "4f62de05",
+            "settings": {
+                "gap": "no",
+                "background_background": "classic",
+                "background_overlay_background": "classic",
+                "background_overlay_image": {
+                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/bg-vector.png",
+                    "id": "63"
+                },
+                "background_overlay_position": "bottom right",
+                "background_overlay_repeat": "no-repeat",
+                "background_overlay_opacity": {
+                    "unit": "px",
+                    "size": "1",
+                    "sizes": []
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": ""
+                },
+                "__globals__": {
+                    "background_overlay_color": "",
+                    "background_color": "globals\/colors?id=499d99e"
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "50",
+                    "right": "032",
+                    "bottom": "50",
+                    "left": "32",
+                    "isLinked": ""
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "32",
+                    "right": "16",
+                    "bottom": "32",
+                    "left": "16",
+                    "isLinked": ""
+                },
+                "_title": "Section: Archive Blog"
+            },
+            "elements": [
+                {
+                    "id": "6cc8c339",
+                    "settings": {
+                        "_column_size": "100"
+                    },
+                    "elements": [
+                        {
+                            "id": "76a84710",
+                            "settings": {
+                                "archive_classic_thumbnail_size_size": "large",
+                                "archive_classic_title_tag": "h4",
+                                "archive_classic_show_excerpt": "",
+                                "archive_classic_meta_data": [
+                                    "author",
+                                    "date",
+                                    "comments"
+                                ],
+                                "archive_classic_meta_separator": "-",
+                                "archive_classic_show_read_more": "",
+                                "archive_classic_read_more_text": "Read More \u00bb",
+                                "archive_cards_meta_separator": "\u2022",
+                                "archive_cards_read_more_text": "Read More \u00bb",
+                                "archive_full_content_meta_separator": "\/\/\/",
+                                "archive_classic_column_gap": {
+                                    "unit": "px",
+                                    "size": "40",
+                                    "sizes": []
+                                },
+                                "archive_classic_row_gap": {
+                                    "unit": "px",
+                                    "size": "40",
+                                    "sizes": []
+                                },
+                                "archive_classic_image_spacing": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "archive_classic_title_spacing": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "pagination_type": "numbers_and_prev_next",
+                                "pagination_page_limit": "5",
+                                "pagination_prev_label": "&lt;",
+                                "pagination_next_label": "&gt;",
+                                "pagination_spacing": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "pagination_spacing_top": {
+                                    "unit": "px",
+                                    "size": "64",
+                                    "sizes": []
+                                },
+                                "nothing_found_message": "It seems we can't find what you're looking for.",
+                                "_animation": "fadeInUp",
+                                "__globals__": {
+                                    "archive_classic_title_color": "globals\/colors?id=text",
+                                    "archive_classic_title_typography_typography": "globals\/typography?id=5ee6bad",
+                                    "archive_classic_meta_color": "globals\/colors?id=b331942",
+                                    "archive_classic_meta_separator_color": "globals\/colors?id=b331942",
+                                    "archive_classic_meta_typography_typography": "globals\/typography?id=text",
+                                    "pagination_typography_typography": "globals\/typography?id=b1ca071",
+                                    "pagination_color": "globals\/colors?id=b331942",
+                                    "pagination_hover_color": "globals\/colors?id=primary",
+                                    "pagination_active_color": "globals\/colors?id=primary"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "archive-posts",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": "",
+                    "elType": "column"
+                }
+            ],
+            "isInner": "",
+            "elType": "section"
+        }
+    ]
+}

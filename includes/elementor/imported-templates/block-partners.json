@@ -1,0 +1,321 @@
+{
+    "version": "0.4",
+    "title": "Block Partners",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-logo-grid",
+        "include_in_zip": "1",
+        "elementor_pro_required": null,
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "7f982d7f",
+            "settings": {
+                "layout": "full_width",
+                "structure": "60",
+                "border_border": "solid",
+                "border_width": {
+                    "unit": "px",
+                    "top": "1",
+                    "right": "0",
+                    "bottom": "1",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "border_color": "rgba(186, 186, 186, 0.42)",
+                "padding": {
+                    "unit": "px",
+                    "top": "30",
+                    "right": "0",
+                    "bottom": "30",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "_title": "Partners",
+                "gap": "wide"
+            },
+            "elements": [
+                {
+                    "id": "3699b9c0",
+                    "settings": {
+                        "_column_size": 16,
+                        "_inline_size": null,
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "5d86e4ca",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/Logo1-8DSCKJ.png",
+                                    "id": 191
+                                },
+                                "image_size": "custom",
+                                "image_custom_dimension": {
+                                    "width": "",
+                                    "height": "100"
+                                },
+                                "link_to": "custom",
+                                "link": {
+                                    "url": "\/#",
+                                    "is_external": "",
+                                    "nofollow": "",
+                                    "custom_attributes": ""
+                                },
+                                "opacity": {
+                                    "unit": "px",
+                                    "size": 0.59999999999999997779553950749686919152736663818359375,
+                                    "sizes": []
+                                },
+                                "opacity_hover": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "background_hover_transition": {
+                                    "unit": "px",
+                                    "size": 0.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "75dc3330",
+                    "settings": {
+                        "_column_size": 16,
+                        "_inline_size": null,
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "4960d434",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/Logo2-C4RRZX.png",
+                                    "id": 192
+                                },
+                                "image_size": "custom",
+                                "image_custom_dimension": {
+                                    "width": "",
+                                    "height": "100"
+                                },
+                                "opacity": {
+                                    "unit": "px",
+                                    "size": 0.59999999999999997779553950749686919152736663818359375,
+                                    "sizes": []
+                                },
+                                "opacity_hover": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "background_hover_transition": {
+                                    "unit": "px",
+                                    "size": 0.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "66c88365",
+                    "settings": {
+                        "_column_size": 16,
+                        "_inline_size": null,
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "1542a8dd",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/Logo3-F4VVGR.png",
+                                    "id": 193
+                                },
+                                "image_size": "custom",
+                                "image_custom_dimension": {
+                                    "width": "",
+                                    "height": "100"
+                                },
+                                "opacity": {
+                                    "unit": "px",
+                                    "size": 0.59999999999999997779553950749686919152736663818359375,
+                                    "sizes": []
+                                },
+                                "opacity_hover": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "background_hover_transition": {
+                                    "unit": "px",
+                                    "size": 0.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "383923f6",
+                    "settings": {
+                        "_column_size": 16,
+                        "_inline_size": null,
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "7d40e28",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/Logo4-SP4KVJ.png",
+                                    "id": 194
+                                },
+                                "image_size": "custom",
+                                "image_custom_dimension": {
+                                    "width": "",
+                                    "height": "100"
+                                },
+                                "opacity": {
+                                    "unit": "px",
+                                    "size": 0.59999999999999997779553950749686919152736663818359375,
+                                    "sizes": []
+                                },
+                                "opacity_hover": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "background_hover_transition": {
+                                    "unit": "px",
+                                    "size": 0.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "485d2d88",
+                    "settings": {
+                        "_column_size": 16,
+                        "_inline_size": null,
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "13ab05f7",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/Logo5-RQCUFR.png",
+                                    "id": 195
+                                },
+                                "image_size": "custom",
+                                "image_custom_dimension": {
+                                    "width": "",
+                                    "height": "100"
+                                },
+                                "opacity": {
+                                    "unit": "px",
+                                    "size": 0.59999999999999997779553950749686919152736663818359375,
+                                    "sizes": []
+                                },
+                                "opacity_hover": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "background_hover_transition": {
+                                    "unit": "px",
+                                    "size": 0.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "d40d376",
+                    "settings": {
+                        "_column_size": 16,
+                        "_inline_size": null,
+                        "content_position": "center"
+                    },
+                    "elements": [
+                        {
+                            "id": "37b74f94",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/Logo6-ZC8U8D.png",
+                                    "id": 196
+                                },
+                                "image_size": "custom",
+                                "image_custom_dimension": {
+                                    "width": "",
+                                    "height": "100"
+                                },
+                                "opacity": {
+                                    "unit": "px",
+                                    "size": 0.59999999999999997779553950749686919152736663818359375,
+                                    "sizes": []
+                                },
+                                "opacity_hover": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "background_hover_transition": {
+                                    "unit": "px",
+                                    "size": 0.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

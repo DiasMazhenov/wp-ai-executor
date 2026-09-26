@@ -1,0 +1,146 @@
+{
+    "version": "0.4",
+    "title": "Block Gallery",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-gallery",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "22fe5986",
+            "settings": {
+                "_title": "Gallery",
+                "margin": {
+                    "unit": "px",
+                    "top": "60",
+                    "right": 0,
+                    "bottom": "60",
+                    "left": 0,
+                    "isLinked": true
+                }
+            },
+            "elements": [
+                {
+                    "id": "2e8a856",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "6e361679",
+                            "settings": {
+                                "gallery_type": "multiple",
+                                "galleries": [
+                                    {
+                                        "gallery_title": "Interior",
+                                        "_id": "f6e7a02",
+                                        "multiple_gallery": [
+                                            {
+                                                "id": 172,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/living-room-with-plant-decoration-PZT6HZM.jpg"
+                                            },
+                                            {
+                                                "id": 173,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/pink-posters-above-green-sofa-in-bright-apartment-XQWH658.jpg"
+                                            },
+                                            {
+                                                "id": 174,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/posters-in-cozy-apartment-interior-PY6HEBD.jpg"
+                                            },
+                                            {
+                                                "id": 175,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/vintage-grey-living-room-interior-BP6VMDG.jpg"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "gallery_title": "Landscape",
+                                        "multiple_gallery": [
+                                            {
+                                                "id": 177,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/mansion-with-large-backyard-PQ55R9L.jpg"
+                                            },
+                                            {
+                                                "id": 178,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-6B8V3D7.jpg"
+                                            },
+                                            {
+                                                "id": 179,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-mansion-with-patio-PBGM8WS.jpg"
+                                            },
+                                            {
+                                                "id": 180,
+                                                "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/villa-patio-with-stone-walls-PHVRW28.jpg"
+                                            }
+                                        ],
+                                        "_id": "968e72b"
+                                    }
+                                ],
+                                "columns": 2,
+                                "gap": {
+                                    "unit": "px",
+                                    "size": 32,
+                                    "sizes": []
+                                },
+                                "aspect_ratio": "4:3",
+                                "thumbnail_image_size": "medium_large",
+                                "show_all_galleries_label": "All",
+                                "animation_line": "grow",
+                                "overlay_title": "title",
+                                "overlay_description": "description",
+                                "align_filter_bar_items": "center",
+                                "galleries_titles_typography_typography": "custom",
+                                "galleries_titles_typography_font_weight": "400",
+                                "galleries_title_color_hover": "#FFB300",
+                                "galleries_pointer_color_hover": "#FFB300",
+                                "galleries_title_color_active": "#FFB300",
+                                "galleries_pointer_color_active": "#FFB300",
+                                "pointer_width": {
+                                    "unit": "px",
+                                    "size": 1,
+                                    "sizes": []
+                                },
+                                "galleries_titles_gap": {
+                                    "unit": "px",
+                                    "size": 42,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "gallery",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "32eaf4f3",
+                            "settings": {
+                                "text": "See Other Works",
+                                "align": "center",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "42",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "button",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

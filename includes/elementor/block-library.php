@@ -426,6 +426,107 @@ function wpae_block_library_bundled_fixtures(): array {
     return $fixtures = is_array( $loaded ) ? $loaded : [];
 }
 
+function wpae_block_library_imported_template_manifest(): array {
+    static $templates;
+    if ( is_array( $templates ) ) {
+        return $templates;
+    }
+
+    $manifest_path = __DIR__ . '/imported-templates/manifest.json';
+    if ( ! is_readable( $manifest_path ) ) {
+        return $templates = [];
+    }
+
+    $manifest = json_decode( (string) file_get_contents( $manifest_path ), true );
+    if ( ! is_array( $manifest ) || (string) ( $manifest['format'] ?? '' ) !== 'wpae-imported-elementor-templates-v1' ) {
+        return $templates = [];
+    }
+
+    $templates = [];
+    foreach ( (array) ( $manifest['files'] ?? [] ) as $template ) {
+        if ( ! is_array( $template ) ) {
+            continue;
+        }
+        $filename = (string) ( $template['file'] ?? '' );
+        $sha256 = strtolower( (string) ( $template['sha256'] ?? '' ) );
+        if ( ! preg_match( '/^[a-z0-9][a-z0-9_-]{0,119}\.json$/', $filename ) || ! preg_match( '/^[a-f0-9]{64}$/', $sha256 ) ) {
+            continue;
+        }
+        $templates[ sanitize_key( (string) ( $template['id'] ?? '' ) ) ] = $template;
+    }
+
+    return $templates;
+}
+
+function wpae_block_library_imported_template_records( string $archetype, array $allowed_categories ): array {
+    $records = [];
+    $allowed_categories = array_map( 'sanitize_key', $allowed_categories );
+    foreach ( wpae_block_library_imported_template_manifest() as $template_id => $template ) {
+        if ( empty( $template['has_content'] ) ) {
+            continue;
+        }
+        $category = sanitize_key( (string) ( $template['category'] ?? 'custom' ) );
+        $tags = wpae_block_library_sanitize_tags( $template['tags'] ?? [] );
+        $matches_category = in_array( $category, $allowed_categories, true )
+            || ( $category === 'custom' && ! empty( array_intersect( $allowed_categories, array_map( 'sanitize_key', $tags ) ) ) );
+        if ( ! empty( $allowed_categories ) && ! $matches_category ) {
+            continue;
+        }
+
+        $path = __DIR__ . '/imported-templates/' . (string) ( $template['file'] ?? '' );
+        $expected_hash = strtolower( (string) ( $template['sha256'] ?? '' ) );
+        if ( ! is_readable( $path ) || ! hash_equals( $expected_hash, (string) hash_file( 'sha256', $path ) ) ) {
+            continue;
+        }
+
+        $raw = file_get_contents( $path );
+        if ( ! is_string( $raw ) || strlen( $raw ) > WPAE_BLOCK_LIBRARY_MAX_BYTES ) {
+            continue;
+        }
+        $parsed = wpae_block_library_extract_elements( $raw );
+        if ( is_wp_error( $parsed ) ) {
+            continue;
+        }
+        $normalized = wpae_elementor_normalize_data( $parsed['elementor_data'] );
+        $elementor_data = (array) ( $normalized['data'] ?? [] );
+        if ( empty( $elementor_data ) ) {
+            continue;
+        }
+        $compatibility = wpae_block_library_compatibility_report( $elementor_data );
+        if ( empty( $compatibility['raw_valid'] ) || empty( $compatibility['normalizable'] ) ) {
+            continue;
+        }
+        if ( ! empty( $compatibility['unavailable_widget_types'] ) ) {
+            $elementor_data = wpae_block_library_filter_compatible_roots( $elementor_data );
+            if ( empty( $elementor_data ) ) {
+                continue;
+            }
+            $compatibility = wpae_block_library_compatibility_report( $elementor_data );
+        }
+
+        $content_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
+        $records[] = [
+            'id' => 0,
+            'title' => sanitize_text_field( (string) ( $template['title'] ?? $template_id ) ),
+            'description' => '',
+            'category' => $category,
+            'tags' => $tags,
+            'source_mode' => 'elementor_export',
+            'source' => 'plugin_template',
+            'status' => 'published',
+            'bundled_fixture_id' => $template_id,
+            'bundled_fixture_sha256' => $expected_hash,
+            'bundled_fixture_content_hash' => $content_hash,
+            'content_hash' => $content_hash,
+            'elementor_data' => $elementor_data,
+            'compatibility' => $compatibility,
+            'manifest' => [ 'schema' => WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA, 'version' => '1.0.0', 'status' => 'published' ],
+        ];
+    }
+
+    return $records;
+}
+
 function wpae_block_library_bundled_preview_url( string $preview_file ): string {
     $preview_file = ltrim( $preview_file, '/' );
     if ( ! preg_match( '#^assets/[a-z0-9][a-z0-9_./-]*\.(?:png|jpe?g)$#i', $preview_file ) || ! function_exists( 'plugins_url' ) ) {
@@ -436,7 +537,8 @@ function wpae_block_library_bundled_preview_url( string $preview_file ): string 
 }
 
 function wpae_block_library_is_trusted_bundled_fixture( array $record ): bool {
-    if ( (string) ( $record['source'] ?? '' ) !== 'copyelement' ) {
+    $source = sanitize_key( (string) ( $record['source'] ?? '' ) );
+    if ( ! in_array( $source, [ 'copyelement', 'plugin_template' ], true ) ) {
         return false;
     }
 
@@ -454,7 +556,10 @@ function wpae_block_library_is_trusted_bundled_fixture( array $record ): bool {
         return false;
     }
 
-    foreach ( wpae_block_library_bundled_fixtures() as $fixture ) {
+    $fixtures = $source === 'plugin_template'
+        ? wpae_block_library_imported_template_manifest()
+        : wpae_block_library_bundled_fixtures();
+    foreach ( $fixtures as $fixture ) {
         if (
             is_array( $fixture )
             && $fixture_id === sanitize_key( (string) ( $fixture['id'] ?? '' ) )
@@ -676,6 +781,9 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     ];
     $allowed_categories = $category_aliases[ $archetype ] ?? [];
     $prompt_requests_vocario = (bool) preg_match( '/\b(?:vocario|template[\s-]*kit)\b/iu', $message );
+    $records = ! empty( $allowed_categories )
+        ? wpae_block_library_imported_template_records( $archetype, $allowed_categories )
+        : [];
     $posts = get_posts( [
         'post_type' => WPAE_BLOCK_LIBRARY_POST_TYPE,
         'post_status' => 'private',
@@ -687,6 +795,12 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
 
     foreach ( $posts as $post ) {
         $record = wpae_block_library_decode_post( $post );
+        if ( ! is_wp_error( $record ) ) {
+            $records[] = $record;
+        }
+    }
+
+    foreach ( $records as $record ) {
         if ( is_wp_error( $record ) ) {
             continue;
         }
@@ -760,9 +874,9 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             $score++;
             $matched_terms[] = 'bento';
         }
-        if ( ! $prompt_requests_vocario && (string) ( $record['source'] ?? '' ) === 'copyelement' ) {
+        if ( ! $prompt_requests_vocario && in_array( (string) ( $record['source'] ?? '' ), [ 'copyelement', 'plugin_template' ], true ) ) {
             $score += 6;
-            $matched_terms[] = 'preferred-copyelement';
+            $matched_terms[] = (string) ( $record['source'] ?? '' ) === 'plugin_template' ? 'preferred-plugin-template' : 'preferred-copyelement';
         }
         $matched_terms = array_values( array_unique( $matched_terms ) );
         if ( $score < 5 ) {
@@ -792,8 +906,10 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     foreach ( array_slice( $ranked, 0, 3 ) as $candidate ) {
         $result['candidates'][] = [
             'id' => (int) ( $candidate['summary']['id'] ?? 0 ),
+            'bundled_fixture_id' => (string) ( $candidate['summary']['bundled_fixture_id'] ?? '' ),
             'title' => (string) ( $candidate['summary']['title'] ?? '' ),
             'category' => (string) ( $candidate['summary']['category'] ?? '' ),
+            'source' => (string) ( $candidate['summary']['source'] ?? '' ),
             'score' => (int) $candidate['score'],
             'matched_terms' => $candidate['matched_terms'],
             'status' => (string) ( $candidate['summary']['status'] ?? '' ),

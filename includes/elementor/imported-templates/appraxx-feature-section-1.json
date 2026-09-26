@@ -1,0 +1,341 @@
+{
+    "version": "0.4",
+    "title": "AppRaxx &#8211; Feature Section 1",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-features",
+        "include_in_zip": "1",
+        "elementor_pro_required": null,
+        "wp_page_template": "elementor_canvas"
+    },
+    "content": [
+        {
+            "id": "39925f9f",
+            "settings": {
+                "structure": "40",
+                "background_background": "classic",
+                "background_color": "#F6F6F6",
+                "padding": {
+                    "unit": "px",
+                    "top": "80",
+                    "right": "0",
+                    "bottom": "80",
+                    "left": "0",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "18fccdc1",
+                    "settings": {
+                        "_column_size": 25,
+                        "_inline_size": null,
+                        "background_background": "classic",
+                        "background_color": "rgba(255, 255, 255, 0)",
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": true
+                        },
+                        "_inline_size_tablet": 50
+                    },
+                    "elements": [
+                        {
+                            "id": "214a37b",
+                            "settings": {
+                                "selected_icon": {
+                                    "value": "icon icon-tools",
+                                    "library": "ekiticons"
+                                },
+                                "title_text": "Cross Platfrom",
+                                "description_text": "Lorem ipsum dolor sit amet, consectetur adipisicing eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                "primary_color": "#EC3851",
+                                "text_align": "center",
+                                "_padding": {
+                                    "unit": "px",
+                                    "top": "35",
+                                    "right": "15",
+                                    "bottom": "70",
+                                    "left": "15",
+                                    "isLinked": false
+                                },
+                                "_background_background": "classic",
+                                "_background_color": "#FFFFFF",
+                                "_background_hover_background": "classic",
+                                "_background_hover_color": "#FFFFFF",
+                                "_border_border": "solid",
+                                "_border_width": {
+                                    "unit": "px",
+                                    "top": "1",
+                                    "right": "1",
+                                    "bottom": "1",
+                                    "left": "1",
+                                    "isLinked": true
+                                },
+                                "_border_color": "#EAEAEA",
+                                "_box_shadow_box_shadow_type": "yes",
+                                "_box_shadow_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": 10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                },
+                                "_box_shadow_hover_box_shadow_type": "yes",
+                                "_box_shadow_hover_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": -10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "icon-box",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "270d6358",
+                    "settings": {
+                        "_column_size": 25,
+                        "_inline_size": null,
+                        "background_background": "classic",
+                        "background_color": "rgba(255, 255, 255, 0)",
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": true
+                        },
+                        "_inline_size_tablet": 50
+                    },
+                    "elements": [
+                        {
+                            "id": "6f35074a",
+                            "settings": {
+                                "selected_icon": {
+                                    "value": "icon icon-speed",
+                                    "library": "ekiticons"
+                                },
+                                "title_text": "Fast Performance",
+                                "description_text": "Lorem ipsum dolor sit amet, consectetur adipisicing eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                "primary_color": "#EC3851",
+                                "text_align": "center",
+                                "_padding": {
+                                    "unit": "px",
+                                    "top": "35",
+                                    "right": "15",
+                                    "bottom": "70",
+                                    "left": "15",
+                                    "isLinked": false
+                                },
+                                "_background_background": "classic",
+                                "_background_color": "#FFFFFF",
+                                "_background_hover_background": "classic",
+                                "_background_hover_color": "#FFFFFF",
+                                "_border_border": "solid",
+                                "_border_width": {
+                                    "unit": "px",
+                                    "top": "1",
+                                    "right": "1",
+                                    "bottom": "1",
+                                    "left": "1",
+                                    "isLinked": true
+                                },
+                                "_border_color": "#EAEAEA",
+                                "_box_shadow_box_shadow_type": "yes",
+                                "_box_shadow_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": 10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                },
+                                "_box_shadow_hover_box_shadow_type": "yes",
+                                "_box_shadow_hover_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": -10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "icon-box",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "f02f5b7",
+                    "settings": {
+                        "_column_size": 25,
+                        "_inline_size": null,
+                        "background_background": "classic",
+                        "background_color": "rgba(255, 255, 255, 0)",
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": true
+                        },
+                        "_inline_size_tablet": 50
+                    },
+                    "elements": [
+                        {
+                            "id": "6454a5bc",
+                            "settings": {
+                                "selected_icon": {
+                                    "value": "fab fa-linode",
+                                    "library": "fa-brands"
+                                },
+                                "title_text": "Clean Design",
+                                "description_text": "Lorem ipsum dolor sit amet, consectetur adipisicing eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                "primary_color": "#EC3851",
+                                "text_align": "center",
+                                "_padding": {
+                                    "unit": "px",
+                                    "top": "35",
+                                    "right": "15",
+                                    "bottom": "70",
+                                    "left": "15",
+                                    "isLinked": false
+                                },
+                                "_background_background": "classic",
+                                "_background_color": "#FFFFFF",
+                                "_background_hover_background": "classic",
+                                "_background_hover_color": "#FFFFFF",
+                                "_border_border": "solid",
+                                "_border_width": {
+                                    "unit": "px",
+                                    "top": "1",
+                                    "right": "1",
+                                    "bottom": "1",
+                                    "left": "1",
+                                    "isLinked": true
+                                },
+                                "_border_color": "#EAEAEA",
+                                "_box_shadow_box_shadow_type": "yes",
+                                "_box_shadow_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": 10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                },
+                                "_box_shadow_hover_box_shadow_type": "yes",
+                                "_box_shadow_hover_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": -10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "icon-box",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "17a7474c",
+                    "settings": {
+                        "_column_size": 25,
+                        "_inline_size": null,
+                        "background_background": "classic",
+                        "background_color": "rgba(255, 255, 255, 0)",
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": true
+                        },
+                        "_inline_size_tablet": 50
+                    },
+                    "elements": [
+                        {
+                            "id": "1bc9845e",
+                            "settings": {
+                                "selected_icon": {
+                                    "value": "icon icon-support1",
+                                    "library": "ekiticons"
+                                },
+                                "title_text": "24\/7 Live Support",
+                                "description_text": "Lorem ipsum dolor sit amet, consectetur adipisicing eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                                "primary_color": "#EC3851",
+                                "text_align": "center",
+                                "_padding": {
+                                    "unit": "px",
+                                    "top": "35",
+                                    "right": "15",
+                                    "bottom": "70",
+                                    "left": "15",
+                                    "isLinked": false
+                                },
+                                "_background_background": "classic",
+                                "_background_color": "#FFFFFF",
+                                "_background_hover_background": "classic",
+                                "_background_hover_color": "#FFFFFF",
+                                "_border_border": "solid",
+                                "_border_width": {
+                                    "unit": "px",
+                                    "top": "1",
+                                    "right": "1",
+                                    "bottom": "1",
+                                    "left": "1",
+                                    "isLinked": true
+                                },
+                                "_border_color": "#EAEAEA",
+                                "_box_shadow_box_shadow_type": "yes",
+                                "_box_shadow_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": 10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                },
+                                "_box_shadow_hover_box_shadow_type": "yes",
+                                "_box_shadow_hover_box_shadow": {
+                                    "horizontal": 0,
+                                    "vertical": -10,
+                                    "blur": 22,
+                                    "spread": -10,
+                                    "color": "rgba(0,0,0,0.5)"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "icon-box",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

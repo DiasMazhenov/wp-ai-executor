@@ -1,0 +1,145 @@
+{
+    "version": "0.4",
+    "title": "Block Promo",
+    "type": "section",
+    "metadata": {
+        "template_type": "section-cta",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "5ac0242f",
+            "settings": {
+                "height": "min-height",
+                "background_background": "video",
+                "background_overlay_background": "classic",
+                "background_overlay_color": "#1A1B1C",
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "60",
+                    "right": "0",
+                    "bottom": "60",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "_title": "Promo",
+                "custom_height": {
+                    "unit": "px",
+                    "size": 500,
+                    "sizes": []
+                },
+                "custom_height_tablet": {
+                    "unit": "px",
+                    "size": 400,
+                    "sizes": []
+                },
+                "custom_height_mobile": {
+                    "unit": "px",
+                    "size": 300,
+                    "sizes": []
+                },
+                "background_video_fallback": {
+                    "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/maxresdefault-VAZR5BK.jpg",
+                    "id": 230
+                }
+            },
+            "elements": [
+                {
+                    "id": "1e6eb50b",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "39f9e769",
+                            "settings": {
+                                "selected_icon": {
+                                    "value": "fas fa-play",
+                                    "library": "fa-solid"
+                                },
+                                "shape": "square",
+                                "primary_color": "#FFB300",
+                                "__dynamic__": {
+                                    "link": "[elementor-tag id=\"fcab14f\" name=\"lightbox\" settings=\"%7B%22type%22%3A%22video%22%2C%22video_url%22%3A%22https%3A%2F%2Fyoutu.be%2F201OyDrB_ms%22%7D\"]"
+                                },
+                                "hover_primary_color": "#FFFFFF",
+                                "hover_animation": "pulse-grow"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "icon",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "71e0b04e",
+                            "settings": {
+                                "title": "Modern Design",
+                                "header_size": "h3",
+                                "align": "center",
+                                "typography_typography": "custom",
+                                "typography_font_size": {
+                                    "unit": "px",
+                                    "size": 36,
+                                    "sizes": []
+                                },
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "15",
+                                    "right": "0",
+                                    "bottom": "-5",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "__dynamic__": {
+                                    "link": "[elementor-tag id=\"5057cff\" name=\"lightbox\" settings=\"%7B%22type%22%3A%22video%22%2C%22video_url%22%3A%22https%3A%2F%2Fyoutu.be%2F201OyDrB_ms%22%7D\"]"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "72a4d739",
+                            "settings": {
+                                "title": "Habitasse platea dictumst quisque sagittis.",
+                                "header_size": "p",
+                                "align": "center",
+                                "title_color": "#BABABA",
+                                "typography_typography": "custom",
+                                "typography_font_size": {
+                                    "unit": "px",
+                                    "size": 18,
+                                    "sizes": []
+                                },
+                                "typography_font_weight": "400",
+                                "__dynamic__": {
+                                    "link": "[elementor-tag id=\"e77cbb4\" name=\"lightbox\" settings=\"%7B%22type%22%3A%22video%22%2C%22video_url%22%3A%22https%3A%2F%2Fyoutu.be%2F201OyDrB_ms%22%7D\"]"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}

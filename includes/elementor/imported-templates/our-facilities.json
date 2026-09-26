@@ -1,0 +1,860 @@
+{
+    "version": "0.4",
+    "title": "Our Facilities",
+    "type": "page",
+    "metadata": {
+        "template_type": "single-page",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "5f3220de",
+            "settings": {
+                "gap": "no",
+                "custom_height": {
+                    "unit": "px",
+                    "size": "500",
+                    "sizes": []
+                },
+                "custom_height_tablet": {
+                    "unit": "px",
+                    "size": "320",
+                    "sizes": []
+                },
+                "custom_height_mobile": {
+                    "unit": "px",
+                    "size": "400",
+                    "sizes": []
+                },
+                "content_position": "middle",
+                "overflow": "hidden",
+                "background_background": "classic",
+                "background_image": {
+                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/hero-facilities.jpg",
+                    "id": "200",
+                    "alt": "",
+                    "source": "library"
+                },
+                "background_position": "center center",
+                "background_repeat": "no-repeat",
+                "background_size": "cover",
+                "background_overlay_background": "classic",
+                "background_overlay_opacity": {
+                    "unit": "px",
+                    "size": "0.3",
+                    "sizes": []
+                },
+                "__globals__": {
+                    "background_overlay_color": "globals\/colors?id=text"
+                },
+                "_title": "Section: Hero Page",
+                "padding": {
+                    "unit": "px",
+                    "top": "246",
+                    "right": "0",
+                    "bottom": "126",
+                    "left": "0",
+                    "isLinked": ""
+                }
+            },
+            "elements": [
+                {
+                    "id": "115192f4",
+                    "settings": {
+                        "_column_size": "100",
+                        "space_between_widgets_tablet": "16",
+                        "space_between_widgets_mobile": "8"
+                    },
+                    "elements": [
+                        {
+                            "id": "1b8259d1",
+                            "settings": {
+                                "width": {
+                                    "unit": "px",
+                                    "size": "185",
+                                    "sizes": []
+                                },
+                                "align": "center",
+                                "look": "line_text",
+                                "text": "facilities",
+                                "html_tag": "h5",
+                                "gap": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "text_spacing": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "__globals__": {
+                                    "color": "globals\/colors?id=secondary",
+                                    "text_color": "globals\/colors?id=499d99e",
+                                    "typography_typography": "globals\/typography?id=ab19678"
+                                },
+                                "_animation": "fadeInLeft"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "divider",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "12dbe057",
+                            "settings": {
+                                "title": "The Home Of Golf &amp; Country Club",
+                                "header_size": "h1",
+                                "align": "center",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=499d99e",
+                                    "typography_typography": "globals\/typography?id=43362a1"
+                                },
+                                "_animation": "fadeInUp",
+                                "__dynamic__": {
+                                    "title": "[elementor-tag id=\"80cb74a\" name=\"page-title\" settings=\"%7B%7D\"]"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": "",
+                    "elType": "column"
+                }
+            ],
+            "isInner": "",
+            "elType": "section"
+        },
+        {
+            "id": "356f99e5",
+            "settings": {
+                "gap": "no",
+                "background_background": "classic",
+                "background_overlay_background": "classic",
+                "background_overlay_image": {
+                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/bg-vector.png",
+                    "id": "63"
+                },
+                "background_overlay_position": "bottom right",
+                "background_overlay_repeat": "no-repeat",
+                "background_overlay_opacity": {
+                    "unit": "px",
+                    "size": "1",
+                    "sizes": []
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": ""
+                },
+                "__globals__": {
+                    "background_overlay_color": "",
+                    "background_color": "globals\/colors?id=499d99e"
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "50",
+                    "right": "032",
+                    "bottom": "50",
+                    "left": "32",
+                    "isLinked": ""
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "32",
+                    "right": "16",
+                    "bottom": "32",
+                    "left": "16",
+                    "isLinked": ""
+                },
+                "_title": "Section:\u00a0Our facilities",
+                "overflow": "hidden"
+            },
+            "elements": [
+                {
+                    "id": "1e8e7c50",
+                    "settings": {
+                        "_column_size": "100",
+                        "space_between_widgets": "100",
+                        "space_between_widgets_tablet": "32"
+                    },
+                    "elements": [
+                        {
+                            "id": "625c6044",
+                            "settings": {
+                                "content_width": {
+                                    "unit": "px",
+                                    "size": "475",
+                                    "sizes": []
+                                },
+                                "gap": "no",
+                                "margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "100",
+                                    "left": "0",
+                                    "isLinked": ""
+                                },
+                                "margin_tablet": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "32",
+                                    "left": "0",
+                                    "isLinked": ""
+                                }
+                            },
+                            "elements": [
+                                {
+                                    "id": "53d1f2ea",
+                                    "settings": {
+                                        "_column_size": "100",
+                                        "content_position": "center"
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "546d8b00",
+                                            "settings": {
+                                                "width": {
+                                                    "unit": "px",
+                                                    "size": "200",
+                                                    "sizes": []
+                                                },
+                                                "align": "center",
+                                                "look": "line_text",
+                                                "text": "facilities",
+                                                "html_tag": "h5",
+                                                "gap": {
+                                                    "unit": "px",
+                                                    "size": "0",
+                                                    "sizes": []
+                                                },
+                                                "text_spacing": {
+                                                    "unit": "px",
+                                                    "size": "16",
+                                                    "sizes": []
+                                                },
+                                                "__globals__": {
+                                                    "color": "globals\/colors?id=primary",
+                                                    "text_color": "globals\/colors?id=primary",
+                                                    "typography_typography": "globals\/typography?id=ab19678"
+                                                },
+                                                "_margin": {
+                                                    "unit": "px",
+                                                    "top": "0",
+                                                    "right": "0",
+                                                    "bottom": "-24",
+                                                    "left": "0",
+                                                    "isLinked": ""
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "divider",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "3137921a",
+                                            "settings": {
+                                                "title": "Our facilities",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "typography_typography": "globals\/typography?id=70d130c",
+                                                    "title_color": "globals\/colors?id=text"
+                                                },
+                                                "_animation": "fadeInUp"
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        },
+                                        {
+                                            "id": "21b0a121",
+                                            "settings": {
+                                                "title": "Sit maecenas consequat massa nibh duis dolor nulla vulputate blandit purus nisl donec lobortis interdum donec etiam.",
+                                                "header_size": "div",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "typography_typography": "globals\/typography?id=text",
+                                                    "title_color": "globals\/colors?id=text"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": "1",
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": "1",
+                            "elType": "section"
+                        },
+                        {
+                            "id": "387c0214",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/facilities1.jpg",
+                                    "id": "201",
+                                    "alt": "",
+                                    "source": "library"
+                                },
+                                "thumbnail_size": "custom",
+                                "thumbnail_custom_dimension": {
+                                    "width": "577",
+                                    "height": "388"
+                                },
+                                "title_text": "Shopping &amp; Accessories",
+                                "description_text": "Sit maecenas consequat massa nibh duis dolor nulla vulputate blandit. Purus nisl donec lobortis interdum. Donec etiam males risus non augue non fames. Mi, sed eget sit libero lacinia ridicu non ridiculus ut.\n<br>\n<br>\nNon velit at nisi, amet ornare sollicitudin. Aliquam suspendisse diam sodales diam nibh nulla dictum arcu consequat. vestibulu egestas rhoncus, pharetra, interdum. Neque purus elit quis et a Libero quis sed cursus lorem mollis.,\n<\/br>",
+                                "position": "right",
+                                "image_space": {
+                                    "unit": "px",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_space_tablet": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "image_space_mobile": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "image_size": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_size_tablet": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_size_mobile": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_border_radius": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "image_border_radius_tablet": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "text_align": "left",
+                                "content_vertical_alignment": "middle",
+                                "title_bottom_space": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "title_bottom_space_mobile": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "_animation": "fadeInUp",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=text",
+                                    "title_typography_typography": "globals\/typography?id=f0e64d4",
+                                    "description_typography_typography": "globals\/typography?id=text"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image-box",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "795ac4c5",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/facilities2.jpg",
+                                    "id": "203",
+                                    "alt": "",
+                                    "source": "library"
+                                },
+                                "thumbnail_size": "custom",
+                                "thumbnail_custom_dimension": {
+                                    "width": "577",
+                                    "height": "388"
+                                },
+                                "title_text": "18Holes Bars &amp; Grills",
+                                "description_text": "Sit maecenas consequat massa nibh duis dolor nulla vulputate blandit. Purus nisl donec lobortis interdum. Donec etiam males risus non augue non fames. Mi, sed eget sit libero lacinia ridicu non ridiculus ut.\n<br>\n<br>\nNon velit at nisi, amet ornare sollicitudin. Aliquam suspendisse diam sodales diam nibh nulla dictum arcu consequat. vestibulu egestas rhoncus, pharetra, interdum. Neque purus elit quis et a Libero quis sed cursus lorem mollis.,\n<\/br>",
+                                "position": "left",
+                                "image_space": {
+                                    "unit": "px",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_space_tablet": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "image_space_mobile": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "image_size": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_size_tablet": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_size_mobile": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_border_radius": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "text_align": "left",
+                                "content_vertical_alignment": "middle",
+                                "title_bottom_space": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "title_bottom_space_mobile": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "_animation": "fadeInLeft",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=text",
+                                    "title_typography_typography": "globals\/typography?id=f0e64d4",
+                                    "description_typography_typography": "globals\/typography?id=text"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image-box",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "13268d5c",
+                            "settings": {
+                                "image": {
+                                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/facilities3.jpg",
+                                    "id": "202",
+                                    "alt": "",
+                                    "source": "library"
+                                },
+                                "thumbnail_size": "custom",
+                                "thumbnail_custom_dimension": {
+                                    "width": "577",
+                                    "height": "388"
+                                },
+                                "title_text": "Rent Events &amp; Wedding",
+                                "description_text": "Sit maecenas consequat massa nibh duis dolor nulla vulputate blandit. Purus nisl donec lobortis interdum. Donec etiam males risus non augue non fames. Mi, sed eget sit libero lacinia ridicu non ridiculus ut.\n<br>\n<br>\nNon velit at nisi, amet ornare sollicitudin. Aliquam suspendisse diam sodales diam nibh nulla dictum arcu consequat. vestibulu egestas rhoncus, pharetra, interdum. Neque purus elit quis et a Libero quis sed cursus lorem mollis.,\n<\/br>",
+                                "position": "right",
+                                "image_space": {
+                                    "unit": "px",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_space_tablet": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "image_space_mobile": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "image_size": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_size_tablet": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_size_mobile": {
+                                    "unit": "%",
+                                    "size": "100",
+                                    "sizes": []
+                                },
+                                "image_border_radius": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "image_border_radius_tablet": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "text_align": "left",
+                                "content_vertical_alignment": "middle",
+                                "title_bottom_space": {
+                                    "unit": "px",
+                                    "size": "32",
+                                    "sizes": []
+                                },
+                                "title_bottom_space_mobile": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "_animation": "fadeInUp",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=text",
+                                    "title_typography_typography": "globals\/typography?id=f0e64d4",
+                                    "description_typography_typography": "globals\/typography?id=text"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "image-box",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": "",
+                    "elType": "column"
+                }
+            ],
+            "isInner": "",
+            "elType": "section"
+        },
+        {
+            "id": "5eaf76e5",
+            "settings": {
+                "gap": "no",
+                "structure": "20",
+                "background_background": "classic",
+                "background_image": {
+                    "url": "https:\/\/templatekits.themewarrior.com\/18holes\/wp-content\/uploads\/sites\/25\/2021\/07\/bg-book-online.jpg",
+                    "id": "70"
+                },
+                "background_position": "center center",
+                "background_repeat": "no-repeat",
+                "background_size": "cover",
+                "background_overlay_background": "gradient",
+                "background_overlay_color_stop": {
+                    "unit": "%",
+                    "size": "50",
+                    "sizes": []
+                },
+                "background_overlay_color_b": "#F2F4F300",
+                "background_overlay_color_b_stop": {
+                    "unit": "%",
+                    "size": "78",
+                    "sizes": []
+                },
+                "background_overlay_gradient_angle": {
+                    "unit": "deg",
+                    "size": "90",
+                    "sizes": []
+                },
+                "background_overlay_opacity": {
+                    "unit": "px",
+                    "size": "0.6",
+                    "sizes": []
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": ""
+                },
+                "__globals__": {
+                    "background_overlay_color": "globals\/colors?id=4dee1a0",
+                    "background_overlay_color_b": "globals\/colors?id=2dbeb49"
+                },
+                "overflow": "hidden",
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "50",
+                    "right": "32",
+                    "bottom": "50",
+                    "left": "32",
+                    "isLinked": ""
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "32",
+                    "right": "16",
+                    "bottom": "32",
+                    "left": "16",
+                    "isLinked": ""
+                },
+                "_title": "Section: Form Book Online"
+            },
+            "elements": [
+                {
+                    "id": "202e7fa5",
+                    "settings": {
+                        "_column_size": "50"
+                    },
+                    "elements": [
+                        {
+                            "id": "657bbfea",
+                            "settings": {
+                                "width": {
+                                    "unit": "px",
+                                    "size": "200",
+                                    "sizes": []
+                                },
+                                "align": "center",
+                                "look": "line_text",
+                                "text": "book online",
+                                "html_tag": "h5",
+                                "gap": {
+                                    "unit": "px",
+                                    "size": "0",
+                                    "sizes": []
+                                },
+                                "text_spacing": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "__globals__": {
+                                    "color": "globals\/colors?id=499d99e",
+                                    "text_color": "globals\/colors?id=499d99e",
+                                    "typography_typography": "globals\/typography?id=ab19678"
+                                },
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "-24",
+                                    "left": "0",
+                                    "isLinked": ""
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "divider",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "3cff7360",
+                            "settings": {
+                                "title": "The Golf Course is Yours",
+                                "align": "center",
+                                "__globals__": {
+                                    "typography_typography": "globals\/typography?id=70d130c",
+                                    "title_color": "globals\/colors?id=499d99e"
+                                },
+                                "_animation": "fadeInUp"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "d3c46fc",
+                            "settings": {
+                                "content_width": {
+                                    "unit": "px",
+                                    "size": "500",
+                                    "sizes": []
+                                },
+                                "gap": "no"
+                            },
+                            "elements": [
+                                {
+                                    "id": "7766c54b",
+                                    "settings": {
+                                        "_column_size": "100",
+                                        "content_position": "center"
+                                    },
+                                    "elements": [
+                                        {
+                                            "id": "16c81887",
+                                            "settings": {
+                                                "title": "Sit maecenas consequat massa nibh duis dolor nulla vulputate blandit purus nisl donec lobortis interdum donec etiam.",
+                                                "header_size": "div",
+                                                "align": "center",
+                                                "__globals__": {
+                                                    "typography_typography": "globals\/typography?id=text",
+                                                    "title_color": "globals\/colors?id=499d99e"
+                                                }
+                                            },
+                                            "elements": [],
+                                            "isInner": false,
+                                            "widgetType": "heading",
+                                            "elType": "widget"
+                                        }
+                                    ],
+                                    "isInner": "1",
+                                    "elType": "column"
+                                }
+                            ],
+                            "isInner": "1",
+                            "elType": "section"
+                        },
+                        {
+                            "id": "27192ef6",
+                            "settings": {
+                                "form_name": "Book online",
+                                "form_fields": [
+                                    {
+                                        "custom_id": "name",
+                                        "field_label": "Name",
+                                        "placeholder": "Your Name",
+                                        "_id": "74598bf",
+                                        "required": "true"
+                                    },
+                                    {
+                                        "custom_id": "email",
+                                        "field_type": "email",
+                                        "required": "true",
+                                        "field_label": "Email",
+                                        "placeholder": "Email address",
+                                        "_id": "0ffce38",
+                                        "width": "50"
+                                    },
+                                    {
+                                        "_id": "f7d48ff",
+                                        "field_label": "Phone Number",
+                                        "placeholder": "Phone Number",
+                                        "custom_id": "field_f7d48ff",
+                                        "width": "50"
+                                    },
+                                    {
+                                        "field_label": "Number of player(s)",
+                                        "placeholder": "Number of player(s)",
+                                        "custom_id": "field_a979e4b",
+                                        "_id": "a979e4b",
+                                        "width": "50"
+                                    },
+                                    {
+                                        "_id": "bececfc",
+                                        "field_type": "date",
+                                        "placeholder": "Date",
+                                        "custom_id": "field_bececfc",
+                                        "field_label": "Choose Date",
+                                        "required": "true",
+                                        "width": "50"
+                                    },
+                                    {
+                                        "_id": "24d2a8b",
+                                        "field_type": "textarea",
+                                        "field_label": "Order Note",
+                                        "placeholder": "Order Note",
+                                        "custom_id": "field_24d2a8b"
+                                    }
+                                ],
+                                "show_labels": "",
+                                "step_next_label": "Next",
+                                "step_previous_label": "Previous",
+                                "button_text": "Book online",
+                                "email_content": "[all-fields]",
+                                "email_content_2": "[all-fields]",
+                                "success_message": "The form was sent successfully.",
+                                "error_message": "An error occurred.",
+                                "required_field_message": "This field is required.",
+                                "invalid_message": "There's something wrong. The form is invalid.",
+                                "column_gap": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "row_gap": {
+                                    "unit": "px",
+                                    "size": "16",
+                                    "sizes": []
+                                },
+                                "field_border_radius": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": "1"
+                                },
+                                "button_hover_animation": "float",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "32",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": ""
+                                },
+                                "_padding": {
+                                    "unit": "px",
+                                    "top": "32",
+                                    "right": "32",
+                                    "bottom": "32",
+                                    "left": "32",
+                                    "isLinked": "1"
+                                },
+                                "_background_background": "classic",
+                                "__globals__": {
+                                    "field_border_color": "globals\/colors?id=b331942",
+                                    "button_background_color": "globals\/colors?id=primary",
+                                    "_background_color": "globals\/colors?id=499d99e"
+                                },
+                                "_animation": "fadeInLeft",
+                                "selected_button_icon": {
+                                    "value": "far fa-calendar-alt",
+                                    "library": "fa-regular"
+                                },
+                                "button_icon_indent": {
+                                    "unit": "px",
+                                    "size": 10,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "form",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": "",
+                    "elType": "column"
+                },
+                {
+                    "id": "392e7f35",
+                    "settings": {
+                        "_column_size": "50"
+                    },
+                    "elements": [],
+                    "isInner": "",
+                    "elType": "column"
+                }
+            ],
+            "isInner": "",
+            "elType": "section"
+        }
+    ]
+}

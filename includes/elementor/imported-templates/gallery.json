@@ -1,0 +1,651 @@
+{
+    "version": "0.4",
+    "title": "Gallery",
+    "type": "page",
+    "metadata": {
+        "template_type": "single-page",
+        "include_in_zip": "1",
+        "elementor_pro_required": null,
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "3d7b55e5",
+            "settings": {
+                "background_background": "classic",
+                "background_image": {
+                    "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-ZZKR9NE.jpg",
+                    "id": 1230
+                },
+                "background_position": "center center",
+                "background_size": "cover",
+                "background_overlay_background": "classic",
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "200",
+                    "right": "0",
+                    "bottom": "200",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "__globals__": {
+                    "background_overlay_color": "globals\/colors?id=0fd9f58"
+                },
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "margin_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "4dbbd2de",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "23622136",
+                            "settings": {
+                                "title": "Gallery",
+                                "header_size": "h1",
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "6c28928c",
+                            "settings": {
+                                "editor": "<p>Lorem ipsum dolor sit amet.<\/p>",
+                                "align": "center",
+                                "__globals__": {
+                                    "text_color": "globals\/colors?id=primary"
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "2e1bc45b",
+            "settings": {
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "margin_mobile": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                },
+                "padding_mobile": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "20",
+                    "bottom": "100",
+                    "left": "20",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "4c45a2d5",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null,
+                        "margin_tablet": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding_tablet": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "d4de16a",
+                            "settings": {
+                                "eael_fg_items_to_show": "9",
+                                "eael_fg_filter_duration": 500,
+                                "eael_fg_grid_item_height": "200",
+                                "filter_enable": "",
+                                "eael_fg_all_label_text": "All",
+                                "eael_fg_controls": [
+                                    {
+                                        "eael_fg_control": "Gallery Item",
+                                        "_id": "6f6f562"
+                                    }
+                                ],
+                                "eael_fg_gallery_items": [
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "a32437b",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-WTNLALN.jpg",
+                                            "id": 1836
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "5d541f4",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-M99DHBF.jpg",
+                                            "id": 1513
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "573773f",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-YYAF6KF-1.jpg",
+                                            "id": 1844
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "5f8cd6c",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-DDXP934.jpg",
+                                            "id": 1596
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "09dcdd4",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/exotic-fish-symphysodon-discus-in-an-aquarium-CQHMB7W.jpg",
+                                            "id": 1841
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "0bee920",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-XCBTYEJ.jpg",
+                                            "id": 1840
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "_id": "85cc43f",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "eael_fg_gallery_item_name": "",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus2-ZZKR9NE.jpg",
+                                            "id": 1843
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "_id": "99b43d2",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "eael_fg_gallery_item_name": "",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/fire-red-discus-fish-PPYMNU6.jpg",
+                                            "id": 1445
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "_id": "e1ca6f8",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "eael_fg_gallery_item_name": "",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/colorful-fish-from-the-spieces-symphysodon-discus-M99DHBF.jpg",
+                                            "id": 1513
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    }
+                                ],
+                                "images_per_page": 6,
+                                "load_more_text": "Load More",
+                                "nomore_items_text": "No more items!",
+                                "eael_fg_item_border_radius": {
+                                    "unit": "px",
+                                    "size": 15,
+                                    "sizes": []
+                                },
+                                "eael_fg_video_item_icon_hover_scale": "1.1",
+                                "fg_sf_placeholder": "Search Gallery Item...",
+                                "eael_fg_grid_style": "masonry"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "eael-filterable-gallery",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "66fccb3e",
+                            "settings": {
+                                "eael_fg_items_to_show": "2",
+                                "eael_fg_filter_duration": 500,
+                                "columns": "2",
+                                "eael_fg_grid_style": "masonry",
+                                "eael_fg_grid_item_height": "300",
+                                "filter_enable": "",
+                                "eael_fg_all_label_text": "All",
+                                "eael_fg_controls": [
+                                    {
+                                        "eael_fg_control": "Gallery Item",
+                                        "_id": "cfbda63"
+                                    }
+                                ],
+                                "eael_fg_gallery_items": [
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "451e4a4",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/Screenshot-2021-06-11-at-11-26-38-Aquarium-algae-elements-of-flora-in-fishbowl-photo-by-NomadSoul1-on-Envato-Elements.png",
+                                            "id": 15
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "",
+                                        "_id": "d1c9f59",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons",
+                                        "eael_fg_gallery_item_content": "",
+                                        "eael_fg_gallery_img": {
+                                            "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/Screenshot-2021-06-11-at-11-24-15-Aquarium-algae-elements-of-flora-in-fishbowl-photo-by-NomadSoul1-on-Envato-Elements.png",
+                                            "id": 13
+                                        },
+                                        "eael_fg_gallery_lightbox": "",
+                                        "eael_fg_gallery_link": ""
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "Gallery Item Name",
+                                        "_id": "ab3cf4a",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons"
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "Gallery Item Name",
+                                        "_id": "e80c1e9",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons"
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "Gallery Item Name",
+                                        "_id": "ceab74f",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons"
+                                    },
+                                    {
+                                        "eael_fg_gallery_item_name": "Gallery Item Name",
+                                        "_id": "1b6ef32",
+                                        "eael_fg_gallery_item_video_link": "https:\/\/www.youtube.com\/watch?v=kB4U67tiQLA",
+                                        "fg_item_price": "$20.00",
+                                        "fg_item_ratings": "5",
+                                        "fg_item_cat": "Essential Addons"
+                                    }
+                                ],
+                                "images_per_page": 6,
+                                "load_more_text": "Load More",
+                                "nomore_items_text": "No more items!",
+                                "eael_fg_item_border_radius": {
+                                    "unit": "px",
+                                    "size": 15,
+                                    "sizes": []
+                                },
+                                "eael_fg_video_item_icon_hover_scale": "1.1",
+                                "fg_sf_placeholder": "Search Gallery Item...",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "-20",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "_padding": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "eael-filterable-gallery",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "51e74ca6",
+            "settings": {
+                "structure": "20",
+                "background_background": "classic",
+                "background_image": {
+                    "url": "https:\/\/kitpro.site\/aquassi\/wp-content\/uploads\/sites\/26\/2021\/06\/aquarium-algae-elements-of-flora-in-fishbowl-P3NP7L6.jpg",
+                    "id": 1225
+                },
+                "background_size": "cover",
+                "background_overlay_background": "classic",
+                "margin": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "0",
+                    "bottom": "100",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "__globals__": {
+                    "background_overlay_color": "globals\/colors?id=0fd9f58"
+                },
+                "background_position": "bottom center",
+                "margin_tablet": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": 0,
+                    "bottom": "0",
+                    "left": 0,
+                    "isLinked": false
+                },
+                "padding_tablet": {
+                    "unit": "px",
+                    "top": "100",
+                    "right": "30",
+                    "bottom": "100",
+                    "left": "30",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "527d712b",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": 52.012,
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "22ea53df",
+                            "settings": {
+                                "title": "Get in Touch",
+                                "align": "left",
+                                "__globals__": {
+                                    "title_color": "globals\/colors?id=primary"
+                                },
+                                "align_mobile": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "1b7271cc",
+                            "settings": {
+                                "editor": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin tellus sem, maximus eget ullamcorper a, aliquam facilisis augue. Praesent placerat nibh ut velit malesuada, at laoreet odio tincidunt. Praesent et pellentesque nibh, in maximus dolor. Curabitur faucibus tellus vel tempor finibus. ",
+                                "__globals__": {
+                                    "text_color": "globals\/colors?id=primary"
+                                },
+                                "align_mobile": "center",
+                                "_margin_mobile": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                },
+                                "_padding_mobile": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "25",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "text-editor",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "4dbb226c",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": 47.654,
+                        "content_position": "center",
+                        "margin": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        },
+                        "padding": {
+                            "unit": "px",
+                            "top": "0",
+                            "right": "0",
+                            "bottom": "0",
+                            "left": "0",
+                            "isLinked": false
+                        }
+                    },
+                    "elements": [
+                        {
+                            "id": "61bcdc28",
+                            "settings": {
+                                "text": "Click here",
+                                "align": "right",
+                                "align_mobile": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "button",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ],
+    "page_settings": {
+        "eael_ext_toc_title": "Table of Contents",
+        "template": "elementor_header_footer"
+    }
+}

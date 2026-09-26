@@ -1,0 +1,2979 @@
+{
+  "format": "wpae-imported-elementor-templates-v1",
+  "source": "user-supplied-template-folder",
+  "files": [
+    {
+      "id": "template-09aa805b6e6f4ae3",
+      "file": "01-homepage.json",
+      "original_filename": "01-homepage.json",
+      "sha256": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
+      "title": "01 &#8211; Homepage",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "homepage"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 10,
+      "bytes": 211473
+    },
+    {
+      "id": "template-ffcd7d482aebb6b2",
+      "file": "02-services.json",
+      "original_filename": "02-services.json",
+      "sha256": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
+      "title": "02 &#8211; Services",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "services"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 91492
+    },
+    {
+      "id": "template-c20dd439cdca4157",
+      "file": "03-pricing.json",
+      "original_filename": "03-pricing.json",
+      "sha256": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
+      "title": "03 &#8211; Pricing",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 133696
+    },
+    {
+      "id": "template-4c1ec279cb6eeebc",
+      "file": "04-job-listing.json",
+      "original_filename": "04-job-listing.json",
+      "sha256": "4c1ec279cb6eeebc24fbf6eed28d6307d211f76b8883b22eb352ba15d9c13448",
+      "title": "04 &#8211; Job listing",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "job",
+        "listing"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 90703
+    },
+    {
+      "id": "template-8420c716a75fa1d5",
+      "file": "05-job-details.json",
+      "original_filename": "05-job-details.json",
+      "sha256": "8420c716a75fa1d5b18bab02ac15b9414d17a2a94c11db580027f81bfd3ff252",
+      "title": "05 &#8211; Job Details",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "job",
+        "details"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 81816
+    },
+    {
+      "id": "template-0bdeb3f7addd7e36",
+      "file": "06-about.json",
+      "original_filename": "06-about.json",
+      "sha256": "0bdeb3f7addd7e36855366188fcd26560bfce96597e924fdfaa7e2c69a85cdee",
+      "title": "06 &#8211; About",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "about",
+      "tags": [
+        "about"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 106933
+    },
+    {
+      "id": "template-436e84b6e855b488",
+      "file": "07-our-team.json",
+      "original_filename": "07-our-team.json",
+      "sha256": "436e84b6e855b4880ae4fb543b5300ab25cee76c9332ad5515f4280d4dee8a4c",
+      "title": "07 &#8211; Our Team",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "team",
+      "tags": [
+        "team",
+        "our"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 84864
+    },
+    {
+      "id": "template-93460f0615340bba",
+      "file": "08-contact.json",
+      "original_filename": "08-contact.json",
+      "sha256": "93460f0615340bbaea3d4c56a9cc42bfe8ab6aea108198ddfbb48a10e57727cc",
+      "title": "08 &#8211; Contact",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "contact"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 49290
+    },
+    {
+      "id": "template-9fc2e6c8ce1ef806",
+      "file": "09-testimonial.json",
+      "original_filename": "09-testimonial.json",
+      "sha256": "9fc2e6c8ce1ef806f7c5b035245cb10b489c2250cf7ba8c796a5684a135c05a4",
+      "title": "09 &#8211; Testimonial",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "testimonials",
+      "tags": [
+        "testimonials",
+        "testimonial"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 100798
+    },
+    {
+      "id": "template-102ace8cb5cc4713",
+      "file": "10-faq.json",
+      "original_filename": "10-faq.json",
+      "sha256": "102ace8cb5cc4713d61c75bb4293c02950269fb55e6f8fc9e649e5da7681b751",
+      "title": "10 &#8211; FAQ",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "faq",
+      "tags": [
+        "faq"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 55324
+    },
+    {
+      "id": "template-afe44c285f8b3bc2",
+      "file": "404-page.json",
+      "original_filename": "404-page.json",
+      "sha256": "afe44c285f8b3bc20f95e22e413c499ee0179dabe5a2d8c7acec1cfa8dd94a05",
+      "title": "404 Page",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "404",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 18814
+    },
+    {
+      "id": "template-7e9446bda81c1c22",
+      "file": "404.json",
+      "original_filename": "404.json",
+      "sha256": "7e9446bda81c1c224cdfa083c30270e41a5dac67dc13524d89633b23c3918fd6",
+      "title": "404",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "404"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 7826
+    },
+    {
+      "id": "template-ebedfc7f8cd0526e",
+      "file": "about-us.json",
+      "original_filename": "about-us.json",
+      "sha256": "ebedfc7f8cd0526eee9711628cdcf21065d0075ca3891fd5dc9da1ef54bd2e40",
+      "title": "About Us",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "about",
+      "tags": [
+        "about"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 7,
+      "bytes": 135953
+    },
+    {
+      "id": "template-4349497435fab1d8",
+      "file": "about.json",
+      "original_filename": "about.json",
+      "sha256": "4349497435fab1d8bd2eb62ca7a63d12ac72a20c35debcd5783bdec5a2827c8a",
+      "title": "About",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "about",
+      "tags": [
+        "about"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 7,
+      "bytes": 363618
+    },
+    {
+      "id": "template-7fd33f225cdd54d9",
+      "file": "adopt-a-pet.json",
+      "original_filename": "adopt-a-pet.json",
+      "sha256": "7fd33f225cdd54d9110227f77bb23ee284994a8f47293248e0fd2451081eff54",
+      "title": "Adopt a Pet",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "adopt",
+        "pet"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 122956
+    },
+    {
+      "id": "template-723a8f548f72bbbb",
+      "file": "app-showcase-about-us.json",
+      "original_filename": "app-showcase-about-us.json",
+      "sha256": "723a8f548f72bbbba09422a7829185371c29ebea3ad2b89403c7dafa27fa144a",
+      "title": "App Showcase &#8211; About Us",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "about",
+      "tags": [
+        "about",
+        "app",
+        "showcase"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 10,
+      "bytes": 83054
+    },
+    {
+      "id": "template-408d573c481a27d3",
+      "file": "app-showcase-contact.json",
+      "original_filename": "app-showcase-contact.json",
+      "sha256": "408d573c481a27d33b352d965d85a1a9638f7db3a76d812c2a4660670d54fc0c",
+      "title": "App Showcase – Contact",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "app",
+        "showcase",
+        "contact"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 43335
+    },
+    {
+      "id": "template-c8b6917a75ffcfc9",
+      "file": "app-showcase-faqs.json",
+      "original_filename": "app-showcase-faqs.json",
+      "sha256": "c8b6917a75ffcfc909bedc6b971b050a92cb50df30a26fba826186a6e8d4b08a",
+      "title": "App Showcase – FAQs",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "faq",
+      "tags": [
+        "faq",
+        "app",
+        "showcase",
+        "faqs"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 46565
+    },
+    {
+      "id": "template-1d3c5fc862e014c0",
+      "file": "app-showcase-gallery.json",
+      "original_filename": "app-showcase-gallery.json",
+      "sha256": "1d3c5fc862e014c0e6f6bc893192bf9fc4144c7e85dbfa8621d7affe5fd03471",
+      "title": "App Showcase – Gallery",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "app",
+        "showcase",
+        "gallery"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 44031
+    },
+    {
+      "id": "template-8648032bad664c62",
+      "file": "app-showcase-how-it-works.json",
+      "original_filename": "app-showcase-how-it-works.json",
+      "sha256": "8648032bad664c62badd7262c0d8e13f9e7d8144d213a55f931b8816b7d05bc5",
+      "title": "App Showcase – How It Works",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "process",
+      "tags": [
+        "process",
+        "app",
+        "showcase",
+        "how",
+        "works"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 8,
+      "bytes": 87003
+    },
+    {
+      "id": "template-0b4945aa121403bf",
+      "file": "app-showcase-portfolio.json",
+      "original_filename": "app-showcase-portfolio.json",
+      "sha256": "0b4945aa121403bf0b87358ea6807db576c4ab8bb3d53178256de2ea0b497e1e",
+      "title": "App Showcase &#8211; Portfolio",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "app",
+        "showcase"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 8,
+      "bytes": 69206
+    },
+    {
+      "id": "template-ca3dd9e7a2991775",
+      "file": "app-showcase-services.json",
+      "original_filename": "app-showcase-services.json",
+      "sha256": "ca3dd9e7a29917750b8093633736fa9437b48fb70b76608e2a04508a0f1de4d8",
+      "title": "App Showcase – Services",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "app",
+        "showcase",
+        "services"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 7,
+      "bytes": 93846
+    },
+    {
+      "id": "template-7581829a76f49c0c",
+      "file": "app-showcase-team.json",
+      "original_filename": "app-showcase-team.json",
+      "sha256": "7581829a76f49c0c1090af72abb062cf6914e7bcb1066b65812201f80ca9f789",
+      "title": "App Showcase – Team",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "team",
+      "tags": [
+        "team",
+        "app",
+        "showcase"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 85732
+    },
+    {
+      "id": "template-b4d35106977fef1c",
+      "file": "app-showcase.json",
+      "original_filename": "app-showcase.json",
+      "sha256": "b4d35106977fef1c3861ac161eae88e23703fd31432c83981a7a9e9ac9d4fb97",
+      "title": "App Showcase",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "app",
+        "showcase"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 9,
+      "bytes": 91597
+    },
+    {
+      "id": "template-399eecf7611e1c7f",
+      "file": "appraxx-aboutus-page.json",
+      "original_filename": "appraxx-aboutus-page.json",
+      "sha256": "399eecf7611e1c7f544e1c72c110e215ef3b19d122b30c63f1524eb4ccd866e7",
+      "title": "AppRaxx &#8211; AboutUs Page",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "about",
+      "tags": [
+        "about",
+        "appraxx",
+        "aboutus",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 8,
+      "bytes": 110137
+    },
+    {
+      "id": "template-7b2ba7c3aeaddb92",
+      "file": "appraxx-appdownload-section.json",
+      "original_filename": "appraxx-appdownload-section.json",
+      "sha256": "7b2ba7c3aeaddb92d2b0be8c4669c6a2d172ff536f6503bfede67dd28cc78dd8",
+      "title": "AppRaxx &#8211; AppDownload Section",
+      "type": "section",
+      "template_type": "section-other",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "appdownload",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 14370
+    },
+    {
+      "id": "template-912112dfcd8d7c0a",
+      "file": "appraxx-appoverview-section-1.json",
+      "original_filename": "appraxx-appoverview-section-1.json",
+      "sha256": "912112dfcd8d7c0a0ffae0a90e4b2bab4b41777d926c1d12751729d63d6dba42",
+      "title": "AppRaxx &#8211; AppOverview Section 1",
+      "type": "section",
+      "template_type": "section-services",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "appraxx",
+        "appoverview",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 14963
+    },
+    {
+      "id": "template-14f32a174b9d27a3",
+      "file": "appraxx-appoverview-section-2.json",
+      "original_filename": "appraxx-appoverview-section-2.json",
+      "sha256": "14f32a174b9d27a334512a81e39ef8ce51dfaea81118b9426cec5701d87335e5",
+      "title": "AppRaxx &#8211; AppOverview Section 2",
+      "type": "section",
+      "template_type": "section-services",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "appraxx",
+        "appoverview",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 28868
+    },
+    {
+      "id": "template-4711087a3f380a1c",
+      "file": "appraxx-contactus-page.json",
+      "original_filename": "appraxx-contactus-page.json",
+      "sha256": "4711087a3f380a1cb3ea96789342fbcd6fe74b0fd7a1fcecbf359a8196054c3a",
+      "title": "AppRaxx &#8211; ContactUs Page",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "appraxx",
+        "contactus",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 66660
+    },
+    {
+      "id": "template-f66b353a35932548",
+      "file": "appraxx-contactus-section.json",
+      "original_filename": "appraxx-contactus-section.json",
+      "sha256": "f66b353a359325487139f894257b59168b45ae6c9dda830e9b237ce216dfb3e2",
+      "title": "AppRaxx &#8211; ContactUs Section",
+      "type": "section",
+      "template_type": "section-contact",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "appraxx",
+        "contactus",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 11323
+    },
+    {
+      "id": "template-8426d881d11875e3",
+      "file": "appraxx-feature-section-1.json",
+      "original_filename": "appraxx-feature-section-1.json",
+      "sha256": "8426d881d11875e337b9536a8b48df38846601895f311e6169e825fe15c5bad9",
+      "title": "AppRaxx &#8211; Feature Section 1",
+      "type": "section",
+      "template_type": "section-features",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "appraxx",
+        "feature",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 16166
+    },
+    {
+      "id": "template-49c6eab80276a113",
+      "file": "appraxx-feature-section-2.json",
+      "original_filename": "appraxx-feature-section-2.json",
+      "sha256": "49c6eab80276a113621c2aee24df5f2c7a49916cec7c62cf900527aa45819454",
+      "title": "AppRaxx &#8211; Feature Section 2",
+      "type": "section",
+      "template_type": "section-features",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "appraxx",
+        "feature",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 25887
+    },
+    {
+      "id": "template-2642dbef0a9e2114",
+      "file": "appraxx-feature-section-with-title.json",
+      "original_filename": "appraxx-feature-section-with-title.json",
+      "sha256": "2642dbef0a9e211402d7f60cdf2f6a3bdbfdb1236d15a9ae772471d172cb3c76",
+      "title": "AppRaxx &#8211; Feature Section with Title",
+      "type": "section",
+      "template_type": "section-features",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "appraxx",
+        "feature",
+        "section",
+        "with",
+        "title"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 36337
+    },
+    {
+      "id": "template-fb7da9e507b400b3",
+      "file": "appraxx-footer-section.json",
+      "original_filename": "appraxx-footer-section.json",
+      "sha256": "fb7da9e507b400b3d95cde4fea181f273bbe30556828a57154d84c4cbddadf72",
+      "title": "AppRaxx – Footer Section",
+      "type": "section",
+      "template_type": "section-pricing",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "appraxx",
+        "footer",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 2876
+    },
+    {
+      "id": "template-aeb8bb16afa5afe4",
+      "file": "appraxx-footertop-section.json",
+      "original_filename": "appraxx-footertop-section.json",
+      "sha256": "aeb8bb16afa5afe4affa50cafc44f5687f9498c93522bdcea543b9e683938c89",
+      "title": "AppRaxx &#8211; FooterTop Section",
+      "type": "section",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "appraxx",
+        "footertop",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 34269
+    },
+    {
+      "id": "template-d6b4897d4027a1bf",
+      "file": "appraxx-header-section.json",
+      "original_filename": "appraxx-header-section.json",
+      "sha256": "d6b4897d4027a1bf1670f6e7f39ace2981af56298562bf634bf67a135cc5f472",
+      "title": "AppRaxx – Header Section",
+      "type": "section",
+      "template_type": "section-pricing",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "appraxx",
+        "header",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 6674
+    },
+    {
+      "id": "template-0c19530562d4bec5",
+      "file": "appraxx-hero-section-1.json",
+      "original_filename": "appraxx-hero-section-1.json",
+      "sha256": "0c19530562d4bec571949190e278e4c98e50ee6166a9bd76a530bb687bb21c95",
+      "title": "AppRaxx &#8211; Hero Section 1",
+      "type": "section",
+      "template_type": "section-hero",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 14615
+    },
+    {
+      "id": "template-aba18d617e136dc3",
+      "file": "appraxx-hero-section-2.json",
+      "original_filename": "appraxx-hero-section-2.json",
+      "sha256": "aba18d617e136dc3876b5f9e4e2ba5ebbf25012df2f5886e7b7523fe6f92daae",
+      "title": "AppRaxx &#8211; Hero Section 2",
+      "type": "section",
+      "template_type": "section-hero",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 24880
+    },
+    {
+      "id": "template-e22818f0fa6fa86f",
+      "file": "appraxx-hero-section-3.json",
+      "original_filename": "appraxx-hero-section-3.json",
+      "sha256": "e22818f0fa6fa86f308962642992e5eb0df8be8d72548739830b2a018f23dc25",
+      "title": "AppRaxx &#8211; Hero Section 3",
+      "type": "section",
+      "template_type": "section-hero",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 14514
+    },
+    {
+      "id": "template-59e352d8aaf51dbe",
+      "file": "appraxx-home-page-1.json",
+      "original_filename": "appraxx-home-page-1.json",
+      "sha256": "59e352d8aaf51dbe10cea67f5731996a01789b3cad9d8deb02ed8cf1d3267a60",
+      "title": "AppRaxx &#8211; Home Page 1",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "home",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 9,
+      "bytes": 102562
+    },
+    {
+      "id": "template-fe5635a137a70318",
+      "file": "appraxx-home-page-2.json",
+      "original_filename": "appraxx-home-page-2.json",
+      "sha256": "fe5635a137a7031805b993136f456cb41f62ea784b24e1ab3539c714e91bd0c7",
+      "title": "AppRaxx &#8211; Home Page 2",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "home",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 9,
+      "bytes": 105921
+    },
+    {
+      "id": "template-966da24f54781ca2",
+      "file": "appraxx-home-page-3.json",
+      "original_filename": "appraxx-home-page-3.json",
+      "sha256": "966da24f54781ca22de6b973a17c1f4a2a2cab2f25a6870649834a368ce95ddb",
+      "title": "AppRaxx &#8211; Home Page 3",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "home",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 11,
+      "bytes": 283524
+    },
+    {
+      "id": "template-87f206a2155f4a1e",
+      "file": "appraxx-home-page-4.json",
+      "original_filename": "appraxx-home-page-4.json",
+      "sha256": "87f206a2155f4a1e22df3152e2b3fa7fd2156cd0162ecec8645cd5657dc4be87",
+      "title": "AppRaxx &#8211; Home Page 4",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "home",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 8,
+      "bytes": 139408
+    },
+    {
+      "id": "template-f90f4115e9b88c7f",
+      "file": "appraxx-home-page-5.json",
+      "original_filename": "appraxx-home-page-5.json",
+      "sha256": "f90f4115e9b88c7f09319b67eee469d3caf20d09e533fdfdc516851e24d1dd40",
+      "title": "AppRaxx &#8211; Home Page 5",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "appraxx",
+        "home",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 12,
+      "bytes": 162888
+    },
+    {
+      "id": "template-10e2fc4b7fc25744",
+      "file": "appraxx-ourteam-page.json",
+      "original_filename": "appraxx-ourteam-page.json",
+      "sha256": "10e2fc4b7fc25744365800974d7c235d5c95cf97841e32e46ac03173a818b54b",
+      "title": "AppRaxx &#8211; OurTeam Page",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "team",
+      "tags": [
+        "team",
+        "appraxx",
+        "ourteam",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 9,
+      "bytes": 186957
+    },
+    {
+      "id": "template-6e53bb3d0e3bc2fb",
+      "file": "appraxx-ourteam-section.json",
+      "original_filename": "appraxx-ourteam-section.json",
+      "sha256": "6e53bb3d0e3bc2fb104986318cfa15b599a81a7bd631622267a6f257d97cebe1",
+      "title": "AppRaxx &#8211; OurTeam Section",
+      "type": "section",
+      "template_type": "section-team",
+      "category": "team",
+      "tags": [
+        "team",
+        "appraxx",
+        "ourteam",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 40229
+    },
+    {
+      "id": "template-fa0ae206a559a572",
+      "file": "appraxx-pricing-page.json",
+      "original_filename": "appraxx-pricing-page.json",
+      "sha256": "fa0ae206a559a57222304dd2fb1242d5713ce733f26b1c0ba01b576dbaab2d13",
+      "title": "AppRaxx &#8211; Pricing Page",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "appraxx",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 151293
+    },
+    {
+      "id": "template-2b082a9669aad337",
+      "file": "appraxx-pricingtable-section.json",
+      "original_filename": "appraxx-pricingtable-section.json",
+      "sha256": "2b082a9669aad337258954cd34e5e06cdbcc63caf130ea9a547f16b1719bd291",
+      "title": "AppRaxx – PricingTable Section",
+      "type": "section",
+      "template_type": "section-pricing",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "appraxx",
+        "pricingtable",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 86167
+    },
+    {
+      "id": "template-e008be4d78cf82c8",
+      "file": "appraxx-screenshot-section.json",
+      "original_filename": "appraxx-screenshot-section.json",
+      "sha256": "e008be4d78cf82c8b9c85ab2899bbcca948e2579d2f51dbe26954a4fe8efb99b",
+      "title": "AppRaxx &#8211; Screenshot Section",
+      "type": "section",
+      "template_type": "section-gallery",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "appraxx",
+        "screenshot",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 11954
+    },
+    {
+      "id": "template-d70c1f3e4d3f08a2",
+      "file": "appraxx-subscribe-section.json",
+      "original_filename": "appraxx-subscribe-section.json",
+      "sha256": "d70c1f3e4d3f08a2c9363fa4cd321311fdf81d7e3712f3812b6ffecdee2fc13f",
+      "title": "AppRaxx &#8211; Subscribe Section",
+      "type": "section",
+      "template_type": "section-other",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "appraxx",
+        "subscribe",
+        "section"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 7418
+    },
+    {
+      "id": "template-5729efe8026c3c87",
+      "file": "appraxx-usersactivity-facts-1.json",
+      "original_filename": "appraxx-usersactivity-facts-1.json",
+      "sha256": "5729efe8026c3c87a7afe0d3d14db2c4764c10f5de247bb715c80b084775235a",
+      "title": "AppRaxx &#8211; UsersActivity Facts 1",
+      "type": "section",
+      "template_type": "section-stats",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "appraxx",
+        "usersactivity",
+        "facts"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 15212
+    },
+    {
+      "id": "template-5e0a41cf0e23c689",
+      "file": "appraxx-usersactivity-facts-2.json",
+      "original_filename": "appraxx-usersactivity-facts-2.json",
+      "sha256": "5e0a41cf0e23c689d73fbc6c3c94624a411ca63c7f57ed6fa022559385719456",
+      "title": "AppRaxx &#8211; UsersActivity Facts 2",
+      "type": "section",
+      "template_type": "section-stats",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "appraxx",
+        "usersactivity",
+        "facts"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 26707
+    },
+    {
+      "id": "template-e4c9cb5070c77626",
+      "file": "archive-post.json",
+      "original_filename": "archive-post.json",
+      "sha256": "e4c9cb5070c7762695a5ef7a138bed1477ae69e11613cd0c3ab08f61d94db750",
+      "title": "Archive Post",
+      "type": "archive",
+      "template_type": "archive-blog",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "archive",
+        "post"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 11965
+    },
+    {
+      "id": "template-1d1279a3bf2eecd9",
+      "file": "archive.json",
+      "original_filename": "archive.json",
+      "sha256": "1d1279a3bf2eecd968fba5ce7d06248e6bd2df4ce0dc4811795429527a7a58c6",
+      "title": "Archive",
+      "type": "archive",
+      "template_type": "archive-blog",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "archive"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 10945
+    },
+    {
+      "id": "template-3ce179befb394315",
+      "file": "block-blockquote.json",
+      "original_filename": "block-blockquote.json",
+      "sha256": "3ce179befb394315bdb3103c70a04537d79690f0c65a8f05624a5c582cca6c0c",
+      "title": "Block Blockquote",
+      "type": "section",
+      "template_type": "section-testimonial",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "block",
+        "blockquote"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 5539
+    },
+    {
+      "id": "template-34e6cdceb2f87325",
+      "file": "block-brand-logos.json",
+      "original_filename": "block-brand-logos.json",
+      "sha256": "34e6cdceb2f8732591156ec9a241a21cec76b06407dc21701443f4253abc582f",
+      "title": "Block &#8211; Brand Logos",
+      "type": "section",
+      "template_type": "section-logo-grid",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "block",
+        "brand",
+        "logos"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 37716
+    },
+    {
+      "id": "template-4abb6e813bbc4091",
+      "file": "block-contact-form.json",
+      "original_filename": "block-contact-form.json",
+      "sha256": "4abb6e813bbc40919496f9a20c9107be1f30521dcdc73dc03cd9f9bd842ee4ae",
+      "title": "Block &#8211; Contact Form",
+      "type": "section",
+      "template_type": "section-contact",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "block",
+        "contact",
+        "form"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 17785
+    },
+    {
+      "id": "template-a40df0dcc7c5642d",
+      "file": "block-course-boxes.json",
+      "original_filename": "block-course-boxes.json",
+      "sha256": "a40df0dcc7c5642db7d06759b97c910f55b7e94ad30d6a819167068d2ceb944f",
+      "title": "Block &#8211; Course Boxes",
+      "type": "section",
+      "template_type": "section-services",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "block",
+        "course",
+        "boxes"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 60939
+    },
+    {
+      "id": "template-9659b7374df4154a",
+      "file": "block-course-index.json",
+      "original_filename": "block-course-index.json",
+      "sha256": "9659b7374df4154aef8c478fdcda968b6a8d8e6d04fba5fbcbf409a0d87480c7",
+      "title": "Block &#8211; Course Index",
+      "type": "section",
+      "template_type": "section-other",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "block",
+        "course",
+        "index"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 19722
+    },
+    {
+      "id": "template-0d8cbc50d1d1e20a",
+      "file": "block-feature-boxes.json",
+      "original_filename": "block-feature-boxes.json",
+      "sha256": "0d8cbc50d1d1e20a8f0d877f08e1f772745308dc79a995c24163ce391ea78547",
+      "title": "Block &#8211; Feature Boxes",
+      "type": "section",
+      "template_type": "section-features",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "block",
+        "feature",
+        "boxes"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 41888
+    },
+    {
+      "id": "template-670d031aba9a67cd",
+      "file": "block-feature-grid.json",
+      "original_filename": "block-feature-grid.json",
+      "sha256": "670d031aba9a67cd896a144fe2b4b798ececfc8fc85f9602a88b9bdc4f3f9cfc",
+      "title": "Block &#8211; Feature Grid",
+      "type": "section",
+      "template_type": "section-features",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "block",
+        "feature",
+        "grid"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 69591
+    },
+    {
+      "id": "template-0a4bbf3cc5c0cef2",
+      "file": "block-features.json",
+      "original_filename": "block-features.json",
+      "sha256": "0a4bbf3cc5c0cef2ff0d56a440605d046c762a8077ff38dcdb87a3d49f836205",
+      "title": "Block Features",
+      "type": "section",
+      "template_type": "section-features",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "block",
+        "features"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 30707
+    },
+    {
+      "id": "template-3af4b442124f60eb",
+      "file": "block-footer.json",
+      "original_filename": "block-footer.json",
+      "sha256": "3af4b442124f60eb7ec6d292a4b8d519e66ae49daaff8ba2e92dcf275c0120e2",
+      "title": "Block &#8211; Footer",
+      "type": "section",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "block",
+        "footer"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 55538
+    },
+    {
+      "id": "template-01bbdad7587a12af",
+      "file": "block-gallery.json",
+      "original_filename": "block-gallery.json",
+      "sha256": "01bbdad7587a12af81da681385b5432bd174322e4819566c71c46d5d7e13b337",
+      "title": "Block Gallery",
+      "type": "section",
+      "template_type": "section-gallery",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "block",
+        "gallery"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 7365
+    },
+    {
+      "id": "template-3a48dab1cb0aa303",
+      "file": "block-header.json",
+      "original_filename": "block-header.json",
+      "sha256": "3a48dab1cb0aa3034432e2cb74e88d8329a849e9b8bf8bebaef0111ad9d0b8c8",
+      "title": "Block &#8211; Header",
+      "type": "section",
+      "template_type": "section-header",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "block",
+        "header"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 38882
+    },
+    {
+      "id": "template-061dcab149beed07",
+      "file": "block-hero.json",
+      "original_filename": "block-hero.json",
+      "sha256": "061dcab149beed07e387de88e77975909ea5adc1ed6c9725bd531b8038987315",
+      "title": "Block Hero",
+      "type": "section",
+      "template_type": "section-hero",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "block"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 5752
+    },
+    {
+      "id": "template-4a965c334543482a",
+      "file": "block-news.json",
+      "original_filename": "block-news.json",
+      "sha256": "4a965c334543482a43c8dd993fb0541d18fc75c9ceba7ed8a0430ea1973a336a",
+      "title": "Block News",
+      "type": "section",
+      "template_type": "section-other",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "block",
+        "news"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 7844
+    },
+    {
+      "id": "template-fb85ee73dac208cb",
+      "file": "block-numbers.json",
+      "original_filename": "block-numbers.json",
+      "sha256": "fb85ee73dac208cb8d6f43f3f3de10c4103311e5c314e263bdd494ef60cc0d5e",
+      "title": "Block &#8211; Numbers",
+      "type": "section",
+      "template_type": "section-stats",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "block",
+        "numbers"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 21351
+    },
+    {
+      "id": "template-ac01955c60d85bde",
+      "file": "block-partners.json",
+      "original_filename": "block-partners.json",
+      "sha256": "ac01955c60d85bde89ffba63238016691c6ee8bfa1822e375f045c8bd44d41e4",
+      "title": "Block Partners",
+      "type": "section",
+      "template_type": "section-logo-grid",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "block",
+        "partners"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 13795
+    },
+    {
+      "id": "template-c010243ce2a550ec",
+      "file": "block-pricing-boxes.json",
+      "original_filename": "block-pricing-boxes.json",
+      "sha256": "c010243ce2a550ecedd05d7c1264a695d2da434cc615e28e74eea3fa60003798",
+      "title": "Block &#8211; Pricing Boxes",
+      "type": "section",
+      "template_type": "section-pricing",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "block",
+        "boxes"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 70051
+    },
+    {
+      "id": "template-5709d99b8b039411",
+      "file": "block-promo.json",
+      "original_filename": "block-promo.json",
+      "sha256": "5709d99b8b0394113824bd1ec6ffea0a644749f7b1b00cd25fca36cbc552e148",
+      "title": "Block Promo",
+      "type": "section",
+      "template_type": "section-cta",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "block",
+        "promo"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 6131
+    },
+    {
+      "id": "template-516d6bc8819ba832",
+      "file": "block-subscribe-form.json",
+      "original_filename": "block-subscribe-form.json",
+      "sha256": "516d6bc8819ba83203a01631d475fb4ba6dc7ab8683d51df8f869cbac94ff0a2",
+      "title": "Block &#8211; Subscribe Form",
+      "type": "section",
+      "template_type": "section-contact",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "block",
+        "subscribe",
+        "form"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 10629
+    },
+    {
+      "id": "template-443a85b544b0d014",
+      "file": "block-testimonial-boxes.json",
+      "original_filename": "block-testimonial-boxes.json",
+      "sha256": "443a85b544b0d0140104523e74264c326b46aff4b381be424257c4fe63f59b67",
+      "title": "Block &#8211; Testimonial Boxes",
+      "type": "section",
+      "template_type": "section-testimonial",
+      "category": "testimonials",
+      "tags": [
+        "testimonials",
+        "block",
+        "testimonial",
+        "boxes"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 136530
+    },
+    {
+      "id": "template-b1f23750bd00d4a5",
+      "file": "block-testimonial.json",
+      "original_filename": "block-testimonial.json",
+      "sha256": "b1f23750bd00d4a53d572b50edd36a06ffc50cd3e1803d7d5397578d8f8739de",
+      "title": "Block &#8211; Testimonial",
+      "type": "section",
+      "template_type": "section-testimonial",
+      "category": "testimonials",
+      "tags": [
+        "testimonials",
+        "block",
+        "testimonial"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 35387
+    },
+    {
+      "id": "template-4c435f1978215c07",
+      "file": "block-works.json",
+      "original_filename": "block-works.json",
+      "sha256": "4c435f1978215c07ced4b85b46cfde0102188434195e694affb826dce1d56b52",
+      "title": "Block Works",
+      "type": "section",
+      "template_type": "section-product",
+      "category": "process",
+      "tags": [
+        "process",
+        "block",
+        "works"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 17819
+    },
+    {
+      "id": "template-35d4ed8a2b69ebd1",
+      "file": "blog-archive.json",
+      "original_filename": "blog-archive.json",
+      "sha256": "35d4ed8a2b69ebd16e07ed17bdd971cbbf311700f8374db9d2a607f43eafbdfa",
+      "title": "Blog Archive",
+      "type": "archive",
+      "template_type": "archive-blog",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "blog",
+        "archive"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 10731
+    },
+    {
+      "id": "template-c8ee052eacf4880a",
+      "file": "blog-grid.json",
+      "original_filename": "blog-grid.json",
+      "sha256": "c8ee052eacf4880a546fc8017fdbd0ddaecc4cce01c9b0b3591bf7f6504552e1",
+      "title": "Blog Grid",
+      "type": "archive",
+      "template_type": "archive-blog",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "blog",
+        "grid"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 9821
+    },
+    {
+      "id": "template-1c0de3344b072e88",
+      "file": "blog.json",
+      "original_filename": "blog.json",
+      "sha256": "1c0de3344b072e88c58102bbf99ec61d3c38bb8b655a88025cdb1f8bbd963caf",
+      "title": "Blog",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "blog"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 52838
+    },
+    {
+      "id": "template-d606f25648953489",
+      "file": "career.json",
+      "original_filename": "career.json",
+      "sha256": "d606f2564895348969c26a3181be60cce950f2b932a7beb061fa67cf93ed9fc0",
+      "title": "Career",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "career"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 158997
+    },
+    {
+      "id": "template-3679d982fa3742e3",
+      "file": "carrers.json",
+      "original_filename": "carrers.json",
+      "sha256": "3679d982fa3742e34e8c21741f25ba1a597cf621d66b6e055ca022e19327a44b",
+      "title": "Carrers",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "carrers"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 79038
+    },
+    {
+      "id": "template-e94dd428c7bad86a",
+      "file": "coming-soon-01.json",
+      "original_filename": "coming-soon-01.json",
+      "sha256": "e94dd428c7bad86ac1225cf2700e3a2095f39be53af81cd05556906dab065b6e",
+      "title": "Coming Soon 01",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "coming",
+        "soon"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 28410
+    },
+    {
+      "id": "template-e16f5b071a6d98fc",
+      "file": "coming-soon-02.json",
+      "original_filename": "coming-soon-02.json",
+      "sha256": "e16f5b071a6d98fc944e12a0172ce857cf3e8ed0a51e8eb5487701349a2965eb",
+      "title": "Coming Soon 02",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "coming",
+        "soon"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 36162
+    },
+    {
+      "id": "template-6fa2e5a206af1a56",
+      "file": "coming-soon.json",
+      "original_filename": "coming-soon.json",
+      "sha256": "6fa2e5a206af1a567e9129933ae3248461506ed0b5b105e62fda1a90a1b81280",
+      "title": "Coming Soon",
+      "type": "section",
+      "template_type": "section-countdown",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "coming",
+        "soon"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 33610
+    },
+    {
+      "id": "template-0110eadc274ac22b",
+      "file": "contact-metform.json",
+      "original_filename": "contact-metform.json",
+      "sha256": "0110eadc274ac22b650a5f06f8b3283dc32329ae6fb312e1bb9025432d5ee169",
+      "title": "Contact-Metform",
+      "type": "section",
+      "template_type": "section-other",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "contact",
+        "metform"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 13442
+    },
+    {
+      "id": "template-acb54e292ee50c74",
+      "file": "contact-us.json",
+      "original_filename": "contact-us.json",
+      "sha256": "acb54e292ee50c74a67ccdf23a1a567135857bb0e2cb2fd2b3f940d3c1388719",
+      "title": "Contact Us",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "contact"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 25212
+    },
+    {
+      "id": "template-f51a3b9b83fe1146",
+      "file": "contact.json",
+      "original_filename": "contact.json",
+      "sha256": "f51a3b9b83fe11464514bc8f1b87b3137c3460e5ce8b29be497f83c52de63880",
+      "title": "Contact",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "contact"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 150783
+    },
+    {
+      "id": "template-4c79ecc78d5861fd",
+      "file": "contacts.json",
+      "original_filename": "contacts.json",
+      "sha256": "4c79ecc78d5861fd992f7c1614a006deec4061044ed3979096d7c41826538671",
+      "title": "Contacts",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "contacts"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 34021
+    },
+    {
+      "id": "template-f5d3799a0b0ca8f6",
+      "file": "donate-table-01.json",
+      "original_filename": "donate-table-01.json",
+      "sha256": "f5d3799a0b0ca8f677ab5a7982bdb5d7be0e33aea76b746e744789e0e2c17911",
+      "title": "Donate Table 01",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "donate",
+        "table"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 56379
+    },
+    {
+      "id": "template-36470736392409c9",
+      "file": "donate-table-02.json",
+      "original_filename": "donate-table-02.json",
+      "sha256": "36470736392409c90ff5f057f6f20e228494ffaa22f357c4d5882f8e6d7dbba9",
+      "title": "Donate Table 02",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "donate",
+        "table"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 41556
+    },
+    {
+      "id": "template-1d23ac087bcf7cc6",
+      "file": "event-details.json",
+      "original_filename": "event-details.json",
+      "sha256": "1d23ac087bcf7cc6247be81ec2ad4e1cfa299728831998237873c21f3f7307ec",
+      "title": "Event Details",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "process",
+      "tags": [
+        "process",
+        "event",
+        "details"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 51239
+    },
+    {
+      "id": "template-92652d9fcbfc945d",
+      "file": "events.json",
+      "original_filename": "events.json",
+      "sha256": "92652d9fcbfc945d6665bf331ec8c8ad7500c973428c2f165d7c14f8d74270d1",
+      "title": "Events",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "process",
+      "tags": [
+        "process",
+        "events"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 562142
+    },
+    {
+      "id": "template-89c82591c03c4ec8",
+      "file": "faq.json",
+      "original_filename": "faq.json",
+      "sha256": "89c82591c03c4ec81a8046e6aff5d88e38a2cff0cd7ba781e2b053ae7538db17",
+      "title": "FAQ",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "faq",
+      "tags": [
+        "faq"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 56148
+    },
+    {
+      "id": "template-e61630cde34efd18",
+      "file": "faqs-page.json",
+      "original_filename": "faqs-page.json",
+      "sha256": "e61630cde34efd18bbcde6120954c6c391f05cc4f27ae8c87a4e06e60edd01a4",
+      "title": "FAQs Page",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "faq",
+      "tags": [
+        "faq",
+        "faqs",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 50268
+    },
+    {
+      "id": "template-3b159639165ba825",
+      "file": "features.json",
+      "original_filename": "features.json",
+      "sha256": "3b159639165ba8252c56da6f570c9a1c440332a940bd62dc9c5187dfbb9b73c8",
+      "title": "Features",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "features"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 165641
+    },
+    {
+      "id": "template-9167b70460dcbb54",
+      "file": "footer-01.json",
+      "original_filename": "footer-01.json",
+      "sha256": "9167b70460dcbb545cff015ce9fe02ded7a8f2e2d85fdd9927ec62970e537673",
+      "title": "Footer 01",
+      "type": "footer",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "footer"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 34572
+    },
+    {
+      "id": "template-e6f6fd80e72ac012",
+      "file": "footer-aquila.json",
+      "original_filename": "footer-aquila.json",
+      "sha256": "e6f6fd80e72ac0123b8570abfcab6d96fa66a36b1d5a4dd78462c718f5629272",
+      "title": "Footer &#8211; Aquila",
+      "type": "footer",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "footer",
+        "aquila"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 42818
+    },
+    {
+      "id": "template-188b5993a0b7eea3",
+      "file": "footer.json",
+      "original_filename": "footer.json",
+      "sha256": "188b5993a0b7eea3bd76acf000dd62200ae0f14e45a7095ddc8fadff6517b376",
+      "title": "Footer",
+      "type": "section",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "footer"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 23553
+    },
+    {
+      "id": "template-3649ca50a68e3bf9",
+      "file": "free-quote.json",
+      "original_filename": "free-quote.json",
+      "sha256": "3649ca50a68e3bf939aaea52339546424b652003365f823150355291ba91a55b",
+      "title": "Free quote",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "free",
+        "quote"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 69311
+    },
+    {
+      "id": "template-01596b9eccd227d6",
+      "file": "gallery.json",
+      "original_filename": "gallery.json",
+      "sha256": "01596b9eccd227d63084dabd0119683b30a2862cc29a18b845d2f60f0b04ca59",
+      "title": "Gallery",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "gallery"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 32594
+    },
+    {
+      "id": "template-4a47022a01b46a6d",
+      "file": "global.json",
+      "original_filename": "global.json",
+      "sha256": "4a47022a01b46a6daafb0b9de424fca199963255c5c843e3d073f9bcb3c7e4e0",
+      "title": "Global Kit Styles",
+      "type": "section",
+      "template_type": "global-styles",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "global"
+      ],
+      "elementor_pro_required": false,
+      "has_content": false,
+      "root_count": 0,
+      "bytes": 12625
+    },
+    {
+      "id": "template-3166b8d7617bba8d",
+      "file": "global-3166b8d7.json",
+      "original_filename": "global — копия.json",
+      "sha256": "3166b8d7617bba8d7e72aed3494fed366cee4b2262f4ec56182fff014c517b72",
+      "title": "Default Kit",
+      "type": "section",
+      "template_type": "global-styles",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "global"
+      ],
+      "elementor_pro_required": false,
+      "has_content": false,
+      "root_count": 0,
+      "bytes": 6994
+    },
+    {
+      "id": "template-f2b3fea711f9f7dd",
+      "file": "header-01.json",
+      "original_filename": "header-01.json",
+      "sha256": "f2b3fea711f9f7dd943f0a6f58bed55d44499a45410791adf1f408c37457707f",
+      "title": "Header 01",
+      "type": "header",
+      "template_type": "section-header",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "header"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 11804
+    },
+    {
+      "id": "template-f822cfefcf92b527",
+      "file": "header-aquila.json",
+      "original_filename": "header-aquila.json",
+      "sha256": "f822cfefcf92b5270a7e39a8c2f1966f4d9b052a7ec0a24129bdde96fdfefbf4",
+      "title": "Header &#8211; Aquila",
+      "type": "header",
+      "template_type": "section-header",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "header",
+        "aquila"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 23974
+    },
+    {
+      "id": "template-e3f381fdfd3d11df",
+      "file": "header.json",
+      "original_filename": "header.json",
+      "sha256": "e3f381fdfd3d11df4b553c4ecc541e362a02054978af5b2c2d353f6b8333266b",
+      "title": "Header",
+      "type": "section",
+      "template_type": "section-header",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "header"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 30120
+    },
+    {
+      "id": "template-90e12653da093734",
+      "file": "home.json",
+      "original_filename": "home.json",
+      "sha256": "90e12653da093734bfee6dd89d570ffe5b19dc4f5e8d2bdf2c96910d748c41d4",
+      "title": "Home",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "home"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 10,
+      "bytes": 240947
+    },
+    {
+      "id": "template-41d0c3ae5c7d1f4e",
+      "file": "homepage.json",
+      "original_filename": "homepage.json",
+      "sha256": "41d0c3ae5c7d1f4e13f6e21e07c4a70b768e240cc1189e8fcd21ca37979582d2",
+      "title": "Homepage",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "homepage"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 11,
+      "bytes": 290802
+    },
+    {
+      "id": "template-37a57d9b85176460",
+      "file": "love-stories.json",
+      "original_filename": "love-stories.json",
+      "sha256": "37a57d9b85176460c3523fa68b4764f941f38be1f010083884a7d1870b44b429",
+      "title": "Love Stories",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "testimonials",
+      "tags": [
+        "testimonials",
+        "love",
+        "stories"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 49723
+    },
+    {
+      "id": "template-52b616c1d32f7203",
+      "file": "membership-plan.json",
+      "original_filename": "membership-plan.json",
+      "sha256": "52b616c1d32f72031cbdbbc0c5c7219845ffdd6fcb21f193c83cf950630ab294",
+      "title": "Membership Plan",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "membership",
+        "plan"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 100165
+    },
+    {
+      "id": "template-6f8ebe2165777c2b",
+      "file": "menu.json",
+      "original_filename": "menu.json",
+      "sha256": "6f8ebe2165777c2b09beb9cd0d8cc1be1028bf48a2ee4a598b547d7c7a1734ac",
+      "title": "menu",
+      "type": "popup",
+      "template_type": "section-popup",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "menu"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 8233
+    },
+    {
+      "id": "template-20c49fe03e61281b",
+      "file": "metform-contact.json",
+      "original_filename": "metform-contact.json",
+      "sha256": "20c49fe03e61281bf376245087d1e422e2742426c7ef33fed91fb98073fb33c3",
+      "title": "Metform Contact",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "metform",
+        "contact"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 54938
+    },
+    {
+      "id": "template-55599584d23ef96e",
+      "file": "offcanvas.json",
+      "original_filename": "offcanvas.json",
+      "sha256": "55599584d23ef96e04624e8b9c1a6d2ef60c3ff6b2c2515a2e32e3e351aea643",
+      "title": "Offcanvas",
+      "type": "popup",
+      "template_type": "section-popup",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "offcanvas"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 21320
+    },
+    {
+      "id": "template-706bc037c91e6cf0",
+      "file": "optin-popup.json",
+      "original_filename": "optin-popup.json",
+      "sha256": "706bc037c91e6cf01010be5ed091bdd8115a311da41983b5af88e319914a769e",
+      "title": "Optin Popup",
+      "type": "popup",
+      "template_type": "section-popup",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "optin",
+        "popup"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 10557
+    },
+    {
+      "id": "template-9d576bc3acf86e61",
+      "file": "our-facilities.json",
+      "original_filename": "our-facilities.json",
+      "sha256": "9d576bc3acf86e611876c227e48ee683bfb066b6eb70cfe5c62b03ac7922f906",
+      "title": "Our Facilities",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "our",
+        "facilities"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 42629
+    },
+    {
+      "id": "template-0deb0c8453516942",
+      "file": "our-services.json",
+      "original_filename": "our-services.json",
+      "sha256": "0deb0c8453516942f700e256f08e8028a7385a0e175552351957b8f7df56f66f",
+      "title": "Our Services",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "our",
+        "services"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 216913
+    },
+    {
+      "id": "template-d4e52e1e0165813e",
+      "file": "our-team.json",
+      "original_filename": "our-team.json",
+      "sha256": "d4e52e1e0165813e3b3b0c884ad25c1583ebf0831ce377d6121085140e650159",
+      "title": "Our Team",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "team",
+      "tags": [
+        "team",
+        "our"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 111136
+    },
+    {
+      "id": "template-6f8d95d0e50700e6",
+      "file": "page-404-page.json",
+      "original_filename": "page-404-page.json",
+      "sha256": "6f8d95d0e50700e6dad1a0c4b6b3e786b0dd608417f909d32a7627012009e4c5",
+      "title": "Page – 404 Page",
+      "type": "section",
+      "template_type": "single-404",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "page",
+        "404"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 33635
+    },
+    {
+      "id": "template-6e67039dbdff8592",
+      "file": "page-about.json",
+      "original_filename": "page-about.json",
+      "sha256": "6e67039dbdff8592d0c6eac3c59bb49d91fa5fc2ba072436dc7baef37e25028a",
+      "title": "Page – About",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "about",
+      "tags": [
+        "about",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 7,
+      "bytes": 178665
+    },
+    {
+      "id": "template-907b3942f27af15f",
+      "file": "page-blog.json",
+      "original_filename": "page-blog.json",
+      "sha256": "907b3942f27af15f2595d373b0278bc2cca0296ed92987601a27fb7519ab6552",
+      "title": "Page – Blog",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "page",
+        "blog"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 51787
+    },
+    {
+      "id": "template-ba395469a3ea2aee",
+      "file": "page-coming-soon.json",
+      "original_filename": "page-coming-soon.json",
+      "sha256": "ba395469a3ea2aee30d04d78276b8fbdc0f7084f8663cd9145f41984be767f2e",
+      "title": "Page – Coming Soon",
+      "type": "page",
+      "template_type": "landing-page",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "page",
+        "coming",
+        "soon"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 83473
+    },
+    {
+      "id": "template-41b33f5fe6f54bd0",
+      "file": "page-contact.json",
+      "original_filename": "page-contact.json",
+      "sha256": "41b33f5fe6f54bd0df5dd6feb849354881ba37c2efd5f83c0147d1f29822d5ce",
+      "title": "Page – Contact",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "page",
+        "contact"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 100281
+    },
+    {
+      "id": "template-0674ba06c5ecc5f4",
+      "file": "page-course-details.json",
+      "original_filename": "page-course-details.json",
+      "sha256": "0674ba06c5ecc5f454eed3d8c3a36ddedc0a4382597c1cab5693aa50315b1b08",
+      "title": "Page – Course Details",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "page",
+        "course",
+        "details"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 59465
+    },
+    {
+      "id": "template-1456d020931e421e",
+      "file": "page-courses.json",
+      "original_filename": "page-courses.json",
+      "sha256": "1456d020931e421e83c6bd23167ab5d78a125d0e4a5cd3d37a8bd5974154c7ab",
+      "title": "Page – Courses",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "page",
+        "courses"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 230405
+    },
+    {
+      "id": "template-534d83c27c5432dd",
+      "file": "page-faq.json",
+      "original_filename": "page-faq.json",
+      "sha256": "534d83c27c5432dd58ed59a99e60e7891033772c4059e3ee001666150e70fc36",
+      "title": "Page – FAQ",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "faq",
+      "tags": [
+        "faq",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 48386
+    },
+    {
+      "id": "template-c5b3f2f20fa05b98",
+      "file": "page-home.json",
+      "original_filename": "page-home.json",
+      "sha256": "c5b3f2f20fa05b9851d1998fe4233b2618932efaab7d56f256320e0497aca975",
+      "title": "Page &#8211; Home",
+      "type": "section",
+      "template_type": "single-home",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "page",
+        "home"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 9,
+      "bytes": 276236
+    },
+    {
+      "id": "template-4ea2366cb4ba0fd1",
+      "file": "page-pricing.json",
+      "original_filename": "page-pricing.json",
+      "sha256": "4ea2366cb4ba0fd18d61f4c5a3b219c21630c171a6cbd0dce5ca2f0661c3e5f3",
+      "title": "Page – Pricing",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 199476
+    },
+    {
+      "id": "template-ff49cde328768fd1",
+      "file": "page-single-post.json",
+      "original_filename": "page-single-post.json",
+      "sha256": "ff49cde328768fd19e5afac0972875ab9f279443d58ee2ac791838a45ac10d8f",
+      "title": "Page – Single Post",
+      "type": "section",
+      "template_type": "single-post",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "page",
+        "single",
+        "post"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 7,
+      "bytes": 93590
+    },
+    {
+      "id": "template-20068aeb1e65caf1",
+      "file": "page-testimonials.json",
+      "original_filename": "page-testimonials.json",
+      "sha256": "20068aeb1e65caf1835f405e487a8ff954103279434efddc5adcab4f9cac192e",
+      "title": "Page – Testimonials",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "testimonials",
+      "tags": [
+        "testimonials",
+        "page"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 195557
+    },
+    {
+      "id": "template-a2b1ad402143f67d",
+      "file": "pet-profile.json",
+      "original_filename": "pet-profile.json",
+      "sha256": "a2b1ad402143f67d616d74616a3c26faad6c693fab97e937385d8438a7e68712",
+      "title": "Pet Profile",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "pet",
+        "profile"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 91284
+    },
+    {
+      "id": "template-05b222e9c4df364d",
+      "file": "popups-banner.json",
+      "original_filename": "popups-banner.json",
+      "sha256": "05b222e9c4df364d142d4e1eafac8059050621631e5286ed70dda10b812ddfea",
+      "title": "Popups Banner",
+      "type": "popup",
+      "template_type": "section-popup",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "popups",
+        "banner"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 12566
+    },
+    {
+      "id": "template-31c658d549bdeb6f",
+      "file": "portfolio.json",
+      "original_filename": "portfolio.json",
+      "sha256": "31c658d549bdeb6f8b1464b6cc88319b79bf0e16d06491a5d80bdd5bbf31484e",
+      "title": "Portfolio",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 58958
+    },
+    {
+      "id": "template-08863daceac9e74d",
+      "file": "price.json",
+      "original_filename": "price.json",
+      "sha256": "08863daceac9e74d537d0e54a09437aae888ddbb66c440d4d176a25f4e153ff9",
+      "title": "Price",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing",
+        "price"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 81223
+    },
+    {
+      "id": "template-72c7cc7a5397b1cd",
+      "file": "pricing.json",
+      "original_filename": "pricing.json",
+      "sha256": "72c7cc7a5397b1cd5f046a1e9fe9a25bd7da424c4226d00f9f24f160b3712e85",
+      "title": "Pricing",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "pricing",
+      "tags": [
+        "pricing"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 127556
+    },
+    {
+      "id": "template-3bfeb50d7ea62156",
+      "file": "product-archive.json",
+      "original_filename": "product-archive.json",
+      "sha256": "3bfeb50d7ea621567c1094c86e21d393ff33c6e35bc2feefb5001c22d28d416f",
+      "title": "Product Archive",
+      "type": "product-archive",
+      "template_type": "archive-product",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "product",
+        "archive"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 19320
+    },
+    {
+      "id": "template-dbc00435a97b4a0c",
+      "file": "project-details.json",
+      "original_filename": "project-details.json",
+      "sha256": "dbc00435a97b4a0c988b66b76d0d9b4c3f54a94e5931485210c6d31437392859",
+      "title": "Project Details",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "project",
+        "details"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 13668
+    },
+    {
+      "id": "template-55b75c58af2db242",
+      "file": "report-bad-treatment.json",
+      "original_filename": "report-bad-treatment.json",
+      "sha256": "55b75c58af2db2420544b0ecc05e6168a7b7e07372d2c3ff0f3ac910572d57f7",
+      "title": "Report Bad Treatment",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "report",
+        "bad",
+        "treatment"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 84236
+    },
+    {
+      "id": "template-ddc9d7ed3104e981",
+      "file": "schedule.json",
+      "original_filename": "schedule.json",
+      "sha256": "ddc9d7ed3104e9810631ccb8a59ddb37e94de520ab5d5ce8515c4c397f48e8ef",
+      "title": "Schedule",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "process",
+      "tags": [
+        "process",
+        "schedule"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 204237
+    },
+    {
+      "id": "template-3fcc88a9daedd8e3",
+      "file": "search-result.json",
+      "original_filename": "search-result.json",
+      "sha256": "3fcc88a9daedd8e357b875f9a6a3ce6110403bd49c96dc381f90ade579c8354c",
+      "title": "Search Result",
+      "type": "search-results",
+      "template_type": "archive-search",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "search",
+        "result"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 23174
+    },
+    {
+      "id": "template-64620653e6951f9c",
+      "file": "service-detail.json",
+      "original_filename": "service-detail.json",
+      "sha256": "64620653e6951f9c03f96a7a9d0fb8965973a52d854b176fed91216841e7d8fe",
+      "title": "Service detail",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "service",
+        "detail"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 158908
+    },
+    {
+      "id": "template-890fba64806eebd4",
+      "file": "service.json",
+      "original_filename": "service.json",
+      "sha256": "890fba64806eebd442ea4e599601be1d32c6239094a3ed4991e2531d52c6618c",
+      "title": "Service",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "service"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 97352
+    },
+    {
+      "id": "template-1e66a058733c8df3",
+      "file": "services.json",
+      "original_filename": "services.json",
+      "sha256": "1e66a058733c8df3f9b594b53e81c9f5293f777e075a5b9f83fa7b48eb93e7c4",
+      "title": "Services",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "benefits",
+      "tags": [
+        "benefits",
+        "services"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 268870
+    },
+    {
+      "id": "template-a6bacc700f00a583",
+      "file": "shop.json",
+      "original_filename": "shop.json",
+      "sha256": "a6bacc700f00a583fc0a3276aa5d9d48a78d3d7afaee26ad16f76c2a0a1fb2ed",
+      "title": "Shop",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "shop"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 29497
+    },
+    {
+      "id": "template-217d3b7c1d2ab2b7",
+      "file": "showcase-footer.json",
+      "original_filename": "showcase-footer.json",
+      "sha256": "217d3b7c1d2ab2b7a7f3d2e824789a99fd89ef101bff1b6c6f59425e282ebed5",
+      "title": "ShowCase Footer",
+      "type": "footer",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "showcase",
+        "footer"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 15363
+    },
+    {
+      "id": "template-1efb33734efdc7d8",
+      "file": "single-blog.json",
+      "original_filename": "single-blog.json",
+      "sha256": "1efb33734efdc7d86a1efc5068ecad30262d998c4a84624d8f7798947de148a0",
+      "title": "Single Blog",
+      "type": "single-post",
+      "template_type": "single-post",
+      "category": "portfolio",
+      "tags": [
+        "portfolio",
+        "single",
+        "blog"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 2,
+      "bytes": 70690
+    },
+    {
+      "id": "template-8d59cdac3a24e053",
+      "file": "single-post.json",
+      "original_filename": "single-post.json",
+      "sha256": "8d59cdac3a24e05342514992bae82fcde1764873fa6bf82354d1548e0e9305e2",
+      "title": "Single Post",
+      "type": "section",
+      "template_type": "single-post",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "single",
+        "post"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 3,
+      "bytes": 150222
+    },
+    {
+      "id": "template-796b4e908e32d253",
+      "file": "single-product.json",
+      "original_filename": "single-product.json",
+      "sha256": "796b4e908e32d253285b208f27cae1505653d53f81d9a033e0f1b56ca71716b4",
+      "title": "Single Product",
+      "type": "product",
+      "template_type": "single-product",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "single",
+        "product"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 30629
+    },
+    {
+      "id": "template-7a62031c82a8d56b",
+      "file": "site-header.json",
+      "original_filename": "site-header.json",
+      "sha256": "7a62031c82a8d56b8e44a9159404d8c0859db78752fc129f8a306015cf14618b",
+      "title": "Site Header",
+      "type": "header",
+      "template_type": "section-header",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "site",
+        "header"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 6217
+    },
+    {
+      "id": "template-dd036a4eaa3dd517",
+      "file": "slide-01-aquila.json",
+      "original_filename": "slide-01-aquila.json",
+      "sha256": "dd036a4eaa3dd51770783baa8ba85a55ada8594ef20439c83c171be981af083e",
+      "title": "Slide 01 &#8211; Aquila",
+      "type": "section",
+      "template_type": "section-hero",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "slide",
+        "aquila"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 44038
+    },
+    {
+      "id": "template-69c0d4770d225b26",
+      "file": "slide-02-aquila.json",
+      "original_filename": "slide-02-aquila.json",
+      "sha256": "69c0d4770d225b26db7787d2940dfaf131beb79138c54b5bd8f277bcd6a89057",
+      "title": "Slide 02 &#8211; Aquila",
+      "type": "section",
+      "template_type": "section-hero",
+      "category": "hero",
+      "tags": [
+        "hero",
+        "slide",
+        "aquila"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 44036
+    },
+    {
+      "id": "template-ad26c3ddaa9dff7e",
+      "file": "speakers.json",
+      "original_filename": "speakers.json",
+      "sha256": "ad26c3ddaa9dff7e404a9206ef0d1a9699a1091ff23c0c60859421067b15deb9",
+      "title": "Speakers",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "team",
+      "tags": [
+        "team",
+        "speakers"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 130895
+    },
+    {
+      "id": "template-bfe7f37ca506baa4",
+      "file": "sponsor-a-dog.json",
+      "original_filename": "sponsor-a-dog.json",
+      "sha256": "bfe7f37ca506baa485a35ed52130c6ccca9de32de390d6de4d7d4b848527592e",
+      "title": "Sponsor a Dog",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "sponsor",
+        "dog"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 99971
+    },
+    {
+      "id": "template-f3a739a8a6c7c611",
+      "file": "sponsor.json",
+      "original_filename": "sponsor.json",
+      "sha256": "f3a739a8a6c7c6111ed101b0c801bbcd09f72ece19fb74114ce6bfdc1ed1c733",
+      "title": "Sponsor",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "sponsor"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 6,
+      "bytes": 224624
+    },
+    {
+      "id": "template-5d1f4b7e33970b28",
+      "file": "style-guide.json",
+      "original_filename": "style-guide.json",
+      "sha256": "5d1f4b7e33970b289f9108f7452c50e82518707fbd6d78d16147bbd6c51372a2",
+      "title": "Style guide",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "style",
+        "guide"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 203874
+    },
+    {
+      "id": "template-87f3f009537d2981",
+      "file": "team.json",
+      "original_filename": "team.json",
+      "sha256": "87f3f009537d2981b60521d5dd7c30028e0cb4e18f5fab494f7ff9151fc84f94",
+      "title": "Team",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "team",
+      "tags": [
+        "team"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 133174
+    },
+    {
+      "id": "template-89528c764171851a",
+      "file": "testimonials.json",
+      "original_filename": "testimonials.json",
+      "sha256": "89528c764171851afeb6b7e74f1f71ef81061edbd52cea87484bc8c4e0955746",
+      "title": "Testimonials",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "testimonials",
+      "tags": [
+        "testimonials"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 4,
+      "bytes": 64325
+    },
+    {
+      "id": "template-cfbed7020e2c74b8",
+      "file": "theme-builder-footer-elementor-pro-cfbed702.json",
+      "original_filename": "theme-builder-footer-elementor-pro-.json",
+      "sha256": "cfbed7020e2c74b80c15b217c50accf90f40d74823649475810974c3304873e1",
+      "title": "Theme Builder – Footer (Elementor Pro)",
+      "type": "footer",
+      "template_type": "section-footer",
+      "category": "cta",
+      "tags": [
+        "cta",
+        "theme",
+        "builder",
+        "footer",
+        "elementor",
+        "pro"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 34596
+    },
+    {
+      "id": "template-43da6d9619da2be8",
+      "file": "theme-builder-header-elementor-pro-43da6d96.json",
+      "original_filename": "theme-builder-header-elementor-pro-.json",
+      "sha256": "43da6d9619da2be8bad1fb500ba98a6772305666cb386de6ce2b80946c46f745",
+      "title": "Theme Builder – Header (Elementor Pro)",
+      "type": "header",
+      "template_type": "section-header",
+      "category": "mega_menu",
+      "tags": [
+        "mega_menu",
+        "theme",
+        "builder",
+        "header",
+        "elementor",
+        "pro"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 8711
+    },
+    {
+      "id": "template-3f91487de940fb37",
+      "file": "venue.json",
+      "original_filename": "venue.json",
+      "sha256": "3f91487de940fb3789237c85099da0918cf37ccdb488e79022d293d07cfa3c36",
+      "title": "Venue",
+      "type": "page",
+      "template_type": "single-page",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "venue"
+      ],
+      "elementor_pro_required": true,
+      "has_content": true,
+      "root_count": 5,
+      "bytes": 136648
+    }
+  ]
+}

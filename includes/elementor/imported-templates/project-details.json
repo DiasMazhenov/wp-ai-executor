@@ -1,0 +1,308 @@
+{
+    "version": "0.4",
+    "title": "Project Details",
+    "type": "page",
+    "metadata": {
+        "template_type": "single-page",
+        "include_in_zip": "1",
+        "elementor_pro_required": "1",
+        "wp_page_template": "elementor_header_footer"
+    },
+    "content": [
+        {
+            "id": "728e4709",
+            "settings": {
+                "padding": {
+                    "unit": "px",
+                    "top": "140",
+                    "right": "0",
+                    "bottom": "0",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "_title": "Features Header"
+            },
+            "elements": [
+                {
+                    "id": "6c1c5120",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "5d1dc5b7",
+                            "settings": {
+                                "title": "Our Services",
+                                "header_size": "h4",
+                                "title_color": "#BABABA",
+                                "typography_typography": "custom",
+                                "typography_font_size": {
+                                    "unit": "px",
+                                    "size": 12,
+                                    "sizes": []
+                                },
+                                "typography_font_weight": "400",
+                                "typography_text_transform": "uppercase",
+                                "typography_letter_spacing": {
+                                    "unit": "px",
+                                    "size": 2,
+                                    "sizes": []
+                                },
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "7886dee5",
+                            "settings": {
+                                "title": "Modern House with Garden and Swimming Pool",
+                                "header_size": "h3",
+                                "align": "center"
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "26b43496",
+                            "settings": {
+                                "width": {
+                                    "unit": "px",
+                                    "size": 100,
+                                    "sizes": []
+                                },
+                                "align": "center",
+                                "look": "line",
+                                "text": "Divider",
+                                "color": "#FFB300",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "-5",
+                                    "right": "0",
+                                    "bottom": "48",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "divider",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "14cc88df",
+            "settings": {
+                "structure": "20",
+                "padding": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "80",
+                    "left": "0",
+                    "isLinked": false
+                },
+                "_title": "About Project"
+            },
+            "elements": [
+                {
+                    "id": "49049ba",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": 30.175000000000000710542735760100185871124267578125
+                    },
+                    "elements": [
+                        {
+                            "id": "4a49988b",
+                            "settings": {
+                                "title": "<b>CLIENT:<\/b> James Donovan<br>\n<b>DATE:<\/b> 07 March 2020<br>\n<b>LOCATION:<\/b> New York, USA<br>\n<b>SITE:<\/b> example.com",
+                                "header_size": "p",
+                                "typography_typography": "custom",
+                                "typography_font_size": {
+                                    "unit": "px",
+                                    "size": 16,
+                                    "sizes": []
+                                },
+                                "typography_line_height": {
+                                    "unit": "em",
+                                    "size": 1.6999999999999999555910790149937383830547332763671875,
+                                    "sizes": []
+                                },
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "0",
+                                    "right": "0",
+                                    "bottom": "30",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                },
+                {
+                    "id": "6d340baa",
+                    "settings": {
+                        "_column_size": 50,
+                        "_inline_size": 69.8250000000000028421709430404007434844970703125
+                    },
+                    "elements": [
+                        {
+                            "id": "15566585",
+                            "settings": {
+                                "title": "Cursus in hac habitasse platea dictumst. Maecenas volutpat blandit aliquam etiam erat velit. Morbi tempus iaculis urna id volutpat lacus. Pellentesque diam volutpat commodo sed. Massa eget egestas purus viverra accumsan in nisl. Sed elementum tempus egestas. Hac habitasse platea dictumst vestibulum rhoncus est pellentesque elit ullamcorper.",
+                                "header_size": "p",
+                                "typography_typography": "custom",
+                                "typography_line_height": {
+                                    "unit": "em",
+                                    "size": 1.5,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "heading",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        },
+        {
+            "id": "4dfb8c0",
+            "settings": {
+                "_title": "Portfolio Gallery",
+                "padding": {
+                    "unit": "px",
+                    "top": "0",
+                    "right": "0",
+                    "bottom": "160",
+                    "left": "0",
+                    "isLinked": false
+                }
+            },
+            "elements": [
+                {
+                    "id": "9ed45",
+                    "settings": {
+                        "_column_size": 100,
+                        "_inline_size": null
+                    },
+                    "elements": [
+                        {
+                            "id": "63e0d745",
+                            "settings": {
+                                "gallery": [
+                                    {
+                                        "id": 377,
+                                        "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-PFH8GAV-scaled.jpg"
+                                    },
+                                    {
+                                        "id": 378,
+                                        "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-PM3JJZB-scaled.jpg"
+                                    },
+                                    {
+                                        "id": 379,
+                                        "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-PXH34K3-scaled.jpg"
+                                    },
+                                    {
+                                        "id": 380,
+                                        "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-villa-with-pool-and-deck-7YYP6W6-scaled.jpg"
+                                    },
+                                    {
+                                        "id": 381,
+                                        "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-P66ZTVQ-scaled.jpg"
+                                    },
+                                    {
+                                        "id": 382,
+                                        "url": "https:\/\/alcor.elementor.42theme.com\/wp-content\/uploads\/2020\/04\/modern-house-with-garden-swimming-pool-and-wooden-PBRJ78W-scaled.jpg"
+                                    }
+                                ],
+                                "galleries": [
+                                    {
+                                        "gallery_title": "New Gallery",
+                                        "_id": "0939d1a",
+                                        "multiple_gallery": []
+                                    }
+                                ],
+                                "columns": 2,
+                                "gap": {
+                                    "unit": "px",
+                                    "size": 32,
+                                    "sizes": []
+                                },
+                                "show_all_galleries_label": "All",
+                                "thumbnail_image_size": "medium_large",
+                                "gap_tablet": {
+                                    "unit": "px",
+                                    "size": 30,
+                                    "sizes": []
+                                },
+                                "gap_mobile": {
+                                    "unit": "px",
+                                    "size": 15,
+                                    "sizes": []
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "gallery",
+                            "elType": "widget"
+                        },
+                        {
+                            "id": "2c495ffe",
+                            "settings": {
+                                "text": "Order Similar",
+                                "link": {
+                                    "url": "\/contacts\/",
+                                    "is_external": "",
+                                    "nofollow": "",
+                                    "custom_attributes": ""
+                                },
+                                "align": "center",
+                                "_margin": {
+                                    "unit": "px",
+                                    "top": "32",
+                                    "right": "0",
+                                    "bottom": "0",
+                                    "left": "0",
+                                    "isLinked": false
+                                }
+                            },
+                            "elements": [],
+                            "isInner": false,
+                            "widgetType": "button",
+                            "elType": "widget"
+                        }
+                    ],
+                    "isInner": false,
+                    "elType": "column"
+                }
+            ],
+            "isInner": false,
+            "elType": "section"
+        }
+    ]
+}
