@@ -11,7 +11,7 @@
         query: '',
         category: '',
         mode: 'preserve',
-        selectedId: 0,
+        selectedId: '',
         loading: false,
     };
     let root = null;
@@ -78,7 +78,7 @@
     };
 
     const getSelectedItem = () => state.items.find(
-        ( item ) => Number( item.id ) === Number( state.selectedId )
+        ( item ) => String( item.id ) === String( state.selectedId )
     ) || null;
 
     const mutate = async ( url, body ) => {
@@ -168,10 +168,12 @@
             action.dataset.wpaeStatus = status === 'draft' ? 'approved' : 'published';
             workflow.appendChild( action );
         }
-        const duplicate = createElement( 'button', 'wpae-library__secondary', config.strings.duplicate );
-        duplicate.type = 'button';
-        duplicate.dataset.wpaeDuplicate = String( item.id );
-        workflow.appendChild( duplicate );
+        if ( item.source !== 'plugin_template' ) {
+            const duplicate = createElement( 'button', 'wpae-library__secondary', config.strings.duplicate );
+            duplicate.type = 'button';
+            duplicate.dataset.wpaeDuplicate = String( item.id );
+            workflow.appendChild( duplicate );
+        }
         panel.appendChild( workflow );
 
         const compatibility = createElement( 'div', 'wpae-library__compatibility' );
@@ -237,13 +239,13 @@
             const stats = item.compatibility && item.compatibility.stats ? item.compatibility.stats : {};
             const card = createElement(
                 'button',
-                Number( item.id ) === Number( state.selectedId )
+                String( item.id ) === String( state.selectedId )
                     ? 'wpae-library__item is-selected'
                     : 'wpae-library__item'
             );
             card.type = 'button';
             card.dataset.wpaeBlock = String( item.id );
-            card.setAttribute( 'aria-pressed', Number( item.id ) === Number( state.selectedId ) ? 'true' : 'false' );
+            card.setAttribute( 'aria-pressed', String( item.id ) === String( state.selectedId ) ? 'true' : 'false' );
 
             const top = createElement( 'span', 'wpae-library__item-top' );
             top.appendChild( createElement( 'span', 'wpae-library__item-category', item.category || 'custom' ) );
@@ -273,11 +275,12 @@
         renderItems();
         try {
             const url = new URL( config.endpoint, window.location.origin );
-            url.searchParams.set( 'limit', '100' );
+            url.searchParams.set( 'limit', '400' );
+            url.searchParams.set( 'include_imported', '1' );
             const payload = await request( url.toString() );
             state.items = Array.isArray( payload.items ) ? payload.items : [];
             if ( state.selectedId && ! getSelectedItem() ) {
-                state.selectedId = 0;
+                state.selectedId = '';
             }
         } catch ( error ) {
             notify( error.message || config.strings.failed, 'error' );
@@ -294,7 +297,7 @@
             button.textContent = config.strings.inserting;
         }
         try {
-            const url = new URL( `${ config.endpoint }/${ blockId }/instantiate`, window.location.origin );
+            const url = new URL( `${ config.endpoint }/${ encodeURIComponent( String( blockId ) ) }/instantiate`, window.location.origin );
             url.searchParams.set( 'mode', state.mode );
             const payload = await request( url.toString() );
             const storage = {
@@ -329,7 +332,7 @@
             await mutate( `${ config.endpoint }/${ blockId }/publish`, { status } );
             notify( config.strings.statusChanged );
             await load();
-            state.selectedId = Number( blockId );
+            state.selectedId = String( blockId );
             renderDetails();
         } catch ( error ) {
             notify( error.message || config.strings.failed, 'error' );
@@ -518,14 +521,14 @@
             }
             const block = event.target.closest( '[data-wpae-block]' );
             if ( block ) {
-                state.selectedId = Number( block.dataset.wpaeBlock );
+                state.selectedId = String( block.dataset.wpaeBlock );
                 renderItems();
                 renderDetails();
                 return;
             }
             const insert = event.target.closest( '[data-wpae-insert]' );
             if ( insert ) {
-                insertBlock( Number( insert.dataset.wpaeInsert ) );
+                insertBlock( String( insert.dataset.wpaeInsert ) );
                 return;
             }
             const status = event.target.closest( '[data-wpae-status]' );

@@ -5,7 +5,7 @@
     "files": {
         "assets/css/elementor-block-library.css": "b394d125696fb7d9c08086d268eb69f049c865ad8b74383ef4cbb63482dab650",
         "assets/css/elementor-llm-chat.css": "c0bd0d56d3c80f54a94c17f52bba3400e25ff3eb297cd2251b7b43b1c2b56e55",
-        "assets/js/elementor-block-library-ui.js": "afcac612cc21cbb3ffdc39b8a9ac5b7c509df88fbc051613af86c57a0a7749f6",
+        "assets/js/elementor-block-library-ui.js": "c354d99ca749aaa15277777f996ceda8420e6f06d9525961335f816a6c0fbe34",
         "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
         "assets/js/elementor-llm-chat.js": "0ef915237217a8f4cbd64cb416f1e1cedad7c95bc645013b7e711290c958f5fd",
         "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
@@ -25,7 +25,7 @@
         "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
         "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
         "includes/design/token-resolution.php": "8b34abaab5a2b62adf8e66e9ea3a732da275bd2ac1c546ba096b38f0e3e9b315",
-        "includes/elementor/block-library.php": "1a793236e2a96bfeef1b31524ff5bc1cb06154699776f5e3038f23cdbbba9070",
+        "includes/elementor/block-library.php": "da06c5e4ad59d4d36ea9a3af2d127133ccc912ff6a6c315881cb3410d452f278",
         "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
         "includes/elementor/capability-registry.php": "5c997dfe1c5be11f1b95ccd347c82b36b2d9f8a01d659302484328593179822b",
         "includes/elementor/compose.php": "8e94c0aefd20a7cd9254b4a8b4396bff05702b791e4b08b0b6acf87d5393b7c1",
@@ -241,7 +241,7 @@
         "includes/llm/routing.php": "9b599574754e1021859a64142096724fef8c95aa84e855ba6edf7b9516d16826",
         "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
         "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
-        "includes/rest/routes.php": "2e26de48cc4701f86a9c1e4ff2b45b6febad34b2d2291d51948f6d7cd6a699e2",
+        "includes/rest/routes.php": "671ce421743365f43b7c733bf7d8beefe91ca2b9b78ff8cd06f63ddc0a56f7fd",
         "includes/rollback/rollback.php": "a2fce0772908dc8a0d06c005db4bcc4a534d3d653c7ea6a59a5308b9d385c9ca",
         "includes/security/capabilities.php": "d3986f1f58ab6bc7d456160211df3945f405e65cd178b8c8bd4b2a22470e1493",
         "includes/skills/manifest.php": "fdb90ff1d311a97da87146c55ae84b9d0eb0ea7e9e444a6181a1d2be7949402c",
@@ -250,6 +250,6 @@
         "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
         "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
         "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-        "wp-ai-executor.php": "f16738f365be5a6072c9b5a3c7e81ab5c8acb375e23586e99ef1e200b81b4e52"
+        "wp-ai-executor.php": "06aca52428b0e458c5de0cabac07e51229eff4bcf097cf830a794565a30b6a9a"
     }
 }

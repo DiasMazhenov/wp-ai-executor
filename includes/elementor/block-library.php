@@ -458,13 +458,78 @@ function wpae_block_library_imported_template_manifest(): array {
     return $templates;
 }
 
+function wpae_block_library_imported_template_record( string $template_id ): ?array {
+    $template_id = sanitize_key( $template_id );
+    $template = wpae_block_library_imported_template_manifest()[ $template_id ] ?? null;
+    if ( ! is_array( $template ) || empty( $template['has_content'] ) ) {
+        return null;
+    }
+
+    $path = __DIR__ . '/imported-templates/' . (string) ( $template['file'] ?? '' );
+    $expected_hash = strtolower( (string) ( $template['sha256'] ?? '' ) );
+    if ( ! is_readable( $path ) || ! hash_equals( $expected_hash, (string) hash_file( 'sha256', $path ) ) ) {
+        return null;
+    }
+
+    $raw = file_get_contents( $path );
+    if ( ! is_string( $raw ) || strlen( $raw ) > WPAE_BLOCK_LIBRARY_MAX_BYTES ) {
+        return null;
+    }
+    $parsed = wpae_block_library_extract_elements( $raw );
+    if ( is_wp_error( $parsed ) ) {
+        return null;
+    }
+    $normalized = wpae_elementor_normalize_data( $parsed['elementor_data'] );
+    $elementor_data = (array) ( $normalized['data'] ?? [] );
+    if ( empty( $elementor_data ) ) {
+        return null;
+    }
+    $compatibility = wpae_block_library_compatibility_report( $elementor_data );
+    if ( empty( $compatibility['raw_valid'] ) || empty( $compatibility['normalizable'] ) ) {
+        return null;
+    }
+    if ( ! empty( $compatibility['unavailable_widget_types'] ) ) {
+        $elementor_data = wpae_block_library_filter_compatible_roots( $elementor_data );
+        if ( empty( $elementor_data ) ) {
+            return null;
+        }
+        $compatibility = wpae_block_library_compatibility_report( $elementor_data );
+    }
+
+    $content_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
+    return [
+        'id' => 0,
+        'title' => sanitize_text_field( (string) ( $template['title'] ?? $template_id ) ),
+        'description' => '',
+        'category' => sanitize_key( (string) ( $template['category'] ?? 'custom' ) ),
+        'tags' => wpae_block_library_sanitize_tags( $template['tags'] ?? [] ),
+        'source_mode' => 'elementor_export',
+        'source' => 'plugin_template',
+        'status' => 'published',
+        'bundled_fixture_id' => $template_id,
+        'bundled_fixture_sha256' => $expected_hash,
+        'bundled_fixture_content_hash' => $content_hash,
+        'content_hash' => $content_hash,
+        'elementor_data' => $elementor_data,
+        'compatibility' => $compatibility,
+        'manifest' => [
+            'schema' => WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA,
+            'version' => '1.0.0',
+            'status' => 'published',
+            'source_skill' => [],
+            'design_system' => [ 'id' => null, 'version' => null ],
+            'provenance' => wpae_block_library_sanitize_provenance( [ 'source' => 'plugin_template' ] ),
+            'parent_revision' => null,
+            'quality' => [ 'score' => null, 'review_state' => 'approved' ],
+            'media_dependencies' => (array) ( $compatibility['stats']['media_references'] ?? [] ),
+        ],
+    ];
+}
+
 function wpae_block_library_imported_template_records( string $archetype, array $allowed_categories ): array {
     $records = [];
     $allowed_categories = array_map( 'sanitize_key', $allowed_categories );
     foreach ( wpae_block_library_imported_template_manifest() as $template_id => $template ) {
-        if ( empty( $template['has_content'] ) ) {
-            continue;
-        }
         $category = sanitize_key( (string) ( $template['category'] ?? 'custom' ) );
         $tags = wpae_block_library_sanitize_tags( $template['tags'] ?? [] );
         $matches_category = in_array( $category, $allowed_categories, true )
@@ -472,56 +537,10 @@ function wpae_block_library_imported_template_records( string $archetype, array 
         if ( ! empty( $allowed_categories ) && ! $matches_category ) {
             continue;
         }
-
-        $path = __DIR__ . '/imported-templates/' . (string) ( $template['file'] ?? '' );
-        $expected_hash = strtolower( (string) ( $template['sha256'] ?? '' ) );
-        if ( ! is_readable( $path ) || ! hash_equals( $expected_hash, (string) hash_file( 'sha256', $path ) ) ) {
-            continue;
+        $record = wpae_block_library_imported_template_record( (string) $template_id );
+        if ( is_array( $record ) ) {
+            $records[] = $record;
         }
-
-        $raw = file_get_contents( $path );
-        if ( ! is_string( $raw ) || strlen( $raw ) > WPAE_BLOCK_LIBRARY_MAX_BYTES ) {
-            continue;
-        }
-        $parsed = wpae_block_library_extract_elements( $raw );
-        if ( is_wp_error( $parsed ) ) {
-            continue;
-        }
-        $normalized = wpae_elementor_normalize_data( $parsed['elementor_data'] );
-        $elementor_data = (array) ( $normalized['data'] ?? [] );
-        if ( empty( $elementor_data ) ) {
-            continue;
-        }
-        $compatibility = wpae_block_library_compatibility_report( $elementor_data );
-        if ( empty( $compatibility['raw_valid'] ) || empty( $compatibility['normalizable'] ) ) {
-            continue;
-        }
-        if ( ! empty( $compatibility['unavailable_widget_types'] ) ) {
-            $elementor_data = wpae_block_library_filter_compatible_roots( $elementor_data );
-            if ( empty( $elementor_data ) ) {
-                continue;
-            }
-            $compatibility = wpae_block_library_compatibility_report( $elementor_data );
-        }
-
-        $content_hash = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
-        $records[] = [
-            'id' => 0,
-            'title' => sanitize_text_field( (string) ( $template['title'] ?? $template_id ) ),
-            'description' => '',
-            'category' => $category,
-            'tags' => $tags,
-            'source_mode' => 'elementor_export',
-            'source' => 'plugin_template',
-            'status' => 'published',
-            'bundled_fixture_id' => $template_id,
-            'bundled_fixture_sha256' => $expected_hash,
-            'bundled_fixture_content_hash' => $content_hash,
-            'content_hash' => $content_hash,
-            'elementor_data' => $elementor_data,
-            'compatibility' => $compatibility,
-            'manifest' => [ 'schema' => WPAE_BLOCK_LIBRARY_MANIFEST_SCHEMA, 'version' => '1.0.0', 'status' => 'published' ],
-        ];
     }
 
     return $records;
@@ -1037,8 +1056,9 @@ function wpae_block_library_request_payload( WP_REST_Request $request ) {
 }
 
 function wpae_block_library_list( WP_REST_Request $request ): WP_REST_Response {
-    $bundled = wpae_block_library_seed_bundled_templates();
-    $limit = max( 1, min( 100, absint( $request->get_param( 'limit' ) ?: 50 ) ) );
+    $include_imported = absint( $request->get_param( 'include_imported' ) ) === 1;
+    $bundled = $include_imported ? [] : wpae_block_library_seed_bundled_templates();
+    $limit = max( 1, min( 400, absint( $request->get_param( 'limit' ) ?: 50 ) ) );
     $query = sanitize_text_field( (string) $request->get_param( 'q' ) );
     $category = sanitize_key( (string) $request->get_param( 'category' ) );
     $tag = sanitize_text_field( (string) $request->get_param( 'tag' ) );
@@ -1066,6 +1086,31 @@ function wpae_block_library_list( WP_REST_Request $request ): WP_REST_Response {
         $items[] = wpae_block_library_summary( $record );
         if ( count( $items ) >= $limit ) {
             break;
+        }
+    }
+
+    if ( $include_imported ) {
+        foreach ( wpae_block_library_imported_template_records( '', [] ) as $record ) {
+            $searchable = strtolower( implode( ' ', [
+                (string) ( $record['title'] ?? '' ),
+                (string) ( $record['category'] ?? '' ),
+                implode( ' ', (array) ( $record['tags'] ?? [] ) ),
+            ] ) );
+            if ( $query !== '' && strpos( $searchable, strtolower( $query ) ) === false ) {
+                continue;
+            }
+            if ( $category !== '' && (string) $record['category'] !== $category ) {
+                continue;
+            }
+            if ( $tag !== '' && ! in_array( $tag, (array) $record['tags'], true ) ) {
+                continue;
+            }
+            $item = wpae_block_library_summary( $record );
+            $item['id'] = 'template-' . (string) $record['bundled_fixture_id'];
+            $items[] = $item;
+            if ( count( $items ) >= $limit ) {
+                break;
+            }
         }
     }
 
@@ -1317,13 +1362,26 @@ function wpae_block_library_delete( WP_REST_Request $request ): WP_REST_Response
 }
 
 function wpae_block_library_instantiate( WP_REST_Request $request ): WP_REST_Response {
-    $post = wpae_block_library_get_post( absint( $request['id'] ) );
-    if ( is_wp_error( $post ) ) {
-        return new WP_REST_Response( [ 'ok' => false, 'error' => $post->get_error_message(), 'code' => $post->get_error_code() ], 404 );
-    }
-    $record = wpae_block_library_decode_post( $post );
-    if ( is_wp_error( $record ) ) {
-        return new WP_REST_Response( [ 'ok' => false, 'error' => $record->get_error_message(), 'code' => $record->get_error_code() ], 500 );
+    $requested_id = (string) $request['id'];
+    $is_plugin_template = strpos( $requested_id, 'template-' ) === 0;
+    $post = null;
+    if ( $is_plugin_template ) {
+        $template_id = sanitize_key( substr( $requested_id, 9 ) );
+        $record = wpae_block_library_imported_template_record( $template_id );
+        if ( ! is_array( $record ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => 'Imported Elementor template was not found or failed its integrity check.', 'code' => 'wpae_template_unavailable' ], 404 );
+        }
+        $block_id = 'template-' . $template_id;
+    } else {
+        $post = wpae_block_library_get_post( absint( $requested_id ) );
+        if ( is_wp_error( $post ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => $post->get_error_message(), 'code' => $post->get_error_code() ], 404 );
+        }
+        $record = wpae_block_library_decode_post( $post );
+        if ( is_wp_error( $record ) ) {
+            return new WP_REST_Response( [ 'ok' => false, 'error' => $record->get_error_message(), 'code' => $record->get_error_code() ], 500 );
+        }
+        $block_id = (int) $post->ID;
     }
 
     $status = wpae_block_library_status( $record );
@@ -1346,7 +1404,8 @@ function wpae_block_library_instantiate( WP_REST_Request $request ): WP_REST_Res
         ], 400 );
     }
 
-    $instance_id = sanitize_key( (string) ( $request->get_param( 'instance_id' ) ?: 'block-' . $post->ID . '-' . wp_generate_password( 8, false, false ) ) );
+    $default_instance_prefix = $is_plugin_template ? $block_id : 'block-' . $block_id;
+    $instance_id = sanitize_key( (string) ( $request->get_param( 'instance_id' ) ?: $default_instance_prefix . '-' . wp_generate_password( 8, false, false ) ) );
     $elementor_data = (array) $record['elementor_data'];
     $normalization = [ 'counts' => [], 'changes' => [] ];
     if ( $mode !== 'preserve' ) {
@@ -1376,7 +1435,8 @@ function wpae_block_library_instantiate( WP_REST_Request $request ): WP_REST_Res
 
     return new WP_REST_Response( [
         'ok' => $ok,
-        'block_id' => $post->ID,
+        'block_id' => $block_id,
+        'source' => (string) ( $record['source'] ?? 'library' ),
         'status' => $status,
         'mode' => $mode,
         'instance_id' => $instance_id,

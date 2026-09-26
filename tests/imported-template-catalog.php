@@ -9,6 +9,24 @@ class WP_Error {
     public function __construct( $code, $message, $data = [] ) { $this->code = $code; $this->message = $message; $this->data = $data; }
 }
 
+class WP_REST_Request implements ArrayAccess {
+    private $params;
+    private $route;
+    public function __construct( array $params = [], array $route = [] ) { $this->params = $params; $this->route = $route; }
+    public function get_param( $key ) { return $this->params[ $key ] ?? null; }
+    public function offsetExists( $offset ): bool { return isset( $this->route[ $offset ] ); }
+    public function offsetGet( $offset ): mixed { return $this->route[ $offset ] ?? null; }
+    public function offsetSet( $offset, $value ): void { $this->route[ $offset ] = $value; }
+    public function offsetUnset( $offset ): void { unset( $this->route[ $offset ] ); }
+}
+
+class WP_REST_Response {
+    public $data;
+    public $status;
+    public function __construct( $data, $status = 200 ) { $this->data = $data; $this->status = $status; }
+    public function get_data() { return $this->data; }
+}
+
 function add_action( ...$args ): void {}
 function is_wp_error( $value ): bool { return $value instanceof WP_Error; }
 function sanitize_key( $value ): string { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $value ) ) ?? ''; }
@@ -19,6 +37,7 @@ function wp_strip_all_tags( $value ): string { return strip_tags( (string) $valu
 function esc_url_raw( $value ): string { return trim( (string) $value ); }
 function absint( $value ): int { return abs( (int) $value ); }
 function wp_json_encode( $value, $flags = 0 ) { return json_encode( $value, $flags ); }
+function get_posts( $args = [] ): array { return []; }
 function wpae_get_design_system_id(): string { return 'test'; }
 function wpae_get_design_system_required_classes(): array { return [ 'wpae-system-test' ]; }
 function wpae_get_enforceable_skill_rules(): array { return []; }
@@ -28,10 +47,22 @@ function imported_template_check( bool $condition, string $message ): void {
         throw new RuntimeException( $message );
     }
 }
+function imported_template_element_ids( array $nodes ): array {
+    $ids = [];
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        $ids[] = (string) ( $node['id'] ?? '' );
+        $ids = array_merge( $ids, imported_template_element_ids( (array) ( $node['elements'] ?? [] ) ) );
+    }
+    return $ids;
+}
 
 require __DIR__ . '/../includes/elementor/normalize.php';
 require __DIR__ . '/../includes/elementor/validation-rules.php';
 require __DIR__ . '/../includes/elementor/data.php';
+require __DIR__ . '/../includes/elementor/compose.php';
 require __DIR__ . '/../includes/elementor/block-library.php';
 
 $manifest = wpae_block_library_imported_template_manifest();
@@ -63,9 +94,32 @@ foreach ( $records as $record ) {
 }
 imported_template_check( count( array_unique( $ids ) ) === 155, 'Imported source IDs must be unique.' );
 
+$catalog_response = wpae_block_library_list( new WP_REST_Request( [ 'include_imported' => 1, 'limit' => 200 ] ) );
+$catalog = $catalog_response->get_data();
+imported_template_check( (int) ( $catalog['count'] ?? 0 ) === 155, 'The editor library must expose all 155 plugin-local templates.' );
+$catalog_ids = array_column( (array) ( $catalog['items'] ?? [] ), 'id' );
+imported_template_check( count( array_unique( $catalog_ids ) ) === 155 && ! in_array( 0, $catalog_ids, true ), 'Editor catalog template identities must be unique and non-database IDs.' );
+
+$instantiated = 0;
+foreach ( $records as $record ) {
+    $template_id = (string) $record['bundled_fixture_id'];
+    $preview_id = 'template-' . $template_id;
+    $preview_response = wpae_block_library_instantiate(
+        new WP_REST_Request( [ 'mode' => 'preserve', 'instance_id' => 'editor-preview-' . $template_id ], [ 'id' => $preview_id ] )
+    );
+    $preview = $preview_response->get_data();
+    imported_template_check( $preview_response->status === 200 && ! empty( $preview['ok'] ), 'A plugin-local template failed the editor instantiate route: ' . $template_id );
+    imported_template_check( (string) ( $preview['block_id'] ?? '' ) === $preview_id && (string) ( $preview['source'] ?? '' ) === 'plugin_template', 'Template preview lost its plugin-local identity: ' . $template_id );
+    $source_ids = imported_template_element_ids( (array) $record['elementor_data'] );
+    $preview_ids = imported_template_element_ids( (array) ( $preview['elementor_data'] ?? [] ) );
+    imported_template_check( count( $preview_ids ) === count( $source_ids ) && count( array_unique( $preview_ids ) ) === count( $preview_ids ), 'A preview instance has a missing or duplicate Elementor ID: ' . $template_id );
+    imported_template_check( empty( array_intersect( $source_ids, $preview_ids ) ), 'A preview instance retained a source Elementor ID: ' . $template_id );
+    $instantiated++;
+}
+
 $faq = wpae_block_library_imported_template_records( 'faq', [ 'faq' ] );
 imported_template_check( count( $faq ) === 5, 'Archetype lookup should load only the five FAQ-tagged source files.' );
 imported_template_check( count( array_filter( $faq, static fn( array $record ): bool => (string) ( $record['category'] ?? '' ) !== 'faq' ) ) === 0, 'Archetype lookup leaked a non-FAQ template.' );
 imported_template_check( (int) ( $GLOBALS['template_db_write_attempts'] ?? 0 ) === 0, 'Plugin-local source loading attempted to create WordPress database records.' );
 
-echo wp_json_encode( [ 'status' => 'passed', 'manifest_files' => count( $manifest ), 'retrievable_trees' => count( $records ), 'faq_candidates' => count( $faq ), 'source' => 'plugin files; no WordPress records created' ] ) . PHP_EOL;
+echo wp_json_encode( [ 'status' => 'passed', 'manifest_files' => count( $manifest ), 'retrievable_trees' => count( $records ), 'instantiated_previews' => $instantiated, 'faq_candidates' => count( $faq ), 'source' => 'plugin files; no WordPress records created' ] ) . PHP_EOL;

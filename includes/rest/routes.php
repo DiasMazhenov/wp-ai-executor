@@ -237,7 +237,7 @@ add_action( 'rest_api_init', function () {
         'permission_callback' => 'wpae_block_library_write_permission',
     ] );
 
-    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>\d+)/instantiate', [
+    register_rest_route( 'ai-executor/v1', '/elementor/blocks/(?P<id>(?:\d+|template-[a-z0-9_-]+))/instantiate', [
         'methods'             => 'GET',
         'callback'            => 'wpae_block_library_instantiate',
         'permission_callback' => 'wpae_block_library_read_permission',
