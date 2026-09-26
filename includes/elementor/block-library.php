@@ -775,6 +775,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         'available_count' => 0,
         'candidate_count' => 0,
         'candidates' => [],
+        'selection_candidates' => [],
         'selected' => null,
     ];
     if ( function_exists( 'wpae_block_library_seed_bundled_templates' ) ) {
@@ -922,17 +923,33 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         return strcasecmp( (string) ( $left_summary['title'] ?? '' ), (string) ( $right_summary['title'] ?? '' ) );
     } );
     $result['candidate_count'] = count( $ranked );
-    foreach ( array_slice( $ranked, 0, 3 ) as $candidate ) {
-        $result['candidates'][] = [
+    foreach ( array_slice( $ranked, 0, 3 ) as $index => $candidate ) {
+        $summary = (array) ( $candidate['summary'] ?? [] );
+        $choice_key = 'candidate_' . (string) ( $index + 1 );
+        $compatibility_stats = (array) ( $summary['compatibility']['stats'] ?? [] );
+        $candidate_summary = [
+            'choice_key' => $choice_key,
             'id' => (int) ( $candidate['summary']['id'] ?? 0 ),
             'bundled_fixture_id' => (string) ( $candidate['summary']['bundled_fixture_id'] ?? '' ),
             'title' => (string) ( $candidate['summary']['title'] ?? '' ),
             'category' => (string) ( $candidate['summary']['category'] ?? '' ),
             'source' => (string) ( $candidate['summary']['source'] ?? '' ),
+            'tags' => array_slice( array_values( array_map( 'sanitize_key', (array) ( $summary['tags'] ?? [] ) ) ), 0, 8 ),
+            'widget_types' => array_slice( array_values( array_map( 'sanitize_key', (array) ( $compatibility_stats['widget_types'] ?? [] ) ) ), 0, 12 ),
+            'root_count' => count( (array) ( $candidate['elementor_data'] ?? [] ) ),
+            'media_reference_count' => count( (array) ( $compatibility_stats['media_references'] ?? [] ) ),
             'score' => (int) $candidate['score'],
             'matched_terms' => $candidate['matched_terms'],
             'status' => (string) ( $candidate['summary']['status'] ?? '' ),
         ];
+        $result['candidates'][] = $candidate_summary;
+        $result['selection_candidates'][] = array_merge(
+            $candidate_summary,
+            [
+                'trusted_bundled' => ! empty( $candidate['trusted_bundled'] ),
+                'elementor_data' => (array) ( $candidate['elementor_data'] ?? [] ),
+            ]
+        );
     }
     if ( empty( $ranked ) ) {
         $result['reason'] = $result['available_count'] > 0
@@ -947,6 +964,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         ? 'A trusted bundled library block matched the request.'
         : 'An approved library block matched the request.';
     $result['selected'] = [
+        'choice_key' => (string) ( $result['selection_candidates'][0]['choice_key'] ?? '' ),
         'id' => (int) ( $selected['summary']['id'] ?? 0 ),
         'title' => (string) ( $selected['summary']['title'] ?? '' ),
         'category' => (string) ( $selected['summary']['category'] ?? '' ),

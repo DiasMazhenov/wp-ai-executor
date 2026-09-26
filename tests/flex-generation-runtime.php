@@ -156,6 +156,21 @@ function check( $condition, $message ) {
     $GLOBALS['checks'] = ( $GLOBALS['checks'] ?? 0 ) + 1;
 }
 
+$library_selection_fixture = [
+	'selection_candidates' => [
+		[ 'choice_key' => 'candidate_1', 'title' => 'Шаблон A', 'elementor_data' => [ [ 'id' => 'tree-a' ] ] ],
+		[ 'choice_key' => 'candidate_2', 'title' => 'Шаблон B', 'elementor_data' => [ [ 'id' => 'tree-b' ] ] ],
+	],
+];
+$library_choice = wpae_llm_resolve_library_choice( $library_selection_fixture, 'candidate_2' );
+check( ! empty( $library_choice['ok'] ) && ( $library_choice['selected']['title'] ?? '' ) === 'Шаблон B' && ( $library_choice['selected']['elementor_data'][0]['id'] ?? '' ) === 'tree-b', 'Agent library choice did not resolve to the matching allowlisted template tree' );
+$library_invalid_choice = wpae_llm_resolve_library_choice( $library_selection_fixture, 'template-999' );
+check( empty( $library_invalid_choice['ok'] ) && ( $library_invalid_choice['source'] ?? '' ) === 'invalid_model_choice' && empty( $library_invalid_choice['selected'] ), 'Agent library choice accepted an unlisted template key' );
+$library_choice_prompt = wpae_llm_library_decision_prompt( $library_selection_fixture );
+check( strpos( $library_choice_prompt, 'candidate_2' ) !== false && strpos( $library_choice_prompt, 'tree-b' ) === false, 'Library decision prompt failed to expose bounded choices without raw Elementor JSON' );
+$decoded_library_choice = wpae_llm_decode_action( wp_json_encode( [ 'action' => 'insert_elements', 'library_choice' => 'candidate_2', 'elements' => [] ] ), 42 );
+check( ( $decoded_library_choice['library_choice'] ?? '' ) === 'candidate_2', 'Action decoder dropped the bounded agent library decision' );
+
 $GLOBALS['test_autosave'] = (object) [
     'ID' => 4975,
     'post_parent' => 4556,
@@ -1138,6 +1153,91 @@ $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION]['design_engine_mode'] = 'off';
 
 $hero_cta_classifier = 'Создай hero для архитектурной студии. Надзаголовок: «АРХИТЕКТУРА». Заголовок: «Пространство для идей». Описание: «Опишите задачу». Основная кнопка «К тарифам», ссылка #contact.';
 check( wpae_llm_detect_block_archetype( $hero_cta_classifier ) === 'hero', 'CTA label "К тарифам" does not override an explicitly requested hero in the primary runtime classifier' );
+
+$library_choice_message = 'Создай карусель партнёров: Партнёры: Альфа, Бета.';
+$library_choice_carousel = [
+	[ 'id' => 1, 'url' => 'https://example.test/partner-a.jpg' ],
+	[ 'id' => 2, 'url' => 'https://example.test/partner-b.jpg' ],
+];
+$library_choice_candidate = [
+	'choice_key' => 'candidate_2',
+	'id' => 102,
+	'title' => 'Выбранная карусель',
+	'category' => 'carousel',
+	'source' => 'plugin_template',
+	'status' => 'published',
+	'score' => 9,
+	'matched_terms' => [ 'carousel' ],
+	'trusted_bundled' => false,
+	'elementor_data' => [ widget( 'library-carousel-choice', 'image-carousel', [ 'carousel' => $library_choice_carousel ] ) ],
+];
+$GLOBALS['library'] = [
+	'status' => 'matched',
+	'reason' => 'fixture',
+	'available_count' => 2,
+	'candidate_count' => 2,
+	'candidates' => [
+		[ 'choice_key' => 'candidate_1', 'title' => 'Неподходящая карточка', 'category' => 'carousel', 'source' => 'plugin_template' ],
+		[ 'choice_key' => 'candidate_2', 'title' => 'Выбранная карусель', 'category' => 'carousel', 'source' => 'plugin_template' ],
+	],
+	'selection_candidates' => [
+		[ 'choice_key' => 'candidate_1', 'id' => 101, 'title' => 'Неподходящая карточка', 'category' => 'carousel', 'source' => 'plugin_template', 'trusted_bundled' => false, 'elementor_data' => [] ],
+		$library_choice_candidate,
+	],
+	'selected' => [ 'choice_key' => 'candidate_1', 'id' => 101, 'title' => 'Неподходящая карточка', 'category' => 'carousel', 'source' => 'plugin_template', 'trusted_bundled' => false, 'elementor_data' => [] ],
+];
+$library_provider_action = [
+	'action' => 'insert_elements',
+	'post_id' => 42,
+	'position' => 'end',
+	'library_choice' => 'candidate_2',
+	'elements' => [ container_node( 'provider-root-must-not-win', [ 'container_type' => 'flex' ], [ widget( 'provider-copy', 'text-editor', [ 'editor' => $library_choice_message ] ) ] ) ],
+];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'off', 'design_engine_mode' => 'off' ];
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $library_provider_action ) ) ];
+$library_choice_request = new WP_REST_Request();
+$library_choice_request->set_param( 'message', $library_choice_message );
+$library_choice_request->set_param( 'context', [ 'post_id' => 42 ] );
+$library_choice_response = wpae_llm_chat_request( $library_choice_request );
+$library_choice_data = $library_choice_response instanceof WP_REST_Response ? $library_choice_response->get_data() : [];
+$library_choice_trace = (array) ( $library_choice_data['library'] ?? [] );
+$library_choice_written = (array) ( $GLOBALS['page_data'][ count( $legacy_page ) ] ?? [] );
+$library_choice_system_prompt = (string) ( $GLOBALS['http_calls'][0]['body']['messages'][0]['content'] ?? '' );
+$library_choice_widget_types = [];
+$collect_library_choice_widgets = static function ( array $nodes ) use ( &$collect_library_choice_widgets, &$library_choice_widget_types ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+			$library_choice_widget_types[] = (string) ( $node['widgetType'] ?? '' );
+		}
+		$collect_library_choice_widgets( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_library_choice_widgets( [ $library_choice_written ] );
+check( ! empty( $library_choice_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'Agent template decision uses the ordinary provider and single page-write boundary' );
+check( strpos( $library_choice_system_prompt, 'candidate_1' ) !== false && strpos( $library_choice_system_prompt, 'candidate_2' ) !== false && strpos( $library_choice_system_prompt, 'library-carousel-choice' ) === false, 'Agent receives bounded template choices without raw library JSON' );
+check( ( $library_choice_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_choice_trace['model_choice'] ?? '' ) === 'candidate_2' && ( $library_choice_trace['selected']['title'] ?? '' ) === 'Выбранная карусель', 'Production diagnostics record the model-selected allowlisted library template' );
+check( ( $library_choice_trace['status'] ?? '' ) === 'applied' && in_array( 'image-carousel', $library_choice_widget_types, true ), 'The model-selected template passes adaptation and is compiled into the page write: ' . wp_json_encode( [ 'status' => $library_choice_trace['status'] ?? '', 'widgets' => $library_choice_widget_types ] ) );
+check( strpos( (string) wp_json_encode( $library_choice_written ), 'provider-root-must-not-win' ) === false && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'The selected library composition wins while existing page roots remain untouched' );
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$library_provider_decline = $library_provider_action;
+$library_provider_decline['library_choice'] = null;
+$library_provider_decline['elements'][0]['id'] = 'provider-root-after-decline';
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $library_provider_decline ) ) ];
+$library_decline_request = new WP_REST_Request();
+$library_decline_request->set_param( 'message', $library_choice_message );
+$library_decline_request->set_param( 'context', [ 'post_id' => 42 ] );
+$library_decline_response = wpae_llm_chat_request( $library_decline_request );
+$library_decline_data = $library_decline_response instanceof WP_REST_Response ? $library_decline_response->get_data() : [];
+$library_decline_trace = (array) ( $library_decline_data['library'] ?? [] );
+check( ! empty( $library_decline_data['ok'] ) && ( $library_decline_trace['selection_source'] ?? '' ) === 'model_declined' && empty( $library_decline_trace['selected'] ), 'The agent may decline every library option without a ranked candidate overriding that decision' );
+check( strpos( (string) wp_json_encode( $GLOBALS['page_data'] ), 'provider-root-after-decline' ) !== false && count( $GLOBALS['writes'] ) === 1, 'When the agent declines the library, its valid native composition uses the same single write boundary' );
+$GLOBALS['library'] = [];
 
 if ( ! class_exists( '\\Elementor\\Plugin' ) ) {
 	eval( 'namespace Elementor; class Plugin { public static $types = [ "heading", "text-editor", "button", "image", "icon-list", "divider" ]; public $widgets_manager; public static function instance() { return new self(); } public function __construct() { $this->widgets_manager = new Widgets_Manager(); } } class Widgets_Manager { public function get_widget_types() { return array_fill_keys( Plugin::$types, new \\stdClass() ); } }' );

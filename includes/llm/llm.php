@@ -8886,6 +8886,39 @@ function wpae_llm_normalize_process_step_labels( array $elements, string $archet
     return $elements;
 }
 
+function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
+	$options = [];
+	foreach ( array_slice( (array) ( $library_retrieval['selection_candidates'] ?? [] ), 0, 3 ) as $candidate ) {
+		if ( ! is_array( $candidate ) || sanitize_key( (string) ( $candidate['choice_key'] ?? '' ) ) === '' ) {
+			continue;
+		}
+		$options[] = array_intersect_key(
+			$candidate,
+			array_flip( [ 'choice_key', 'title', 'category', 'tags', 'widget_types', 'root_count', 'media_reference_count' ] )
+		);
+	}
+	if ( empty( $options ) ) {
+		return '';
+	}
+	return "\nКандидаты приватной библиотеки (только совместимые; это метаданные, не факты для публикации): "
+		. wp_json_encode( $options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
+		. '. Как агент, сравни эти варианты и обязательно верни поле "library_choice" со значением одного choice_key или null. Не выбирай только по совпадению названия; учитывай тип секции, набор native widgets и наличие нужной структуры. Сервер адаптирует пользовательский контент в выбранный шаблон и повторно проверит точный текст, native shape и совместимость. Выбор не обходит эти проверки. Если ни один вариант не подходит, верни null и используй свою native-композицию.';
+}
+
+function wpae_llm_resolve_library_choice( array $library_retrieval, string $choice ): array {
+	$choice = sanitize_key( $choice );
+	if ( $choice === '' ) {
+		return [ 'ok' => false, 'source' => 'no_model_choice', 'selected' => null, 'choice_key' => '' ];
+	}
+	foreach ( array_slice( (array) ( $library_retrieval['selection_candidates'] ?? [] ), 0, 3 ) as $candidate ) {
+		if ( ! is_array( $candidate ) || ! hash_equals( sanitize_key( (string) ( $candidate['choice_key'] ?? '' ) ), $choice ) ) {
+			continue;
+		}
+		return [ 'ok' => true, 'source' => 'model_choice', 'selected' => $candidate, 'choice_key' => $choice ];
+	}
+	return [ 'ok' => false, 'source' => 'invalid_model_choice', 'selected' => null, 'choice_key' => $choice ];
+}
+
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
     $candidate = trim( preg_replace( '/^```(?:json)?\s*|\s*```$/i', '', $reply ) );
     $decoded = json_decode( $candidate, true );
@@ -9762,10 +9795,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'capabilities' => function_exists( 'wpae_get_capabilities_payload' ) ? wpae_get_capabilities_payload() : [],
         ];
         $system_prompt .= "\nЭто guided-режим WP AI Executor. Перед выполнением обязательно применяй agent_rules, все custom_skills и capabilities из следующего контекста. Правила WP AI Executor имеют приоритет при конфликте:\n" . wp_json_encode( $guided_context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
-        if ( $library_retrieval['status'] === 'matched' && is_array( $library_retrieval['selected'] ?? null ) ) {
-            $library_label = ! empty( $library_retrieval['selected']['trusted_bundled'] ) ? 'проверенный bundled-шаблон' : 'одобренный шаблон';
-            $system_prompt .= "\nДля этого нового блока найден " . $library_label . " из private block library: «" . sanitize_text_field( (string) ( $library_retrieval['selected']['title'] ?? '' ) ) . '». Сервер может применить его как запасную композицию, если твой дизайн не пройдет проверки native-структуры и контента. Не возвращай служебные инструкции или JSON библиотеки; сгенерируй контент по запросу пользователя.';
-        }
     }
     if ( $action_request ) {
         $system_prompt .= $targeted_edit
@@ -9788,6 +9817,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         $system_prompt .= $targeted_edit ? ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только JSON-объект patch_elements. Не возвращай URL, endpoint, пояснения или markdown.' : ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
+        if ( ! $targeted_edit ) {
+			$system_prompt .= wpae_llm_library_decision_prompt( $library_retrieval );
+		}
     }
     $messages = [ [
         'role' => 'system',
@@ -10000,6 +10032,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( $action_request ) {
         $post_id = is_array( $context ?? null ) ? absint( $context['post_id'] ?? 0 ) : 0;
         $action = wpae_llm_decode_action( $reply, $post_id );
+        $provider_library_choice = sanitize_key( (string) ( $action['library_choice'] ?? '' ) );
+		$provider_library_choice_present = array_key_exists( 'library_choice', $action );
         $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
         $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
         $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
@@ -10046,7 +10080,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( ! $action_valid ) {
             $repair_error = '';
 			$repair_messages = [
-				[ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с полностью заполненными native widget descendants по содержанию запроса. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . WPAE_LLM_Design::prompt() . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Блок собирается полностью заполненным сразу: никаких пустых контейнеров-заготовок на потом. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
+				[ 'role' => 'system', 'content' => 'Исправь Elementor action JSON. Верни только JSON без markdown и текста. Нужен ровно один верхнеуровневый elType=container с полностью заполненными native widget descendants по содержанию запроса. Используй именно post_id ' . (string) $post_id . '. ' . wpae_llm_block_archetype_hint( $message ) . WPAE_LLM_Design::prompt() . wpae_llm_library_decision_prompt( $library_retrieval ) . ' Сгенерируй осмысленный русский контент под запрос пользователя «' . sanitize_text_field( $message ) . '», а не служебные заглушки. Используй минимум три подходящих заполненных native widgets; для специального типа предпочти соответствующий widget (icon-list, accordion, price-list, testimonial, image или divider), а если он недоступен или требует неподдерживаемой структуры, используй заполненные heading/text-editor/button с содержанием именно этого типа, а не общий текст о преимуществах. Не используй тексты «Заголовок блока», «Короткое описание результата для клиента», «Текст заголовка» или другие placeholder-фразы. У heading не может быть пустым settings.title, у text-editor settings.editor, у button settings.text или settings.link.url; для общего CTA fallback допустим текст «Обсудить проект», но специальный блок должен сохранить содержание своего типа. Не возвращай пустые контейнеры, плоские виджеты, дополнительные верхнеуровневые элементы, REST-маршруты или пояснения. Блок собирается полностью заполненным сразу: никаких пустых контейнеров-заготовок на потом. Схема: {"action":"insert_elements","post_id":' . (string) $post_id . ',"position":"end","elements":[container]}.' ],
 				[ 'role' => 'user', 'content' => $message ],
 			];
 			if ( $vision_feedback_prompt !== '' ) {
@@ -10116,6 +10150,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $reply = $repair_reply;
                 $body = $repair_payload;
                 $action = $candidate;
+                $candidate_library_choice = sanitize_key( (string) ( $candidate['library_choice'] ?? '' ) );
+				if ( array_key_exists( 'library_choice', $candidate ) ) {
+					$provider_library_choice_present = true;
+					$provider_library_choice = $candidate_library_choice;
+				}
                 $action_diagnostics = is_array( $action['_wpae_diagnostics'] ?? null ) ? $action['_wpae_diagnostics'] : [];
                 $action_diagnostics['decoded_action'] = sanitize_key( $candidate_action );
                 $action_diagnostics['decoded_post_id'] = $candidate_post_id;
@@ -10196,7 +10235,19 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $library_preserve_design = false;
         $template_source_fingerprint = [];
         $template_fidelity = [ 'ok' => true, 'schema' => 'wpae-template-fidelity-v1', 'status' => 'not_applicable', 'failures' => [] ];
-        $selected_library = is_array( $library_retrieval['selected'] ?? null ) ? $library_retrieval['selected'] : [];
+		$library_choice_resolution = wpae_llm_resolve_library_choice( $library_retrieval, $provider_library_choice );
+		$library_selection_source = (string) ( $library_choice_resolution['source'] ?? 'no_model_choice' );
+		$selected_library = is_array( $library_choice_resolution['selected'] ?? null ) ? $library_choice_resolution['selected'] : [];
+		if ( empty( $library_choice_resolution['ok'] ) && $provider_library_choice_present && $provider_library_choice === '' ) {
+			$library_selection_source = 'model_declined';
+		}
+		if ( empty( $library_choice_resolution['ok'] ) && ! $provider_library_choice_present && $action_fallback && is_array( $library_retrieval['selected'] ?? null ) ) {
+			$selected_library = $library_retrieval['selected'];
+			$library_selection_source = 'ranked_fallback';
+		}
+		if ( $library_selection_source === 'invalid_model_choice' ) {
+			$library_skip_reason = 'The model selected a library key outside the server-provided candidate allowlist.';
+		}
         // A full Vision regeneration is a recovery boundary, not a second
         // chance to write the same sparse provider tree. Rebuild the block
         // from the semantic brief so the bounded repair has a deterministic,
@@ -10233,7 +10284,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 ]
             );
         }
-        if ( $action_fallback && ! $vision_fallback_mode && ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
+        if ( ( $action_fallback || $library_selection_source === 'model_choice' ) && ! $vision_fallback_mode && ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
             $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
             if ( ! empty( $library_elements ) ) {
                 $template_source_fingerprint = wpae_llm_template_fingerprint( $library_elements );
@@ -10463,7 +10514,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'available_count' => (int) ( $library_retrieval['available_count'] ?? 0 ),
             'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ),
             'candidates' => (array) ( $library_retrieval['candidates'] ?? [] ),
-            'selected' => ! empty( $selected_library ) ? array_intersect_key( $selected_library, array_flip( [ 'id', 'title', 'category', 'source', 'status', 'trusted_bundled', 'score', 'matched_terms' ] ) ) : null,
+            'selection_source' => $library_selection_source,
+            'model_choice' => $provider_library_choice,
+            'selected' => ! empty( $selected_library ) ? array_intersect_key( $selected_library, array_flip( [ 'choice_key', 'id', 'title', 'category', 'source', 'status', 'trusted_bundled', 'score', 'matched_terms' ] ) ) : null,
             'source_fingerprint' => $template_source_fingerprint,
             'fidelity' => $template_fidelity,
             'content_changes' => $library_changed,
