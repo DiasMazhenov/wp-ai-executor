@@ -191,6 +191,16 @@
                 config.strings.foreignDesign
             ) );
         }
+        const unavailableWidgets = item.compatibility && Array.isArray( item.compatibility.unavailable_widget_types )
+            ? item.compatibility.unavailable_widget_types
+            : [];
+        if ( unavailableWidgets.length ) {
+            compatibility.appendChild( createElement(
+                'span',
+                'wpae-library__status wpae-library__status--warn',
+                `${ config.strings.unavailableWidgets }: ${ unavailableWidgets.join( ', ' ) }`
+            ) );
+        }
         panel.appendChild( compatibility );
 
         if ( item.tags && item.tags.length ) {
@@ -240,10 +250,13 @@
             top.appendChild( createElement( 'span', 'wpae-library__item-count', `${ stats.elements || 0 } ${ config.strings.units }` ) );
             card.appendChild( top );
             card.appendChild( createElement( 'strong', 'wpae-library__item-title', item.title ) );
+            const unavailableWidgets = item.compatibility && Array.isArray( item.compatibility.unavailable_widget_types )
+                ? item.compatibility.unavailable_widget_types.length
+                : 0;
             card.appendChild( createElement(
                 'span',
                 'wpae-library__item-meta',
-                `${ stats.containers || 0 } ${ config.strings.shortContainers } · ${ stats.widgets || 0 } ${ config.strings.shortWidgets }`
+                `${ stats.containers || 0 } ${ config.strings.shortContainers } · ${ stats.widgets || 0 } ${ config.strings.shortWidgets }${ unavailableWidgets ? ` · ${ config.strings.unavailableWidgets }: ${ unavailableWidgets }` : '' }`
             ) );
             list.appendChild( card );
         } );
@@ -333,6 +346,103 @@
         }
     };
 
+    const importTemplates = async ( event ) => {
+        const input = event.target;
+        const files = Array.from( input.files || [] );
+        if ( ! files.length ) {
+            return;
+        }
+
+        const status = root.querySelector( '[data-wpae-import-status]' );
+        const maxBytes = 4 * 1024 * 1024;
+        let imported = 0;
+        const failures = [];
+        input.disabled = true;
+
+        for ( let index = 0; index < files.length; index++ ) {
+            const file = files[ index ];
+            status.textContent = `${ config.strings.importing } ${ index + 1 }/${ files.length }: ${ file.name }`;
+            try {
+                if ( ! file.name.toLowerCase().endsWith( '.json' ) || file.size > maxBytes ) {
+                    throw new Error( file.size > maxBytes ? config.strings.fileTooLarge : config.strings.jsonOnly );
+                }
+
+                const block = JSON.parse( await file.text() );
+                if ( ! block || typeof block !== 'object' ) {
+                    throw new Error( config.strings.invalidJson );
+                }
+
+                const sourceInfo = block.wpae_import_metadata && typeof block.wpae_import_metadata === 'object'
+                    ? block.wpae_import_metadata
+                    : {};
+                const sourceTitle = typeof block.title === 'string' && block.title.trim()
+                    ? block.title.trim()
+                    : file.name.replace( /\.json$/i, '' );
+                const kitTitle = typeof sourceInfo.kit_title === 'string' ? sourceInfo.kit_title.trim() : '';
+                const title = kitTitle ? `${ kitTitle } — ${ sourceTitle }` : sourceTitle;
+                const searchable = `${ title } ${ file.name }`;
+                const tags = [ 'elementorpro-temp', 'imported-template', 'license-unverified' ];
+                const kitTag = typeof sourceInfo.kit_slug === 'string'
+                    ? sourceInfo.kit_slug.toLowerCase().replace( /[^a-z0-9-]+/g, '-' ).replace( /^-+|-+$/g, '' )
+                    : '';
+                if ( kitTag ) {
+                    tags.push( `kit-${ kitTag }` );
+                }
+                if ( sourceInfo.elementor_pro_required === true ) {
+                    tags.push( 'elementor-pro-required' );
+                }
+                const archetypes = [
+                    [ 'hero', /hero|banner|cover|homepage|home/i ],
+                    [ 'benefits', /feature|benefit|service|advantage|course/i ],
+                    [ 'pricing', /pricing|price|tariff/i ],
+                    [ 'testimonials', /testimonial|review/i ],
+                    [ 'team', /team|staff|people/i ],
+                    [ 'about', /about|company/i ],
+                    [ 'faq', /faq|accordion|question/i ],
+                    [ 'process', /process|steps|timeline/i ],
+                    [ 'portfolio', /gallery|portfolio|project|case/i ],
+                    [ 'carousel', /carousel|slider|brand|logo/i ],
+                    [ 'mega-menu', /header|menu|navigation/i ],
+                    [ 'cta', /contact|form|footer|cta/i ],
+                ];
+                archetypes.forEach( ( [ tag, pattern ] ) => {
+                    if ( pattern.test( searchable ) ) {
+                        tags.push( tag );
+                    }
+                } );
+
+                await mutate( config.endpoint, {
+                    title,
+                    description: kitTitle ? `${ kitTitle }; ${ config.strings.importDescription }` : config.strings.importDescription,
+                    category: 'custom',
+                    tags,
+                    source: 'import',
+                    source_url: typeof sourceInfo.preview_url === 'string' ? sourceInfo.preview_url : '',
+                    provenance: {
+                        source: 'import',
+                        source_url: typeof sourceInfo.preview_url === 'string' ? sourceInfo.preview_url : '',
+                        license: config.strings.unverifiedLicense,
+                        attribution: `${ kitTitle ? `${ kitTitle } / ` : '' }${ sourceTitle } (${ file.name }); ${ config.strings.localArchiveAttribution }`,
+                    },
+                    block,
+                } );
+                imported++;
+            } catch ( error ) {
+                failures.push( `${ file.name }: ${ error.message || config.strings.failed }` );
+            }
+        }
+
+        input.value = '';
+        input.disabled = false;
+        await load();
+
+        const summary = `${ config.strings.importComplete }: ${ imported }/${ files.length }`;
+        status.textContent = failures.length
+            ? `${ summary }. ${ config.strings.importFailed }: ${ failures.slice( 0, 3 ).join( ' · ' ) }`
+            : summary;
+        notify( status.textContent, failures.length ? 'error' : 'success' );
+    };
+
     const close = () => {
         if ( root ) {
             root.hidden = true;
@@ -378,9 +488,13 @@
                         <button type="button" data-wpae-mode="compatibility">${ config.strings.compatibility }</button>
                         <button type="button" data-wpae-mode="adapt">${ config.strings.adapt }</button>
                     </div>
+                    <label class="wpae-library__import">${ config.strings.importTemplates }
+                        <input type="file" data-wpae-import accept=".json,application/json" multiple aria-label="${ config.strings.importTemplates }">
+                    </label>
                     <button type="button" class="wpae-library__icon-button" data-wpae-refresh title="${ config.strings.refresh }" aria-label="${ config.strings.refresh }">
                         <i class="eicon-sync" aria-hidden="true"></i>
                     </button>
+                    <span class="wpae-library__import-status" data-wpae-import-status role="status" aria-live="polite"></span>
                 </div>
                 <div class="wpae-library__body">
                     <div class="wpae-library__catalog">
@@ -440,6 +554,7 @@
             state.query = event.target.value;
             renderItems();
         } );
+        root.querySelector( '[data-wpae-import]' ).addEventListener( 'change', importTemplates );
         root.querySelector( '[data-wpae-category]' ).addEventListener( 'change', ( event ) => {
             state.category = event.target.value;
             renderItems();
