@@ -1,35 +1,26 @@
 # WP AI Executor — context
 
-Последнее обновление: **2026-09-26 13:52 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-26 19:49 +05:00 (Asia/Almaty)**.
 
-## Текущее состояние
+## Актуальное состояние
 
-- Checkout `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`; исходный HEAD до этого этапа `5c976ff8c3b9d5d201172b9efd9305159408c753`.
-- Локальная версия исходников подготовлена как **v02.11.158**, изменения runtime и тестов не закоммичены. Read-only GitHub API подтвердил `origin/main=5c976ff8c3b9d5d201172b9efd9305159408c753` на 2026-09-26 13:02 +05. `git add` остановился на запрете создания `.git/index.lock`; GitHub `create_blob` вернул 403 `Resource not accessible by integration`; обычный `git ls-remote` не разрешил `github.com`. Commit/push/install не выполнены.
-- WP Pusher открыт для `DiasMazhenov/wp-ai-executor`; в списке указаны branch `main` и `Push-to-Deploy: enabled`. Установленные плагины показывают **v02.11.157**. WP Pusher отобразил общее уведомление `Plugin was successfully updated`, но оно не подтверждает установку v158. Повторное обновление не запускалось: пока v158 не опубликована в `main`, это могло бы установить только старый код.
-- Предыдущая успешная публикация v155 зафиксирована в историческом handoff как push в `origin/main`; это подтверждает, что раньше работал обычный Git push, после которого сайт обновлялся отдельно. Нынешний отказ специфичен для этого запуска: sandbox запрещает запись в `.git` (`git add` → `Operation not permitted`), GitHub connector отклонил запись (`403 Resource not accessible by integration`), а DNS не разрешил `github.com`. POSIX write bits сами по себе не отменяют sandbox-ограничение.
-- В открытом Browser Use IAB три вкладки: редактор существующей страницы `post=5214`, Plugins и WP Pusher. Plugins подтверждает установленную **v02.11.157**; текущая запись WP Pusher — `main`, Push-to-Deploy включён. В ранее прочитанном editor tab был version marker **v02.11.157** и пустой canvas/dropzone при CSS viewport 928×923. В этом проходе editor не перезагружался, saved document/public render заново не читались; generation/save/root mutation не было.
-- Для активного deterministic pipeline локально добавлена поддержка `hero` с media, `services`, `team`, `testimonials` и отдельного `cta`; `pricing`, `benefits`, `faq` оставлены регрессионными archetypes. Production-path harness при EDDE=`active` и pipeline=`active` проверяет `action_path=pipeline`, 0 provider calls и ровно один writer call; это local harness, не live operation.
-- Для фото hero в fixtures используется URL снимка Neon Wang на Unsplash с alt, license и attribution. Фото не скачивалось и не копировалось в runtime/package. Условия использования сверены с [Unsplash License](https://unsplash.com/license) и [страницей автора](https://unsplash.com/photos/modern-concrete-interior-with-large-windows-overlooking-landscape-vDubGhodBV8).
-- Live-тесты пяти новых композиций, сохранение, readback, DOM/screenshots, public mobile и operation-bound Vision — **NOT RUN**: установленная editor-страница всё ещё сообщает v157, а v158 пока не опубликована/не установлена. Пустой editor canvas — текущее наблюдение editor UI, не доказательство свежего серверного readback.
+- Checkout `/Users/diasmazhenov/vibecode/wp-ai-executor`, branch `main`, source commit `7beef71bffa1745427956879c7bcb483ee28ee99`; runtime `v02.11.160` опубликован в `origin/main` и установлен через WP Pusher. Plugins UI и свежий editor inline config подтвердили `v02.11.160`.
+- Runtime update добавляет CTA с явным изображением как deterministic `split_60_40`: native copy/image containers на desktop, stack copy-first на tablet/mobile. Вариант CTA без media сохраняет прежний text-only path. Targeted replacement разрешается только при совпадении выбранного root с единственным актуальным operation-owned root; ownership, revision, saved fingerprint и transaction guards остаются включены.
+- Behavioral checks: `php tests/design-pipeline-contract.php` — 245 checks; `php tests/flex-generation-runtime.php` — 396; `node --test tests/*.test.js` — 4/4; PHP syntax, `git diff --check` — PASS. Package probe: 90 файлов, 0 hash mismatches, 4 package scenarios PASS; полный probe JSON по-прежнему содержит malformed UTF-8, компактный результат валиден.
+- На текущем `post=5214` live replacement не выполнялся. Свежий editor config показывает CTA repair `wpae-2ca8292fb0a142e8`, identity `384c25ad-8506-449f-8cfe-637da1287a4e`, revision 5, state `written`, root `eb0103a`, `reviewable=false`, `target_status.reason=root_missing`. Editor canvas после обычного reload содержит 0 roots. Текущая public страница после обычного reload также содержит 0 Elementor roots и 0 headings.
+- До обычного reload существующая public-вкладка показывала старый HTML с четырьмя roots `5a3292b`, `32f16d1`, `5b96df3`, `eb0103a`; после reload они исчезли. Это подтверждает устаревшее содержимое прежней public-вкладки, но точный слой cache/response не установлен. Сохранённый CTA отсутствует; страницу не записывали и новые roots/pages/drafts не создавали.
+- В regression prompt использовано фото современного интерьера из Unsplash, автор Neon Wang; оригинальная страница помечает его как бесплатное по Unsplash License. Фото и его CDN URL в live document не записывались. Источники: https://unsplash.com/photos/modern-interior-with-concrete-walls-and-wooden-accents-JsL6PZU1KRU и https://unsplash.com/license.
 
-## Реализация и локальные проверки v158
+## Свежие screenshots
 
-- `includes/llm/brief-ir.php`: групповые media fields сохраняют Unicode context, точный alt/license/photographer provenance.
-- `includes/llm/design-plan.php`: typed archetypes и validation для services/team/testimonials/CTA; item ids и повторяемые группы остаются связанными; synthetic testimonials — только явно помеченные тестовые данные.
-- `includes/elementor/elementor-ir.php`: существующий compiler формирует native Flex/card/container/Image/Heading/Text Editor/Button nodes; mobile policy и source image/alt остаются явными.
-- `includes/elementor/reference-set.php`, `includes/llm/llm.php`: media provenance и новый выбор существующего deterministic pipeline dispatcher. Отдельный writer или новая библиотека не добавлялись.
-- `tests/design-pipeline-contract.php` — **223 checks OK**; `tests/flex-generation-runtime.php` — **393 checks OK**; `node --test tests/*.test.js` — **4 passed, 0 failed**.
-- `php -l` прошёл для runtime PHP files; `php docs/audits/2026-09-12/package-probe.php` — **PASS**, 90 package files, 0 hash mismatches, 4 manifest/archive scenarios; `git diff --check` — **PASS**.
+Снимки сделаны Browser Use из существующих вкладок. JPEG bytes сохранены, сигнатура проверена, PNG созданы через `sips`, все файлы открыты и визуально проверены. Pixel canvas указан отдельно от CSS viewport.
 
-## Правило screenshot evidence
+- Старая public-вкладка **до её reload**: root `eb0103a` с прежним CTA без картинки, operation из исторического состояния `wpae-2ca8292fb0a142e8`; CSS viewport `1105×923`, PNG `1050×923`: `/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-26-v160-cta/cta-public-render-after-editor-reload-20260926.png`. Это старый public DOM, не v160 acceptance.
+- Editor **после reload**, post `5214`, operation `wpae-2ca8292fb0a142e8` rev 5, root status `root_missing`; CSS viewport `1100×923`, canvas `1025×860`, PNG `1045×923`: `/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-26-v160-cta/cta-editor-v160-after-reload-empty-20260926.png`.
+- Public **после reload**, post `5214`, Elementor roots отсутствуют; CSS viewport `1105×923`, PNG `1050×923`: `/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-26-v160-cta/cta-public-after-reload-empty-20260926.png`.
 
-Для live Elementor: текущая Browser Use вкладка существующей страницы после save/reload → screenshot bytes → проверить формат → JPEG конвертировать через `sips` в PNG → открыть PNG и визуально проверить → показать inline и дать кликабельную абсолютную ссылку. Записать CSS viewport, post/root/operation IDs и editor/public source. Не создавать новые pages/drafts и не выдавать размер screenshot canvas за viewport. Если новый блок в live не создавался, не использовать пустой кадр как замену приёмке дизайна.
+Полная история v02.11.159 и более ранних проверок сохранена в `LUNA_HANDOFF_REPORT.md` под пометкой «Историческое состояние»; она не описывает текущий post state.
 
-## Выпуск через WP Pusher
+## Постоянные workflow rules
 
-После готовности исходников сначала опубликовать проверенный commit в `main`, затем выполнять установку/обновление через зарегистрированный WP Pusher `DiasMazhenov/wp-ai-executor` (branch `main`, Push-to-Deploy включён). Если автоматический deploy не сработал, использовать действие обновления существующей записи WP Pusher. После deploy отдельно подтвердить версию в Plugins и в inline config редактора; уведомление WP Pusher само по себе не доказывает активную версию. Не запускать WP Pusher до появления нужного commit в `main`, чтобы не переустановить старую версию. Если запись репозитория отсутствует, использовать экран добавления WP Pusher с тем же repo/branch и включить Push-to-Deploy и Link installed plugin. Секреты GitHub не читать и не выводить.
-
-## История
-
-Наблюдения v154–v157 и более ранние states страницы в `LUNA_HANDOFF_REPORT.md` исторические. Старые root IDs и screenshots не описывают текущий editor document. `SESSION_CONTEXT.md` не используется.
+Для live Elementor использовать только текущую существующую страницу; новые pages/drafts не создавать. Не сохранять неполную editor model и не обходить ownership/stale guards. Screenshots через Browser Use: сохранить screenshot bytes в абсолютный путь, проверить формат, при JPEG преобразовать через `sips` в PNG, открыть/проверить и вставить inline с абсолютной ссылкой. Всегда указывать CSS viewport отдельно от pixel dimensions. Установку после релиза выполнять существующим WP Pusher.
