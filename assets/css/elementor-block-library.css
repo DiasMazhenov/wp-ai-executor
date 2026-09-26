@@ -23,7 +23,6 @@ body.wpae-library-open {
     inset: 0;
     z-index: 999999;
     color: var(--wpae-ink);
-    font-family: Inter, Roboto, Arial, sans-serif;
     letter-spacing: 0;
 }
 
