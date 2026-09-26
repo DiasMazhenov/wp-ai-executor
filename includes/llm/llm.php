@@ -9400,6 +9400,20 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	$design_pipeline_mode = function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off';
 	$edde_mode = function_exists( 'wpae_llm_design_engine_mode' ) ? wpae_llm_design_engine_mode() : 'off';
 	$deterministic_archetype = in_array( $action_archetype, function_exists( 'wpae_design_plan_schema' ) ? wpae_design_plan_schema()['archetypes'] : [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
+	$content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
+	$library_retrieval = [
+		'status' => 'skipped',
+		'reason' => $targeted_edit ? 'Library retrieval is skipped for targeted edits.' : ( $vision_regenerate ? 'Library retrieval is available for full Vision regeneration.' : ( $vision_repair ? 'Library retrieval is skipped for selected-element Vision repair.' : 'Library retrieval is available for new block generation.' ) ),
+		'available_count' => 0,
+		'candidate_count' => 0,
+		'candidates' => [],
+		'selection_candidates' => [],
+		'selected' => null,
+	];
+	$library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
+	if ( $library_retrieval_enabled ) {
+		$library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
+	}
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	if ( $vision_regenerate && $design_pipeline_mode === 'active' && ( $design_generation_route['action_path'] ?? '' ) === 'pipeline' && $selected_post_id > 0 && $deterministic_archetype && ! $replacement_requested ) {
 		return new WP_Error( 'wpae_vision_replacement_scope_required', 'У Vision regeneration отсутствует подтверждённый operation-owned root; добавление нового root запрещено.', [ 'status' => 409 ] );
@@ -9457,8 +9471,26 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				? wpae_llm_route_diagnostics( wpae_llm_route_policy( $action_request ? 'elementor_write' : 'draft', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ), [ 'source' => 'not_called', 'provider_calls' => 0 ] )
 				: [],
 		];
-        $design_pipeline_trace['status'] = empty( $brief_validation['ok'] ) || empty( $plan_validation['ok'] ) ? 'invalid_plan' : 'planned';
-    }
+		$design_pipeline_trace['status'] = empty( $brief_validation['ok'] ) || empty( $plan_validation['ok'] ) ? 'invalid_plan' : 'planned';
+	}
+	$library_agent_eligible = $design_pipeline_mode === 'active'
+		&& $deterministic_archetype
+		&& $selected_post_id > 0
+		&& ! $targeted_edit
+		&& ! $vision_repair
+		&& ! $vision_regenerate
+		&& ! $replacement_requested
+		&& (int) ( $library_retrieval['candidate_count'] ?? 0 ) > 0
+		&& ! empty( $design_pipeline_trace['brief']['validation']['ok'] )
+		&& ! empty( $design_pipeline_trace['plan']['validation']['ok'] )
+		&& ! empty( $design_pipeline_trace['layout']['ok'] );
+	if ( $library_agent_eligible && function_exists( 'wpae_design_generation_route' ) ) {
+		$design_generation_route = wpae_design_generation_route( $design_pipeline_mode, $edde_mode, true, $action_archetype === 'hero', true );
+		$design_pipeline_trace['route_decision'] = $design_generation_route;
+		$design_pipeline_trace['routing'] = function_exists( 'wpae_llm_route_diagnostics' ) && function_exists( 'wpae_llm_route_policy' )
+			? wpae_llm_route_diagnostics( wpae_llm_route_policy( 'elementor_write', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ), [ 'source' => 'pending', 'provider_calls' => $design_generation_route['provider_calls'], 'action_path' => 'library_agent' ] )
+			: [ 'source' => 'pending', 'provider_calls' => $design_generation_route['provider_calls'], 'action_path' => 'library_agent' ];
+	}
 	$active_pipeline_eligible = $action_request
 		&& $design_pipeline_trace['mode'] === 'active'
 		&& ( $design_generation_route['action_path'] ?? '' ) === 'pipeline'
@@ -9660,6 +9692,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     // the provider append path when the safe retry target is missing.
     $process_retry_request = ! $targeted_edit
         && ! $vision_repair
+        && ( $design_generation_route['action_path'] ?? '' ) !== 'library_agent'
         && $selected_post_id > 0
         && wpae_llm_is_process_request( $message, $action_archetype )
         && function_exists( 'wpae_llm_execute_process_timeline_repair' );
@@ -9700,7 +9733,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             }
         }
     }
-    if ( $action_request && ! $targeted_edit && ! $vision_repair && $selected_post_id > 0 && empty( $selected_element_ids ) && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_action' ) ) {
+    if ( $action_request && ! $targeted_edit && ! $vision_repair && ( $design_generation_route['action_path'] ?? '' ) !== 'library_agent' && $selected_post_id > 0 && empty( $selected_element_ids ) && wpae_llm_is_process_request( $message, $action_archetype ) && function_exists( 'wpae_llm_execute_action' ) ) {
         $local_steps = wpae_llm_process_timeline_steps( $message );
         $local_action = [
             'action'   => 'insert_elements',
@@ -9727,23 +9760,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'model'        => $runtime['model'],
         ], 200 );
     }
-    $content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
-    $library_retrieval = [
-        'status' => 'skipped',
-        'reason' => $targeted_edit
-            ? 'Library retrieval is skipped for targeted edits.'
-            : ( $vision_regenerate
-                ? 'Library retrieval is available for full Vision regeneration.'
-                : ( $vision_repair ? 'Library retrieval is skipped for selected-element Vision repair.' : 'Library retrieval is available for new block generation.' ) ),
-        'available_count' => 0,
-        'candidate_count' => 0,
-        'candidates' => [],
-        'selected' => null,
-    ];
-    $library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
-    if ( $library_retrieval_enabled ) {
-        $library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
-    }
 	$design_engine_result = [
 		'ok' => false,
 		'trace' => [
@@ -9763,6 +9779,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ! $targeted_edit
 		&& ! $vision_repair
 		&& ! $vision_regenerate
+		&& ( $design_generation_route['action_path'] ?? '' ) !== 'library_agent'
 		&& $action_archetype === 'hero'
 		&& $design_engine_post_id > 0;
 	if ( $design_engine_eligible && function_exists( 'wpae_llm_design_engine_decide' ) ) {
@@ -10241,10 +10258,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		if ( empty( $library_choice_resolution['ok'] ) && $provider_library_choice_present && $provider_library_choice === '' ) {
 			$library_selection_source = 'model_declined';
 		}
-		if ( empty( $library_choice_resolution['ok'] ) && ! $provider_library_choice_present && $action_fallback && is_array( $library_retrieval['selected'] ?? null ) ) {
-			$selected_library = $library_retrieval['selected'];
-			$library_selection_source = 'ranked_fallback';
-		}
 		if ( $library_selection_source === 'invalid_model_choice' ) {
 			$library_skip_reason = 'The model selected a library key outside the server-provided candidate allowlist.';
 		}
@@ -10507,10 +10520,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 			];
 		}
 		$library_trace = [
-            'status' => $library_applied ? 'applied' : (string) ( $library_retrieval['status'] ?? 'skipped' ),
+            'status' => $library_applied ? 'applied' : ( $library_selection_source === 'model_choice' ? 'rejected' : ( $library_selection_source === 'model_declined' ? 'declined' : ( $library_selection_source === 'invalid_model_choice' ? 'invalid_choice' : ( ! empty( $library_retrieval['selection_candidates'] ) ? 'not_selected' : (string) ( $library_retrieval['status'] ?? 'skipped' ) ) ) ) ),
             'reason' => $library_applied
                 ? 'Library composition was adapted to the user content and passed native checks.'
-                : ( $library_skip_reason !== '' ? $library_skip_reason : (string) ( $library_retrieval['reason'] ?? 'Library retrieval was skipped.' ) ),
+                : ( $library_skip_reason !== '' ? $library_skip_reason : ( $library_selection_source === 'model_declined' ? 'The model declined the offered candidates; no locally ranked candidate was substituted.' : ( ! empty( $library_retrieval['selection_candidates'] ) ? 'No valid model selection was received; ranked retrieval did not choose a template.' : (string) ( $library_retrieval['reason'] ?? 'Library retrieval was skipped.' ) ) ) ),
             'available_count' => (int) ( $library_retrieval['available_count'] ?? 0 ),
             'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ),
             'candidates' => (array) ( $library_retrieval['candidates'] ?? [] ),
@@ -10672,7 +10685,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $execution_variation_seed = $library_applied || $provider_design ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
         $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $design_engine_active ? 'Typed EDDE-план скомпилирован существующим native Elementor-пайплайном.' : ( $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.' ), 'details' => [ 'source' => $design_engine_active ? 'edde' : ( $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ) ] ];
-		$resolved_action_path = $design_engine_active ? 'edde' : ( $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ) );
+		$resolved_action_path = ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' ? 'library_agent' : ( $design_engine_active ? 'edde' : ( $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ) ) );
 		$response_diagnostics = wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] );
 		$usage = is_array( $response_diagnostics['usage'] ?? null ) ? $response_diagnostics['usage'] : [];
 		$routing_policy = function_exists( 'wpae_llm_route_policy' ) ? wpae_llm_route_policy( $action_request ? 'elementor_write' : 'draft', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ) : [];

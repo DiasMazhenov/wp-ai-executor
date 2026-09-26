@@ -6,10 +6,13 @@ defined( 'ABSPATH' ) || exit;
 
 const WPAE_LLM_ROUTE_SCHEMA = 'wpae-llm-route-v1';
 
-function wpae_design_generation_route( string $pipeline_mode, string $edde_mode, bool $pipeline_supported = true, bool $edde_eligible = true ): array {
+function wpae_design_generation_route( string $pipeline_mode, string $edde_mode, bool $pipeline_supported = true, bool $edde_eligible = true, bool $library_candidates_available = false ): array {
 	$pipeline_mode = in_array( sanitize_key( $pipeline_mode ), [ 'off', 'shadow', 'active' ], true ) ? sanitize_key( $pipeline_mode ) : 'off';
 	$edde_mode = in_array( sanitize_key( $edde_mode ), [ 'off', 'shadow', 'active' ], true ) ? sanitize_key( $edde_mode ) : 'off';
 	if ( $pipeline_mode === 'active' && $pipeline_supported ) {
+		if ( $library_candidates_available ) {
+			return [ 'action_path' => 'library_agent', 'provider_calls' => 1, 'writes' => 1, 'shadow_only' => false, 'precedence' => 'active_pipeline_library_decision' ];
+		}
 		return [ 'action_path' => 'pipeline', 'provider_calls' => 0, 'writes' => 1, 'shadow_only' => false, 'precedence' => 'pipeline' ];
 	}
 	if ( $edde_mode === 'active' && $edde_eligible ) {

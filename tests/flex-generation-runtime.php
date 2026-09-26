@@ -1237,6 +1237,17 @@ $library_decline_data = $library_decline_response instanceof WP_REST_Response ? 
 $library_decline_trace = (array) ( $library_decline_data['library'] ?? [] );
 check( ! empty( $library_decline_data['ok'] ) && ( $library_decline_trace['selection_source'] ?? '' ) === 'model_declined' && empty( $library_decline_trace['selected'] ), 'The agent may decline every library option without a ranked candidate overriding that decision' );
 check( strpos( (string) wp_json_encode( $GLOBALS['page_data'] ), 'provider-root-after-decline' ) !== false && count( $GLOBALS['writes'] ) === 1, 'When the agent declines the library, its valid native composition uses the same single write boundary' );
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ new WP_Error( 'http_request_failed', 'simulated provider outage' ) ];
+$library_failure_request = new WP_REST_Request();
+$library_failure_request->set_param( 'message', $library_choice_message );
+$library_failure_request->set_param( 'context', [ 'post_id' => 42 ] );
+$library_failure_response = wpae_llm_chat_request( $library_failure_request );
+$library_failure_data = $library_failure_response instanceof WP_REST_Response ? $library_failure_response->get_data() : [];
+$library_failure_trace = (array) ( $library_failure_data['library'] ?? [] );
+check( ! empty( $library_failure_data['ok'] ) && ( $library_failure_trace['selection_source'] ?? '' ) === 'no_model_choice' && empty( $library_failure_trace['selected'] ), 'Provider failure does not silently promote the locally ranked library candidate' );
+check( ( $library_failure_trace['status'] ?? '' ) === 'not_selected' && stripos( (string) ( $library_failure_trace['reason'] ?? '' ), 'no valid model selection' ) !== false, 'Library diagnostics distinguish provider failure from model selection' );
 $GLOBALS['library'] = [];
 
 if ( ! class_exists( '\\Elementor\\Plugin' ) ) {
@@ -1331,6 +1342,63 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 		check( ( $case_image['settings']['image']['url'] ?? '' ) === 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85' && ( $case_image['settings']['image']['alt'] ?? '' ) === 'Современный бетонный интерьер с большими окнами на природный ландшафт', 'production hero route writes the exact licensed image URL and alt into a native Image widget' );
 	}
 }
+
+$library_agent_message = '«Пространство для идей». Hero. Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
+$library_agent_root = container_node( 'imported-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-fixture-candidate-two wpae-generated-badge' ], [
+	widget( 'imported-hero-title', 'heading', [ 'title' => 'Исходный заголовок', 'header_size' => 'h2' ] ),
+	widget( 'imported-hero-copy', 'text-editor', [ 'editor' => 'Исходное описание.' ] ),
+	widget( 'imported-hero-button', 'button', [ 'text' => 'Исходная кнопка', 'link' => [ 'url' => '#old' ] ] ),
+] );
+$library_agent_first_root = container_node( 'unselected-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-candidate-one' ], [
+	widget( 'unselected-hero-title', 'heading', [ 'title' => 'Не выбранный вариант', 'header_size' => 'h2' ] ),
+	widget( 'unselected-hero-copy', 'text-editor', [ 'editor' => 'Другой вариант.' ] ),
+	widget( 'unselected-hero-button', 'button', [ 'text' => 'Смотреть', 'link' => [ 'url' => '#other' ] ] ),
+ ] );
+$GLOBALS['library'] = [
+	'status' => 'matched', 'available_count' => 2, 'candidate_count' => 2,
+	'candidates' => [
+		[ 'choice_key' => 'candidate_1', 'title' => 'Локально ранжированный вариант', 'category' => 'hero' ],
+		[ 'choice_key' => 'candidate_2', 'title' => 'Импортированный hero', 'category' => 'hero' ],
+	],
+	'selection_candidates' => [
+		[ 'choice_key' => 'candidate_1', 'id' => 500, 'title' => 'Локально ранжированный вариант', 'category' => 'hero', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => [ $library_agent_first_root ] ],
+		[ 'choice_key' => 'candidate_2', 'id' => 501, 'title' => 'Импортированный hero', 'category' => 'hero', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => [ $library_agent_root ] ],
+	],
+];
+$library_agent_action = [
+	'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_2',
+	'elements' => [ container_node( 'provider-tree-ignored', [ 'container_type' => 'flex' ], [ widget( 'provider-copy', 'text-editor', [ 'editor' => $library_agent_message ] ) ] ) ],
+];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $library_agent_action ) ) ];
+$library_agent_request = new WP_REST_Request();
+$library_agent_request->set_param( 'message', $library_agent_message );
+$library_agent_request->set_param( 'context', [ 'post_id' => 42 ] );
+$library_agent_response = wpae_llm_chat_request( $library_agent_request );
+$library_agent_data = $library_agent_response instanceof WP_REST_Response ? $library_agent_response->get_data() : [];
+$library_agent_trace = (array) ( $library_agent_data['library'] ?? [] );
+$library_agent_written_root = (array) ( $GLOBALS['page_data'][ count( $legacy_page ) ] ?? [] );
+$library_agent_root_json = wp_json_encode( $library_agent_written_root );
+$library_agent_written_copy = wpae_llm_collect_action_content( [ $library_agent_written_root ] );
+$find_library_agent_button_url = static function ( array $nodes ) use ( &$find_library_agent_button_url ): string {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'button' ) {
+			return (string) ( $node['settings']['link']['url'] ?? '' );
+		}
+		$url = $find_library_agent_button_url( (array) ( $node['elements'] ?? [] ) );
+		if ( $url !== '' ) { return $url; }
+	}
+	return '';
+};
+$library_agent_button_url = $find_library_agent_button_url( [ $library_agent_written_root ] );
+check( ! empty( $library_agent_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'active supported pipeline delegates one library decision, then uses one existing write boundary' );
+check( ( $library_agent_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['provider_calls'] ?? null ) === 1 && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['precedence'] ?? '' ) === 'active_pipeline_library_decision', 'active pipeline diagnostics expose the bounded library-agent route without invoking EDDE in parallel' );
+check( ( $library_agent_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_agent_trace['model_choice'] ?? '' ) === 'candidate_2' && ( $library_agent_trace['selected']['title'] ?? '' ) === 'Импортированный hero' && ( $library_agent_trace['status'] ?? '' ) === 'applied' && strpos( $library_agent_root_json, 'wpae-library-agent-fixture-candidate-two' ) !== false && strpos( $library_agent_root_json, 'wpae-library-agent-candidate-one' ) === false, 'the model can select a non-first ranked template and that exact tree reaches the write boundary' );
+check( strpos( $library_agent_written_copy, 'Пространство для идей' ) !== false && strpos( $library_agent_written_copy, 'Опишите задачу и получите понятный первый шаг' ) !== false && strpos( $library_agent_written_copy, 'Начать проект' ) !== false && $library_agent_button_url === '#contact', 'active library-agent adaptation preserves exact brief copy and CTA URL' );
+$GLOBALS['library'] = [];
 
 // Negative insertion language stays a selected-root edit; an explicit new
 // root request is rejected only when it conflicts with that same edit scope.

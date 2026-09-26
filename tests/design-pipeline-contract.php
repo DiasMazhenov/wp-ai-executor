@@ -711,13 +711,14 @@ $check( wpae_design_operation_update( 'op-repair-transition', [ 'current_state' 
 $route = wpae_llm_route_policy( 'elementor_write', 'openrouter', 'openrouter/free' );
 $check( $route['critical_write'] && $route['requires_structured_output'] && $route['retry_budget'] === 1 && ! $route['fallback_allowed'], 'critical route policy is bounded' );
 $matrix = [
-	[ 'off', 'off', 'provider', 1, 1 ],
-	[ 'off', 'active', 'edde', 0, 1 ],
-	[ 'shadow', 'active', 'edde', 0, 1 ],
-	[ 'active', 'active', 'pipeline', 0, 1 ],
+	[ 'off', 'off', 'provider', 1, 1, false ],
+	[ 'off', 'active', 'edde', 0, 1, false ],
+	[ 'shadow', 'active', 'edde', 0, 1, false ],
+	[ 'active', 'active', 'pipeline', 0, 1, false ],
+	[ 'active', 'active', 'library_agent', 1, 1, true ],
 ];
 foreach ( $matrix as $entry ) {
-	$decision = wpae_design_generation_route( $entry[0], $entry[1], true, true );
+	$decision = wpae_design_generation_route( $entry[0], $entry[1], true, true, $entry[5] );
 	$check( $decision['action_path'] === $entry[2] && $decision['provider_calls'] === $entry[3] && $decision['writes'] === $entry[4], 'feature flag route matrix ' . $entry[0] . '/' . $entry[1] );
 }
 
