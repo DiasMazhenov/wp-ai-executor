@@ -9,7 +9,7 @@
 ## Версии и выпуск
 
 - Source runtime: `v02.11.160`, commit `7beef71bffa1745427956879c7bcb483ee28ee99` (`Add media composition to CTA replacement`).
-- Final repository HEAD: `7030db0` (`Document v160 CTA repair status`); документация закоммичена и отправлена в `origin/main`. Runtime commit `7beef71` находится в истории того же remote branch.
+- Документация отчёта и context закоммичена и отправлена в `origin/main` после runtime commit `7beef71`.
 - Live plugin: `v02.11.160`, обновлён штатно через WP Pusher.
 - После обновления обычная перезагрузка существующей editor-вкладки показала inline config `v02.11.160`.
 - Runtime commit содержит 8 файлов: CTA routing/UI, DesignPlan, ElementorIR compiler, tests, plugin version и package hashes.
