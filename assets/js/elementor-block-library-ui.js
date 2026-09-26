@@ -300,24 +300,39 @@
             const url = new URL( `${ config.endpoint }/${ encodeURIComponent( String( blockId ) ) }/instantiate`, window.location.origin );
             url.searchParams.set( 'mode', state.mode );
             const payload = await request( url.toString() );
-            const storage = {
-                type: 'elementor',
-                siteurl: elementorCommon.config.urls.rest,
-                elements: payload.elementor_data,
-            };
-            const args = {
-                storageType: 'wpae-json',
-                data: JSON.stringify( storage ),
-            };
             const selected = elementor.selection && elementor.selection.getElements
                 ? elementor.selection.getElements()
                 : [];
-            if ( selected.length ) {
-                args.containers = selected;
-            }
-            const result = await $e.run( 'document/ui/paste', args );
-            if ( result === false ) {
+            const previewContainer = ! selected.length && typeof elementor.getPreviewContainer === 'function'
+                ? elementor.getPreviewContainer()
+                : null;
+            const target = selected[0] || previewContainer;
+            if ( ! target || ! Array.isArray( payload.elementor_data ) || ! payload.elementor_data.length ) {
                 throw new Error( config.strings.insertTargetMissing );
+            }
+
+            const inserted = [];
+            try {
+                for ( const model of payload.elementor_data ) {
+                    const result = await $e.run( 'document/elements/create', {
+                        container: target,
+                        model,
+                        options: { clone: false },
+                    } );
+                    if ( ! result ) {
+                        throw new Error( config.strings.insertTargetMissing );
+                    }
+                    inserted.push( result );
+                }
+            } catch ( error ) {
+                for ( const created of inserted.reverse() ) {
+                    try {
+                        await $e.run( 'document/elements/delete', { container: created } );
+                    } catch ( cleanupError ) {
+                        window.console.error( '[WPAE] Failed to roll back a partial template insert.', cleanupError );
+                    }
+                }
+                throw error;
             }
             close();
             notify( config.strings.inserted );

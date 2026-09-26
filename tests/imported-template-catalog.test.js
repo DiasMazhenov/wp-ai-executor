@@ -7,6 +7,7 @@ const test = require('node:test');
 const root = path.resolve(__dirname, '..');
 const directory = path.join(root, 'includes/elementor/imported-templates');
 const manifest = JSON.parse(fs.readFileSync(path.join(directory, 'manifest.json'), 'utf8'));
+const editorLibrary = fs.readFileSync(path.join(root, 'assets/js/elementor-block-library-ui.js'), 'utf8');
 
 test('bundled Elementor template imports are complete and hash verified', () => {
   assert.equal(manifest.format, 'wpae-imported-elementor-templates-v1');
@@ -27,4 +28,10 @@ test('bundled Elementor template imports are complete and hash verified', () => 
   }
   assert.equal(treeCount, 155);
   assert.equal(proCount, 76);
+});
+
+test('editor inserts imported templates through Elementor native create command', () => {
+  assert.match(editorLibrary, /document\/elements\/create/);
+  assert.match(editorLibrary, /getPreviewContainer/);
+  assert.doesNotMatch(editorLibrary, /document\/ui\/paste/);
 });
