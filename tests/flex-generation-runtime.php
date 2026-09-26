@@ -1343,6 +1343,31 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	}
 }
 
+$team_fallback_prompt = "Блок команды\nУчастник 1 — имя: «Синтетический участник 1»\nУчастник 1 — должность: «Демо-архитектор»\nУчастник 2 — имя: «Синтетический участник 2»\nУчастник 2 — должность: «Демо-руководитель проекта»";
+$team_requested_content = wpae_llm_extract_requested_content( $team_fallback_prompt );
+check( $team_requested_content === [ 'Синтетический участник 1', 'Демо-архитектор', 'Синтетический участник 2', 'Демо-руководитель проекта' ], 'Team content fidelity treats quoted name and position values as content, not their field labels: ' . wp_json_encode( $team_requested_content, JSON_UNESCAPED_UNICODE ) );
+$team_fallback = wpae_llm_build_fallback_action( $team_fallback_prompt, 42 );
+$team_fallback_nodes = [];
+$collect_team_fallback_nodes = static function ( array $nodes ) use ( &$collect_team_fallback_nodes, &$team_fallback_nodes ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		$team_fallback_nodes[] = $node;
+		$collect_team_fallback_nodes( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_team_fallback_nodes( (array) ( $team_fallback['elements'] ?? [] ) );
+$team_fallback_grid = array_values( array_filter( $team_fallback_nodes, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' && ( $node['id'] ?? '' ) === 'llm-team-grid' ) )[0] ?? [];
+$team_fallback_cards = (array) ( $team_fallback_grid['elements'] ?? [] );
+$team_fallback_rows = array_map( static function ( array $card ): array {
+	$heading = array_values( array_filter( (array) ( $card['elements'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' ) )[0] ?? [];
+	$body = array_values( array_filter( (array) ( $card['elements'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) )[0] ?? [];
+	return [ 'name' => (string) ( $heading['settings']['title'] ?? '' ), 'position' => (string) ( $body['settings']['editor'] ?? '' ) ];
+}, $team_fallback_cards );
+check( count( $team_fallback_cards ) === 2, 'Team deterministic fallback groups name and position fields into exactly one card per member' );
+check( $team_fallback_rows === [ [ 'name' => 'Синтетический участник 1', 'position' => 'Демо-архитектор' ], [ 'name' => 'Синтетический участник 2', 'position' => 'Демо-руководитель проекта' ] ], 'Team fallback preserves exact member copy in the matching native heading and text widgets: ' . wp_json_encode( $team_fallback_rows, JSON_UNESCAPED_UNICODE ) );
+
 $library_agent_message = '«Пространство для идей». Hero. Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
 $library_agent_root = container_node( 'imported-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-fixture-candidate-two wpae-generated-badge' ], [
 	widget( 'imported-hero-title', 'heading', [ 'title' => 'Исходный заголовок', 'header_size' => 'h2' ] ),

@@ -1554,6 +1554,31 @@ function wpae_llm_extract_requested_content( string $message ): array {
 		];
 	}, $pricing_items ) : wpae_llm_extract_labeled_content( $message );
 	$structured_pairs = $labeled_pairs;
+	if ( function_exists( 'wpae_brief_ir_parse' ) ) {
+		$team_brief = wpae_brief_ir_parse( $message );
+		if ( ( $team_brief['intent']['archetype'] ?? '' ) === 'team' ) {
+			$team_values = [];
+			foreach ( (array) ( $team_brief['content'] ?? [] ) as $item ) {
+				if ( ! is_array( $item ) || ! in_array( (string) ( $item['role'] ?? '' ), [ 'eyebrow', 'title', 'body', 'team_name', 'team_position', 'team_bio' ], true ) ) {
+					continue;
+				}
+				$value = trim( (string) ( $item['exact_text'] ?? '' ) );
+				if ( $value !== '' ) {
+					$team_values[] = $value;
+				}
+			}
+			if ( ! empty( $team_values ) ) {
+				$matches = $team_values;
+				foreach ( wpae_llm_extract_requested_ctas( $message ) as $cta ) {
+					$cta_text = trim( (string) ( $cta['text'] ?? '' ) );
+					if ( $cta_text !== '' ) {
+						$matches[] = $cta_text;
+					}
+				}
+				$structured_pairs = [];
+			}
+		}
+	}
 	$faq_request = (bool) preg_match( '/\b(?:faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu', $message );
 	if ( $faq_request ) {
 		$faq_pairs = wpae_llm_extract_faq_content( $message );
@@ -8057,8 +8082,39 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
             ];
         }
     } elseif ( $archetype === 'team' ) {
-        $pairs = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 4 );
-        if ( count( $pairs ) < 2 ) {
+        $team_brief = wpae_brief_ir_parse( $message );
+        $team_grouping = wpae_design_plan_grouped_items(
+            $team_brief,
+            'team',
+            [
+                'team_name' => 'name_ref',
+                'team_position' => 'position_ref',
+                'team_bio' => 'bio_ref',
+            ],
+            [ 'name_ref', 'position_ref' ],
+            1,
+            8
+        );
+        $team_content = [];
+        foreach ( (array) ( $team_brief['content'] ?? [] ) as $content_item ) {
+            if ( is_array( $content_item ) ) {
+                $team_content[ sanitize_key( (string) ( $content_item['id'] ?? '' ) ) ] = trim( (string) ( $content_item['exact_text'] ?? '' ) );
+            }
+        }
+        $pairs = [];
+        foreach ( (array) ( $team_grouping['items'] ?? [] ) as $team_item ) {
+            $name = trim( (string) ( $team_content[ sanitize_key( (string) ( $team_item['name_ref'] ?? '' ) ) ] ?? '' ) );
+            $position = trim( (string) ( $team_content[ sanitize_key( (string) ( $team_item['position_ref'] ?? '' ) ) ] ?? '' ) );
+            if ( $name === '' || $position === '' ) {
+                continue;
+            }
+            $pairs[] = [
+                'label' => $name,
+                'content' => $position,
+                'bio' => trim( (string) ( $team_content[ sanitize_key( (string) ( $team_item['bio_ref'] ?? '' ) ) ] ?? '' ) ),
+            ];
+        }
+        if ( empty( $pairs ) ) {
             $pairs = [
                 [ 'label' => 'Стратегия', 'content' => 'Помогаем определить цель и собрать ясный план.' ],
                 [ 'label' => 'Дизайн', 'content' => 'Превращаем смысл проекта в понятную визуальную систему.' ],
@@ -8067,10 +8123,14 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
         $cards = [];
         foreach ( $pairs as $index => $pair ) {
             $number = (string) ( $index + 1 );
-            $cards[] = $card( 'llm-team-' . $number, [
+            $team_children = [
                 $widget( 'llm-team-' . $number . '-title', 'heading', [ 'title' => (string) $pair['label'], 'header_size' => 'h4' ] ),
                 $widget( 'llm-team-' . $number . '-copy', 'text-editor', [ 'editor' => (string) $pair['content'] ] ),
-            ] );
+            ];
+            if ( trim( (string) ( $pair['bio'] ?? '' ) ) !== '' ) {
+                $team_children[] = $widget( 'llm-team-' . $number . '-bio', 'text-editor', [ 'editor' => (string) $pair['bio'] ] );
+            }
+            $cards[] = $card( 'llm-team-' . $number, $team_children );
         }
         $elements = [
             $widget( 'llm-heading', 'heading', [ 'title' => 'Наша команда', 'header_size' => 'h2' ] ),
