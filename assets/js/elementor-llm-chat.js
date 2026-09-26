@@ -735,6 +735,26 @@
     function selectedElements() {
         return selectedModels().map(serializeSelectedModel);
     }
+    function targetedDesignReplacement(message, selected) {
+        if (!/(?:обнови|переделай|исправь|улучши|перестрой|замени)[\s\S]{0,100}(?:выбран|выделен|этот|эту|текущ)/iu.test(String(message || ''))) return null;
+        var roots = config.pendingOperation && Array.isArray(config.pendingOperation.root_ids)
+            ? config.pendingOperation.root_ids.map(String).filter(Boolean).slice(0, 12)
+            : [];
+        var selectedIds = (Array.isArray(selected) ? selected : []).map(function (item) {
+            return item && typeof item === 'object' ? String(item.id || item.element_id || '') : String(item || '');
+        }).filter(Boolean);
+        var repair = { targetedDesignRepair: true };
+        if (config.pendingOperation && config.pendingOperation.reviewable === true && roots.length === 1 && selectedIds.length === 1 && selectedIds[0] === roots[0]) {
+            repair.replaceExistingRoot = true;
+            repair.replacesOperation = {
+                operation_id: String(config.pendingOperation.operation_id || ''),
+                operation_identity: String(config.pendingOperation.operation_identity || ''),
+                revision: Number(config.pendingOperation.revision || 0),
+                root_ids: roots
+            };
+        }
+        return repair;
+    }
     function refreshSelectionHint() {
         if (!selectionHint) return;
         var models = selectedModels();
@@ -1769,6 +1789,13 @@
     var requestInFlight = false;
     function request(message, retried, options) {
         options = options || {};
+        var requestSelection = options.selectedElements || selectedElements();
+        if (!options.retryCurrentOperation && !options.visionRepair && !options.targetedDesignRepair) {
+            var explicitReplacement = targetedDesignReplacement(message, requestSelection);
+            if (explicitReplacement) {
+                options = Object.assign({}, options, explicitReplacement, { selectedElements: requestSelection });
+            }
+        }
         if (options.retryCurrentOperation && !readOperationIdentity()) {
             addMessage('assistant', 'Не найден идентификатор текущей операции; повтор доставки остановлен, чтобы не создать дубликат.');
             status.textContent = strings.error;
@@ -1833,6 +1860,7 @@
             requestContext.replaces_operation = options.replacesOperation;
         }
         if (options.retryCurrentOperation) requestContext.retry_current_operation = true;
+        if (options.targetedDesignRepair) requestContext.targeted_design_repair = true;
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
         if (options.visionFindings) requestContext.vision_findings = String(options.visionFindings).slice(0, 3600);

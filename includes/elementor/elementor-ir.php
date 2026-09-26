@@ -331,6 +331,26 @@ function wpae_elementor_ir_validate( array $ir ): array {
 			$errors[] = 'required_media_asset_missing';
 		}
 	}
+	if ( ( $ir['archetype'] ?? '' ) === 'cta' ) {
+		$media_nodes = [];
+		$find_media = static function ( array $nodes ) use ( &$find_media, &$media_nodes ): void {
+			foreach ( $nodes as $node ) {
+				if ( is_array( $node ) && str_starts_with( (string) ( $node['role'] ?? '' ), 'media' ) && ( $node['widget_type'] ?? '' ) === 'image' ) {
+					$media_nodes[] = $node;
+				}
+				if ( is_array( $node ) ) {
+					$find_media( (array) ( $node['children'] ?? [] ) );
+				}
+			}
+		};
+		$find_media( (array) ( $ir['nodes'] ?? [] ) );
+		if ( ( $ir['media_intent'] ?? 'unspecified' ) === 'forbidden' && ! empty( $media_nodes ) ) {
+			$errors[] = 'forbidden_media_in_ir';
+		}
+		if ( ( $ir['media_intent'] ?? 'unspecified' ) === 'required' && empty( $media_nodes ) ) {
+			$errors[] = 'required_media_asset_missing';
+		}
+	}
 	$capabilities = function_exists( 'wpae_widget_capability_report' ) ? wpae_widget_capability_report( $widgets ) : [ 'ok' => true, 'unavailable' => [], 'downgrades' => [] ];
 	if ( empty( $capabilities['ok'] ) ) {
 		foreach ( (array) ( $capabilities['failures'] ?? [] ) as $failure ) {
@@ -450,6 +470,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$token_values[ $token_ref ] = wpae_elementor_ir_setting_value( (string) $token_ref, $tokens, $token_report );
 	}
 	$role = sanitize_key( (string) ( $node['role'] ?? '' ) );
+	$cta_has_media = $role === 'cta' && (bool) array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media_group' );
 	$settings['background_background'] = 'classic';
 	if ( isset( $token_values['color.page_bg'] ) && is_string( $token_values['color.page_bg'] ) ) {
 		$settings['background_color'] = $token_values['color.page_bg'];
@@ -532,7 +553,14 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'cta' ) {
 			$settings['_css_classes'] = 'wpae-cta-section';
 			$settings['flex_align_items'] = 'center';
-			$settings['flex_direction'] = 'column';
+			$settings['flex_direction'] = $cta_has_media ? 'row' : 'column';
+			if ( $cta_has_media ) {
+				$settings['flex_direction_tablet'] = 'column';
+				$settings['flex_direction_mobile'] = 'column';
+				$settings['flex_wrap'] = 'nowrap';
+				$settings['flex_wrap_tablet'] = 'nowrap';
+				$settings['flex_wrap_mobile'] = 'nowrap';
+			}
 		}
 		if ( $role === 'cta_actions' ) {
 			$settings['_css_classes'] = 'wpae-cta-actions';
@@ -547,6 +575,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_gap_mobile'] = [ 'unit' => 'rem', 'size' => 0.75, 'column' => '0.75', 'row' => '0.75', 'isLinked' => true ];
 		}
 		if ( $role === 'hero' && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media_group' ) ) {
+			$settings['flex_direction_mobile'] = 'column-reverse';
+		}
+		if ( $role === 'cta' && $cta_has_media && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' ) {
 			$settings['flex_direction_mobile'] = 'column-reverse';
 		}
 		if ( $role === 'process' ) {
@@ -958,7 +989,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		} elseif ( $role === 'feature_cards' && count( $compiled_children ) >= 4 ) {
 			$composition_basis = array_fill( 0, count( $compiled_children ), 48 );
 		}
-		if ( $role === 'hero' && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && count( $composition_basis ) === 2 ) {
+		if ( in_array( $role, [ 'hero', 'cta' ], true ) && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && count( $composition_basis ) === 2 ) {
 			$composition_basis = array_reverse( $composition_basis );
 		}
 		$composition_matches_children = ! empty( $composition_basis ) && count( $composition_basis ) === count( $compiled_children );
@@ -974,7 +1005,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
 			$tablet_is_stack = ( $settings['flex_direction_tablet'] ?? '' ) === 'column';
 			$tablet_basis = $tablet_is_stack ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
-			if ( $role === 'cta' && $child_role === 'cta_copy_group' ) {
+			if ( $role === 'cta' && ! $cta_has_media && $child_role === 'cta_copy_group' ) {
 				$basis = 72;
 				$tablet_basis = 84;
 			}

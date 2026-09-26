@@ -2,6 +2,7 @@ const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
@@ -1156,4 +1157,34 @@ assert.match(visualAudit, /needle_checks/);
 // pattern: never scaffold empty containers to fill later.
 assert.match(llm, /Контракт полноты: собери блок полностью заполненным с первого раза/);
 assert.match(llm, /никаких пустых контейнеров-заготовок на потом/);
+const targetedRepairStart = js.indexOf('    function targetedDesignReplacement(');
+const targetedRepairEnd = js.indexOf('    function refreshSelectionHint()', targetedRepairStart);
+assert.ok(targetedRepairStart >= 0 && targetedRepairEnd > targetedRepairStart, 'targeted repair helper is present');
+const targetedRepairSource = js.slice(targetedRepairStart, targetedRepairEnd);
+const runTargetedRepair = (pendingOperation, message, selected) => vm.runInNewContext(
+    `var config = ${JSON.stringify({ pendingOperation })};\n${targetedRepairSource}\ntargetedDesignReplacement(${JSON.stringify(message)}, ${JSON.stringify(selected)});`,
+    { String, Number, Array }
+);
+const repairMessage = 'Обнови выбранный CTA-блок: добавь фото справа и уменьши левый отступ';
+const eligibleRepair = JSON.parse(JSON.stringify(runTargetedRepair(
+    { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
+    repairMessage,
+    [{ id: 'eb0103a' }]
+)));
+assert.equal(eligibleRepair.replaceExistingRoot, true, 'selected current root is sent as a targeted replacement');
+assert.deepEqual(eligibleRepair.replacesOperation.root_ids, ['eb0103a']);
+assert.equal(eligibleRepair.replacesOperation.revision, 4);
+const staleRepair = runTargetedRepair(
+    { operation_id: 'op-stale', revision: 4, root_ids: ['eb0103a'], reviewable: false },
+    repairMessage,
+    [{ id: 'eb0103a' }]
+);
+assert.equal(staleRepair.replaceExistingRoot, undefined, 'stale or missing targets cannot enter replacement mode');
+const foreignRepair = runTargetedRepair(
+    { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
+    repairMessage,
+    [{ id: 'neighbor-root' }]
+);
+assert.equal(foreignRepair.replaceExistingRoot, undefined, 'a selected neighboring root cannot be replaced');
+assert.equal(runTargetedRepair({ root_ids: ['eb0103a'], reviewable: true }, 'Добавь новый CTA блок', []), null, 'new append requests keep the normal route');
 console.log('llm chat contract: OK');

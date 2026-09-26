@@ -370,6 +370,23 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
 	return $selection_signal || $property_signal;
 }
 
+function wpae_llm_targeted_design_replacement_shape_valid( string $message, bool $action_request, array $context, array $selected_ids ): bool {
+	$replacement = is_array( $context['replaces_operation'] ?? null ) ? $context['replaces_operation'] : [];
+	$roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $replacement['root_ids'] ?? [] ), 0, 12 ) ) ) );
+	$owned_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $context['operation_owned_root_ids'] ?? [] ), 0, 12 ) ) ) );
+	$selected_ids = array_values( array_unique( array_filter( array_map( 'sanitize_key', array_slice( $selected_ids, 0, 8 ) ) ) ) );
+	return ! empty( $context['targeted_design_repair'] )
+		&& $action_request
+		&& wpae_llm_is_targeted_edit_request( $message )
+		&& ! wpae_llm_has_explicit_root_insert_intent( $message )
+		&& sanitize_key( (string) ( $replacement['operation_id'] ?? '' ) ) !== ''
+		&& sanitize_text_field( (string) ( $replacement['operation_identity'] ?? '' ) ) !== ''
+		&& absint( $replacement['revision'] ?? 0 ) > 0
+		&& count( $roots ) === 1
+		&& $owned_roots === $roots
+		&& $selected_ids === $roots;
+}
+
 function wpae_llm_is_process_structure_repair_request( string $message, string $archetype = '' ): bool {
 	if ( ! wpae_llm_is_process_request( $message, $archetype ) ) {
 		return false;
@@ -9302,18 +9319,22 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $selected_element_count = is_array( $editor_context_input ) && is_array( $editor_context_input['selected_elements'] ?? null ) ? count( $editor_context_input['selected_elements'] ) : 0;
     $vision_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_repair'] );
     $vision_regenerate = is_array( $editor_context_input ) && ! empty( $editor_context_input['vision_regenerate'] );
+	$targeted_design_repair = is_array( $editor_context_input ) && ! empty( $editor_context_input['targeted_design_repair'] );
     $retry_current_operation = is_array( $editor_context_input ) && ! empty( $editor_context_input['retry_current_operation'] );
     $operation_owned_root_ids = is_array( $editor_context_input )
         ? array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $editor_context_input['operation_owned_root_ids'] ?? [] ), 0, 12 ) ) ) )
         : [];
     $vision_findings = $vision_repair && is_array( $editor_context_input ) ? sanitize_textarea_field( substr( (string) ( $editor_context_input['vision_findings'] ?? '' ), 0, 3600 ) ) : '';
     $vision_feedback_prompt = $vision_repair ? wpae_llm_build_vision_feedback_prompt( $message, $vision_findings, $vision_regenerate ) : '';
-    $targeted_edit = $action_request && $selected_element_count > 0 && ! $vision_regenerate && ! $retry_current_operation && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
+    $targeted_edit = $action_request && $selected_element_count > 0 && ! $targeted_design_repair && ! $vision_regenerate && ! $retry_current_operation && ( $vision_repair || wpae_llm_is_targeted_edit_request( $message ) );
     $action_archetype = $action_request ? wpae_llm_detect_block_archetype( $message ) : '';
     $selected_element_ids = is_array( $editor_context_input )
         ? array_values( array_filter( array_map( static fn( $item ) => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? $item['element_id'] ?? '' ) ) : sanitize_key( (string) $item ), (array) ( $editor_context_input['selected_elements'] ?? [] ) ) ) )
         : [];
     $selected_post_id = is_array( $editor_context_input ) ? absint( $editor_context_input['post_id'] ?? 0 ) : 0;
+	if ( $targeted_design_repair && ! wpae_llm_targeted_design_replacement_shape_valid( $message, $action_request, is_array( $editor_context_input ) ? $editor_context_input : [], $selected_element_ids ) ) {
+		return new WP_Error( 'wpae_design_replacement_scope_invalid', 'Безопасная замена требует один выбранный root, принадлежащую ему текущую операцию и запрос точечного изменения. Запись не выполнялась.', [ 'status' => 409, 'details' => [ 'selected_element_ids' => array_slice( $selected_element_ids, 0, 8 ), 'write_count' => 0 ] ] );
+	}
 	if ( $targeted_edit && wpae_llm_has_explicit_root_insert_intent( $message ) ) {
 		return new WP_Error( 'wpae_llm_conflicting_scope', 'Запрос одновременно изменяет выбранный элемент и просит добавить отдельный root. Уточните одну цель; запись не выполнялась.', [ 'status' => 409, 'details' => [ 'selected_element_ids' => array_slice( $selected_element_ids, 0, 8 ), 'write_count' => 0 ] ] );
 	}
@@ -9327,7 +9348,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	$replacement_parent = null;
 	$replacement_guard = null;
 	$replacement_context = is_array( $editor_context_input['replaces_operation'] ?? null ) ? $editor_context_input['replaces_operation'] : [];
-	$replacement_requested = $vision_repair && $vision_regenerate && ! empty( $replacement_context );
+	$replacement_requested = ( $vision_repair && $vision_regenerate || $targeted_design_repair ) && ! empty( $replacement_context );
 	if ( $replacement_requested ) {
 		$parent_id = sanitize_key( (string) ( $replacement_context['operation_id'] ?? '' ) );
 		$parent_identity = sanitize_text_field( (string) ( $replacement_context['operation_identity'] ?? '' ) );
@@ -9339,7 +9360,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 			return new WP_Error( 'wpae_vision_replacement_unavailable', 'Нельзя подтвердить владельца и сохранённое состояние заменяемого root; запись остановлена.', [ 'status' => 409 ] );
 		}
 		$replacement_guard = wpae_design_operation_replacement_target( $replacement_parent, $selected_post_id, $parent_identity, $parent_revision, $parent_roots, $replacement_readback );
-		if ( empty( $replacement_guard['ok'] ) || $parent_roots !== $operation_owned_root_ids ) {
+		if ( empty( $replacement_guard['ok'] ) || $parent_roots !== $operation_owned_root_ids || ( $targeted_design_repair && $selected_element_ids !== $parent_roots ) ) {
 			return new WP_Error( 'wpae_vision_replacement_conflict', 'Сохранённый target изменился или не принадлежит этой операции; replacement не записан.', [ 'status' => 409, 'details' => [ 'reason' => $replacement_guard['reason'] ?? 'operation_root_mismatch', 'target' => $replacement_guard['target_status'] ?? [] ] ] );
 		}
 	}

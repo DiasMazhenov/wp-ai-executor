@@ -833,6 +833,24 @@ foreach ( [ 1, 2 ] as $cta_count ) {
 		$check( ! array_key_exists( 'background_color', $cta_copy['settings'] ?? [] ) && ! array_key_exists( 'background_color', $cta_actions['settings'] ?? [] ) && (float) ( $cta_actions['settings']['flex_gap']['size'] ?? 0 ) === 0.875, 'CTA copy/action groups remain transparent and button gap is native Flex' );
 	}
 }
+$cta_photo_url = 'https://images.unsplash.com/photo-1774516534141-fd68a4713366?auto=format&fit=crop&fm=jpg&q=80&w=1400';
+$cta_photo_prompt = "Самостоятельный CTA\nЗаголовок: «Обсудите следующий шаг проекта»\nОписание: «Опишите задачу, чтобы выбрать подходящий формат разговора.»\nОсновная кнопка: «Связаться», ссылка #contact\nВторичная кнопка: «Посмотреть проекты», ссылка #projects\nИзображение справа: {$cta_photo_url}\nAlt: «Иллюстративное фото современного интерьера с бетоном и деревом»\nЛицензия: Unsplash License\nPhoto by: «Neon Wang»";
+[ $cta_photo_brief, $cta_photo_plan, $cta_photo_validation, $cta_photo_compiled, $cta_photo_nodes ] = $compile_prompt( $cta_photo_prompt, 'standalone-cta-photo-regression' );
+$cta_photo_root = $cta_photo_compiled['elementor_data'][0] ?? [];
+$cta_photo_children = (array) ( $cta_photo_root['elements'] ?? [] );
+$cta_photo_copy = $cta_photo_children[0] ?? [];
+$cta_photo_media = $cta_photo_children[1] ?? [];
+$cta_photo_image = $cta_photo_media['elements'][0] ?? [];
+$cta_photo_refs = (array) ( $cta_photo_brief['media_references'] ?? [] );
+$check( $cta_photo_brief['intent']['archetype'] === 'cta' && ( $cta_photo_plan['sections'][0]['composition'] ?? '' ) === 'split_60_40' && ( $cta_photo_plan['sections'][0]['media_side'] ?? '' ) === 'right', 'CTA image selects a deterministic right-side 60/40 composition' );
+$check( $cta_photo_validation['ok'] && ! empty( $cta_photo_compiled['ok'] ) && ( $cta_photo_root['settings']['flex_direction'] ?? '' ) === 'row' && ( $cta_photo_root['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $cta_photo_root['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'photo CTA compiles to desktop columns and stacks at tablet/mobile breakpoints' );
+$check( (float) ( $cta_photo_copy['settings']['width']['size'] ?? 0 ) === 60.0 && (float) ( $cta_photo_media['settings']['width']['size'] ?? 0 ) === 40.0 && (float) ( $cta_photo_copy['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && (float) ( $cta_photo_media['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'photo CTA uses 60/40 native container widths and full-width mobile stack' );
+$check( ( $cta_photo_image['widgetType'] ?? '' ) === 'image' && ( $cta_photo_image['settings']['image']['url'] ?? '' ) === $cta_photo_url && ( $cta_photo_image['settings']['image']['alt'] ?? '' ) === 'Иллюстративное фото современного интерьера с бетоном и деревом' && ! empty( $cta_photo_refs[0]['allowed_reuse'] ) && ( $cta_photo_refs[0]['attribution'] ?? '' ) === 'Neon Wang', 'photo CTA keeps the native image URL, alt text and confirmed Unsplash license provenance' );
+$cta_replacement_context = [ 'targeted_design_repair' => true, 'operation_owned_root_ids' => [ 'owned-root' ], 'replaces_operation' => [ 'operation_id' => 'op-owned', 'operation_identity' => 'owned-identity', 'revision' => 4, 'root_ids' => [ 'owned-root' ] ] ];
+$cta_replacement_prompt = 'Самостоятельный CTA — обнови выбранный блок и сохрани его содержание';
+$check( wpae_llm_targeted_design_replacement_shape_valid( $cta_replacement_prompt, true, $cta_replacement_context, [ 'owned-root' ] ), 'explicit selected-root design repair can enter the guarded deterministic replacement path' );
+$check( ! wpae_llm_targeted_design_replacement_shape_valid( $cta_replacement_prompt, true, $cta_replacement_context, [ 'neighbor-root' ] ) && ! wpae_llm_targeted_design_replacement_shape_valid( $cta_replacement_prompt, true, array_merge( $cta_replacement_context, [ 'operation_owned_root_ids' => [ 'neighbor-root' ] ] ), [ 'owned-root' ] ), 'targeted design replacement rejects a selected neighbor or mismatched operation ownership before any write' );
+$check( ! wpae_llm_targeted_design_replacement_shape_valid( 'Добавь новый CTA-блок', true, $cta_replacement_context, [ 'owned-root' ] ), 'explicit append intent cannot be reinterpreted as a targeted replacement' );
 $architecture_cta_prompt = "Добавь отдельный CTA-блок\nЗаголовок: «Обсудите следующий шаг архитектурного проекта»\nОписание: «Опишите задачу и получите понятный первый шаг.»\nКнопка: «Связаться», ссылка #contact\nВторая кнопка: «Посмотреть проекты», ссылка #projects";
 $architecture_cta_brief = wpae_brief_ir_parse( $architecture_cta_prompt );
 $check( wpae_llm_detect_block_archetype( $architecture_cta_prompt ) === 'cta' && $architecture_cta_brief['intent']['archetype'] === 'cta', 'explicit standalone CTA intent wins over architecture/studio content-only hero heuristics' );
