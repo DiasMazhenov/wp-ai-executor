@@ -18,6 +18,7 @@ function wpae_reference_set_normalize( array $input ): array {
 	$focal = is_array( $input['focal_point'] ?? null ) ? $input['focal_point'] : null;
 	return [
 		'asset_id' => sanitize_key( (string) ( $input['asset_id'] ?? '' ) ),
+		'group_id' => sanitize_key( (string) ( $input['group_id'] ?? '' ) ),
 		'attachment_id' => isset( $input['attachment_id'] ) && is_numeric( $input['attachment_id'] ) ? absint( $input['attachment_id'] ) : null,
 		'source_url' => esc_url_raw( (string) ( $input['source_url'] ?? '' ) ),
 		'role' => $role,
@@ -29,6 +30,7 @@ function wpae_reference_set_normalize( array $input ): array {
 		'crop' => sanitize_key( (string) ( $input['crop'] ?? '' ) ) ?: null,
 		'object_fit' => in_array( sanitize_key( (string) ( $input['object_fit'] ?? 'cover' ) ), [ 'cover', 'contain', 'fill' ], true ) ? sanitize_key( (string) ( $input['object_fit'] ?? 'cover' ) ) : 'cover',
 		'license' => sanitize_text_field( (string) ( $input['license'] ?? '' ) ),
+		'attribution' => sanitize_text_field( (string) ( $input['attribution'] ?? '' ) ),
 		'allowed_reuse' => ! empty( $input['allowed_reuse'] ),
 		'provenance' => is_array( $input['provenance'] ?? null ) ? $input['provenance'] : [ 'source' => 'unknown' ],
 	];

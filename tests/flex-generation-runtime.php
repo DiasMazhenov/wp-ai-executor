@@ -1142,9 +1142,14 @@ check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
 $production_design_cases = [
 	[ 'hero', 'Создай hero. Надзаголовок: «ТИХАЯ ФОРМА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.', 'heading' ],
+	[ 'hero_image', "Создай hero с изображением. Надзаголовок: «АРХИТЕКТУРА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact. Изображение: https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85\nAlt: «Современный бетонный интерьер с большими окнами на природный ландшафт»\nLicense: «Unsplash License»\nPhoto by: «Neon Wang»", 'image' ],
 	[ 'pricing', 'Создай pricing. «Старт» — «от 50 000 ₸» — «Для небольшой задачи». Кнопка: «Выбрать Старт», ссылка #start. «Проект» — «от 150 000 ₸» — «Для комплексной работы». Кнопка: «Обсудить проект», ссылка #project. «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач». Кнопка: «Подключить поддержку», ссылка #support.', 'button' ],
 	[ 'faq', "Создай FAQ\nВопрос 1: «Как начать?»\nОтвет 1: «Сначала согласуем задачу.»\nВопрос 2: «Можно ли редактировать?»\nОтвет 2: «Да, тексты остаются native Elementor.»", 'accordion' ],
 	[ 'benefits', "Создай блок преимуществ\nПреимущество 1: «Прозрачный план»\nОписание преимущества 1: «Каждый этап согласован заранее.»\nПреимущество 2: «Редактируемый сайт»\nОписание преимущества 2: «Команда меняет тексты внутри Elementor.»", 'icon' ],
+	[ 'services', "Блок услуг\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»", 'text-editor' ],
+	[ 'team', "Блок команды\nУчастник 1 — имя: «Синтетический участник 1»\nУчастник 1 — должность: «Демо-архитектор»\nУчастник 2 — имя: «Синтетический участник 2»\nУчастник 2 — должность: «Демо-руководитель проекта»", 'heading' ],
+	[ 'testimonials', "Блок отзывов — синтетические тестовые данные\nОтзыв 1 — текст: «Синтетический короткий отзыв для проверки карточки.»\nОтзыв 1 — автор: «Тестовый автор 1»\nОтзыв 2 — текст: «Синтетический длинный отзыв для проверки переноса текста и естественной высоты карточки без обрезания.»\nОтзыв 2 — автор: «Тестовый автор 2»", 'text-editor' ],
+	[ 'cta', "Самостоятельный CTA\nЗаголовок: «Обсудите следующий шаг проекта»\nОписание: «Опишите задачу, чтобы выбрать подходящий формат разговора.»\nКнопка: «Связаться», ссылка #contact\nВторичная кнопка: «Посмотреть проекты», ссылка #projects", 'button' ],
 ];
 foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widget ] ) {
 	$GLOBALS['page_data'] = $legacy_page;
@@ -1159,19 +1164,28 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, $case_name . ' performs no provider call and exactly one page write' );
 	$case_tree = (array) ( $GLOBALS['page_data'] ?? [] );
 	$case_widgets = [];
-	$collect_case_widgets = static function ( array $nodes ) use ( &$collect_case_widgets, &$case_widgets ): void {
+	$case_nodes = [];
+	$collect_case_widgets = static function ( array $nodes ) use ( &$collect_case_widgets, &$case_widgets, &$case_nodes ): void {
 		foreach ( $nodes as $node ) {
 			if ( ! is_array( $node ) ) {
 				continue;
 			}
+			$case_nodes[] = $node;
 			if ( ( $node['elType'] ?? '' ) === 'widget' ) {
 				$case_widgets[] = (string) ( $node['widgetType'] ?? '' );
 			}
 			$collect_case_widgets( (array) ( $node['elements'] ?? [] ) );
 		}
 	};
-	$collect_case_widgets( $case_tree );
-	check( in_array( $expected_widget, $case_widgets, true ) && ( $case_tree[0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), $case_name . ' compiles its native widget and keeps the existing first root' );
+	$case_generated_roots = array_slice( $case_tree, count( $legacy_page ) );
+	$collect_case_widgets( $case_generated_roots );
+	$case_data = $case_response instanceof WP_REST_Response ? $case_response->get_data() : [];
+	check( in_array( $expected_widget, $case_widgets, true ) && ( $case_tree[0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ) && count( $case_generated_roots ) === 1, $case_name . ' compiles a native widget into exactly one new root while keeping existing roots: ' . wp_json_encode( [ 'expected_widget' => $expected_widget, 'widgets' => $case_widgets, 'generated_roots' => count( $case_generated_roots ), 'first_root' => $case_tree[0]['id'] ?? '', 'ok' => $case_data['ok'] ?? false, 'action_path' => $case_data['diagnostics']['action_path'] ?? '', 'error' => $case_response instanceof WP_Error ? $case_response->get_error_code() : '' ] ) );
+	check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1 && ( $case_data['diagnostics']['provider_calls'] ?? null ) === 0, $case_name . ' uses exactly one production write and no provider calls' );
+	if ( $case_name === 'hero_image' ) {
+		$case_image = array_values( array_filter( $case_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+		check( ( $case_image['settings']['image']['url'] ?? '' ) === 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85' && ( $case_image['settings']['image']['alt'] ?? '' ) === 'Современный бетонный интерьер с большими окнами на природный ландшафт', 'production hero route writes the exact licensed image URL and alt into a native Image widget' );
+	}
 }
 
 // Negative insertion language stays a selected-root edit; an explicit new

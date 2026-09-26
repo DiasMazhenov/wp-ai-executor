@@ -1029,6 +1029,18 @@ function wpae_llm_detect_block_archetype( string $message ): string {
 	if ( wpae_llm_is_content_only_hero_brief( $message ) ) {
 		return 'hero';
 	}
+	$intent_head = wpae_llm_request_intent_head( $message );
+	$explicit_archetypes = [
+		'services' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu',
+		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
+		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
+		'cta' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*:|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action)\b/iu',
+	];
+	foreach ( $explicit_archetypes as $archetype => $pattern ) {
+		if ( preg_match( $pattern, $intent_head ) ) {
+			return $archetype;
+		}
+	}
     $scores = wpae_llm_content_archetype_scores( $message, $labeled_pairs );
     if ( ! wpae_llm_is_process_request( $message ) ) {
         $scores['process'] = 0;
@@ -9332,7 +9344,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	}
 	$design_pipeline_mode = function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off';
 	$edde_mode = function_exists( 'wpae_llm_design_engine_mode' ) ? wpae_llm_design_engine_mode() : 'off';
-	$deterministic_archetype = in_array( $action_archetype, [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
+	$deterministic_archetype = in_array( $action_archetype, function_exists( 'wpae_design_plan_schema' ) ? wpae_design_plan_schema()['archetypes'] : [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	if ( $vision_regenerate && $design_pipeline_mode === 'active' && ( $design_generation_route['action_path'] ?? '' ) === 'pipeline' && $selected_post_id > 0 && $deterministic_archetype && ! $replacement_requested ) {
 		return new WP_Error( 'wpae_vision_replacement_scope_required', 'У Vision regeneration отсутствует подтверждённый operation-owned root; добавление нового root запрещено.', [ 'status' => 409 ] );
@@ -9355,7 +9367,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$brief_ir = wpae_brief_ir_parse( $message, [ 'audience' => is_array( $editor_context_input ) ? (string) ( $editor_context_input['audience'] ?? '' ) : '' ] );
         $design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, [ 'post_id' => $selected_post_id ] );
         $brief_validation = function_exists( 'wpae_brief_ir_validate' ) ? wpae_brief_ir_validate( $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
-        $plan_validation = function_exists( 'wpae_design_plan_validate' ) ? wpae_design_plan_validate( $design_plan_v1 ) : [ 'ok' => true, 'errors' => [] ];
+		$plan_validation = function_exists( 'wpae_design_plan_validate' ) ? wpae_design_plan_validate( $design_plan_v1, $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
         $layout_tokens = function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [];
         $layout_report = function_exists( 'wpae_layout_report_for_plan' ) ? wpae_layout_report_for_plan( $design_plan_v1, [ 'tokens' => $layout_tokens ] ) : [];
         $layout_validation = function_exists( 'wpae_layout_report_validate' ) ? wpae_layout_report_validate( $layout_report ) : [ 'ok' => true, 'errors' => [] ];
@@ -9399,7 +9411,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ( ! $vision_repair || $replacement_requested )
 		&& ( ! $vision_regenerate || $replacement_requested )
 		&& $selected_post_id > 0
-		&& in_array( (string) ( $design_plan_v1['archetype'] ?? '' ), [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
+		&& in_array( (string) ( $design_plan_v1['archetype'] ?? '' ), function_exists( 'wpae_design_plan_schema' ) ? wpae_design_plan_schema()['archetypes'] : [], true );
 	if (
 		$active_pipeline_eligible
 		&& ! empty( $design_pipeline_trace['brief']['validation']['ok'] )

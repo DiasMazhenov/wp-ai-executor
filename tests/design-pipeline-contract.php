@@ -448,7 +448,8 @@ $check( ( $faq_compiled['elementor_data'][0]['settings']['background_color'] ?? 
 $check( ( $faq_surface['settings']['background_color'] ?? '' ) === '#ffffff' && ( $faq_surface['settings']['border_radius']['unit'] ?? '' ) === 'px' && (float) ( $faq_surface['settings']['border_radius']['size'] ?? 0 ) === 12.0 && ( $faq_surface['settings']['border_border'] ?? '' ) === 'solid' && (float) ( $faq_surface['settings']['border_width']['size'] ?? 0 ) === 1.0, 'explicit FAQ white surface, light border and 12px radius compile onto the native container' );
 $check( ( $faq_widget['settings']['title_background'] ?? '' ) === '#ffffff' && ( $faq_widget['settings']['content_background_color'] ?? '' ) === '#ffffff' && (float) ( $faq_widget['settings']['border_width']['size'] ?? -1 ) === 0.0 && ( $faq_widget['settings']['border_color'] ?? '' ) !== '' && str_contains( (string) ( $faq_widget['settings']['custom_css'] ?? '' ), 'border-bottom: 1px solid' ), 'native Accordion drops its duplicate frame but retains token-backed separators inside the outer card' );
 $faq_css = (string) ( $faq_widget['settings']['custom_css'] ?? '' );
-$check( ( $faq_widget['settings']['title_color'] ?? '' ) === '#111827' && ( $faq_widget['settings']['title_active_color'] ?? '' ) === '#111827' && str_contains( $faq_css, 'selector .elementor-tab-title:hover .elementor-accordion-title' ) && str_contains( $faq_css, 'selector .elementor-tab-title.elementor-active .elementor-accordion-title' ) && str_contains( $faq_css, 'selector .elementor-tab-title .elementor-accordion-title:focus-visible' ) && str_contains( $faq_css, '#2563eb' ), 'Accordion active/hover anchors inherit semantic text token and keyboard focus ring uses focus token' );
+$check( ( $faq_widget['settings']['title_color'] ?? '' ) === '#111827' && ( $faq_widget['settings']['title_active_color'] ?? '' ) === '#111827' && ( $faq_widget['settings']['title_hover_color'] ?? '' ) === '#111827' && ( $faq_widget['settings']['icon_hover_color'] ?? '' ) === '#111827' && str_contains( $faq_css, 'selector .elementor-tab-title:focus-visible' ) && str_contains( $faq_css, 'max-width: 70ch' ) && str_contains( $faq_css, '#2563eb' ) && ! str_contains( $faq_css, '!important' ), 'Accordion active/hover use native semantic controls while scoped answer width and keyboard focus use shared tokens' );
+$check( ( $faq_widget['settings']['title_padding_mobile']['right'] ?? '' ) === '0.75' && ( $faq_widget['settings']['content_padding_mobile']['left'] ?? '' ) === '0.25', 'mobile Accordion reduces nested padding without reducing font size or answer height' );
 $faq_action = $faq_compiled['elementor_data'][0]['elements'][2]['elements'][0] ?? [];
 $check( ( $faq_action['widgetType'] ?? '' ) === 'button' && ( $faq_action['settings']['text'] ?? '' ) === 'Задать вопрос' && ( $faq_action['settings']['link']['url'] ?? '' ) === '#contact', 'FAQ keeps an optional explicit CTA after the native Accordion' );
 $incomplete_faq = wpae_design_plan_from_brief( wpae_brief_ir_parse( 'FAQ\nВопрос: «Есть ли поддержка?»' ) );
@@ -719,5 +720,107 @@ foreach ( $matrix as $entry ) {
 	$decision = wpae_design_generation_route( $entry[0], $entry[1], true, true );
 	$check( $decision['action_path'] === $entry[2] && $decision['provider_calls'] === $entry[3] && $decision['writes'] === $entry[4], 'feature flag route matrix ' . $entry[0] . '/' . $entry[1] );
 }
+
+$walk_elements = static function ( array $nodes ) use ( &$walk_elements ): array {
+	$all = [];
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		$all[] = $node;
+		$all = array_merge( $all, $walk_elements( (array) ( $node['elements'] ?? [] ) ) );
+	}
+	return $all;
+};
+$compile_prompt = static function ( string $prompt, string $seed ) use ( $walk_elements ): array {
+	$brief = wpae_brief_ir_parse( $prompt );
+	$plan = wpae_design_plan_from_brief( $brief );
+	$validation = wpae_design_plan_validate( $plan, $brief );
+	$ir = wpae_elementor_ir_from_design_plan( $plan, $brief );
+	$compiled = wpae_native_elementor_compile( $ir, $brief, [ 'palette' => [ 'paper' => '#f6f0e6', 'surface' => '#ffffff', 'ink' => '#111827', 'muted' => '#4b5563', 'accent' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => $seed ] );
+	return [ $brief, $plan, $validation, $compiled, $walk_elements( (array) ( $compiled['elementor_data'] ?? [] ) ) ];
+};
+$hero_image_url = 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85';
+$hero_image_prompt = "Hero\nEyebrow: «АРХИТЕКТУРА»\nЗаголовок: «Пространство для идей, длинный заголовок для проверки переноса»\nОписание: «Опишите задачу и получите понятный первый шаг.»\nКнопка: «Начать проект» ссылка #contact\nКнопка 2: «Смотреть проекты» ссылка #projects\nТекст 40%, визуальная часть 60%. Фото слева. Изображение: {$hero_image_url}\nAlt: «Современный интерьер студии с панорамным окном и видом на природу»\nLicense: «Unsplash License»\nPhoto by: «Neon Wang»";
+[ $hero_photo_brief, $hero_photo_plan, $hero_photo_validation, $hero_photo_compiled, $hero_photo_nodes ] = $compile_prompt( $hero_image_prompt, 'hero-unsplash-regression' );
+$hero_photo_ref = $hero_photo_brief['media_references'][0] ?? [];
+$hero_photo_widget = array_values( array_filter( $hero_photo_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+$hero_photo_root = $hero_photo_compiled['elementor_data'][0] ?? [];
+$hero_photo_buttons = array_values( array_filter( $hero_photo_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+$check( $hero_photo_brief['intent']['archetype'] === 'hero' && count( $hero_photo_brief['media_references'] ) === 1 && $hero_photo_ref['alt'] === 'Современный интерьер студии с панорамным окном и видом на природу' && $hero_photo_ref['license'] === 'Unsplash License' && $hero_photo_ref['attribution'] === 'Neon Wang' && ! empty( $hero_photo_ref['allowed_reuse'] ), 'hero BriefIR keeps the real free-license image, meaningful alt, attribution and provenance' );
+$check( $hero_photo_validation['ok'] && ! empty( $hero_photo_compiled['ok'] ) && $hero_photo_widget['settings']['image']['url'] === $hero_image_url && $hero_photo_widget['settings']['image']['alt'] === $hero_photo_ref['alt'], 'licensed hero photo compiles as an editable native Image with exact source and alt text' );
+$check( ( $hero_photo_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60' && ( $hero_photo_plan['sections'][0]['media_side'] ?? '' ) === 'left' && ( $hero_photo_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 60.0 && ( $hero_photo_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 40.0 && ( $hero_photo_root['settings']['flex_direction_mobile'] ?? '' ) === 'column-reverse', 'hero photo left uses 60% media and 40% copy widths and keeps copy first on mobile' );
+$check( array_column( array_map( static fn( array $node ): array => [ 'text' => $node['settings']['text'] ?? '', 'url' => $node['settings']['link']['url'] ?? '' ], $hero_photo_buttons ), 'text' ) === [ 'Начать проект', 'Смотреть проекты' ] && array_column( array_map( static fn( array $node ): array => [ 'text' => $node['settings']['text'] ?? '', 'url' => $node['settings']['link']['url'] ?? '' ], $hero_photo_buttons ), 'url' ) === [ '#contact', '#projects' ], 'photo hero keeps two exact CTA labels and their separate destinations' );
+
+foreach ( [ 2, 3, 4 ] as $service_count ) {
+	$service_prompt = "Блок услуг\nЗаголовок: «Услуги студии»\n";
+	for ( $service_index = 1; $service_index <= $service_count; $service_index++ ) {
+		$service_description = $service_index === 2 ? str_repeat( 'Длинное описание услуги сохраняется целиком. ', 5 ) : 'Краткое описание услуги.';
+		$service_prompt .= "Услуга {$service_index} — название: «Услуга {$service_index}»\nУслуга {$service_index} — описание: «{$service_description}»\n";
+	}
+	$service_prompt .= "Услуга 1 — ссылка: «Подробнее» ссылка #service-1";
+	[ $service_brief, $service_plan, $service_validation, $service_compiled, $service_nodes ] = $compile_prompt( $service_prompt, 'services-' . $service_count . '-regression' );
+	$service_group = array_values( array_filter( $service_compiled['elementor_data'][0]['elements'] ?? [], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-service_cards' ) )[0] ?? [];
+	$service_cards = (array) ( $service_group['elements'] ?? [] );
+	$service_ids = array_column( $service_nodes, 'id' );
+	$service_cta = array_values( array_filter( $service_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
+	$check( $service_brief['intent']['archetype'] === 'services' && $service_validation['ok'] && ! empty( $service_compiled['ok'] ) && count( $service_cards ) === $service_count, 'services production functions accept ' . $service_count . ' explicitly grouped cards' );
+	$check( count( array_unique( $service_ids ) ) === count( $service_ids ) && ( $service_cards[0]['elements'][0]['settings']['title'] ?? '' ) === 'Услуга 1' && trim( (string) ( $service_cards[1]['elements'][1]['settings']['editor'] ?? '' ) ) === trim( $service_count > 1 ? str_repeat( 'Длинное описание услуги сохраняется целиком. ', 5 ) : '' ), 'services bind exact item copy to distinct native cards for count ' . $service_count );
+	if ( $service_count >= 3 ) {
+		$service_bodies = array_map( static fn( array $card ): string => trim( (string) ( $card['elements'][1]['settings']['editor'] ?? '' ) ), $service_cards );
+		$check( $service_bodies[0] === $service_bodies[2] && $service_bodies[0] === 'Краткое описание услуги.', 'services retain equal copy as separate item-bound values for count ' . $service_count );
+	}
+	if ( $service_count === 4 ) {
+		$check( ( $service_group['settings']['flex_direction'] ?? '' ) === 'row' && (float) ( $service_cards[0]['settings']['width']['size'] ?? 0 ) === 48.0 && (float) ( $service_cards[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ( $service_cta['settings']['link']['url'] ?? '' ) === '#service-1', 'four service cards keep gap-safe desktop sizing, mobile stack and the exact optional CTA URL' );
+	}
+}
+
+$team_prompt = "Блок команды\nУчастник 1 — имя: «Ай»\nУчастник 1 — должность: «Архитектор»\nУчастник 2 — имя: «Алия Нурланова, руководитель проектного направления»\nУчастник 2 — должность: «Старший архитектор по устойчивому проектированию»\nУчастник 2 — описание: «Ведёт проекты от первого обсуждения до согласованных чертежей.»";
+[ $team_brief, $team_plan, $team_validation, $team_compiled, $team_nodes ] = $compile_prompt( $team_prompt, 'team-without-photo-regression' );
+$team_group = array_values( array_filter( $team_compiled['elementor_data'][0]['elements'] ?? [], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-team_cards' ) )[0] ?? [];
+$team_cards = (array) ( $team_group['elements'] ?? [] );
+$check( $team_brief['intent']['archetype'] === 'team' && $team_validation['ok'] && ! empty( $team_compiled['ok'] ) && count( $team_cards ) === 2 && count( array_filter( $team_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) ) === 0, 'team compiles short/long names and roles without creating optional photo placeholders' );
+$check( ( $team_cards[1]['elements'][0]['settings']['title'] ?? '' ) === 'Алия Нурланова, руководитель проектного направления' && ( $team_cards[1]['elements'][1]['settings']['editor'] ?? '' ) === 'Старший архитектор по устойчивому проектированию' && ! empty( $team_cards[1]['elements'][2]['settings']['editor'] ), 'team fields remain attached to their own source item with long exact copy' );
+$team_portrait_url = 'https://images.unsplash.com/photo-1638727295415-286409421143?auto=format&fit=crop&w=800&q=80';
+$team_photo_prompt = "Блок команды\nУчастник 1 — имя: «Синтетический персонаж для теста»\nУчастник 1 — должность: «Не реальный сотрудник»\nУчастник 1 — фото: {$team_portrait_url}\nAlt: «Тестовый портрет, не изображающий конкретного сотрудника»\nLicense: «Unsplash License»\nPhoto by: «Brianna Geoghegan»";
+[ $team_photo_brief, $team_photo_plan, $team_photo_validation, $team_photo_compiled, $team_photo_nodes ] = $compile_prompt( $team_photo_prompt, 'team-photo-regression' );
+$team_photo_ref = $team_photo_brief['media_references'][0] ?? [];
+$team_photo_widget = array_values( array_filter( $team_photo_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+$check( ( $team_photo_ref['role'] ?? '' ) === 'portrait' && ( $team_photo_ref['group_id'] ?? '' ) === 'team_1' && ! empty( $team_photo_ref['allowed_reuse'] ) && $team_photo_ref['attribution'] === 'Brianna Geoghegan' && $team_photo_validation['ok'] && ! empty( $team_photo_compiled['ok'] ), 'team optional portrait keeps its item ID, free-use license and photographer provenance' );
+$check( $team_photo_widget['settings']['image']['url'] === $team_portrait_url && $team_photo_widget['settings']['image']['alt'] === 'Тестовый портрет, не изображающий конкретного сотрудника', 'team photo compiles as a native image only for the explicitly photo-bearing test member' );
+$unlicensed_team_brief = wpae_brief_ir_parse( "Блок команды\nУчастник 1 — имя: «Тестовый персонаж»\nУчастник 1 — должность: «Не реальный сотрудник»\nУчастник 1 — фото: {$team_portrait_url}\nAlt: «Тестовый портрет»" );
+$unlicensed_team_plan = wpae_design_plan_from_brief( $unlicensed_team_brief );
+$unlicensed_team_validation = wpae_design_plan_validate( $unlicensed_team_plan, $unlicensed_team_brief );
+$check( ! $unlicensed_team_validation['ok'] && in_array( 'media_unsplash_license_unconfirmed_prompt_media_0', $unlicensed_team_validation['errors'], true ), 'new-card media rejects Unsplash assets unless the free-use license is explicitly recorded' );
+$service_image_prompt = "Блок услуг\nУслуга 1 — название: «Проектирование интерьеров»\nУслуга 1 — описание: «Планировка и архитектурная концепция пространства.»\nУслуга 1 — изображение: {$hero_image_url}\nAlt: «Современный интерьер с панорамным окном»\nLicense: «Unsplash License»\nPhoto by: «Neon Wang»\nУслуга 2 — название: «Авторский надзор»\nУслуга 2 — описание: «Контроль реализации проекта.»";
+[ $service_image_brief, $service_image_plan, $service_image_validation, $service_image_compiled, $service_image_nodes ] = $compile_prompt( $service_image_prompt, 'service-image-regression' );
+$service_image_ref = $service_image_brief['media_references'][0] ?? [];
+$service_image_widget = array_values( array_filter( $service_image_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+$check( ( $service_image_ref['role'] ?? '' ) === 'card_image' && ( $service_image_ref['group_id'] ?? '' ) === 'service_1' && $service_image_validation['ok'] && ! empty( $service_image_compiled['ok'] ), 'service-card media is grouped with its own source item and passes the license gate' );
+$check( $service_image_widget['settings']['image']['url'] === $hero_image_url && $service_image_widget['settings']['image']['alt'] === 'Современный интерьер с панорамным окном', 'optional service image is a native editable widget with its provided alt text' );
+
+$testimonial_long_quote = str_repeat( 'Синтетический тестовый текст отзыва для проверки длинного содержимого. ', 6 );
+$testimonial_prompt = "Блок отзывов — синтетические тестовые данные\nОтзыв 1 — текст: «Короткий синтетический отзыв.»\nОтзыв 1 — автор: «Тестовый автор»\nОтзыв 2 — текст: «{$testimonial_long_quote}»\nОтзыв 2 — автор: «Второй тестовый автор»\nОтзыв 2 — компания: «Тестовая компания»";
+[ $testimonial_brief, $testimonial_plan, $testimonial_validation, $testimonial_compiled, $testimonial_nodes ] = $compile_prompt( $testimonial_prompt, 'synthetic-testimonials-regression' );
+$testimonial_group = array_values( array_filter( $testimonial_compiled['elementor_data'][0]['elements'] ?? [], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-testimonial_cards' ) )[0] ?? [];
+$testimonial_cards = (array) ( $testimonial_group['elements'] ?? [] );
+$check( $testimonial_brief['intent']['archetype'] === 'testimonials' && $testimonial_validation['ok'] && ! empty( $testimonial_compiled['ok'] ) && count( $testimonial_cards ) === 2 && count( array_filter( $testimonial_nodes, static fn( array $node ): bool => str_contains( (string) ( $node['widgetType'] ?? '' ), 'star' ) ) ) === 0, 'testimonials compile as labeled synthetic native cards and do not invent a rating widget' );
+$check( ( $testimonial_cards[0]['elements'][0]['settings']['editor'] ?? '' ) === 'Короткий синтетический отзыв.' && trim( (string) ( $testimonial_cards[1]['elements'][0]['settings']['editor'] ?? '' ) ) === trim( $testimonial_long_quote ) && ( $testimonial_cards[1]['elements'][2]['settings']['editor'] ?? '' ) === 'Тестовая компания', 'testimonials preserve short/long text and optional company on the matching author card' );
+
+foreach ( [ 1, 2 ] as $cta_count ) {
+	$cta_prompt = "Самостоятельный CTA\nЗаголовок: «Начните разговор о проекте с нашей архитектурной студией»\nОписание: «Расскажите о задаче, и команда подскажет следующий шаг.»\nКнопка: «Связаться» ссылка #contact";
+	if ( $cta_count === 2 ) {
+		$cta_prompt .= "\nВторичная кнопка: «Посмотреть проекты» ссылка #projects";
+	}
+	[ $cta_brief, $cta_plan, $cta_validation, $cta_compiled, $cta_nodes ] = $compile_prompt( $cta_prompt, 'standalone-cta-' . $cta_count . '-regression' );
+	$cta_buttons = array_values( array_filter( $cta_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+	$cta_ids = array_column( $cta_nodes, 'id' );
+	$check( $cta_brief['intent']['archetype'] === 'cta' && $cta_validation['ok'] && ! empty( $cta_compiled['ok'] ) && count( $cta_buttons ) === $cta_count && count( array_unique( $cta_ids ) ) === count( $cta_ids ), 'standalone CTA uses one exact compiled native scope with ' . $cta_count . ' button(s)' );
+	$check( array_column( array_map( static fn( array $node ): array => [ 'text' => $node['settings']['text'] ?? '', 'url' => $node['settings']['link']['url'] ?? '' ], $cta_buttons ), 'url' ) === ( $cta_count === 1 ? [ '#contact' ] : [ '#contact', '#projects' ] ), 'standalone CTA preserves every explicit URL with ' . $cta_count . ' button(s)' );
+}
+$invalid_cta_brief = wpae_brief_ir_parse( "Самостоятельный CTA\nЗаголовок: «Оставить заявку»\nКнопка: «Написать»" );
+$invalid_cta_plan = wpae_design_plan_from_brief( $invalid_cta_brief );
+$invalid_cta_validation = wpae_design_plan_validate( $invalid_cta_plan, $invalid_cta_brief );
+$check( ! $invalid_cta_validation['ok'] && in_array( 'cta_button_1_explicit_url_required', $invalid_cta_validation['errors'], true ), 'standalone CTA rejects a missing explicit destination before compilation' );
 
 fwrite( STDOUT, "design pipeline contract: {$checks} checks OK\n" );
