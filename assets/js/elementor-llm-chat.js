@@ -1817,13 +1817,16 @@
                 addMessage('assistant', 'Выполняется: ' + progressMessages[progressIndex++]);
             }
         }, 900);
+        var replacementRootIds = options.replaceExistingRoot
+            ? (options.replacesOperation && Array.isArray(options.replacesOperation.root_ids) ? options.replacesOperation.root_ids.slice(0, 12) : [])
+            : liveGeneratedRootIds.slice(0, 12);
         var requestContext = {
             post_id: config.postId,
             original_message: String(originalBrief || message || '').slice(0, 4000),
             selected_elements: options.selectedElements || selectedElements(),
             background_image_urls: getPreviewBackgroundImageUrls(),
             editor_root_snapshot: captureEditorRootSnapshot(),
-            operation_owned_root_ids: liveGeneratedRootIds.slice(0, 12),
+            operation_owned_root_ids: replacementRootIds,
             operation_identity: operationIdentity
         };
         if (options.replaceExistingRoot && options.replacesOperation) {

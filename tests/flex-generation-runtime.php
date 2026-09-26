@@ -66,6 +66,45 @@ function wpae_elementor_update( $request ) {
     }
     return new WP_REST_Response( [ 'ok' => true, 'rollback_snapshot_id' => 'snapshot' ] );
 }
+function wpae_elementor_patch( $request ) {
+    $tree = $GLOBALS['page_data'];
+    $changes = [];
+    foreach ( (array) $request->get_param( 'patches' ) as $patch ) {
+        $path = explode( '.', (string) ( $patch['path'] ?? '' ) );
+        if ( count( $path ) < 2 || array_shift( $path ) !== 'settings' ) {
+            return new WP_REST_Response( [ 'ok' => false ], 422 );
+        }
+        $walk = static function ( array &$nodes ) use ( &$walk, $patch, $path, &$changes ): bool {
+            foreach ( $nodes as &$node ) {
+                if ( ! is_array( $node ) ) {
+                    continue;
+                }
+                if ( (string) ( $node['id'] ?? '' ) === (string) ( $patch['element_id'] ?? '' ) ) {
+                    $target = &$node['settings'];
+                    foreach ( array_slice( $path, 0, -1 ) as $key ) {
+                        $target[ $key ] = is_array( $target[ $key ] ?? null ) ? $target[ $key ] : [];
+                        $target = &$target[ $key ];
+                    }
+                    $target[ end( $path ) ] = $patch['value'] ?? null;
+                    $changes[] = [ 'element_id' => (string) $node['id'] ];
+                    return true;
+                }
+                if ( $walk( $node['elements'] ) ) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        if ( ! $walk( $tree ) ) {
+            return new WP_REST_Response( [ 'ok' => false ], 422 );
+        }
+    }
+    if ( ! $request->get_param( 'dry_run' ) ) {
+        $GLOBALS['page_data'] = $tree;
+        $GLOBALS['writes'][] = $tree;
+    }
+    return new WP_REST_Response( [ 'ok' => true, 'patch_report' => [ 'changes' => $changes ] ], 200 );
+}
 function wp_safe_remote_post( $url, $args ) {
     $GLOBALS['http_calls'][] = [ 'url' => $url, 'timeout' => $args['timeout'], 'body' => json_decode( $args['body'], true ) ];
     if ( empty( $GLOBALS['responses'] ) ) {
@@ -1160,7 +1199,7 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	$case_request->set_param( 'context', [ 'post_id' => 42 ] );
 	$case_response = wpae_llm_chat_request( $case_request );
 	$case_data = $case_response instanceof WP_REST_Response ? $case_response->get_data() : [];
-	check( ! empty( $case_data['ok'] ) && ( $case_data['diagnostics']['action_path'] ?? '' ) === 'pipeline', $case_name . ' takes the active production pipeline when EDDE is also active' );
+	check( ! empty( $case_data['ok'] ) && ( $case_data['diagnostics']['action_path'] ?? '' ) === 'pipeline', $case_name . ' takes the active production pipeline when EDDE is also active: ' . wp_json_encode( [ 'ok' => $case_data['ok'] ?? false, 'action_path' => $case_data['diagnostics']['action_path'] ?? '', 'error' => $case_response instanceof WP_Error ? $case_response->get_error_code() : '', 'message' => $case_response instanceof WP_Error ? $case_response->get_error_message() : '', 'data' => $case_response instanceof WP_Error ? $case_response->get_error_data() : [] ] ) );
 	check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, $case_name . ' performs no provider call and exactly one page write' );
 	$case_tree = (array) ( $GLOBALS['page_data'] ?? [] );
 	$case_widgets = [];
@@ -1182,6 +1221,11 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	$case_data = $case_response instanceof WP_REST_Response ? $case_response->get_data() : [];
 	check( in_array( $expected_widget, $case_widgets, true ) && ( $case_tree[0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ) && count( $case_generated_roots ) === 1, $case_name . ' compiles a native widget into exactly one new root while keeping existing roots: ' . wp_json_encode( [ 'expected_widget' => $expected_widget, 'widgets' => $case_widgets, 'generated_roots' => count( $case_generated_roots ), 'first_root' => $case_tree[0]['id'] ?? '', 'ok' => $case_data['ok'] ?? false, 'action_path' => $case_data['diagnostics']['action_path'] ?? '', 'error' => $case_response instanceof WP_Error ? $case_response->get_error_code() : '' ] ) );
 	check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1 && ( $case_data['diagnostics']['provider_calls'] ?? null ) === 0, $case_name . ' uses exactly one production write and no provider calls' );
+	if ( $case_name === 'cta' ) {
+		$cta_trace = $case_data['diagnostics']['design_pipeline'] ?? [];
+		$cta_classes = preg_split( '/\s+/', trim( (string) ( $case_generated_roots[0]['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		check( ( $cta_trace['brief']['archetype'] ?? '' ) === 'cta' && ( $cta_trace['plan']['archetype'] ?? '' ) === 'cta' && in_array( 'wpae-generated-cta', $cta_classes, true ) && ! in_array( 'wpae-generated-hero', $cta_classes, true ), 'production CTA diagnostics and the written root agree on cta archetype' );
+	}
 	if ( $case_name === 'hero_image' ) {
 		$case_image = array_values( array_filter( $case_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
 		check( ( $case_image['settings']['image']['url'] ?? '' ) === 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85' && ( $case_image['settings']['image']['alt'] ?? '' ) === 'Современный бетонный интерьер с большими окнами на природный ландшафт', 'production hero route writes the exact licensed image URL and alt into a native Image widget' );
@@ -1231,6 +1275,24 @@ $independent_insert_response = wpae_llm_chat_request( $independent_insert );
 $independent_ids = array_column( $GLOBALS['page_data'], 'id' );
 check( $independent_insert_response instanceof WP_REST_Response && ( $independent_insert_response->get_data()['diagnostics']['action_path'] ?? '' ) === 'pipeline', 'a distinct new timeline request remains a valid insert even while an old element is selected' );
 check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1 && $independent_ids[0] === 'neighbor-root' && $independent_ids[1] === 'selected-process-root' && count( $independent_ids ) === 3, 'independent selected-page insert appends exactly one root without replacing selected or neighboring content' );
+
+$cta_selected_root = container_node( 'selected-cta-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-generated-root wpae-generated-cta' ], [
+	widget( 'cta-primary', 'button', [ 'text' => 'Связаться', 'link' => [ 'url' => '#contact' ] ] ),
+	widget( 'cta-secondary', 'button', [ 'text' => 'Посмотреть проекты', 'link' => [ 'url' => '#projects' ] ] ),
+] );
+$cta_selected_neighbor = container_node( 'cta-neighbor-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-system-test' ], [ widget( 'cta-neighbor-title', 'heading', [ 'title' => 'Соседняя секция' ] ) ] );
+$GLOBALS['page_data'] = [ $cta_selected_neighbor, $cta_selected_root ];
+$cta_before_ids = array_column( $GLOBALS['page_data'], 'id' );
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$cta_targeted_edit = new WP_REST_Request();
+$cta_targeted_edit->set_param( 'message', 'Измени кнопки в выбранном CTA-блоке: основная «Связаться», вторичная «Посмотреть проекты».' );
+$cta_targeted_edit->set_param( 'context', [ 'post_id' => 42, 'selected_elements' => [ [ 'id' => 'selected-cta-root' ] ] ] );
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ] ) ) ];
+$cta_targeted_response = wpae_llm_chat_request( $cta_targeted_edit );
+$cta_after_ids = array_column( $GLOBALS['page_data'], 'id' );
+check( $cta_targeted_response instanceof WP_REST_Response && ( $cta_targeted_response->get_data()['action'] ?? '' ) === 'patch_elements', 'targeted CTA button edit routes to the selected patch action rather than append' );
+check( count( $GLOBALS['writes'] ) === 1 && $cta_after_ids === $cta_before_ids && ( $GLOBALS['page_data'][1]['id'] ?? '' ) === 'selected-cta-root', 'targeted CTA button edit writes once in place and preserves both root identities' );
 
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );

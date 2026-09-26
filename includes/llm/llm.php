@@ -1023,23 +1023,24 @@ function wpae_llm_is_content_only_hero_brief( string $message ): bool {
 
 function wpae_llm_detect_block_archetype( string $message ): string {
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
-	if ( wpae_llm_is_content_only_process_brief( $message ) ) {
-		return 'process';
-	}
-	if ( wpae_llm_is_content_only_hero_brief( $message ) ) {
-		return 'hero';
-	}
 	$intent_head = wpae_llm_request_intent_head( $message );
 	$explicit_archetypes = [
+		'hero' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:новый\s+)?(?:hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран)\b/iu',
 		'services' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu',
 		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
 		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
-		'cta' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*:|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action)\b/iu',
+		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*[:\-]|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
 	];
 	foreach ( $explicit_archetypes as $archetype => $pattern ) {
 		if ( preg_match( $pattern, $intent_head ) ) {
 			return $archetype;
 		}
+	}
+	if ( wpae_llm_is_content_only_process_brief( $message ) ) {
+		return 'process';
+	}
+	if ( wpae_llm_is_content_only_hero_brief( $message ) ) {
+		return 'hero';
 	}
     $scores = wpae_llm_content_archetype_scores( $message, $labeled_pairs );
     if ( ! wpae_llm_is_process_request( $message ) ) {

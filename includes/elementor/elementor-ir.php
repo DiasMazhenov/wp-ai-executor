@@ -108,7 +108,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 			$content_refs = array_values( array_filter( array_map( 'sanitize_key', (array) ( $child['content_refs'] ?? [] ) ) ) );
 			$allowed = array_values( array_filter( array_map( 'sanitize_key', (array) ( $child['allowed_widgets'] ?? [] ) ) ) );
 			$token_refs = array_values( array_filter( array_map( 'wpae_design_token_ref', (array) ( $child['token_refs'] ?? [] ) ) ) );
-			if ( $role === 'copy_group' ) {
+			if ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) ) {
 				$widgets = [];
 				foreach ( $content_refs as $content_ref ) {
 					$item = $content_map[ $content_ref ] ?? [];
@@ -116,7 +116,8 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					if ( $item_role === 'brand' ) {
 						$widgets['brand'] = wpae_elementor_ir_node( $child_id . '-brand', 'brand', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
-						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						$title_role = $role === 'cta_copy_group' ? 'cta_section_title' : 'title';
+						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', $title_role, 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'eyebrow' ) {
 						if ( ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) {
 							$badge_label = wpae_elementor_ir_node( $child_id . '-eyebrow-badge-label', 'eyebrow_badge_label', 'heading', [ $content_ref ], [ 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
@@ -127,7 +128,8 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					} elseif ( $item_role === 'label' ) {
 						$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-label', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'body' || $item_role === 'text' ) {
-						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						$body_role = $role === 'cta_copy_group' ? 'cta_description' : 'body';
+						$widgets['body'] = wpae_elementor_ir_node( $child_id . '-body', $body_role, 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( str_starts_with( $item_role, 'cta' ) || $item_role === 'button' ) {
 						$cta_count = count( array_filter( array_keys( $widgets ), static fn( string $key ): bool => str_starts_with( $key, 'cta_' ) ) );
 						$button_key = 'cta_' . $cta_count;
@@ -141,10 +143,16 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 							$ordered_widgets[] = $widgets[ $widget_key ];
 						}
 					}
+					$cta_widgets = [];
 					foreach ( $widgets as $widget_key => $widget ) {
 						if ( str_starts_with( (string) $widget_key, 'cta_' ) ) {
-							$ordered_widgets[] = $widget;
+							$cta_widgets[] = $widget;
 						}
+					}
+					if ( $role === 'cta_copy_group' && ! empty( $cta_widgets ) ) {
+						$ordered_widgets[] = wpae_elementor_ir_node( $child_id . '-actions', 'cta_actions', 'container', [], [ 'space.component', 'color.primary', 'color.surface', 'color.text' ], $cta_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+					} else {
+						$ordered_widgets = array_merge( $ordered_widgets, $cta_widgets );
 					}
 					$text_alignment = sanitize_key( (string) ( $child['layout_constraints']['text_align'] ?? '' ) );
 					if ( in_array( $text_alignment, [ 'left', 'center', 'right' ], true ) ) {
@@ -156,7 +164,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						unset( $ordered_widget );
 					}
 					$copy_constraints = array_merge( [ 'min_width' => 0, 'max_width' => 100 ], (array) ( $child['layout_constraints'] ?? [] ) );
-				$section_children[] = wpae_elementor_ir_node( $child_id, 'copy_group', 'container', [], $token_refs, $ordered_widgets, $copy_constraints, [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
+				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $ordered_widgets, $copy_constraints, [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				if ( empty( $widgets ) ) {
 					$warnings[] = $child_id . ':no_content_widgets';
 				}
@@ -455,8 +463,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['flex_gap'] = [ 'unit' => $gap_control['unit'], 'size' => $gap_control['size'], 'column' => (string) $gap_control['size'], 'row' => (string) $gap_control['size'], 'isLinked' => true ];
 		$settings['flex_gap_mobile'] = $settings['flex_gap'];
 		if ( in_array( $role, [ 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta' ], true ) ) {
-			$desktop_padding = wpae_elementor_ir_dimension_control( $token_values['space.section'] ?? ( $tokens['native_tokens']['spacing']['section_desktop'] ?? '4.5rem' ), 'rem', 4.5, false );
-			$mobile_padding = wpae_elementor_ir_dimension_control( $tokens['native_tokens']['spacing']['section_mobile'] ?? '2rem', 'rem', 2, false );
+			$section_spacing = $token_values['space.section'] ?? $token_values['space.component'] ?? ( $tokens['native_tokens']['spacing']['section_desktop'] ?? '4.5rem' );
+			$mobile_spacing = isset( $token_values['space.section'] ) ? ( $tokens['native_tokens']['spacing']['section_mobile'] ?? '2rem' ) : $section_spacing;
+			$desktop_padding = wpae_elementor_ir_dimension_control( $section_spacing, 'rem', 4.5, false );
+			$mobile_padding = wpae_elementor_ir_dimension_control( $mobile_spacing, 'rem', 2, false );
 			$desktop_padding['left'] = $desktop_padding['right'] = '2';
 			$mobile_padding['left'] = $mobile_padding['right'] = '1';
 			$settings['padding'] = $desktop_padding;
@@ -470,6 +480,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 			$settings['background_color'] = $surface_override;
 			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
+		}
+		if ( in_array( $role, [ 'copy_group', 'service_cards', 'team_cards', 'testimonial_cards', 'cta_copy_group', 'cta_actions' ], true ) ) {
+			unset( $settings['background_color'], $settings['background_background'] );
 		}
 		if ( $role === 'faq_surface' ) {
 			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
@@ -517,8 +530,21 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_align_items'] = 'stretch';
 		}
 		if ( $role === 'cta' ) {
-			$settings['flex_align_items'] = 'stretch';
+			$settings['_css_classes'] = 'wpae-cta-section';
+			$settings['flex_align_items'] = 'center';
 			$settings['flex_direction'] = 'column';
+		}
+		if ( $role === 'cta_actions' ) {
+			$settings['_css_classes'] = 'wpae-cta-actions';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'row';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'wrap';
+			$settings['flex_wrap_tablet'] = 'wrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
+			$settings['flex_align_items'] = 'flex-start';
+			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.875, 'column' => '0.875', 'row' => '0.875', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = [ 'unit' => 'rem', 'size' => 0.75, 'column' => '0.75', 'row' => '0.75', 'isLinked' => true ];
 		}
 		if ( $role === 'hero' && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media_group' ) ) {
 			$settings['flex_direction_mobile'] = 'column-reverse';
@@ -625,12 +651,23 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_direction'] = 'column';
 			$settings['flex_align_items'] = 'stretch';
 			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.5, 'column' => '0.5', 'row' => '0.5', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
 		}
-		if ( $role === 'copy_group' ) {
+		if ( $role === 'testimonial_card' ) {
+			$settings['flex_justify_content'] = 'space-between';
+			$settings['flex_justify_content_mobile'] = 'flex-start';
+		}
+		if ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) ) {
 			$alignment = sanitize_key( (string) ( $node['layout_constraints']['text_align'] ?? 'left' ) );
 			$settings['flex_direction'] = 'column';
 			$settings['flex_align_items'] = [ 'center' => 'center', 'right' => 'flex-end' ][ $alignment ] ?? 'flex-start';
 			$settings['text_align'] = in_array( $alignment, [ 'left', 'center', 'right' ], true ) ? $alignment : 'left';
+			if ( $role === 'cta_copy_group' ) {
+				$settings['_css_classes'] = 'wpae-cta-copy';
+				$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.5, 'column' => '0.5', 'row' => '0.5', 'isLinked' => true ];
+				$settings['flex_gap_mobile'] = $settings['flex_gap'];
+			}
 		}
 		if ( $role === 'pricing_details' ) {
 			$settings['flex_direction'] = 'column';
@@ -673,9 +710,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( in_array( $heading_alignment, [ 'left', 'center', 'right' ], true ) ) {
 			$settings['align'] = $heading_alignment;
 		}
-		$settings['header_size'] = in_array( $role, [ 'process_number', 'process_badge_label', 'brand', 'eyebrow' ], true ) ? 'h6' : ( $role === 'pricing_label' ? 'h4' : ( $role === 'pricing_price' ? 'h2' : ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' ) ) );
+		$settings['header_size'] = [ 'process_number' => 'h6', 'process_badge_label' => 'h6', 'brand' => 'h6', 'eyebrow' => 'h6', 'pricing_label' => 'h4', 'pricing_price' => 'h2', 'cta_section_title' => 'h2', 'service_title' => 'h3', 'team_name' => 'h3', 'testimonial_author' => 'h3' ][ $role ] ?? ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
 		$settings['title_color'] = in_array( $role, [ 'process_number', 'process_badge_label' ], true ) ? (string) ( $token_values['color.surface'] ?? '#ffffff' ) : (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
-		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'feature_title', 'pricing_label', 'process_number', 'process_badge_label' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
+		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'feature_title', 'pricing_label', 'process_number', 'process_badge_label', 'cta_section_title', 'service_title', 'team_name', 'testimonial_author' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
 		if ( is_array( $type_token ) ) {
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
 		}
@@ -686,6 +723,26 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
 			$settings['typography_font_size_mobile'] = $settings['typography_font_size'];
 			$settings['typography_font_weight'] = '600';
+		} elseif ( $role === 'cta_section_title' ) {
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.75, 'sizes' => [] ];
+			$settings['typography_font_size_tablet'] = [ 'unit' => 'rem', 'size' => 1.625, 'sizes' => [] ];
+			$settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 1.5, 'sizes' => [] ];
+			$settings['typography_font_weight'] = '700';
+			$settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.2, 'sizes' => [] ];
+		} elseif ( in_array( $role, [ 'service_title', 'team_name' ], true ) ) {
+			$settings['align'] = 'left';
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.125, 'sizes' => [] ];
+			$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
+			$settings['typography_font_size_mobile'] = $settings['typography_font_size'];
+			$settings['typography_font_weight'] = '600';
+		} elseif ( $role === 'testimonial_author' ) {
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1, 'sizes' => [] ];
+			$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
+			$settings['typography_font_size_mobile'] = $settings['typography_font_size'];
+			$settings['typography_font_weight'] = '700';
 		} elseif ( $role === 'pricing_label' ) {
 			$settings['typography_font_weight'] = '700';
 		} elseif ( $role === 'pricing_price' ) {
@@ -750,7 +807,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['text_color'] = (string) ( $token_values[ $heading_color ] ?? '#111827' );
 		} else {
 			$settings['editor'] = $text;
-			$settings['text_color'] = (string) ( $token_values['color.muted'] ?? '#6b7280' );
+			$settings['text_color'] = (string) ( $token_values[ $role === 'testimonial_quote' ? 'color.text' : 'color.muted' ] ?? '#6b7280' );
 			$text_alignment = sanitize_key( (string) ( $node['layout_constraints']['text_align'] ?? '' ) );
 			if ( in_array( $text_alignment, [ 'left', 'center', 'right' ], true ) ) {
 				$settings['align'] = $text_alignment;
@@ -917,6 +974,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
 			$tablet_is_stack = ( $settings['flex_direction_tablet'] ?? '' ) === 'column';
 			$tablet_basis = $tablet_is_stack ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
+			if ( $role === 'cta' && $child_role === 'cta_copy_group' ) {
+				$basis = 72;
+				$tablet_basis = 84;
+			}
 			$child_settings = &$compiled_child['settings'];
 			// Elementor's native container controls use _element_custom_width and
 			// _flex_*; generic flex_basis keys are persisted but ignored by the

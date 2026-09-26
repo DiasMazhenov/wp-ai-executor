@@ -267,7 +267,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		// Pricing owns a white surface so the card borders remain visible and the
 		// section does not inherit the site's warm page background.
 		'surface_token' => in_array( $archetype, [ 'pricing' ], true ) ? 'color.surface' : 'color.page_bg',
-		'spacing_token' => 'space.section',
+		'spacing_token' => in_array( $archetype, [ 'services', 'team', 'testimonials', 'cta' ], true ) ? 'space.component' : 'space.section',
 		'children' => [],
 		'provenance' => [ 'source' => 'brief' ],
 	];
@@ -481,7 +481,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$alignment = (string) wpae_design_plan_constraint_value( $brief, 'cta_alignment', 'left' );
 		$section['children'] = [
 			[
-				'role' => 'copy_group',
+				'role' => 'cta_copy_group',
 				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
 				'content_refs' => $cta_content,
 				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'color.surface', 'type.display', 'type.body', 'space.component' ],
