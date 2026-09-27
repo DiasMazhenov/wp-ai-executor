@@ -272,7 +272,7 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
     };
     $walk( $elements );
 
-    $units = wpae_llm_content_units( $message );
+    $units = $archetype === 'services' ? wpae_llm_extract_requested_content( $message ) : wpae_llm_content_units( $message );
     $cta_requirements = wpae_llm_extract_requested_ctas( $message );
     $non_cta_units = array_values( array_filter( $units, static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit ) ) );
     $expected_copy_slots = count( $non_cta_units ) + count( $cta_requirements );
@@ -1207,6 +1207,10 @@ function wpae_llm_block_archetype_hint( string $message ): string {
 function wpae_llm_content_plan( string $message, string $archetype = '' ): array {
     $archetype = $archetype !== '' ? sanitize_key( $archetype ) : wpae_llm_detect_block_archetype( $message );
     $units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_content_units( $message ) ) ) );
+    $brief_ir = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
+    if ( $archetype === 'services' && ( $brief_ir['intent']['archetype'] ?? '' ) === 'services' ) {
+        $units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_extract_requested_content( $message ) ) ) );
+    }
     $pairs = array_slice( array_map( static function ( $pair ): array {
         return [
             'label' => trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) ),
@@ -1251,6 +1255,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
     $allowed_widgets = [
         'hero' => [ 'heading', 'text-editor', 'button', 'image' ],
         'benefits' => [ 'heading', 'text-editor', 'icon-list', 'icon' ],
+        'services' => [ 'heading', 'text-editor', 'icon-box', 'image', 'button' ],
         'pricing' => [ 'heading', 'text-editor', 'price-list', 'button' ],
         'testimonials' => [ 'heading', 'text-editor', 'image', 'testimonial' ],
         'team' => [ 'heading', 'text-editor', 'image', 'icon' ],
@@ -1262,7 +1267,6 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'mega_menu' => [ 'image', 'mega-menu', 'button' ],
         'cta' => [ 'heading', 'text-editor', 'button' ],
     ];
-    $brief_ir = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
     $media_intent = '';
     foreach ( (array) ( $brief_ir['layout_constraints'] ?? [] ) as $constraint ) {
         if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
@@ -1283,7 +1287,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'cta_required' => ! empty( $ctas ),
         'requires_media' => $media_intent === 'required' || ! empty( $brief_ir['media_references'] ),
         'allowed_widgets' => $allowed_widgets[ $archetype ] ?? [ 'heading', 'text-editor', 'image', 'button' ],
-        'forbidden_widgets' => [ 'icon-box' ],
+        'forbidden_widgets' => $archetype === 'services' ? [] : [ 'icon-box' ],
     ];
 }
 
@@ -1292,7 +1296,7 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     $button_texts = [];
     $repeatable_container_count = 0;
     $accordion_item_count = 0;
-    $repeatable_archetypes = [ 'benefits', 'pricing', 'testimonials', 'team', 'process', 'portfolio' ];
+    $repeatable_archetypes = [ 'benefits', 'services', 'pricing', 'testimonials', 'team', 'process', 'portfolio' ];
     $walk = static function ( array $nodes ) use ( &$walk, &$counts, &$button_texts ): void {
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
@@ -1541,6 +1545,7 @@ function wpae_llm_normalize_content_text( $value ): string {
 
 function wpae_llm_extract_requested_content( string $message ): array {
     $matches = [];
+    $services_request = false;
     $navigation_request = false;
     $process_request = wpae_llm_is_process_request( $message );
     $process_steps = [];
@@ -1562,6 +1567,27 @@ function wpae_llm_extract_requested_content( string $message ): array {
 		];
 	}, $pricing_items ) : wpae_llm_extract_labeled_content( $message );
 	$structured_pairs = $labeled_pairs;
+	$services_intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
+	if ( function_exists( 'wpae_brief_ir_parse' ) && preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu', $services_intent_head ) ) {
+		$services_brief = wpae_brief_ir_parse( $message );
+		if ( ( $services_brief['intent']['archetype'] ?? '' ) === 'services' ) {
+			$service_values = [];
+			foreach ( (array) ( $services_brief['content'] ?? [] ) as $item ) {
+				if ( ! is_array( $item ) || ! in_array( (string) ( $item['role'] ?? '' ), [ 'eyebrow', 'title', 'body', 'service_title', 'service_body', 'service_cta' ], true ) ) {
+					continue;
+				}
+				$value = trim( (string) ( $item['exact_text'] ?? '' ) );
+				if ( $value !== '' ) {
+					$service_values[] = $value;
+				}
+			}
+			if ( ! empty( $service_values ) ) {
+				$matches = $service_values;
+				$structured_pairs = wpae_llm_extract_services_content( $message );
+				$services_request = true;
+			}
+		}
+	}
 	if ( function_exists( 'wpae_brief_ir_parse' ) ) {
 		$team_brief = wpae_brief_ir_parse( $message );
 		if ( ( $team_brief['intent']['archetype'] ?? '' ) === 'team' ) {
@@ -1659,7 +1685,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
 			$matches[] = $pair_content;
 		}
     }
-	if ( ! empty( $structured_pairs ) && wpae_llm_is_content_composition_request( $message ) && ! $process_request ) {
+	if ( ! $services_request && ! empty( $structured_pairs ) && wpae_llm_is_content_composition_request( $message ) && ! $process_request ) {
 		foreach ( wpae_llm_content_units( $message ) as $unit ) {
 			$unit = trim( (string) $unit );
 			if ( $pricing_request && ! wpae_llm_is_cta_copy( $unit ) ) {
@@ -1917,6 +1943,10 @@ function wpae_llm_extract_labeled_content( string $message ): array {
             ];
         }, $pricing_items );
     }
+	$services = wpae_llm_extract_services_content( $message );
+	if ( count( $services ) >= 2 ) {
+		return $services;
+	}
     $content_message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', trim( $message ) );
 	if ( ! is_string( $content_message ) || $content_message === '' ) {
 		$content_message = $message;
@@ -2063,6 +2093,40 @@ function wpae_llm_extract_labeled_content( string $message ): array {
     return $pairs;
 }
 
+function wpae_llm_extract_services_content( string $message ): array {
+	$intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
+	if ( ! function_exists( 'wpae_brief_ir_parse' ) || ! preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu', $intent_head ) ) {
+		return [];
+	}
+	$brief = wpae_brief_ir_parse( $message );
+	if ( ( $brief['intent']['archetype'] ?? '' ) !== 'services' ) {
+		return [];
+	}
+	$groups = [];
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( ! is_array( $item ) || ! preg_match( '/^service_\d+$/', (string) ( $item['group_id'] ?? '' ) ) ) {
+			continue;
+		}
+		$field = [ 'service_title' => 'label', 'service_body' => 'content', 'service_cta' => 'cta_text' ][ (string) ( $item['role'] ?? '' ) ] ?? '';
+		if ( $field === '' ) {
+			continue;
+		}
+		$group_id = (string) $item['group_id'];
+		$groups[ $group_id ][ $field ] = trim( (string) ( $item['exact_text'] ?? '' ) );
+		if ( $field === 'cta_text' && ! empty( $item['url'] ) ) {
+			$groups[ $group_id ]['cta_url'] = (string) $item['url'];
+		}
+	}
+	$pairs = [];
+	foreach ( $groups as $group ) {
+		if ( ( $group['label'] ?? '' ) === '' || ( $group['content'] ?? '' ) === '' ) {
+			continue;
+		}
+		$pairs[] = $group + [ 'description' => (string) $group['content'], 'cta_url' => (string) ( $group['cta_url'] ?? '' ) ];
+	}
+	return array_slice( $pairs, 0, 8 );
+}
+
 function wpae_llm_extract_faq_content( string $message ): array {
     $message = trim( sanitize_text_field( $message ) );
     $message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $message );
@@ -2195,13 +2259,25 @@ function wpae_llm_compact_cta_text( string $value ): string {
 }
 
 function wpae_llm_clear_unrequested_library_copy( array &$elements, string $message, int &$changed ): void {
-    $requested = array_values( array_unique( array_merge( wpae_llm_extract_requested_content( $message ), wpae_llm_content_units( $message ) ) ) );
+    $intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
+    $services_request = function_exists( 'wpae_brief_ir_parse' ) && preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu', $intent_head );
+    $requested = $services_request
+        ? wpae_llm_extract_requested_content( $message )
+        : array_values( array_unique( array_merge( wpae_llm_extract_requested_content( $message ), wpae_llm_content_units( $message ) ) ) );
     if ( empty( $requested ) ) {
         return;
     }
 
     $requested_text = wpae_llm_normalize_content_text( implode( ' ', $requested ) );
     $title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? ( $requested[0] ?? '' ) ) );
+    if ( $services_request ) {
+        foreach ( (array) ( wpae_brief_ir_parse( $message )['content'] ?? [] ) as $item ) {
+            if ( is_array( $item ) && ( $item['role'] ?? '' ) === 'title' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== '' ) {
+                $title = trim( sanitize_text_field( (string) $item['exact_text'] ) );
+                break;
+            }
+        }
+    }
     $cta = '';
     foreach ( $requested as $value ) {
         if ( wpae_llm_is_cta_copy( (string) $value ) ) {
@@ -2297,7 +2373,7 @@ function wpae_llm_apply_fallback_content( array &$elements, array &$missing, str
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $widget_type = (string) ( $element['widgetType'] ?? '' );
-        $repeatable_archetypes = [ 'benefits', 'pricing', 'testimonials', 'process', 'portfolio' ];
+        $repeatable_archetypes = [ 'benefits', 'services', 'pricing', 'testimonials', 'process', 'portfolio' ];
         $is_repeatable_shell = in_array( $archetype, $repeatable_archetypes, true ) && $depth === 1;
         if ( ! $is_repeatable_shell && ! empty( $missing ) && in_array( $widget_type, [ 'heading', 'icon-box', 'text-editor', 'button' ], true ) ) {
             $value_index = 0;
@@ -4359,6 +4435,7 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
     if ( count( $template_elements ) > 1 ) {
         $root_patterns = [
             'hero' => '/hero|banner|header|первый|обложк/iu',
+            'services' => '/service|services|услуг|appoverview/iu',
             'benefits' => '/benefit|feature|why\s+choose(?:\s+us)?|почему|опор|преимуществ|выгод/iu',
             'pricing' => '/pricing|price|тариф|стоимост|пакет/iu',
             'testimonials' => '/testimonial|review|отзыв|клиент/iu',
@@ -8962,7 +9039,7 @@ function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 		}
 		$options[] = array_intersect_key(
 			$candidate,
-			array_flip( [ 'choice_key', 'title', 'category', 'tags', 'widget_types', 'root_count', 'media_reference_count' ] )
+			array_flip( [ 'choice_key', 'title', 'category', 'template_type', 'tags', 'widget_types', 'root_count', 'media_reference_count' ] )
 		);
 	}
 	if ( empty( $options ) ) {

@@ -502,6 +502,7 @@ function wpae_block_library_imported_template_record( string $template_id ): ?ar
         'title' => sanitize_text_field( (string) ( $template['title'] ?? $template_id ) ),
         'description' => '',
         'category' => sanitize_key( (string) ( $template['category'] ?? 'custom' ) ),
+        'template_type' => sanitize_key( (string) ( $template['template_type'] ?? '' ) ),
         'tags' => wpae_block_library_sanitize_tags( $template['tags'] ?? [] ),
         'source_mode' => 'elementor_export',
         'source' => 'plugin_template',
@@ -532,8 +533,13 @@ function wpae_block_library_imported_template_records( string $archetype, array 
     foreach ( wpae_block_library_imported_template_manifest() as $template_id => $template ) {
         $category = sanitize_key( (string) ( $template['category'] ?? 'custom' ) );
         $tags = wpae_block_library_sanitize_tags( $template['tags'] ?? [] );
+        $template_type = sanitize_key( (string) ( $template['template_type'] ?? '' ) );
+        $service_section = $archetype === 'services'
+            && ( ( $template['type'] ?? '' ) === 'section' )
+            && ( $template_type === 'section-services' || ! empty( array_intersect( [ 'service', 'services' ], array_map( 'sanitize_key', $tags ) ) ) );
         $matches_category = in_array( $category, $allowed_categories, true )
-            || ( $category === 'custom' && ! empty( array_intersect( $allowed_categories, array_map( 'sanitize_key', $tags ) ) ) );
+            || ( $category === 'custom' && ! empty( array_intersect( $allowed_categories, array_map( 'sanitize_key', $tags ) ) ) )
+            || $service_section;
         if ( ! empty( $allowed_categories ) && ! $matches_category ) {
             continue;
         }
@@ -544,6 +550,48 @@ function wpae_block_library_imported_template_records( string $archetype, array 
     }
 
     return $records;
+}
+
+function wpae_block_library_has_service_card_groups( array $elements ): bool {
+    $has_heading_and_body = static function ( array $nodes, bool &$heading, bool &$body ) use ( &$has_heading_and_body ): void {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+                $type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+                $heading = $heading || $type === 'heading';
+                $body = $body || $type === 'text-editor';
+            }
+            if ( is_array( $node['elements'] ?? null ) ) {
+                $has_heading_and_body( $node['elements'], $heading, $body );
+            }
+        }
+    };
+    $walk = static function ( array $nodes ) use ( &$walk, $has_heading_and_body ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            $cards = 0;
+            foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+                if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'container' ) {
+                    continue;
+                }
+                $heading = false;
+                $body = false;
+                $has_heading_and_body( (array) ( $child['elements'] ?? [] ), $heading, $body );
+                if ( $heading && $body ) {
+                    $cards++;
+                }
+            }
+            if ( $cards >= 2 || ( is_array( $node['elements'] ?? null ) && $walk( $node['elements'] ) ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
+    return $walk( $elements );
 }
 
 function wpae_block_library_bundled_preview_url( string $preview_file ): string {
@@ -756,6 +804,7 @@ function wpae_block_library_retrieval_aliases( string $archetype ): array {
         'carousel' => [ 'carousel', 'slider', 'карусел', 'слайдер', 'логотип', 'логотипы', 'партнер', 'партнёр', 'бренд' ],
         'hero' => [ 'hero', 'хиро', 'первый', 'экран', 'обложка', 'cover', 'home', 'главн', 'image', 'image-box' ],
         'benefits' => [ 'benefit', 'benefits', 'feature', 'features', 'course', 'courses', 'курс', 'курсы', 'обучен', 'заняти', 'программ', 'преимуществ', 'выгод' ],
+        'services' => [ 'service', 'services', 'услуги', 'услуга', 'сервис' ],
         'pricing' => [ 'pricing', 'price', 'тариф', 'цена', 'стоимость', 'пакет' ],
         'testimonials' => [ 'testimonial', 'testimonials', 'отзыв', 'рекомендац', 'клиент' ],
         'team' => [ 'team', 'команд', 'сотрудник', 'специалист', 'коллег' ],
@@ -788,6 +837,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     $category_aliases = [
         'hero' => [ 'hero', 'home' ],
         'benefits' => [ 'benefits' ],
+        'services' => [ 'services' ],
         'pricing' => [ 'pricing' ],
         'testimonials' => [ 'testimonials', 'reviews' ],
         'team' => [ 'team' ],
@@ -838,6 +888,9 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         if ( function_exists( 'wpae_elementor_normalize_data' ) ) {
             $elementor_data = wpae_elementor_normalize_data( $elementor_data )['data'];
         }
+        if ( $archetype === 'services' && ! wpae_block_library_has_service_card_groups( $elementor_data ) ) {
+            continue;
+        }
         if ( ! empty( $compatibility['unavailable_widget_types'] ) ) {
             $elementor_data = wpae_block_library_filter_compatible_roots( $elementor_data );
             if ( empty( $elementor_data ) ) {
@@ -846,11 +899,15 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         }
 
         $category = sanitize_key( (string) ( $record['category'] ?? '' ) );
+        $template_type = sanitize_key( (string) ( $record['template_type'] ?? '' ) );
         $tags = array_map( 'sanitize_key', (array) ( $record['tags'] ?? [] ) );
         if ( ! empty( $allowed_categories ) ) {
             $type_match = in_array( $category, $allowed_categories, true );
             if ( ! $type_match && $category === 'custom' ) {
                 $type_match = ! empty( array_intersect( $allowed_categories, $tags ) );
+            }
+            if ( ! $type_match && $archetype === 'services' ) {
+                $type_match = $template_type === 'section-services' || ! empty( array_intersect( [ 'service', 'services' ], $tags ) );
             }
             if ( ! $type_match ) {
                 continue;
@@ -858,6 +915,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         }
         $candidate_text = implode( ' ', [
             $category,
+            $template_type,
             implode( ' ', $tags ),
             (string) ( $record['title'] ?? '' ),
             (string) ( $record['description'] ?? '' ),
@@ -893,6 +951,10 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         if ( in_array( 'bento', $tags, true ) && in_array( sanitize_key( $archetype ), [ 'hero', 'portfolio' ], true ) ) {
             $score++;
             $matched_terms[] = 'bento';
+        }
+        if ( $archetype === 'services' && $template_type === 'section-services' ) {
+            $score += 8;
+            $matched_terms[] = 'section-services';
         }
         if ( ! $prompt_requests_vocario && in_array( (string) ( $record['source'] ?? '' ), [ 'copyelement', 'plugin_template' ], true ) ) {
             $score += 6;
@@ -933,6 +995,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             'bundled_fixture_id' => (string) ( $candidate['summary']['bundled_fixture_id'] ?? '' ),
             'title' => (string) ( $candidate['summary']['title'] ?? '' ),
             'category' => (string) ( $candidate['summary']['category'] ?? '' ),
+            'template_type' => (string) ( $candidate['summary']['template_type'] ?? '' ),
             'source' => (string) ( $candidate['summary']['source'] ?? '' ),
             'tags' => array_slice( array_values( array_map( 'sanitize_key', (array) ( $summary['tags'] ?? [] ) ) ), 0, 8 ),
             'widget_types' => array_slice( array_values( array_map( 'sanitize_key', (array) ( $compatibility_stats['widget_types'] ?? [] ) ) ), 0, 12 ),
@@ -986,6 +1049,7 @@ function wpae_block_library_summary( array $record ): array {
         'title' => (string) ( $record['title'] ?? '' ),
         'description' => (string) ( $record['description'] ?? '' ),
         'category' => (string) ( $record['category'] ?? 'custom' ),
+        'template_type' => sanitize_key( (string) ( $record['template_type'] ?? '' ) ),
         'tags' => array_values( (array) ( $record['tags'] ?? [] ) ),
         'source_mode' => (string) ( $record['source_mode'] ?? 'native_elementor_json' ),
         'source' => (string) ( $record['source'] ?? 'foreign' ),

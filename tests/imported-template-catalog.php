@@ -120,6 +120,10 @@ foreach ( $records as $record ) {
 $faq = wpae_block_library_imported_template_records( 'faq', [ 'faq' ] );
 imported_template_check( count( $faq ) === 5, 'Archetype lookup should load only the five FAQ-tagged source files.' );
 imported_template_check( count( array_filter( $faq, static fn( array $record ): bool => (string) ( $record['category'] ?? '' ) !== 'faq' ) ) === 0, 'Archetype lookup leaked a non-FAQ template.' );
+$service_records = wpae_block_library_imported_template_records( 'services', [ 'services' ] );
+$service_candidates = array_values( array_filter( $service_records, static fn( array $record ): bool => wpae_block_library_has_service_card_groups( (array) ( $record['elementor_data'] ?? [] ) ) ) );
+imported_template_check( count( $service_candidates ) === 1 && ( $service_candidates[0]['bundled_fixture_id'] ?? '' ) === 'template-a40df0dcc7c5642d', 'Services retrieval should offer the imported native card section with repeated heading/body cards, while excluding unadaptable roots and whole pages.' );
+imported_template_check( ( $service_candidates[0]['template_type'] ?? '' ) === 'section-services', 'Services candidate metadata lost its section archetype before the model decision.' );
 imported_template_check( (int) ( $GLOBALS['template_db_write_attempts'] ?? 0 ) === 0, 'Plugin-local source loading attempted to create WordPress database records.' );
 
-echo wp_json_encode( [ 'status' => 'passed', 'manifest_files' => count( $manifest ), 'retrievable_trees' => count( $records ), 'instantiated_previews' => $instantiated, 'faq_candidates' => count( $faq ), 'source' => 'plugin files; no WordPress records created' ] ) . PHP_EOL;
+echo wp_json_encode( [ 'status' => 'passed', 'manifest_files' => count( $manifest ), 'retrievable_trees' => count( $records ), 'instantiated_previews' => $instantiated, 'faq_candidates' => count( $faq ), 'services_candidates' => count( $service_candidates ), 'source' => 'plugin files; no WordPress records created' ] ) . PHP_EOL;

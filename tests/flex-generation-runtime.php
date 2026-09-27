@@ -1372,6 +1372,14 @@ $team_fallback_rows = array_map( static function ( array $card ): array {
 check( count( $team_fallback_cards ) === 2, 'Team deterministic fallback groups name and position fields into exactly one card per member' );
 check( $team_fallback_rows === [ [ 'name' => 'Синтетический участник 1', 'position' => 'Демо-архитектор' ], [ 'name' => 'Синтетический участник 2', 'position' => 'Демо-руководитель проекта' ] ], 'Team fallback preserves exact member copy in the matching native heading and text widgets: ' . wp_json_encode( $team_fallback_rows, JSON_UNESCAPED_UNICODE ) );
 
+$services_message = "Блок услуг\nЗаголовок: «Услуги архитектурной студии»\nОписание: «От первого замысла до авторского сопровождения.»\nПусть ИИ-агент сам выберет подходящий шаблон из встроенной библиотеки и применит только проверенный вариант.\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
+$services_pairs = wpae_llm_extract_services_content( $services_message );
+$services_plan = wpae_llm_content_plan( $services_message, 'services' );
+$services_requested = wpae_llm_extract_requested_content( $services_message );
+check( count( $services_pairs ) === 3 && ( $services_pairs[2]['label'] ?? '' ) === 'Сопровождение' && ( $services_pairs[2]['content'] ?? '' ) === 'Проверяем соответствие согласованному проекту.', 'Services extraction groups exact labels and descriptions into three semantic cards' );
+check( count( (array) ( $services_plan['content_pairs'] ?? [] ) ) === 3 && count( (array) ( $services_plan['content_units'] ?? [] ) ) === 8 && ! str_contains( wp_json_encode( $services_plan, JSON_UNESCAPED_UNICODE ), 'сам выберет подходящий шаблон' ), 'Services content plan keeps required copy and excludes the instruction tail from generated content' );
+check( ! in_array( 'сам выберет подходящий шаблон', $services_requested, true ) && in_array( 'Услуги архитектурной студии', $services_requested, true ), 'Services fidelity compares user copy while ignoring agent instructions' );
+
 $library_agent_message = '«Пространство для идей». Hero. Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
 $library_agent_root = container_node( 'imported-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-fixture-candidate-two wpae-generated-badge' ], [
 	widget( 'imported-hero-title', 'heading', [ 'title' => 'Исходный заголовок', 'header_size' => 'h2' ] ),
@@ -1399,6 +1407,7 @@ $library_agent_action = [
 	'elements' => [ container_node( 'provider-tree-ignored', [ 'container_type' => 'flex' ], [ widget( 'provider-copy', 'text-editor', [ 'editor' => $library_agent_message ] ) ] ) ],
 ];
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [ provider_reply( wp_json_encode( $library_agent_action ) ) ];
@@ -1427,6 +1436,69 @@ check( ! empty( $library_agent_data['ok'] ) && count( $GLOBALS['http_calls'] ) =
 check( ( $library_agent_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['provider_calls'] ?? null ) === 1 && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['precedence'] ?? '' ) === 'active_pipeline_library_decision', 'active pipeline diagnostics expose the bounded library-agent route without invoking EDDE in parallel' );
 check( ( $library_agent_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_agent_trace['model_choice'] ?? '' ) === 'candidate_2' && ( $library_agent_trace['selected']['title'] ?? '' ) === 'Импортированный hero' && ( $library_agent_trace['status'] ?? '' ) === 'applied' && strpos( $library_agent_root_json, 'wpae-library-agent-fixture-candidate-two' ) !== false && strpos( $library_agent_root_json, 'wpae-library-agent-candidate-one' ) === false, 'the model can select a non-first ranked template and that exact tree reaches the write boundary' );
 check( strpos( $library_agent_written_copy, 'Пространство для идей' ) !== false && strpos( $library_agent_written_copy, 'Опишите задачу и получите понятный первый шаг' ) !== false && strpos( $library_agent_written_copy, 'Начать проект' ) !== false && $library_agent_button_url === '#contact', 'active library-agent adaptation preserves exact brief copy and CTA URL' );
+$GLOBALS['library'] = [];
+
+// The imported Course Boxes section is normalized and offered as a bounded
+// Services candidate; the model chooses it, and only that structure is written.
+$services_template_document = json_decode( (string) file_get_contents( __DIR__ . '/../includes/elementor/imported-templates/block-course-boxes.json' ), true );
+$services_template_data = wpae_elementor_normalize_data( (array) ( $services_template_document['content'] ?? [] ) )['data'];
+$services_provider_root = container_node( 'services-provider-root', [ 'container_type' => 'flex' ], [
+	widget( 'services-provider-heading', 'heading', [ 'title' => 'Услуги архитектурной студии', 'header_size' => 'h2' ] ),
+	widget( 'services-provider-description', 'text-editor', [ 'editor' => 'От первого замысла до авторского сопровождения.' ] ),
+	container_node( 'services-provider-cards', [ 'container_type' => 'flex' ], [
+		container_node( 'services-provider-card-1', [ 'container_type' => 'flex' ], [ widget( 'services-provider-title-1', 'heading', [ 'title' => 'Стратегия проекта' ] ), widget( 'services-provider-copy-1', 'text-editor', [ 'editor' => 'Формулируем задачу и согласуем план работ.' ] ) ] ),
+		container_node( 'services-provider-card-2', [ 'container_type' => 'flex' ], [ widget( 'services-provider-title-2', 'heading', [ 'title' => 'Архитектура и дизайн' ] ), widget( 'services-provider-copy-2', 'text-editor', [ 'editor' => 'Разрабатываем решение под заданный контекст.' ] ) ] ),
+		container_node( 'services-provider-card-3', [ 'container_type' => 'flex' ], [ widget( 'services-provider-title-3', 'heading', [ 'title' => 'Сопровождение' ] ), widget( 'services-provider-copy-3', 'text-editor', [ 'editor' => 'Проверяем соответствие согласованному проекту.' ] ) ] ),
+	] ),
+ ] );
+$services_adaptation_changes = 0;
+$services_adapted_probe = wpae_llm_apply_library_template( $services_template_data, $services_message, 'services', $services_adaptation_changes );
+$services_probe_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'elements' => $services_adapted_probe ];
+$services_probe_shape = wpae_llm_validate_action_shape( $services_probe_action, 42 );
+$services_probe_fidelity = wpae_llm_content_fidelity( $services_message, $services_adapted_probe );
+$services_probe_audit = wpae_llm_content_plan_audit( $services_plan, $services_adapted_probe );
+$services_probe = [ 'changes' => $services_adaptation_changes, 'shape' => $services_probe_shape, 'fidelity' => $services_probe_fidelity, 'audit' => $services_probe_audit ];
+check( ! empty( $services_probe_shape['ok'] ) && ! empty( $services_probe_fidelity['ok'] ) && ! empty( $services_probe_audit['ok'] ), 'Imported Services card adapter must satisfy native shape, exact content, and repeatable-plan checks: ' . wp_json_encode( $services_probe, JSON_UNESCAPED_UNICODE ) );
+$GLOBALS['library'] = [
+	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
+	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template' ] ],
+	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 742, 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
+];
+$services_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [ $services_provider_root ] ];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $services_provider_action ) ) ];
+$services_request = new WP_REST_Request();
+$services_request->set_param( 'message', $services_message );
+$services_request->set_param( 'context', [ 'post_id' => 42 ] );
+$services_response = wpae_llm_chat_request( $services_request );
+$services_response_data = $services_response instanceof WP_REST_Response ? $services_response->get_data() : [];
+$services_trace = (array) ( $services_response_data['library'] ?? [] );
+$services_written = array_slice( (array) $GLOBALS['page_data'], count( $legacy_page ) );
+$services_written_json = wp_json_encode( $services_written, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+$services_heading_values = [];
+$services_text_values = [];
+$collect_services_written = static function ( array $nodes ) use ( &$collect_services_written, &$services_heading_values, &$services_text_values ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' ) { $services_heading_values[] = (string) ( $node['settings']['title'] ?? '' ); }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'text-editor' ) { $services_text_values[] = trim( wp_strip_all_tags( (string) ( $node['settings']['editor'] ?? '' ) ) ); }
+		$collect_services_written( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_services_written( $services_written );
+check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'Imported Services design uses the agent library decision route and the single existing writer: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '', 'message' => $services_response instanceof WP_Error ? $services_response->get_error_message() : '', 'error_data' => $services_response instanceof WP_Error ? $services_response->get_error_data() : [] ] ) );
+$services_step_statuses = [];
+$services_library_diagnostics = [];
+foreach ( (array) ( $services_response_data['steps'] ?? [] ) as $service_step ) {
+	$services_step_statuses[] = [ 'id' => $service_step['id'] ?? '', 'status' => $service_step['status'] ?? '', 'message' => $service_step['message'] ?? '' ];
+	if ( ( $service_step['id'] ?? '' ) === 'library_retrieval' ) { $services_library_diagnostics = (array) ( $service_step['details'] ?? [] ); }
+}
+check( ( $services_trace['selection_source'] ?? '' ) === 'model_choice' && ( $services_trace['selected']['title'] ?? '' ) === 'Block – Course Boxes' && ( $services_trace['status'] ?? '' ) === 'applied', 'The model-selected imported Services section reaches production adaptation: ' . wp_json_encode( [ 'source' => $services_trace['selection_source'] ?? '', 'choice' => $services_trace['model_choice'] ?? '', 'title' => $services_trace['selected']['title'] ?? '', 'status' => $services_trace['status'] ?? '', 'reason' => $services_trace['reason'] ?? '', 'fidelity' => $services_trace['fidelity'] ?? [], 'library_diagnostics' => $services_library_diagnostics, 'root_count' => count( $services_written ), 'steps' => $services_step_statuses ] ) );
+check( count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'сам выберет подходящий шаблон' ) && ! str_contains( $services_written_json, 'временный QA-блок' ), 'Imported Services cards retain exact requested text without exposing the prompt instructions' );
+check( count( $services_written ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'Imported Services generation appends one root and preserves the pre-existing page root' );
 $GLOBALS['library'] = [];
 
 // Negative insertion language stays a selected-root edit; an explicit new
@@ -1488,7 +1560,7 @@ $cta_targeted_edit->set_param( 'context', [ 'post_id' => 42, 'selected_elements'
 $GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ] ) ) ];
 $cta_targeted_response = wpae_llm_chat_request( $cta_targeted_edit );
 $cta_after_ids = array_column( $GLOBALS['page_data'], 'id' );
-check( $cta_targeted_response instanceof WP_REST_Response && ( $cta_targeted_response->get_data()['action'] ?? '' ) === 'patch_elements', 'targeted CTA button edit routes to the selected patch action rather than append' );
+check( $cta_targeted_response instanceof WP_REST_Response && ( $cta_targeted_response->get_data()['action'] ?? '' ) === 'patch_elements', 'targeted CTA button edit routes to the selected patch action rather than append: ' . wp_json_encode( [ 'error' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_code() : '', 'message' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_message() : '', 'data' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_data() : [] ] ) );
 check( count( $GLOBALS['writes'] ) === 1 && $cta_after_ids === $cta_before_ids && ( $GLOBALS['page_data'][1]['id'] ?? '' ) === 'selected-cta-root', 'targeted CTA button edit writes once in place and preserves both root identities' );
 
 $permission = new WP_REST_Request();
