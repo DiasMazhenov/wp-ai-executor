@@ -654,6 +654,31 @@
         messages.scrollTop = messages.scrollHeight;
     }
     var selectedModelCache = [];
+    function cleanInitialDocumentNode(id) {
+        var initialDocument = window.ElementorConfig && window.ElementorConfig.initial_document;
+        if (!initialDocument || !Array.isArray(initialDocument.elements) || !id) return null;
+        var saveControl = Array.prototype.slice.call(document.querySelectorAll('button')).find(function (button) {
+            return /^(?:publish|update|опубликовать|обновить)$/i.test(String(button.innerText || button.getAttribute('aria-label') || '').trim());
+        });
+        if (!saveControl || !saveControl.disabled) return null;
+        var match = null;
+        var matches = 0;
+        var visited = 0;
+        var walk = function (nodes, depth) {
+            if (!Array.isArray(nodes) || depth > 32 || visited >= 5000 || matches > 1) return;
+            nodes.forEach(function (node) {
+                if (!node || typeof node !== 'object' || visited++ >= 5000 || matches > 1) return;
+                if (String(node.id || '') === id) {
+                    match = node;
+                    matches += 1;
+                    if (matches > 1) return;
+                }
+                walk(node.elements, depth + 1);
+            });
+        };
+        walk(initialDocument.elements, 0);
+        return matches === 1 ? match : null;
+    }
     function liveSelectedModels() {
         var editor = window.elementor;
         var selection = editor && editor.selection;
@@ -697,6 +722,10 @@
                         }
                     }];
                 }
+            }
+            if (!models.length && selectedId && /^[A-Za-z0-9_-]{1,64}$/.test(selectedId)) {
+                var initialNode = cleanInitialDocumentNode(selectedId);
+                if (initialNode) models = [{ attributes: initialNode }];
             }
         }
         return Array.prototype.slice.call(models || [], 0, 8).map(function (container) {

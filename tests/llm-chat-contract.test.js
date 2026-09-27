@@ -1198,7 +1198,7 @@ const foreignRepair = runTargetedRepair(
 assert.equal(foreignRepair.replaceExistingRoot, undefined, 'a selected neighboring root cannot be replaced');
 assert.equal(runTargetedRepair({ root_ids: ['eb0103a'], reviewable: true }, 'Добавь новый CTA блок', []), null, 'new append requests keep the normal route');
 
-const liveSelectionStart = js.indexOf('    function liveSelectedModels()');
+const liveSelectionStart = js.indexOf('    var selectedModelCache = []');
 const liveSelectionEnd = js.indexOf('    function selectedModels()', liveSelectionStart);
 assert.ok(liveSelectionStart >= 0 && liveSelectionEnd > liveSelectionStart, 'live editor selection collector is present');
 const liveSelectionSource = js.slice(liveSelectionStart, liveSelectionEnd);
@@ -1206,7 +1206,7 @@ const selectedPreviewNode = (id, visibleText = '') => ({
     getAttribute: (name) => ({ 'data-id': id, 'data-element_type': 'container', 'data-widget_type': '' })[name] || null,
     innerText: visibleText
 });
-const runLiveSelection = ({ activeIds = [], editingIds = [], previewNodes = [], elementor = {} }) => {
+const runLiveSelection = ({ activeIds = [], editingIds = [], previewNodes = [], previewUnavailable = false, initialDocument = null, saveDisabled = false, elementor = {} }) => {
     const rows = [
         ...activeIds.map((id) => ({ id, className: 'elementor-active' })),
         ...editingIds.map((id) => ({ id, className: 'elementor-editing' }))
@@ -1214,14 +1214,15 @@ const runLiveSelection = ({ activeIds = [], editingIds = [], previewNodes = [], 
         matches: (selector) => selector.split(',').some((part) => part.includes('.' + className)),
         closest: () => ({ getAttribute: () => id })
     }));
-    const iframe = { contentDocument: { querySelectorAll: () => previewNodes } };
+    const iframe = { contentDocument: previewUnavailable ? null : { querySelectorAll: () => previewNodes } };
+    const saveButton = { innerText: 'Опубликовать', disabled: saveDisabled, getAttribute: () => null };
     const fakeDocument = {
-        querySelectorAll: (selector) => rows.filter((row) => row.matches(selector)),
+        querySelectorAll: (selector) => selector === 'button' ? [saveButton] : rows.filter((row) => row.matches(selector)),
         querySelector: () => iframe
     };
     return vm.runInNewContext(
         `function getPreviewIframe() { return document.querySelector('#elementor-preview-iframe'); }\n${liveSelectionSource}\nliveSelectedModels();`,
-        { window: { elementor }, document: fakeDocument, Array }
+        { window: { elementor, ElementorConfig: initialDocument ? { initial_document: initialDocument } : null }, document: fakeDocument, Array }
     );
 };
 const navigatorSelection = runLiveSelection({
@@ -1233,10 +1234,15 @@ assert.equal(navigatorSelection[0].attributes.id, '8d98dc9', 'Navigator fallback
 assert.equal(navigatorSelection[0].attributes.visible_text, 'Архитектура и дизайн', 'Navigator fallback carries bounded visible text');
 const elementor4EditingSelection = runLiveSelection({
     editingIds: ['2fc6b48'],
-    previewNodes: [selectedPreviewNode('2fc6b48', 'УСЛУГИ')]
+    previewUnavailable: true,
+    saveDisabled: true,
+    initialDocument: { elements: [{ id: '2fc6b48', elType: 'container', settings: { _css_classes: 'wpae-generated-services' }, elements: [{ id: 'service-heading', elType: 'widget', widgetType: 'heading', settings: { title: 'УСЛУГИ' }, elements: [] }] }] }
 });
 assert.equal(elementor4EditingSelection.length, 1, 'Elementor 4 Navigator editing row is recognized as the selected model');
 assert.equal(elementor4EditingSelection[0].attributes.id, '2fc6b48', 'Elementor 4 selection fallback preserves the exact selected root ID');
+assert.equal(elementor4EditingSelection[0].attributes.elements[0].settings.title, 'УСЛУГИ', 'sandboxed preview fallback preserves the full saved selected subtree');
+assert.equal(runLiveSelection({ editingIds: ['2fc6b48'], previewUnavailable: true, saveDisabled: false, initialDocument: { elements: [{ id: '2fc6b48', elType: 'container', elements: [] }] } }).length, 0, 'dirty editor never falls back to the stale initial document');
+assert.equal(runLiveSelection({ editingIds: ['2fc6b48'], previewUnavailable: true, saveDisabled: true, initialDocument: { elements: [{ id: '2fc6b48', elements: [] }, { id: '2fc6b48', elements: [] }] } }).length, 0, 'ambiguous initial-document IDs are rejected');
 assert.equal(runLiveSelection({ activeIds: ['foreign-id'], previewNodes: [] }).length, 0, 'Navigator fallback ignores IDs missing from the live preview');
 assert.equal(runLiveSelection({
     activeIds: ['8d98dc9'],
