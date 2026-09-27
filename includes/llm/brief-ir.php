@@ -70,11 +70,18 @@ function wpae_brief_ir_locale( string $source_text ): string {
 	return 'und';
 }
 
+function wpae_brief_ir_is_services_request( string $source_text ): bool {
+	$intent_head = trim( (string) ( preg_split( '/\R/u', $source_text, 2 )[0] ?? '' ) );
+	return (bool) preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:|^\s*(?:услуга|service)\s*#?\d+\s*:/iu', $intent_head );
+}
+
 function wpae_brief_ir_archetype( string $source_text ): string {
 	$intent_head = trim( (string) ( preg_split( '/\R/u', $source_text, 2 )[0] ?? '' ) );
+	if ( wpae_brief_ir_is_services_request( $source_text ) ) {
+		return 'services';
+	}
 	$explicit = [
 		'hero' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:новый\s+)?(?:hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран)\b/iu',
-		'services' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu',
 		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
 		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
 		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*[:\-]|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
@@ -248,6 +255,75 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		return $id;
 	};
 
+	$service_quote_spans = [];
+	if ( $archetype === 'services' ) {
+		$service_line_pattern = '/^[ \t]*(?:[-*•][ \t]*)?Услуга[ \t]+#?(\d+)[ \t]*:[ \t]*(?<title_quote>«(?<title_angle>[^»\r\n]{1,240})»|“(?<title_curly>[^”\r\n]{1,240})”|"(?<title_plain>[^"\r\n]{1,240})")[ \t]*[—–-][ \t]*(?<body_quote>«(?<body_angle>[^»\r\n]{1,400})»|“(?<body_curly>[^”\r\n]{1,400})”|"(?<body_plain>[^"\r\n]{1,400})")[.!]?[ \t]*$/imu';
+		$service_lines = [];
+		preg_match_all( $service_line_pattern, $source_text, $service_lines, PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL );
+		$service_numbers = [];
+		foreach ( $service_lines as $service_line ) {
+			$number = (int) ( $service_line[1][0] ?? 0 );
+			$line_start = (int) ( $service_line[0][1] ?? 0 );
+			$line_length = strlen( (string) ( $service_line[0][0] ?? '' ) );
+			$title_capture = $body_capture = null;
+			foreach ( [ 'title_angle', 'title_curly', 'title_plain' ] as $key ) {
+				if ( isset( $service_line[ $key ][1] ) && $service_line[ $key ][1] >= 0 ) {
+					$title_capture = $service_line[ $key ];
+					break;
+				}
+			}
+			foreach ( [ 'body_angle', 'body_curly', 'body_plain' ] as $key ) {
+				if ( isset( $service_line[ $key ][1] ) && $service_line[ $key ][1] >= 0 ) {
+					$body_capture = $service_line[ $key ];
+					break;
+				}
+			}
+			foreach ( [ 'title_quote', 'body_quote' ] as $key ) {
+				if ( isset( $service_line[ $key ][1] ) && $service_line[ $key ][1] >= 0 ) {
+					$quote = $service_line[ $key ];
+					$service_quote_spans[] = [ (int) $quote[1], (int) $quote[1] + strlen( (string) $quote[0] ) ];
+				}
+			}
+			if ( ! $number || ! is_array( $title_capture ) || ! is_array( $body_capture ) ) {
+				continue;
+			}
+			if ( isset( $service_numbers[ $number ] ) ) {
+				$ambiguities[] = [
+					'kind' => 'duplicate_service_index',
+					'value' => 'service_' . $number,
+					'source_span' => [ $line_start, $line_start + $line_length ],
+					'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+				];
+				continue;
+			}
+			$service_numbers[ $number ] = true;
+			$group_id = 'service_' . $number;
+			$add_content( 'service_title', (string) $title_capture[0], (int) $title_capture[1], strlen( (string) $title_capture[0] ), null, 0.98, true, false, $group_id . '_title', false, $group_id );
+			$add_content( 'service_body', (string) $body_capture[0], (int) $body_capture[1], strlen( (string) $body_capture[0] ), null, 0.98, true, false, $group_id . '_body', false, $group_id );
+		}
+		if ( preg_match_all( '/^[ \t]*(?:[-*•][ \t]*)?Услуга[ \t]+#?\d+[ \t]*:[^\r\n]*$/imu', $source_text, $service_like_lines, PREG_OFFSET_CAPTURE ) ) {
+			foreach ( $service_like_lines[0] as $service_like_line ) {
+				$line = (string) $service_like_line[0];
+				$line_start = (int) $service_like_line[1];
+				$complete = false;
+				foreach ( $service_lines as $service_line ) {
+					if ( (int) ( $service_line[0][1] ?? -1 ) === $line_start ) {
+						$complete = true;
+						break;
+					}
+				}
+				if ( ! $complete ) {
+					$ambiguities[] = [
+						'kind' => 'incomplete_service_pair',
+						'value' => trim( $line ),
+						'source_span' => [ $line_start, $line_start + strlen( $line ) ],
+						'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+					];
+				}
+			}
+		}
+	}
+
 	$quote_pattern = '~«([^»]{1,500})»|“([^”]{1,500})”|"([^"]{1,500})"~su';
 	$quote_matches = [];
 	preg_match_all( $quote_pattern, $source_text, $quote_matches, PREG_OFFSET_CAPTURE );
@@ -255,6 +331,16 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	foreach ( $quote_matches[0] ?? [] as $match_index => $full_match ) {
 		$full = (string) ( $full_match[0] ?? '' );
 		$start = (int) ( $full_match[1] ?? 0 );
+		$claimed_service_quote = false;
+		foreach ( $service_quote_spans as [ $service_quote_start, $service_quote_end ] ) {
+			if ( $start >= $service_quote_start && $start < $service_quote_end ) {
+				$claimed_service_quote = true;
+				break;
+			}
+		}
+		if ( $claimed_service_quote ) {
+			continue;
+		}
 		$inner = '';
 		foreach ( [ 1, 2, 3 ] as $capture_index ) {
 			if ( ! empty( $quote_matches[ $capture_index ][ $match_index ][0] ) ) {

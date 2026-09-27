@@ -60,6 +60,10 @@ function wpae_elementor_update( $request ) {
     if ( ! $contract['ok'] ) {
         throw new RuntimeException( 'Real write contract failed: ' . wp_json_encode( $contract['errors'] ) );
     }
+    if ( ! empty( $GLOBALS['fail_write_boundary'] ) ) {
+        $GLOBALS['fail_write_boundary'] = false;
+        return new WP_Error( 'wpae_test_write_failed', 'simulated write boundary failure' );
+    }
     if ( ! $request->get_param( 'dry_run' ) ) {
         $GLOBALS['writes'][] = $request->get_param( 'elementor_data' );
         $GLOBALS['page_data'] = $request->get_param( 'elementor_data' );
@@ -1380,6 +1384,98 @@ check( count( $services_pairs ) === 3 && ( $services_pairs[2]['label'] ?? '' ) =
 check( count( (array) ( $services_plan['content_pairs'] ?? [] ) ) === 3 && count( (array) ( $services_plan['content_units'] ?? [] ) ) === 8 && ! str_contains( wp_json_encode( $services_plan, JSON_UNESCAPED_UNICODE ), 'сам выберет подходящий шаблон' ), 'Services content plan keeps required copy and excludes the instruction tail from generated content' );
 check( ! in_array( 'сам выберет подходящий шаблон', $services_requested, true ) && in_array( 'Услуги архитектурной студии', $services_requested, true ), 'Services fidelity compares user copy while ignoring agent instructions' );
 
+$services_one_line = "Услуга 1: «Стратегия проекта» — «Формулируем задачу и согласуем план работ.»\nУслуга 2: «Архитектура и дизайн» — «Разрабатываем решение под заданный контекст.»\nУслуга 3: «Сопровождение» — «Проверяем соответствие согласованному проекту.»";
+$services_one_line_brief = wpae_brief_ir_parse( $services_one_line );
+$services_one_line_pairs = wpae_llm_extract_services_content( $services_one_line );
+$services_one_line_spans_ok = true;
+foreach ( (array) ( $services_one_line_brief['content'] ?? [] ) as $service_item ) {
+	if ( ! is_array( $service_item ) || ! in_array( (string) ( $service_item['role'] ?? '' ), [ 'service_title', 'service_body' ], true ) ) { continue; }
+	$span = (array) ( $service_item['source_span'] ?? [] );
+	$services_one_line_spans_ok = $services_one_line_spans_ok && substr( $services_one_line, (int) ( $span[0] ?? -1 ), (int) ( ( $span[1] ?? 0 ) - ( $span[0] ?? 0 ) ) ) === (string) ( $service_item['exact_text'] ?? '' );
+}
+check( ( $services_one_line_brief['intent']['archetype'] ?? '' ) === 'services' && $services_one_line_pairs === $services_pairs, 'Natural one-line service pairs produce the same three exact semantic items as the canonical slot form' );
+check( count( array_filter( (array) ( $services_one_line_brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'service_title', 'service_body' ], true ) ) ) === 6 && $services_one_line_spans_ok, 'One-line service fields retain their exact values, stable group slots, and source spans' );
+$services_ambiguous_brief = wpae_brief_ir_parse( "Услуга 1: «Стратегия проекта» — без кавычек" );
+check( ! empty( array_filter( (array) ( $services_ambiguous_brief['ambiguities'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['kind'] ?? '' ) === 'incomplete_service_pair' ) ), 'An incomplete natural service row is reported as ambiguous instead of paired heuristically' );
+$services_mixed_ambiguity_brief = wpae_brief_ir_parse( $services_message . "\nУслуга 4: «Дополнение» — описание без закрытой пары" );
+$services_mixed_ambiguity_plan = wpae_design_plan_from_brief( $services_mixed_ambiguity_brief );
+$services_mixed_ambiguity_validation = wpae_design_plan_validate( $services_mixed_ambiguity_plan, $services_mixed_ambiguity_brief );
+check( empty( $services_mixed_ambiguity_validation['ok'] ) && in_array( 'services_ambiguous_input', (array) ( $services_mixed_ambiguity_validation['errors'] ?? [] ), true ), 'Three complete Services pairs do not hide an additional incomplete service line from the typed plan gate' );
+
+$services_fallback_message = str_replace( "Пусть ИИ-агент сам выберет подходящий шаблон из встроенной библиотеки и применит только проверенный вариант.\n", '', $services_message );
+$services_fallback = wpae_llm_build_fallback_action( $services_fallback_message, 42 );
+$services_fallback_plan = wpae_llm_content_plan( $services_fallback_message, 'services' );
+$services_fallback_audit = wpae_llm_content_plan_audit( $services_fallback_plan, (array) ( $services_fallback['elements'] ?? [] ) );
+$services_fallback_json = wp_json_encode( $services_fallback['elements'] ?? [], JSON_UNESCAPED_UNICODE );
+$expected_services_pairs = [
+	[ 'Стратегия проекта', 'Формулируем задачу и согласуем план работ.' ],
+	[ 'Архитектура и дизайн', 'Разрабатываем решение под заданный контекст.' ],
+	[ 'Сопровождение', 'Проверяем соответствие согласованному проекту.' ],
+];
+$collect_service_card_pairs = static function ( array $nodes ) use ( &$collect_service_card_pairs, $expected_services_pairs ): array {
+	$pairs = [];
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'container' ) {
+			$title = '';
+			$body = '';
+			foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+				if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) { continue; }
+				$settings = (array) ( $child['settings'] ?? [] );
+				if ( ( $child['widgetType'] ?? '' ) === 'heading' ) { $title = trim( (string) ( $settings['title'] ?? '' ) ); }
+				if ( ( $child['widgetType'] ?? '' ) === 'text-editor' ) { $body = trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) ); }
+			}
+			if ( in_array( [ $title, $body ], $expected_services_pairs, true ) ) { $pairs[] = [ $title, $body ]; }
+		}
+		$pairs = array_merge( $pairs, $collect_service_card_pairs( (array) ( $node['elements'] ?? [] ) ) );
+	}
+	return $pairs;
+};
+check( ! empty( $services_fallback_audit['ok'] ) && ( $services_fallback_audit['service_card_count'] ?? 0 ) === 3 && ( $services_fallback_audit['expected_service_card_count'] ?? 0 ) === 3, 'Deterministic Services fallback has three independently verified semantic cards: ' . wp_json_encode( $services_fallback_audit, JSON_UNESCAPED_UNICODE ) );
+$services_fallback_pairs = $collect_service_card_pairs( (array) ( $services_fallback['elements'] ?? [] ) );
+check( $services_fallback_pairs === $expected_services_pairs && ! str_contains( $services_fallback_json, 'сам выберет подходящий шаблон' ), 'Services fallback keeps all three exact title/body pairs in order and excludes the instruction tail: ' . wp_json_encode( $services_fallback_pairs, JSON_UNESCAPED_UNICODE ) );
+$services_normalized_fallback = wpae_elementor_normalize_data( (array) ( $services_fallback['elements'] ?? [] ) );
+$services_normalized_pairs = $collect_service_card_pairs( (array) ( $services_normalized_fallback['data'] ?? [] ) );
+$services_normalized_audit = wpae_llm_content_plan_audit( $services_fallback_plan, (array) ( $services_normalized_fallback['data'] ?? [] ) );
+check( $services_normalized_pairs === $expected_services_pairs && ! empty( $services_normalized_audit['ok'] ), 'Elementor normalization preserves the same three Services title/body cards before the semantic gate' );
+$services_fallback_missing_third = (array) ( $services_fallback['elements'] ?? [] );
+$remove_service_card = static function ( array $nodes, string $title ) use ( &$remove_service_card ): array {
+	$out = [];
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$direct_title = '';
+	foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
+			if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' && ( $child['widgetType'] ?? '' ) === 'heading' ) {
+				$direct_title = trim( (string) ( $child['settings']['title'] ?? '' ) );
+				break;
+			}
+		}
+		if ( ( $node['elType'] ?? '' ) === 'container' && $direct_title === $title ) { continue; }
+		$node['elements'] = $remove_service_card( (array) ( $node['elements'] ?? [] ), $title );
+		$out[] = $node;
+	}
+	return $out;
+};
+$services_fallback_missing_third = $remove_service_card( $services_fallback_missing_third, 'Сопровождение' );
+$services_missing_third_audit = wpae_llm_content_plan_audit( $services_fallback_plan, $services_fallback_missing_third );
+check( empty( $services_missing_third_audit['ok'] ) && ( $services_missing_third_audit['service_card_count'] ?? 0 ) === 2 && ( $services_missing_third_audit['expected_service_card_count'] ?? 0 ) === 3, 'Semantic gate still rejects a two-card Services tree for three requested pairs: ' . wp_json_encode( $services_missing_third_audit, JSON_UNESCAPED_UNICODE ) );
+$services_fallback_wrong_third = (array) ( $services_fallback['elements'] ?? [] );
+$replace_service_body = static function ( array $nodes ) use ( &$replace_service_body ): array {
+	foreach ( $nodes as &$node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'text-editor' && trim( (string) ( $node['settings']['editor'] ?? '' ) ) === 'Проверяем соответствие согласованному проекту.' ) {
+			$node['settings']['editor'] = 'Описание другой услуги.';
+		}
+		$node['elements'] = $replace_service_body( (array) ( $node['elements'] ?? [] ) );
+	}
+	unset( $node );
+	return $nodes;
+};
+$services_fallback_wrong_third = $replace_service_body( $services_fallback_wrong_third );
+$services_wrong_third_audit = wpae_llm_content_plan_audit( $services_fallback_plan, $services_fallback_wrong_third );
+check( empty( $services_wrong_third_audit['ok'] ) && ( $services_wrong_third_audit['structural_container_count'] ?? 0 ) === 3 && ( $services_wrong_third_audit['service_card_count'] ?? 0 ) === 2, 'Three structural containers cannot mask one incorrect service title/body pair from semantic validation: ' . wp_json_encode( $services_wrong_third_audit, JSON_UNESCAPED_UNICODE ) );
+check( wpae_llm_requires_verified_library_template( $services_message ) && wpae_llm_forbids_fallback( 'Не используй fallback при отказе провайдера.' ), 'Library-only and explicit no-fallback requests are recognized as write constraints' );
+
 $library_agent_message = '«Пространство для идей». Hero. Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
 $library_agent_root = container_node( 'imported-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-fixture-candidate-two wpae-generated-badge' ], [
 	widget( 'imported-hero-title', 'heading', [ 'title' => 'Исходный заголовок', 'header_size' => 'h2' ] ),
@@ -1459,6 +1555,7 @@ $services_probe_fidelity = wpae_llm_content_fidelity( $services_message, $servic
 $services_probe_audit = wpae_llm_content_plan_audit( $services_plan, $services_adapted_probe );
 $services_probe = [ 'changes' => $services_adaptation_changes, 'shape' => $services_probe_shape, 'fidelity' => $services_probe_fidelity, 'audit' => $services_probe_audit ];
 check( ! empty( $services_probe_shape['ok'] ) && ! empty( $services_probe_fidelity['ok'] ) && ! empty( $services_probe_audit['ok'] ), 'Imported Services card adapter must satisfy native shape, exact content, and repeatable-plan checks: ' . wp_json_encode( $services_probe, JSON_UNESCAPED_UNICODE ) );
+check( $collect_service_card_pairs( $services_adapted_probe ) === $expected_services_pairs, 'The imported Course Boxes adapter maps three service pairs in order without an ID forced by the application' );
 $GLOBALS['library'] = [
 	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template' ] ],
@@ -1499,6 +1596,70 @@ foreach ( (array) ( $services_response_data['steps'] ?? [] ) as $service_step ) 
 check( ( $services_trace['selection_source'] ?? '' ) === 'model_choice' && ( $services_trace['selected']['title'] ?? '' ) === 'Block – Course Boxes' && ( $services_trace['status'] ?? '' ) === 'applied', 'The model-selected imported Services section reaches production adaptation: ' . wp_json_encode( [ 'source' => $services_trace['selection_source'] ?? '', 'choice' => $services_trace['model_choice'] ?? '', 'title' => $services_trace['selected']['title'] ?? '', 'status' => $services_trace['status'] ?? '', 'reason' => $services_trace['reason'] ?? '', 'fidelity' => $services_trace['fidelity'] ?? [], 'library_diagnostics' => $services_library_diagnostics, 'root_count' => count( $services_written ), 'steps' => $services_step_statuses ] ) );
 check( count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'сам выберет подходящий шаблон' ) && ! str_contains( $services_written_json, 'временный QA-блок' ), 'Imported Services cards retain exact requested text without exposing the prompt instructions' );
 check( count( $services_written ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'Imported Services generation appends one root and preserves the pre-existing page root' );
+
+$run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active' ) use ( $legacy_page ): array {
+	$previous_globals = [];
+	foreach ( [ 'library', 'options', 'page_data', 'http_calls', 'writes', 'responses', 'fail_write_boundary' ] as $global_key ) {
+		$previous_globals[ $global_key ] = $GLOBALS[ $global_key ] ?? null;
+	}
+	$GLOBALS['library'] = $library;
+	$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => $pipeline_mode, 'design_engine_mode' => $engine_mode ];
+	$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
+	$GLOBALS['page_data'] = $legacy_page;
+	$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+	$GLOBALS['responses'] = $responses;
+	$GLOBALS['fail_write_boundary'] = $fail_write;
+	$request = new WP_REST_Request();
+	$request->set_param( 'message', $message );
+	$request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => $operation_identity ] );
+	$response = wpae_llm_chat_request( $request );
+	$result = [
+		'response' => $response instanceof WP_REST_Response ? $response->get_data() : [],
+		'error' => $response instanceof WP_Error ? [ 'code' => $response->get_error_code(), 'message' => $response->get_error_message(), 'data' => $response->get_error_data() ] : [],
+		'calls' => count( $GLOBALS['http_calls'] ),
+		'writes' => count( $GLOBALS['writes'] ),
+		'roots' => array_column( (array) $GLOBALS['page_data'], 'id' ),
+		'written' => (array) ( $GLOBALS['page_data'][ count( $legacy_page ) ] ?? [] ),
+	];
+	foreach ( $previous_globals as $global_key => $value ) {
+		if ( $value === null ) {
+			unset( $GLOBALS[ $global_key ] );
+		} else {
+			$GLOBALS[ $global_key ] = $value;
+		}
+	}
+	return $result;
+};
+$services_library_fixture = [
+	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
+	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Block – Course Boxes', 'category' => 'services' ] ],
+	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 742, 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
+];
+$services_ambiguous_route = $run_services_route( $services_message . "\nУслуга 4: «Дополнение» — описание без закрытой пары", [], $services_library_fixture, 'services-ambiguous-identity' );
+check( ( $services_ambiguous_route['error']['code'] ?? '' ) === 'wpae_design_plan_rejected' && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'Изменения не записаны' ) && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'services-ambiguous-identity' ), 'Production route explains ambiguous Services input and exposes the request identity before provider/write' );
+check( $services_ambiguous_route['calls'] === 0 && $services_ambiguous_route['writes'] === 0 && $services_ambiguous_route['roots'] === array_column( $legacy_page, 'id' ) && ( $services_ambiguous_route['error']['data']['details']['operation_identity'] ?? '' ) === 'services-ambiguous-identity', 'Ambiguous Services input cannot call a provider or cross the write boundary' );
+$services_declined_action = $services_provider_action;
+$services_declined_action['library_choice'] = null;
+$services_declined = $run_services_route( $services_message, [ provider_reply( wp_json_encode( $services_declined_action ) ) ], $services_library_fixture, 'services-declined-identity' );
+check( ( $services_declined['error']['code'] ?? '' ) === 'wpae_llm_library_selection_required' && str_contains( (string) ( $services_declined['error']['message'] ?? '' ), 'Модель отказалась' ) && str_contains( (string) ( $services_declined['error']['message'] ?? '' ), 'services-declined-identity' ), 'Library-only Services request surfaces the model refusal and existing request identity' );
+check( ( $services_declined['error']['data']['details']['write_count'] ?? null ) === 0 && $services_declined['writes'] === 0 && $services_declined['roots'] === array_column( $legacy_page, 'id' ), 'Model decline does not locally select a template, invoke fallback, or write the page' );
+$services_unknown_action = $services_provider_action;
+$services_unknown_action['library_choice'] = 'candidate_not_offered';
+$services_unknown = $run_services_route( $services_message, [ provider_reply( wp_json_encode( $services_unknown_action ) ) ], $services_library_fixture, 'services-unknown-identity' );
+check( ( $services_unknown['error']['data']['details']['library_selection_source'] ?? '' ) === 'invalid_model_choice' && str_contains( (string) ( $services_unknown['error']['message'] ?? '' ), 'неизвестный ID шаблона' ) && $services_unknown['writes'] === 0, 'Unknown model template ID is rejected before the existing write boundary' );
+$services_timeout = $run_services_route( $services_message, [ new WP_Error( 'http_request_failed', 'simulated provider timeout' ) ], $services_library_fixture, 'services-timeout-identity' );
+check( ( $services_timeout['error']['data']['details']['library_selection_source'] ?? '' ) === 'no_model_choice' && ( $services_timeout['error']['data']['details']['action_path'] ?? '' ) === 'library_agent' && ( $services_timeout['error']['data']['details']['provider_call_count'] ?? 0 ) === 1 && $services_timeout['writes'] === 0, 'Provider timeout cannot trigger a local template selection or unapproved fallback write' );
+$services_forbidden_timeout = $run_services_route( $services_fallback_message . "\nНе используй fallback при отказе или timeout.", [ new WP_Error( 'http_request_failed', 'simulated provider timeout' ) ], [], 'services-no-fallback-identity', false, 'off', 'off' );
+check( ( $services_forbidden_timeout['error']['code'] ?? '' ) === 'wpae_llm_library_selection_required' && str_contains( (string) ( $services_forbidden_timeout['error']['message'] ?? '' ), 'Изменения не записаны' ) && $services_forbidden_timeout['writes'] === 0, 'Explicit no-fallback instruction stops the deterministic recovery path after timeout' );
+
+$services_invalid_action = [ 'action' => 'unsupported', 'post_id' => 42, 'position' => 'end', 'library_choice' => null, 'elements' => [] ];
+$services_fallback_result = $run_services_route( $services_fallback_message, [ provider_reply( wp_json_encode( $services_invalid_action ) ), provider_reply( wp_json_encode( $services_invalid_action ) ), provider_reply( wp_json_encode( $services_invalid_action ) ) ], [], 'services-fallback-allowed-identity', false, 'off', 'off' );
+$services_fallback_route_plan = wpae_llm_content_plan( $services_fallback_message, 'services' );
+$services_fallback_route_audit = wpae_llm_content_plan_audit( $services_fallback_route_plan, [ $services_fallback_result['written'] ] );
+check( ! empty( $services_fallback_result['response']['ok'] ) && ( $services_fallback_result['response']['diagnostics']['action_path'] ?? '' ) === 'fallback' && $services_fallback_result['calls'] === 3 && $services_fallback_result['writes'] === 1, 'Permitted model/repair failure produces one validated Services fallback write' );
+check( ! empty( $services_fallback_route_audit['ok'] ) && ( $services_fallback_route_audit['service_card_count'] ?? 0 ) === 3 && ! str_contains( wp_json_encode( $services_fallback_result['written'], JSON_UNESCAPED_UNICODE ), 'сам выберет подходящий шаблон' ), 'Written fallback has three exact cards and does not publish instruction text' );
+$services_write_failure = $run_services_route( $services_fallback_message, [ provider_reply( wp_json_encode( $services_invalid_action ) ), provider_reply( wp_json_encode( $services_invalid_action ) ), provider_reply( wp_json_encode( $services_invalid_action ) ) ], [], 'services-write-failure-identity', true, 'off', 'off' );
+check( empty( $services_write_failure['response']['ok'] ) && $services_write_failure['writes'] === 0 && $services_write_failure['roots'] === array_column( $legacy_page, 'id' ), 'A failing Elementor transaction boundary writes no fallback root and preserves the existing page tree' );
 $GLOBALS['library'] = [];
 
 // Negative insertion language stays a selected-root edit; an explicit new

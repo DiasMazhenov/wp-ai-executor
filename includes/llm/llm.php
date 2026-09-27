@@ -1041,9 +1041,11 @@ function wpae_llm_is_content_only_hero_brief( string $message ): bool {
 function wpae_llm_detect_block_archetype( string $message ): string {
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
 	$intent_head = wpae_llm_request_intent_head( $message );
+	if ( function_exists( 'wpae_brief_ir_is_services_request' ) && wpae_brief_ir_is_services_request( $intent_head ) ) {
+		return 'services';
+	}
 	$explicit_archetypes = [
 		'hero' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:новый\s+)?(?:hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран)\b/iu',
-		'services' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu',
 		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
 		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
 		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*[:\-]|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
@@ -1355,6 +1357,61 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
         }
     };
     $count_repeatable_containers( $elements );
+    $structural_repeatable_container_count = $repeatable_container_count;
+    $service_card_count = 0;
+    $expected_service_pairs = array_values( array_filter( (array) ( $plan['content_pairs'] ?? [] ), static function ( $pair ): bool {
+		return is_array( $pair ) && trim( (string) ( $pair['label'] ?? '' ) ) !== '' && trim( (string) ( $pair['content'] ?? '' ) ) !== '';
+	} ) );
+	if ( sanitize_key( (string) ( $plan['archetype'] ?? '' ) ) === 'services' && ! empty( $expected_service_pairs ) ) {
+		$matched_service_pairs = [];
+		$count_service_cards = static function ( array $nodes ) use ( &$count_service_cards, &$matched_service_pairs, &$service_card_count, $expected_service_pairs ): void {
+			foreach ( $nodes as $element ) {
+				if ( ! is_array( $element ) ) {
+					continue;
+				}
+				if ( ( $element['elType'] ?? '' ) === 'container' ) {
+					$headings = [];
+					$bodies = [];
+					foreach ( (array) ( $element['elements'] ?? [] ) as $child ) {
+						if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
+							continue;
+						}
+						$type = sanitize_key( (string) ( $child['widgetType'] ?? '' ) );
+						$settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+						if ( $type === 'heading' && trim( (string) ( $settings['title'] ?? '' ) ) !== '' ) {
+							$headings[] = wpae_llm_normalize_content_text( $settings['title'] );
+						} elseif ( $type === 'text-editor' && trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) ) !== '' ) {
+							$bodies[] = wpae_llm_normalize_content_text( $settings['editor'] );
+						} elseif ( $type === 'icon-box' ) {
+							if ( trim( (string) ( $settings['title_text'] ?? '' ) ) !== '' ) {
+								$headings[] = wpae_llm_normalize_content_text( $settings['title_text'] );
+							}
+							if ( trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) ) !== '' ) {
+								$bodies[] = wpae_llm_normalize_content_text( $settings['description_text'] );
+							}
+						}
+					}
+					foreach ( $expected_service_pairs as $pair_index => $pair ) {
+						if ( isset( $matched_service_pairs[ $pair_index ] ) ) {
+							continue;
+						}
+						$expected_title = wpae_llm_normalize_content_text( (string) $pair['label'] );
+						$expected_body = wpae_llm_normalize_content_text( (string) $pair['content'] );
+						if ( in_array( $expected_title, $headings, true ) && in_array( $expected_body, $bodies, true ) ) {
+							$matched_service_pairs[ $pair_index ] = true;
+							$service_card_count++;
+							break;
+						}
+					}
+				}
+				$count_service_cards( (array) ( $element['elements'] ?? [] ) );
+			}
+		};
+		$count_service_cards( $elements );
+		// Generic leaf-container counts include structural shells. For Services,
+		// only a container holding one complete requested title/body pair is a card.
+		$repeatable_container_count = $service_card_count;
+	}
     $forbidden_found = array_values( array_filter( (array) ( $plan['forbidden_widgets'] ?? [] ), static fn( $type ): bool => ! empty( $counts[ sanitize_key( (string) $type ) ] ) ) );
     $required_media = ! empty( $plan['requires_media'] );
     $media_count = (int) ( $counts['image'] ?? 0 ) + (int) ( $counts['image-carousel'] ?? 0 );
@@ -1424,6 +1481,9 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
         'matching_cta_count' => $matching_cta_count,
         'unrequested_button_count' => $unrequested_button_count,
         'repeatable_container_count' => $repeatable_container_count,
+		'structural_container_count' => $structural_repeatable_container_count,
+		'service_card_count' => $service_card_count,
+		'expected_service_card_count' => sanitize_key( (string) ( $plan['archetype'] ?? '' ) ) === 'services' ? count( $expected_service_pairs ) : 0,
         'accordion_item_count' => $accordion_item_count,
         'repeatable_units' => $repeatable_units,
         'semantic_scope' => $semantic_scope,
@@ -1543,6 +1603,16 @@ function wpae_llm_normalize_content_text( $value ): string {
     return trim( preg_replace( '/\s+/u', ' ', $value ) );
 }
 
+function wpae_llm_requires_verified_library_template( string $message ): bool {
+	$library_template = (bool) preg_match( '/(?:шаблон.{0,100}библиотек\w*|библиотек\w*.{0,100}шаблон|library.{0,60}template)/iu', $message );
+	$verified_only = (bool) preg_match( '/\bтолько\s+(?:проверенн\w*|одобренн\w*|верифицированн\w*)|\bonly\s+(?:verified|approved)\b/iu', $message );
+	return $library_template && $verified_only;
+}
+
+function wpae_llm_forbids_fallback( string $message ): bool {
+	return (bool) preg_match( '/\bне\s+(?:используй|применяй|создавай|подставляй)\s+(?:fallback|фолбэк|запасн\w*)|\bне\s+использовать\s+(?:fallback|фолбэк|запасн\w*)/iu', $message );
+}
+
 function wpae_llm_extract_requested_content( string $message ): array {
     $matches = [];
     $services_request = false;
@@ -1567,8 +1637,8 @@ function wpae_llm_extract_requested_content( string $message ): array {
 		];
 	}, $pricing_items ) : wpae_llm_extract_labeled_content( $message );
 	$structured_pairs = $labeled_pairs;
-	$services_intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
-	if ( function_exists( 'wpae_brief_ir_parse' ) && preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu', $services_intent_head ) ) {
+    $services_intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
+	if ( function_exists( 'wpae_brief_ir_parse' ) && function_exists( 'wpae_brief_ir_is_services_request' ) && wpae_brief_ir_is_services_request( $services_intent_head ) ) {
 		$services_brief = wpae_brief_ir_parse( $message );
 		if ( ( $services_brief['intent']['archetype'] ?? '' ) === 'services' ) {
 			$service_values = [];
@@ -2095,7 +2165,7 @@ function wpae_llm_extract_labeled_content( string $message ): array {
 
 function wpae_llm_extract_services_content( string $message ): array {
 	$intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
-	if ( ! function_exists( 'wpae_brief_ir_parse' ) || ! preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu', $intent_head ) ) {
+	if ( ! function_exists( 'wpae_brief_ir_parse' ) || ! function_exists( 'wpae_brief_ir_is_services_request' ) || ! wpae_brief_ir_is_services_request( $intent_head ) ) {
 		return [];
 	}
 	$brief = wpae_brief_ir_parse( $message );
@@ -2260,7 +2330,7 @@ function wpae_llm_compact_cta_text( string $value ): string {
 
 function wpae_llm_clear_unrequested_library_copy( array &$elements, string $message, int &$changed ): void {
     $intent_head = trim( (string) ( preg_split( '/\R/u', trim( $message ), 2 )[0] ?? '' ) );
-    $services_request = function_exists( 'wpae_brief_ir_parse' ) && preg_match( '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:услуг\w*|services?)\b|^\s*(?:услуги|services?)\s*:/iu', $intent_head );
+    $services_request = function_exists( 'wpae_brief_ir_parse' ) && function_exists( 'wpae_brief_ir_is_services_request' ) && wpae_brief_ir_is_services_request( $intent_head );
     $requested = $services_request
         ? wpae_llm_extract_requested_content( $message )
         : array_values( array_unique( array_merge( wpae_llm_extract_requested_content( $message ), wpae_llm_content_units( $message ) ) ) );
@@ -8117,8 +8187,47 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                 ] ),
                 $widget( 'llm-button', 'button', [ 'text' => 'Обсудить проект', 'link' => [ 'url' => '#contact' ] ] ),
             ];
-        }
-    } elseif ( $archetype === 'faq' ) {
+		}
+	} elseif ( $archetype === 'services' ) {
+		$brief = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
+		$section_title = '';
+		$section_description = '';
+		foreach ( (array) ( $brief['content'] ?? [] ) as $content_item ) {
+			if ( ! is_array( $content_item ) ) {
+				continue;
+			}
+			$role = (string) ( $content_item['role'] ?? '' );
+			$value = trim( (string) ( $content_item['exact_text'] ?? '' ) );
+			if ( $role === 'title' && $section_title === '' ) {
+				$section_title = $value;
+			} elseif ( $role === 'body' && $section_description === '' ) {
+				$section_description = $value;
+			}
+		}
+		$service_cards = [];
+		foreach ( array_slice( wpae_llm_extract_services_content( $message ), 0, 6 ) as $index => $pair ) {
+			$number = (string) ( $index + 1 );
+			$label = trim( (string) ( $pair['label'] ?? '' ) );
+			$content = trim( (string) ( $pair['content'] ?? '' ) );
+			if ( $label === '' || $content === '' ) {
+				continue;
+			}
+			$service_cards[] = $card( 'llm-service-' . $number, [
+				$widget( 'llm-service-' . $number . '-title', 'heading', [ 'title' => $label, 'header_size' => 'h4' ] ),
+				$widget( 'llm-service-' . $number . '-copy', 'text-editor', [ 'editor' => $content ] ),
+			] );
+		}
+		$elements = [];
+		if ( $section_title !== '' ) {
+			$elements[] = $widget( 'llm-heading', 'heading', [ 'title' => $section_title, 'header_size' => 'h2' ] );
+		}
+		if ( $section_description !== '' ) {
+			$elements[] = $widget( 'llm-copy', 'text-editor', [ 'editor' => $section_description ] );
+		}
+		if ( ! empty( $service_cards ) ) {
+			$elements[] = $grid( 'llm-services-grid', $service_cards );
+		}
+	} elseif ( $archetype === 'faq' ) {
         $faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 12 );
         if ( empty( $faq_pairs ) ) {
             $faq_pairs = [
@@ -9655,9 +9764,20 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		] );
 	}
 	if ( $active_pipeline_eligible && ( empty( $design_pipeline_trace['brief']['validation']['ok'] ) || empty( $design_pipeline_trace['plan']['validation']['ok'] ) || empty( $design_pipeline_trace['layout']['ok'] ) ) ) {
-		return new WP_Error( 'wpae_design_plan_rejected', 'Запрос не прошёл проверку плана дизайна; запись и переход в legacy-путь остановлены.', [
+		$plan_errors = (array) ( $design_pipeline_trace['plan']['validation']['errors'] ?? [] );
+		$service_ambiguity = in_array( 'services_ambiguous_input', $plan_errors, true );
+		$error_message = $service_ambiguity
+			? 'Неоднозначная строка услуги: укажите каждую услугу целиком в формате «Услуга N: «Название» — «Описание»». Изменения не записаны.'
+			: 'Запрос не прошёл проверку плана дизайна; запись и переход в legacy-путь остановлены.';
+		if ( $operation_identity !== '' ) {
+			$error_message .= ' ID запроса: ' . $operation_identity . '.';
+		}
+		return new WP_Error( 'wpae_design_plan_rejected', $error_message, [
 			'status' => 422,
 			'details' => [
+				'operation_identity' => $operation_identity,
+				'post_id' => $selected_post_id,
+				'plan_errors' => $plan_errors,
 				'brief' => $design_pipeline_trace['brief']['validation'] ?? [],
 				'plan' => $design_pipeline_trace['plan']['validation'] ?? [],
 				'layout' => $design_pipeline_trace['layout'],
@@ -10484,6 +10604,32 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $library_skip_reason = 'The selected library block has no repeatable content group that can be adapted.';
             }
         }
+		$requires_library_template = wpae_llm_requires_verified_library_template( $message );
+		$fallback_forbidden = wpae_llm_forbids_fallback( $message );
+		if ( ( $requires_library_template && ! $library_applied ) || ( $fallback_forbidden && $action_fallback && ! $library_applied ) ) {
+			$reason = $library_selection_source === 'model_declined'
+				? 'Модель отказалась от предложенных шаблонов.'
+				: ( $library_selection_source === 'invalid_model_choice'
+					? 'Модель вернула неизвестный ID шаблона.'
+					: ( $library_skip_reason !== '' ? 'Выбранный шаблон не прошёл проверку.' : 'Модель не подтвердила выбор шаблона.' ) );
+			$error_message = $reason . ' Изменения не записаны.';
+			if ( $operation_identity !== '' ) {
+				$error_message .= ' ID запроса: ' . $operation_identity . '.';
+			}
+			return new WP_Error( 'wpae_llm_library_selection_required', $error_message, [
+				'status' => 422,
+				'details' => [
+					'operation_identity' => $operation_identity,
+					'post_id' => $post_id,
+					'action_path' => (string) ( $design_generation_route['action_path'] ?? '' ),
+					'library_selection_source' => $library_selection_source,
+					'library_skip_reason' => $library_skip_reason,
+					'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ),
+					'provider_call_count' => count( $provider_attempts ) + count( $repair_attempts ),
+					'write_count' => 0,
+				],
+			] );
+		}
         $provider_design = ! $action_fallback && ! $library_applied;
         $provider_design_changed = 0;
         $provider_quality = [ 'ok' => true, 'failures' => [], 'counts' => [] ];
@@ -10685,10 +10831,20 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'design_preserved' => $library_preserve_design,
             'bundled_fixture_id' => (string) ( $selected_library['bundled_fixture_id'] ?? '' ),
         ];
-        $action_steps[] = [
+		$library_message = 'Шаблон не выбран; библиотека не применялась.';
+		if ( $library_applied ) {
+			$library_message = 'Шаблон выбран моделью, адаптирован и прошёл структурные проверки.';
+		} elseif ( $library_selection_source === 'model_declined' ) {
+			$library_message = 'Модель отказалась от предложенных шаблонов; локальная подмена не выполнялась.';
+		} elseif ( $library_selection_source === 'invalid_model_choice' ) {
+			$library_message = 'Ответ содержал неизвестный ID шаблона; он не применён.';
+		} elseif ( $library_skip_reason !== '' ) {
+			$library_message = 'Шаблон найден, но не прошёл проверку и не применён.';
+		}
+		$action_steps[] = [
             'id' => 'library_retrieval',
             'status' => $library_applied ? 'ok' : 'skipped',
-            'message' => $library_applied ? 'Шаблон найден, адаптирован под контент и подготовлен к вставке.' : 'Подходящий шаблон не применен; использована обычная генерация.',
+			'message' => $library_message,
             'details' => $library_trace,
         ];
         if ( $library_applied ) {
@@ -10706,7 +10862,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $action_steps[] = [
             'id' => 'content_fidelity',
             'status' => ! empty( $content_fidelity['ok'] ) ? 'ok' : 'failed',
-            'message' => ! empty( $content_fidelity['ok'] ) ? 'Явно заданный контент пользователя сохранен в native Elementor widgets.' : 'Команда не содержит весь явно заданный контент пользователя.',
+			'message' => ! empty( $content_fidelity['ok'] ) ? 'Точный контент пользователя прошёл проверку в native Elementor widgets; запись ещё не подтверждена.' : 'Команда не содержит весь явно заданный контент пользователя; запись остановлена.',
             'details' => $content_fidelity,
         ];
         if ( empty( $content_fidelity['ok'] ) ) {
@@ -10797,7 +10953,16 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             return new WP_Error( 'wpae_llm_content_mismatch', 'LLM-команда отклонена: сгенерированный контент не соответствует запросу.', [ 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'action' => $action_diagnostics, 'steps' => $action_steps ] ] );
         }
         if ( empty( $content_plan_audit['ok'] ) ) {
-            return new WP_Error( 'wpae_llm_content_plan_failed', 'LLM-команда отклонена: нарушен семантический план или использован запрещенный вид виджета.', [ 'status' => 422, 'details' => [ 'content_plan' => $content_plan, 'audit' => $content_plan_audit, 'steps' => $action_steps ] ] );
+			$failure_message = 'Композиция не прошла проверку смысла или структуры. Изменения не записаны.';
+			if ( $action_archetype === 'services' ) {
+				$expected_cards = (int) ( $content_plan_audit['expected_service_card_count'] ?? $content_plan['repeatable_units'] ?? 0 );
+				$actual_cards = (int) ( $content_plan_audit['service_card_count'] ?? 0 );
+				$failure_message = sprintf( 'Ожидалось карточек услуг: %d, получено: %d. Изменения не записаны.', $expected_cards, $actual_cards );
+			}
+			if ( $operation_identity !== '' ) {
+				$failure_message .= ' ID запроса: ' . $operation_identity . '.';
+			}
+			return new WP_Error( 'wpae_llm_content_plan_failed', $failure_message, [ 'status' => 422, 'details' => [ 'operation_identity' => $operation_identity, 'post_id' => $post_id, 'content_plan' => $content_plan, 'audit' => $content_plan_audit, 'steps' => $action_steps ] ] );
         }
         if ( $library_applied && empty( $template_fidelity['ok'] ) ) {
             return new WP_Error( 'wpae_llm_template_fidelity_failed', 'Библиотечный шаблон отклонен: после адаптации нарушена его структура.', [ 'status' => 422, 'details' => [ 'fidelity' => $template_fidelity, 'source_fingerprint' => $template_source_fingerprint, 'steps' => $action_steps ] ] );

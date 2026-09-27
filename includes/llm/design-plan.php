@@ -760,6 +760,15 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 	];
 	if ( isset( $grouped_requirements[ $plan['archetype'] ?? '' ] ) ) {
 		$requirement = $grouped_requirements[ $plan['archetype'] ];
+		if ( ( $plan['archetype'] ?? '' ) === 'services' ) {
+			foreach ( (array) ( $brief['ambiguities'] ?? [] ) as $ambiguity ) {
+				if ( ! is_array( $ambiguity ) || ! in_array( (string) ( $ambiguity['kind'] ?? '' ), [ 'incomplete_service_pair', 'duplicate_service_index' ], true ) ) {
+					continue;
+				}
+				$errors[] = 'services_ambiguous_input';
+				break;
+			}
+		}
 		$cards = null;
 		foreach ( (array) ( $plan['sections'][0]['children'] ?? [] ) as $child ) {
 			if ( is_array( $child ) && ( $child['role'] ?? '' ) === $requirement['role'] ) {
