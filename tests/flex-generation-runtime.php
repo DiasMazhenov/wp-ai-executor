@@ -1637,6 +1637,34 @@ $services_layout_normalized = wpae_llm_normalize_library_layout( (array) ( $serv
 $services_layout_grid = $find_services_grid( $services_layout_normalized );
 $services_layout_cards = array_values( array_filter( (array) ( $services_layout_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
 check( count( $services_layout_cards ) === 3 && count( array_filter( $services_layout_cards, static fn( $card ): bool => ( $card['settings']['border_radius']['unit'] ?? '' ) === 'rem' && (float) ( $card['settings']['border_radius']['size'] ?? 0 ) === 1.0 && ( $card['settings']['padding']['top'] ?? '' ) === '1.5' && ( $card['settings']['background_color'] ?? '' ) === '#ffffff' ) ) === 3, 'Services layout normalization applies rounded, padded native card surfaces to every service card' );
+$services_final_elements = wpae_llm_apply_generation_visual_grammar( (array) ( $services_layout_fallback['elements'] ?? [] ), 'services', $services_layout_visual_changes );
+$services_library_changes = 0;
+$services_final_elements = wpae_llm_normalize_library_layout( $services_final_elements, $services_library_changes, 'services' );
+$services_bento_changes = 0;
+wpae_llm_normalize_bento_grids_recursive( $services_final_elements, $services_bento_changes, 'services' );
+$services_final_grid = $find_services_grid( $services_final_elements );
+$services_final_cards = array_values( array_filter( (array) ( $services_final_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
+$services_final_card_checks = array_map( static function ( array $card ): array {
+	$image_widgets = array_values( array_filter( (array) ( $card['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) );
+	return [
+		'width' => (float) ( $card['settings']['width']['size'] ?? 0 ),
+		'tablet_width' => (float) ( $card['settings']['width_tablet']['size'] ?? 0 ),
+		'mobile_width' => (float) ( $card['settings']['width_mobile']['size'] ?? 0 ),
+		'radius' => (float) ( $card['settings']['border_radius']['size'] ?? 0 ),
+		'image' => $image_widgets[0]['settings']['image'] ?? [],
+		'object_fit' => $image_widgets[0]['settings']['object-fit'] ?? '',
+	];
+}, $services_final_cards );
+$services_final_copy = wp_json_encode( $services_final_elements, JSON_UNESCAPED_UNICODE );
+check( count( $services_final_cards ) === 3 && ( $services_final_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $services_final_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && count( array_filter( $services_final_card_checks, static fn( $card ): bool => $card['width'] === 31.0 && $card['tablet_width'] === 48.0 && $card['mobile_width'] === 100.0 && $card['radius'] === 1.0 && str_starts_with( (string) ( $card['image']['url'] ?? '' ), 'https://images.unsplash.com/' ) && trim( (string) ( $card['image']['alt'] ?? '' ) ) !== '' && $card['object_fit'] === 'cover' ) ) === 3, 'Services final bento normalization enforces row/tablet/mobile widths, rounded card surfaces, and native Unsplash photos' );
+check( str_contains( $services_final_copy, 'Услуги архитектурной студии' ) && str_contains( $services_final_copy, 'От первого замысла до авторского сопровождения.' ) && str_contains( $services_final_copy, 'УСЛУГИ' ) && str_contains( $services_final_copy, 'Проверяем соответствие согласованному проекту.' ), 'Services visual fix keeps the exact section copy, badge and final service description' );
+$services_explicit_media_grid = $services_final_grid;
+$services_explicit_media_grid['elements'][0]['elements'] = array_values( array_filter( (array) ( $services_explicit_media_grid['elements'][0]['elements'] ?? [] ), static fn( $node ): bool => ! ( is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) ) );
+array_unshift( $services_explicit_media_grid['elements'][0]['elements'], [ 'id' => 'user-service-image', 'elType' => 'widget', 'widgetType' => 'image', 'settings' => [ 'image' => [ 'url' => 'https://example.com/owner-photo.jpg', 'id' => 0, 'alt' => 'Фото, указанное пользователем.' ] ], 'elements' => [] ] );
+$services_preserve_changes = 0;
+wpae_llm_normalize_bento_grid( $services_explicit_media_grid, $services_preserve_changes, 'services' );
+$services_first_card_images = array_values( array_filter( (array) ( $services_explicit_media_grid['elements'][0]['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) );
+check( count( $services_first_card_images ) === 1 && ( $services_first_card_images[0]['settings']['image']['url'] ?? '' ) === 'https://example.com/owner-photo.jpg', 'Services visual normalization preserves an existing user-supplied image and does not add a duplicate: ' . wp_json_encode( [ 'card_count' => count( (array) ( $services_explicit_media_grid['elements'] ?? [] ) ), 'images' => array_map( static fn( $node ): string => (string) ( $node['settings']['image']['url'] ?? '' ), $services_first_card_images ) ] ) );
 
 $run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active' ) use ( $legacy_page ): array {
 	$previous_globals = [];

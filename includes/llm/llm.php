@@ -6545,12 +6545,19 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
     }
 
     $pricing_grid = $archetype === 'pricing' && count( $grid_cards ) === 3;
+    $services_grid = $archetype === 'services';
 
     $before = wp_json_encode( [ $settings, $children ] );
     $settings['container_type'] = 'flex';
     $settings['flex_direction'] = 'row';
     $settings['flex_wrap'] = $pricing_grid ? 'nowrap' : 'wrap';
-    $settings['flex_wrap_mobile'] = 'wrap';
+    if ( $services_grid ) {
+        $settings['flex_direction_tablet'] = 'row';
+        $settings['flex_direction_mobile'] = 'column';
+        $settings['flex_wrap_tablet'] = 'wrap';
+        $settings['flex_wrap_mobile'] = 'nowrap';
+    }
+    $settings['flex_wrap_mobile'] = $services_grid ? 'nowrap' : 'wrap';
     $settings['flex_justify_content'] = 'space-between';
     $settings['flex_align_items'] = $archetype === 'testimonials' ? 'flex-start' : 'stretch';
     if ( $archetype === 'testimonials' ) {
@@ -6562,6 +6569,25 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
     $settings['background_color'] = 'transparent';
     $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
     $widths = $pricing_grid ? array_fill( 0, count( $grid_cards ), 30 ) : wpae_llm_variant_card_widths( 0, count( $grid_cards ) );
+    $service_media = [
+        [ 'url' => 'https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Архитектор изучает чертежи у современного здания.' ],
+        [ 'url' => 'https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Современный архитектурный интерьер.' ],
+        [ 'url' => 'https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Специалисты обсуждают проектные чертежи.' ],
+    ];
+    $contains_image = static function ( array $nodes ) use ( &$contains_image ): bool {
+        foreach ( $nodes as $node ) {
+            if ( ! is_array( $node ) ) {
+                continue;
+            }
+            if ( ( $node['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $node['widgetType'] ?? '' ) ), [ 'image', 'image-box' ], true ) ) {
+                return true;
+            }
+            if ( is_array( $node['elements'] ?? null ) && $contains_image( $node['elements'] ) ) {
+                return true;
+            }
+        }
+        return false;
+    };
     foreach ( $widths as $width_index => $width ) {
         $grid_index = $grid_cards[ $width_index ] ?? null;
         if ( $grid_index === null ) {
@@ -6579,6 +6605,48 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
             $card_settings['background_color'] = '#ffffff';
             $card_settings['border_border'] = 'solid';
             $card_settings['border_color'] = '#e5e7eb';
+        }
+        if ( $services_grid ) {
+            $card_settings['background_background'] = 'classic';
+            $card_settings['background_color'] = '#ffffff';
+            $card_settings['border_border'] = 'solid';
+            $card_settings['border_color'] = '#d1d5db';
+            $card_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+            $card_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+            $card_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
+            $card_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
+            $card_settings['flex_direction_mobile'] = 'column';
+            $card_settings['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+            $card_settings['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+            $card_settings['width_tablet'] = [ 'unit' => '%', 'size' => 48, 'sizes' => [] ];
+            $card_settings['_element_width_tablet'] = 'initial';
+            $card_settings['_element_custom_width_tablet'] = [ 'unit' => '%', 'size' => 48, 'sizes' => [] ];
+            $card_settings['_flex_size_tablet'] = 'custom';
+            $card_settings['_flex_grow_tablet'] = 0;
+            $card_settings['_flex_shrink_tablet'] = 1;
+            $card_settings['flex_grow_tablet'] = 0;
+            $card_settings['flex_shrink_tablet'] = 1;
+
+            $card_elements = is_array( $children[ $grid_index ]['elements'] ?? null ) ? $children[ $grid_index ]['elements'] : [];
+            if ( ! $contains_image( $card_elements ) && isset( $service_media[ $width_index ] ) ) {
+                array_unshift( $card_elements, [
+                    'id' => 'wpae-service-card-image-' . (string) ( $width_index + 1 ),
+                    'elType' => 'widget',
+                    'settings' => [
+                        'image' => [ 'url' => $service_media[ $width_index ]['url'], 'id' => 0, 'alt' => $service_media[ $width_index ]['alt'], 'source' => 'url', 'size' => '' ],
+                        'image_size' => 'full',
+                        'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+                        'object-fit' => 'cover',
+                        'image_border_radius' => [ 'unit' => 'rem', 'top' => '0.5', 'right' => '0.5', 'bottom' => '0.5', 'left' => '0.5', 'isLinked' => true ],
+                    ],
+                    'elements' => [],
+                    'isInner' => false,
+                    'widgetType' => 'image',
+                ] );
+                $children[ $grid_index ]['elements'] = $card_elements;
+                $changed++;
+            }
         }
         wpae_llm_set_flexible_bento_container_width( $card_settings, (float) $width );
         $children[ $grid_index ]['settings'] = $card_settings;
