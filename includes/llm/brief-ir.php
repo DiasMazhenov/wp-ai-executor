@@ -127,6 +127,12 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	if ( $repeated['role'] !== '' ) {
 		return $repeated['role'];
 	}
+	if ( preg_match( '/(?:заголов\w*\s+(?:секци\w*|раздел\w*)|(?:section|block)\s+(?:heading|title))\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'title';
+	}
+	if ( preg_match( '/(?:(?:описани\w*|подзаголов\w*)\s+(?:секци\w*|раздел\w*)|(?:section|block)\s+(?:description|subtitle))\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'body';
+	}
 	if ( preg_match( '/(?:вопрос\w*|question\w*)\s*(?:\#?\d+)?\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'faq_question';
 	}
@@ -168,6 +174,7 @@ function wpae_brief_ir_repeated_slot( string $prefix ): array {
 	$patterns = [
 		[ 'service', 'service_title', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:назван\w*|title|name)\s*[:\-]?\s*$/iu' ],
 		[ 'service', 'service_body', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:описан\w*|description|details?)\s*[:\-]?\s*$/iu' ],
+		[ 'service', 'service_body', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:назван\w*|title|name)\s*[:\-]?\s*(?:«[^»\r\n]{1,240}»|“[^”\r\n]{1,240}”|"[^"\r\n]{1,240}")\s*[.!]?\s*(?:описан\w*|description|details?)\s*[:\-]?\s*$/iu' ],
 		[ 'service', 'service_cta', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:кнопк\w*|ссылк\w*|cta|link)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_name', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:имя|name)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_position', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:должност\w*|роль|position|role)\s*[:\-]?\s*$/iu' ],

@@ -7173,6 +7173,7 @@ function wpae_llm_badge_label( string $archetype ): string {
         'mega_menu' => 'МЕГА МЕНЮ',
         'hero' => 'ПРЕДЛОЖЕНИЕ',
         'benefits' => 'ПРЕИМУЩЕСТВА',
+        'services' => 'УСЛУГИ',
         'pricing' => 'ФОРМАТЫ',
         'testimonials' => 'ОТЗЫВЫ',
         'faq' => 'ВОПРОСЫ',
@@ -8754,6 +8755,14 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $settings['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
                     $settings['flex_gap_tablet'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
                     $settings['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = '#ffffff';
+                    $settings['border_border'] = 'solid';
+                    $settings['border_color'] = '#d1d5db';
+                    $settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
+                    $settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                    $settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
+                    $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
                     unset( $settings['_inline_size_tablet'] );
                     $settings['width_tablet'] = [ 'unit' => '%', 'size' => 48, 'sizes' => [] ];
                     $settings['_element_width_tablet'] = 'initial';

@@ -1384,6 +1384,22 @@ check( count( $services_pairs ) === 3 && ( $services_pairs[2]['label'] ?? '' ) =
 check( count( (array) ( $services_plan['content_pairs'] ?? [] ) ) === 3 && count( (array) ( $services_plan['content_units'] ?? [] ) ) === 8 && ! str_contains( wp_json_encode( $services_plan, JSON_UNESCAPED_UNICODE ), 'сам выберет подходящий шаблон' ), 'Services content plan keeps required copy and excludes the instruction tail from generated content' );
 check( ! in_array( 'сам выберет подходящий шаблон', $services_requested, true ) && in_array( 'Услуги архитектурной студии', $services_requested, true ), 'Services fidelity compares user copy while ignoring agent instructions' );
 
+$services_layout_prompt = "Создай на этой странице один блок услуг для архитектурной студии. Заголовок секции: «Услуги архитектурной студии». Описание секции: «От первого замысла до авторского сопровождения.»\nУслуга 1 — название: «Стратегия проекта». Описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн». Описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение». Описание: «Проверяем соответствие согласованному проекту.»";
+$services_layout_brief = wpae_brief_ir_parse( $services_layout_prompt );
+$services_layout_roles = [];
+foreach ( (array) ( $services_layout_brief['content'] ?? [] ) as $item ) {
+	if ( is_array( $item ) ) {
+		$services_layout_roles[ (string) ( $item['exact_text'] ?? '' ) ] = [ (string) ( $item['role'] ?? '' ), (string) ( $item['group_id'] ?? '' ) ];
+	}
+}
+check( ( $services_layout_roles['Услуги архитектурной студии'][0] ?? '' ) === 'title' && ( $services_layout_roles['От первого замысла до авторского сопровождения.'][0] ?? '' ) === 'body', 'Services section heading and description keep their semantic BriefIR slots' );
+check( ( $services_layout_roles['Формулируем задачу и согласуем план работ.'] ?? [] ) === [ 'service_body', 'service_1' ] && ( $services_layout_roles['Разрабатываем решение под заданный контекст.'] ?? [] ) === [ 'service_body', 'service_2' ] && ( $services_layout_roles['Проверяем соответствие согласованному проекту.'] ?? [] ) === [ 'service_body', 'service_3' ], 'Inline service descriptions remain grouped with the matching service title instead of becoming hero body content' );
+$services_layout_fallback = wpae_llm_build_fallback_action( $services_layout_prompt, 42 );
+$services_layout_visual_changes = 0;
+$services_layout_visual = wpae_llm_apply_generation_visual_grammar( (array) ( $services_layout_fallback['elements'] ?? [] ), 'services', $services_layout_visual_changes );
+$services_layout_text = wp_json_encode( $services_layout_visual, JSON_UNESCAPED_UNICODE );
+check( str_contains( $services_layout_text, 'Услуги архитектурной студии' ) && str_contains( $services_layout_text, 'От первого замысла до авторского сопровождения.' ) && str_contains( $services_layout_text, 'УСЛУГИ' ) && ! str_contains( $services_layout_text, 'НОВЫЙ БЛОК' ), 'Services fallback renders the exact section copy and a family-specific badge label' );
+
 $services_one_line = "Услуга 1: «Стратегия проекта» — «Формулируем задачу и согласуем план работ.»\nУслуга 2: «Архитектура и дизайн» — «Разрабатываем решение под заданный контекст.»\nУслуга 3: «Сопровождение» — «Проверяем соответствие согласованному проекту.»";
 $services_one_line_brief = wpae_brief_ir_parse( $services_one_line );
 $services_one_line_pairs = wpae_llm_extract_services_content( $services_one_line );
@@ -1616,6 +1632,11 @@ foreach ( $services_grid_cards as $service_card ) {
 check( count( $services_grid_cards ) === 3 && ( $services_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $services_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && $services_card_spacers === 0, 'Production Services template is normalized into a desktop card row, a mobile stack, and no spacer-driven card gaps: ' . wp_json_encode( [ 'archetype' => $services_response_data['diagnostics']['archetype'] ?? null, 'grid_settings' => $services_grid['settings'] ?? [], 'card_count' => count( $services_grid_cards ), 'card_ids' => array_column( $services_grid_cards, 'id' ), 'card_widgets' => array_map( static fn( $card ): array => array_map( static fn( $node ): string => (string) ( $node['widgetType'] ?? $node['elType'] ?? '' ), (array) ( $card['elements'] ?? [] ) ), $services_grid_cards ), 'spacers' => $services_card_spacers ] ) );
 $services_styled_card_count = count( array_filter( $services_grid_cards, static fn( $card ): bool => ( $card['settings']['container_type'] ?? '' ) === 'flex' && ( $card['settings']['flex_direction'] ?? '' ) === 'column' && ( $card['settings']['flex_direction_mobile'] ?? '' ) === 'column' && (float) ( $card['settings']['width']['size'] ?? 0 ) >= 30 && (float) ( $card['settings']['width_tablet']['size'] ?? 0 ) === 48.0 && (float) ( $card['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ( $card['settings']['background_background'] ?? '' ) === 'classic' && ( $card['settings']['background_color'] ?? '' ) === '#ffffff' && ( $card['settings']['margin']['right'] ?? null ) === '0' && ( $card['settings']['margin_mobile']['left'] ?? null ) === '0' ) );
 check( $services_styled_card_count === 3, 'All three Services cards use native vertical Flex content, gap-aware responsive widths, zero imported side margins, and a consistent readable surface' );
+$services_layout_changes = 0;
+$services_layout_normalized = wpae_llm_normalize_library_layout( (array) ( $services_layout_fallback['elements'] ?? [] ), $services_layout_changes, 'services' );
+$services_layout_grid = $find_services_grid( $services_layout_normalized );
+$services_layout_cards = array_values( array_filter( (array) ( $services_layout_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
+check( count( $services_layout_cards ) === 3 && count( array_filter( $services_layout_cards, static fn( $card ): bool => ( $card['settings']['border_radius']['unit'] ?? '' ) === 'rem' && (float) ( $card['settings']['border_radius']['size'] ?? 0 ) === 1.0 && ( $card['settings']['padding']['top'] ?? '' ) === '1.5' && ( $card['settings']['background_color'] ?? '' ) === '#ffffff' ) ) === 3, 'Services layout normalization applies rounded, padded native card surfaces to every service card' );
 
 $run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active' ) use ( $legacy_page ): array {
 	$previous_globals = [];
