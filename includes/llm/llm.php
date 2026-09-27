@@ -6612,7 +6612,7 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
             $card_settings['border_border'] = 'solid';
             $card_settings['border_color'] = '#d1d5db';
             $card_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-            $card_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+            $card_settings['border_radius'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'size' => 1, 'isLinked' => true ];
             $card_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
             $card_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
             $card_settings['flex_direction_mobile'] = 'column';
@@ -8414,7 +8414,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
                     'border_border' => 'solid',
                     'border_color' => '#e5e7eb',
                     'border_width' => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
-                    'border_radius' => [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ],
+                    'border_radius' => [ 'unit' => 'rem', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'size' => 1, 'isLinked' => true ],
                     'flex_gap' => [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ],
                     'padding' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ],
                     'padding_mobile' => [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ],
@@ -8828,7 +8828,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $settings['border_border'] = 'solid';
                     $settings['border_color'] = '#d1d5db';
                     $settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-                    $settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                    $settings['border_radius'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'size' => 1, 'isLinked' => true ];
                     $settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
                     $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
                     unset( $settings['_inline_size_tablet'] );
@@ -8873,7 +8873,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $settings['border_border'] = 'solid';
                     $settings['border_color'] = '#d1d5db';
                     $settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-                    $settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                    $settings['border_radius'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'size' => 1, 'isLinked' => true ];
                     $settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.5', 'bottom' => '1.5', 'left' => '1.5', 'isLinked' => true ];
                     $settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1.25', 'bottom' => '1.25', 'left' => '1.25', 'isLinked' => true ];
                     if ( $before_card !== wp_json_encode( $settings ) ) {
@@ -8916,7 +8916,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $slide_settings['border_border'] = 'solid';
                         $slide_settings['border_color'] = '#d1d5db';
                         $slide_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-                        $slide_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                        $slide_settings['border_radius'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'size' => 1, 'isLinked' => true ];
                         $slide_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
                         $slide_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
                         wpae_llm_set_flexible_bento_container_width( $slide_settings, (float) $width );
@@ -8963,7 +8963,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                             $child_settings['border_border'] = 'solid';
                             $child_settings['border_color'] = '#d1d5db';
                             $child_settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
-                            $child_settings['border_radius'] = [ 'unit' => 'rem', 'size' => 1, 'isLinked' => true ];
+                            $child_settings['border_radius'] = [ 'unit' => 'rem', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'size' => 1, 'isLinked' => true ];
                             $child_settings['padding'] = [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.25', 'bottom' => '1.5', 'left' => '1.25', 'isLinked' => true ];
                             $child_settings['padding_mobile'] = [ 'unit' => 'rem', 'top' => '1.25', 'right' => '1', 'bottom' => '1.25', 'left' => '1', 'isLinked' => true ];
                             wpae_llm_set_flexible_bento_container_width( $child_settings, (float) $width );

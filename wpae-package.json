@@ -7,7 +7,7 @@
         "assets/css/elementor-llm-chat.css": "c0bd0d56d3c80f54a94c17f52bba3400e25ff3eb297cd2251b7b43b1c2b56e55",
         "assets/js/elementor-block-library-ui.js": "609bf4f58257801a0bfbb101c9d82b2ab252978bec77ef7904b2c26e0905f710",
         "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-        "assets/js/elementor-llm-chat.js": "0ef915237217a8f4cbd64cb416f1e1cedad7c95bc645013b7e711290c958f5fd",
+        "assets/js/elementor-llm-chat.js": "051e756158baa6025570919cf16cde1f7ded873fa56d518065ce439f82cb0b11",
         "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
         "assets/previews/vocario-404.jpg": "46c02d4078d7fd9595d83585d2fd89e82273096be63f111d7567a4a1c05a1a0f",
         "assets/previews/vocario-about-us.jpg": "0ec916cb2daf9c7f934da367a4aa9082777509c8bbc3ef9eef6ab5513406ca0a",
@@ -237,7 +237,7 @@
         "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
         "includes/llm/design-plan.php": "77d93c06a4123f5c6bd2e08cbd8c03aeac010af7644eea6891f268c5f00cbd16",
         "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-        "includes/llm/llm.php": "51ba2cf77fd8b4f289ac31e2e978e9d3874520dfefc92da5e043a46df009d301",
+        "includes/llm/llm.php": "6cad91c753e118150cc8847db0404246a36c51a142805d9b9435961bf16aa3f5",
         "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
         "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
         "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -250,6 +250,6 @@
         "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
         "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
         "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-        "wp-ai-executor.php": "d7271a92661204e451242fd0e216bb3fe66809d904ab1e6a43a50cbf8cceef3c"
+        "wp-ai-executor.php": "8c809f9000a961cae509a806dc6a43c460e2564868326721c691f563568e9708"
     }
 }

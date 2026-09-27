@@ -662,6 +662,41 @@
             var activeModel = editor.channels.editor.get('activeModel');
             if (activeModel) models = [activeModel];
         }
+        if (!models.length && typeof document.querySelectorAll === 'function') {
+            var activeRows = document.querySelectorAll('#elementor-navigator .elementor-navigator__item.elementor-active');
+            var activeRow = activeRows.length ? activeRows[activeRows.length - 1] : null;
+            var navigatorElement = activeRow && typeof activeRow.closest === 'function'
+                ? activeRow.closest('.elementor-navigator__element[data-id]')
+                : null;
+            var selectedId = navigatorElement && typeof navigatorElement.getAttribute === 'function'
+                ? navigatorElement.getAttribute('data-id')
+                : '';
+            var iframe = getPreviewIframe();
+            var previewDocument = iframe && iframe.contentDocument;
+            if (selectedId && /^[A-Za-z0-9_-]{1,64}$/.test(selectedId) && previewDocument && typeof previewDocument.querySelectorAll === 'function') {
+                var previewElements = previewDocument.querySelectorAll('.elementor-element[data-id]');
+                var previewElement = null;
+                var matchingElements = 0;
+                Array.prototype.forEach.call(previewElements, function (element) {
+                    if (element && element.getAttribute('data-id') === selectedId) {
+                        previewElement = element;
+                        matchingElements += 1;
+                    }
+                });
+                if (matchingElements === 1) {
+                    var widgetType = String(previewElement.getAttribute('data-widget_type') || '').split('.')[0];
+                    models = [{
+                        attributes: {
+                            id: selectedId,
+                            elType: previewElement.getAttribute('data-element_type') || (widgetType ? 'widget' : 'container'),
+                            widgetType: widgetType,
+                            settings: {},
+                            visible_text: String(previewElement.innerText || '').slice(0, 240)
+                        }
+                    }];
+                }
+            }
+        }
         return Array.prototype.slice.call(models || [], 0, 8).map(function (container) {
             return container && container.model ? container.model : container;
         }).filter(function (model) {

@@ -1197,4 +1197,43 @@ const foreignRepair = runTargetedRepair(
 );
 assert.equal(foreignRepair.replaceExistingRoot, undefined, 'a selected neighboring root cannot be replaced');
 assert.equal(runTargetedRepair({ root_ids: ['eb0103a'], reviewable: true }, 'Добавь новый CTA блок', []), null, 'new append requests keep the normal route');
+
+const liveSelectionStart = js.indexOf('    function liveSelectedModels()');
+const liveSelectionEnd = js.indexOf('    function selectedModels()', liveSelectionStart);
+assert.ok(liveSelectionStart >= 0 && liveSelectionEnd > liveSelectionStart, 'live editor selection collector is present');
+const liveSelectionSource = js.slice(liveSelectionStart, liveSelectionEnd);
+const selectedPreviewNode = (id, visibleText = '') => ({
+    getAttribute: (name) => ({ 'data-id': id, 'data-element_type': 'container', 'data-widget_type': '' })[name] || null,
+    innerText: visibleText
+});
+const runLiveSelection = ({ activeIds = [], previewNodes = [], elementor = {} }) => {
+    const rows = activeIds.map((id) => ({ closest: () => ({ getAttribute: () => id }) }));
+    const iframe = { contentDocument: { querySelectorAll: () => previewNodes } };
+    const fakeDocument = {
+        querySelectorAll: () => rows,
+        querySelector: () => iframe
+    };
+    return vm.runInNewContext(
+        `function getPreviewIframe() { return document.querySelector('#elementor-preview-iframe'); }\n${liveSelectionSource}\nliveSelectedModels();`,
+        { window: { elementor }, document: fakeDocument, Array }
+    );
+};
+const navigatorSelection = runLiveSelection({
+    activeIds: ['2fc6b48', '8d98dc9'],
+    previewNodes: [selectedPreviewNode('8d98dc9', 'Архитектура и дизайн')]
+});
+assert.equal(navigatorSelection.length, 1, 'Navigator fallback returns one selected editor model');
+assert.equal(navigatorSelection[0].attributes.id, '8d98dc9', 'Navigator fallback preserves selected element ID');
+assert.equal(navigatorSelection[0].attributes.visible_text, 'Архитектура и дизайн', 'Navigator fallback carries bounded visible text');
+assert.equal(runLiveSelection({ activeIds: ['foreign-id'], previewNodes: [] }).length, 0, 'Navigator fallback ignores IDs missing from the live preview');
+assert.equal(runLiveSelection({
+    activeIds: ['8d98dc9'],
+    previewNodes: [selectedPreviewNode('8d98dc9'), selectedPreviewNode('8d98dc9')]
+}).length, 0, 'Navigator fallback rejects duplicate IDs in the live preview');
+const legacySelection = { attributes: { id: 'legacy-selected' } };
+assert.equal(runLiveSelection({
+    activeIds: ['8d98dc9'],
+    previewNodes: [selectedPreviewNode('8d98dc9')],
+    elementor: { selection: { getElements: () => [legacySelection] } }
+})[0].attributes.id, 'legacy-selected', 'Elementor model selection remains the preferred source');
 console.log('llm chat contract: OK');
