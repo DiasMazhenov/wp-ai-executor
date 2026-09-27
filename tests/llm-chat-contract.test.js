@@ -1206,11 +1206,17 @@ const selectedPreviewNode = (id, visibleText = '') => ({
     getAttribute: (name) => ({ 'data-id': id, 'data-element_type': 'container', 'data-widget_type': '' })[name] || null,
     innerText: visibleText
 });
-const runLiveSelection = ({ activeIds = [], previewNodes = [], elementor = {} }) => {
-    const rows = activeIds.map((id) => ({ closest: () => ({ getAttribute: () => id }) }));
+const runLiveSelection = ({ activeIds = [], editingIds = [], previewNodes = [], elementor = {} }) => {
+    const rows = [
+        ...activeIds.map((id) => ({ id, className: 'elementor-active' })),
+        ...editingIds.map((id) => ({ id, className: 'elementor-editing' }))
+    ].map(({ id, className }) => ({
+        matches: (selector) => selector.split(',').some((part) => part.includes('.' + className)),
+        closest: () => ({ getAttribute: () => id })
+    }));
     const iframe = { contentDocument: { querySelectorAll: () => previewNodes } };
     const fakeDocument = {
-        querySelectorAll: () => rows,
+        querySelectorAll: (selector) => rows.filter((row) => row.matches(selector)),
         querySelector: () => iframe
     };
     return vm.runInNewContext(
@@ -1225,6 +1231,12 @@ const navigatorSelection = runLiveSelection({
 assert.equal(navigatorSelection.length, 1, 'Navigator fallback returns one selected editor model');
 assert.equal(navigatorSelection[0].attributes.id, '8d98dc9', 'Navigator fallback preserves selected element ID');
 assert.equal(navigatorSelection[0].attributes.visible_text, 'Архитектура и дизайн', 'Navigator fallback carries bounded visible text');
+const elementor4EditingSelection = runLiveSelection({
+    editingIds: ['2fc6b48'],
+    previewNodes: [selectedPreviewNode('2fc6b48', 'УСЛУГИ')]
+});
+assert.equal(elementor4EditingSelection.length, 1, 'Elementor 4 Navigator editing row is recognized as the selected model');
+assert.equal(elementor4EditingSelection[0].attributes.id, '2fc6b48', 'Elementor 4 selection fallback preserves the exact selected root ID');
 assert.equal(runLiveSelection({ activeIds: ['foreign-id'], previewNodes: [] }).length, 0, 'Navigator fallback ignores IDs missing from the live preview');
 assert.equal(runLiveSelection({
     activeIds: ['8d98dc9'],

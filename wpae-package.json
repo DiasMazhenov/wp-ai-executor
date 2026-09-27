@@ -7,7 +7,7 @@
         "assets/css/elementor-llm-chat.css": "c0bd0d56d3c80f54a94c17f52bba3400e25ff3eb297cd2251b7b43b1c2b56e55",
         "assets/js/elementor-block-library-ui.js": "609bf4f58257801a0bfbb101c9d82b2ab252978bec77ef7904b2c26e0905f710",
         "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-        "assets/js/elementor-llm-chat.js": "051e756158baa6025570919cf16cde1f7ded873fa56d518065ce439f82cb0b11",
+        "assets/js/elementor-llm-chat.js": "66c299db440fe59f32524a88b920ec59783825bcd770db3618989d45b6b36e44",
         "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
         "assets/previews/vocario-404.jpg": "46c02d4078d7fd9595d83585d2fd89e82273096be63f111d7567a4a1c05a1a0f",
         "assets/previews/vocario-about-us.jpg": "0ec916cb2daf9c7f934da367a4aa9082777509c8bbc3ef9eef6ab5513406ca0a",
@@ -250,6 +250,6 @@
         "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
         "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
         "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-        "wp-ai-executor.php": "8c809f9000a961cae509a806dc6a43c460e2564868326721c691f563568e9708"
+        "wp-ai-executor.php": "3e4ddb2001a4c3fb0c7479e8797a3d9502242c1122664aa3f6753e1952287e88"
     }
 }

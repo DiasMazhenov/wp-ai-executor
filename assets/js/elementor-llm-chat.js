@@ -663,7 +663,9 @@
             if (activeModel) models = [activeModel];
         }
         if (!models.length && typeof document.querySelectorAll === 'function') {
-            var activeRows = document.querySelectorAll('#elementor-navigator .elementor-navigator__item.elementor-active');
+            // Elementor 4.1 marks the Navigator's selected row with
+            // `elementor-editing`; older editor builds use `elementor-active`.
+            var activeRows = document.querySelectorAll('#elementor-navigator .elementor-navigator__item.elementor-active, #elementor-navigator .elementor-navigator__item.elementor-editing');
             var activeRow = activeRows.length ? activeRows[activeRows.length - 1] : null;
             var navigatorElement = activeRow && typeof activeRow.closest === 'function'
                 ? activeRow.closest('.elementor-navigator__element[data-id]')
