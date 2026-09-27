@@ -207,6 +207,10 @@ $message = 'Создай hero. Заголовок: «Пространство д
 $explicit_cta_message = 'Создай новый hero для архитектурной студии «Тихая форма». Заголовок: «Пространство для вашей жизни». Текст: «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Кнопка: «Обсудить проект», ссылка #contact. Выразительная асимметричная композиция из native Flexbox-контейнеров, крупная типографика, тёплый светлый фон и терракотовый акцент. Справа отдельный визуальный блок с надписью «Архитектура повседневности». Адаптируй для телефона.';
 $explicit_cta_plan = wpae_llm_content_plan( $explicit_cta_message, 'hero' );
 check( ! empty( $explicit_cta_plan['cta_required'] ) && in_array( 'Обсудить проект', (array) ( $explicit_cta_plan['explicit_cta'] ?? [] ), true ), 'Labeled quoted CTA was not added to the semantic content plan' );
+$process_without_media_plan = wpae_llm_content_plan( 'Создай процесс из этапов «Заявка» и «Старт». Не добавляй изображения, фото или медиа.', 'process' );
+check( empty( $process_without_media_plan['requires_media'] ), 'A negated media mention must not become a required-image fidelity gate' );
+$required_media_content_plan = wpae_llm_content_plan( 'Create a hero with an image required. Title: "Room for ideas".', 'hero' );
+check( ! empty( $required_media_content_plan['requires_media'] ), 'An explicit required image remains enforced by content fidelity' );
 $explicit_fallback_action = wpae_llm_build_fallback_action( $explicit_cta_message, 42 );
 $explicit_fallback_changed = 0;
 wpae_llm_remove_unrequested_buttons( $explicit_fallback_action['elements'], $explicit_cta_message, $explicit_fallback_changed );
@@ -1219,7 +1223,7 @@ $collect_library_choice_widgets = static function ( array $nodes ) use ( &$colle
 };
 $collect_library_choice_widgets( [ $library_choice_written ] );
 check( ! empty( $library_choice_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'Agent template decision uses the ordinary provider and single page-write boundary' );
-check( strpos( $library_choice_system_prompt, 'candidate_1' ) !== false && strpos( $library_choice_system_prompt, 'candidate_2' ) !== false && strpos( $library_choice_system_prompt, 'library-carousel-choice' ) === false, 'Agent receives bounded template choices without raw library JSON' );
+check( strpos( $library_choice_system_prompt, 'candidate_1' ) !== false && strpos( $library_choice_system_prompt, 'candidate_2' ) !== false && strpos( $library_choice_system_prompt, 'library-carousel-choice' ) === false && strpos( $library_choice_system_prompt, '"library_choice":"offered choice_key or null"' ) !== false, 'Agent receives bounded template choices and an explicit matching JSON field without raw library JSON' );
 check( ( $library_choice_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_choice_trace['model_choice'] ?? '' ) === 'candidate_2' && ( $library_choice_trace['selected']['title'] ?? '' ) === 'Выбранная карусель', 'Production diagnostics record the model-selected allowlisted library template' );
 check( ( $library_choice_trace['status'] ?? '' ) === 'applied' && in_array( 'image-carousel', $library_choice_widget_types, true ), 'The model-selected template passes adaptation and is compiled into the page write: ' . wp_json_encode( [ 'status' => $library_choice_trace['status'] ?? '', 'widgets' => $library_choice_widget_types ] ) );
 check( strpos( (string) wp_json_encode( $library_choice_written ), 'provider-root-must-not-win' ) === false && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'The selected library composition wins while existing page roots remain untouched' );

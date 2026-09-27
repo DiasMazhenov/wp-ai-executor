@@ -1262,6 +1262,14 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'mega_menu' => [ 'image', 'mega-menu', 'button' ],
         'cta' => [ 'heading', 'text-editor', 'button' ],
     ];
+    $brief_ir = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
+    $media_intent = '';
+    foreach ( (array) ( $brief_ir['layout_constraints'] ?? [] ) as $constraint ) {
+        if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
+            $media_intent = sanitize_key( (string) ( $constraint['value'] ?? '' ) );
+            break;
+        }
+    }
     return [
         'schema' => 'wpae-content-plan-v1',
         'archetype' => $archetype,
@@ -1273,7 +1281,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'repeatable_units' => count( $content_pairs ) >= 2 ? count( $content_pairs ) : max( 0, count( $units ) - 1 ),
         'explicit_cta' => $ctas,
         'cta_required' => ! empty( $ctas ),
-        'requires_media' => (bool) preg_match( '/\b(фото|изображен\w*|портрет\w*|картин\w*|медиа|image|photo|portrait|background)\b/iu', $message ),
+        'requires_media' => $media_intent === 'required' || ! empty( $brief_ir['media_references'] ),
         'allowed_widgets' => $allowed_widgets[ $archetype ] ?? [ 'heading', 'text-editor', 'image', 'button' ],
         'forbidden_widgets' => [ 'icon-box' ],
     ];
@@ -9888,13 +9896,16 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $variation_seed = hexdec( substr( md5( $message . '|' . microtime( true ) ), 0, 6 ) ) % 100000;
         $system_prompt .= wpae_llm_block_archetype_hint( $message );
         $system_prompt .= "\nСемантический план контента (контракт для адаптации, не текст для вывода): " . wp_json_encode( $content_plan, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '. Не добавляй CTA, имена, цены или смысловые блоки, которых нет в плане; не меняй смысл пользовательского контента ради шаблона.';
-        $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects]}. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй столько заполненных native widgets, сколько требуется для полноценной композиции; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; фон, обводку и акценты выбирай по заданному визуальному направлению; обеспечь контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Контракт полноты: собери блок полностью заполненным с первого раза — никогда не оставляй пустые контейнеры-заготовки, чтобы «заполнить потом». Стиль из дизайн-системы — это ограничения (палитра, типографика, контраст), а не готовая вёрстка: композицию выбирай по содержанию запроса.' . ' Не удаляй и не заменяй существующие элементы.';
+        $system_prompt .= $targeted_edit ? ' Это запрос на выполнение точечной правки. Не пиши инструкцию и не объясняй ручные клики.' : ' Это запрос на выполнение работы. Не пиши инструкцию и не объясняй ручные клики. Верни только компактный JSON без markdown по схеме: {"action":"insert_elements","post_id":number,"position":"start|end","elements":[Elementor native Flexbox container/widget objects],"library_choice":"offered choice_key or null"}. Поле library_choice обязательно, если в system prompt переданы варианты приватной библиотеки; в этом случае выбери один предложенный choice_key либо null. Для этой задачи массив elements обязан содержать ровно один объект elType=container, все widget-объекты должны находиться только внутри его elements, а верхний уровень не должен содержать widget-объекты или дополнительные контейнеры. Используй столько заполненных native widgets, сколько требуется для полноценной композиции; heading, text-editor и button разрешены, но не обязательны, если более подходящий native widget поддерживается Elementor. Разрешена только вставка новых элементов с elType=container/widget, точным camelCase widgetType, native settings и elements arrays. Каждый container обязан содержать заполненные native widgets в своем дереве; не возвращай контейнеры без widgets. Для hero обязательно добавь полезный контент через native heading/text-editor/button widgets, а не только пустую структуру layout. Любой тип блока должен иметь сбалансированную композицию без пустых или чрезмерно широких зон и чрезмерно широких колонок: на desktop используй понятную композицию, на mobile собери ее в вертикальный stack; фон, обводку и акценты выбирай по заданному визуальному направлению; обеспечь контрастный текст, видимый CTA там, где он нужен, разумные min-height/spacing и responsive units rem/em/vh/% вместо огромных px-значений. Не допускай слитого текста, гигантских пустых промежутков и элементов, которые визуально существуют только как placeholder. Контракт полноты: собери блок полностью заполненным с первого раза — никогда не оставляй пустые контейнеры-заготовки, чтобы «заполнить потом». Стиль из дизайн-системы — это ограничения (палитра, типографика, контраст), а не готовая вёрстка: композицию выбирай по содержанию запроса.' . ' Не удаляй и не заменяй существующие элементы.';
         if ( ! $targeted_edit ) {
             $system_prompt .= ' Выбери для этого запуска новую композицию и не копируй предыдущие блоки: меняй ритм, соотношение зон, плотность и акцентную иерархию, сохраняя смысл и весь пользовательский контент. Внутренний номер варианта: ' . (string) $variation_seed . '.';
         }
         $system_prompt .= "\nАктивная дизайн-система: " . wp_json_encode( wpae_build_project_design_system(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
         $system_prompt .= $targeted_edit ? ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только JSON-объект patch_elements. Не возвращай URL, endpoint, пояснения или markdown.' : ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
         if ( ! $targeted_edit ) {
+			if ( ! empty( $library_retrieval['selection_candidates'] ) ) {
+				$system_prompt .= ' Корневое поле "library_choice" является обязательной частью JSON-команды insert_elements: выбери один из предложенных choice_key или укажи null, если ни один не подходит.';
+			}
 			$system_prompt .= wpae_llm_library_decision_prompt( $library_retrieval );
 		}
     }
