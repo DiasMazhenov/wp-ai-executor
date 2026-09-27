@@ -8543,6 +8543,8 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
             || strpos( $normalized, 'volur tatem accus' ) !== false;
     };
     $contains_card_signal = static function ( array $nodes ) use ( &$contains_card_signal, $archetype ): bool {
+        $has_service_title = false;
+        $has_service_description = false;
         foreach ( $nodes as $node ) {
             if ( ! is_array( $node ) ) {
                 continue;
@@ -8552,12 +8554,18 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                 if ( in_array( $widget_type, [ 'icon-box', 'testimonial' ], true ) || ( $archetype === 'about' && $widget_type === 'counter' ) ) {
                     return true;
                 }
+                if ( $archetype === 'services' && $widget_type === 'heading' && trim( wp_strip_all_tags( (string) ( $node['settings']['title'] ?? '' ) ) ) !== '' ) {
+                    $has_service_title = true;
+                }
+                if ( $archetype === 'services' && $widget_type === 'text-editor' && trim( wp_strip_all_tags( (string) ( $node['settings']['editor'] ?? '' ) ) ) !== '' ) {
+                    $has_service_description = true;
+                }
             }
             if ( is_array( $node['elements'] ?? null ) && $contains_card_signal( $node['elements'] ) ) {
                 return true;
             }
         }
-        return false;
+        return $archetype === 'services' && $has_service_title && $has_service_description;
     };
     $has_meaningful_descendant = static function ( array $nodes ) use ( &$has_meaningful_descendant ): bool {
         foreach ( $nodes as $node ) {
@@ -8719,6 +8727,47 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
                         $child_containers[] = $child_index;
                     }
+                }
+                $is_service_card = $archetype === 'services'
+                    && $depth > 0
+                    && empty( $child_containers )
+                    && $contains_card_signal( $children );
+                if ( $is_service_card ) {
+                    $service_children = array_values( array_filter( $children, static function ( $child ): bool {
+                        return ! ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $child['widgetType'] ?? '' ) ) === 'spacer' );
+                    } ) );
+                    if ( count( $service_children ) !== count( $children ) ) {
+                        $children = $service_children;
+                        $changed++;
+                    }
+                    $settings['container_type'] = 'flex';
+                    $settings['flex_direction'] = 'column';
+                    $settings['flex_direction_tablet'] = 'column';
+                    $settings['flex_direction_mobile'] = 'column';
+                    $settings['flex_wrap'] = 'nowrap';
+                    $settings['flex_wrap_tablet'] = 'nowrap';
+                    $settings['flex_wrap_mobile'] = 'nowrap';
+                    $settings['flex_justify_content'] = 'flex-start';
+                    $settings['flex_align_items'] = 'stretch';
+                    $settings['flex_align_items_tablet'] = 'stretch';
+                    $settings['flex_align_items_mobile'] = 'stretch';
+                    $settings['flex_gap'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+                    $settings['flex_gap_tablet'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+                    $settings['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
+                    unset( $settings['_inline_size_tablet'] );
+                    $settings['width_tablet'] = [ 'unit' => '%', 'size' => 48, 'sizes' => [] ];
+                    $settings['_element_width_tablet'] = 'initial';
+                    $settings['_element_custom_width_tablet'] = [ 'unit' => '%', 'size' => 48, 'sizes' => [] ];
+                    $settings['_flex_size_tablet'] = 'custom';
+                    $settings['_flex_grow_tablet'] = 0;
+                    $settings['_flex_shrink_tablet'] = 1;
+                    $settings['flex_grow_tablet'] = 0;
+                    $settings['flex_shrink_tablet'] = 1;
+                    $settings['align_self_tablet'] = 'stretch';
+                    foreach ( [ 'margin', 'margin_tablet', 'margin_mobile' ] as $margin_key ) {
+                        $settings[ $margin_key ] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ];
+                    }
+                    $element['elements'] = $children;
                 }
                 $container_classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
                 $is_structural_container = count( $child_containers ) >= 2

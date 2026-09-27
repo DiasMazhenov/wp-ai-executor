@@ -37,10 +37,17 @@ function wpae_token_map_unset( array &$settings, string $key, string $element_id
 
 function wpae_token_map_set( array &$settings, string $key, $value, string $element_id, string $role, array &$report ): void {
     $before = $settings[ $key ] ?? null;
-    if ( $before === $value ) {
+    $has_global_override = isset( $settings['__globals__'][ $key ] );
+    if ( $before === $value && ! $has_global_override ) {
         return;
     }
     $settings[ $key ] = $value;
+    if ( $has_global_override ) {
+        unset( $settings['__globals__'][ $key ] );
+        if ( empty( $settings['__globals__'] ) ) {
+            unset( $settings['__globals__'] );
+        }
+    }
     wpae_token_map_record( $report, $element_id, 'settings.' . $key, $role, $before, $value );
 }
 

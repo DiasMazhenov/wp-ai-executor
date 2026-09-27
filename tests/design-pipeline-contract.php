@@ -137,6 +137,7 @@ require_once __DIR__ . '/../includes/elementor/layout-report.php';
 require_once __DIR__ . '/../includes/elementor/elementor-ir.php';
 require_once __DIR__ . '/../includes/elementor/native-compiler.php';
 require_once __DIR__ . '/../includes/elementor/operation-ledger.php';
+require_once __DIR__ . '/../includes/elementor/token-map.php';
 require_once __DIR__ . '/../includes/llm/routing.php';
 
 $checks = 0;
@@ -147,6 +148,11 @@ $check = static function ( bool $condition, string $message ) use ( &$checks ): 
 	}
 	$checks++;
 };
+
+$token_override_settings = [ 'text_color' => '#6b7280', '__globals__' => [ 'text_color' => 'globals/colors?id=bffb171', 'border_color' => 'globals/colors?id=secondary' ] ];
+$token_override_report = [ 'mapped' => [], 'native_paths' => [], 'evidence' => [], 'source_roles' => [] ];
+wpae_token_map_set( $token_override_settings, 'text_color', '#6b7280', 'service-copy', 'palette.muted', $token_override_report );
+$check( ! isset( $token_override_settings['__globals__']['text_color'] ) && isset( $token_override_settings['__globals__']['border_color'] ) && $token_override_settings['text_color'] === '#6b7280', 'A semantic token override clears only its stale Elementor global color reference' );
 
 $wpae_test_actions = [ 'elementor/widgets/register' => 1 ];
 eval( 'namespace Elementor;

@@ -1596,6 +1596,26 @@ foreach ( (array) ( $services_response_data['steps'] ?? [] ) as $service_step ) 
 check( ( $services_trace['selection_source'] ?? '' ) === 'model_choice' && ( $services_trace['selected']['title'] ?? '' ) === 'Block – Course Boxes' && ( $services_trace['status'] ?? '' ) === 'applied', 'The model-selected imported Services section reaches production adaptation: ' . wp_json_encode( [ 'source' => $services_trace['selection_source'] ?? '', 'choice' => $services_trace['model_choice'] ?? '', 'title' => $services_trace['selected']['title'] ?? '', 'status' => $services_trace['status'] ?? '', 'reason' => $services_trace['reason'] ?? '', 'fidelity' => $services_trace['fidelity'] ?? [], 'library_diagnostics' => $services_library_diagnostics, 'root_count' => count( $services_written ), 'steps' => $services_step_statuses ] ) );
 check( count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'сам выберет подходящий шаблон' ) && ! str_contains( $services_written_json, 'временный QA-блок' ), 'Imported Services cards retain exact requested text without exposing the prompt instructions' );
 check( count( $services_written ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'Imported Services generation appends one root and preserves the pre-existing page root' );
+$find_services_grid = static function ( array $nodes ) use ( &$find_services_grid ): array {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		$cards = array_values( array_filter( (array) ( $node['elements'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) );
+		if ( in_array( 'wpae-bento-grid', $classes, true ) && count( $cards ) >= 2 ) { return $node; }
+		$found = $find_services_grid( (array) ( $node['elements'] ?? [] ) );
+		if ( ! empty( $found ) ) { return $found; }
+	}
+	return [];
+};
+$services_grid = $find_services_grid( $services_written );
+$services_grid_cards = array_values( array_filter( (array) ( $services_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
+$services_card_spacers = 0;
+foreach ( $services_grid_cards as $service_card ) {
+	$services_card_spacers += count( array_filter( (array) ( $service_card['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'spacer' ) );
+}
+check( count( $services_grid_cards ) === 3 && ( $services_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $services_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && $services_card_spacers === 0, 'Production Services template is normalized into a desktop card row, a mobile stack, and no spacer-driven card gaps: ' . wp_json_encode( [ 'archetype' => $services_response_data['diagnostics']['archetype'] ?? null, 'grid_settings' => $services_grid['settings'] ?? [], 'card_count' => count( $services_grid_cards ), 'card_ids' => array_column( $services_grid_cards, 'id' ), 'card_widgets' => array_map( static fn( $card ): array => array_map( static fn( $node ): string => (string) ( $node['widgetType'] ?? $node['elType'] ?? '' ), (array) ( $card['elements'] ?? [] ) ), $services_grid_cards ), 'spacers' => $services_card_spacers ] ) );
+$services_styled_card_count = count( array_filter( $services_grid_cards, static fn( $card ): bool => ( $card['settings']['container_type'] ?? '' ) === 'flex' && ( $card['settings']['flex_direction'] ?? '' ) === 'column' && ( $card['settings']['flex_direction_mobile'] ?? '' ) === 'column' && (float) ( $card['settings']['width']['size'] ?? 0 ) >= 30 && (float) ( $card['settings']['width_tablet']['size'] ?? 0 ) === 48.0 && (float) ( $card['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ( $card['settings']['background_background'] ?? '' ) === 'classic' && ( $card['settings']['background_color'] ?? '' ) === '#ffffff' && ( $card['settings']['margin']['right'] ?? null ) === '0' && ( $card['settings']['margin_mobile']['left'] ?? null ) === '0' ) );
+check( $services_styled_card_count === 3, 'All three Services cards use native vertical Flex content, gap-aware responsive widths, zero imported side margins, and a consistent readable surface' );
 
 $run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active' ) use ( $legacy_page ): array {
 	$previous_globals = [];
