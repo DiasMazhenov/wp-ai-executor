@@ -9373,10 +9373,14 @@ function wpae_llm_normalize_process_step_labels( array $elements, string $archet
 
 function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 	$options = [];
+	$has_services_candidate = false;
 	foreach ( array_slice( (array) ( $library_retrieval['selection_candidates'] ?? [] ), 0, 3 ) as $candidate ) {
 		if ( ! is_array( $candidate ) || sanitize_key( (string) ( $candidate['choice_key'] ?? '' ) ) === '' ) {
 			continue;
 		}
+		$has_services_candidate = $has_services_candidate
+			|| sanitize_key( (string) ( $candidate['category'] ?? '' ) ) === 'services'
+			|| sanitize_key( (string) ( $candidate['template_type'] ?? '' ) ) === 'section-services';
 		$options[] = array_intersect_key(
 			$candidate,
 			array_flip( [ 'choice_key', 'title', 'category', 'template_type', 'tags', 'widget_types', 'root_count', 'media_reference_count' ] )
@@ -9385,8 +9389,12 @@ function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 	if ( empty( $options ) ) {
 		return '';
 	}
+	$services_media_note = $has_services_candidate
+		? ' Для Services компилятор может добавить запрошенные native Image widgets из встроенного набора Unsplash с provenance бесплатного использования, даже если у исходного шаблона media_reference_count равен 0; не отклоняй иначе подходящую структуру карточек только из-за отсутствия фото в исходнике.'
+		: '';
 	return "\nКандидаты приватной библиотеки (только совместимые; это метаданные, не факты для публикации): "
 		. wp_json_encode( $options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
+		. $services_media_note
 		. '. Как агент, сравни эти варианты и обязательно верни поле "library_choice" со значением одного choice_key или null. Не выбирай только по совпадению названия; учитывай тип секции, набор native widgets и наличие нужной структуры. Сервер адаптирует пользовательский контент в выбранный шаблон и повторно проверит точный текст, native shape и совместимость. Выбор не обходит эти проверки. Если ни один вариант не подходит, верни null и используй свою native-композицию.';
 }
 

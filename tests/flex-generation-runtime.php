@@ -204,6 +204,12 @@ $library_invalid_choice = wpae_llm_resolve_library_choice( $library_selection_fi
 check( empty( $library_invalid_choice['ok'] ) && ( $library_invalid_choice['source'] ?? '' ) === 'invalid_model_choice' && empty( $library_invalid_choice['selected'] ), 'Agent library choice accepted an unlisted template key' );
 $library_choice_prompt = wpae_llm_library_decision_prompt( $library_selection_fixture );
 check( strpos( $library_choice_prompt, 'candidate_2' ) !== false && strpos( $library_choice_prompt, 'tree-b' ) === false, 'Library decision prompt failed to expose bounded choices without raw Elementor JSON' );
+$services_library_prompt = wpae_llm_library_decision_prompt( [
+	'selection_candidates' => [
+		[ 'choice_key' => 'candidate_1', 'category' => 'services', 'template_type' => 'section-services', 'media_reference_count' => 0 ],
+	],
+] );
+check( strpos( $services_library_prompt, 'native Image widgets' ) !== false && strpos( $services_library_prompt, 'Unsplash' ) !== false && strpos( $services_library_prompt, 'не отклоняй иначе подходящую структуру карточек' ) !== false, 'Services library decisions know the production compiler can add licensed native Unsplash images when the source template has none' );
 $decoded_library_choice = wpae_llm_decode_action( wp_json_encode( [ 'action' => 'insert_elements', 'library_choice' => 'candidate_2', 'elements' => [] ] ), 42 );
 check( ( $decoded_library_choice['library_choice'] ?? '' ) === 'candidate_2', 'Action decoder dropped the bounded agent library decision' );
 
