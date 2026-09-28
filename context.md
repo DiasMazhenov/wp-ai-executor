@@ -1,16 +1,47 @@
 # WP AI Executor — context
 
-Последнее обновление: **2026-09-28 07:29 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-29 02:59 +05:00 (Asia/Almaty)**.
 
-## Текущая версия и состояние Services на post=5214
+## Предпочтение к generation prompts
 
-- Source и `origin/main` исходно совпадали на `be5e3c121405ea9522f026f2b040118a84597ed2`. Runtime release v02.11.178 — commit `de45db889a7fcb52c8951605c6d2b1f48cac3eef`, запушен в `origin/main`; WP Pusher сообщил об успешном обновлении, Plugins UI подтвердил `v02.11.178`.
-- Уже открытый editor не перезагружался после установки и его inline config всё ещё `v02.11.177`. Browser Use read-only snapshot от 2026-09-28 07:26 +05: CSS viewport editor 1203×923; preview root `2fc6b48`, pill `eac6890`, group `c0f8cfb`, cards wrapper `4581453`, cards `64c85b0`, `8d98dc9`, `2ce81e5`. Три пары услуг видны; preview DOM не является saved `_elementor_data` readback.
-- Предыдущая проблема Services — неодинаковые native overlay/radius/border, бледные/отсутствующие фото и один mobile radius `0`. Новый compiler path строит Flex card с native Image сверху и отдельной светлой непрозрачной текстовой областью; использует текущие разрешённые Unsplash media refs и сохраняет явные пользовательские media overrides.
-- Общая native-control validation принимает opacity 0–1 scalar/slider, не преобразует `55` и принимает известную форму пустого unset slider `{unit:px,size:"",sizes:[]}`. Исправлены два импортированных exports, которые ошибочно отсеивались: `block-feature-grid.json`, `page-home.json`; локальный каталог снова содержит 155/155 доступных деревьев.
-- Patch boundary сохраняет `expected_before_hash`, operation identity и target guards. Behavioral checks покрывают stale hash 409 без записи, idempotent повтор без второго write, scoped target, before-snapshot/Undo и конфликт соседнего изменения.
-- Последний подтверждённый server readback из предыдущего среза: `_elementor_data=[]`, hash `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`; durable ledger для предыдущей generation/patch traces не подтверждён. В этом проходе fresh canonical readback/ownership не получены; live save/patch/reload не выполнялись. Поэтому post-v178 screenshots и desktop/mobile visual acceptance остаются BLOCKED.
-- PNG в `docs/audits/2026-09-28-v177-services-repair/` — только прежний v177 baseline, не приёмка v178. Новых pages/drafts/roots не создавали.
+Пиши коротко и естественно: что создать, точный пользовательский контент и только важный видимый результат. Не перегружай запрос внутренними названиями полей, схемами, маршрутизацией, write-boundary, множеством запретов и повторяющимися требованиями. Такие гарантии обеспечивает pipeline плагина, а не текст prompt.
+
+## Services — пользовательский визуальный эталон
+
+Пользовательский screenshot и экспортированный root `3dc3822` от 2026-09-29 задают нужную композицию: pill-бейдж «УСЛУГИ», отдельный заголовок секции «Наши услуги», затем три равные desktop-карточки. В каждой карточке: широкое native-фото сверху, горизонтальная строка «иконка + тёмное название», ниже приглушённое описание; светлая поверхность, тонкая серая рамка, скругление и мягкая тень. Это визуальный ориентир, а не подтверждение свежего save/reload или mobile render.
+
+Исполняемый шаблон добавлен в библиотеку плагина: `includes/elementor/imported-templates/services-photo-cards.json`, catalog id `template-services-photo-cards-v1` в `includes/elementor/imported-templates/manifest.json`, SHA-256 указан в `wpae-package.json`. Этот файл, а не `context.md`, является шаблоном. В рабочем дереве исходник подготовлен как v02.11.181; commit/push/WP Pusher и live-generation этой версии пока не подтверждены.
+
+В переданном JSON описание второй карточки ошибочно повторяет первое. Для генерации сохранять ранее заданную точную пару для «Архитектура и дизайн»: «Разрабатываем решение под заданный контекст». Не переносить ошибочную копию текста вместе со стилем и не изменять текущий live root без отдельной задачи.
+
+## Текущий live Services на post=5214 — v02.11.180
+
+- Source HEAD: `e185415b1948bf9a0157a571439ff7b85d51ee01` (`fix: normalize imported services sections`), branch `main`; `wp-ai-executor.php` — v02.11.180. В существующем Elementor editor чат также показывает v02.11.180 после reload. Установка через WP Pusher подтверждалась в ходе этого запуска.
+- Дефект на пользовательском снимке был реальным: в v179 служебная фраза запроса стала заголовком, импортированный Services-набор содержал чёрную поверхность первой карточки, зелёный текст, source-site global styles и лишние spacer/divider. Это не приемлемый render.
+- Исправление в `includes/llm/llm.php`: `wpae_llm_clear_unrequested_library_copy()` оставляет Services-заголовок только при явно помеченном title; `wpae_llm_normalize_library_layout()` удаляет spacer/divider и чужие global references, а цвета/поверхности задаёт через активные project tokens и единый card style. Regression checks находятся в `tests/flex-generation-runtime.php` и `tests/llm-chat-contract.test.js`.
+- Через production UI на существующем post=5214 выполнена одна новая Services generation: operation ID `wpae-20260928203645-d4f94ae5`, новый root `3dc3822`; карточки `5386bb7`, `f57b434`, `576d53e`, pill `f7ccd22`. Diagnostics показывают `action_path=library_agent`, archetype `services`, `library_applied=true`, один provider call. Ручной JSON-import не применялся; точный catalog candidate ID в ответе не surfaced. UI сообщил Elementor update HTTP 200.
+- После обычного reload существующих editor и public tabs в обоих отображается root `3dc3822`; старый root `882b453` не найден. На public DOM нет утёкшей инструкции, spacer/divider и горизонтального overflow. При CSS viewport 1203×923 три карточки стоят в row, каждая примерно 324×442 CSS px, gap 20px; фон всех карточек `#fff`, border `1px solid #d1d5db`, radius `16px`, заголовки тёмные, описания серые; все три native image widgets имеют alt. Page background не менялся.
+- Screenshot evidence — public PNG 1143×923 при CSS viewport 1203×923; editor PNG 1144×923 при outer CSS viewport 1203×923. На public кадре остаются WordPress admin bar и плавающий чат, блок не перекрыт. В editor кадре панель WPAE перекрывает часть двух карточек, поэтому чистым visual proof служит public кадр. Оба PNG открыты и визуально осмотрены.
+
+![Services v180 — public desktop after save/reload](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v180/public-services-desktop.png)
+
+[Открыть PNG — Services public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v180/public-services-desktop.png)
+
+- Mobile визуальная приёмка не подтверждена: текущий Elementor preview остался в desktop mode 1025×860 CSS px; доступное переключение на Mobile не изменило selected device. Public mobile не запускался. Vision в чате выдал advisory score 96/confidence 100%; operation-bound Vision review не подтверждён.
+- Runtime checks, выполненные перед live на commit v180: `tests/flex-generation-runtime.php` — 475 checks; `tests/design-pipeline-contract.php` — 261; imported catalog — 157 manifests / 155 retrievable / 155 instantiated previews; patch guard PASS; Node 6/6; PHP lint PASS; package 248 files / 0 hash mismatch. В текущем продолжении runtime не менялся, после обновления документов повторён `git diff --check`.
+- Локальная tracking ref `origin/main` в этом checkout указывает на `50c2e97` (v178), тогда как рабочий HEAD — `e185415`. `git ls-remote origin refs/heads/main` завершился DNS-ошибкой GitHub; поэтому актуальный remote HEAD/push в этом срезе отдельно не подтверждён. Live editor v180 подтверждён.
+
+## Исторический live smoke test Services на post=5214 — v02.11.179
+
+- Source HEAD/runtime commit: `f1a09e7845fc7e5d29ac78d23b4127e081e53954` (`fix: inform service library selection about photo adaptation`), v02.11.179. Push `origin/main`, WP Pusher installation, and inline editor v179 were verified earlier in this run. Runtime checks passed before live: 470 flex checks, 261 design-pipeline checks, imported catalog 157/155/155, patch guard PASS, Node 6/6, package 248 files/0 mismatches, PHP lint; no runtime changes since.
+- Existing editor/public page post=5214 was empty before this test. First unstructured Services request failed before write (`8cedbe92-a289-4b22-810d-4e52104a7ac3`, `services_items_out_of_range`); no root was created. A fresh explicit three-item request then produced one operation `wpae-20260928182647-9f11f829`, one root `882b453`, and card roots `31672f2`, `54398cf`, `603b28a`.
+- Successful diagnostic route: `action_path=library_agent`, archetype `services`, provider/model `openrouter/free`, `reliable_structured`, one provider call. `library_applied=true`, UI/Navigator title `Courses Boxes`; exact catalog candidate ID/path was not returned. Final native tree came through `deterministic_fallback` after unusable provider/repair tree and a repair timeout, so the output is not verified as a direct native-template compilation.
+- All three requested title/body pairs and three native Unsplash Image widgets are present; structural checks and 6 content fields passed. An unintended heading, `Создай отдельную секцию услуг на post=5214`, leaked into the generated block. First card has black background; descriptions are green/low contrast. Desktop/mobile visual result FAIL; exact source of these styles has not been isolated.
+- After public reload the existing public tab displayed exactly one new Services root. Public desktop CSS viewport 1203×923, no horizontal overflow; cards are about 361px wide with 20px gaps. Canonical `_elementor_data` and durable operation-ledger readback were not separately confirmed.
+- Editor Mobile mode works: actual preview document viewport 345×736 CSS px; root about 345×1566; cards stack at y≈313/720/1127; `scrollWidth=clientWidth=345`, no horizontal overflow. Public mobile remains BLOCKED because the documented IAB viewport override did not change public `innerWidth` from 1203px. Do not label editor mobile as public mobile.
+- Advisory Vision score 68/confidence 95% flagged the black first card and leaked heading. It is not operation-bound review. Automatic and explicit targeted repair were refused by the existing root ownership/saved-state guard; no second write occurred. New test root `882b453` remains; no prior/user root was deleted or edited.
+- Fresh Browser Use PNG files are under `docs/audits/2026-09-28-services-v179/`: public desktop, editor desktop, and three editor-mobile frames covering cards 1–3. Browser bytes were JPEG (`FF D8 FF E0`), converted with `sips`; PNG signature/dimensions checked and each opened. Public desktop CSS viewport 1203×923; editor outer viewport 1203×923; mobile preview CSS viewport 345×736; PNG canvas 1143×923 public and 1144×923 editor.
+- No direct durable ledger or operation-bound Vision evidence. Detailed statuses, exact operation/roots, failures, and inline screenshots are in `LUNA_HANDOFF_REPORT.md`.
 
 ## Исторический baseline Services v177 (2026-09-28 04:47 +05:00)
 
@@ -30,7 +61,11 @@
 
 ## Скриншоты через Browser Use
 
-Для live-проверки используй Browser Use на уже открытых вкладках существующей страницы: capture bytes → проверить MIME/signature → JPEG конвертировать в PNG через `sips` → открыть и проверить → вставить inline и абсолютную ссылку. Указывать реальный CSS viewport отдельно от размеров внешнего PNG, post/root/operation IDs и editor/public source. Не считать размер editor shell viewport-ом iframe и не называть editor mobile public mobile.
+**Live-проверки с актуальными скриншотами обязательны.** Не считать live-проверку завершённой без свежего Browser Use capture после соответствующего save/reload, сохранённого PNG, проверки формата, открытия и визуального осмотра файла, inline-вставки и кликабельной абсолютной ссылки. Указывать фактический CSS viewport отдельно от размеров PNG, post/root/operation IDs и editor/public source; editor mobile не называть public mobile.
+
+Если версия плагина в открытом Elementor editor отстаёт от исходной версии, обновить плагин через WP Pusher по штатному release-процессу. Затем обновить существующую editor-вкладку безопасным reload и подтвердить актуальную версию в самом editor (inline config/чат и доступные загруженные assets); одного Plugins UI недостаточно. Не объявлять live-проверку успешной, пока не подтверждены текущая версия и требуемые screenshots.
+
+Работать на существующей странице и вкладках; новые WordPress pages/drafts для проверки не создавать.
 
 ## Исторические наблюдения до 2026-09-28
 
@@ -42,7 +77,7 @@
 - WP Pusher installation подтверждена ранее; текущая editor inline config и видимый chat показывают pluginVersion=v02.11.171, postId=5214, model openrouter/free, ready=true. Встроенный script добавлен inline через elementor-editor; отдельного JS URL нет. Elementor editor assets показывают 4.1.1.
 - Код во время текущего live прохода не менялся. Runtime tests из предыдущего v171 release были успешны; сейчас повторно запускались только документные проверки.
 
-## Services live на существующем post=5214
+## Исторический Services live на post=5214 — срез v171, 2026-09-27
 
 - Запрос: library-only Services с точными заголовком/вводным текстом и тремя title/body парами. UI route library_agent, archetype services. Диагностика одновременно сообщает library_applied=true и конечную команду deterministic_fallback variant 29; два repair-ответа были отклонены. Live template ID отсутствует. Поэтому библиотечный выбор не принят как доказанный.
 - UI сообщил write HTTP 200 для operation wpae-20260927161915-412fe84f, root ab47082, и три пары текста 8/8 проходят content fidelity. В public DOM после reload виден один top-level root ab47082.

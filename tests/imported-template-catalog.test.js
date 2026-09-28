@@ -11,9 +11,9 @@ const editorLibrary = fs.readFileSync(path.join(root, 'assets/js/elementor-block
 
 test('bundled Elementor template imports are complete and hash verified', () => {
   assert.equal(manifest.format, 'wpae-imported-elementor-templates-v1');
-  assert.equal(manifest.files.length, 157);
-  assert.equal(new Set(manifest.files.map((item) => item.id)).size, 157);
-  assert.equal(new Set(manifest.files.map((item) => item.file)).size, 157);
+  assert.equal(manifest.files.length, 158);
+  assert.equal(new Set(manifest.files.map((item) => item.id)).size, 158);
+  assert.equal(new Set(manifest.files.map((item) => item.file)).size, 158);
 
   let treeCount = 0;
   let proCount = 0;
@@ -26,7 +26,7 @@ test('bundled Elementor template imports are complete and hash verified', () => 
     if (item.has_content) treeCount++;
     if (item.elementor_pro_required) proCount++;
   }
-  assert.equal(treeCount, 155);
+  assert.equal(treeCount, 156);
   assert.equal(proCount, 76);
 });
 

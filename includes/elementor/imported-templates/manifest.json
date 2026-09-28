@@ -1893,24 +1893,6 @@
       "bytes": 32594
     },
     {
-      "id": "template-4a47022a01b46a6d",
-      "file": "global.json",
-      "original_filename": "global.json",
-      "sha256": "4a47022a01b46a6daafb0b9de424fca199963255c5c843e3d073f9bcb3c7e4e0",
-      "title": "Global Kit Styles",
-      "type": "section",
-      "template_type": "global-styles",
-      "category": "custom",
-      "tags": [
-        "custom",
-        "global"
-      ],
-      "elementor_pro_required": false,
-      "has_content": false,
-      "root_count": 0,
-      "bytes": 12625
-    },
-    {
       "id": "template-3166b8d7617bba8d",
       "file": "global-3166b8d7.json",
       "original_filename": "global — копия.json",
@@ -1927,6 +1909,24 @@
       "has_content": false,
       "root_count": 0,
       "bytes": 6994
+    },
+    {
+      "id": "template-4a47022a01b46a6d",
+      "file": "global.json",
+      "original_filename": "global.json",
+      "sha256": "4a47022a01b46a6daafb0b9de424fca199963255c5c843e3d073f9bcb3c7e4e0",
+      "title": "Global Kit Styles",
+      "type": "section",
+      "template_type": "global-styles",
+      "category": "custom",
+      "tags": [
+        "custom",
+        "global"
+      ],
+      "elementor_pro_required": false,
+      "has_content": false,
+      "root_count": 0,
+      "bytes": 12625
     },
     {
       "id": "template-f2b3fea711f9f7dd",
@@ -2635,6 +2635,25 @@
       "has_content": true,
       "root_count": 5,
       "bytes": 97352
+    },
+    {
+      "id": "template-services-photo-cards-v1",
+      "file": "services-photo-cards.json",
+      "original_filename": "user-corrected-services-reference.json",
+      "sha256": "1b758048ea30117d6dc1c93eb348bae1cc56de775cfa4fea4808688402717945",
+      "title": "Services — Photo Cards (User Reference)",
+      "type": "section",
+      "template_type": "section-services",
+      "category": "services",
+      "tags": [
+        "services",
+        "photo-cards",
+        "three-cards"
+      ],
+      "elementor_pro_required": false,
+      "has_content": true,
+      "root_count": 1,
+      "bytes": 159069
     },
     {
       "id": "template-1e66a058733c8df3",

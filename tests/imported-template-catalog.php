@@ -66,9 +66,9 @@ require __DIR__ . '/../includes/elementor/compose.php';
 require __DIR__ . '/../includes/elementor/block-library.php';
 
 $manifest = wpae_block_library_imported_template_manifest();
-imported_template_check( count( $manifest ) === 157, 'The plugin manifest must include all 157 imported JSON files.' );
+imported_template_check( count( $manifest ) === 158, 'The plugin manifest must include all 158 imported JSON files.' );
 $records = wpae_block_library_imported_template_records( '', [] );
-imported_template_check( count( $records ) === 155, 'Only the 155 exports with Elementor content trees should enter retrieval.' );
+imported_template_check( count( $records ) === 156, 'Only the 156 exports with Elementor content trees should enter retrieval.' );
 
 $ids = [];
 foreach ( $records as $record ) {
@@ -92,13 +92,13 @@ foreach ( $records as $record ) {
     $walk( (array) ( $record['elementor_data'] ?? [] ) );
     $ids[] = (string) ( $record['bundled_fixture_id'] ?? '' );
 }
-imported_template_check( count( array_unique( $ids ) ) === 155, 'Imported source IDs must be unique.' );
+imported_template_check( count( array_unique( $ids ) ) === 156, 'Imported source IDs must be unique.' );
 
 $catalog_response = wpae_block_library_list( new WP_REST_Request( [ 'include_imported' => 1, 'limit' => 200 ] ) );
 $catalog = $catalog_response->get_data();
-imported_template_check( (int) ( $catalog['count'] ?? 0 ) === 155, 'The editor library must expose all 155 plugin-local templates.' );
+imported_template_check( (int) ( $catalog['count'] ?? 0 ) === 156, 'The editor library must expose all 156 plugin-local templates.' );
 $catalog_ids = array_column( (array) ( $catalog['items'] ?? [] ), 'id' );
-imported_template_check( count( array_unique( $catalog_ids ) ) === 155 && ! in_array( 0, $catalog_ids, true ), 'Editor catalog template identities must be unique and non-database IDs.' );
+imported_template_check( count( array_unique( $catalog_ids ) ) === 156 && ! in_array( 0, $catalog_ids, true ), 'Editor catalog template identities must be unique and non-database IDs.' );
 
 $instantiated = 0;
 foreach ( $records as $record ) {
@@ -122,8 +122,42 @@ imported_template_check( count( $faq ) === 5, 'Archetype lookup should load only
 imported_template_check( count( array_filter( $faq, static fn( array $record ): bool => (string) ( $record['category'] ?? '' ) !== 'faq' ) ) === 0, 'Archetype lookup leaked a non-FAQ template.' );
 $service_records = wpae_block_library_imported_template_records( 'services', [ 'services' ] );
 $service_candidates = array_values( array_filter( $service_records, static fn( array $record ): bool => wpae_block_library_has_service_card_groups( (array) ( $record['elementor_data'] ?? [] ) ) ) );
-imported_template_check( count( $service_candidates ) === 1 && ( $service_candidates[0]['bundled_fixture_id'] ?? '' ) === 'template-a40df0dcc7c5642d', 'Services retrieval should offer the imported native card section with repeated heading/body cards, while excluding unadaptable roots and whole pages.' );
-imported_template_check( ( $service_candidates[0]['template_type'] ?? '' ) === 'section-services', 'Services candidate metadata lost its section archetype before the model decision.' );
+imported_template_check( count( $service_candidates ) === 2 && in_array( 'template-a40df0dcc7c5642d', array_column( $service_candidates, 'bundled_fixture_id' ), true ) && in_array( 'template-services-photo-cards-v1', array_column( $service_candidates, 'bundled_fixture_id' ), true ), 'Services retrieval should offer both compatible plugin-local card sections while excluding unadaptable roots and whole pages.' );
+$photo_services = null;
+foreach ( $service_candidates as $candidate ) {
+    if ( ( $candidate['bundled_fixture_id'] ?? '' ) === 'template-services-photo-cards-v1' ) {
+        $photo_services = $candidate;
+        break;
+    }
+}
+imported_template_check( is_array( $photo_services ) && ( $photo_services['template_type'] ?? '' ) === 'section-services', 'User-corrected Services template lost its section archetype before the model decision.' );
+$photo_widgets = [];
+$photo_copy = [];
+$photo_images = [];
+$collect_photo_services = static function ( array $nodes ) use ( &$collect_photo_services, &$photo_widgets, &$photo_copy, &$photo_images ): void {
+    foreach ( $nodes as $node ) {
+        if ( ! is_array( $node ) ) {
+            continue;
+        }
+        $widget_type = (string) ( $node['widgetType'] ?? '' );
+        if ( $widget_type !== '' ) {
+            $photo_widgets[] = $widget_type;
+        }
+        $settings = (array) ( $node['settings'] ?? [] );
+        if ( $widget_type === 'heading' ) {
+            $photo_copy[] = (string) ( $settings['title'] ?? '' );
+        } elseif ( $widget_type === 'text-editor' ) {
+            $photo_copy[] = trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) );
+        } elseif ( $widget_type === 'image' ) {
+            $photo_images[] = (array) ( $settings['image'] ?? [] );
+        }
+        $collect_photo_services( (array) ( $node['elements'] ?? [] ) );
+    }
+};
+$collect_photo_services( (array) ( $photo_services['elementor_data'] ?? [] ) );
+imported_template_check( count( array_filter( $photo_widgets, static fn( string $type ): bool => $type === 'image' ) ) === 3 && count( array_filter( $photo_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3 && count( array_filter( $photo_widgets, static fn( string $type ): bool => $type === 'heading' ) ) === 5 && count( array_filter( $photo_widgets, static fn( string $type ): bool => $type === 'text-editor' ) ) === 3, 'User-corrected Services recipe keeps the native badge/title, three image/icon/title/body cards, and no extra widgets.' );
+imported_template_check( in_array( 'УСЛУГИ', $photo_copy, true ) && in_array( 'Наши услуги', $photo_copy, true ) && count( array_filter( $photo_copy, static fn( string $value ): bool => $value === 'Название услуги' ) ) === 3 && count( array_filter( $photo_copy, static fn( string $value ): bool => $value === 'Описание услуги' ) ) === 3, 'User-corrected Services recipe preserves its badge and heading with reusable empty-content slots.' );
+imported_template_check( count( $photo_images ) === 3 && count( array_filter( $photo_images, static fn( array $image ): bool => str_contains( (string) ( $image['url'] ?? '' ), 'images.unsplash.com/' ) && trim( (string) ( $image['alt'] ?? '' ) ) !== '' ) ) === 3, 'All three bundled photo slots retain their Unsplash URLs and alt text.' );
 imported_template_check( (int) ( $GLOBALS['template_db_write_attempts'] ?? 0 ) === 0, 'Plugin-local source loading attempted to create WordPress database records.' );
 
 echo wp_json_encode( [ 'status' => 'passed', 'manifest_files' => count( $manifest ), 'retrievable_trees' => count( $records ), 'instantiated_previews' => $instantiated, 'faq_candidates' => count( $faq ), 'services_candidates' => count( $service_candidates ), 'source' => 'plugin files; no WordPress records created' ] ) . PHP_EOL;

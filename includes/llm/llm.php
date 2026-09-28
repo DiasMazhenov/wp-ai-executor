@@ -1467,58 +1467,59 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     };
     $count_repeatable_containers( $elements );
     $structural_repeatable_container_count = $repeatable_container_count;
-    $service_card_count = 0;
-    $expected_service_pairs = array_values( array_filter( (array) ( $plan['content_pairs'] ?? [] ), static function ( $pair ): bool {
+	$service_card_count = 0;
+	$expected_service_pairs = array_values( array_filter( (array) ( $plan['content_pairs'] ?? [] ), static function ( $pair ): bool {
 		return is_array( $pair ) && trim( (string) ( $pair['label'] ?? '' ) ) !== '' && trim( (string) ( $pair['content'] ?? '' ) ) !== '';
 	} ) );
 	if ( sanitize_key( (string) ( $plan['archetype'] ?? '' ) ) === 'services' && ! empty( $expected_service_pairs ) ) {
-		$matched_service_pairs = [];
-		$count_service_cards = static function ( array $nodes ) use ( &$count_service_cards, &$matched_service_pairs, &$service_card_count, $expected_service_pairs ): void {
+		$service_containers = [];
+		$collect_service_container_copy = static function ( array $nodes, array $ancestors = [] ) use ( &$collect_service_container_copy, &$service_containers ): void {
 			foreach ( $nodes as $element ) {
 				if ( ! is_array( $element ) ) {
 					continue;
 				}
+				$child_ancestors = $ancestors;
 				if ( ( $element['elType'] ?? '' ) === 'container' ) {
-					$headings = [];
-					$bodies = [];
-					foreach ( (array) ( $element['elements'] ?? [] ) as $child ) {
-						if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'widget' ) {
-							continue;
+					$service_containers[] = [ 'headings' => [], 'bodies' => [] ];
+					$child_ancestors[] = count( $service_containers ) - 1;
+				}
+				if ( ( $element['elType'] ?? '' ) === 'widget' ) {
+					$type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+					$settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+					$heading = $type === 'heading' ? (string) ( $settings['title'] ?? '' ) : ( $type === 'icon-box' ? (string) ( $settings['title_text'] ?? '' ) : '' );
+					$body = $type === 'text-editor' ? wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) : ( $type === 'icon-box' ? wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) : '' );
+					foreach ( $child_ancestors as $container_index ) {
+						if ( trim( $heading ) !== '' ) {
+							$service_containers[ $container_index ]['headings'][] = wpae_llm_normalize_content_text( $heading );
 						}
-						$type = sanitize_key( (string) ( $child['widgetType'] ?? '' ) );
-						$settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
-						if ( $type === 'heading' && trim( (string) ( $settings['title'] ?? '' ) ) !== '' ) {
-							$headings[] = wpae_llm_normalize_content_text( $settings['title'] );
-						} elseif ( $type === 'text-editor' && trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) ) !== '' ) {
-							$bodies[] = wpae_llm_normalize_content_text( $settings['editor'] );
-						} elseif ( $type === 'icon-box' ) {
-							if ( trim( (string) ( $settings['title_text'] ?? '' ) ) !== '' ) {
-								$headings[] = wpae_llm_normalize_content_text( $settings['title_text'] );
-							}
-							if ( trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) ) !== '' ) {
-								$bodies[] = wpae_llm_normalize_content_text( $settings['description_text'] );
-							}
-						}
-					}
-					foreach ( $expected_service_pairs as $pair_index => $pair ) {
-						if ( isset( $matched_service_pairs[ $pair_index ] ) ) {
-							continue;
-						}
-						$expected_title = wpae_llm_normalize_content_text( (string) $pair['label'] );
-						$expected_body = wpae_llm_normalize_content_text( (string) $pair['content'] );
-						if ( in_array( $expected_title, $headings, true ) && in_array( $expected_body, $bodies, true ) ) {
-							$matched_service_pairs[ $pair_index ] = true;
-							$service_card_count++;
-							break;
+						if ( trim( $body ) !== '' ) {
+							$service_containers[ $container_index ]['bodies'][] = wpae_llm_normalize_content_text( $body );
 						}
 					}
 				}
-				$count_service_cards( (array) ( $element['elements'] ?? [] ) );
+				$collect_service_container_copy( (array) ( $element['elements'] ?? [] ), $child_ancestors );
 			}
 		};
-		$count_service_cards( $elements );
+		$collect_service_container_copy( $elements );
+		$matched_service_pairs = [];
+		foreach ( $service_containers as $container_copy ) {
+			$matches_in_container = [];
+			foreach ( $expected_service_pairs as $pair_index => $pair ) {
+				$expected_title = wpae_llm_normalize_content_text( (string) $pair['label'] );
+				$expected_body = wpae_llm_normalize_content_text( (string) $pair['content'] );
+				if ( in_array( $expected_title, $container_copy['headings'], true ) && in_array( $expected_body, $container_copy['bodies'], true ) ) {
+					$matches_in_container[] = $pair_index;
+				}
+			}
+			// A section wrapper may contain every service. Count only containers
+			// whose own subtree represents exactly one requested service pair.
+			if ( count( $matches_in_container ) === 1 ) {
+				$matched_service_pairs[ $matches_in_container[0] ] = true;
+			}
+		}
+		$service_card_count = count( $matched_service_pairs );
 		// Generic leaf-container counts include structural shells. For Services,
-		// only a container holding one complete requested title/body pair is a card.
+		// only an isolated container holding one complete requested pair is a card.
 		$repeatable_container_count = $service_card_count;
 	}
     $forbidden_found = array_values( array_filter( (array) ( $plan['forbidden_widgets'] ?? [] ), static fn( $type ): bool => ! empty( $counts[ sanitize_key( (string) $type ) ] ) ) );
@@ -2816,11 +2817,17 @@ function wpae_llm_prepare_fallback_elements( array &$elements, string $message, 
 	return wpae_llm_content_fidelity( $message, $elements );
 }
 
-function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, int &$changed, string $archetype = '', bool $content_already_set = false ): bool {
+function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, int &$changed, string $archetype = '', bool $content_already_set = false, array &$state = [] ): bool {
     $title = trim( (string) ( $pair['label'] ?? '' ) );
     $content = trim( (string) ( $pair['content'] ?? '' ) );
-    $title_set = false;
-    $content_set = false;
+    if ( ! array_key_exists( 'title_set', $state ) ) {
+        $state['title_set'] = false;
+    }
+    if ( ! array_key_exists( 'content_set', $state ) ) {
+        $state['content_set'] = $content_already_set;
+    }
+    $title_set = &$state['title_set'];
+    $content_set = &$state['content_set'];
     foreach ( $elements as &$element ) {
         if ( ! is_array( $element ) ) {
             continue;
@@ -2879,7 +2886,7 @@ function wpae_llm_apply_library_pair_to_widgets( array &$elements, array $pair, 
         if ( ( $title_set && ( $content_set || $content === '' ) ) ) {
             return true;
         }
-        if ( is_array( $element['elements'] ?? null ) && wpae_llm_apply_library_pair_to_widgets( $element['elements'], $pair, $changed, $archetype, $content_set || $content_already_set ) ) {
+        if ( is_array( $element['elements'] ?? null ) && wpae_llm_apply_library_pair_to_widgets( $element['elements'], $pair, $changed, $archetype, $content_already_set, $state ) ) {
             return true;
         }
     }
@@ -8727,7 +8734,29 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
         'muted' => (string) ( $design_palette['muted'] ?? '#6b7280' ),
         'surface' => (string) ( $design_palette['surface'] ?? '#ffffff' ),
     ];
-    $contains_card_signal = static function ( array $nodes ) use ( &$contains_card_signal, $archetype ): bool {
+    $collect_service_copy_flags = static function ( array $nodes ) use ( &$collect_service_copy_flags ): array {
+		$flags = [ 'title' => false, 'description' => false ];
+		foreach ( $nodes as $node ) {
+			if ( ! is_array( $node ) ) {
+				continue;
+			}
+			if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+				$widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+				$settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+				$flags['title'] = $flags['title'] || ( $widget_type === 'heading' && trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) ) !== '' );
+				$flags['description'] = $flags['description'] || ( $widget_type === 'text-editor' && trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) ) !== '' );
+			}
+			$nested_flags = $collect_service_copy_flags( (array) ( $node['elements'] ?? [] ) );
+			$flags['title'] = $flags['title'] || $nested_flags['title'];
+			$flags['description'] = $flags['description'] || $nested_flags['description'];
+		}
+		return $flags;
+	};
+	$contains_card_signal = static function ( array $nodes ) use ( &$contains_card_signal, $archetype, $collect_service_copy_flags ): bool {
+		if ( $archetype === 'services' ) {
+			$service_copy_flags = $collect_service_copy_flags( $nodes );
+			return $service_copy_flags['title'] && $service_copy_flags['description'];
+		}
         $has_service_title = false;
         $has_service_description = false;
         foreach ( $nodes as $node ) {
@@ -10634,6 +10663,19 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $decoded_shape = wpae_llm_validate_action_shape( $action, $post_id );
         $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
         $initial_validation = wpae_llm_build_action_validation_diagnostics( $action, $post_id, $message );
+		$preselected_library_choice = wpae_llm_resolve_library_choice( $library_retrieval, $provider_library_choice );
+		$valid_model_selected_library = ! empty( $preselected_library_choice['ok'] )
+			&& is_array( $preselected_library_choice['selected']['elementor_data'] ?? null )
+			&& ! empty( $preselected_library_choice['selected']['elementor_data'] );
+		if ( $valid_model_selected_library && ! empty( $decoded_shape['ok'] ) ) {
+			// The provider tree is discarded when the model picks an allowlisted
+			// library candidate; validate the envelope here and the adapted tree below.
+			$initial_validation['ok'] = true;
+			$initial_validation['failed_checks'] = [];
+			$initial_validation['validation_scope'] = 'allowlisted_library_choice';
+			$initial_validation['provider_tree_ignored'] = true;
+			$initial_validation['content_validation_deferred_to_library_tree'] = true;
+		}
         $action_diagnostics['validation'] = $initial_validation;
         if ( $provider_transport_fallback ) {
             $action_diagnostics['response_type'] = 'deterministic_fallback';
@@ -10767,7 +10809,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( ! $targeted_edit ) {
             wpae_llm_remove_unrequested_buttons( $action['elements'], $message, $fallback_content_changed );
             $preflight_plan_audit = wpae_llm_content_plan_audit( $content_plan, (array) $action['elements'] );
-            if ( empty( $preflight_plan_audit['ok'] ) && ! $action_fallback ) {
+            if ( empty( $preflight_plan_audit['ok'] ) && ! $action_fallback && ! $valid_model_selected_library ) {
                 $action = wpae_llm_build_fallback_action( $message, $post_id );
                 $action_fallback = true;
                 $fallback_content_changed = 0;
@@ -10941,7 +10983,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             }
         }
         $provider_design = ! $action_fallback && ! $library_applied;
-        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design && ! $provider_design ) {
+        if ( is_array( $action['elements'] ?? null ) && ! ( $library_applied && $action_archetype === 'services' ) && ! $library_preserve_design && ! $provider_design ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
             $action['elements'] = wpae_llm_apply_bento_layout( $action['elements'], $action_archetype, $bento_changed );
             $action['elements'] = wpae_llm_repair_unbalanced_repeatable_layout( $action['elements'], $message, $action_archetype, $composition_repair_changed );
@@ -10954,7 +10996,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( is_array( $action['elements'] ?? null ) && $library_preserve_design ) {
             $action['elements'] = wpae_llm_enforce_preserved_library_badge( $action['elements'], $action_archetype, $visual_grammar_changed );
         }
-        if ( is_array( $action['elements'] ?? null ) && ! $library_preserve_design && ! $provider_design ) {
+        if ( is_array( $action['elements'] ?? null ) && ! ( $library_applied && $action_archetype === 'services' ) && ! $library_preserve_design && ! $provider_design ) {
             $action['elements'] = wpae_llm_apply_generation_visual_grammar( $action['elements'], $action_archetype, $visual_grammar_changed );
             $final_bento_changed = 0;
             wpae_llm_normalize_bento_grids_recursive( $action['elements'], $final_bento_changed, $action_archetype );
