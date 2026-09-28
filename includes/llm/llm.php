@@ -11139,6 +11139,16 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'details' => [ 'regenerate' => $vision_regenerate, 'feedback_length' => strlen( $vision_feedback_prompt ) ],
 			];
 		}
+		$library_authored_design_preserved = false;
+		if ( $library_applied && ! empty( $selected_library['trusted_bundled'] ) ) {
+			foreach ( (array) ( $action['elements'] ?? [] ) as $library_root ) {
+				$root_classes = preg_split( '/\\s+/', trim( (string) ( $library_root['settings']['_css_classes'] ?? '' ) ) );
+				if ( is_array( $root_classes ) && in_array( 'wpae-preserve-library-design', $root_classes, true ) ) {
+					$library_authored_design_preserved = true;
+					break;
+				}
+			}
+		}
 		$library_trace = [
             'status' => $library_applied ? 'applied' : ( $library_selection_source === 'model_choice' ? 'rejected' : ( $library_selection_source === 'model_declined' ? 'declined' : ( $library_selection_source === 'invalid_model_choice' ? 'invalid_choice' : ( ! empty( $library_retrieval['selection_candidates'] ) ? 'not_selected' : (string) ( $library_retrieval['status'] ?? 'skipped' ) ) ) ) ),
             'reason' => $library_applied
@@ -11154,7 +11164,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             'fidelity' => $template_fidelity,
             'content_changes' => $library_changed,
             'layout_changes' => $library_layout_changed,
-            'design_preserved' => $library_preserve_design,
+            'design_preserved' => $library_preserve_design || $library_authored_design_preserved,
+            'design_preservation_scope' => $library_authored_design_preserved ? 'authored_layout_after_project_palette_adaptation' : ( $library_preserve_design ? 'trusted_library_design' : 'normalized_to_project_design_system' ),
             'bundled_fixture_id' => (string) ( $selected_library['bundled_fixture_id'] ?? '' ),
         ];
 		$library_message = 'Шаблон не выбран; библиотека не применялась.';
@@ -11360,7 +11371,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'library_applied' => $library_applied,
             ],
         ];
-        $execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $design_engine_active || $provider_design || $action_fallback, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
+		$execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $design_engine_active || $provider_design || $action_fallback || $library_authored_design_preserved, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         $generation_diagnostics['execution'] = [
             'ok' => ! empty( $execution['ok'] ),

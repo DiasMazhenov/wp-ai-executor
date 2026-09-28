@@ -163,8 +163,8 @@
         "includes/elementor/imported-templates/home.json": "90e12653da093734bfee6dd89d570ffe5b19dc4f5e8d2bdf2c96910d748c41d4",
         "includes/elementor/imported-templates/homepage.json": "41d0c3ae5c7d1f4e13f6e21e07c4a70b768e240cc1189e8fcd21ca37979582d2",
         "includes/elementor/imported-templates/love-stories.json": "37a57d9b85176460c3523fa68b4764f941f38be1f010083884a7d1870b44b429",
-        "includes/elementor/imported-templates/manifest.json": "fda20672133911f18da10d7400f38f5bdcf36e7a1664a2ec2de54e3e01cbe43c",
-        "includes/elementor/imported-templates/services-photo-cards.json": "1b758048ea30117d6dc1c93eb348bae1cc56de775cfa4fea4808688402717945",
+        "includes/elementor/imported-templates/manifest.json": "fc7fc833047c3fe2d4a341edf6add2ea6fbf87abd6363ad8758baf3c099305f6",
+        "includes/elementor/imported-templates/services-photo-cards.json": "db84c2666ca77fa504a9810ea36e1caa748b650c93e93ebc0683e876b528fef3",
         "includes/elementor/imported-templates/membership-plan.json": "52b616c1d32f72031cbdbbc0c5c7219845ffdd6fcb21f193c83cf950630ab294",
         "includes/elementor/imported-templates/menu.json": "6f8ebe2165777c2b09beb9cd0d8cc1be1028bf48a2ee4a598b547d7c7a1734ac",
         "includes/elementor/imported-templates/metform-contact.json": "20c49fe03e61281bf376245087d1e422e2742426c7ef33fed91fb98073fb33c3",
@@ -238,7 +238,7 @@
         "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
         "includes/llm/design-plan.php": "13b33d7974ed5f0594caf27651596dec9171c4e75a5170c346992e7cb2874910",
         "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-        "includes/llm/llm.php": "29d8f95442d82fa7898be6141d73fa833ad98fb72960687f2f506ac79381723b",
+        "includes/llm/llm.php": "c4e2ef079058880d80c1436ee78eaeaf231989c04bfa6e9e45eb1684612260dc",
         "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
         "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
         "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -251,6 +251,6 @@
         "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
         "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
         "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-        "wp-ai-executor.php": "2f8bc6d9082919049706983311a9989118314f41478136af69857d3c8a96722e"
+        "wp-ai-executor.php": "40d19db4f40186c2372bbfd954d0ef38f843bca0ab3b9b7acccd4d8b36eda02f"
     }
 }

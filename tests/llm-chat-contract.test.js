@@ -716,7 +716,7 @@ assert.match(llm, /available_variants' => wpae_llm_visual_variant_count\(\)/);
 assert.match(llm, /array_intersect\( \$candidate_signatures, \$used_signatures \)/);
 assert.match(llm, /\$prefer_new_layout/);
 assert.match(llm, /\$candidate_layouts/);
-  assert.match(llm, /wpae_llm_execute_action\( \$action, \$post_id, \$action_archetype, \$execution_variation_seed, \$message, (?:\$design_engine_active \|\| )?\$provider_design \|\| \$action_fallback, \[ 'replace_root_ids' => \$vision_regenerate \? \$operation_owned_root_ids : \[\] \] \)/);
+  assert.match(llm, /wpae_llm_execute_action\( \$action, \$post_id, \$action_archetype, \$execution_variation_seed, \$message, (?:\$design_engine_active \|\| )?\$provider_design \|\| \$action_fallback(?: \|\| \$library_authored_design_preserved)?, \[ 'replace_root_ids' => \$vision_regenerate \? \$operation_owned_root_ids : \[\] \] \)/);
 assert.match(llm, /process_timeline_final/);
 assert.match(llm, /\$process_request = wpae_llm_is_process_request\( \$message, \$archetype \)/);
 assert.match(llm, /\$process_request \? 'process' : \$archetype/);

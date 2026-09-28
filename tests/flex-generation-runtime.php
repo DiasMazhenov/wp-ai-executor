@@ -72,7 +72,18 @@ function wp_generate_password( ...$args ) { return 'test-operation'; }
 function wpae_vision_decrypt_api_key( $value ) { return 'test-key'; }
 function wpae_capability_enabled( $value ) { return true; }
 function wpae_build_project_design_system() { return []; }
-function wpae_get_project_design_tokens() { return [ 'palette' => [ 'ink' => '#111827' ] ]; }
+function wpae_get_project_design_tokens() {
+    $tokens = [ 'palette' => [ 'ink' => '#111827' ] ];
+    if ( ! empty( $GLOBALS['test_project_typography_tokens'] ) ) {
+        $tokens['native_tokens']['typography'] = [
+            'display' => [ 'font_family' => 'inherit', 'desktop' => '3.5rem', 'tablet' => '2.75rem', 'mobile' => '2.25rem', 'weight' => '700', 'line_height' => '1.05' ],
+            'subheading' => [ 'font_family' => 'inherit', 'desktop' => '2rem', 'tablet' => '1.75rem', 'mobile' => '1.5rem', 'weight' => '600', 'line_height' => '1.2' ],
+            'body' => [ 'font_family' => 'inherit', 'desktop' => '1rem', 'tablet' => '1rem', 'mobile' => '1rem', 'weight' => '400', 'line_height' => '1.5' ],
+            'utility' => [ 'font_family' => 'inherit', 'desktop' => '0.875rem', 'tablet' => '0.875rem', 'mobile' => '0.875rem', 'weight' => '500', 'line_height' => '1.4' ],
+        ];
+    }
+    return $tokens;
+}
 function wpae_get_design_system_required_classes() { return [ 'wpae-system-test' ]; }
 function wpae_get_design_system_id() { return 'test'; }
 function wpae_block_library_retrieve_for_prompt( ...$args ) { return $GLOBALS['library']; }
@@ -1675,10 +1686,12 @@ $GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [ provider_reply( wp_json_encode( $services_provider_action ) ) ];
+$GLOBALS['test_project_typography_tokens'] = true;
 $services_request = new WP_REST_Request();
 $services_request->set_param( 'message', $services_message );
 $services_request->set_param( 'context', [ 'post_id' => 42 ] );
 $services_response = wpae_llm_chat_request( $services_request );
+unset( $GLOBALS['test_project_typography_tokens'] );
 $services_response_data = $services_response instanceof WP_REST_Response ? $services_response->get_data() : [];
 $services_trace = (array) ( $services_response_data['library'] ?? [] );
 $services_written = array_slice( (array) $GLOBALS['page_data'], count( $legacy_page ) );
@@ -1694,6 +1707,22 @@ $collect_services_written = static function ( array $nodes ) use ( &$collect_ser
 	}
 };
 $collect_services_written( $services_written );
+$services_card_heading_settings = [];
+$services_badge_settings = [];
+$collect_services_layout_controls = static function ( array $nodes ) use ( &$collect_services_layout_controls, &$services_card_heading_settings, &$services_badge_settings ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$settings = (array) ( $node['settings'] ?? [] );
+	$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' && in_array( 'wpae-card-heading', $classes, true ) ) { $services_card_heading_settings[] = $settings; }
+		if ( ( $node['elType'] ?? '' ) === 'container' && in_array( 'wpae-generated-badge', $classes, true ) ) { $services_badge_settings[] = $settings; }
+		$collect_services_layout_controls( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_services_layout_controls( $services_written );
+$services_reference_type_matches = count( $services_card_heading_settings ) === 3 && count( array_filter( $services_card_heading_settings, static fn( $settings ): bool => ( $settings['header_size'] ?? '' ) === 'div' && ( $settings['typography_font_size']['unit'] ?? '' ) === 'px' && (float) ( $settings['typography_font_size']['size'] ?? 0 ) === 22.0 && ( $settings['typography_font_size_tablet']['unit'] ?? '' ) === 'rem' && (float) ( $settings['typography_font_size_tablet']['size'] ?? 0 ) === 1.75 && ( $settings['typography_font_size_mobile']['unit'] ?? '' ) === 'rem' && (float) ( $settings['typography_font_size_mobile']['size'] ?? 0 ) === 1.5 ) ) === 3;
+check( $services_reference_type_matches, 'Production Services write preserves the reference 22px / 1.75rem / 1.5rem card titles instead of mapping them to the 3.5rem display token: ' . wp_json_encode( $services_card_heading_settings ) );
+check( count( $services_badge_settings ) === 1 && ( $services_badge_settings[0]['align_self'] ?? '' ) === 'flex-start' && ( $services_badge_settings[0]['_element_width'] ?? '' ) === 'initial' && (float) ( $services_badge_settings[0]['_flex_grow'] ?? -1 ) === 0.0 && ( $services_badge_settings[0]['width']['size'] ?? null ) === '' && ( $services_badge_settings[0]['width_mobile']['size'] ?? null ) === '' && ( $services_badge_settings[0]['_flex_size'] ?? null ) === '' && ( $services_badge_settings[0]['_flex_size_mobile'] ?? null ) === '', 'Production Services write keeps the reference pill intrinsic-width controls at desktop and mobile' );
 check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'Imported Services design uses the agent library decision route and the single existing writer: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'library' => $services_response_data['library'] ?? [], 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '', 'message' => $services_response instanceof WP_Error ? $services_response->get_error_message() : '', 'error_data' => $services_response instanceof WP_Error ? $services_response->get_error_data() : [] ] ) );
 $services_step_statuses = [];
 $services_library_diagnostics = [];
@@ -1702,7 +1731,7 @@ foreach ( (array) ( $services_response_data['steps'] ?? [] ) as $service_step ) 
 	if ( ( $service_step['id'] ?? '' ) === 'library_retrieval' ) { $services_library_diagnostics = (array) ( $service_step['details'] ?? [] ); }
 }
 check( ( $services_trace['selection_source'] ?? '' ) === 'model_choice' && ( $services_trace['model_choice'] ?? '' ) === 'candidate_1' && ( $services_trace['selected']['title'] ?? '' ) === 'Services — Photo Cards (User Reference)' && ( $services_trace['status'] ?? '' ) === 'applied', 'The model-selected user Services reference reaches production adaptation: ' . wp_json_encode( [ 'source' => $services_trace['selection_source'] ?? '', 'choice' => $services_trace['model_choice'] ?? '', 'title' => $services_trace['selected']['title'] ?? '', 'status' => $services_trace['status'] ?? '', 'reason' => $services_trace['reason'] ?? '', 'fidelity' => $services_trace['fidelity'] ?? [], 'library_diagnostics' => $services_library_diagnostics, 'root_count' => count( $services_written ), 'steps' => $services_step_statuses ] ) );
-check( array_key_exists( 'design_preserved', $services_trace ) && $services_trace['design_preserved'] === false && ! str_contains( $services_written_json, 'wpae-preserve-library-design' ), 'Trusted Services structure is re-skinned through the project design system instead of retaining source-site global colors' );
+check( ! empty( $services_trace['design_preserved'] ) && ( $services_trace['design_preservation_scope'] ?? '' ) === 'authored_layout_after_project_palette_adaptation' && str_contains( $services_written_json, 'wpae-preserve-library-design' ), 'The bundled Services reference keeps its authored composition after safe palette adaptation' );
 check( count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'сам выберет подходящий шаблон' ) && ! str_contains( $services_written_json, 'временный QA-блок' ), 'Imported Services cards retain exact requested text without exposing the prompt instructions' );
 $services_written_widgets = [];
 $collect_services_widget_types = static function ( array $nodes ) use ( &$collect_services_widget_types, &$services_written_widgets ): void {

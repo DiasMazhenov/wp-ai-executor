@@ -2640,7 +2640,7 @@
       "id": "template-services-photo-cards-v1",
       "file": "services-photo-cards.json",
       "original_filename": "user-corrected-services-reference.json",
-      "sha256": "1b758048ea30117d6dc1c93eb348bae1cc56de775cfa4fea4808688402717945",
+      "sha256": "db84c2666ca77fa504a9810ea36e1caa748b650c93e93ebc0683e876b528fef3",
       "title": "Services — Photo Cards (User Reference)",
       "type": "section",
       "template_type": "section-services",
