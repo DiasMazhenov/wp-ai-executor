@@ -682,7 +682,7 @@ assert.match(llm, /\$used_buttons/);
 assert.match(llm, /if \( is_array\( \$target \) \) \{/);
 assert.match(llm, /презентац\\w\*\|выступлен\\w\*\|руководител\\w\*/iu);
 assert.match(llm, /why\\s\+choose\(\?:\\s\+us\)\?/iu);
-assert.match(llm, /\$library_preserve_design = ! empty\( \$selected_library\['trusted_bundled'\] \) && \$action_archetype !== 'hero'/);
+assert.match(llm, /\$library_preserve_design = ! empty\( \$selected_library\['trusted_bundled'\] \) && ! in_array\( \$action_archetype, \[ 'hero', 'services' \], true \)/);
 assert.match(llm, /wpae_llm_normalize_library_layout\( \$action\['elements'\], \$placeholder_layout_changed, \$action_archetype \)/);
 assert.match(llm, /wpae_llm_sync_native_photo_overlay_settings\( \$settings, \$is_photo_container, \$has_light_text\( \$children \) \)/);
 assert.match(llm, /\$settings\['title_color'\] = '#ffffff'/);

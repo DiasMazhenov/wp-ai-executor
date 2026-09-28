@@ -2450,6 +2450,9 @@ function wpae_llm_clear_unrequested_library_copy( array &$elements, string $mess
     $requested_text = wpae_llm_normalize_content_text( implode( ' ', $requested ) );
     $title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? ( $requested[0] ?? '' ) ) );
     if ( $services_request ) {
+        // An imperative first line is routing context, not a heading. Only put
+        // a section title in the design when the user labeled one explicitly.
+        $title = '';
         foreach ( (array) ( wpae_brief_ir_parse( $message )['content'] ?? [] ) as $item ) {
             if ( is_array( $item ) && ( $item['role'] ?? '' ) === 'title' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== '' ) {
                 $title = trim( sanitize_text_field( (string) $item['exact_text'] ) );
@@ -8716,6 +8719,14 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
             || strpos( $normalized, 'sed ut unde omnis' ) === 0
             || strpos( $normalized, 'volur tatem accus' ) !== false;
     };
+    $design_palette = function_exists( 'wpae_get_project_design_tokens' )
+        ? (array) ( wpae_get_project_design_tokens()['palette'] ?? [] )
+        : [];
+    $service_colors = [
+        'ink' => (string) ( $design_palette['ink'] ?? '#111827' ),
+        'muted' => (string) ( $design_palette['muted'] ?? '#6b7280' ),
+        'surface' => (string) ( $design_palette['surface'] ?? '#ffffff' ),
+    ];
     $contains_card_signal = static function ( array $nodes ) use ( &$contains_card_signal, $archetype ): bool {
         $has_service_title = false;
         $has_service_description = false;
@@ -8763,7 +8774,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
     };
     $placeholder_heading_index = 0;
     $library_image_index = 0;
-    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, $has_meaningful_descendant, &$placeholder_heading_index, &$library_image_index, $is_library_image_placeholder, $next_library_image, $library_image_alt ): array {
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, $has_meaningful_descendant, &$placeholder_heading_index, &$library_image_index, $is_library_image_placeholder, $next_library_image, $library_image_alt, $service_colors ): array {
         $normalized_nodes = [];
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
@@ -8774,6 +8785,16 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
             $element_type = (string) ( $element['elType'] ?? '' );
             if ( $element_type === 'widget' ) {
                 $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
+                if ( $archetype === 'services' && in_array( $widget_type, [ 'spacer', 'divider' ], true ) ) {
+                    $changed++;
+                    continue;
+                }
+                if ( $archetype === 'services' && ! empty( $settings['__globals__'] ) ) {
+                    // Imported Elementor global IDs belong to the source site's theme.
+                    // Services are re-skinned with the active project tokens below.
+                    unset( $settings['__globals__'] );
+                    $changed++;
+                }
                 if ( in_array( $widget_type, [ 'image', 'image-box' ], true ) ) {
                     $image = is_array( $settings['image'] ?? null ) ? $settings['image'] : [];
                     $image_url = trim( (string) ( $image['url'] ?? $settings['image_url'] ?? '' ) );
@@ -8878,7 +8899,20 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                         $changed++;
                     }
                 }
+                if ( $archetype === 'services' && $widget_type === 'heading' ) {
+                    $settings['title_color'] = $service_colors['ink'];
+                } elseif ( $archetype === 'services' && $widget_type === 'text-editor' ) {
+                    $settings['text_color'] = $service_colors['muted'];
+                }
             } elseif ( $element_type === 'container' ) {
+                if ( $archetype === 'services' && ! empty( $settings['__globals__'] ) ) {
+                    unset( $settings['__globals__'] );
+                    $changed++;
+                }
+                if ( $archetype === 'services' && $depth === 0 ) {
+                    $settings['background_background'] = 'classic';
+                    $settings['background_color'] = 'transparent';
+                }
                 if ( wpae_llm_normalize_generated_container_spacing( $settings ) ) {
                     $changed++;
                 }
@@ -8929,7 +8963,15 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $settings['flex_gap_tablet'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
                     $settings['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
                     $settings['background_background'] = 'classic';
-                    $settings['background_color'] = '#ffffff';
+                    $settings['background_color'] = $service_colors['surface'];
+                    foreach ( [
+                        'background_color_b', 'background_gradient_type', 'background_gradient_angle',
+                        'background_gradient_position', 'background_color_stop', 'background_color_b_stop',
+                        'background_overlay_background', 'background_overlay_color', 'background_overlay_color_b',
+                        'background_overlay_opacity', 'background_overlay_opacity_b', 'background_overlay_gradient_type',
+                    ] as $source_surface_key ) {
+                        unset( $settings[ $source_surface_key ] );
+                    }
                     $settings['border_border'] = 'solid';
                     $settings['border_color'] = '#d1d5db';
                     $settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
@@ -10821,7 +10863,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
                     $action_fallback = false;
-                    $library_preserve_design = ! empty( $selected_library['trusted_bundled'] ) && $action_archetype !== 'hero';
+                    // Services templates often carry source-site Elementor globals and
+                    // deliberately mixed card treatments. Keep their structure, but let
+                    // the Services normalizer and active project tokens own the palette.
+                    $library_preserve_design = ! empty( $selected_library['trusted_bundled'] ) && ! in_array( $action_archetype, [ 'hero', 'services' ], true );
                     if ( $library_preserve_design ) {
                         unset( $action['fallback_variant'] );
                         $placeholder_layout_changed = 0;

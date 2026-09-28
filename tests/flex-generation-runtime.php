@@ -1610,10 +1610,41 @@ $services_probe_audit = wpae_llm_content_plan_audit( $services_plan, $services_a
 $services_probe = [ 'changes' => $services_adaptation_changes, 'shape' => $services_probe_shape, 'fidelity' => $services_probe_fidelity, 'audit' => $services_probe_audit ];
 check( ! empty( $services_probe_shape['ok'] ) && ! empty( $services_probe_fidelity['ok'] ) && ! empty( $services_probe_audit['ok'] ), 'Imported Services card adapter must satisfy native shape, exact content, and repeatable-plan checks: ' . wp_json_encode( $services_probe, JSON_UNESCAPED_UNICODE ) );
 check( $collect_service_card_pairs( $services_adapted_probe ) === $expected_services_pairs, 'The imported Course Boxes adapter maps three service pairs in order without an ID forced by the application' );
+$services_command_prompt = "Создай отдельную секцию услуг на post=5214\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
+$services_command_changes = 0;
+$services_command_tree = wpae_llm_apply_library_template( $services_template_data, $services_command_prompt, 'services', $services_command_changes );
+wpae_llm_clear_unrequested_library_copy( $services_command_tree, $services_command_prompt, $services_command_changes );
+$services_command_layout_changes = 0;
+$services_command_tree = wpae_llm_normalize_library_layout( $services_command_tree, $services_command_layout_changes, 'services' );
+$services_command_json = wp_json_encode( $services_command_tree, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+$services_command_headings = [];
+$services_command_spacers = 0;
+$services_command_dividers = 0;
+$services_command_globals = 0;
+
+$collect_services_command_nodes = static function ( array $nodes ) use ( &$collect_services_command_nodes, &$services_command_headings, &$services_command_spacers, &$services_command_dividers, &$services_command_globals ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' ) { $services_command_headings[] = trim( (string) ( $node['settings']['title'] ?? '' ) ); }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'spacer' ) { $services_command_spacers++; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'divider' ) { $services_command_dividers++; }
+		if ( ! empty( $node['settings']['__globals__'] ) ) { $services_command_globals++; }
+		$collect_services_command_nodes( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_services_command_nodes( $services_command_tree );
+check( in_array( 'Стратегия проекта', $services_command_headings, true ) && ! in_array( 'Услуги', $services_command_headings, true ) && ! str_contains( $services_command_json, 'Создай отдельную секцию услуг на post=5214' ), 'Services instruction-only first line is removed instead of becoming a fabricated section heading' );
+$services_explicit_title_prompt = "Создай отдельную секцию услуг\nЗаголовок: «Услуги архитектурной студии»\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
+$services_explicit_title_changes = 0;
+$services_explicit_title_tree = wpae_llm_apply_library_template( $services_template_data, $services_explicit_title_prompt, 'services', $services_explicit_title_changes );
+wpae_llm_clear_unrequested_library_copy( $services_explicit_title_tree, $services_explicit_title_prompt, $services_explicit_title_changes );
+$services_explicit_title_text = wpae_llm_collect_action_content( $services_explicit_title_tree );
+check( strpos( $services_explicit_title_text, 'Услуги архитектурной студии' ) !== false, 'An explicitly labeled Services title remains intact during library copy cleanup' );
+check( $services_command_spacers === 0 && $services_command_dividers === 0 && $services_command_globals === 0 && str_contains( $services_command_json, '"text_color":"#6b7280"' ) && str_contains( $services_command_json, '"title_color":"#111827"' ), 'Services template adaptation removes source spacers/dividers/global styles and applies semantic project colors' );
 $GLOBALS['library'] = [
 	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template' ] ],
-	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 742, 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
+	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 742, 'title' => 'Block – Course Boxes', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => true, 'elementor_data' => $services_template_data ] ],
 ];
 $services_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [ $services_provider_root ] ];
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
@@ -1648,7 +1679,29 @@ foreach ( (array) ( $services_response_data['steps'] ?? [] ) as $service_step ) 
 	if ( ( $service_step['id'] ?? '' ) === 'library_retrieval' ) { $services_library_diagnostics = (array) ( $service_step['details'] ?? [] ); }
 }
 check( ( $services_trace['selection_source'] ?? '' ) === 'model_choice' && ( $services_trace['selected']['title'] ?? '' ) === 'Block – Course Boxes' && ( $services_trace['status'] ?? '' ) === 'applied', 'The model-selected imported Services section reaches production adaptation: ' . wp_json_encode( [ 'source' => $services_trace['selection_source'] ?? '', 'choice' => $services_trace['model_choice'] ?? '', 'title' => $services_trace['selected']['title'] ?? '', 'status' => $services_trace['status'] ?? '', 'reason' => $services_trace['reason'] ?? '', 'fidelity' => $services_trace['fidelity'] ?? [], 'library_diagnostics' => $services_library_diagnostics, 'root_count' => count( $services_written ), 'steps' => $services_step_statuses ] ) );
+check( array_key_exists( 'design_preserved', $services_trace ) && $services_trace['design_preserved'] === false && ! str_contains( $services_written_json, 'wpae-preserve-library-design' ), 'Trusted Services structure is re-skinned through the project design system instead of retaining source-site global colors' );
 check( count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'сам выберет подходящий шаблон' ) && ! str_contains( $services_written_json, 'временный QA-блок' ), 'Imported Services cards retain exact requested text without exposing the prompt instructions' );
+$services_card_surfaces = [];
+$collect_services_card_surfaces = static function ( array $nodes ) use ( &$collect_services_card_surfaces, &$services_card_surfaces ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'container' ) {
+			$children = (array) ( $node['elements'] ?? [] );
+			$types = array_map( static fn( $child ): string => is_array( $child ) ? (string) ( $child['widgetType'] ?? '' ) : '', $children );
+			if ( in_array( 'heading', $types, true ) && in_array( 'text-editor', $types, true ) ) {
+				$settings = (array) ( $node['settings'] ?? [] );
+				$service_text = '';
+				foreach ( $children as $child ) {
+					if ( is_array( $child ) && ( $child['widgetType'] ?? '' ) === 'text-editor' ) { $service_text = (string) ( $child['settings']['text_color'] ?? '' ); }
+				}
+				$services_card_surfaces[] = [ 'background' => $settings['background_background'] ?? '', 'color' => strtolower( (string) ( $settings['background_color'] ?? '' ) ), 'text_color' => strtolower( $service_text ) ];
+			}
+		}
+		$collect_services_card_surfaces( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_services_card_surfaces( $services_written );
+check( count( $services_card_surfaces ) === 3 && count( array_filter( $services_card_surfaces, static fn( $card ): bool => ( $card['background'] ?? '' ) === 'classic' && ( $card['color'] ?? '' ) === '#ffffff' && ( $card['text_color'] ?? '' ) === '#6b7280' ) ) === 3, 'All imported Services cards reset dark/source-token fills and green source text to one readable surface palette: ' . wp_json_encode( $services_card_surfaces ) );
 check( count( $services_written ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'Imported Services generation appends one root and preserves the pre-existing page root' );
 $find_services_grid = static function ( array $nodes ) use ( &$find_services_grid ): array {
 	foreach ( $nodes as $node ) {

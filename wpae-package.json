@@ -237,7 +237,7 @@
         "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
         "includes/llm/design-plan.php": "13b33d7974ed5f0594caf27651596dec9171c4e75a5170c346992e7cb2874910",
         "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-        "includes/llm/llm.php": "594ef19bcd8928692eab9094460496629b6f11ee95072c849f99f7f457bb036a",
+        "includes/llm/llm.php": "30515c71eec0d166b7a3842f5cb21121537b0f24dcbb7f1fd57739b889e7026b",
         "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
         "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
         "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -250,6 +250,6 @@
         "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
         "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
         "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-        "wp-ai-executor.php": "461e3eb8c982e59f50bed412e9a56aa8e58e12d51d3d3e3c5e6db5e30080f047"
+        "wp-ai-executor.php": "e8de0f2b732e20e06b034817db1a599e82ed033991189a55cbfe9a79ef15f526"
     }
 }
