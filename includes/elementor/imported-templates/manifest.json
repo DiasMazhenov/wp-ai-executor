@@ -2640,7 +2640,7 @@
       "id": "template-services-photo-cards-v1",
       "file": "services-photo-cards.json",
       "original_filename": "user-corrected-services-reference.json",
-      "sha256": "db84c2666ca77fa504a9810ea36e1caa748b650c93e93ebc0683e876b528fef3",
+      "sha256": "9f6d8e2a5cc3ddf0f865656a540f36de86ef3fb3f2d81be48b49ad60d11a52c4",
       "title": "Services — Photo Cards (User Reference)",
       "type": "section",
       "template_type": "section-services",
@@ -2653,7 +2653,7 @@
       "elementor_pro_required": false,
       "has_content": true,
       "root_count": 1,
-      "bytes": 159069
+      "bytes": 159400
     },
     {
       "id": "template-1e66a058733c8df3",

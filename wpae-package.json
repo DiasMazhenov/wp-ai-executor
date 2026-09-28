@@ -163,8 +163,8 @@
         "includes/elementor/imported-templates/home.json": "90e12653da093734bfee6dd89d570ffe5b19dc4f5e8d2bdf2c96910d748c41d4",
         "includes/elementor/imported-templates/homepage.json": "41d0c3ae5c7d1f4e13f6e21e07c4a70b768e240cc1189e8fcd21ca37979582d2",
         "includes/elementor/imported-templates/love-stories.json": "37a57d9b85176460c3523fa68b4764f941f38be1f010083884a7d1870b44b429",
-        "includes/elementor/imported-templates/manifest.json": "fc7fc833047c3fe2d4a341edf6add2ea6fbf87abd6363ad8758baf3c099305f6",
-        "includes/elementor/imported-templates/services-photo-cards.json": "db84c2666ca77fa504a9810ea36e1caa748b650c93e93ebc0683e876b528fef3",
+        "includes/elementor/imported-templates/manifest.json": "2ec91c01a804f2c6d50c2dae8623454c130efbbd123fe79cf2d2e9a97048a39e",
+        "includes/elementor/imported-templates/services-photo-cards.json": "9f6d8e2a5cc3ddf0f865656a540f36de86ef3fb3f2d81be48b49ad60d11a52c4",
         "includes/elementor/imported-templates/membership-plan.json": "52b616c1d32f72031cbdbbc0c5c7219845ffdd6fcb21f193c83cf950630ab294",
         "includes/elementor/imported-templates/menu.json": "6f8ebe2165777c2b09beb9cd0d8cc1be1028bf48a2ee4a598b547d7c7a1734ac",
         "includes/elementor/imported-templates/metform-contact.json": "20c49fe03e61281bf376245087d1e422e2742426c7ef33fed91fb98073fb33c3",
@@ -251,6 +251,6 @@
         "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
         "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
         "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-        "wp-ai-executor.php": "40d19db4f40186c2372bbfd954d0ef38f843bca0ab3b9b7acccd4d8b36eda02f"
+        "wp-ai-executor.php": "d827994b45e4540e286eb3aee07ee5587a3fee265ac537c1669a18ba024dda29"
     }
 }
