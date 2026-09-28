@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v2';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v3';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -264,7 +264,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 
 	$service_quote_spans = [];
 	if ( $archetype === 'services' ) {
-		$service_line_pattern = '/^[ \t]*(?:[-*•][ \t]*)?Услуга[ \t]+#?(\d+)[ \t]*:[ \t]*(?<title_quote>«(?<title_angle>[^»\r\n]{1,240})»|“(?<title_curly>[^”\r\n]{1,240})”|"(?<title_plain>[^"\r\n]{1,240})")[ \t]*[—–-][ \t]*(?<body_quote>«(?<body_angle>[^»\r\n]{1,400})»|“(?<body_curly>[^”\r\n]{1,400})”|"(?<body_plain>[^"\r\n]{1,400})")[.!]?[ \t]*$/imu';
+		$service_line_pattern = '/(?<![\p{L}\p{N}_])Услуга[ \t]+#?(\d+)[ \t]*:[ \t]*(?<title_quote>«(?<title_angle>[^»\r\n]{1,240})»|“(?<title_curly>[^”\r\n]{1,240})”|"(?<title_plain>[^"\r\n]{1,240})")[ \t]*[—–-][ \t]*(?<body_quote>«(?<body_angle>[^»\r\n]{1,400})»|“(?<body_curly>[^”\r\n]{1,400})”|"(?<body_plain>[^"\r\n]{1,400})")[.!]?(?=[ \t]*(?:Услуга[ \t]+#?\d+[ \t]*:|$)|\r?\n)/iu';
 		$service_lines = [];
 		preg_match_all( $service_line_pattern, $source_text, $service_lines, PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL );
 		$service_numbers = [];
@@ -308,7 +308,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$add_content( 'service_title', (string) $title_capture[0], (int) $title_capture[1], strlen( (string) $title_capture[0] ), null, 0.98, true, false, $group_id . '_title', false, $group_id );
 			$add_content( 'service_body', (string) $body_capture[0], (int) $body_capture[1], strlen( (string) $body_capture[0] ), null, 0.98, true, false, $group_id . '_body', false, $group_id );
 		}
-		if ( preg_match_all( '/^[ \t]*(?:[-*•][ \t]*)?Услуга[ \t]+#?\d+[ \t]*:[^\r\n]*$/imu', $source_text, $service_like_lines, PREG_OFFSET_CAPTURE ) ) {
+		if ( preg_match_all( '/(?<![\p{L}\p{N}_])Услуга[ \t]+#?\d+[ \t]*:/iu', $source_text, $service_like_lines, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $service_like_lines[0] as $service_like_line ) {
 				$line = (string) $service_like_line[0];
 				$line_start = (int) $service_like_line[1];

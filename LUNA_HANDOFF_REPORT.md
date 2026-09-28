@@ -1,12 +1,16 @@
-# Services library template — локальная подготовка v02.11.181
+# Services library template — v02.11.181 и исправление краткого prompt в v02.11.182
 
-Срез: **2026-09-29 02:59 +05:00 (Asia/Almaty)**. Эталон не ограничен документацией: исполняемый JSON находится в `includes/elementor/imported-templates/services-photo-cards.json`, зарегистрирован в `manifest.json` как `template-services-photo-cards-v1` и включён в hash manifest `wpae-package.json`. `context.md` хранит только визуальное описание и provenance.
+Срез: **2026-09-29 03:11 +05:00 (Asia/Almaty)**. Эталон не ограничен документацией: исполняемый JSON находится в `includes/elementor/imported-templates/services-photo-cards.json`, зарегистрирован в `manifest.json` как `template-services-photo-cards-v1` и включён в hash manifest `wpae-package.json`. `context.md` хранит только визуальное описание и provenance.
 
-Для корректного выбора и адаптации этого шаблона исправлены production library route/content audit в `includes/llm/llm.php`; добавлены проверки в `tests/flex-generation-runtime.php`, `tests/imported-template-catalog.php` и `tests/imported-template-catalog.test.js`. Локально: 477 flex runtime checks, 261 design pipeline checks, Node 6/6, catalog 158/156, package probe 249 files / 0 mismatches, PHP lint и `git diff --check` — PASS.
+v02.11.181 (`fd19a1d`) committed, pushed to `origin/main`, installed via WP Pusher. Existing editor page reloaded and showed `v02.11.181`. Local fixes in `includes/llm/llm.php` protect the user’s imported nested photo-card composition through library adaptation and validation. The plugin candidate is selected by the AI agent’s allowlisted library route; no direct Elementor JSON import was used.
 
-**Статус выпуска/live:** source code подготовлен как v02.11.181, но текущая editor-вкладка всё ещё загружена с `wpae_release=180`; commit, push, WP Pusher installation и генерация этого шаблона в live editor ещё не выполнены. Поэтому live/save/reload/visual acceptance этой новой композиции не заявляется. На открытом editor текущий canvas пуст и кнопка «Опубликовать» отключена; страницу не сохранял.
+Первая краткая live-генерация на post `5214` завершилась до записи: operation identity `6e0ebd79-b9ae-4086-93e4-8cd63552aded`; `plan_errors=services_items_out_of_range, services_service_item_count_out_of_range`. Это не отказ модели и не сбой write boundary: `wpae_brief_ir_parse()` с parser v2 распознавал целый Services-запрос, но регулярное выражение группировало услугу только когда она занимала отдельную строку. После запроса в одну строку grouped items оказались пустыми и DesignPlan корректно запретил запись. Никакой root не создан, Elementor canvas остался пустым; root ID, save/readback и скриншота нового дизайна нет.
 
-# WP AI Executor — Services исправлен на v02.11.180
+Причина устранена локально для v02.11.182 в общем `includes/llm/brief-ir.php`: парсер принимает соседние quoted service pairs в одном абзаце, сохраняет точный текст и spans, а незакрытая пара по-прежнему создаёт явную ambiguity. Parser version увеличена до v3. Regression в `tests/flex-generation-runtime.php` покрывает краткий полный inline prompt, exact copy/order, успешный typed plan и явную ambiguity; `tests/design-pipeline-contract.php` фиксирует parser v3.
+
+Локальные проверки v182-кандидата: flex runtime 480 checks, design pipeline 261 checks, Node 6/6, catalog 158 manifest entries / 156 retrievable previews, package probe 249 files / 0 hash mismatches, PHP syntax checks и `git diff --check` — PASS. Source v182 ещё не committed/pushed/installed; live generation и визуальная приёмка нового шаблона не пройдены. В открытом editor canvas пуст и кнопка публикации отключена; страницу после отказа не сохранял.
+
+# Исторический handoff — Services live snapshot v02.11.180
 
 Фактический срез: **2026-09-29 01:47 +05:00 (Asia/Almaty)**. Работа выполнена на существующем WordPress post `5214`; новые pages/drafts не создавались.
 

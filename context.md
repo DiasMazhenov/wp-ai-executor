@@ -1,6 +1,6 @@
 # WP AI Executor — context
 
-Последнее обновление: **2026-09-29 02:59 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-29 03:11 +05:00 (Asia/Almaty)**.
 
 ## Предпочтение к generation prompts
 
@@ -10,11 +10,13 @@
 
 Пользовательский screenshot и экспортированный root `3dc3822` от 2026-09-29 задают нужную композицию: pill-бейдж «УСЛУГИ», отдельный заголовок секции «Наши услуги», затем три равные desktop-карточки. В каждой карточке: широкое native-фото сверху, горизонтальная строка «иконка + тёмное название», ниже приглушённое описание; светлая поверхность, тонкая серая рамка, скругление и мягкая тень. Это визуальный ориентир, а не подтверждение свежего save/reload или mobile render.
 
-Исполняемый шаблон добавлен в библиотеку плагина: `includes/elementor/imported-templates/services-photo-cards.json`, catalog id `template-services-photo-cards-v1` в `includes/elementor/imported-templates/manifest.json`, SHA-256 указан в `wpae-package.json`. Этот файл, а не `context.md`, является шаблоном. В рабочем дереве исходник подготовлен как v02.11.181; commit/push/WP Pusher и live-generation этой версии пока не подтверждены.
+Исполняемый шаблон находится в библиотеке плагина: `includes/elementor/imported-templates/services-photo-cards.json`, catalog id `template-services-photo-cards-v1` в `includes/elementor/imported-templates/manifest.json`, SHA-256 указан в `wpae-package.json`. Этот JSON, а не `context.md`, является шаблоном. v02.11.181 (`fd19a1d`) отправлена в `origin/main` и установлена через WP Pusher; после reload текущий editor показывает v181. Первая короткая live-генерация отклонена до записи: `wpae-6e0ebd79-b9ae-4086-93e4-8cd63552aded`, local BriefIR v2 не сгруппировал три услуги без переносов строк. Root не создан; editor canvas остаётся пустым.
+
+Исходник v02.11.182 содержит исправление BriefIR для inline-пар «Услуга N: название — описание», с сохранением provenance и ambiguity gate. Изменение пока локальное; выпуск и повторная live-генерация v182 не подтверждены. Скриншоты дизайна для не записанной операции отсутствуют.
 
 В переданном JSON описание второй карточки ошибочно повторяет первое. Для генерации сохранять ранее заданную точную пару для «Архитектура и дизайн»: «Разрабатываем решение под заданный контекст». Не переносить ошибочную копию текста вместе со стилем и не изменять текущий live root без отдельной задачи.
 
-## Текущий live Services на post=5214 — v02.11.180
+## Исторический live Services на post=5214 — snapshot v02.11.180
 
 - Source HEAD: `e185415b1948bf9a0157a571439ff7b85d51ee01` (`fix: normalize imported services sections`), branch `main`; `wp-ai-executor.php` — v02.11.180. В существующем Elementor editor чат также показывает v02.11.180 после reload. Установка через WP Pusher подтверждалась в ходе этого запуска.
 - Дефект на пользовательском снимке был реальным: в v179 служебная фраза запроса стала заголовком, импортированный Services-набор содержал чёрную поверхность первой карточки, зелёный текст, source-site global styles и лишние spacer/divider. Это не приемлемый render.

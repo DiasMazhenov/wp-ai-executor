@@ -1449,6 +1449,22 @@ foreach ( (array) ( $services_one_line_brief['content'] ?? [] ) as $service_item
 }
 check( ( $services_one_line_brief['intent']['archetype'] ?? '' ) === 'services' && $services_one_line_pairs === $services_pairs, 'Natural one-line service pairs produce the same three exact semantic items as the canonical slot form' );
 check( count( array_filter( (array) ( $services_one_line_brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'service_title', 'service_body' ], true ) ) ) === 6 && $services_one_line_spans_ok, 'One-line service fields retain their exact values, stable group slots, and source spans' );
+$services_inline_prompt = 'Блок услуг. Надзаголовок «УСЛУГИ», заголовок «Наши услуги». Услуга 1: «Стратегия проекта» — «Формулируем задачу и согласуем план работ». Услуга 2: «Архитектура и дизайн» — «Разрабатываем решение под заданный контекст». Услуга 3: «Сопровождение» — «Проверяем соответствие согласованному проекту».';
+$services_inline_brief = wpae_brief_ir_parse( $services_inline_prompt );
+$services_inline_plan = wpae_design_plan_from_brief( $services_inline_brief );
+$services_inline_validation = wpae_design_plan_validate( $services_inline_plan, $services_inline_brief );
+$services_inline_items = [];
+foreach ( (array) ( $services_inline_plan['sections'][0]['children'] ?? [] ) as $service_child ) {
+	if ( is_array( $service_child ) && ( $service_child['role'] ?? '' ) === 'service_cards' ) { $services_inline_items = (array) ( $service_child['items'] ?? [] ); }
+}
+check( ( $services_inline_brief['intent']['archetype'] ?? '' ) === 'services' && count( $services_inline_items ) === 3 && ! empty( $services_inline_validation['ok'] ), 'A concise single-paragraph Services prompt builds three complete typed items without forced line breaks' );
+$services_inline_copy = [];
+foreach ( (array) ( $services_inline_brief['content'] ?? [] ) as $item ) {
+	if ( is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'service_title', 'service_body' ], true ) ) { $services_inline_copy[] = (string) ( $item['exact_text'] ?? '' ); }
+}
+check( $services_inline_copy === [ 'Стратегия проекта', 'Формулируем задачу и согласуем план работ', 'Архитектура и дизайн', 'Разрабатываем решение под заданный контекст', 'Сопровождение', 'Проверяем соответствие согласованному проекту' ], 'Single-paragraph Services extraction preserves the exact requested six values in order' );
+$services_inline_ambiguous = wpae_brief_ir_parse( 'Блок услуг. Услуга 1: «Стратегия проекта» — «Формулируем задачу». Услуга 2: «Архитектура» — описание без кавычек.' );
+check( ! empty( array_filter( (array) ( $services_inline_ambiguous['ambiguities'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['kind'] ?? '' ) === 'incomplete_service_pair' ) ), 'An incomplete inline service pair remains an explicit ambiguity instead of disappearing silently' );
 $services_ambiguous_brief = wpae_brief_ir_parse( "Услуга 1: «Стратегия проекта» — без кавычек" );
 check( ! empty( array_filter( (array) ( $services_ambiguous_brief['ambiguities'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['kind'] ?? '' ) === 'incomplete_service_pair' ) ), 'An incomplete natural service row is reported as ambiguous instead of paired heuristically' );
 $services_mixed_ambiguity_brief = wpae_brief_ir_parse( $services_message . "\nУслуга 4: «Дополнение» — описание без закрытой пары" );
