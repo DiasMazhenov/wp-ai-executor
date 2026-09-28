@@ -846,70 +846,179 @@ function wpae_llm_execute_process_timeline_repair( array $existing, int $post_id
     ];
 }
 
-function wpae_llm_execute_patch_action( array $action, int $post_id, array $selected_ids = [], string $message = '' ): array {
-	$operation_id = sanitize_key( (string) ( $operation_context['operation_id'] ?? '' ) );
-	if ( $operation_id === '' ) {
-		$operation_id = wpae_llm_new_operation_id();
+function wpae_llm_patch_operation_snapshot( string $operation_id, string $operation_identity, int $post_id, array $root_ids ): ?array {
+	if ( ! function_exists( 'wpae_get_rollback_snapshots' ) ) {
+		return null;
 	}
-    $patches = is_array( $action['patches'] ?? null ) ? array_slice( $action['patches'], 0, 12 ) : [];
-    $selected_ids = array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) );
-    $patch_ids = array_values( array_filter( array_map( static fn( $patch ) => is_array( $patch ) ? sanitize_key( (string) ( $patch['element_id'] ?? $patch['id'] ?? '' ) ) : '', $patches ) ) );
-    $existing = wpae_get_elementor_data_for_post( $post_id );
-    if ( is_wp_error( $existing ) ) {
-        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Не удалось прочитать текущую структуру Elementor для точечной правки.', 'status' => 422, 'details' => [ 'error' => $existing->get_error_message() ] ];
-    }
-    if ( (string) ( $action['action'] ?? '' ) === 'patch_elements' && absint( $action['post_id'] ?? 0 ) === $post_id && ! empty( $selected_ids ) && wpae_llm_is_process_structure_repair_request( $message, 'process' ) ) {
-        $process_repair = wpae_llm_execute_process_timeline_repair( $existing, $post_id, $selected_ids, $message, $operation_id );
-        if ( ! empty( $process_repair['ok'] ) || ( $process_repair['error'] ?? '' ) !== 'Выбранный процессный таймлайн не найден.' ) {
-            return $process_repair;
-        }
-    }
-    $scope_ids = wpae_llm_collect_selected_scope_ids( $existing, $selected_ids );
-    $out_of_scope_ids = array_values( array_diff( $patch_ids, $scope_ids ) );
-    if ( (string) ( $action['action'] ?? '' ) !== 'patch_elements' || absint( $action['post_id'] ?? 0 ) !== $post_id || empty( $patches ) || empty( $selected_ids ) || empty( $scope_ids ) || count( $patch_ids ) !== count( $patches ) || ! empty( $out_of_scope_ids ) ) {
-        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch-команда не соответствует текущему Elementor элементу или странице.' ];
-    }
-    $request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/patch' );
-    $request->set_param( 'post_id', $post_id );
-    $request->set_param( 'patches', $patches );
-    $request->set_param( 'dry_run', true );
-    $preview = wpae_elementor_patch( $request );
-    $preview_data = $preview instanceof WP_REST_Response ? $preview->get_data() : [];
-    $preview_status = $preview instanceof WP_REST_Response ? $preview->get_status() : 500;
-    $steps = [ [ 'id' => 'preview', 'status' => $preview_status >= 200 && $preview_status < 300 && ! empty( $preview_data['ok'] ) ? 'ok' : 'failed', 'message' => 'Patch preview и preflight проверены до записи.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $preview_status, 'patch_count' => count( $patches ), 'selected_scope_count' => count( $scope_ids ) ] ] ];
-    if ( $preview_status < 200 || $preview_status >= 300 || empty( $preview_data['ok'] ) ) {
-        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview отклонён до записи.', 'status' => $preview_status, 'details' => $preview_data, 'steps' => $steps ];
-    }
-    $request->set_param( 'dry_run', false );
-    $result = wpae_elementor_patch( $request );
-    $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
-    $status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
-    if ( $status < 200 || $status >= 300 || empty( $data['ok'] ) ) {
-        $steps[] = [ 'id' => 'elementor_patch', 'status' => 'failed', 'message' => 'Patch не сохранён и был остановлен проверками.', 'details' => [ 'http_status' => $status, 'error' => $data['error'] ?? '', 'selected_scope_count' => count( $scope_ids ) ] ];
-        return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Elementor patch отклонён проверкой.', 'status' => $status, 'details' => $data, 'steps' => $steps ];
-    }
-    $changes = (array) ( $data['patch_report']['changes'] ?? [] );
-    $changed_ids = array_values( array_unique( array_map( static fn( $item ) => sanitize_key( (string) ( $item['element_id'] ?? '' ) ), $changes ) ) );
-    $steps[] = [ 'id' => 'elementor_patch', 'status' => 'ok', 'message' => 'Точечные native-свойства изменены через Elementor patch.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'changes' => $changes, 'changed_ids' => $changed_ids, 'selected_scope_count' => count( $scope_ids ) ] ];
-    return [
-        'ok' => true,
-        'operation_id' => $operation_id,
-        'action' => 'patch_elements',
-        'post_id' => $post_id,
-        'changed_count' => count( $changes ),
-        'patch_report' => $data['patch_report'] ?? [],
-        'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
-        'rollback_expires_at' => $data['rollback_expires_at'] ?? null,
-        'editor_sync' => [
-            'mode' => 'patch',
-            'patches' => array_values( $patches ),
-            'changed_ids' => $changed_ids,
-            'target_element_ids' => $changed_ids,
-            'selected_scope_ids' => array_values( array_unique( $scope_ids ) ),
-            'selected_scope_count' => count( $scope_ids ),
-        ],
-        'steps' => $steps,
-    ];
+	foreach ( wpae_get_rollback_snapshots() as $snapshot_id => $snapshot ) {
+		if ( ! is_array( $snapshot ) || sanitize_key( (string) ( $snapshot['operation_id'] ?? '' ) ) !== $operation_id
+			|| ! hash_equals( sanitize_text_field( (string) ( $snapshot['operation_identity'] ?? '' ) ), $operation_identity ) ) {
+			continue;
+		}
+		$snapshot_roots = array_values( array_filter( array_map( 'sanitize_key', (array) ( $snapshot['root_ids'] ?? [] ) ) ) );
+		$snapshot_posts = array_map( 'absint', array_keys( (array) ( $snapshot['posts'] ?? [] ) ) );
+		if ( $snapshot_roots === $root_ids && $snapshot_posts === [ $post_id ] && ! empty( $snapshot['after_hashes'][ $post_id ] ) ) {
+			return [ 'id' => sanitize_text_field( (string) $snapshot_id ), 'snapshot' => $snapshot ];
+		}
+	}
+	return null;
+}
+
+function wpae_llm_execute_patch_action( array $action, int $post_id, array $selected_ids = [], string $message = '', array $operation_context = [] ): array {
+	$patches = is_array( $action['patches'] ?? null ) ? array_slice( $action['patches'], 0, 12 ) : [];
+	$selected_ids = array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) );
+	$patch_ids = array_values( array_filter( array_map( static fn( $patch ) => is_array( $patch ) ? sanitize_key( (string) ( $patch['element_id'] ?? $patch['id'] ?? '' ) ) : '', $patches ) ) );
+	$operation_identity = substr( sanitize_text_field( (string) ( $operation_context['operation_identity'] ?? '' ) ), 0, 120 );
+	$existing = wpae_get_elementor_data_for_post( $post_id );
+	if ( is_wp_error( $existing ) ) {
+		return [ 'ok' => false, 'error' => 'Не удалось прочитать текущую структуру Elementor для точечной правки.', 'status' => 422, 'details' => [ 'error' => $existing->get_error_message() ] ];
+	}
+	if ( (string) ( $action['action'] ?? '' ) === 'patch_elements' && absint( $action['post_id'] ?? 0 ) === $post_id && ! empty( $selected_ids ) && wpae_llm_is_process_structure_repair_request( $message, 'process' ) ) {
+		$process_repair = wpae_llm_execute_process_timeline_repair( $existing, $post_id, $selected_ids, $message, sanitize_key( (string) ( $operation_context['operation_id'] ?? '' ) ) );
+		if ( ! empty( $process_repair['ok'] ) || ( $process_repair['error'] ?? '' ) !== 'Выбранный процессный таймлайн не найден.' ) {
+			return $process_repair;
+		}
+	}
+	$scope_ids = wpae_llm_collect_selected_scope_ids( $existing, $selected_ids );
+	$out_of_scope_ids = array_values( array_diff( $patch_ids, $scope_ids ) );
+	$root_ids = [];
+	foreach ( $existing as $root ) {
+		if ( ! is_array( $root ) || empty( wpae_llm_collect_selected_scope_ids( [ $root ], $selected_ids ) ) ) {
+			continue;
+		}
+		$root_id = sanitize_key( (string) ( $root['id'] ?? '' ) );
+		if ( $root_id !== '' ) {
+			$root_ids[] = $root_id;
+		}
+	}
+	sort( $root_ids );
+	if ( (string) ( $action['action'] ?? '' ) !== 'patch_elements' || absint( $action['post_id'] ?? 0 ) !== $post_id || empty( $patches ) || empty( $selected_ids ) || empty( $scope_ids ) || empty( $root_ids ) || count( $patch_ids ) !== count( $patches ) || ! empty( $out_of_scope_ids ) ) {
+		return [ 'ok' => false, 'error' => 'Patch-команда не соответствует текущему Elementor элементу или странице.' ];
+	}
+	if ( $operation_identity === '' ) {
+		$operation_identity = sanitize_text_field( (string) ( $operation_context['request_id'] ?? '' ) );
+	}
+	if ( $operation_identity === '' ) {
+		$operation_identity = 'patch-' . substr( hash( 'sha256', $post_id . '|' . $message . '|' . wp_json_encode( $selected_ids ) . '|' . microtime( true ) ), 0, 24 );
+	}
+	$brief_hash = hash( 'sha256', $message );
+	$scope_key = hash( 'sha256', implode( '|', $root_ids ) . '|' . implode( '|', $selected_ids ) );
+	$operation_type = 'targeted_edit';
+	$idempotency_key = wpae_design_operation_idempotency_key( $post_id, $brief_hash, $scope_key, $operation_type, $operation_identity );
+	$operation_id = 'wpae-patch-' . substr( $idempotency_key, 0, 16 );
+	$before_hash = hash( 'sha256', (string) wp_json_encode( $existing ) );
+	$request = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/patch' );
+	$request->set_param( 'post_id', $post_id );
+	$request->set_param( 'patches', $patches );
+	$request->set_param( 'expected_before_hash', $before_hash );
+	$request->set_param( 'dry_run', true );
+	$preview = wpae_elementor_patch( $request );
+	$preview_data = $preview instanceof WP_REST_Response ? $preview->get_data() : [];
+	$preview_status = $preview instanceof WP_REST_Response ? $preview->get_status() : 500;
+	$steps = [ [ 'id' => 'preview', 'status' => $preview_status >= 200 && $preview_status < 300 && ! empty( $preview_data['ok'] ) ? 'ok' : 'failed', 'message' => 'Patch preview и preflight проверены до записи.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $preview_status, 'patch_count' => count( $patches ), 'selected_scope_count' => count( $scope_ids ) ] ] ];
+	if ( $preview_status < 200 || $preview_status >= 300 || empty( $preview_data['ok'] ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview отклонён до записи.', 'status' => $preview_status, 'details' => $preview_data, 'steps' => $steps ];
+	}
+	$compiled_data = is_array( $preview_data['elementor_data'] ?? null ) ? $preview_data['elementor_data'] : [];
+	$compiled_hash = hash( 'sha256', (string) wp_json_encode( $compiled_data ) );
+	$operation = wpae_design_operation_create( [
+		'operation_id' => $operation_id,
+		'idempotency_key' => $idempotency_key,
+		'operation_identity' => $operation_identity,
+		'operation_type' => $operation_type,
+		'post_id' => $post_id,
+		'selected_scope' => $scope_key,
+		'brief_hash' => $brief_hash,
+		'plan_hash' => hash( 'sha256', (string) wp_json_encode( $patches ) ),
+		'compiled_hash' => $compiled_hash,
+		'root_ids' => $root_ids,
+		'provider' => $operation_context['provider'] ?? '',
+		'model' => $operation_context['model'] ?? '',
+		'current_state' => 'generated',
+	] );
+	if ( ! empty( $operation['lock_conflict'] ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Журнал операции занят; запись не выполнялась.', 'status' => 409, 'details' => $operation ];
+	}
+	if ( ! empty( $operation['reconciled'] ) ) {
+		$current_data = wpae_get_elementor_data_for_post( $post_id );
+		$current_hash = is_array( $current_data ) ? hash( 'sha256', (string) wp_json_encode( $current_data ) ) : '';
+		$snapshot = wpae_llm_patch_operation_snapshot( $operation_id, $operation_identity, $post_id, $root_ids );
+		$snapshot_current = false;
+		if ( $current_hash !== '' && hash_equals( (string) ( $operation['compiled_hash'] ?? '' ), $current_hash ) && is_array( $snapshot ) ) {
+			$fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : '';
+			$snapshot_after_hash = sanitize_text_field( (string) ( $snapshot['snapshot']['after_hashes'][ $post_id ] ?? '' ) );
+			if ( $fingerprint !== '' && $snapshot_after_hash !== '' && hash_equals( $snapshot_after_hash, $fingerprint ) ) {
+				$snapshot_current = true;
+				if ( ( $operation['current_state'] ?? '' ) !== 'written' ) {
+					$operation = wpae_design_operation_update( $operation_id, [ 'current_state' => 'written', 'saved_hash' => $current_hash, 'rollback_snapshot_id' => $snapshot['id'], 'target_fingerprint' => $fingerprint ] ) ?: $operation;
+				}
+			}
+			$target_status = wpae_design_operation_target_status( $operation, $post_id, $current_data );
+			if ( $snapshot_current && ( $operation['current_state'] ?? '' ) === 'written' && ! empty( $target_status['reviewable'] ) ) {
+				return [ 'ok' => true, 'idempotent' => true, 'operation_id' => $operation_id, 'action' => 'patch_elements', 'post_id' => $post_id, 'changed_count' => 0, 'rollback_snapshot_id' => $snapshot['id'], 'operation_ledger' => $operation, 'editor_sync' => [ 'mode' => 'patch', 'patches' => $patches, 'changed_ids' => $patch_ids, 'target_element_ids' => $patch_ids, 'selected_scope_ids' => $scope_ids, 'selected_scope_count' => count( $scope_ids ), 'operation_owned_root_ids' => $root_ids ], 'steps' => $steps ];
+			}
+		}
+		$operation['target_status'] = is_array( $current_data ) ? wpae_design_operation_target_status( $operation, $post_id, $current_data ) : [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'readback_unavailable' ];
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Повторный patch остановлен: операция уже зарегистрирована, но её сохранённое состояние не совпало с ожидаемым результатом.', 'status' => 409, 'details' => $operation, 'steps' => $steps ];
+	}
+	foreach ( [ 'normalized', 'validated' ] as $next_state ) {
+		$operation = wpae_design_operation_update( $operation_id, [ 'current_state' => $next_state ] ) ?: [];
+		if ( ( $operation['current_state'] ?? '' ) !== $next_state || ! empty( $operation['transition_rejected'] ) ) {
+			return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Нельзя подтвердить переход состояния targeted patch; запись остановлена.', 'status' => 409, 'details' => $operation, 'steps' => $steps ];
+		}
+	}
+	$request->set_param( 'operation_id', $operation_id );
+	$request->set_param( 'operation_identity', $operation_identity );
+	$request->set_param( 'operation_root_ids', $root_ids );
+	$request->set_param( 'dry_run', false );
+	$result = wpae_elementor_patch( $request );
+	$data = $result instanceof WP_REST_Response ? $result->get_data() : [];
+	$status = $result instanceof WP_REST_Response ? $result->get_status() : 500;
+	if ( $status < 200 || $status >= 300 || empty( $data['ok'] ) ) {
+		$operation = wpae_design_operation_update( $operation_id, [ 'current_state' => 'failed', 'last_error' => sanitize_text_field( (string) ( $data['code'] ?? $data['error'] ?? 'patch_rejected' ) ) ] ) ?: $operation;
+		$steps[] = [ 'id' => 'elementor_patch', 'status' => 'failed', 'message' => 'Patch не сохранён и был остановлен проверками.', 'details' => [ 'http_status' => $status, 'error' => $data['error'] ?? '', 'selected_scope_count' => count( $scope_ids ) ] ];
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Elementor patch отклонён проверкой.', 'status' => $status, 'details' => $data, 'operation_ledger' => $operation, 'steps' => $steps ];
+	}
+	$changes = (array) ( $data['patch_report']['changes'] ?? [] );
+	$changed_ids = array_values( array_unique( array_map( static fn( $item ) => sanitize_key( (string) ( $item['element_id'] ?? '' ) ), $changes ) ) );
+	$saved_data = wpae_get_elementor_data_for_post( $post_id );
+	$saved_hash = is_array( $saved_data ) ? hash( 'sha256', (string) wp_json_encode( $saved_data ) ) : '';
+	$fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : '';
+	$snapshot = wpae_llm_patch_operation_snapshot( $operation_id, $operation_identity, $post_id, $root_ids );
+	$snapshot_matches_write = is_array( $snapshot ) && (string) $snapshot['id'] === (string) ( $data['rollback_snapshot_id'] ?? '' ) && $fingerprint !== '' && hash_equals( sanitize_text_field( (string) ( $snapshot['snapshot']['after_hashes'][ $post_id ] ?? '' ) ), $fingerprint );
+	$operation = wpae_design_operation_update( $operation_id, [
+		'current_state' => is_array( $saved_data ) && $saved_hash === $compiled_hash && $snapshot_matches_write ? 'written' : 'unknown',
+		'saved_hash' => $saved_hash,
+		'target_fingerprint' => $fingerprint,
+		'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? '',
+		'last_error' => is_array( $saved_data ) && $saved_hash === $compiled_hash && $snapshot_matches_write ? '' : 'patch_readback_or_rollback_mismatch',
+	] ) ?: $operation;
+	$target_status = is_array( $saved_data ) ? wpae_design_operation_target_status( $operation, $post_id, $saved_data ) : [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'readback_unavailable' ];
+	if ( ( $operation['current_state'] ?? '' ) !== 'written' || empty( $target_status['reviewable'] ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch записан, но сохранённое состояние не прошло read-back для этой операции.', 'status' => 409, 'details' => $target_status, 'operation_ledger' => $operation, 'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null, 'steps' => $steps ];
+	}
+	$steps[] = [ 'id' => 'elementor_patch', 'status' => 'ok', 'message' => 'Точечные native-свойства записаны и read-back привязан к durable operation.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'changes' => $changes, 'changed_ids' => $changed_ids, 'selected_scope_count' => count( $scope_ids ) ] ];
+	return [
+		'ok' => true,
+		'operation_id' => $operation_id,
+		'action' => 'patch_elements',
+		'post_id' => $post_id,
+		'changed_count' => count( $changes ),
+		'patch_report' => $data['patch_report'] ?? [],
+		'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null,
+		'rollback_expires_at' => $data['rollback_expires_at'] ?? null,
+		'operation_ledger' => $operation,
+		'editor_sync' => [
+			'mode' => 'patch',
+			'patches' => array_values( $patches ),
+			'changed_ids' => $changed_ids,
+			'target_element_ids' => $changed_ids,
+			'selected_scope_ids' => array_values( array_unique( $scope_ids ) ),
+			'selected_scope_count' => count( $scope_ids ),
+			'operation_owned_root_ids' => $root_ids,
+		],
+		'steps' => $steps,
+	];
 }
 
 // Single registry keeps classification and post-write semantic checks in sync.
@@ -6569,11 +6678,7 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
     $settings['background_color'] = 'transparent';
     $settings['_css_classes'] = function_exists( 'wpae_append_css_classes' ) ? wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-bento-grid' ] ) : trim( (string) ( $settings['_css_classes'] ?? '' ) . ' wpae-bento-grid' );
     $widths = $pricing_grid ? array_fill( 0, count( $grid_cards ), 30 ) : wpae_llm_variant_card_widths( 0, count( $grid_cards ) );
-    $service_media = [
-        [ 'url' => 'https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Архитектор изучает чертежи у современного здания.' ],
-        [ 'url' => 'https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Современный архитектурный интерьер.' ],
-        [ 'url' => 'https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Специалисты обсуждают проектные чертежи.' ],
-    ];
+    $service_media = wpae_design_plan_default_service_media();
     $contains_image = static function ( array $nodes ) use ( &$contains_image ): bool {
         foreach ( $nodes as $node ) {
             if ( ! is_array( $node ) ) {
@@ -6633,7 +6738,7 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
                     'id' => 'wpae-service-card-image-' . (string) ( $width_index + 1 ),
                     'elType' => 'widget',
                     'settings' => [
-                        'image' => [ 'url' => $service_media[ $width_index ]['url'], 'id' => 0, 'alt' => $service_media[ $width_index ]['alt'], 'source' => 'url', 'size' => '' ],
+                        'image' => [ 'url' => $service_media[ $width_index ]['source_url'], 'id' => 0, 'alt' => $service_media[ $width_index ]['alt'], 'source' => 'url', 'size' => '' ],
                         'image_size' => 'full',
                         'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
                         'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
@@ -10460,7 +10565,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $action_diagnostics['decoded_action'] = sanitize_key( (string) ( $action['action'] ?? $action['type'] ?? $action['command'] ?? '' ) );
             $action_diagnostics['decoded_post_id'] = absint( $action['post_id'] ?? 0 );
             $action_diagnostics['decoded_patch_count'] = is_array( $action['patches'] ?? null ) ? count( $action['patches'] ) : 0;
-            $patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids, $message );
+			$patch_execution = wpae_llm_execute_patch_action( $action, $post_id, $selected_element_ids, $message, [ 'operation_identity' => $operation_identity, 'provider' => $runtime['provider'] ?? '', 'model' => $runtime['model'] ?? '' ] );
             $patch_execution['steps'] = array_merge(
                 [ [ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены guide, skills и полное дерево выбранного Elementor элемента.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'selected_element_count' => $selected_element_count ] ] ],
                 [ [ 'id' => 'command_decode', 'status' => ! empty( $action_diagnostics['json_decoded'] ) || ! empty( $action_diagnostics['deterministic_border_radius_patch'] ) ? 'ok' : 'failed', 'message' => ! empty( $action_diagnostics['json_decoded'] ) || ! empty( $action_diagnostics['deterministic_border_radius_patch'] ) ? 'Ответ разобран как patch-команда.' : 'Ответ не разобран как patch-команда.', 'details' => $action_diagnostics ] ],
@@ -10469,7 +10574,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             if ( empty( $patch_execution['ok'] ) ) {
                 return new WP_Error( 'wpae_llm_action_failed', 'LLM не выполнил точечную правку в Elementor.', [ 'status' => 422, 'details' => $patch_execution ] );
             }
-            return new WP_REST_Response( [ 'ok' => true, 'message' => 'Точечная правка выполнена через Elementor. Изменено свойств: ' . (int) $patch_execution['changed_count'] . '.', 'operation_id' => $patch_execution['operation_id'] ?? null, 'action' => $patch_execution['action'], 'write' => $patch_execution, 'steps' => $patch_execution['steps'], 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
+			return new WP_REST_Response( [ 'ok' => true, 'message' => ! empty( $patch_execution['idempotent'] ) ? 'Эта точечная операция уже сохранена; повторная запись не выполнялась.' : 'Точечная правка выполнена через Elementor. Изменено свойств: ' . (int) $patch_execution['changed_count'] . '.', 'operation_id' => $patch_execution['operation_id'] ?? null, 'action' => $patch_execution['action'], 'write' => $patch_execution, 'steps' => $patch_execution['steps'], 'diagnostics' => [ 'action_path' => 'targeted_patch', 'operation_ledger' => $patch_execution['operation_ledger'] ?? [] ], 'provider' => $runtime['provider'], 'model' => $runtime['model'] ], 200 );
         }
         $action_repair = false;
         $action_fallback = $provider_transport_fallback;

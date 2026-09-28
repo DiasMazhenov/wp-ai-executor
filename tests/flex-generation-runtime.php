@@ -41,6 +41,29 @@ function home_url( $path = '' ) { return 'https://example.test' . $path; }
 function get_bloginfo( $key ) { return 'Test site'; }
 function get_option( $key, $default = false ) { return $GLOBALS['options'][ $key ] ?? $default; }
 function update_option( $key, $value, $autoload = false ) { $GLOBALS['options'][ $key ] = $value; return true; }
+function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); return true; }
+function delete_post_meta( $id, $key ) {
+    if ( $key === '_elementor_data' ) { $GLOBALS['page_data'] = []; }
+    if ( $key === '_elementor_css' ) { unset( $GLOBALS['css_cache'] ); }
+    return true;
+}
+function add_post_meta( $id, $key, $value ) {
+    if ( $key === '_elementor_data' ) {
+        $decoded = json_decode( (string) $value, true );
+        if ( is_array( $decoded ) ) { $GLOBALS['page_data'] = $decoded; }
+    }
+    return true;
+}
+function update_post_meta( $id, $key, $value ) {
+    if ( $key === '_elementor_data' ) {
+        $decoded = json_decode( (string) $value, true );
+        if ( is_array( $decoded ) ) { $GLOBALS['page_data'] = $decoded; }
+    }
+    return true;
+}
+function wp_slash( $value ) { return $value; }
+function wp_update_post( $post, $wp_error = false ) { return (int) ( $post['ID'] ?? 42 ); }
+function do_action( ...$args ) {}
 function is_user_logged_in() { return true; }
 function current_user_can( ...$args ) { return $args[0] !== 'edit_post' || ( $args[1] ?? 0 ) !== 99; }
 function wpae_get_request_api_key( $request ) { return ''; }
@@ -52,7 +75,6 @@ function wpae_build_project_design_system() { return []; }
 function wpae_get_project_design_tokens() { return [ 'palette' => [ 'ink' => '#111827' ] ]; }
 function wpae_get_design_system_required_classes() { return [ 'wpae-system-test' ]; }
 function wpae_get_design_system_id() { return 'test'; }
-function wpae_get_elementor_data_for_post( $id ) { return $GLOBALS['page_data']; }
 function wpae_block_library_retrieve_for_prompt( ...$args ) { return $GLOBALS['library']; }
 function wpae_count_elementor_validation_errors_by_type( array $errors ) { return []; }
 function wpae_elementor_update( $request ) {
@@ -71,43 +93,31 @@ function wpae_elementor_update( $request ) {
     return new WP_REST_Response( [ 'ok' => true, 'rollback_snapshot_id' => 'snapshot' ] );
 }
 function wpae_elementor_patch( $request ) {
-    $tree = $GLOBALS['page_data'];
-    $changes = [];
-    foreach ( (array) $request->get_param( 'patches' ) as $patch ) {
-        $path = explode( '.', (string) ( $patch['path'] ?? '' ) );
-        if ( count( $path ) < 2 || array_shift( $path ) !== 'settings' ) {
-            return new WP_REST_Response( [ 'ok' => false ], 422 );
-        }
-        $walk = static function ( array &$nodes ) use ( &$walk, $patch, $path, &$changes ): bool {
-            foreach ( $nodes as &$node ) {
-                if ( ! is_array( $node ) ) {
-                    continue;
-                }
-                if ( (string) ( $node['id'] ?? '' ) === (string) ( $patch['element_id'] ?? '' ) ) {
-                    $target = &$node['settings'];
-                    foreach ( array_slice( $path, 0, -1 ) as $key ) {
-                        $target[ $key ] = is_array( $target[ $key ] ?? null ) ? $target[ $key ] : [];
-                        $target = &$target[ $key ];
-                    }
-                    $target[ end( $path ) ] = $patch['value'] ?? null;
-                    $changes[] = [ 'element_id' => (string) $node['id'] ];
-                    return true;
-                }
-                if ( $walk( $node['elements'] ) ) {
-                    return true;
-                }
-            }
-            return false;
-        };
-        if ( ! $walk( $tree ) ) {
-            return new WP_REST_Response( [ 'ok' => false ], 422 );
-        }
+    $existing = $GLOBALS['page_data'];
+    $expected_before_hash = (string) $request->get_param( 'expected_before_hash' );
+    if ( $expected_before_hash !== '' && ! hash_equals( $expected_before_hash, hash( 'sha256', (string) wp_json_encode( $existing ) ) ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'code' => 'wpae_patch_before_hash_mismatch' ], 409 );
     }
-    if ( ! $request->get_param( 'dry_run' ) ) {
-        $GLOBALS['page_data'] = $tree;
-        $GLOBALS['writes'][] = $tree;
+    $patched = wpae_apply_elementor_patches( $existing, (array) $request->get_param( 'patches' ) );
+    if ( ! empty( $patched['report']['errors'] ) || ! empty( $patched['report']['missing_element_ids'] ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'patch_report' => $patched['report'] ], 422 );
     }
-    return new WP_REST_Response( [ 'ok' => true, 'patch_report' => [ 'changes' => $changes ] ], 200 );
+    if ( $request->get_param( 'dry_run' ) ) {
+        return new WP_REST_Response( [ 'ok' => true, 'dry_run' => true, 'elementor_data' => $patched['data'], 'patch_report' => $patched['report'] ], 200 );
+    }
+    $operation_id = sanitize_key( (string) $request->get_param( 'operation_id' ) );
+    $snapshot = wpae_create_rollback_snapshot( 'elementor_patch:' . (int) $request->get_param( 'post_id' ), [ (int) $request->get_param( 'post_id' ) ], [], [], [
+        'operation_id' => $operation_id,
+        'operation_identity' => (string) $request->get_param( 'operation_identity' ),
+        'root_ids' => (array) $request->get_param( 'operation_root_ids' ),
+    ] );
+    if ( empty( $snapshot['id'] ) ) {
+        return new WP_REST_Response( [ 'ok' => false, 'error' => 'rollback_snapshot_failed' ], 500 );
+    }
+    $GLOBALS['page_data'] = $patched['data'];
+    $GLOBALS['writes'][] = $patched['data'];
+    wpae_seal_rollback_snapshot( (string) $snapshot['id'], (int) $request->get_param( 'post_id' ) );
+    return new WP_REST_Response( [ 'ok' => true, 'rollback_snapshot_id' => $snapshot['id'], 'rollback_expires_at' => $snapshot['expires_at'], 'patch_report' => $patched['report'] ], 200 );
 }
 function wp_safe_remote_post( $url, $args ) {
     $GLOBALS['http_calls'][] = [ 'url' => $url, 'timeout' => $args['timeout'], 'body' => json_decode( $args['body'], true ) ];
@@ -149,6 +159,8 @@ function get_post_meta( $id, $key = '', $single = false ) {
 }
 
 require __DIR__ . '/../includes/llm/llm.php';
+require __DIR__ . '/../includes/elementor/validation-rules.php';
+require __DIR__ . '/../includes/elementor/data.php';
 require __DIR__ . '/../includes/elementor/normalize.php';
 require __DIR__ . '/../includes/elementor/design-contract.php';
 require __DIR__ . '/../includes/elementor/validation.php';
@@ -159,6 +171,26 @@ function check( $condition, $message ) {
     if ( ! $condition ) { throw new RuntimeException( $message ); }
     $GLOBALS['checks'] = ( $GLOBALS['checks'] ?? 0 ) + 1;
 }
+
+$native_controls = container_node( 'native-control-regression', [
+	'container_type' => 'flex',
+	'background_overlay_opacity' => 0.55,
+	'border_radius' => [ 'unit' => 'px', 'size' => 16, 'sizes' => [] ],
+	'image_border_radius' => [ 'unit' => 'px', 'size' => 12, 'sizes' => [] ],
+	'border_radius_mobile' => [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ],
+], [] );
+$native_controls_normalized = wpae_elementor_normalize_data( [ $native_controls ] )['data'][0]['settings'];
+check( ( $native_controls_normalized['background_overlay_opacity']['size'] ?? null ) === 0.55 && ( $native_controls_normalized['border_radius']['right'] ?? '' ) === '16' && ( $native_controls_normalized['image_border_radius']['bottom'] ?? '' ) === '12' && ( $native_controls_normalized['border_radius_mobile']['top'] ?? '' ) === '20', 'native opacity/dimensions normalize by control schema and preserve an explicit responsive override' );
+check( wpae_elementor_native_control_error( 'background_overlay_opacity', [ 'unit' => 'px', 'size' => '', 'sizes' => [] ] ) === '', 'an empty native opacity slider remains an unset control instead of rejecting an otherwise valid imported template' );
+$native_controls_patch = wpae_apply_elementor_patches( [ $native_controls ], [
+	[ 'element_id' => 'native-control-regression', 'path' => 'settings.background_overlay_opacity', 'op' => 'set', 'value' => 0.55 ],
+	[ 'element_id' => 'native-control-regression', 'path' => 'settings.border_radius', 'op' => 'set', 'value' => 24 ],
+	[ 'element_id' => 'native-control-regression', 'path' => 'settings.image_border_radius', 'op' => 'set', 'value' => [ 'unit' => 'px', 'top' => '8', 'right' => '8', 'bottom' => '0', 'left' => '0', 'isLinked' => false ] ],
+] );
+check( empty( $native_controls_patch['report']['errors'] ) && ( $native_controls_patch['data'][0]['settings']['background_overlay_opacity']['size'] ?? null ) === 0.55 && ( $native_controls_patch['data'][0]['settings']['border_radius']['left'] ?? '' ) === '24' && ( $native_controls_patch['data'][0]['settings']['image_border_radius']['bottom'] ?? '' ) === '0', 'targeted patches accept native opacity and both uniform and per-side radius controls' );
+$invalid_opacity_patch = wpae_apply_elementor_patches( [ $native_controls ], [ [ 'element_id' => 'native-control-regression', 'path' => 'settings.background_overlay_opacity', 'op' => 'set', 'value' => 55 ] ] );
+$invalid_radius_patch = wpae_apply_elementor_patches( [ $native_controls ], [ [ 'element_id' => 'native-control-regression', 'path' => 'settings.border_radius', 'op' => 'set', 'value' => [ 'unit' => 'px', 'top' => [], 'right' => '1', 'bottom' => '1', 'left' => '1' ] ] ] );
+check( ! empty( $invalid_opacity_patch['report']['errors'] ) && ( $invalid_opacity_patch['data'][0]['settings']['background_overlay_opacity'] ?? null ) === 0.55 && ! empty( $invalid_radius_patch['report']['errors'] ) && ( $invalid_radius_patch['data'][0]['settings']['border_radius']['top'] ?? '' ) === '', 'ambiguous native opacity and malformed radius are rejected without Arraypx coercion or partial mutation' );
 
 $library_selection_fixture = [
 	'selection_candidates' => [
@@ -1782,17 +1814,77 @@ $cta_selected_root = container_node( 'selected-cta-root', [ 'container_type' => 
 ] );
 $cta_selected_neighbor = container_node( 'cta-neighbor-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-system-test' ], [ widget( 'cta-neighbor-title', 'heading', [ 'title' => 'Соседняя секция' ] ) ] );
 $GLOBALS['page_data'] = [ $cta_selected_neighbor, $cta_selected_root ];
+$cta_before_undo = $GLOBALS['page_data'];
 $cta_before_ids = array_column( $GLOBALS['page_data'], 'id' );
+$GLOBALS['options'][ WPAE_DESIGN_OPERATION_OPTION ] = [];
+$GLOBALS['options']['wp_ai_executor_rollback_snapshots'] = [];
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [];
+$cta_target_mismatch = wpae_llm_execute_patch_action(
+	[ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-neighbor-title', 'path' => 'settings.title', 'op' => 'set', 'value' => 'Не трогать соседний блок' ] ] ],
+	42,
+	[ 'selected-cta-root' ],
+	'Измени кнопки в выбранном CTA-блоке.',
+	[ 'operation_identity' => 'cta-target-mismatch' ]
+);
+check( empty( $cta_target_mismatch['ok'] ) && count( $GLOBALS['writes'] ) === 0 && ( $GLOBALS['page_data'][0]['elements'][0]['settings']['title'] ?? '' ) === 'Соседняя секция', 'targeted patch rejects a provider target outside the captured selected root before any write' );
 $cta_targeted_edit = new WP_REST_Request();
 $cta_targeted_edit->set_param( 'message', 'Измени кнопки в выбранном CTA-блоке: основная «Связаться», вторичная «Посмотреть проекты».' );
-$cta_targeted_edit->set_param( 'context', [ 'post_id' => 42, 'selected_elements' => [ [ 'id' => 'selected-cta-root' ] ] ] );
+$cta_targeted_edit->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'cta-targeted-patch-identity', 'selected_elements' => [ [ 'id' => 'selected-cta-root' ] ] ] );
 $GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ] ) ) ];
 $cta_targeted_response = wpae_llm_chat_request( $cta_targeted_edit );
 $cta_after_ids = array_column( $GLOBALS['page_data'], 'id' );
 check( $cta_targeted_response instanceof WP_REST_Response && ( $cta_targeted_response->get_data()['action'] ?? '' ) === 'patch_elements', 'targeted CTA button edit routes to the selected patch action rather than append: ' . wp_json_encode( [ 'error' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_code() : '', 'message' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_message() : '', 'data' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_data() : [] ] ) );
 check( count( $GLOBALS['writes'] ) === 1 && $cta_after_ids === $cta_before_ids && ( $GLOBALS['page_data'][1]['id'] ?? '' ) === 'selected-cta-root', 'targeted CTA button edit writes once in place and preserves both root identities' );
+$cta_patch_payload = $cta_targeted_response->get_data();
+$cta_operation = wpae_design_operation_find_by_id( (string) ( $cta_patch_payload['operation_id'] ?? '' ) );
+$cta_snapshot_id = (string) ( $cta_patch_payload['write']['rollback_snapshot_id'] ?? '' );
+$cta_snapshot = wpae_get_rollback_snapshots()[ $cta_snapshot_id ] ?? [];
+check( is_array( $cta_operation ) && ( $cta_operation['current_state'] ?? '' ) === 'written' && ( $cta_operation['operation_identity'] ?? '' ) === 'cta-targeted-patch-identity' && ( $cta_operation['root_ids'] ?? [] ) === [ 'selected-cta-root' ], 'successful targeted patch is durably registered as written under its exact request identity and root' );
+check( $cta_snapshot_id !== '' && ( $cta_snapshot['operation_id'] ?? '' ) === ( $cta_operation['operation_id'] ?? '' ) && ( $cta_snapshot['operation_identity'] ?? '' ) === 'cta-targeted-patch-identity' && ( $cta_snapshot['root_ids'] ?? [] ) === [ 'selected-cta-root' ] && ! empty( $cta_snapshot['after_hashes'][42] ), 'rollback snapshot is bound to the same durable operation, post state, and owned root' );
+
+$cta_retry = new WP_REST_Request();
+$cta_retry->set_param( 'message', $cta_targeted_edit->get_param( 'message' ) );
+$cta_retry->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'cta-targeted-patch-identity', 'selected_elements' => [ [ 'id' => 'selected-cta-root' ] ] ] );
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ] ) ) ];
+$cta_retry_response = wpae_llm_chat_request( $cta_retry );
+check( $cta_retry_response instanceof WP_REST_Response && ( $cta_retry_response->get_data()['operation_id'] ?? '' ) === ( $cta_operation['operation_id'] ?? '' ) && ! empty( $cta_retry_response->get_data()['write']['idempotent'] ) && count( $GLOBALS['writes'] ) === 1, 'same request identity reconciles the saved patch without a second write' );
+
+$cta_undo = new WP_REST_Request();
+$cta_undo->set_param( 'post_id', 42 );
+$cta_undo->set_param( 'operation_id', $cta_operation['operation_id'] );
+$cta_undo->set_param( 'operation_identity', $cta_operation['operation_identity'] );
+$cta_undo->set_param( 'revision', $cta_operation['revision'] );
+$cta_undo->set_param( 'root_ids', $cta_operation['root_ids'] );
+$cta_undo->set_param( 'rollback_snapshot_id', $cta_snapshot_id );
+$cta_undo->set_param( 'operation_event', 'user_undo' );
+$cta_undo_response = wpae_llm_undo( $cta_undo );
+check( $cta_undo_response->get_status() === 200 && ! empty( $cta_undo_response->get_data()['ok'] ) && $GLOBALS['page_data'] === $cta_before_undo, 'operation-bound Undo restores the exact before-document without losing the unchanged neighbor' );
+$cta_rolled_back = wpae_design_operation_find_by_id( (string) $cta_operation['operation_id'] );
+check( ( $cta_rolled_back['current_state'] ?? '' ) === 'unknown' && ( $cta_rolled_back['rollback_event'] ?? '' ) === 'user_undo' && (int) ( $cta_rolled_back['revision'] ?? 0 ) > (int) $cta_operation['revision'], 'successful Undo advances the same ledger operation instead of losing its operation link' );
+$stale_cta_undo = wpae_llm_undo( $cta_undo );
+check( $stale_cta_undo->get_status() === 409 && ( $stale_cta_undo->get_data()['code'] ?? '' ) === 'wpae_undo_stale_revision' && $GLOBALS['page_data'] === $cta_before_undo, 'old Undo confirmation is rejected after the operation revision advances' );
+
+$independent_patch = wpae_llm_execute_patch_action(
+	[ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ],
+	42,
+	[ 'selected-cta-root' ],
+	'Измени кнопки в выбранном CTA-блоке: основная «Связаться», вторичная «Посмотреть проекты».',
+	[ 'operation_identity' => 'cta-same-brief-new-operation' ]
+);
+check( ! empty( $independent_patch['ok'] ) && $independent_patch['operation_id'] !== $cta_operation['operation_id'] && count( $GLOBALS['writes'] ) === 2, 'same patch content with a new explicit identity creates an independent operation' );
+$GLOBALS['page_data'][0]['elements'][0]['settings']['title'] = 'Пользовательская правка после patch';
+$independent_operation = wpae_design_operation_find_by_id( (string) $independent_patch['operation_id'] );
+$independent_undo = new WP_REST_Request();
+$independent_undo->set_param( 'post_id', 42 );
+$independent_undo->set_param( 'operation_id', $independent_operation['operation_id'] );
+$independent_undo->set_param( 'operation_identity', $independent_operation['operation_identity'] );
+$independent_undo->set_param( 'revision', $independent_operation['revision'] );
+$independent_undo->set_param( 'root_ids', $independent_operation['root_ids'] );
+$independent_undo->set_param( 'rollback_snapshot_id', $independent_patch['rollback_snapshot_id'] );
+$independent_undo->set_param( 'operation_event', 'user_undo' );
+$conflicted_undo = wpae_llm_undo( $independent_undo );
+check( $conflicted_undo->get_status() === 409 && ( $conflicted_undo->get_data()['code'] ?? '' ) === 'wpae_undo_conflict' && ( $GLOBALS['page_data'][0]['elements'][0]['settings']['title'] ?? '' ) === 'Пользовательская правка после patch' && ( $GLOBALS['page_data'][1]['elements'][0]['settings']['text'] ?? '' ) === 'Обсудить проект', 'Undo refuses a stale full-page snapshot and preserves both the later neighbor edit and target patch' );
 
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );

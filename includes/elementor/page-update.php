@@ -182,6 +182,10 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
             'details' => $existing_data->get_error_data(),
         ], 422 );
     }
+	$expected_before_hash = sanitize_text_field( (string) $request->get_param( 'expected_before_hash' ) );
+	if ( $expected_before_hash !== '' && ! hash_equals( $expected_before_hash, hash( 'sha256', (string) wp_json_encode( $existing_data ) ) ) ) {
+		return new WP_REST_Response( [ 'ok' => false, 'code' => 'wpae_patch_before_hash_mismatch', 'error' => 'Сохранённый Elementor document изменился после preview; patch остановлен без записи.' ], 409 );
+	}
 
     $patched = wpae_apply_elementor_patches( $existing_data, $patches );
     $elementor_data = $patched['data'];

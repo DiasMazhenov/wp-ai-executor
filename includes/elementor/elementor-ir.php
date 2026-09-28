@@ -51,16 +51,29 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 		}
 		$group_id = sanitize_key( (string) ( $item['group_id'] ?? $role . '_' . ( $index + 1 ) ) );
 		$card_children = [];
+		$content_children = [];
+		$card_style = [];
+		foreach ( [ 'border_radius', 'border_radius_mobile' ] as $style_key ) {
+			$style_value = $item['layout_constraints'][ $style_key ] ?? null;
+			if ( is_scalar( $style_value ) && preg_match( '/^\d+(?:\.\d+)?\s*(?:px|rem|em)?$/i', trim( (string) $style_value ) ) ) {
+				$card_style[ $style_key ] = trim( (string) $style_value );
+			}
+		}
 		if ( ! empty( $item['media_ref'] ) ) {
 			$image_role = $role === 'service_cards' ? 'service_image' : ( $role === 'testimonial_cards' ? 'testimonial_photo' : 'team_photo' );
-			$card_children[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-photo', $image_role, 'image', [], [ 'radius.card' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'media_refs' => [ sanitize_key( (string) $item['media_ref'] ) ], 'editable_fields' => [ 'media', 'alt' ] ] );
+			$image_constraints = [ 'min_width' => 0, 'max_width' => 100 ];
+			if ( $role === 'service_cards' && ( ! empty( $card_style['border_radius'] ) || ! empty( $card_style['border_radius_mobile'] ) ) ) {
+				$image_constraints['card_border_radius'] = $card_style['border_radius'] ?? '16px';
+				$image_constraints['card_border_radius_mobile'] = $card_style['border_radius_mobile'] ?? ( $card_style['border_radius'] ?? '16px' );
+			}
+			$card_children[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-photo', $image_role, 'image', [], [ 'radius.card' ], [], $image_constraints, [ 'strategy' => 'stack', 'media_refs' => [ sanitize_key( (string) $item['media_ref'] ) ], 'editable_fields' => [ 'media', 'alt' ] ] );
 		}
 		foreach ( $field_map as $field => [ $field_role, $widget_type ] ) {
 			$ref = sanitize_key( (string) ( $item[ $field ] ?? '' ) );
 			if ( $ref === '' ) {
 				continue;
 			}
-			$card_children[] = wpae_elementor_ir_node(
+			$field_node = wpae_elementor_ir_node(
 				$node_id . '-' . $group_id . '-' . $field_role,
 				$field_role,
 				$widget_type,
@@ -70,7 +83,25 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 				[ 'min_width' => 0, 'max_width' => 100 ],
 				[ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ]
 			);
+			if ( $role === 'service_cards' ) {
+				$content_children[] = $field_node;
+			} else {
+				$card_children[] = $field_node;
+			}
 		}
+		if ( $role === 'service_cards' ) {
+			$card_children[] = wpae_elementor_ir_node(
+				$node_id . '-' . $group_id . '-content',
+				'service_content',
+				'container',
+				[],
+				[ 'color.surface', 'color.text', 'color.muted', 'space.component' ],
+				$content_children,
+				[ 'min_width' => 0, 'max_width' => 100 ],
+				[ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ]
+			);
+		}
+		$card_constraints = array_merge( [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], $card_style );
 		$cards[] = wpae_elementor_ir_node(
 			$node_id . '-' . $group_id . '-card',
 			substr( $role, 0, -1 ),
@@ -78,7 +109,7 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 			[],
 			[ 'color.surface', 'color.border', 'radius.card', 'space.component' ],
 			$card_children,
-			[ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ],
+			$card_constraints,
 			[ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ]
 		);
 	}
@@ -285,6 +316,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 		'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
 		'archetype' => sanitize_key( (string) ( $plan['archetype'] ?? 'unknown' ) ),
 		'media_intent' => sanitize_key( (string) ( $plan['media_intent'] ?? 'unspecified' ) ),
+		'media_references' => array_values( (array) ( $plan['media_references'] ?? $brief['media_references'] ?? [] ) ),
 		'nodes' => $nodes,
 		'provenance' => [ 'plan_hash' => function_exists( 'wpae_design_plan_hash' ) ? wpae_design_plan_hash( $plan ) : '', 'source' => 'design-plan' ],
 		'warnings' => array_values( array_unique( $warnings ) ),
@@ -432,6 +464,18 @@ function wpae_elementor_ir_dimension_control( $value, string $fallback_unit, flo
 	];
 }
 
+function wpae_elementor_ir_service_image_radius( string $card_radius ): array {
+	$radius = wpae_elementor_ir_dimension_control( $card_radius, 'px', 16 );
+	return [
+		'unit' => $radius['unit'],
+		'top' => (string) $radius['top'],
+		'right' => (string) $radius['right'],
+		'bottom' => '0',
+		'left' => (string) $radius['left'],
+		'isLinked' => false,
+	];
+}
+
 function wpae_elementor_ir_type_settings( array $type ): array {
 	$dimension = static function ( $value, string $fallback_unit ): array {
 		if ( preg_match( '/^(-?\d+(?:\.\d+)?)\s*(px|%|em|rem|vh|vw)?$/i', trim( (string) $value ), $matches ) ) {
@@ -494,6 +538,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['padding_tablet'] = $desktop_padding;
 			$settings['padding_mobile'] = $mobile_padding;
 		}
+		if ( $role === 'services' ) {
+			$settings['content_width'] = 'boxed';
+			$settings['boxed_width'] = [ 'unit' => 'px', 'size' => 1200, 'sizes' => [] ];
+		}
 		if ( isset( $token_values['color.surface'] ) ) {
 			$settings['background_color'] = $token_values['color.surface'];
 		}
@@ -549,6 +597,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_wrap_tablet'] = 'nowrap';
 			$settings['flex_wrap_mobile'] = 'nowrap';
 			$settings['flex_align_items'] = 'stretch';
+		}
+		if ( $role === 'service_cards' ) {
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
 		}
 		if ( $role === 'cta' ) {
 			$settings['_css_classes'] = 'wpae-cta-section';
@@ -683,6 +735,29 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_align_items'] = 'stretch';
 			$settings['flex_wrap'] = 'nowrap';
 			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.5, 'column' => '0.5', 'row' => '0.5', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
+		}
+		if ( $role === 'service_card' ) {
+			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$card_radius = $node['layout_constraints']['border_radius'] ?? '16px';
+			$mobile_radius = $node['layout_constraints']['border_radius_mobile'] ?? $card_radius;
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( $card_radius, 'px', 16 );
+			$settings['border_radius_mobile'] = wpae_elementor_ir_dimension_control( $mobile_radius, 'px', 16 );
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+			$settings['padding_tablet'] = $settings['padding'];
+			$settings['padding_mobile'] = $settings['padding'];
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
+			$settings['overflow'] = 'hidden';
+		}
+		if ( $role === 'service_content' ) {
+			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '24', 'right' => '24', 'bottom' => '24', 'left' => '24', 'isLinked' => true ];
+			$settings['padding_tablet'] = $settings['padding'];
+			$settings['padding_mobile'] = [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ];
+			$settings['flex_direction'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 8, 'column' => '8', 'row' => '8', 'isLinked' => true ];
 			$settings['flex_gap_mobile'] = $settings['flex_gap'];
 		}
 		if ( $role === 'testimonial_card' ) {
@@ -873,13 +948,28 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$report['errors'][] = [ 'node_id' => sanitize_key( (string) ( $node['node_id'] ?? '' ) ), 'widget_type' => 'image', 'reason' => 'media_asset_missing_or_invalid' ];
 			return [];
 		}
+		if ( $role === 'service_image' && is_array( $source_parts ) && strtolower( (string) ( $source_parts['host'] ?? '' ) ) === 'images.unsplash.com' ) {
+			$query = [];
+			parse_str( (string) ( $source_parts['query'] ?? '' ), $query );
+			$query['fit'] = 'crop';
+			$query['w'] = 1200;
+			$query['h'] = 900;
+			$source_url = ( (string) ( $source_parts['scheme'] ?? 'https' ) ) . '://' . (string) $source_parts['host'] . (string) ( $source_parts['path'] ?? '' ) . '?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 );
+		}
 		$settings['image'] = [ 'url' => $source_url, 'id' => absint( $media['attachment_id'] ?? 0 ), 'alt' => (string) ( $media['alt'] ?? '' ) ];
 		$settings['image_size'] = 'full';
 		$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 		$settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-		$settings['image_border_radius'] = wpae_elementor_ir_dimension_control( $token_values['radius.card'] ?? '0.5rem', 'rem', 0.5 );
+		$settings['image_border_radius'] = $role === 'service_image'
+			? wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius'] ?? '16px' ) )
+			: wpae_elementor_ir_dimension_control( $token_values['radius.card'] ?? '0.5rem', 'rem', 0.5 );
+		if ( $role === 'service_image' ) {
+			$settings['image_border_radius_mobile'] = wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius_mobile'] ?? $node['layout_constraints']['card_border_radius'] ?? '16px' ) );
+		}
 		if ( in_array( (string) ( $media['object_fit'] ?? '' ), [ 'cover', 'contain', 'fill' ], true ) ) {
 			$settings['object-fit'] = (string) $media['object_fit'];
+		} elseif ( $role === 'service_image' ) {
+			$settings['object-fit'] = 'cover';
 		}
 	} elseif ( $widget_type === 'icon-list' ) {
 		$settings['icon_list'] = [];
@@ -1073,7 +1163,7 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 	}
 	$content_map = wpae_elementor_ir_content_map( $brief );
 	$media_map = [];
-	foreach ( (array) ( $brief['media_references'] ?? [] ) as $media ) {
+	foreach ( array_merge( (array) ( $brief['media_references'] ?? [] ), (array) ( $ir['media_references'] ?? [] ) ) as $media ) {
 		if ( is_array( $media ) ) {
 			$media_map[ sanitize_key( (string) ( $media['asset_id'] ?? '' ) ) ] = $media;
 		}

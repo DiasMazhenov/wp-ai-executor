@@ -215,6 +215,14 @@ function wpae_design_plan_media_reference_valid( array $media ): bool {
 	return ! function_exists( 'wp_http_validate_url' ) || (bool) wp_http_validate_url( $url );
 }
 
+function wpae_design_plan_default_service_media(): array {
+	return [
+		[ 'asset_id' => 'wpae_service_photo_1', 'group_id' => 'service_1', 'source_url' => 'https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Архитектор изучает чертежи у современного здания.' ],
+		[ 'asset_id' => 'wpae_service_photo_2', 'group_id' => 'service_2', 'source_url' => 'https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Современный архитектурный интерьер.' ],
+		[ 'asset_id' => 'wpae_service_photo_3', 'group_id' => 'service_3', 'source_url' => 'https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200', 'alt' => 'Специалисты обсуждают проектные чертежи.' ],
+	];
+}
+
 function wpae_design_plan_from_brief( array $brief, array $context = [] ): array {
 	$archetype = sanitize_key( (string) ( $brief['intent']['archetype'] ?? 'unknown' ) );
 	if ( ! in_array( $archetype, wpae_design_plan_schema()['archetypes'], true ) ) {
@@ -224,6 +232,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			'sections' => [],
 			'responsive' => [],
 			'tokens' => [],
+			'media_references' => [],
 			'quality_gates' => [ 'brief_fidelity', 'capabilities', 'layout_report', 'readback', 'render_review' ],
 			'provenance' => [ 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'planner' => 'wpae-design-plan-v1' ],
 			'warnings' => [ 'unsupported_archetype' ],
@@ -412,6 +421,31 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$section['qa_errors'] = $qa['errors'];
 	} elseif ( $archetype === 'services' ) {
 		$grouped = wpae_design_plan_grouped_items( $brief, 'service', [ 'service_title' => 'title_ref', 'service_body' => 'body_ref', 'service_cta' => 'cta_ref' ], [ 'title_ref', 'body_ref' ], 2, 6 );
+		if ( ! in_array( $media_intent, [ 'forbidden', 'conflict' ], true ) ) {
+			$service_defaults = array_column( wpae_design_plan_default_service_media(), null, 'group_id' );
+			foreach ( $grouped['items'] as &$service_item ) {
+				if ( ! empty( $service_item['media_ref'] ) ) {
+					continue;
+				}
+				$group_id = sanitize_key( (string) ( $service_item['group_id'] ?? '' ) );
+				$default = $service_defaults[ $group_id ] ?? null;
+				if ( ! is_array( $default ) ) {
+					continue;
+				}
+				$default['role'] = 'card_image';
+				$default['attachment_id'] = null;
+				$default['focal_point'] = null;
+				$default['crop'] = '4:3';
+				$default['object_fit'] = 'cover';
+				$default['license'] = 'Unsplash License';
+				$default['attribution'] = '';
+				$default['allowed_reuse'] = true;
+				$default['provenance'] = [ 'source' => 'plugin_default', 'catalog' => 'wpae-service-media-v1' ];
+				$media_references[] = $default;
+				$service_item['media_ref'] = $default['asset_id'];
+			}
+			unset( $service_item );
+		}
 		$service_widgets = [ 'container', 'heading', 'text-editor', 'button' ];
 		if ( (bool) array_filter( $grouped['items'], static fn( array $item ): bool => ! empty( $item['media_ref'] ) ) ) {
 			$service_widgets[] = 'image';
@@ -566,6 +600,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		],
 		'tokens' => $tokens,
 		'quality_gates' => [ 'brief_fidelity', 'capabilities', 'layout_report', 'readback', 'render_review' ],
+		'media_references' => array_values( $media_references ),
 		'provenance' => [
 			'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '',
 			'planner' => 'wpae-design-plan-v1',
@@ -649,7 +684,7 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			}
 		}
 		$media_by_id = [];
-		foreach ( (array) ( $brief['media_references'] ?? [] ) as $media ) {
+		foreach ( array_merge( (array) ( $brief['media_references'] ?? [] ), (array) ( $plan['media_references'] ?? [] ) ) as $media ) {
 			if ( is_array( $media ) ) {
 				$media_by_id[ sanitize_key( (string) ( $media['asset_id'] ?? '' ) ) ] = $media;
 			}

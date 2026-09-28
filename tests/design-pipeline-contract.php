@@ -759,6 +759,14 @@ $check( $hero_photo_validation['ok'] && ! empty( $hero_photo_compiled['ok'] ) &&
 $check( ( $hero_photo_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60' && ( $hero_photo_plan['sections'][0]['media_side'] ?? '' ) === 'left' && ( $hero_photo_root['elements'][0]['settings']['width']['size'] ?? 0 ) === 60.0 && ( $hero_photo_root['elements'][1]['settings']['width']['size'] ?? 0 ) === 40.0 && ( $hero_photo_root['settings']['flex_direction_mobile'] ?? '' ) === 'column-reverse', 'hero photo left uses 60% media and 40% copy widths and keeps copy first on mobile' );
 $check( array_column( array_map( static fn( array $node ): array => [ 'text' => $node['settings']['text'] ?? '', 'url' => $node['settings']['link']['url'] ?? '' ], $hero_photo_buttons ), 'text' ) === [ 'Начать проект', 'Смотреть проекты' ] && array_column( array_map( static fn( array $node ): array => [ 'text' => $node['settings']['text'] ?? '', 'url' => $node['settings']['link']['url'] ?? '' ], $hero_photo_buttons ), 'url' ) === [ '#contact', '#projects' ], 'photo hero keeps two exact CTA labels and their separate destinations' );
 
+$service_content_for = static function ( array $card ): array {
+	foreach ( (array) ( $card['elements'] ?? [] ) as $child ) {
+		if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
+			return $child;
+		}
+	}
+	return [];
+};
 foreach ( [ 2, 3, 4 ] as $service_count ) {
 	$service_prompt = "Блок услуг\nЗаголовок: «Услуги студии»\n";
 	for ( $service_index = 1; $service_index <= $service_count; $service_index++ ) {
@@ -769,15 +777,25 @@ foreach ( [ 2, 3, 4 ] as $service_count ) {
 	[ $service_brief, $service_plan, $service_validation, $service_compiled, $service_nodes ] = $compile_prompt( $service_prompt, 'services-' . $service_count . '-regression' );
 	$service_group = array_values( array_filter( $service_compiled['elementor_data'][0]['elements'] ?? [], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-service_cards' ) )[0] ?? [];
 	$service_cards = (array) ( $service_group['elements'] ?? [] );
+	$service_copy_panels = array_map( $service_content_for, $service_cards );
 	$service_ids = array_column( $service_nodes, 'id' );
+	$service_image_cards = array_values( array_filter( $service_cards, static fn( array $card ): bool => ( $card['elements'][0]['widgetType'] ?? '' ) === 'image' ) );
+	$service_default_refs = array_values( array_filter( (array) ( $service_plan['media_references'] ?? [] ), static fn( array $media ): bool => ( $media['provenance']['source'] ?? '' ) === 'plugin_default' ) );
 	$service_cta = array_values( array_filter( $service_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
 	$check( $service_brief['intent']['archetype'] === 'services' && $service_validation['ok'] && ! empty( $service_compiled['ok'] ) && count( $service_cards ) === $service_count, 'services production functions accept ' . $service_count . ' explicitly grouped cards' );
-	$check( count( array_unique( $service_ids ) ) === count( $service_ids ) && ( $service_cards[0]['elements'][0]['settings']['title'] ?? '' ) === 'Услуга 1' && trim( (string) ( $service_cards[1]['elements'][1]['settings']['editor'] ?? '' ) ) === trim( $service_count > 1 ? str_repeat( 'Длинное описание услуги сохраняется целиком. ', 5 ) : '' ), 'services bind exact item copy to distinct native cards for count ' . $service_count );
-	$check( ! array_key_exists( 'background_color', $service_group['settings'] ?? [] ) && ( $service_cards[0]['settings']['background_color'] ?? '' ) === '#ffffff' && ( $service_cards[0]['settings']['flex_gap']['size'] ?? 0 ) === 0.5, 'service gap exposes the section surface while native cards keep white surfaces and compact spacing' );
-	$check( ( $service_cards[0]['elements'][0]['settings']['header_size'] ?? '' ) === 'h3' && ( $service_cards[0]['elements'][0]['settings']['typography_font_size']['size'] ?? 0 ) === 1.125 && ( $service_cards[0]['elements'][0]['settings']['typography_font_weight'] ?? '' ) === '600', 'service title has a stronger semantic level than its body and can wrap naturally' );
+	$check( count( array_unique( $service_ids ) ) === count( $service_ids ) && ( $service_copy_panels[0]['elements'][0]['settings']['title'] ?? '' ) === 'Услуга 1' && trim( (string) ( $service_copy_panels[1]['elements'][1]['settings']['editor'] ?? '' ) ) === trim( $service_count > 1 ? str_repeat( 'Длинное описание услуги сохраняется целиком. ', 5 ) : '' ), 'services bind exact item copy inside a distinct text panel for count ' . $service_count );
+	$check( ! array_key_exists( 'background_color', $service_group['settings'] ?? [] ) && ( $service_cards[0]['settings']['background_color'] ?? '' ) === '#ffffff' && ( $service_cards[0]['settings']['flex_gap']['size'] ?? null ) === 0 && ( $service_copy_panels[0]['settings']['background_color'] ?? '' ) === '#ffffff', 'service group is transparent, image/text are separate, and each card has a white native copy panel' );
+	$check( count( $service_image_cards ) === min( $service_count, 3 ) && count( $service_default_refs ) === min( $service_count, 3 ) && array_reduce( $service_default_refs, static fn( bool $ok, array $media ): bool => $ok && ! empty( $media['allowed_reuse'] ) && ( $media['role'] ?? '' ) === 'card_image' && trim( (string) ( $media['alt'] ?? '' ) ) !== '', true ), 'Services use the existing licensed photo set as native image nodes with role, alt and provenance for count ' . $service_count );
+	$check( count( array_unique( array_column( $service_default_refs, 'asset_id' ) ) ) === count( $service_default_refs ), 'default service photos have stable distinct asset identities independent of generated Elementor IDs' );
+	$check( array_reduce( $service_image_cards, static fn( bool $ok, array $card ): bool => $ok && ( $card['settings']['border_radius']['top'] ?? '' ) === '16' && ( $card['settings']['border_radius_mobile']['top'] ?? '' ) === '16' && ( $card['elements'][0]['settings']['image_border_radius_mobile']['top'] ?? '' ) === '16' && ( $card['elements'][0]['settings']['image_border_radius_mobile']['bottom'] ?? '' ) === '0', true ), 'service image/card corners share the 16px default at mobile without forcing a missing override to zero' );
+	$check( ( $service_copy_panels[0]['elements'][0]['settings']['header_size'] ?? '' ) === 'h3' && ( $service_copy_panels[0]['elements'][0]['settings']['typography_font_size']['size'] ?? 0 ) === 1.125 && ( $service_copy_panels[0]['elements'][0]['settings']['typography_font_weight'] ?? '' ) === '600' && ( $service_copy_panels[0]['settings']['flex_gap']['size'] ?? 0 ) === 8, 'service title has a stronger semantic level and a compact native heading/body relationship' );
 	if ( $service_count >= 3 ) {
-		$service_bodies = array_map( static fn( array $card ): string => trim( (string) ( $card['elements'][1]['settings']['editor'] ?? '' ) ), $service_cards );
+		$service_bodies = array_map( static fn( array $panel ): string => trim( (string) ( $panel['elements'][1]['settings']['editor'] ?? '' ) ), $service_copy_panels );
 		$check( $service_bodies[0] === $service_bodies[2] && $service_bodies[0] === 'Краткое описание услуги.', 'services retain equal copy as separate item-bound values for count ' . $service_count );
+	}
+	if ( $service_count === 3 ) {
+		[ , , , , $service_reseeded_nodes ] = $compile_prompt( $service_prompt, 'services-distinct-id-seed' );
+		$check( empty( array_intersect( $service_ids, array_column( $service_reseeded_nodes, 'id' ) ) ) && ! in_array( '2fc6b48', $service_ids, true ), 'Services composition compiles fresh IDs from the seed and does not depend on historical live root 2fc6b48' );
 	}
 	if ( $service_count === 4 ) {
 		$check( ( $service_group['settings']['flex_direction'] ?? '' ) === 'row' && (float) ( $service_cards[0]['settings']['width']['size'] ?? 0 ) === 48.0 && (float) ( $service_cards[0]['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ( $service_cta['settings']['link']['url'] ?? '' ) === '#service-1', 'four service cards keep gap-safe desktop sizing, mobile stack and the exact optional CTA URL' );
@@ -807,8 +825,32 @@ $service_image_prompt = "Блок услуг\nУслуга 1 — названи�
 [ $service_image_brief, $service_image_plan, $service_image_validation, $service_image_compiled, $service_image_nodes ] = $compile_prompt( $service_image_prompt, 'service-image-regression' );
 $service_image_ref = $service_image_brief['media_references'][0] ?? [];
 $service_image_widget = array_values( array_filter( $service_image_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+$service_image_url = (string) ( $service_image_widget['settings']['image']['url'] ?? '' );
+$service_image_url_parts = parse_url( $service_image_url );
+$service_image_url_query = [];
+parse_str( (string) ( $service_image_url_parts['query'] ?? '' ), $service_image_url_query );
 $check( ( $service_image_ref['role'] ?? '' ) === 'card_image' && ( $service_image_ref['group_id'] ?? '' ) === 'service_1' && $service_image_validation['ok'] && ! empty( $service_image_compiled['ok'] ), 'service-card media is grouped with its own source item and passes the license gate' );
-$check( $service_image_widget['settings']['image']['url'] === $hero_image_url && $service_image_widget['settings']['image']['alt'] === 'Современный интерьер с панорамным окном', 'optional service image is a native editable widget with its provided alt text' );
+$check( ( $service_image_url_parts['host'] ?? '' ) === ( parse_url( $hero_image_url, PHP_URL_HOST ) ?: '' ) && ( $service_image_url_parts['path'] ?? '' ) === ( parse_url( $hero_image_url, PHP_URL_PATH ) ?: '' ) && ( $service_image_url_query['fit'] ?? '' ) === 'crop' && (int) ( $service_image_url_query['w'] ?? 0 ) === 1200 && (int) ( $service_image_url_query['h'] ?? 0 ) === 900 && $service_image_widget['settings']['image']['alt'] === 'Современный интерьер с панорамным окном', 'optional service image remains the requested asset, uses a stable 4:3 crop, and retains its alt' );
+$service_image_group = array_values( array_filter( $service_image_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-service_cards' ) )[0] ?? [];
+$service_image_card = $service_image_group['elements'][0] ?? [];
+$service_image_panel = $service_content_for( $service_image_card );
+$check( ( $service_image_card['elements'][0]['widgetType'] ?? '' ) === 'image' && ( $service_image_card['elements'][1]['elType'] ?? '' ) === 'container' && ( $service_image_panel['elements'][0]['settings']['title'] ?? '' ) === 'Проектирование интерьеров' && ! isset( $service_image_card['settings']['background_image'] ) && ! isset( $service_image_card['settings']['background_overlay_opacity'] ), 'service composition puts the native image above a separate text panel and removes photo overlays' );
+$service_explicit_and_default_urls = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['image']['url'] ?? '' ), array_filter( $service_image_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) ) );
+$check( count( $service_explicit_and_default_urls ) === 2 && ( parse_url( $service_explicit_and_default_urls[0], PHP_URL_PATH ) ?: '' ) === ( parse_url( $hero_image_url, PHP_URL_PATH ) ?: '' ) && ( parse_url( $service_explicit_and_default_urls[1], PHP_URL_HOST ) ?: '' ) === 'images.unsplash.com', 'explicit service media remains first while the next unfilled card receives a separate built-in photo' );
+$service_explicit_radius_plan = $service_image_plan;
+foreach ( $service_explicit_radius_plan['sections'][0]['children'] as &$service_plan_child ) {
+	if ( ( $service_plan_child['role'] ?? '' ) === 'service_cards' ) {
+		$service_plan_child['items'][0]['layout_constraints'] = [ 'border_radius' => '12px', 'border_radius_mobile' => '22px' ];
+	}
+}
+unset( $service_plan_child );
+$service_explicit_radius_ir = wpae_elementor_ir_from_design_plan( $service_explicit_radius_plan, $service_image_brief );
+$service_explicit_radius_result = wpae_elementor_ir_compile( $service_explicit_radius_ir, $service_image_brief, [], [ 'id_seed' => 'services-radius-override' ] );
+$service_explicit_radius_card = array_values( array_filter( $walk_elements( $service_explicit_radius_result['elementor_data'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === '' && ( $node['settings']['_css_classes'] ?? '' ) === '' && ( $node['settings']['border_radius']['top'] ?? '' ) === '12' ) )[0] ?? [];
+$check( ! empty( $service_explicit_radius_result['ok'] ) && ( $service_explicit_radius_card['settings']['border_radius_mobile']['top'] ?? '' ) === '22' && ( $service_explicit_radius_card['elements'][0]['settings']['image_border_radius']['top'] ?? '' ) === '12' && ( $service_explicit_radius_card['elements'][0]['settings']['image_border_radius_mobile']['top'] ?? '' ) === '22', 'an explicit per-card mobile radius override survives the plan, card surface and native image compiler' );
+$service_no_photo_brief = wpae_brief_ir_parse( "Блок услуг без изображений\nУслуга 1 — название: «Стратегия»\nУслуга 1 — описание: «План проекта.»\nУслуга 2 — название: «Дизайн»\nУслуга 2 — описание: «Архитектурное решение.»" );
+$service_no_photo_plan = wpae_design_plan_from_brief( $service_no_photo_brief );
+$check( ( $service_no_photo_plan['media_intent'] ?? '' ) === 'forbidden' && empty( array_filter( (array) ( $service_no_photo_plan['media_references'] ?? [] ), static fn( array $media ): bool => ( $media['provenance']['source'] ?? '' ) === 'plugin_default' ) ), 'explicit no-image service request suppresses plugin defaults' );
 
 $testimonial_long_quote = str_repeat( 'Синтетический тестовый текст отзыва для проверки длинного содержимого. ', 6 );
 $testimonial_prompt = "Блок отзывов — синтетические тестовые данные\nОтзыв 1 — текст: «Короткий синтетический отзыв.»\nОтзыв 1 — автор: «Тестовый автор»\nОтзыв 2 — текст: «{$testimonial_long_quote}»\nОтзыв 2 — автор: «Второй тестовый автор»\nОтзыв 2 — компания: «Тестовая компания»";

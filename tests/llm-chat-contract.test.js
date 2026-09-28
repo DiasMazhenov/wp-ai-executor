@@ -1,4 +1,5 @@
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -214,7 +215,7 @@ assert.match(llm, /скругл\\w\*\|закругл\\w\*/);
 assert.match(llm, /function wpae_llm_is_border_radius_request/);
 assert.match(llm, /function wpae_llm_ensure_targeted_border_radius_patch/);
 assert.match(elementorData, /function wpae_normalize_elementor_border_radius_value/);
-assert.match(elementorData, /settings\.border_radius/);
+assert.match(elementorData, /wpae_elementor_normalize_border_radius_patch_value/);
 assert.match(llm, /function wpae_llm_is_content_composition_request/);
 assert.match(llm, /function wpae_llm_content_units/);
 assert.match(llm, /function wpae_llm_is_content_only_hero_brief/);
@@ -1255,3 +1256,4 @@ assert.equal(runLiveSelection({
     elementor: { selection: { getElements: () => [legacySelection] } }
 })[0].attributes.id, 'legacy-selected', 'Elementor model selection remains the preferred source');
 console.log('llm chat contract: OK');
+assert.match(execFileSync('php', [path.join(root, 'tests/elementor-patch-guard.php')], { encoding: 'utf8' }), /production Elementor patch before-hash guard: OK/);

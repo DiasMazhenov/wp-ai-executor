@@ -187,6 +187,17 @@ function wpae_normalize_elementor_border_radius_value( $value, $current = null )
     ];
 }
 
+function wpae_elementor_normalize_border_radius_patch_value( $value ) {
+	if ( is_scalar( $value ) && is_numeric( $value ) && is_finite( (float) $value ) && (float) $value >= 0 && (float) $value <= 999 ) {
+		$size = (string) $value;
+		$value = [ 'unit' => 'px', 'top' => $size, 'right' => $size, 'bottom' => $size, 'left' => $size, 'isLinked' => true ];
+	}
+	if ( wpae_elementor_native_control_error( 'border_radius', $value ) !== '' ) {
+		return null;
+	}
+	return $value;
+}
+
 function wpae_set_array_path_value( array &$target, array $segments, $value ): void {
     $cursor =& $target;
     $last_index = count( $segments ) - 1;
@@ -292,11 +303,31 @@ function wpae_apply_elementor_patch_to_element( array &$elements, string $elemen
                 $changed = wpae_delete_array_path_value( $element, $segments );
             } else {
                 $patch_value = $patch['value'] ?? null;
-                if ( $property_path === 'settings.border_radius' ) {
-                    $patch_value = wpae_normalize_elementor_border_radius_value( $patch_value, $element['settings']['border_radius'] ?? null );
-                } elseif ( strpos( $property_path, 'settings.border_radius.' ) === 0 ) {
-                    $element['settings']['border_radius'] = wpae_normalize_elementor_border_radius_value( $element['settings']['border_radius'] ?? null, $element['settings']['border_radius'] ?? null );
-                }
+				$control_path = substr( $property_path, strlen( 'settings.' ) );
+				if ( wpae_elementor_native_control_kind( $control_path ) === 'opacity' ) {
+					$patch_value = wpae_elementor_normalize_native_control_value( $control_path, $patch_value );
+					$control_error = wpae_elementor_native_control_error( $control_path, $patch_value );
+					if ( $control_error !== '' ) {
+						$report['errors'][] = [ 'element_id' => $element_id, 'path' => $property_path, 'message' => 'Invalid native opacity: ' . $control_error . '.' ];
+						return true;
+					}
+				} elseif ( preg_match( '/^(?:_?border_radius|image_border_radius)(?:_(?:tablet|mobile|widescreen|laptop|tablet_extra|mobile_extra))?$/', preg_replace( '/\.(?:top|right|bottom|left)$/', '', $control_path ) ) ) {
+					if ( preg_match( '/\.(?:top|right|bottom|left)$/', $control_path ) ) {
+						$dimension_key = preg_replace( '/\.(?:top|right|bottom|left)$/', '', $control_path );
+						$current = $element['settings'][ $dimension_key ] ?? null;
+						if ( wpae_elementor_native_control_error( $dimension_key, $current ) !== '' || ! is_scalar( $patch_value ) || (string) $patch_value !== '' && ! preg_match( '/^-?\d+(?:\.\d+)?$/', (string) $patch_value ) ) {
+							$report['errors'][] = [ 'element_id' => $element_id, 'path' => $property_path, 'message' => 'Invalid native border-radius side; an existing valid dimensions control and numeric side value are required.' ];
+							return true;
+						}
+					} else {
+						$normalized_radius = wpae_elementor_normalize_border_radius_patch_value( $patch_value );
+						if ( ! is_array( $normalized_radius ) ) {
+							$report['errors'][] = [ 'element_id' => $element_id, 'path' => $property_path, 'message' => 'Invalid native border radius; use a numeric pixel value or a four-side Elementor dimensions object.' ];
+							return true;
+						}
+						$patch_value = $normalized_radius;
+					}
+				}
                 wpae_set_array_path_value( $element, $segments, $patch_value );
                 $changed = true;
             }

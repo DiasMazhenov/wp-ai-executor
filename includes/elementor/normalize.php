@@ -405,10 +405,17 @@ function wpae_normalize_known_third_party_widget( array &$element, array &$repor
 
 function wpae_elementor_normalize_dimensions( array &$settings, array &$report, string $element_path ): void {
     foreach ( $settings as $key => $value ) {
-        if ( ! preg_match( '/^_?(?:padding|margin|border_width|border_radius)(?:_(?:tablet|mobile|widescreen|laptop|tablet_extra|mobile_extra))?$/', (string) $key ) || ! is_array( $value ) ) {
-            continue;
-        }
+		if ( ! preg_match( '/^_?(?:padding|margin|border_width|border_radius|image_border_radius)(?:_(?:tablet|mobile|widescreen|laptop|tablet_extra|mobile_extra))?$/', (string) $key ) || ! is_array( $value ) ) {
+			continue;
+		}
         $filled = $value;
+		$has_sides = count( array_intersect( [ 'top', 'right', 'bottom', 'left' ], array_keys( $value ) ) ) > 0;
+		if ( ! $has_sides && is_scalar( $value['size'] ?? null ) && is_numeric( $value['size'] ) && is_finite( (float) $value['size'] ) ) {
+			$uniform = (string) $value['size'];
+			foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+				$filled[ $side ] = $uniform;
+			}
+		}
         $linked_value = '';
         if ( ! empty( $value['isLinked'] ) ) {
             foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
@@ -423,6 +430,9 @@ function wpae_elementor_normalize_dimensions( array &$settings, array &$report, 
                 $filled[ $side ] = $linked_value;
             }
         }
+        if ( isset( $filled['size'] ) && is_numeric( $filled['size'] ) && count( array_filter( [ 'top', 'right', 'bottom', 'left' ], static fn( string $side ): bool => (float) $filled[ $side ] !== (float) $filled['size'] ) ) === 0 ) {
+			unset( $filled['size'] );
+		}
         $filled += [ 'unit' => 'px', 'isLinked' => false ];
         if ( $filled !== $value ) {
             $settings[ $key ] = $filled;
@@ -597,6 +607,13 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
             $settings = [];
             wpae_elementor_normalize_add_change( $report, 'filled_settings', $element_path, 'Filled missing settings array.' );
         }
+		foreach ( $element['settings'] as $setting_key => $setting_value ) {
+			$normalized_control = wpae_elementor_normalize_native_control_value( (string) $setting_key, $setting_value );
+			if ( $normalized_control !== $setting_value ) {
+				$element['settings'][ $setting_key ] = $normalized_control;
+				wpae_elementor_normalize_add_change( $report, 'normalized_native_control', $element_path, 'Normalized a known native Elementor control without changing its semantic value.', [ 'setting' => (string) $setting_key ] );
+			}
+		}
 
         wpae_elementor_normalize_dimensions( $element['settings'], $report, $element_path );
         $el_type = (string) ( $element['elType'] ?? '' );

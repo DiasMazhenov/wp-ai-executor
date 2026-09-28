@@ -13,6 +13,85 @@ function wpae_validate_elementor_data_string( string $raw_data ): array {
     return $errors;
 }
 
+function wpae_elementor_native_control_kind( string $key ): string {
+	if ( preg_match( '/^background_overlay_opacity(?:_b)?(?:_(?:tablet|mobile|widescreen|laptop|tablet_extra|mobile_extra))?$/', $key ) ) {
+		return 'opacity';
+	}
+	if ( preg_match( '/^_?(?:padding|margin|border_width|border_radius|image_border_radius)(?:_(?:tablet|mobile|widescreen|laptop|tablet_extra|mobile_extra))?$/', $key ) ) {
+		return 'dimensions';
+	}
+	return '';
+}
+
+function wpae_elementor_normalize_native_control_value( string $key, $value ) {
+	if ( wpae_elementor_native_control_kind( $key ) !== 'opacity' || ! is_scalar( $value ) || ! is_numeric( $value ) ) {
+		return $value;
+	}
+	$size = (float) $value;
+	if ( ! is_finite( $size ) || $size < 0 || $size > 1 ) {
+		return $value;
+	}
+	return [ 'unit' => 'px', 'size' => $size, 'sizes' => [] ];
+}
+
+function wpae_elementor_native_control_error( string $key, $value ): string {
+	$kind = wpae_elementor_native_control_kind( $key );
+	if ( $kind === 'opacity' ) {
+		if ( is_scalar( $value ) && is_numeric( $value ) ) {
+			$size = (float) $value;
+			return is_finite( $size ) && $size >= 0 && $size <= 1 ? '' : 'must be a native opacity value between 0 and 1';
+		}
+		if ( ! is_array( $value ) || ! array_key_exists( 'size', $value ) ) {
+			return 'must be a numeric value from 0 to 1 or an Elementor slider object';
+		}
+		$raw_size = $value['size'];
+		$unset_size = is_string( $raw_size ) && trim( $raw_size ) === '';
+		if ( ! $unset_size && ! is_numeric( $raw_size ) ) {
+			return 'must be a numeric value from 0 to 1 or an Elementor slider object';
+		}
+		if ( $unset_size ) {
+			return ( isset( $value['unit'] ) && $value['unit'] !== 'px' ) || ( isset( $value['sizes'] ) && ! is_array( $value['sizes'] ) )
+				? 'must be an Elementor opacity slider with size between 0 and 1'
+				: '';
+		}
+		$size = (float) $value['size'];
+		if ( ! is_finite( $size ) || $size < 0 || $size > 1 || ( isset( $value['unit'] ) && $value['unit'] !== 'px' ) || ( isset( $value['sizes'] ) && ! is_array( $value['sizes'] ) ) ) {
+			return 'must be an Elementor opacity slider with size between 0 and 1';
+		}
+		return '';
+	}
+	if ( $kind !== 'dimensions' ) {
+		return '';
+	}
+	$unit = is_array( $value ) ? strtolower( (string) ( $value['unit'] ?? '' ) ) : '';
+	if ( ! is_array( $value ) || ! in_array( $unit, [ 'px', '%', 'em', 'rem', 'vh', 'vw' ], true ) || isset( $value['sizes'] ) && ! is_array( $value['sizes'] ) ) {
+		return 'must be a native Elementor dimensions object with a supported unit';
+	}
+	$side_values = [];
+	foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+		if ( ! array_key_exists( $side, $value ) || ! is_scalar( $value[ $side ] ) ) {
+			return 'must contain scalar top, right, bottom, and left values';
+		}
+		$raw = trim( (string) $value[ $side ] );
+		if ( $raw !== '' && ! preg_match( '/^-?\d+(?:\.\d+)?$/', $raw ) ) {
+			return 'contains a non-numeric dimension side';
+		}
+		$side_values[] = $raw;
+	}
+	if ( array_key_exists( 'size', $value ) ) {
+		if ( ! is_scalar( $value['size'] ) || ! is_numeric( $value['size'] ) || ! is_finite( (float) $value['size'] ) ) {
+			return 'contains an ambiguous slider size in a dimensions object';
+		}
+		$size = (string) (float) $value['size'];
+		foreach ( $side_values as $side_value ) {
+			if ( $side_value === '' || (float) $side_value !== (float) $size ) {
+				return 'contains conflicting slider size and dimensions sides';
+			}
+		}
+	}
+	return '';
+}
+
 function wpae_html_has_blocking_heading_typography_override( string $html ): bool {
     return (bool) preg_match(
         '/\.elementor-heading-title[^{}]*\{[^{}]*\b(?:font-family|font-size|font-weight|font-style|line-height|letter-spacing|word-spacing|text-transform|text-decoration)\s*:[^;{}]*!important/i',
@@ -141,6 +220,12 @@ function wpae_validate_elementor_elements_recursive( array $elements, string $pa
         }
 
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+		foreach ( $settings as $setting_key => $setting_value ) {
+			$control_error = wpae_elementor_native_control_error( (string) $setting_key, $setting_value );
+			if ( $control_error !== '' ) {
+				$errors[] = "{$element_path}: native setting {$setting_key} {$control_error}.";
+			}
+		}
         if ( (string) ( $element['widgetType'] ?? '' ) === 'html' ) {
             $html = (string) ( $settings['html'] ?? $settings['content'] ?? $settings['code'] ?? '' );
             if ( $html !== '' && wpae_html_has_blocking_heading_typography_override( $html ) ) {
