@@ -223,6 +223,28 @@ function wpae_design_plan_default_service_media(): array {
 	];
 }
 
+function wpae_design_plan_default_hero_media( array $brief ): array {
+	if ( wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) !== 'unspecified' || ! empty( $brief['media_references'] ) ) {
+		return [];
+	}
+	$source = (string) ( $brief['source_text'] ?? '' );
+	if ( ! preg_match( '/архитектур\w*|архитектор\w*|интерьер\w*|строительств\w*|здан\w*|ландшафт\w*|\barchitecture\b|\barchitect\w*|\binterior\w*|\bconstruction\b|\bbuilding\b/iu', $source ) ) {
+		return [];
+	}
+	$media = wpae_design_plan_default_service_media()[1];
+	$media['asset_id'] = 'wpae_hero_architecture_interior';
+	$media['group_id'] = 'hero_visual';
+	$media['role'] = 'hero';
+	$media['attachment_id'] = null;
+	$media['crop'] = '16:9';
+	$media['object_fit'] = 'cover';
+	$media['license'] = 'Unsplash License';
+	$media['attribution'] = '';
+	$media['allowed_reuse'] = true;
+	$media['provenance'] = [ 'source' => 'plugin_default', 'catalog' => 'wpae-hero-media-v1' ];
+	return $media;
+}
+
 function wpae_design_plan_from_brief( array $brief, array $context = [] ): array {
 	$archetype = sanitize_key( (string) ( $brief['intent']['archetype'] ?? 'unknown' ) );
 	if ( ! in_array( $archetype, wpae_design_plan_schema()['archetypes'], true ) ) {
@@ -242,6 +264,12 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 	$explicit_composition = wpae_design_plan_constraint_value( $brief, 'composition' );
 	$composition = (string) ( $explicit_composition ?? ( $archetype === 'hero' ? 'split_60_40' : ( $archetype === 'pricing' ? 'three_cards' : 'linear' ) ) );
 	$media_references = array_values( array_filter( (array) ( $brief['media_references'] ?? [] ), static fn( $media ): bool => is_array( $media ) && wpae_design_plan_media_reference_valid( $media ) && ( $archetype !== 'hero' || ( $media['role'] ?? '' ) === 'hero' ) ) );
+	if ( $archetype === 'hero' && empty( $media_references ) ) {
+		$default_hero_media = wpae_design_plan_default_hero_media( $brief );
+		if ( ! empty( $default_hero_media ) ) {
+			$media_references[] = $default_hero_media;
+		}
+	}
 	$hero_has_media = $archetype === 'hero' && ! empty( $media_references ) && $media_intent !== 'forbidden' && $media_intent !== 'conflict';
 	$cta_has_media = $archetype === 'cta' && ! empty( $media_references ) && $media_intent !== 'forbidden' && $media_intent !== 'conflict';
 	if ( $archetype === 'hero' && ! $hero_has_media && $explicit_composition === null && $media_intent !== 'conflict' ) {

@@ -1314,6 +1314,7 @@ function wpae_llm_block_archetype_hint( string $message ): string {
         'mega_menu' => [ 'мега меню/навигация', 'image, mega-menu и button в сохраненной grid-композиции' ],
         'carousel' => [ 'карусель/логотипы', 'image-carousel с реальными изображениями и responsive-настройками' ],
         'hero' => [ 'hero/первый экран', 'heading, text-editor, button и image при необходимости' ],
+        'services' => [ 'услуги/services', 'image, heading, text-editor, icon и button в повторяющихся карточках' ],
         'benefits' => [ 'преимущества/features', 'heading, icon-list и text-editor или button' ],
         'pricing' => [ 'тарифы/pricing', 'heading, price-list или заполненные native heading/text-editor/button' ],
         'team' => [ 'команда/team', 'heading, image, icon и повторяющиеся карточки' ],
@@ -1324,8 +1325,23 @@ function wpae_llm_block_archetype_hint( string $message ): string {
         'cta' => [ 'CTA/контакт', 'heading, text-editor и button' ],
         'portfolio' => [ 'портфолио/кейсы', 'heading, image и text-editor или button' ],
     ];
+    $image_guidance = [
+        'hero' => 'Используй релевантное фото Unsplash, когда тема первого экрана от этого выигрывает; при явном запрете изображения не добавляй его и не оставляй пустой media-зоны.',
+        'services' => 'Для услуг используй релевантное изображение Unsplash на карточку; не заменяй фото пустыми media-зонами.',
+        'benefits' => 'Сначала используй иконки; добавляй фото только когда оно передаёт конкретную пользу лучше иконки.',
+        'team' => 'Не выдумывай портреты сотрудников; добавляй фото только для реально указанных людей и явно предоставленных портретов.',
+        'testimonials' => 'Не добавляй стоковые лица к отзывам; используй только явно предоставленные фото реальных авторов.',
+        'process' => 'Не используй стоковые фото; этапы показывай номерами, маркерами или иконками.',
+        'pricing' => 'Не добавляй фото по умолчанию; используй его только по явному запросу и при смысловой пользе.',
+        'faq' => 'Не добавляй фото по умолчанию; используй его только по явному запросу и при смысловой пользе.',
+        'cta' => 'Не добавляй фото по умолчанию; используй его только по явному запросу и при смысловой пользе.',
+        'portfolio' => 'Используй изображения реальных проектов; не выдумывай работы и не выдавай стоковые фото за портфолио.',
+        'about' => 'Используй предоставленное фото компании или явно иллюстративный тематический кадр; не представляй стоковое фото как реальный объект.',
+        'carousel' => 'Используй предоставленные логотипы или тематические изображения, не подменяй их случайным стоком.',
+        'mega_menu' => 'Добавляй изображения только когда они помогают различать пункты навигации.',
+    ];
     if ( isset( $labels[ $archetype ] ) ) {
-        return ' Сначала классифицируй запрос как блок «' . $labels[ $archetype ][0] . '» и собери соответствующую композицию. Предпочтительные native widgets: ' . $labels[ $archetype ][1] . '. Не повторяй hero/benefits-шаблон, если запрос относится к другому типу.';
+        return ' Сначала классифицируй запрос как блок «' . $labels[ $archetype ][0] . '» и собери соответствующую композицию. Предпочтительные native widgets: ' . $labels[ $archetype ][1] . '. ' . ( $image_guidance[ $archetype ] ?? '' ) . ' Не повторяй hero/benefits-шаблон, если запрос относится к другому типу.';
     }
     return ' Сначала определи тип блока по смыслу запроса и выбери подходящие native widgets из доступных Elementor. Не своди каждый блок к одному и тому же hero/benefits-шаблону; содержание и композиция должны соответствовать задаче пользователя.';
 }
@@ -3768,21 +3784,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
     };
 
     $content_units = wpae_llm_content_units( $message );
-    $trusted_hero_images = [
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/side-view-of-caucasian-businessman-standing-and-gi-2026-03-25-05-35-12-utc2.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/business-executive-giving-a-speech-at-conference-c-2026-03-26-11-49-31-utc-200kb.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/man-giving-presentation-to-an-audience-indoors-2026-03-10-03-17-22-utc-1.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/woman-speaking-at-event-with-audience-members-2026-03-26-22-59-42-utc.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/confident-professional-woman-speaking-into-microph-2026-05-18-21-28-38-utc.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/smiling-woman-speaking-at-corporate-event-2026-01-11-11-10-44-utc-200kb.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/businessman-holding-microphone-at-business-seminar-2026-01-09-08-36-06-utc-200kb.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/business-presentation-of-marketing-plan-and-data-a-2026-03-15-00-39-37-utc.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/woman-in-lab-coat-speaking-at-conference-2026-01-23-00-14-47-utc.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/happy-entrepreneur-communicating-with-coworkers-wh-2026-07-14-20-39-23-utc.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/confident-businesswoman-standing-in-modern-office-2026-04-14-19-34-06-utc.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/cropped-view-of-journalists-holding-microphones-ne-2026-03-25-10-30-11-utc-200kb.jpg',
-        'https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/asian-businesswoman-presenting-financial-data-to-o-2026-01-09-12-00-44-utc-200kb.jpg',
-    ];
+    $trusted_hero_images = array_values( array_column( wpae_design_plan_default_service_media(), 'source_url' ) );
     $used_image_urls = array_values( array_unique( array_filter( array_map( 'trim', $used_image_urls ) ) ) );
     $clean_hero = static function ( array $root, array $units, int &$changed ) use ( $has_background_image, $clean_trusted_source, $trusted_hero_images, $image_variant, $message, $used_image_urls ): array {
         if ( count( $units ) < 2 ) {
@@ -6301,7 +6303,76 @@ function wpae_llm_normalize_generated_button_settings( array &$settings, string 
     return $before !== wp_json_encode( $settings );
 }
 
+function wpae_llm_normalize_image_usage( array $elements, string $message, string $archetype, int &$changed = 0 ): array {
+	$brief = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
+	$media_intent = 'unspecified';
+	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) {
+		if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
+			$media_intent = sanitize_key( (string) ( $constraint['value'] ?? '' ) );
+			break;
+		}
+	}
+	$allowed_urls = [];
+	if ( ! in_array( $media_intent, [ 'forbidden', 'conflict' ], true ) ) {
+		foreach ( (array) ( $brief['media_references'] ?? [] ) as $media ) {
+			if ( is_array( $media ) && trim( (string) ( $media['source_url'] ?? '' ) ) !== '' ) {
+				$allowed_urls[] = trim( (string) $media['source_url'] );
+			}
+		}
+		if ( $archetype === 'services' && function_exists( 'wpae_design_plan_default_service_media' ) ) {
+			$allowed_urls = array_merge( $allowed_urls, array_column( wpae_design_plan_default_service_media(), 'source_url' ) );
+		}
+		if ( $archetype === 'hero' && function_exists( 'wpae_design_plan_default_hero_media' ) && ! empty( wpae_design_plan_default_hero_media( $brief ) ) && function_exists( 'wpae_design_plan_default_service_media' ) ) {
+			$allowed_urls = array_merge( $allowed_urls, array_column( wpae_design_plan_default_service_media(), 'source_url' ) );
+		}
+	}
+	$allowed_urls = array_values( array_unique( $allowed_urls ) );
+	$walk = static function ( array $nodes ) use ( &$walk, &$changed, $allowed_urls ): array {
+		$normalized = [];
+		foreach ( $nodes as $element ) {
+			if ( ! is_array( $element ) ) {
+				continue;
+			}
+			$settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+			if ( ( $element['elType'] ?? '' ) === 'widget' && in_array( sanitize_key( (string) ( $element['widgetType'] ?? '' ) ), [ 'image', 'image-box' ], true ) ) {
+				$image = is_array( $settings['image'] ?? null ) ? $settings['image'] : [];
+				$image_url = trim( (string) ( $image['url'] ?? $settings['image_url'] ?? '' ) );
+				$image_id = absint( $image['id'] ?? $settings['image_id'] ?? 0 );
+				$library_attachment = $image_id > 0 && sanitize_key( (string) ( $image['source'] ?? '' ) ) === 'library';
+				if ( ( $image_url === '' || ! in_array( $image_url, $allowed_urls, true ) ) && ! $library_attachment ) {
+					$changed++;
+					if ( ( $element['widgetType'] ?? '' ) === 'image' ) {
+						continue;
+					}
+					unset( $settings['image'], $settings['image_url'], $settings['image_id'] );
+				}
+				$element['settings'] = $settings;
+			}
+			if ( ( $element['elType'] ?? '' ) === 'container' ) {
+				foreach ( [ 'background_image', 'background_overlay_image', 'background_hover_image' ] as $key ) {
+					$image = is_array( $settings[ $key ] ?? null ) ? $settings[ $key ] : [];
+					$image_url = trim( (string) ( $image['url'] ?? '' ) );
+					$image_id = absint( $image['id'] ?? 0 );
+					$library_attachment = $image_id > 0 && sanitize_key( (string) ( $image['source'] ?? '' ) ) === 'library';
+					if ( $image_url !== '' && ! in_array( $image_url, $allowed_urls, true ) && ! $library_attachment ) {
+						unset( $settings[ $key ] );
+						$changed++;
+					}
+				}
+				$element['settings'] = $settings;
+			}
+			if ( is_array( $element['elements'] ?? null ) ) {
+				$element['elements'] = $walk( $element['elements'] );
+			}
+			$normalized[] = $element;
+		}
+		return $normalized;
+	};
+	return $walk( $elements );
+}
+
 function wpae_llm_normalize_native_visual_contract( array $elements, string $message, string $archetype, int &$changed = 0 ): array {
+	$elements = wpae_llm_normalize_image_usage( $elements, $message, $archetype, $changed );
     if ( in_array( $archetype, [ 'benefits', 'pricing', 'testimonials', 'portfolio', 'team' ], true ) ) {
         $before_layout = wp_json_encode( $elements );
         $elements = wpae_llm_apply_bento_layout( $elements, $archetype, $changed );
@@ -8367,16 +8438,25 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 			];
 		}
 		$hero_badge = wpae_llm_badge_widget( 'llm-hero-badge', 'hero', $visual_copy !== '' ? $visual_copy : null );
-		$visual_panel_elements = [
-			$widget( 'llm-hero-visual-icon', 'icon', [
+		$hero_default_media = wpae_design_plan_default_hero_media( wpae_brief_ir_parse( $message ) );
+		$visual_panel_elements = ! empty( $hero_default_media )
+			? [ $widget( 'llm-hero-visual-image', 'image', [
+				'image' => [ 'url' => $hero_default_media['source_url'], 'id' => 0, 'alt' => $hero_default_media['alt'], 'source' => 'url' ],
+				'image_size' => 'full',
+				'width' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+				'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+				'object-fit' => 'cover',
+				'image_border_radius' => [ 'unit' => 'px', 'top' => '16', 'right' => '16', 'bottom' => '16', 'left' => '16', 'isLinked' => true ],
+				'_css_classes' => 'wpae-hero-visual-image',
+			] ) ]
+			: [ $widget( 'llm-hero-visual-icon', 'icon', [
 				'selected_icon' => [ 'value' => 'fas fa-building', 'library' => 'fa-solid' ],
 				'primary_color' => '#a84c36',
 				'size' => [ 'unit' => 'rem', 'size' => 4 ],
 				'align' => 'center',
 				'content_width' => 'full',
 				'_css_classes' => 'wpae-hero-visual-icon',
-			] ),
-		];
+			] ) ];
 		$elements = [
 			$hero_badge,
 			[
@@ -8427,10 +8507,10 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 							'flex_gap' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
 							'flex_gap_mobile' => [ 'column' => '1', 'row' => '1', 'isLinked' => true, 'unit' => 'rem', 'size' => '1' ],
 							'background_background' => 'classic',
-							'background_color' => '#e7c7b7',
+							'background_color' => empty( $hero_default_media ) ? '#e7c7b7' : 'transparent',
 							'border_radius' => [ 'unit' => 'rem', 'top' => '1.5', 'right' => '1.5', 'bottom' => '1.5', 'left' => '1.5', 'isLinked' => true ],
-							'padding' => [ 'unit' => 'rem', 'top' => '3', 'right' => '2.5', 'bottom' => '3', 'left' => '2.5', 'isLinked' => false ],
-							'padding_mobile' => [ 'unit' => 'rem', 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5', 'isLinked' => false ],
+							'padding' => empty( $hero_default_media ) ? [ 'unit' => 'rem', 'top' => '3', 'right' => '2.5', 'bottom' => '3', 'left' => '2.5', 'isLinked' => false ] : [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
+							'padding_mobile' => empty( $hero_default_media ) ? [ 'unit' => 'rem', 'top' => '2.25', 'right' => '1.5', 'bottom' => '2.25', 'left' => '1.5', 'isLinked' => false ] : [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ],
 							'width' => [ 'unit' => '%', 'size' => 38, 'sizes' => [] ],
 							'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
 							'_element_custom_width' => [ 'unit' => '%', 'size' => 38, 'sizes' => [] ],
@@ -8815,49 +8895,12 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
         'image-box' => [ 'title' => 'Избранные проекты', 'description' => 'Показываем задачу, решение и результат без лишнего шума.', 'cta' => 'Смотреть проекты', 'card' => 'Проект' ],
     ];
     $copyelement_defaults = $defaults[ $archetype ] ?? $defaults['portfolio'];
-    $library_image_sets = [
-        'testimonials' => [
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80',
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80',
-        ],
-        'team' => [
-            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=80',
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80',
-            'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=900&q=80',
-        ],
-        'about' => [
-            'https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
-        ],
-        'portfolio' => [
-            'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
-        ],
-        'image-box' => [
-            'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1559028012-481c04fa702d?auto=format&fit=crop&w=1200&q=80',
-            'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80',
-        ],
-    ];
-    $library_image_alt = [
-        'testimonials' => 'Портрет клиента',
-        'team' => 'Член команды',
-        'about' => 'Команда проекта',
-        'portfolio' => 'Избранный проект',
-        'image-box' => 'Избранный проект',
-    ];
     $is_library_image_placeholder = static function ( string $url ): bool {
         $normalized = strtolower( trim( $url ) );
         return $normalized === ''
             || strpos( $normalized, 'new-container-image-' ) !== false
             || strpos( $normalized, 'image-placeholder' ) !== false
             || strpos( $normalized, 'placeholder-image' ) !== false;
-    };
-    $next_library_image = static function ( int $index ) use ( $library_image_sets, $archetype ): string {
-        $images = $library_image_sets[ $archetype ] ?? $library_image_sets['portfolio'];
-        return (string) ( $images[ $index % count( $images ) ] ?? $images[0] );
     };
     $is_placeholder = static function ( $value ): bool {
         $normalized = wpae_llm_normalize_content_text( $value );
@@ -8952,8 +8995,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
         return false;
     };
     $placeholder_heading_index = 0;
-    $library_image_index = 0;
-    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, $has_meaningful_descendant, &$placeholder_heading_index, &$library_image_index, $is_library_image_placeholder, $next_library_image, $library_image_alt, $service_colors ): array {
+    $walk = static function ( array $nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $copyelement_defaults, $is_placeholder, $contains_card_signal, $has_meaningful_descendant, &$placeholder_heading_index, $is_library_image_placeholder, $service_colors ): array {
         $normalized_nodes = [];
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
@@ -8978,13 +9020,12 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                     $image = is_array( $settings['image'] ?? null ) ? $settings['image'] : [];
                     $image_url = trim( (string) ( $image['url'] ?? $settings['image_url'] ?? '' ) );
                     $image_id = absint( $image['id'] ?? $settings['image_id'] ?? 0 );
-                    if ( $is_library_image_placeholder( $image_url ) && $archetype !== '' ) {
-                        $image['url'] = $next_library_image( $library_image_index++ );
-                        $image['id'] = 0;
-                        $image['source'] = 'url';
-                        $image['alt'] = (string) ( $library_image_alt[ $archetype ] ?? 'Изображение блока' );
-                        $settings['image'] = $image;
+                    if ( $is_library_image_placeholder( $image_url ) ) {
                         $changed++;
+                        if ( $widget_type === 'image' ) {
+                            continue;
+                        }
+                        unset( $settings['image'], $settings['image_url'], $settings['image_id'] );
                     }
                     if ( $image_url !== '' && $image_id > 0 && function_exists( 'home_url' ) && function_exists( 'wp_parse_url' ) ) {
                         $site_host = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );

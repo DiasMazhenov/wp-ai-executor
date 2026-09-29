@@ -247,6 +247,33 @@ function widget( $id, $type, $settings ) { return [ 'id' => $id, 'elType' => 'wi
 function container_node( $id, $settings, $children ) { return [ 'id' => $id, 'elType' => 'container', 'settings' => $settings, 'elements' => $children ]; }
 function provider_reply( $reply ) { return [ 'response' => [ 'code' => 200 ], 'body' => wp_json_encode( [ 'choices' => [ [ 'finish_reason' => 'stop', 'message' => [ 'content' => $reply ] ] ] ] ) ]; }
 
+$unsolicited_team_photo = 'https://images.unsplash.com/photo-random-person?auto=format&fit=crop&w=800&q=80';
+$team_image_changes = 0;
+$team_without_requested_photo = wpae_llm_normalize_native_visual_contract( [ container_node( 'team-root', [], [
+	widget( 'team-face', 'image', [ 'image' => [ 'url' => $unsolicited_team_photo, 'id' => 0, 'source' => 'url' ] ] ),
+	widget( 'team-name', 'heading', [ 'title' => 'Алия Садыкова' ] ),
+] ) ], 'Блок команды: Алия Садыкова.', 'team', $team_image_changes );
+check( count( $team_without_requested_photo[0]['elements'] ?? [] ) === 1 && ( $team_without_requested_photo[0]['elements'][0]['settings']['title'] ?? '' ) === 'Алия Садыкова' && $team_image_changes > 0, 'Team generation removes an unrequested stock portrait while preserving the person copy' );
+$requested_team_photo = 'https://example.test/media/aliya.png';
+$team_explicit_image_changes = 0;
+$team_with_requested_photo = wpae_llm_normalize_native_visual_contract( [ container_node( 'team-explicit-root', [], [ widget( 'team-face-explicit', 'image', [ 'image' => [ 'url' => $requested_team_photo, 'id' => 0, 'source' => 'url' ] ] ) ] ) ], 'Команда. Участник 1 — фото: ' . $requested_team_photo, 'team', $team_explicit_image_changes );
+check( ( $team_with_requested_photo[0]['elements'][0]['settings']['image']['url'] ?? '' ) === $requested_team_photo, 'Team generation keeps an image explicitly supplied for the actual named person' );
+$process_background_changes = 0;
+$process_without_stock_background = wpae_llm_normalize_native_visual_contract( [ container_node( 'process-root', [ 'background_image' => [ 'url' => $unsolicited_team_photo, 'id' => 0 ] ], [ widget( 'process-step', 'heading', [ 'title' => 'Заявка' ] ) ] ) ], 'Процесс: этапы работы.', 'process', $process_background_changes );
+check( ! isset( $process_without_stock_background[0]['settings']['background_image'] ) && $process_background_changes > 0, 'Process generation strips an unrequested decorative stock photo from its background' );
+$services_catalog_image = wpae_design_plan_default_service_media()[0]['source_url'];
+$service_image_changes = 0;
+$service_with_catalog_image = wpae_llm_normalize_native_visual_contract( [ container_node( 'service-root', [], [ widget( 'service-photo', 'image', [ 'image' => [ 'url' => $services_catalog_image, 'id' => 0, 'source' => 'url' ] ] ) ] ) ], 'Блок услуг.', 'services', $service_image_changes );
+check( ( $service_with_catalog_image[0]['elements'][0]['settings']['image']['url'] ?? '' ) === $services_catalog_image, 'Services may use the plugin curated Unsplash image catalog without a URL in the prompt' );
+$hero_default_brief = wpae_brief_ir_parse( 'Hero архитектурной студии. Заголовок: «Пространство для идей».' );
+$hero_default_image = wpae_design_plan_default_hero_media( $hero_default_brief );
+$hero_default_image_changes = 0;
+$hero_with_default_image = wpae_llm_normalize_native_visual_contract( [ container_node( 'architecture-hero-root', [], [ widget( 'architecture-hero-photo', 'image', [ 'image' => [ 'url' => $hero_default_image['source_url'], 'id' => 0, 'source' => 'url' ] ] ) ] ) ], 'Hero архитектурной студии. Заголовок: «Пространство для идей».', 'hero', $hero_default_image_changes );
+check( ( $hero_with_default_image[0]['elements'][0]['settings']['image']['url'] ?? '' ) === $hero_default_image['source_url'], 'Contextual architecture Hero keeps its plugin selected Unsplash image' );
+$hero_no_photo_changes = 0;
+$hero_no_photo = wpae_llm_normalize_native_visual_contract( [ container_node( 'architecture-hero-no-photo-root', [], [ widget( 'architecture-hero-no-photo', 'image', [ 'image' => [ 'url' => $hero_default_image['source_url'], 'id' => 0, 'source' => 'url' ] ] ) ] ) ], 'Hero архитектурной студии без фото. Заголовок: «Пространство для идей».', 'hero', $hero_no_photo_changes );
+check( empty( $hero_no_photo[0]['elements'] ) && $hero_no_photo_changes > 0, 'Explicit no-photo instruction overrides contextual Hero imagery' );
+
 $hero = container_node( 'provider-hero', [ 'container_type' => 'flex', 'flex_direction' => 'row', 'background_color' => '#f4eee4', 'min_height' => [ 'unit' => 'vh', 'size' => 78 ], 'flex_gap' => [ 'unit' => 'rem', 'size' => 2 ] ], [
     container_node( 'copy-zone', [ 'width' => [ 'unit' => '%', 'size' => 54 ] ], [
         widget( 'title', 'heading', [ 'title' => 'Пространство для жизни', 'header_size' => 'h1', 'typography_font_size' => [ 'unit' => 'rem', 'size' => 5.5 ], 'title_color' => '#28251f' ] ),
@@ -480,9 +507,9 @@ $content_only_json = (string) wp_json_encode( $content_only_saved, JSON_UNESCAPE
 foreach ( [ 'Тихая форма', 'Пространство для вашей жизни', 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали', 'Архитектура повседневности', 'Обсудить проект', 'Смотреть проекты' ] as $required_copy ) {
 	check( strpos( $content_only_json, $required_copy ) !== false, 'Content-only hero lost requested copy: ' . $required_copy );
 }
-check( substr_count( $content_only_json, 'Архитектура повседневности' ) === 1 && strpos( $content_only_json, '"widgetType":"icon"' ) !== false, 'Hero fallback duplicated the eyebrow instead of using a native visual icon' );
+check( substr_count( $content_only_json, 'Архитектура повседневности' ) === 1 && strpos( $content_only_json, '"widgetType":"image"' ) !== false && strpos( $content_only_json, 'images.unsplash.com' ) !== false, 'Architecture hero fallback should use one contextual Unsplash image instead of a generic icon placeholder' );
 check( strpos( $content_only_json, 'Обсудить проект — #contact' ) === false && strpos( $content_only_json, 'Смотреть проекты — #projects' ) === false, 'CTA URL leaked into visible content-only hero copy' );
-check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"#e7c7b7' ) !== false, 'Content-only hero did not create the separate visual panel' );
+check( strpos( $content_only_json, 'wpae-hero-visual-panel' ) !== false && strpos( $content_only_json, 'background_color":"transparent' ) !== false, 'Photo-backed hero visual panel should expose the native image without a colored placeholder surface' );
 check( strpos( $content_only_json, 'wpae-generated-root' ) !== false, 'Generated hero root did not receive the operation ownership marker' );
 $content_only_children = (array) ( $content_only_saved['elements'] ?? [] );
 $content_only_badge_classes = preg_split( '/\s+/', trim( (string) ( $content_only_children[0]['settings']['_css_classes'] ?? '' ) ) );
@@ -495,6 +522,13 @@ check( strpos( $content_only_json, 'Создай новый hero' ) === false &&
 check( substr_count( $content_only_json, '"widgetType":"button"' ) === 2 && strpos( $content_only_json, '"url":"#projects"' ) !== false, 'Content-only hero fallback did not save both native CTA buttons and URLs' );
 check( strpos( $content_only_json, '"button_background_color"' ) === false, 'Content-only hero retained a non-native Button background key' );
 check( strpos( $content_only_json, '"background_color":"#61ce70' ) === false, 'Content-only hero was remapped to the generic green design-system accent' );
+$template_hero_root = container_node( 'template-hero', [ 'background_image' => [ 'url' => 'https://templatekit.example.invalid/hero.jpg', 'id' => 42, 'source' => 'url' ] ], [ widget( 'template-title', 'heading', [ 'title' => 'Архитектурная студия' ] ), widget( 'template-copy', 'text-editor', [ 'editor' => 'Современные интерьеры.' ] ) ] );
+$template_hero_changed = 0;
+$template_hero_prompt = "Hero\nАрхитектурная студия\nСовременный интерьер\nПроектируем дома";
+check( count( wpae_llm_content_units( $template_hero_prompt ) ) >= 2, 'trusted hero image replacement test includes distinct copy units' );
+$template_hero_normalized = wpae_llm_normalize_hero_composition( [ $template_hero_root ], $template_hero_changed, $template_hero_prompt, true, 0 );
+$template_hero_json = (string) wp_json_encode( $template_hero_normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( strpos( $template_hero_json, 'https://images.unsplash.com/' ) !== false && strpos( $template_hero_json, 'templatekit.example.invalid' ) === false, 'Trusted imported hero image replacement should use the existing Unsplash catalog, never the source kit host' );
 $content_only_mobile_stack = false;
 $find_content_only_mobile_stack = static function ( array $nodes ) use ( &$find_content_only_mobile_stack, &$content_only_mobile_stack ): void {
 	foreach ( $nodes as $node ) {
@@ -2126,6 +2160,10 @@ $cta_rolled_back = wpae_design_operation_find_by_id( (string) $cta_operation['op
 check( ( $cta_rolled_back['current_state'] ?? '' ) === 'unknown' && ( $cta_rolled_back['rollback_event'] ?? '' ) === 'user_undo' && (int) ( $cta_rolled_back['revision'] ?? 0 ) > (int) $cta_operation['revision'], 'successful Undo advances the same ledger operation instead of losing its operation link' );
 $stale_cta_undo = wpae_llm_undo( $cta_undo );
 check( $stale_cta_undo->get_status() === 409 && ( $stale_cta_undo->get_data()['code'] ?? '' ) === 'wpae_undo_stale_revision' && $GLOBALS['page_data'] === $cta_before_undo, 'old Undo confirmation is rejected after the operation revision advances' );
+
+$library_placeholder_changes = 0;
+$library_placeholder_result = wpae_llm_normalize_library_layout( [ container_node( 'team-library-root', [], [ widget( 'team-library-photo', 'image', [ 'image' => [ 'url' => 'new-container-image-placeholder', 'id' => 0, 'source' => 'url' ] ] ), widget( 'team-library-name', 'heading', [ 'title' => 'Алия Садыкова' ] ) ] ) ], $library_placeholder_changes, 'team' );
+check( count( $library_placeholder_result[0]['elements'] ?? [] ) === 1 && ( $library_placeholder_result[0]['elements'][0]['settings']['title'] ?? '' ) === 'Алия Садыкова' && $library_placeholder_changes > 0, 'Library template normalization removes an empty Team image slot instead of filling it with an invented stock portrait' );
 
 $independent_patch = wpae_llm_execute_patch_action(
 	[ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ],
