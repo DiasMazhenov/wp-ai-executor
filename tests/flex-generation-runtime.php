@@ -358,7 +358,12 @@ $leaked_cta_provider = [ container_node( 'leaked-cta-provider', [ 'container_typ
 ] ) ];
 $leaked_cta_quality = wpae_llm_provider_composition_quality( $standalone_cta_message, $leaked_cta_provider, 'cta' );
 check( empty( $leaked_cta_quality['ok'] ) && in_array( 'CTA field labels were published as visible copy', (array) $leaked_cta_quality['failures'], true ), 'CTA provider tree with field labels passed composition quality' );
-$natural_cta_message = 'Секция призыва к действию: «Обсудим проект». Текст: «Опишите задачу». Основная кнопка «Связаться» → #contact. Вторичная кнопка «Проекты» → #projects.';
+$natural_cta_message = 'Секция призыва к действию: «Обсудим проект». Текст: «Опишите задачу». Кнопки: «Связаться» → #contact и «Проекты» → #projects.';
+$natural_ctas = wpae_llm_extract_requested_ctas( $natural_cta_message );
+check( count( $natural_ctas ) === 2 && ( $natural_ctas[0]['text'] ?? '' ) === 'Связаться' && ( $natural_ctas[0]['url'] ?? '' ) === '#contact' && ( $natural_ctas[1]['text'] ?? '' ) === 'Проекты' && ( $natural_ctas[1]['url'] ?? '' ) === '#projects', 'CTA extractor ignored the grouped CTA roles already parsed by BriefIR' );
+$natural_cta_fallback = wpae_llm_build_fallback_action( $natural_cta_message, 42 );
+$natural_cta_fallback_fidelity = wpae_llm_content_fidelity( $natural_cta_message, (array) ( $natural_cta_fallback['elements'] ?? [] ) );
+check( ! empty( $natural_cta_fallback_fidelity['ok'] ), 'CTA deterministic fallback failed to preserve all BriefIR roles and URLs: ' . wp_json_encode( $natural_cta_fallback_fidelity, JSON_UNESCAPED_UNICODE ) );
 $natural_cta_provider = container_node( 'natural-cta-root', [ 'container_type' => 'flex' ], [
 	widget( 'natural-cta-heading', 'heading', [ 'title' => 'Обсудим проект' ] ),
 	widget( 'natural-cta-body', 'text-editor', [ 'editor' => 'Опишите задачу' ] ),
@@ -368,7 +373,6 @@ $natural_cta_provider = container_node( 'natural-cta-root', [ 'container_type' =
 $natural_cta_quality = wpae_llm_provider_composition_quality( $natural_cta_message, [ $natural_cta_provider ], 'cta' );
 check( ! empty( $natural_cta_quality['ok'] ) && (int) ( $natural_cta_quality['expected_copy_slots'] ?? 0 ) === 4, 'CTA quality gate counted instruction fragments instead of its four parsed copy roles: ' . wp_json_encode( [ $natural_cta_quality, wpae_brief_ir_parse( $natural_cta_message )['content'] ?? [] ], JSON_UNESCAPED_UNICODE ) );
 $natural_cta_plan = wpae_llm_content_plan( $natural_cta_message, 'cta' );
-$natural_cta_fallback = wpae_llm_build_fallback_action( $natural_cta_message, 42 );
 $natural_cta_audit = wpae_llm_content_plan_audit( $natural_cta_plan, (array) ( $natural_cta_fallback['elements'] ?? [] ) );
 check( ! empty( $natural_cta_audit['ok'] ), 'CTA plan audit treated generic next-step copy as an unrelated process section: ' . wp_json_encode( $natural_cta_audit['failures'] ?? [], JSON_UNESCAPED_UNICODE ) );
 $leaked_cta_fallback = wpae_llm_build_fallback_action( $standalone_cta_message, 42 );

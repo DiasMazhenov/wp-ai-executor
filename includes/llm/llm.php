@@ -6496,9 +6496,32 @@ function wpae_llm_extract_requested_ctas( string $message ): array {
 			'role' => preg_match( '/втор|secondary/iu', $role ) ? 'secondary' : ( preg_match( '/основн|главн|перва|primary/iu', $role ) ? 'primary' : 'cta' ),
 		];
 	}
+	static $brief_roles_active = false;
+	if ( function_exists( 'wpae_brief_ir_parse' ) && ! $brief_roles_active ) {
+		$brief_roles_active = true;
+		try {
+			$brief = wpae_brief_ir_parse( $message );
+		} finally {
+			$brief_roles_active = false;
+		}
+		foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+			if ( ! is_array( $item ) || ! in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2', 'hero_cta', 'hero_cta_2' ], true ) ) {
+				continue;
+			}
+			$label = trim( sanitize_text_field( (string) ( $item['exact_text'] ?? '' ) ) );
+			if ( $label === '' ) {
+				continue;
+			}
+			$requirements[] = [
+				'text' => $label,
+				'url' => wpae_llm_normalize_cta_url( $item['url'] ?? '' ),
+				'role' => in_array( (string) $item['role'], [ 'cta_2', 'hero_cta_2' ], true ) ? 'secondary' : 'primary',
+			];
+		}
+	}
     // Do not infer a CTA from ordinary content. FAQ answers such as
-    // "Оставьте заявку..." are copy, not a button requirement. Explicit CTA
-    // labels are already handled by the labelled or arrow+URL patterns above.
+    // "Оставьте заявку..." are copy, not a button requirement. BriefIR roles
+    // supplement the labeled forms above when a prompt groups multiple CTAs.
     $unique = [];
     foreach ( $requirements as $index => $requirement ) {
         $text = trim( (string) ( $requirement['text'] ?? '' ) );
