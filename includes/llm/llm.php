@@ -1375,6 +1375,42 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         ];
     }, wpae_llm_extract_labeled_content( $message ) ), 0, 8 );
     $content_pairs = $pairs;
+    if ( $archetype === 'testimonials' ) {
+        // Generic labeled-pair and CTA heuristics mistake “text/author” slot
+        // labels and author names for separate cards/buttons. BriefIR already
+        // carries the typed, grouped fields; build one audit unit per review.
+        $reviews = [];
+        foreach ( (array) ( $brief_ir['content'] ?? [] ) as $item ) {
+            if ( ! is_array( $item ) || empty( $item['group_id'] ) ) {
+                continue;
+            }
+            $group_id = sanitize_key( (string) $item['group_id'] );
+            if ( ! str_starts_with( $group_id, 'testimonial_' ) ) {
+                continue;
+            }
+            $role = sanitize_key( (string) ( $item['role'] ?? '' ) );
+            if ( ! in_array( $role, [ 'testimonial_quote', 'testimonial_author', 'testimonial_meta' ], true ) ) {
+                continue;
+            }
+            $reviews[ $group_id ][ $role ] = trim( sanitize_text_field( (string) ( $item['exact_text'] ?? '' ) ) );
+        }
+        $content_pairs = [];
+        foreach ( $reviews as $review ) {
+            $quote = (string) ( $review['testimonial_quote'] ?? '' );
+            $author = (string) ( $review['testimonial_author'] ?? '' );
+            if ( $quote === '' || $author === '' ) {
+                continue;
+            }
+            $content_pairs[] = [
+                'label' => $author,
+                'content' => $quote,
+                'description' => (string) ( $review['testimonial_meta'] ?? '' ),
+                'price_text' => '',
+                'cta_text' => '',
+                'cta_url' => '',
+            ];
+        }
+    }
     if ( $archetype === 'faq' ) {
         // FAQ prompts use question/answer pairs whose question mark is inside
         // the quoted label. Prefer that parser over the generic dash parser so
@@ -6538,6 +6574,22 @@ function wpae_llm_normalize_cta_url( $value ): string {
 }
 
 function wpae_llm_extract_requested_ctas( string $message ): array {
+    if ( preg_match( '/^\s*(?:(?:создай|сделай|добавь|сгенерируй)\s+)?(?:блок\s+)?(?:отзыв\w*|testimonials?|reviews?)\b/iu', $message ) ) {
+        $brief_ir = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
+        $typed_ctas = [];
+        foreach ( (array) ( $brief_ir['content'] ?? [] ) as $item ) {
+            if ( ! is_array( $item ) || ! in_array( sanitize_key( (string) ( $item['role'] ?? '' ) ), [ 'cta', 'cta_2' ], true ) ) {
+                continue;
+            }
+            $typed_ctas[] = [
+                'text' => trim( sanitize_text_field( (string) ( $item['exact_text'] ?? '' ) ) ),
+                'url' => (string) ( $item['url'] ?? '' ),
+                'role' => sanitize_key( (string) $item['role'] ) === 'cta_2' ? 'secondary' : 'primary',
+                'index' => count( $typed_ctas ),
+            ];
+        }
+        return $typed_ctas;
+    }
     $requirements = [];
 	$pattern = '/(?:(?:(основн\w*|главн\w*|перва\w*|втор\w*|primary|secondary)\s+)(?:кнопка|cta|button)?|(?:кнопка|cta|button))\s*:?\s*[«"]([^»"\n]{2,120})[»"](?:\s*,?\s*(?:(?:(?:с|со)\s+)?ссылк\w*|link|url|href)\s*[:\-]?\s*([^\s,.;]+))?/iu';
     if ( preg_match_all( $pattern, $message, $matches, PREG_SET_ORDER ) ) {

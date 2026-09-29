@@ -1627,6 +1627,9 @@ check( $team_fallback_rows === [ [ 'name' => 'Синтетический уча�
 $testimonials_prompt = 'Создай блок отзывов: отзыв 1 — текст «Согласование прошло легко и спокойно»; отзыв 1 — автор «Динара»; отзыв 2 — текст «Получили ясный план действий»; отзыв 2 — автор «Марат».';
 $testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
 check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
+$testimonial_plan = wpae_llm_content_plan( $testimonials_prompt, 'testimonials' );
+check( count( (array) ( $testimonial_plan['content_pairs'] ?? [] ) ) === 2 && ( $testimonial_plan['content_pairs'][0]['label'] ?? '' ) === 'Динара' && ( $testimonial_plan['content_pairs'][0]['content'] ?? '' ) === 'Согласование прошло легко и спокойно' && ( $testimonial_plan['repeatable_units'] ?? 0 ) === 2, 'Testimonials semantic plan groups one quote and author per review instead of treating field labels as four cards' );
+check( empty( $testimonial_plan['explicit_cta'] ) && empty( wpae_llm_extract_requested_ctas( $testimonials_prompt ) ), 'Testimonials author names are not misclassified as CTA labels' );
 $testimonial_fallback = wpae_llm_build_fallback_action( $testimonials_prompt, 42 );
 $testimonial_nodes = [];
 $collect_testimonial_nodes = static function ( array $nodes ) use ( &$collect_testimonial_nodes, &$testimonial_nodes ): void {
@@ -1645,6 +1648,7 @@ $testimonial_rows = array_map( static function ( array $card ): array {
 	return [ 'quote' => (string) ( $quote['settings']['editor'] ?? '' ), 'author' => (string) ( $author['settings']['title'] ?? '' ) ];
 }, $testimonial_cards );
 check( count( $testimonial_cards ) === 2 && $testimonial_rows === [ [ 'quote' => 'Согласование прошло легко и спокойно', 'author' => 'Динара' ], [ 'quote' => 'Получили ясный план действий', 'author' => 'Марат' ] ], 'Testimonials fallback writes only two native quote/author cards with the correct pairing: ' . wp_json_encode( $testimonial_rows, JSON_UNESCAPED_UNICODE ) );
+check( ! empty( wpae_llm_content_plan_audit( $testimonial_plan, (array) ( $testimonial_fallback['elements'] ?? [] ) )['ok'] ), 'Testimonials audit accepts exactly the two grouped review cards without an unrequested button' );
 check( empty( wpae_llm_content_fidelity( $testimonials_prompt, (array) ( $testimonial_fallback['elements'] ?? [] ) )['missing'] ) && ! str_contains( wp_json_encode( $testimonial_fallback['elements'], JSON_UNESCAPED_UNICODE ), 'отзыв 1' ), 'Testimonials fallback passes fidelity without exposing field labels as visible copy' );
 
 $services_message = "Блок услуг\nЗаголовок: «Наши услуги»\nНадзаголовок: «УСЛУГИ»\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
