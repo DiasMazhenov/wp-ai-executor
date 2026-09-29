@@ -1619,6 +1619,29 @@ $team_fallback_rows = array_map( static function ( array $card ): array {
 check( count( $team_fallback_cards ) === 2, 'Team deterministic fallback groups name and position fields into exactly one card per member' );
 check( $team_fallback_rows === [ [ 'name' => 'Синтетический участник 1', 'position' => 'Демо-архитектор' ], [ 'name' => 'Синтетический участник 2', 'position' => 'Демо-руководитель проекта' ] ], 'Team fallback preserves exact member copy in the matching native heading and text widgets: ' . wp_json_encode( $team_fallback_rows, JSON_UNESCAPED_UNICODE ) );
 
+$testimonials_prompt = 'Создай блок отзывов: отзыв 1 — текст «Согласование прошло легко и спокойно»; отзыв 1 — автор «Динара»; отзыв 2 — текст «Получили ясный план действий»; отзыв 2 — автор «Марат».';
+$testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
+check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
+$testimonial_fallback = wpae_llm_build_fallback_action( $testimonials_prompt, 42 );
+$testimonial_nodes = [];
+$collect_testimonial_nodes = static function ( array $nodes ) use ( &$collect_testimonial_nodes, &$testimonial_nodes ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$testimonial_nodes[] = $node;
+		$collect_testimonial_nodes( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_testimonial_nodes( (array) ( $testimonial_fallback['elements'] ?? [] ) );
+$testimonial_grid = array_values( array_filter( $testimonial_nodes, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' && ( $node['id'] ?? '' ) === 'llm-testimonial-grid' ) )[0] ?? [];
+$testimonial_cards = (array) ( $testimonial_grid['elements'] ?? [] );
+$testimonial_rows = array_map( static function ( array $card ): array {
+	$quote = array_values( array_filter( (array) ( $card['elements'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) )[0] ?? [];
+	$author = array_values( array_filter( (array) ( $card['elements'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' ) )[0] ?? [];
+	return [ 'quote' => (string) ( $quote['settings']['editor'] ?? '' ), 'author' => (string) ( $author['settings']['title'] ?? '' ) ];
+}, $testimonial_cards );
+check( count( $testimonial_cards ) === 2 && $testimonial_rows === [ [ 'quote' => 'Согласование прошло легко и спокойно', 'author' => 'Динара' ], [ 'quote' => 'Получили ясный план действий', 'author' => 'Марат' ] ], 'Testimonials fallback writes only two native quote/author cards with the correct pairing: ' . wp_json_encode( $testimonial_rows, JSON_UNESCAPED_UNICODE ) );
+check( empty( wpae_llm_content_fidelity( $testimonials_prompt, (array) ( $testimonial_fallback['elements'] ?? [] ) )['missing'] ) && ! str_contains( wp_json_encode( $testimonial_fallback['elements'], JSON_UNESCAPED_UNICODE ), 'отзыв 1' ), 'Testimonials fallback passes fidelity without exposing field labels as visible copy' );
+
 $services_message = "Блок услуг\nЗаголовок: «Наши услуги»\nНадзаголовок: «УСЛУГИ»\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
 $services_colon_prompt = 'Услуги: стратегия проекта — формулируем задачу и согласуем план работ; архитектура и дизайн — разрабатываем решение под заданный контекст; сопровождение — проверяем соответствие согласованному проекту.';
 check( ( wpae_brief_ir_parse( $services_colon_prompt )['intent']['archetype'] ?? '' ) === 'services' && wpae_llm_detect_block_archetype( $services_colon_prompt ) === 'services', 'A natural “Услуги:” lead keeps the production classifier aligned with BriefIR instead of routing service copy to portfolio' );

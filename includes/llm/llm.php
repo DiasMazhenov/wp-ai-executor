@@ -1840,6 +1840,25 @@ function wpae_llm_extract_requested_content( string $message ): array {
 			}
 		}
 	}
+	if ( function_exists( 'wpae_brief_ir_parse' ) ) {
+		$testimonials_brief = wpae_brief_ir_parse( $message );
+		if ( ( $testimonials_brief['intent']['archetype'] ?? '' ) === 'testimonials' ) {
+			$testimonial_values = [];
+			foreach ( (array) ( $testimonials_brief['content'] ?? [] ) as $item ) {
+				if ( ! is_array( $item ) || ! in_array( (string) ( $item['role'] ?? '' ), [ 'eyebrow', 'title', 'body', 'testimonial_quote', 'testimonial_author', 'testimonial_meta' ], true ) ) {
+					continue;
+				}
+				$value = trim( (string) ( $item['exact_text'] ?? '' ) );
+				if ( $value !== '' ) {
+					$testimonial_values[] = $value;
+				}
+			}
+			if ( ! empty( $testimonial_values ) ) {
+				$matches = $testimonial_values;
+				$structured_pairs = [];
+			}
+		}
+	}
 	$faq_request = (bool) preg_match( '/\b(?:faq|частые\s+вопрос\w*|вопрос\w*\s+и\s+ответ\w*|аккордеон)\b/iu', $message );
 	if ( $faq_request ) {
 		$faq_pairs = wpae_llm_extract_faq_content( $message );
@@ -2732,9 +2751,79 @@ function wpae_llm_apply_fallback_archetype_content( array &$elements, string $me
             }
             unset( $root );
         }
-        return;
-    }
-    $pairs = wpae_llm_extract_labeled_content( $message );
+		return;
+	}
+	if ( $archetype === 'testimonials' && function_exists( 'wpae_brief_ir_parse' ) && function_exists( 'wpae_design_plan_from_brief' ) ) {
+		$brief = wpae_brief_ir_parse( $message );
+		$plan = wpae_design_plan_from_brief( $brief );
+		$items = [];
+		$content = [];
+		foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+			if ( is_array( $item ) ) {
+				$content[ sanitize_key( (string) ( $item['id'] ?? '' ) ) ] = trim( sanitize_text_field( (string) ( $item['exact_text'] ?? '' ) ) );
+			}
+		}
+		foreach ( (array) ( $plan['sections'][0]['children'] ?? [] ) as $child ) {
+			if ( is_array( $child ) && ( $child['role'] ?? '' ) === 'testimonial_cards' ) {
+				$items = array_values( (array) ( $child['items'] ?? [] ) );
+				break;
+			}
+		}
+		$cards = [];
+		foreach ( $items as $index => $item ) {
+			$quote = trim( (string) ( $content[ sanitize_key( (string) ( $item['quote_ref'] ?? '' ) ) ] ?? '' ) );
+			$author = trim( (string) ( $content[ sanitize_key( (string) ( $item['author_ref'] ?? '' ) ) ] ?? '' ) );
+			if ( $quote === '' || $author === '' ) {
+				continue;
+			}
+			$cards[] = [ 'quote' => $quote, 'author' => $author, 'index' => $index + 1 ];
+		}
+		if ( empty( $cards ) ) {
+			return;
+		}
+		$rewrite_grid = static function ( array &$nodes ) use ( &$rewrite_grid, $cards, &$changed ): bool {
+			foreach ( $nodes as &$node ) {
+				if ( ! is_array( $node ) || ( $node['elType'] ?? '' ) !== 'container' ) {
+					continue;
+				}
+				if ( ( $node['id'] ?? '' ) === 'llm-testimonial-grid' ) {
+					$children = is_array( $node['elements'] ?? null ) ? $node['elements'] : [];
+					$template = null;
+					foreach ( $children as $candidate ) {
+						if ( is_array( $candidate ) && ( $candidate['elType'] ?? '' ) === 'container' ) {
+							$template = $candidate;
+							break;
+						}
+					}
+					if ( ! is_array( $template ) ) {
+						return false;
+					}
+					$non_cards = array_values( array_filter( $children, static fn( $child ): bool => ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'container' ) );
+					$rebuilt = [];
+					foreach ( $cards as $card ) {
+						$copy = $template;
+						$copy['id'] = 'llm-testimonial-card-' . $card['index'];
+						$copy['elements'] = [
+							[ 'id' => 'llm-testimonial-quote-' . $card['index'], 'elType' => 'widget', 'widgetType' => 'text-editor', 'settings' => [ 'editor' => $card['quote'] ], 'elements' => [] ],
+							[ 'id' => 'llm-testimonial-author-' . $card['index'], 'elType' => 'widget', 'widgetType' => 'heading', 'settings' => [ 'title' => $card['author'], 'header_size' => 'h5' ], 'elements' => [] ],
+						];
+						$rebuilt[] = $copy;
+					}
+					$node['elements'] = array_merge( $rebuilt, $non_cards );
+					$changed++;
+					return true;
+				}
+				if ( is_array( $node['elements'] ?? null ) && $rewrite_grid( $node['elements'] ) ) {
+					return true;
+				}
+			}
+			unset( $node );
+			return false;
+		};
+		$rewrite_grid( $elements );
+		return;
+	}
+	$pairs = wpae_llm_extract_labeled_content( $message );
     if ( count( $pairs ) < 2 ) {
         return;
     }
