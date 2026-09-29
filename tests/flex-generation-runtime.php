@@ -1650,6 +1650,10 @@ $services_command_tree = wpae_llm_apply_library_template( $services_template_dat
 wpae_llm_clear_unrequested_library_copy( $services_command_tree, $services_command_prompt, $services_command_changes );
 $services_command_layout_changes = 0;
 $services_command_tree = wpae_llm_normalize_library_layout( $services_command_tree, $services_command_layout_changes, 'services' );
+$services_root_padding = (array) ( $services_command_tree[0]['settings']['padding'] ?? [] );
+$services_root_padding_tablet = (array) ( $services_command_tree[0]['settings']['padding_tablet'] ?? [] );
+$services_root_padding_mobile = (array) ( $services_command_tree[0]['settings']['padding_mobile'] ?? [] );
+check( ( $services_root_padding['left'] ?? null ) === '4.5' && ( $services_root_padding['right'] ?? null ) === '4.5' && ( $services_root_padding_tablet['left'] ?? null ) === '0' && ( $services_root_padding_tablet['right'] ?? null ) === '0' && ( $services_root_padding_mobile['left'] ?? null ) === '2' && ( $services_root_padding_mobile['right'] ?? null ) === '2', 'Services outer container preserves reference horizontal padding on desktop, tablet, and mobile' );
 $services_command_json = wp_json_encode( $services_command_tree, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 $services_command_headings = [];
 $services_command_spacers = 0;

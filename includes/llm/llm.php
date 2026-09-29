@@ -9025,7 +9025,7 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
                 $container_classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
                 $is_structural_container = count( $child_containers ) >= 2
                     || ( is_array( $container_classes ) && ( in_array( 'wpae-bento-grid', $container_classes, true ) || in_array( 'wpae-generated-content-shell', $container_classes, true ) ) );
-                if ( $is_structural_container ) {
+                if ( $is_structural_container && ! ( $archetype === 'services' && $depth === 0 ) ) {
                     foreach ( [ 'padding', 'padding_tablet', 'padding_mobile' ] as $padding_key ) {
                         if ( ! is_array( $settings[ $padding_key ] ?? null ) ) {
                             continue;
