@@ -1579,6 +1579,12 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	}
 }
 
+$team_natural_brief = wpae_brief_ir_parse( 'Команда: участник 1 — имя «Айжан Садыкова», должность «Архитектор»; участник 2 — имя «Тимур Оспанов», должность «Руководитель проекта».' );
+$team_natural_plan = wpae_design_plan_from_brief( $team_natural_brief );
+$team_natural_validation = wpae_design_plan_validate( $team_natural_plan, $team_natural_brief );
+check( empty( $team_natural_validation['errors'] ), 'Team parser lost a position that follows a quoted name in one natural member entry: ' . wp_json_encode( $team_natural_validation['errors'] ?? [] ) );
+$team_natural_items = (array) ( $team_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( count( $team_natural_items ) === 2 && $team_natural_items[0]['name_ref'] === 'team_1_name' && $team_natural_items[0]['position_ref'] === 'team_1_position' && $team_natural_items[1]['name_ref'] === 'team_2_name' && $team_natural_items[1]['position_ref'] === 'team_2_position', 'Team natural member entries were not grouped into exact name/position pairs' );
 $team_fallback_prompt = "Блок команды\nУчастник 1 — имя: «Синтетический участник 1»\nУчастник 1 — должность: «Демо-архитектор»\nУчастник 2 — имя: «Синтетический участник 2»\nУчастник 2 — должность: «Демо-руководитель проекта»";
 $team_requested_content = wpae_llm_extract_requested_content( $team_fallback_prompt );
 check( $team_requested_content === [ 'Синтетический участник 1', 'Демо-архитектор', 'Синтетический участник 2', 'Демо-руководитель проекта' ], 'Team content fidelity treats quoted name and position values as content, not their field labels: ' . wp_json_encode( $team_requested_content, JSON_UNESCAPED_UNICODE ) );

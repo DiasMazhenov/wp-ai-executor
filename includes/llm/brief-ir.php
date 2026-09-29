@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v5';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v6';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -180,7 +180,7 @@ function wpae_brief_ir_repeated_slot( string $prefix ): array {
 		[ 'service', 'service_body', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:назван\w*|title|name)\s*[:\-]?\s*(?:«[^»\r\n]{1,240}»|“[^”\r\n]{1,240}”|"[^"\r\n]{1,240}")\s*[.!]?\s*(?:описан\w*|description|details?)\s*[:\-]?\s*$/iu' ],
 		[ 'service', 'service_cta', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:кнопк\w*|ссылк\w*|cta|link)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_name', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:имя|name)\s*[:\-]?\s*$/iu' ],
-		[ 'team', 'team_position', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:должност\w*|роль|position|role)\s*[:\-]?\s*$/iu' ],
+		[ 'team', 'team_position', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:(?:имя|name)\s*[:\-]?\s*(?:«[^»\r\n]{1,240}»|“[^”\r\n]{1,240}”|"[^"\r\n]{1,240}")\s*[,;—–-]\s*)?(?:должност\w*|роль|position|role)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_bio', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:описан\w*|биограф\w*|bio|description)\s*[:\-]?\s*$/iu' ],
 		[ 'testimonial', 'testimonial_quote', '/(?:отзыв|testimonial|review)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:текст|цитат\w*|quote|text)\s*[:\-]?\s*$/iu' ],
 		[ 'testimonial', 'testimonial_author', '/(?:отзыв|testimonial|review)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:автор|имя|author|name)\s*[:\-]?\s*$/iu' ],
