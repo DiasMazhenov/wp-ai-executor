@@ -130,6 +130,9 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	if ( preg_match( '/(?:заголов\w*\s+(?:секци\w*|раздел\w*)|(?:section|block)\s+(?:heading|title))\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'title';
 	}
+	if ( preg_match( '/призыв\w*\s+к\s+действи\w*\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'title';
+	}
 	if ( preg_match( '/(?:(?:описани\w*|подзаголов\w*)\s+(?:секци\w*|раздел\w*)|(?:section|block)\s+(?:description|subtitle))\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'body';
 	}
@@ -378,6 +381,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		} elseif ( preg_match( '/^\s*(?:->|→|—|-|:)\s*' . $url_pattern . '/u', $after, $url_match ) ) {
 			$url_requested = true;
 			$url = wpae_brief_ir_normalize_url( (string) $url_match[1] );
+		}
+		if ( $archetype === 'cta' && $role === 'text' && $url_requested && $cta_index > 0 && $cta_index < 2 ) {
+			$role = 'cta';
 		}
 		if ( $role === 'cta' ) {
 			$role = $cta_index === 0 ? 'cta' : 'cta_' . ( $cta_index + 1 );
