@@ -428,6 +428,31 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$previous_quote_inner = $inner;
 		$previous_quote_end = $start + strlen( $full );
 	}
+	if ( $archetype === 'benefits' && ! array_filter( $content, static fn( $item ): bool => ( $item['role'] ?? '' ) === 'feature_title' ) ) {
+		// Accept compact unquoted lists such as "Title — description; Title — description"
+		// when the brief has no typed/quoted feature fields yet.
+		$feature_index = 0;
+		foreach ( preg_split( '/[;\r\n]+/u', $source_text ) ?: [] as $segment ) {
+			$segment = trim( (string) $segment );
+			if ( preg_match( '/^(?:создай|сделай|добавь|create|make)\b[^:]{0,120}:\s*/iu', $segment ) ) {
+				$segment = preg_replace( '/^(?:создай|сделай|добавь|create|make)\b[^:]{0,120}:\s*/iu', '', $segment ) ?? $segment;
+			}
+			if ( ! preg_match( '/^(.{2,120}?)\s+[—–-]\s+(.{2,500}?)\s*[.!]?$/u', $segment, $feature_match ) ) {
+				continue;
+			}
+			$title = trim( (string) $feature_match[1], " \t\n\r\0\x0B:.-" );
+			$body = trim( (string) $feature_match[2], " \t\n\r\0\x0B. " );
+			if ( $title === '' || $body === '' ) {
+				continue;
+			}
+			$feature_index++;
+			$title_offset = strpos( $source_text, $title );
+			$body_offset = strpos( $source_text, $body, $title_offset === false ? 0 : $title_offset + strlen( $title ) );
+			$group_id = 'feature_' . $feature_index;
+			$add_content( 'feature_title', $title, $title_offset === false ? 0 : $title_offset, strlen( $title ), null, 0.9, true, false, $group_id . '_title', false, $group_id );
+			$add_content( 'feature_body', $body, $body_offset === false ? 0 : $body_offset, strlen( $body ), null, 0.9, true, false, $group_id . '_body', false, $group_id );
+		}
+	}
 
 	$plain_line_offset = 0;
 	foreach ( preg_split( '/\n/', $source_text ) ?: [] as $line ) {

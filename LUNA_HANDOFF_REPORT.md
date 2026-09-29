@@ -1,4 +1,205 @@
-# Визуальный провал Process / Pricing / CTA в v02.11.185; локальные исправления v02.11.186
+## Текущий срез — live проверка семейств и исправления parser/audit
+
+Срез: **2026-09-30 04:46 +05:00 (Asia/Almaty)**. Работа велась в существующем `post=5214` и одной Elementor-вкладке. Новые страницы, drafts и вкладки редактора не создавались.
+
+### Source, runtime и исправления
+
+- Source checkout: ветка `main`, базовый HEAD `cc3636b`; рабочее дерево содержит незакоммиченный candidate runtime `v02.11.204`. Remote подтверждён только до `cc3636b` (`origin/main`); v204 ещё не опубликован. В открытой вкладке query `wpae_release=193`, inline config сообщает **v02.11.202**. Пользователь сообщил v201, но актуальный UI в этой же вкладке показывает v202.
+- `includes/llm/brief-ir.php`: добавлен разбор коротких незаключённых в кавычки пар Benefits формата `название — описание; ...`, без обязательной нумерации. Обе части сохраняются отдельными BriefIR полями с исходными текстами.
+- `includes/llm/llm.php`: для Benefits `repeatable_units` теперь считается по полным парным карточкам BriefIR, а не по числу полей title+body. Подтверждённый сбой был в общем pre-write audit: три карточки считались шестью единицами, поэтому правильно сформированный deterministic fallback отклонялся, хотя в дереве были три полные карточки. Также в этом candidate сохраняется FAQ parser fix: допускается естественная связка `вопрос — ответ «...»` с меткой «ответ».
+- Regression в `tests/flex-generation-runtime.php` покрывает natural Benefits parser, три DesignPlan cards, количество repeatable units и прохождение audit для трёх карточек, а также естественный FAQ-парсер.
+- Проверки после изменений: `php -d memory_limit=512M tests/flex-generation-runtime.php` — **556 checks PASS**; `php tests/design-pipeline-contract.php` — **270 PASS**; `php tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — **6/6 PASS**; PHP lint для `brief-ir.php`, `llm.php`, test harness — PASS; `wpae-package.json` — 249 hashes, 0 mismatches; `git diff --check` — PASS. Commit/push/install v204 ещё не выполнены.
+
+### Live семейства: post=5214
+
+Существующий сохранённый root — только Testimonials `578a737`, operation `wpae-20260929230626-0e11efff`; операция создана runtime v202 через `deterministic_fallback`. Exact copy пережил Elementor save/reload. Визуальная проверка остаётся **FAIL**: общий bento-нормализатор превратил секционные badge/content shells в две равноправные 48%-колонки; pill оказался слева, заголовок и карточки — сжаты справа. Исправление этой причины входит в предыдущий source v203, но live repair не выполнен, поскольку v203/v204 не установлены.
+
+![Testimonials — editor desktop, дефект после reload](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/testimonials-editor-desktop.png)
+
+[Открыть PNG — Testimonials editor desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/testimonials-editor-desktop.png)
+
+FAQ live attempt использовал prompt: `Создай блок FAQ: вопрос «Как начать проект?» — ответ «Оставьте заявку, и мы обсудим задачу». Вопрос «Сколько стоит работа?» — ответ «Стоимость зависит от объёма и сроков».` Runtime v202 отклонил контент до записи; FAQ root и успешная operation identity не появились. Запрос не повторялся после локального parser fix.
+
+Для Benefits проверены два точных live запроса. Естественный запрос `Создай блок преимуществ из трёх пунктов: точный расчёт сроков — планируем этапы до начала работ; единая команда — архитекторы и инженеры работают вместе; прозрачный контроль — показываем ход проекта на каждом этапе.` остановлен на DesignPlan: BriefIR не выделил незаключённые пары и вернул `benefits_require_two_to_six_complete_items` (request ID `d19cf07f-ccc5-4ed1-b220-65cb443dba43`). Второй запрос с явными строками `Преимущество N` и `Описание преимущества N` создал три полные native карточки в deterministic fallback, но audit v202 требовал 6 контейнеров вместо 3; модельный library route использовал один provider call и отказался от candidates, replacement не применялся. Pre-write validation остановила запись (request ID `a874c075-7c9f-4572-b8ec-1b0cf66009fb`). Root не появился, число сохранённых roots не увеличилось. Оба отказа предотвращены до write.
+
+![Benefits — editor, отказ pre-write на runtime v202](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/benefits-v202-validation-error.png)
+
+[Открыть PNG — Benefits v202 validation error](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/benefits-v202-validation-error.png)
+
+Для кадра Benefits использован Browser Use screenshot существующей вкладки; фактический editor viewport **1109×923 CSS px**, PNG `1109×923`. JPEG signature проверена, сконвертирован через `sips`, PNG открыт и проверен. Кадр показывает активный root Testimonials и pre-write diagnostics Benefits, не результат дизайна Benefits. Скриншот FAQ аналогично показывает ошибку v202, не сгенерированный блок.
+
+### Установка и фактическое покрытие
+
+- WP Pusher на двух ранее открытых административных вкладках не ответил в Browser Use: CDP timeout на чтении/взаимодействии (`Emulation.setFocusEmulationEnabled`); навигация editor → Pusher оборвалась `net::ERR_ABORTED`. Это технические ошибки UI automation, не установленный запрет приложения. Обход Browser Use другим транспортом не применялся. Изменений настроек WordPress или других плагинов не было.
+- На текущей установленной v202 после последнего screenshot проверены: Testimonials (save/reload PASS, visual FAIL), FAQ (pre-write FAIL), Benefits (pre-write FAIL). Исправленные Benefits и FAQ должны быть перепроверены после установки candidate v204. Охват по семействам из исторических срезов не означает, что каждый импортированный JSON был отдельно сгенерирован и принят.
+- Каталог содержит 158 manifest entries / 13 categories; девять typed archetypes: Hero, Process, Pricing, FAQ, Benefits, Services, Team, Testimonials, CTA. В текущем editor root set: только `578a737`; после двух отказов set не изменился. Public DOM и durable ledger readback в этом срезе не снимались; public desktop/mobile и operation-bound Vision — NOT RUN.
+
+| Область | Статус |
+|---|---|
+| Benefits natural pair parser + typed plan | PASS local |
+| Benefits audit: 3 title/body pairs → 3 cards | PASS local; live v202 reproduced validator defect |
+| FAQ optional answer label parser | PASS local; live v202 rejected before source fix |
+| Testimonials exact content/save/reload | PASS live v202 |
+| Testimonials editor visual | FAIL; fresh editor screenshot |
+| FAQ/Benefits live write | NOT RUN after fix; v204 not installed |
+| Source package hashes / local checks | PASS |
+| Source v204 commit/push | NOT RUN |
+| WP Pusher installation/editor version | BLOCKED / unconfirmed; editor reads v202 |
+| Public DOM, public desktop/mobile, durable ledger, operation-bound Vision | NOT RUN |
+
+## Исторический live-срез — проверка поддерживаемых семейств v02.11.192
+
+Срез: **2026-09-30 01:02 +0500 (Asia/Almaty)**. Post `5214`. Source/pushed runtime HEAD `3c170b94199aa8fc351a1415f5bf0503a0a65348`; установленный plugin, inline editor config после reload — `v02.11.192`. Установка WP Pusher была подтверждена до этого live-цикла. Runtime-код в нём не менялся; source/push/install не повторялись.
+
+Пользователь очистил страницу перед циклом. Services `802dfd4` и ошибочный CTA→Process `1f764e8` относятся к предыдущему состоянию и в этом цикле не восстанавливались. Свежий read через Browser Use в конце цикла дал одинаковые roots editor iframe и public DOM: `fb863c6`, `df970cc`, `8849f21`. Новых страниц и drafts не создавали. Durable ledger revision/fingerprint не читали.
+
+### Live coverage и результат
+
+| Семейство | Запрос и идентичность | Результат после записи / причины остановки |
+|---|---|---|
+| Services | Этот цикл не запускался; прежний root был очищен пользователем | Предыдущая generation v192 `802dfd4` была fallback, не library-template PASS; исторические кадры не показывают нынешнюю страницу. |
+| Team | «Блок команды. Участник 1 — имя: „Айгерим“. Участник 1 — должность: „Архитектор“. Без фотографий.» Root `df970cc`; operation `wpae-20260929194222-9fca7545` | Content/save/reload PASS; editor/public совпали; native Image count 0. Desktop — одна широкая карточка с лишней star icon; visual PASS частичный. Mobile natural stack, CSS viewport 390×844, scrollWidth 390. Advisory Vision 88/confidence95; не operation-bound review. |
+| Pricing | Первый запрос с нумерованными полями остановлен `pricing_tiers_required`, без записи. Повтор: «Блок pricing. „Старт“ — „от 50 000 ₸“ — „Для небольшой задачи“. „Проект“ — „от 150 000 ₸“ — „Для комплексной работы“. „Поддержка“ — „от 80 000 ₸/мес“ — „Для регулярных задач“.» Root `fb863c6`; operation `wpae-20260929194740-97229547` | Content/save/reload PASS, три точные суммы, три desktop cards, mobile vertical stack; Image count 0, horizontal overflow не наблюдался. Route `deterministic_fallback`, поэтому не библиотечный шаблон PASS. |
+| Process | «Процесс · QA. Три шага: „01. Заявка“ — „QA: запрос поступил“; „02. Уточнение“ — „QA: детали проверены“; „03. Старт“ — „QA: следующий шаг согласован“. На mobile расположи вертикально.» Root `8849f21`; operation `wpae-20260929195420-d028c181` | Content/save/reload PASS, Image count 0, desktop row/mobile stack; scrollWidth 375 при viewport 390. Visual partial: desktop — простой текстовый ряд без заметного оформления карточками/соединителями. Advisory Vision 90/confidence95, не operation-bound review. |
+| Testimonials | «Блок отзывов — синтетические тестовые данные. Отзыв 1 — текст: „Короткий синтетический отзыв.“ Отзыв 1 — автор: „Тестовый автор“. Отзыв 2 — текст: „Второй синтетический отзыв для проверки композиции карточек.“ Отзыв 2 — автор: „Второй тестовый автор“.» | Library candidate выбран моделью, затем адаптация template остановлена: «после адаптации нарушена его структура». До write; root/screenshot нет. |
+| FAQ | Prompt A: «Какие сроки проекта?» / «Сроки зависят от объёма работ.» и «Как начать?» / «Напишите нам и обсудим задачу.» Prompt B: «Как проходит работа?» / «Сначала согласуем задачу, затем соберём страницу.» и «Можно ли изменить содержание?» / «Да, каждый текст остаётся редактируемым.» | В обоих случаях provider tree и deterministic fallback не прошли content-fidelity validation. До write; root/screenshot нет. |
+| CTA | «CTA: заголовок „Обсудим проект“, текст „Опишите задачу и выберите следующий шаг“. Кнопка „Связаться“ → #contact.» | Pipeline ответил: «Безопасная цель повторной сборки не найдена; новый дубликат не добавлен». Запись не подтверждена, root/screenshot нет; CTA не считается протестированным успешно. |
+| Benefits | «Преимущества. Заголовок: „Понятный процесс“. Преимущество 1: „Прозрачные этапы“ — „Каждый шаг согласован до начала работы.“ Преимущество 2: „Удобное редактирование“ — „Содержание доступно в native Elementor widgets.“ Преимущество 3: „Адаптация под экран“ — „Карточки складываются в одну колонку на телефоне.“» | Deterministic fallback не прошёл content fidelity: «сгенерированный контент не соответствует запросу». До write; root/screenshot нет. |
+| Hero | Проверен в предыдущем v192 live-цикле; см. исторический раздел ниже | Не генерировался заново в этом цикле. |
+
+Схема `includes/llm/design-plan.php` объявляет девять поддерживаемых archetypes: Hero, Process, Pricing, FAQ, Benefits, Services, Team, Testimonials, CTA. Все девять имеют live попытки текущего/предыдущих циклов, но не все прошли. В этом цикле Pricing прошёл через `deterministic_fallback`; для Team фактический маршрут не устанавливался, а Process пришёл как структурированный JSON. Library-template PASS ни для одного из трёх не подтверждён. Единственная попытка Testimonials, в которой модель выбрала библиотечный candidate, была отклонена после адаптации. Это не проверка всех импортированных JSON файлов и не свидетельство о поддержке иных типов вроде Gallery/Portfolio.
+
+### Responsive и screenshot evidence
+
+Кадры захвачены из существующей public вкладки Browser Use после save/reload. Байты Browser Use оказались JPEG; проверены, преобразованы `sips` в PNG и открыты для визуальной проверки. CSS viewport указан отдельно от физического PNG canvas. На кадрах присутствуют WordPress admin bar и плавающий чат. Mobile чат перекрывает часть нижнего кадра Team/Process, но карточки и тексты доступны; это ограничение чистоты кадров. Ни Vision scores, ни screenshot сами по себе не подтверждают durable ledger или operation-bound review.
+
+Pricing + Team: post `5214`, roots `fb863c6` и `df970cc`, operations `wpae-20260929194740-97229547` и `wpae-20260929194222-9fca7545`, public, CSS viewport desktop `1280×900`, mobile `390×844`. Desktop кадр PNG `1280×900`; mobile физические кадры `375×812`, первый при scrollY 0, второй ниже по странице. Desktop три Pricing cards в строку и Team ниже; mobile cards складываются в колонку.
+
+![Pricing и Team — public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/pricing-team-desktop.png)
+[Открыть Pricing + Team desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/pricing-team-desktop.png)
+
+![Pricing и Team — public mobile, верх](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/pricing-team-mobile-top.png)
+[Открыть mobile кадр 1](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/pricing-team-mobile-top.png)
+
+![Pricing и Team — public mobile, низ](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/pricing-team-mobile-bottom.png)
+[Открыть mobile кадр 2](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/pricing-team-mobile-bottom.png)
+
+Process: post `5214`, root `8849f21`, operation `wpae-20260929195420-d028c181`, public. Desktop CSS viewport `1280×720`, scrollY `220`; mobile `390×844`, scrollY `499.5`. Desktop физический PNG `1265×712`, mobile `375×812`; на mobile все три шага вертикальны.
+
+![Process — public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/process-desktop.png)
+[Открыть Process desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/process-desktop.png)
+
+![Process — public mobile](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/process-mobile.png)
+[Открыть Process mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v192/process-mobile.png)
+
+### Итоговые статусы текущего цикла
+
+| Проверка | Статус |
+|---|---|
+| Source/editor version | PASS: v02.11.192 |
+| Existing-page save/reload for Pricing, Team, Process | PASS: matching editor iframe and public DOM roots |
+| Exact requested content | PASS for those three roots |
+| Image rule | PASS for these no-photo Team/Pricing/Process requests; no Image widgets in their roots |
+| Desktop/mobile geometry | PASS for Pricing/Team stacking and Process stacking; horizontal overflow not observed |
+| Full visual quality | PARTIAL: Team has an unsolicited star and a single wide member card; Process remains visually plain |
+| Testimonials, FAQ, CTA, Benefits | BLOCKED before write by structure/content/target validation; no roots |
+| Gallery/Portfolio | NOT RUN; not an archetype in the production DesignPlan contract |
+| Library JSON selection/application | NOT PASS for successful writes; fallback route used |
+| Operation-bound Vision / durable ledger readback | NOT VERIFIED |
+| Source edits/release during this continuation | NONE; only report/context updated |
+
+Runtime verification evidence belongs to release v192 before this continuation: `tests/flex-generation-runtime.php` 524 checks PASS; `tests/design-pipeline-contract.php` 269 PASS; `node --test tests/*.test.js` 6/6; PHP lint PASS; package probe 249 files/0 hash mismatches; commit/push/WP Pusher/editor installation PASS. `git diff --check` is rerun after this documentation update.
+
+## Исторический срез до очистки страницы: Image policy v192, 2026-09-29
+
+Source/успешно pushed commit `3c170b94199aa8fc351a1415f5bf0503a0a65348`; WP Pusher/editor v02.11.192. На очищенной тогда странице была создана Services generation `802dfd4`, operation `wpae-20260929174248-51e7b6b4`. Это deterministic fallback после provider error503 и content-fidelity recovery, не library-template PASS. Три exact text pairs, badge «УСЛУГИ», три загруженных native Unsplash Images и save/reload подтверждались тогда. Позже пользователь очистил этот root перед нынешним циклом; он не входит в финальные roots ниже. Старые screenshots `docs/audits/2026-09-29-image-policy-v192/` — только историческая evidence, не снимки текущего набора roots.
+
+Локальные release checks v192: `php -d error_reporting=E_ALL tests/flex-generation-runtime.php` — 524; `tests/design-pipeline-contract.php` — 269; `node --test tests/*.test.js` — 6/6; package probe — 249 files/0 mismatches; PHP lint — PASS. В текущем continuation runtime не менялся.
+
+## Историческая проверка v190 (страница затем очищена пользователем)
+
+### Image-use policy v02.11.190 — live Hero acceptance
+
+Срез: **2026-09-29 21:03 +05:00 (Asia/Almaty)**. Проверка прошла на существующей странице `post=5214` после установки WP AI Executor v02.11.190 через WP Pusher. Source HEAD — `182cccd6c6b02307f6bccd4f548f91b0cf83ca4a`.
+
+## Что изменено в production image policy
+
+В `includes/llm/design-plan.php` добавлен выбор curated Unsplash изображения для Hero только при архитектурном/интерьерном контексте, если пользователь не запретил media и не передал свой media reference. Для Services используется существующий plugin catalog из трёх Unsplash изображений. В `includes/llm/llm.php` общий `wpae_llm_normalize_image_usage()` подключён к production native visual normalization: он оставляет только явно переданные, разрешённые design-plan и Media Library assets, а незапрошенные внешние images/backgrounds удаляет. Общий filler изображений из library placeholders устранён. Team, Testimonials, Process, Pricing, FAQ и CTA не получают случайных фотографий; фотографии людей сохраняются, когда пользователь явно предоставил соответствующий asset.
+
+Behavioral regression в `tests/flex-generation-runtime.php` проверяет: default architecture Hero photo; приоритет явного no-photo; Services catalog image; сохранение явно предоставленного Team image; удаление незапрошенного Team stock portrait и Process background photo. `tests/design-pipeline-contract.php` и `tests/llm-chat-contract.test.js` покрывают передачу brief/plan через generation path.
+
+## Live generation и сохранение
+
+До запуска editor model на `post=5214` была пустой. Первый пробный запрос с явными Hero полями был остановлен fidelity validation до write: operation/root не созданы. После этого использован короткий контентный запрос:
+
+```text
+Тихая форма
+Пространство для вашей жизни
+Проектируем спокойные, светлые интерьеры с вниманием к каждой детали
+Обсудить проект — #contact
+Смотреть проекты — #projects
+Архитектура повседневности
+```
+
+Успешная operation: `wpae-20260929154249-c791f293`. Создан и сохранён один root `79a1071`; operation write получил HTTP 200. После reload editor и public DOM показывают тот же root. В public DOM обнаружен один WPAE-generated root; другие roots не были изменены, а в исходной editor model их не было. Новых WordPress pages/drafts не создавалось.
+
+Diagnostics: `action_path=fallback`, `archetype=hero`, `library_applied=false`, `provider_design=false`. Настроенный provider вызов закончился cURL 28 timeout примерно через 90 секунд (получено 254 bytes). Fallback прошёл content fidelity gate и записал native Elementor структуру: pill/badge heading, бренд, H1, description, два native Button, один native Image. Следовательно, live тест подтверждает работу contextual image policy в production fallback, но не library template choice или успешную provider design generation.
+
+Сохранённый content:
+
+- Badge: «Архитектура повседневности».
+- Бренд: «Тихая форма».
+- Heading: «Пространство для вашей жизни».
+- Description: «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали».
+- CTA: «Обсудить проект» → `#contact`; «Смотреть проекты» → `#projects`.
+- Native Image URL: Unsplash `photo-1766230976347-c5badd3f76c9`; alt: «Современный архитектурный интерьер.»; public image loaded, natural width 1200 px.
+
+## Layout and visual checks
+
+- **Public desktop:** actual CSS viewport 1280×720; root box 1280×439.9 CSS px. Copy/CTAs are on the left and photo on the right. Exact CTA hrefs and image load verified in DOM. `documentElement.scrollWidth=clientWidth=1280`. Public PNG canvas is 1280×720. WordPress admin bar and floating chat are visible; neither covers the Hero.
+- **Public mobile:** documented viewport override set to 390×844 and actual `window.innerWidth/innerHeight` confirmed 390×844; override reset after capture. Root is 390×624.6 CSS px. Copy and both stacked buttons precede the image. `scrollWidth=clientWidth=390`; image loaded with alt. Public PNG canvas is 390×844. Compact WordPress bar is visible; chat bubble sits below the Hero and does not cover it.
+- **Editor desktop:** Elementor inline config reports v02.11.190; preview CSS viewport 1025×860. Editor PNG canvas is 1144×923. The left Elementor panel narrows the visible canvas and clips the far edge of the image; this frame confirms editor/root state, not public visual quality.
+- **Editor mobile:** preview iframe CSS viewport 360×736; PNG canvas 1144×923. The text and buttons stack before the Image widget. Elementor selection outlines and controls remain visible.
+- Manual visual inspection: public desktop/mobile show readable copy, correct image placement, exact CTAs, no horizontal overflow. A chat response displayed advisory Vision score 88/confidence 95%; this is not an operation-bound Vision review.
+
+### Public desktop — post=5214, root=79a1071, operation=wpae-20260929154249-c791f293
+
+![Hero v190 — public desktop, viewport 1280×720](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-public-desktop.png)
+
+[Открыть public desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-public-desktop.png)
+
+### Public mobile — post=5214, root=79a1071, operation=wpae-20260929154249-c791f293
+
+![Hero v190 — public mobile, viewport 390×844](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-public-mobile.png)
+
+[Открыть public mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-public-mobile.png)
+
+### Elementor editor desktop/mobile — тот же post/root/operation
+
+Editor desktop viewport 1025×860 CSS px; editor mobile preview 360×736 CSS px. Внешний browser screenshot canvas для обоих — 1144×923; это размер окна редактора, не preview viewport.
+
+![Hero v190 — Elementor editor desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-editor-desktop.png)
+
+[Открыть editor desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-editor-desktop.png)
+
+![Hero v190 — Elementor editor mobile](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-editor-mobile.png)
+
+[Открыть editor mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-image-policy-v190/hero-editor-mobile.png)
+
+## Verification and release evidence
+
+- `node --test tests/*.test.js` — 6/6 PASS.
+- `php tests/design-pipeline-contract.php` — 269 checks PASS.
+- `php tests/flex-generation-runtime.php` — 521 checks PASS.
+- `php tests/elementor-patch-guard.php` — PASS.
+- `php tests/imported-template-catalog.php` — 158 manifest entries, 156 retrievable, 156 instantiated previews.
+- Modified PHP files linted; package probe — 249 files, 0 hash mismatches; `git diff --check` — PASS before report edits. Screenshot PNG signatures/dimensions checked with `file`/`sips`; all four files opened and visually inspected.
+- Installed/editor runtime v02.11.190 confirmed after WP Pusher update. Source commit is `182cccd6c6b02307f6bccd4f548f91b0cf83ca4a`. Local `origin/main` tracking ref is stale at `50c2e97ade7b2f9c71fc9a335c14f8160816b296` and its entrypoint says v02.11.178. A fresh `git ls-remote origin refs/heads/main` failed because this environment could not resolve `github.com`; current remote HEAD and push status are therefore **NOT VERIFIED** in this pass.
+- Runtime release files were committed in source HEAD; this report/context and screenshots are working-tree evidence only and were not committed here.
+
+## Historical reports
+
+### Исторический срез: визуальный провал Process / Pricing / CTA в v02.11.185; локальные исправления v02.11.186
 
 Срез: **2026-09-29 15:55 +05:00 (Asia/Almaty)**. Источник — присланные public screenshots и сохранённые кадры [`docs/audits/2026-09-29-other-blocks-v185`](</Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185>). Наблюдаемые roots относятся к старой генерации; на момент повторного чтения текущие editor canvas и public page post=5214 пусты. Ничего на странице не создавалось и не сохранялось.
 

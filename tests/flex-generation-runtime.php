@@ -725,6 +725,12 @@ $benefits_fidelity = wpae_llm_content_fidelity( $benefits_message, (array) ( $be
 check( ! empty( $benefits_fidelity['ok'] ), 'Benefits content fidelity treated already-split label/description pairs as missing full-line copy' );
 $benefits_requested = wpae_llm_extract_requested_content( $benefits_message );
 check( ! in_array( 'Точная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха', $benefits_requested, true ), 'Benefits requested-content extraction retained a redundant unsplit pair line' );
+$benefits_live_message = 'Создай блок преимуществ. Преимущество 1: «Точный расчёт сроков». Описание преимущества 1: «Планируем этапы до начала работ». Преимущество 2: «Единая команда». Описание преимущества 2: «Архитекторы и инженеры работают вместе». Преимущество 3: «Прозрачный контроль». Описание преимущества 3: «Показываем ход проекта на каждом этапе».';
+$benefits_live_plan = wpae_llm_content_plan( $benefits_live_message, 'benefits' );
+$benefits_live_fallback = wpae_llm_build_fallback_action( $benefits_live_message, 42 );
+$benefits_live_audit = wpae_llm_content_plan_audit( $benefits_live_plan, (array) ( $benefits_live_fallback['elements'] ?? [] ) );
+check( ( $benefits_live_plan['repeatable_units'] ?? 0 ) === 3, 'Benefits semantic audit counted each title and description as a separate card' );
+check( ! in_array( 'repeatable content units are not separated into distinct containers', (array) ( $benefits_live_audit['failures'] ?? [] ), true ), 'Benefits fallback was rejected despite one complete native card per requested pair' );
 
 $faq_message = 'Создай FAQ «Частые вопросы». «Как начать?» — «Оставьте заявку, и мы согласуем встречу». «Можно работать дистанционно?» — «Да, обсуждения и согласования проводим онлайн». «Что входит в проект?» — «Планировка, концепция и согласованный комплект материалов». Сохрани точные вопросы, ответы и порядок. Адаптируй блок для телефона.';
 $faq_natural_brief = wpae_brief_ir_parse( 'FAQ: два вопроса — «Как проходит работа?» — «Сначала обсуждаем задачу, затем согласуем проект и сроки»; «Можно ли внести правки?» — «Да, изменения согласуем до финальной версии».' );
@@ -734,6 +740,12 @@ check( $benefits_natural_roles === [ 'feature_title', 'feature_body', 'feature_t
 $benefits_natural_plan = wpae_design_plan_from_brief( $benefits_natural_brief );
 $benefits_natural_items = (array) ( $benefits_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
 check( count( $benefits_natural_items ) === 3 && $benefits_natural_items[0]['title_ref'] === 'feature_title' && $benefits_natural_items[0]['body_ref'] === 'feature_body' && $benefits_natural_items[2]['title_ref'] === 'feature_title_3' && $benefits_natural_items[2]['body_ref'] === 'feature_body_3', 'Benefits natural inline pairs were not assembled into three ordered feature cards' );
+$benefits_unquoted_prompt = 'Создай блок преимуществ из трёх пунктов: точный расчёт сроков — планируем этапы до начала работ; единая команда — архитекторы и инженеры работают вместе; прозрачный контроль — показываем ход проекта на каждом этапе.';
+$benefits_unquoted_brief = wpae_brief_ir_parse( $benefits_unquoted_prompt );
+$benefits_unquoted_plan = wpae_design_plan_from_brief( $benefits_unquoted_brief );
+$benefits_unquoted_items = (array) ( $benefits_unquoted_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( count( $benefits_unquoted_items ) === 3 && ( $benefits_unquoted_brief['content'][0]['exact_text'] ?? '' ) === 'точный расчёт сроков' && ( $benefits_unquoted_brief['content'][1]['exact_text'] ?? '' ) === 'планируем этапы до начала работ', 'Benefits BriefIR did not split natural unquoted title/description pairs into exact fields' );
+check( count( $benefits_unquoted_items ) === 3 && ! in_array( 'benefits_require_two_to_six_complete_items', (array) ( wpae_design_plan_validate( $benefits_unquoted_plan )['errors'] ?? [] ), true ), 'Benefits DesignPlan rejected three complete unquoted feature pairs' );
 $faq_natural_roles = array_column( (array) ( $faq_natural_brief['content'] ?? [] ), 'role' );
 check( $faq_natural_roles === [ 'faq_question', 'faq_answer', 'faq_question', 'faq_answer' ], 'FAQ parser did not pair short natural question/answer copy separated by an em dash' );
 $faq_natural_plan = wpae_design_plan_from_brief( $faq_natural_brief );
@@ -746,6 +758,18 @@ check( ( $faq_pairs[2]['label'] ?? '' ) === 'Что входит в проект
 $faq_requested = wpae_llm_extract_requested_content( $faq_message );
 check( in_array( 'Частые вопросы', $faq_requested, true ) && in_array( 'Как начать', $faq_requested, true ) && in_array( 'Оставьте заявку, и мы согласуем встречу', $faq_requested, true ), 'FAQ requested-content extraction lost the title or first pair' );
 check( ! in_array( 'Сохрани точные вопросы, ответы и порядок', $faq_requested, true ) && ! in_array( '«Как начать?»', $faq_requested, true ), 'FAQ requested-content extraction retained instruction or quoted duplicate content' );
+
+$faq_answer_labeled_message = 'Создай блок FAQ: вопрос «Как начать проект?» — ответ «Оставьте заявку, и мы обсудим задачу». Вопрос «Сколько стоит работа?» — ответ «Стоимость зависит от объёма и сроков».';
+$faq_answer_labeled_pairs = wpae_llm_extract_faq_content( $faq_answer_labeled_message );
+check( $faq_answer_labeled_pairs === [
+	[ 'label' => 'Как начать проект', 'content' => 'Оставьте заявку, и мы обсудим задачу' ],
+	[ 'label' => 'Сколько стоит работа', 'content' => 'Стоимость зависит от объёма и сроков' ],
+], 'FAQ parser did not retain natural inline pairs with an explicit answer label' );
+$faq_answer_labeled_action = wpae_llm_build_fallback_action( $faq_answer_labeled_message, 42 );
+$faq_answer_labeled_tabs = (array) ( $faq_answer_labeled_action['elements'][0]['elements'][1]['settings']['tabs'] ?? [] );
+check( count( $faq_answer_labeled_tabs ) === 2 && ( $faq_answer_labeled_tabs[0]['tab_title'] ?? '' ) === 'Как начать проект?' && ( $faq_answer_labeled_tabs[0]['tab_content'] ?? '' ) === 'Оставьте заявку, и мы обсудим задачу' && ( $faq_answer_labeled_tabs[1]['tab_title'] ?? '' ) === 'Сколько стоит работа?' && ( $faq_answer_labeled_tabs[1]['tab_content'] ?? '' ) === 'Стоимость зависит от объёма и сроков', 'FAQ production fallback lost natural answer-labeled question/answer copy' );
+$faq_answer_labeled_fidelity = wpae_llm_content_fidelity( $faq_answer_labeled_message, $faq_answer_labeled_action['elements'] );
+check( ! empty( $faq_answer_labeled_fidelity['ok'] ), 'FAQ content-fidelity rejected the supported answer-labeled pair format' );
 $faq_plan = wpae_llm_content_plan( $faq_message, 'faq' );
 check( count( $faq_plan['content_pairs'] ?? [] ) === 3 && ( $faq_plan['content_pairs'][1]['label'] ?? '' ) === 'Можно работать дистанционно', 'FAQ semantic plan did not use the question/answer parser' );
 check( empty( $faq_plan['explicit_cta'] ?? [] ) && empty( $faq_plan['cta_required'] ), 'FAQ semantic plan inferred a CTA from ordinary answer copy' );

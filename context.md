@@ -1,10 +1,72 @@
-# WP AI Executor — context
+## Текущий срез — live проверка семейств и исправления parser/audit
 
-Последнее обновление: **2026-09-29 05:58 +05:00 (Asia/Almaty)**.
+Срез: **2026-09-30 04:46 +05:00 (Asia/Almaty)**. Работа велась в существующем `post=5214` и одной Elementor-вкладке. Новые страницы, drafts и вкладки редактора не создавались.
+
+### Source, runtime и исправления
+
+- Source checkout: ветка `main`, базовый HEAD `cc3636b`; рабочее дерево содержит незакоммиченный candidate runtime `v02.11.204`. Remote подтверждён только до `cc3636b` (`origin/main`); v204 ещё не опубликован. В открытой вкладке query `wpae_release=193`, inline config сообщает **v02.11.202**. Пользователь сообщил v201, но актуальный UI в этой же вкладке показывает v202.
+- `includes/llm/brief-ir.php`: добавлен разбор коротких незаключённых в кавычки пар Benefits формата `название — описание; ...`, без обязательной нумерации. Обе части сохраняются отдельными BriefIR полями с исходными текстами.
+- `includes/llm/llm.php`: для Benefits `repeatable_units` теперь считается по полным парным карточкам BriefIR, а не по числу полей title+body. Подтверждённый сбой был в общем pre-write audit: три карточки считались шестью единицами, поэтому правильно сформированный deterministic fallback отклонялся, хотя в дереве были три полные карточки. Также в этом candidate сохраняется FAQ parser fix: допускается естественная связка `вопрос — ответ «...»` с меткой «ответ».
+- Regression в `tests/flex-generation-runtime.php` покрывает natural Benefits parser, три DesignPlan cards, количество repeatable units и прохождение audit для трёх карточек, а также естественный FAQ-парсер.
+- Проверки после изменений: `php -d memory_limit=512M tests/flex-generation-runtime.php` — **556 checks PASS**; `php tests/design-pipeline-contract.php` — **270 PASS**; `php tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — **6/6 PASS**; PHP lint для `brief-ir.php`, `llm.php`, test harness — PASS; `wpae-package.json` — 249 hashes, 0 mismatches; `git diff --check` — PASS. Commit/push/install v204 ещё не выполнены.
+
+### Live семейства: post=5214
+
+Существующий сохранённый root — только Testimonials `578a737`, operation `wpae-20260929230626-0e11efff`; операция создана runtime v202 через `deterministic_fallback`. Exact copy пережил Elementor save/reload. Визуальная проверка остаётся **FAIL**: общий bento-нормализатор превратил секционные badge/content shells в две равноправные 48%-колонки; pill оказался слева, заголовок и карточки — сжаты справа. Исправление этой причины входит в предыдущий source v203, но live repair не выполнен, поскольку v203/v204 не установлены.
+
+![Testimonials — editor desktop, дефект после reload](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/testimonials-editor-desktop.png)
+
+[Открыть PNG — Testimonials editor desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/testimonials-editor-desktop.png)
+
+FAQ live attempt использовал prompt: `Создай блок FAQ: вопрос «Как начать проект?» — ответ «Оставьте заявку, и мы обсудим задачу». Вопрос «Сколько стоит работа?» — ответ «Стоимость зависит от объёма и сроков».` Runtime v202 отклонил контент до записи; FAQ root и успешная operation identity не появились. Запрос не повторялся после локального parser fix.
+
+Для Benefits проверены два точных live запроса. Естественный запрос `Создай блок преимуществ из трёх пунктов: точный расчёт сроков — планируем этапы до начала работ; единая команда — архитекторы и инженеры работают вместе; прозрачный контроль — показываем ход проекта на каждом этапе.` остановлен на DesignPlan: BriefIR не выделил незаключённые пары и вернул `benefits_require_two_to_six_complete_items` (request ID `d19cf07f-ccc5-4ed1-b220-65cb443dba43`). Второй запрос с явными строками `Преимущество N` и `Описание преимущества N` создал три полные native карточки в deterministic fallback, но audit v202 требовал 6 контейнеров вместо 3; модельный library route использовал один provider call и отказался от candidates, replacement не применялся. Pre-write validation остановила запись (request ID `a874c075-7c9f-4572-b8ec-1b0cf66009fb`). Root не появился, число сохранённых roots не увеличилось. Оба отказа предотвращены до write.
+
+![Benefits — editor, отказ pre-write на runtime v202](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/benefits-v202-validation-error.png)
+
+[Открыть PNG — Benefits v202 validation error](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v203/benefits-v202-validation-error.png)
+
+Для кадра Benefits использован Browser Use screenshot существующей вкладки; фактический editor viewport **1109×923 CSS px**, PNG `1109×923`. JPEG signature проверена, сконвертирован через `sips`, PNG открыт и проверен. Кадр показывает активный root Testimonials и pre-write diagnostics Benefits, не результат дизайна Benefits. Скриншот FAQ аналогично показывает ошибку v202, не сгенерированный блок.
+
+### Установка и фактическое покрытие
+
+- WP Pusher на двух ранее открытых административных вкладках не ответил в Browser Use: CDP timeout на чтении/взаимодействии (`Emulation.setFocusEmulationEnabled`); навигация editor → Pusher оборвалась `net::ERR_ABORTED`. Это технические ошибки UI automation, не установленный запрет приложения. Обход Browser Use другим транспортом не применялся. Изменений настроек WordPress или других плагинов не было.
+- На текущей установленной v202 после последнего screenshot проверены: Testimonials (save/reload PASS, visual FAIL), FAQ (pre-write FAIL), Benefits (pre-write FAIL). Исправленные Benefits и FAQ должны быть перепроверены после установки candidate v204. Охват по семействам из исторических срезов не означает, что каждый импортированный JSON был отдельно сгенерирован и принят.
+- Каталог содержит 158 manifest entries / 13 categories; девять typed archetypes: Hero, Process, Pricing, FAQ, Benefits, Services, Team, Testimonials, CTA. В текущем editor root set: только `578a737`; после двух отказов set не изменился. Public DOM и durable ledger readback в этом срезе не снимались; public desktop/mobile и operation-bound Vision — NOT RUN.
+
+| Область | Статус |
+|---|---|
+| Benefits natural pair parser + typed plan | PASS local |
+| Benefits audit: 3 title/body pairs → 3 cards | PASS local; live v202 reproduced validator defect |
+| FAQ optional answer label parser | PASS local; live v202 rejected before source fix |
+| Testimonials exact content/save/reload | PASS live v202 |
+| Testimonials editor visual | FAIL; fresh editor screenshot |
+| FAQ/Benefits live write | NOT RUN after fix; v204 not installed |
+| Source package hashes / local checks | PASS |
+| Source v204 commit/push | NOT RUN |
+| WP Pusher installation/editor version | BLOCKED / unconfirmed; editor reads v202 |
+| Public DOM, public desktop/mobile, durable ledger, operation-bound Vision | NOT RUN |
+
+## Исторический live-срез — v02.11.192, 2026-09-30
+
+- Source HEAD/pushed runtime commit `3c170b94199aa8fc351a1415f5bf0503a0a65348`; установленная версия и inline editor config после reload — v02.11.192. Runtime этого продолжения не менялся.
+- Пользователь очистил post=5214 перед нынешним циклом тестирования. Services `802dfd4` и предыдущий ошибочный CTA→Process `1f764e8` относятся к прежнему состоянию и были очищены; не считать их текущими.
+- Новые успешные live roots этого цикла: Pricing `fb863c6` / `wpae-20260929194740-97229547`; Team `df970cc` / `wpae-20260929194222-9fca7545`; Process `8849f21` / `wpae-20260929195420-d028c181`. На момент чтения editor iframe и public DOM содержат тот же порядок и тот же набор; screenshot/public viewport был 1280×720. Новых pages/drafts не было.
+- Pricing: exact three prices/descriptions, three cards on desktop, natural vertical stack on mobile, no Image widgets. Route — deterministic fallback; предыдущая numbered-form попытка остановлена `pricing_tiers_required` до записи.
+- Team: one native card, «Айгерим» / «Архитектор», no Image widgets; content/save/reload PASS. Визуально карточка широкая для одного человека и содержит лишнюю star icon; считать visual PASS частичным, не полным.
+- Process: три точных QA-шага, no Image widgets, save/reload PASS; desktop row, mobile vertical stack без горизонтального overflow. Desktop выглядит как простой текстовый ряд без выраженных карточек/соединителей; visual PASS частичный. Advisory score 90 не operation-bound review.
+- Testimonials: библиотечный кандидат был выбран, но отклонён после адаптации (`после адаптации нарушена его структура`); write/root отсутствует. FAQ (два разных briefs) и Benefits (явный набор из трёх преимуществ) остановлены content-fidelity validation до записи. CTA-запрос остановлен сообщением «Безопасная цель повторной сборки не найдена; новый дубликат не добавлен». Для этих блоков root/screenshot нет.
+- Все девять typed archetypes в `includes/llm/design-plan.php` теперь имеют live попытку в текущем или предыдущих циклах; live PASS по каждому не достигнут. Это не означает проверку каждого импортированного JSON-шаблона: для Pricing подтверждён deterministic fallback; для Team не установлен route, Process пришёл структурированным JSON; library-template PASS не подтверждён.
+- Fresh public PNG этой проверки в `docs/audits/2026-09-30-live-family-v192/`: Pricing+Team desktop/mobile (mobile — два кадра) и Process desktop/mobile. CSS viewport: desktop 1280×900 (Process desktop 1280×720; scrollY=220), mobile 390×844. Browser screenshot physical canvas: 1280×900; mobile обычно 375×812. Каждый файл открыт и визуально проверен; WordPress toolbar/чат присутствуют, плавающий чат частично перекрывает нижний mobile кадр.
+- Итоговые текущие roots: `fb863c6`, `df970cc`, `8849f21`. No other roots detected in editor iframe or public DOM. Durable ledger revision/fingerprint и operation-bound Vision не подтверждены. Остальные фактические статусы и prompts см. в актуальном разделе LUNA_HANDOFF_REPORT.md.
 
 ## Предпочтение к generation prompts
 
 Пиши коротко и естественно: что создать, точный пользовательский контент и только важный видимый результат. Не перегружай запрос внутренними названиями полей, схемами, маршрутизацией, write-boundary, множеством запретов и повторяющимися требованиями. Такие гарантии обеспечивает pipeline плагина, а не текст prompt.
+
+## Правило исправления невалидного визуального результата
+
+Если свежий скриншот показывает дефект или несоответствие эталону, не засчитывай блок как PASS и не подправляй его вручную в Elementor. Найди первопричину в общем production-пути (Brief/DesignPlan, выбор шаблона, нормализация, compiler, responsive/style tokens или write/finalize — по фактическим доказательствам), исправь минимально общий механизм и добавь behavioral regression. Затем исправь только принадлежащий тесту root через штатную transaction boundary; сохрани соседние roots, выполни save/reload и снова проверь содержимое, DOM-геометрию и свежие desktop/mobile screenshots. Не маскируй дефект усложнением prompt или случайным CSS-патчем.
 
 ## Services — эталон хранится в плагине
 
@@ -12,7 +74,7 @@
 
 Эталон пользователя: pill «УСЛУГИ», отдельный heading «Наши услуги», три равные desktop-карточки; native Image сверху, затем иконка рядом с тёмным названием и приглушённое описание; светлая поверхность, тонкая серая рамка, скругление, мягкая тень. На mobile карточки складываются вертикально.
 
-## Текущий live Services repair — v02.11.185
+## Исторический live Services repair — v02.11.185
 
 - Source HEAD: 0368a0e74281dec4482b527adad33c35b436a5f8, branch main. Runtime commit запушен в origin/main; WP Pusher установил v02.11.185; после reload существующий editor подтвердил inline-конфигурацию v02.11.185. Повторный git ls-remote в текущем срезе не завершился: DNS не разрешил github.com.
 - Подтверждённая причина скриншота пользователя: старая editor-вкладка с URL wpae_release=180 всё ещё загружала root 672fbb9 с нулевыми боковыми padding. Ширина preview root — 1010 CSS px, pill — 1010 px (100% root). Эта вкладка не перезагружалась и не изменялась.

@@ -1420,6 +1420,25 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
             $content_pairs = $faq_pairs;
         }
     }
+    if ( $archetype === 'benefits' ) {
+        // A feature is one title/body pair, not two independent repeatable
+        // units. BriefIR already groups the typed fields used by DesignPlan.
+        $feature_titles = array_filter(
+            (array) ( $brief_ir['content'] ?? [] ),
+            static fn( $item ): bool => is_array( $item ) && sanitize_key( (string) ( $item['role'] ?? '' ) ) === 'feature_title' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== ''
+        );
+        $feature_bodies = array_filter(
+            (array) ( $brief_ir['content'] ?? [] ),
+            static fn( $item ): bool => is_array( $item ) && sanitize_key( (string) ( $item['role'] ?? '' ) ) === 'feature_body' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== ''
+        );
+        if ( count( $feature_titles ) >= 2 && count( $feature_titles ) === count( $feature_bodies ) ) {
+            $repeatable_units = count( $feature_titles );
+        } else {
+            $repeatable_units = max( 0, count( $units ) - 1 );
+        }
+    } else {
+        $repeatable_units = count( $content_pairs ) >= 2 ? count( $content_pairs ) : max( 0, count( $units ) - 1 );
+    }
     $archetype_scores = wpae_llm_content_archetype_scores( $message, $pairs );
     if ( $archetype === 'faq' && count( $content_pairs ) < 2 ) {
         $content_pairs = array_slice( array_map( static function ( $pair ): array {
@@ -1471,7 +1490,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'content_units' => array_slice( $units, 0, 8 ),
         'labeled_pairs' => $pairs,
         'content_pairs' => $content_pairs,
-        'repeatable_units' => count( $content_pairs ) >= 2 ? count( $content_pairs ) : max( 0, count( $units ) - 1 ),
+        'repeatable_units' => $repeatable_units,
         'explicit_cta' => $ctas,
         'cta_required' => ! empty( $ctas ),
         'requires_media' => $media_intent === 'required' || ! empty( $brief_ir['media_references'] ),
@@ -2426,7 +2445,7 @@ function wpae_llm_extract_faq_content( string $message ): array {
     $message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $message );
     $message = preg_replace( '/^\s*(?:faq|частые вопросы|вопросы)\s*:\s*/iu', '', $message );
 	$quoted_pairs = [];
-	if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:«([^»]{3,320})»|"([^"\n]{3,320})")/u', (string) $message, $quoted_matches, PREG_SET_ORDER ) ) {
+	if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:(?:ответ|answer)\s*[:：]?\s*)?(?:«([^»]{3,320})»|"([^"\n]{3,320})")/iu', (string) $message, $quoted_matches, PREG_SET_ORDER ) ) {
 		foreach ( $quoted_matches as $match ) {
 			$label = trim( preg_replace( '/[?؟\s]+$/u', '', (string) ( $match[1] !== '' ? $match[1] : ( $match[2] ?? '' ) ) ) );
 			$content = trim( preg_replace( '/[.!?؟\s]+$/u', '', (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) ) ) );
