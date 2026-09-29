@@ -67,6 +67,9 @@ function wpae_llm_is_content_only_process_brief( string $message ): bool {
 }
 
 function wpae_llm_is_process_request( string $message, string $archetype = '' ): bool {
+	if ( $archetype !== '' && $archetype !== 'process' ) {
+		return false;
+	}
 	if ( wpae_llm_is_content_only_process_brief( $message ) ) {
 		return true;
 	}
@@ -1394,13 +1397,13 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
             )
         )
     );
-    $allowed_widgets = [
+	$allowed_widgets = [
         'hero' => [ 'heading', 'text-editor', 'button', 'image' ],
         'benefits' => [ 'heading', 'text-editor', 'icon-list', 'icon' ],
         'services' => [ 'heading', 'text-editor', 'icon-box', 'image', 'button' ],
         'pricing' => [ 'heading', 'text-editor', 'price-list', 'button' ],
         'testimonials' => [ 'heading', 'text-editor', 'image', 'testimonial' ],
-        'team' => [ 'heading', 'text-editor', 'image', 'icon' ],
+		'team' => [ 'heading', 'text-editor', 'image' ],
         'about' => [ 'heading', 'text-editor', 'image', 'icon-list', 'counter' ],
         'faq' => [ 'heading', 'accordion', 'text-editor' ],
         'process' => [ 'heading', 'text-editor', 'icon-list', 'divider' ],
@@ -1429,7 +1432,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'cta_required' => ! empty( $ctas ),
         'requires_media' => $media_intent === 'required' || ! empty( $brief_ir['media_references'] ),
         'allowed_widgets' => $allowed_widgets[ $archetype ] ?? [ 'heading', 'text-editor', 'image', 'button' ],
-        'forbidden_widgets' => $archetype === 'services' ? [] : [ 'icon-box' ],
+		'forbidden_widgets' => $archetype === 'services' ? [] : ( $archetype === 'team' ? [ 'icon-box', 'icon' ] : [ 'icon-box' ] ),
     ];
 }
 
@@ -6139,7 +6142,7 @@ function wpae_llm_normalize_process_timeline( array $elements, ?string $message,
     return $elements;
 }
 
-function wpae_llm_enforce_process_timeline_contract( array $elements, ?string $message, int &$changed = 0 ): array {
+function wpae_llm_enforce_process_timeline_contract( array $elements, ?string $message, int &$changed = 0, bool $force_generated_root = false ): array {
 	$message = (string) $message;
     $layout = wpae_llm_process_timeline_layout( $message );
     $contains_process = static function ( array $nodes ) use ( &$contains_process ): bool {
@@ -6159,7 +6162,7 @@ function wpae_llm_enforce_process_timeline_contract( array $elements, ?string $m
         return false;
     };
     foreach ( $elements as $index => $root ) {
-        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' || ! $contains_process( [ $root ] ) ) {
+        if ( ! is_array( $root ) || ( $root['elType'] ?? '' ) !== 'container' || ( ! $force_generated_root && ! $contains_process( [ $root ] ) ) ) {
             continue;
         }
         $steps = array_slice( wpae_llm_extract_labeled_content( $message ), 0, 6 );
@@ -9847,9 +9850,9 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $steps[] = [ 'id' => 'visual_variation', 'status' => 'ok', 'message' => 'Для нового блока выбрана новая композиция без повтора уже добавленных блоков.', 'details' => [ 'variant' => $fallback_variant, 'archetype' => $variation_archetype, 'available_variants' => wpae_llm_visual_variant_count(), 'layout' => intdiv( $fallback_variant, 10 ) ] ];
     }
 	$process_request = wpae_llm_is_process_request( $message, $archetype );
-    if ( ! $preserve_provider_design && $process_request && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
+    if ( $process_request && $message !== '' && function_exists( 'wpae_llm_enforce_process_timeline_contract' ) ) {
         $final_process_changed = 0;
-        $elements = wpae_llm_enforce_process_timeline_contract( $elements, $message, $final_process_changed );
+        $elements = wpae_llm_enforce_process_timeline_contract( $elements, $message, $final_process_changed, true );
         if ( $final_process_changed > 0 ) {
             $steps[] = [ 'id' => 'process_timeline_final', 'status' => 'ok', 'message' => 'Финальная граница записи восстановила канонический native Flex timeline после вариаций.', 'details' => [ 'containers_rebuilt' => $final_process_changed, 'layout' => wpae_llm_process_timeline_layout( $message ) ] ];
         }
@@ -11264,9 +11267,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 			$action['elements'] = wpae_llm_normalize_requested_cta( $action['elements'], $message, $pricing_cta_changed );
 			$cta_changed = (int) ( $cta_changed ?? 0 ) + $pricing_cta_changed;
 		}
-		if ( ! $provider_design && wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
+		if ( $action_archetype === 'process' && wpae_llm_is_process_request( $message, $action_archetype ) && is_array( $action['elements'] ?? null ) ) {
 			$final_process_changed = 0;
-			$action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $final_process_changed );
+			$action['elements'] = wpae_llm_enforce_process_timeline_contract( $action['elements'], $message, $final_process_changed, true );
 			$process_timeline_changed += $final_process_changed;
 		}
         $hero_composition_changed = 0;

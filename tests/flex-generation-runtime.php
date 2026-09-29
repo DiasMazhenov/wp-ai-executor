@@ -1090,6 +1090,8 @@ $explicit_process_timeline = wpae_llm_build_process_timeline( $explicit_process_
 $explicit_process_json = (string) wp_json_encode( $explicit_process_timeline, JSON_UNESCAPED_UNICODE );
 check( strpos( $explicit_process_json, 'Определяем задачу, аудиторию и идею ролика' ) !== false && strpos( $explicit_process_json, 'Готовим финальные файлы для выбранных площадок' ) !== false, 'Native process builder lost explicitly requested descriptions' );
 $bare_content_only_process_message = "Как мы работаем\nПРОЦЕСС\nЗамысел\nСъёмка\nМонтаж\nПубликация";
+$standalone_cta_with_process_words = 'Самостоятельный CTA. Заголовок: «Обсудите следующий шаг проекта». Кнопка: «Связаться»';
+check( ! wpae_llm_is_process_request( $standalone_cta_with_process_words, 'cta' ), 'Explicit CTA archetype was hijacked by the generic “следующий шаг проекта” process heuristic' );
 $bare_process_archetype = wpae_llm_detect_block_archetype( $bare_content_only_process_message );
 check( wpae_llm_is_content_only_process_brief( $bare_content_only_process_message ), 'Content-only process shell was not recognised before archetype scoring' );
 check( wpae_llm_is_process_request( $bare_content_only_process_message ), 'Content-only process shell was not recognised as a process request' );
@@ -1127,6 +1129,20 @@ $contract_changed = 0;
 $contract_timeline = wpae_llm_enforce_process_timeline_contract( [ $reference_timeline ], $detailed_process_message, $contract_changed )[0] ?? [];
 $contract_json = wp_json_encode( $contract_timeline );
 check( substr_count( (string) $contract_json, '"wpae-generated-badge"' ) === 1 && substr_count( (string) $contract_json, '"wpae-process-heading"' ) === 1, 'Process contract duplicated or dropped the horizontal badge/heading shell' );
+$provider_process_message = 'Создай блок процесса «Как мы работаем»: «01. Заявка» — «QA: запрос поступил»; «02. Уточнение» — «QA: детали проверены»; «03. Старт» — «QA: следующий шаг согласован».';
+$provider_process_root = container_node( 'provider-process-root', [ 'flex_direction' => 'row' ], [
+	widget( 'provider-process-label-1', 'heading', [ 'title' => '01. Заявка' ] ),
+	widget( 'provider-process-copy-1', 'text-editor', [ 'editor' => 'QA: запрос поступил' ] ),
+	widget( 'provider-process-label-2', 'heading', [ 'title' => '02. Уточнение' ] ),
+	widget( 'provider-process-copy-2', 'text-editor', [ 'editor' => 'QA: детали проверены' ] ),
+	widget( 'provider-process-label-3', 'heading', [ 'title' => '03. Старт' ] ),
+	widget( 'provider-process-copy-3', 'text-editor', [ 'editor' => 'QA: следующий шаг согласован' ] ),
+] );
+$provider_process_changed = 0;
+$provider_process_result = wpae_llm_enforce_process_timeline_contract( [ $provider_process_root ], $provider_process_message, $provider_process_changed, true );
+$provider_process_json = (string) wp_json_encode( $provider_process_result, JSON_UNESCAPED_UNICODE );
+check( $provider_process_changed === 1 && str_contains( $provider_process_json, 'wpae-process-items' ) && substr_count( $provider_process_json, 'wpae-process-content' ) === 3, 'Markerless provider Process root bypassed the canonical responsive timeline contract' );
+check( str_contains( $provider_process_json, 'QA: запрос поступил' ) && str_contains( $provider_process_json, 'QA: детали проверены' ) && str_contains( $provider_process_json, 'QA: следующий шаг согласован' ), 'Canonical Process rebuild lost explicit provider content' );
 $repair_root = $reference_timeline;
 $repair_root['id'] = 'repair-root';
 $repair_root['settings']['_css_classes'] = 'wpae-system-test';
@@ -1538,6 +1554,15 @@ $team_fallback_prompt = "Блок команды\nУчастник 1 — имя:
 $team_requested_content = wpae_llm_extract_requested_content( $team_fallback_prompt );
 check( $team_requested_content === [ 'Синтетический участник 1', 'Демо-архитектор', 'Синтетический участник 2', 'Демо-руководитель проекта' ], 'Team content fidelity treats quoted name and position values as content, not their field labels: ' . wp_json_encode( $team_requested_content, JSON_UNESCAPED_UNICODE ) );
 $team_fallback = wpae_llm_build_fallback_action( $team_fallback_prompt, 42 );
+$team_content_plan = wpae_llm_content_plan( $team_fallback_prompt, 'team' );
+$team_star_tree = [ container_node( 'team-root', [ '_css_classes' => 'wpae-generated-root wpae-system-test' ], [
+	container_node( 'team-grid', [], [
+		container_node( 'team-card-1', [], [ widget( 'team-name-1', 'heading', [ 'title' => 'Синтетический участник 1' ] ), widget( 'team-position-1', 'text-editor', [ 'editor' => 'Демо-архитектор' ] ), widget( 'team-rating-star', 'icon', [ 'icon' => [ 'value' => 'fas fa-star', 'library' => 'fa-solid' ] ] ) ] ),
+		container_node( 'team-card-2', [], [ widget( 'team-name-2', 'heading', [ 'title' => 'Синтетический участник 2' ] ), widget( 'team-position-2', 'text-editor', [ 'editor' => 'Демо-руководитель проекта' ] ) ] ),
+	] ),
+] ) ];
+$team_star_audit = wpae_llm_content_plan_audit( $team_content_plan, $team_star_tree );
+check( in_array( 'icon', (array) ( $team_content_plan['forbidden_widgets'] ?? [] ), true ) && in_array( 'icon', (array) ( $team_star_audit['forbidden_widgets'] ?? [] ), true ), 'Team semantic contract rejects an unsolicited decorative/rating icon instead of saving it as part of a person card' );
 $team_fallback_nodes = [];
 $collect_team_fallback_nodes = static function ( array $nodes ) use ( &$collect_team_fallback_nodes, &$team_fallback_nodes ): void {
 	foreach ( $nodes as $node ) {
