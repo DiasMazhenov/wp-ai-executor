@@ -1560,6 +1560,9 @@ check( count( $team_fallback_cards ) === 2, 'Team deterministic fallback groups 
 check( $team_fallback_rows === [ [ 'name' => 'Синтетический участник 1', 'position' => 'Демо-архитектор' ], [ 'name' => 'Синтетический участник 2', 'position' => 'Демо-руководитель проекта' ] ], 'Team fallback preserves exact member copy in the matching native heading and text widgets: ' . wp_json_encode( $team_fallback_rows, JSON_UNESCAPED_UNICODE ) );
 
 $services_message = "Блок услуг\nЗаголовок: «Наши услуги»\nНадзаголовок: «УСЛУГИ»\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
+$services_colon_prompt = 'Услуги: стратегия проекта — формулируем задачу и согласуем план работ; архитектура и дизайн — разрабатываем решение под заданный контекст; сопровождение — проверяем соответствие согласованному проекту.';
+check( ( wpae_brief_ir_parse( $services_colon_prompt )['intent']['archetype'] ?? '' ) === 'services' && wpae_llm_detect_block_archetype( $services_colon_prompt ) === 'services', 'A natural “Услуги:” lead keeps the production classifier aligned with BriefIR instead of routing service copy to portfolio' );
+
 $services_pairs = wpae_llm_extract_services_content( $services_message );
 $services_plan = wpae_llm_content_plan( $services_message, 'services' );
 $services_requested = wpae_llm_extract_requested_content( $services_message );

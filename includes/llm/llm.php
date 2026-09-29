@@ -1165,7 +1165,7 @@ function wpae_llm_is_content_only_hero_brief( string $message ): bool {
 function wpae_llm_detect_block_archetype( string $message ): string {
     $labeled_pairs = wpae_llm_extract_labeled_content( $message );
 	$intent_head = wpae_llm_request_intent_head( $message );
-	if ( function_exists( 'wpae_brief_ir_is_services_request' ) && wpae_brief_ir_is_services_request( $intent_head ) ) {
+	if ( function_exists( 'wpae_brief_ir_is_services_request' ) && wpae_brief_ir_is_services_request( $message ) ) {
 		return 'services';
 	}
 	$explicit_archetypes = [
