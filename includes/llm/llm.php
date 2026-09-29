@@ -2059,6 +2059,18 @@ function wpae_llm_extract_pricing_content( string $message ): array {
 		return wpae_llm_pricing_contract_from_pairs( array_slice( array_values( $pairs ), 0, 8 ), $message );
     }
 
+	// Compact requests often put several unquoted tiers on one line, separated
+	// by semicolons. Keep the optional section label out of the first tier.
+	foreach ( preg_split( '/;\s*/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $segment ) {
+		if ( ! preg_match( '/^\s*(?:[^:;]{1,50}:\s*)?([^—–:\n.;]{2,80}?)\s*[—–-]\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)\s*[—–-]\s*(.+?)\s*$/u', (string) $segment, $match ) ) {
+			continue;
+		}
+		$append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[2] ?? '' ), (string) ( $match[3] ?? '' ) );
+	}
+	if ( count( $pairs ) >= 2 ) {
+		return wpae_llm_pricing_contract_from_pairs( array_slice( array_values( $pairs ), 0, 8 ), $message );
+	}
+
     // Content-only prompts commonly express a tier as
     // «Название» — «Описание» — «Цена». Parse that shape before the generic
     // sentence parser, which otherwise treats the quoted description as a
