@@ -723,6 +723,12 @@ check( ! in_array( 'Точная работа с пространством — 
 
 $faq_message = 'Создай FAQ «Частые вопросы». «Как начать?» — «Оставьте заявку, и мы согласуем встречу». «Можно работать дистанционно?» — «Да, обсуждения и согласования проводим онлайн». «Что входит в проект?» — «Планировка, концепция и согласованный комплект материалов». Сохрани точные вопросы, ответы и порядок. Адаптируй блок для телефона.';
 $faq_natural_brief = wpae_brief_ir_parse( 'FAQ: два вопроса — «Как проходит работа?» — «Сначала обсуждаем задачу, затем согласуем проект и сроки»; «Можно ли внести правки?» — «Да, изменения согласуем до финальной версии».' );
+$benefits_natural_brief = wpae_brief_ir_parse( 'Блок преимуществ: «Понятный процесс» — «Этапы и сроки согласованы заранее»; «Продуманные решения» — «Каждое решение связано с задачей проекта»; «Сопровождение» — «Проверяем результат на каждом этапе».' );
+$benefits_natural_roles = array_column( (array) ( $benefits_natural_brief['content'] ?? [] ), 'role' );
+check( $benefits_natural_roles === [ 'feature_title', 'feature_body', 'feature_title', 'feature_body', 'feature_title', 'feature_body' ], 'Benefits parser did not pair natural quoted title/description values separated by dashes' );
+$benefits_natural_plan = wpae_design_plan_from_brief( $benefits_natural_brief );
+$benefits_natural_items = (array) ( $benefits_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( count( $benefits_natural_items ) === 3 && $benefits_natural_items[0]['title_ref'] === 'feature_title' && $benefits_natural_items[0]['body_ref'] === 'feature_body' && $benefits_natural_items[2]['title_ref'] === 'feature_title_3' && $benefits_natural_items[2]['body_ref'] === 'feature_body_3', 'Benefits natural inline pairs were not assembled into three ordered feature cards' );
 $faq_natural_roles = array_column( (array) ( $faq_natural_brief['content'] ?? [] ), 'role' );
 check( $faq_natural_roles === [ 'faq_question', 'faq_answer', 'faq_question', 'faq_answer' ], 'FAQ parser did not pair short natural question/answer copy separated by an em dash' );
 $faq_natural_plan = wpae_design_plan_from_brief( $faq_natural_brief );

@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v4';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v5';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -374,6 +374,13 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				$role = 'faq_answer';
 			} elseif ( preg_match( '/[?؟]\s*$/u', $inner ) && preg_match( '/^\s*[—–-]\s*$/u', $gap_to_next ) ) {
 				$role = 'faq_question';
+			}
+		}
+		if ( $archetype === 'benefits' && $role === 'text' ) {
+			if ( preg_match( '/^\s*[—–-]\s*$/u', $gap_to_next ) ) {
+				$role = 'feature_title';
+			} elseif ( is_string( $previous_quote_inner ) && preg_match( '/^\s*[—–-]\s*$/u', $gap_from_previous ) ) {
+				$role = 'feature_body';
 			}
 		}
 		$repeated = wpae_brief_ir_repeated_slot( $prefix );
