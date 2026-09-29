@@ -375,6 +375,11 @@ check( ! empty( $natural_cta_quality['ok'] ) && (int) ( $natural_cta_quality['ex
 $natural_cta_plan = wpae_llm_content_plan( $natural_cta_message, 'cta' );
 $natural_cta_audit = wpae_llm_content_plan_audit( $natural_cta_plan, (array) ( $natural_cta_fallback['elements'] ?? [] ) );
 check( ! empty( $natural_cta_audit['ok'] ), 'CTA plan audit treated generic next-step copy as an unrelated process section: ' . wp_json_encode( $natural_cta_audit['failures'] ?? [], JSON_UNESCAPED_UNICODE ) );
+$short_cta_live_prompt = 'Отдельная CTA-секция: «Обсудим ваш проект». Опишите задачу, чтобы выбрать следующий шаг. Кнопка «Связаться» → #contact.';
+$short_cta_live_brief = wpae_brief_ir_parse( $short_cta_live_prompt );
+$short_cta_live_plan = wpae_design_plan_from_brief( $short_cta_live_brief );
+$short_cta_live_errors = (array) ( wpae_design_plan_validate( $short_cta_live_plan, $short_cta_live_brief )['errors'] ?? [] );
+check( count( array_filter( (array) ( $short_cta_live_brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['role'] ?? '' ) === 'title' && ( $item['exact_text'] ?? '' ) === 'Обсудим ваш проект' ) ) === 1 && ! in_array( 'cta_heading_required', $short_cta_live_errors, true ), 'Natural standalone CTA heading was lost from the typed design plan' );
 $leaked_cta_fallback = wpae_llm_build_fallback_action( $standalone_cta_message, 42 );
 $leaked_cta_fallback_copy = wpae_llm_collect_action_content( (array) ( $leaked_cta_fallback['elements'] ?? [] ) );
 check( str_contains( $leaked_cta_fallback_copy, 'Обсудим проект' ) && str_contains( $leaked_cta_fallback_copy, 'Опишите задачу и выберите следующий шаг' ) && ! preg_match( '/(?:Заголовок|Описание) секции:|(?:Основная|Вторичная) кнопка:/u', $leaked_cta_fallback_copy ), 'CTA recovery fallback leaked field labels instead of publishing the semantic content' );

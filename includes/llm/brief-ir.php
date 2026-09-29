@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v6';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v7';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -363,6 +363,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$before = substr( $source_text, 0, $start );
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		$role = wpae_brief_ir_label_role( $prefix );
+		if ( $archetype === 'cta' && $role === 'text' && $cta_index === 0 && preg_match( '/(?:\bcta\b|call\s+to\s+action|призыв\w*\s+к\s+действи\w*|cta[-\s]+секци\w*|секци\w*\s+cta)/iu', $prefix ) ) {
+			$role = 'title';
+		}
 		$gap_from_previous = $previous_quote_end !== null ? substr( $source_text, $previous_quote_end, max( 0, $start - $previous_quote_end ) ) : '';
 		$after_quote_end = $start + strlen( $full );
 		$next_quote_start_for_role = isset( $quote_matches[0][ $match_index + 1 ][1] )
