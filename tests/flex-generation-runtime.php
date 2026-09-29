@@ -1636,9 +1636,27 @@ $collect_service_card_pairs = static function ( array $nodes ) use ( $expected_s
 		return strpos( $copy, wpae_llm_normalize_content_text( $pair[0] ) ) !== false && strpos( $copy, wpae_llm_normalize_content_text( $pair[1] ) ) !== false;
 	} ) );
 };
+$services_fallback_images = [];
+$services_fallback_badges = [];
+$collect_services_visuals = static function ( array $nodes ) use ( &$collect_services_visuals, &$services_fallback_images, &$services_fallback_badges ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$settings = (array) ( $node['settings'] ?? [] );
+		$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) { $services_fallback_images[] = $settings['image'] ?? []; }
+		if ( ( $node['elType'] ?? '' ) === 'container' && in_array( 'wpae-generated-badge', $classes, true ) ) {
+			foreach ( (array) ( $node['elements'] ?? [] ) as $badge_child ) {
+				if ( is_array( $badge_child ) && ( $badge_child['widgetType'] ?? '' ) === 'heading' ) { $services_fallback_badges[] = (string) ( $badge_child['settings']['title'] ?? '' ); }
+			}
+		}
+		$collect_services_visuals( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_services_visuals( (array) ( $services_fallback['elements'] ?? [] ) );
 check( ! empty( $services_fallback_audit['ok'] ) && ( $services_fallback_audit['service_card_count'] ?? 0 ) === 3 && ( $services_fallback_audit['expected_service_card_count'] ?? 0 ) === 3, 'Deterministic Services fallback has three independently verified semantic cards: ' . wp_json_encode( $services_fallback_audit, JSON_UNESCAPED_UNICODE ) );
 $services_fallback_pairs = $collect_service_card_pairs( (array) ( $services_fallback['elements'] ?? [] ) );
 check( $services_fallback_pairs === $expected_services_pairs && ! str_contains( $services_fallback_json, 'сам выберет подходящий шаблон' ), 'Services fallback keeps all three exact title/body pairs in order and excludes the instruction tail: ' . wp_json_encode( $services_fallback_pairs, JSON_UNESCAPED_UNICODE ) );
+check( count( $services_fallback_images ) === 3 && count( array_filter( $services_fallback_images, static fn( $image ): bool => in_array( (string) ( $image['url'] ?? '' ), array_column( wpae_design_plan_default_service_media(), 'source_url' ), true ) && trim( (string) ( $image['alt'] ?? '' ) ) !== '' ) ) === 3 && $services_fallback_badges === [ 'УСЛУГИ' ], 'Services fallback includes one pill and three accessible native Unsplash images in its actual Elementor tree' );
 $services_normalized_fallback = wpae_elementor_normalize_data( (array) ( $services_fallback['elements'] ?? [] ) );
 $services_normalized_pairs = $collect_service_card_pairs( (array) ( $services_normalized_fallback['data'] ?? [] ) );
 $services_normalized_audit = wpae_llm_content_plan_audit( $services_fallback_plan, (array) ( $services_normalized_fallback['data'] ?? [] ) );
@@ -1678,7 +1696,7 @@ $replace_service_body = static function ( array $nodes ) use ( &$replace_service
 };
 $services_fallback_wrong_third = $replace_service_body( $services_fallback_wrong_third );
 $services_wrong_third_audit = wpae_llm_content_plan_audit( $services_fallback_plan, $services_fallback_wrong_third );
-check( empty( $services_wrong_third_audit['ok'] ) && ( $services_wrong_third_audit['structural_container_count'] ?? 0 ) === 3 && ( $services_wrong_third_audit['service_card_count'] ?? 0 ) === 2, 'Three structural containers cannot mask one incorrect service title/body pair from semantic validation: ' . wp_json_encode( $services_wrong_third_audit, JSON_UNESCAPED_UNICODE ) );
+check( empty( $services_wrong_third_audit['ok'] ) && ( $services_wrong_third_audit['structural_container_count'] ?? 0 ) === 4 && ( $services_wrong_third_audit['service_card_count'] ?? 0 ) === 2, 'Structural containers, including the new pill, cannot mask one incorrect service title/body pair from semantic validation: ' . wp_json_encode( $services_wrong_third_audit, JSON_UNESCAPED_UNICODE ) );
 $services_library_only_message = $services_message . "\nПусть ИИ-агент сам выберет подходящий шаблон из встроенной библиотеки и использует только проверенный вариант.";
 check( wpae_llm_requires_verified_library_template( $services_library_only_message ) && wpae_llm_forbids_fallback( 'Не используй fallback при отказе провайдера.' ), 'Library-only and explicit no-fallback requests are recognized as write constraints' );
 
@@ -2059,6 +2077,10 @@ $services_fallback_route_plan = wpae_llm_content_plan( $services_fallback_messag
 $services_fallback_route_audit = wpae_llm_content_plan_audit( $services_fallback_route_plan, [ $services_fallback_result['written'] ] );
 check( ! empty( $services_fallback_result['response']['ok'] ) && ( $services_fallback_result['response']['diagnostics']['action_path'] ?? '' ) === 'fallback' && $services_fallback_result['calls'] === 3 && $services_fallback_result['writes'] === 1, 'Permitted model/repair failure produces one validated Services fallback write' );
 check( ! empty( $services_fallback_route_audit['ok'] ) && ( $services_fallback_route_audit['service_card_count'] ?? 0 ) === 3 && ! str_contains( wp_json_encode( $services_fallback_result['written'], JSON_UNESCAPED_UNICODE ), 'сам выберет подходящий шаблон' ), 'Written fallback has three exact cards and does not publish instruction text' );
+$services_fallback_images = [];
+$services_fallback_badges = [];
+$collect_services_visuals( [ $services_fallback_result['written'] ] );
+check( count( $services_fallback_images ) === 3 && $services_fallback_badges === [ 'УСЛУГИ' ], 'The production fallback route writes the Services pill and all three photos through the existing Elementor boundary' );
 $services_write_failure = $run_services_route( $services_fallback_message, [ provider_reply( wp_json_encode( $services_invalid_action ) ), provider_reply( wp_json_encode( $services_invalid_action ) ), provider_reply( wp_json_encode( $services_invalid_action ) ) ], [], 'services-write-failure-identity', true, 'off', 'off' );
 check( empty( $services_write_failure['response']['ok'] ) && $services_write_failure['writes'] === 0 && $services_write_failure['roots'] === array_column( $legacy_page, 'id' ), 'A failing Elementor transaction boundary writes no fallback root and preserves the existing page tree' );
 $GLOBALS['library'] = [];

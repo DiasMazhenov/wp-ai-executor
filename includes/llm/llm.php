@@ -8563,6 +8563,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 		}
 	} elseif ( $archetype === 'services' ) {
 		$brief = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
+		$section_badge = '';
 		$section_title = '';
 		$section_description = '';
 		foreach ( (array) ( $brief['content'] ?? [] ) as $content_item ) {
@@ -8571,7 +8572,9 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 			}
 			$role = (string) ( $content_item['role'] ?? '' );
 			$value = trim( (string) ( $content_item['exact_text'] ?? '' ) );
-			if ( $role === 'title' && $section_title === '' ) {
+			if ( $role === 'eyebrow' && $section_badge === '' ) {
+				$section_badge = $value;
+			} elseif ( $role === 'title' && $section_title === '' ) {
 				$section_title = $value;
 			} elseif ( $role === 'body' && $section_description === '' ) {
 				$section_description = $value;
@@ -8590,7 +8593,7 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 				$widget( 'llm-service-' . $number . '-copy', 'text-editor', [ 'editor' => $content ] ),
 			] );
 		}
-		$elements = [];
+		$elements = [ wpae_llm_badge_widget( 'llm-services-badge', 'services', $section_badge !== '' ? $section_badge : null ) ];
 		if ( $section_title !== '' ) {
 			$elements[] = $widget( 'llm-heading', 'heading', [ 'title' => $section_title, 'header_size' => 'h2' ] );
 		}
@@ -8599,6 +8602,8 @@ function wpae_llm_build_fallback_action( string $message, int $post_id ): array 
 		}
 		if ( ! empty( $service_cards ) ) {
 			$elements[] = $grid( 'llm-services-grid', $service_cards );
+			$service_layout_changed = 0;
+			wpae_llm_normalize_bento_grids_recursive( $elements, $service_layout_changed, 'services' );
 		}
 	} elseif ( $archetype === 'faq' ) {
         $faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 12 );
