@@ -763,7 +763,7 @@ assert.match(llm, /\$spacer_id \. '-label'/);
 assert.match(llm, /\$step_settings\['border_border'\] = 'none'/);
 assert.match(llm, /\$step_settings\['background_color'\] = 'transparent'/);
 assert.match(llm, /'background_color' => '#ffffff'/);
-assert.match(llm, /'border_radius' => \[ 'unit' => 'px', 'size' => 0\.75, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20'/);
+assert.match(llm, /'border_radius' => \[ 'unit' => 'px', 'size' => 20, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20'/);
 assert.match(llm, /Эталон применяется только к горизонтальной последовательности/);
 assert.match(llm, /connector-line/);
 assert.match(llm, /'style' => 'solid'/);

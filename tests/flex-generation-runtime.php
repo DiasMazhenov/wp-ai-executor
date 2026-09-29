@@ -829,6 +829,21 @@ $pricing_walk = static function ( array $nodes ) use ( &$pricing_walk, &$pricing
 };
 $pricing_walk( $pricing_content_only_action['elements'] );
 check( $pricing_card_buttons === 3, 'Pricing CTA buttons are not nested inside their native pricing cards' );
+$pricing_dimension_errors = [];
+$check_pricing_dimensions = static function ( array $nodes, string $path = 'root' ) use ( &$check_pricing_dimensions, &$pricing_dimension_errors ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$node_path = $path . '.' . (string) ( $node['id'] ?? 'unknown' );
+		foreach ( (array) ( $node['settings'] ?? [] ) as $key => $value ) {
+			if ( wpae_elementor_native_control_kind( (string) $key ) !== 'dimensions' ) { continue; }
+			$error = wpae_elementor_native_control_error( (string) $key, $value );
+			if ( $error !== '' ) { $pricing_dimension_errors[] = $node_path . '.' . $key . ': ' . $error; }
+		}
+		$check_pricing_dimensions( (array) ( $node['elements'] ?? [] ), $node_path );
+	}
+};
+$check_pricing_dimensions( $pricing_content_only_action['elements'] );
+check( empty( $pricing_dimension_errors ), 'Pricing fallback contains invalid native dimension controls: ' . implode( '; ', $pricing_dimension_errors ) );
 
 $quoted_pricing_message = "Создай блок «Тарифы» с тремя карточками:\n«Старт» — «Одна консультация» — «30 000 ₸»;\n«Проект» — «Планировка и концепция» — «150 000 ₸»;\n«Полное сопровождение» — «Проект и авторский надзор» — «300 000 ₸».\nВ каждой карточке отдельная кнопка:\n«Выбрать Старт» → #start,\n«Выбрать Проект» → #project,\n«Выбрать сопровождение» → #support.\nИспользуй светлый фон и терракотовые акценты. На телефоне расположи карточки вертикально.";
 $quoted_pricing_contract = wpae_llm_extract_pricing_content( $quoted_pricing_message );
@@ -1050,6 +1065,22 @@ check( array_column( $bare_content_only_process_steps, 'label' ) === [ 'Замы
 check( wpae_llm_process_timeline_layout( $bare_content_only_process_message ) === 'horizontal', 'Content-only process brief did not infer horizontal layout' );
 $standard_timeline_message = 'Сделай стандартный таймлайн.';
 check( wpae_llm_detect_block_archetype( $standard_timeline_message ) === 'process' && wpae_llm_process_timeline_layout( $standard_timeline_message ) === 'horizontal', 'Bare standard timeline request did not use the reference desktop row by default' );
+$standard_timeline = wpae_llm_build_process_timeline( wpae_llm_process_timeline_steps( $standard_timeline_message ), 'standard-timeline', wpae_llm_process_timeline_layout( $standard_timeline_message ) );
+$standard_timeline_errors = [];
+$check_timeline_radii = static function ( array $nodes, string $path = 'root' ) use ( &$check_timeline_radii, &$standard_timeline_errors ): void {
+	foreach ( $nodes as $node ) {
+		$node_path = $path . '.' . (string) ( $node['id'] ?? 'unknown' );
+		if ( isset( $node['settings']['border_radius'] ) ) {
+			$error = wpae_elementor_native_control_error( 'border_radius', $node['settings']['border_radius'] );
+			if ( $error !== '' ) {
+				$standard_timeline_errors[] = $node_path . ': ' . $error;
+			}
+		}
+		$check_timeline_radii( (array) ( $node['elements'] ?? [] ), $node_path );
+	}
+};
+$check_timeline_radii( [ $standard_timeline ] );
+check( empty( $standard_timeline_errors ), 'Canonical horizontal timeline failed Elementor native-setting validation: ' . implode( '; ', $standard_timeline_errors ) );
 check( is_array( wpae_llm_process_timeline_steps( null, false ) ), 'Null retry message crashed the shared process parser' );
 $content_only_process_timeline = wpae_llm_build_process_timeline( $content_only_process_steps, 'content-only-process', 'horizontal', 'Как мы работаем' );
 $content_only_process_json = wp_json_encode( $content_only_process_timeline );
