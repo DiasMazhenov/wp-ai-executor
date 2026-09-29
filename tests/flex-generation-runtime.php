@@ -1675,6 +1675,29 @@ $testimonial_rows = array_map( static function ( array $card ): array {
 check( count( $testimonial_cards ) === 2 && $testimonial_rows === [ [ 'quote' => 'Согласование прошло легко и спокойно', 'author' => 'Динара' ], [ 'quote' => 'Получили ясный план действий', 'author' => 'Марат' ] ], 'Testimonials fallback writes only two native quote/author cards with the correct pairing: ' . wp_json_encode( $testimonial_rows, JSON_UNESCAPED_UNICODE ) );
 check( ! empty( wpae_llm_content_plan_audit( $testimonial_plan, (array) ( $testimonial_fallback['elements'] ?? [] ) )['ok'] ), 'Testimonials audit accepts exactly the two grouped review cards without an unrequested button' );
 check( empty( wpae_llm_content_fidelity( $testimonials_prompt, (array) ( $testimonial_fallback['elements'] ?? [] ) )['missing'] ) && ! str_contains( wp_json_encode( $testimonial_fallback['elements'], JSON_UNESCAPED_UNICODE ), 'отзыв 1' ), 'Testimonials fallback passes fidelity without exposing field labels as visible copy' );
+$testimonial_pipeline = (array) $testimonial_fallback['elements'];
+$testimonial_pipeline_changed = 0;
+$testimonial_pipeline = wpae_llm_normalize_generated_typography( $testimonial_pipeline, 'testimonials', 0, $testimonial_pipeline_changed );
+$testimonial_pipeline = wpae_llm_apply_bento_layout( $testimonial_pipeline, 'testimonials', $testimonial_pipeline_changed );
+$testimonial_pipeline = wpae_llm_repair_unbalanced_repeatable_layout( $testimonial_pipeline, $testimonials_prompt, 'testimonials', $testimonial_pipeline_changed );
+$testimonial_pipeline = wpae_llm_apply_generation_visual_grammar( $testimonial_pipeline, 'testimonials', $testimonial_pipeline_changed );
+wpae_llm_normalize_bento_grids_recursive( $testimonial_pipeline, $testimonial_pipeline_changed, 'testimonials' );
+$testimonial_pipeline = wpae_llm_normalize_native_visual_contract( $testimonial_pipeline, $testimonials_prompt, 'testimonials', $testimonial_pipeline_changed );
+$testimonial_root = (array) ( $testimonial_pipeline[0] ?? [] );
+$testimonial_root_children = (array) ( $testimonial_root['elements'] ?? [] );
+$testimonial_pipeline_root_classes = preg_split( '/\s+/', trim( (string) ( $testimonial_root['settings']['_css_classes'] ?? '' ) ) );
+$testimonial_pipeline_grid_count = 0;
+$count_testimonial_grids = static function ( array $nodes ) use ( &$count_testimonial_grids, &$testimonial_pipeline_grid_count ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) );
+		if ( is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) && count( (array) ( $node['elements'] ?? [] ) ) === 2 ) { $testimonial_pipeline_grid_count++; }
+		$count_testimonial_grids( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$count_testimonial_grids( $testimonial_root_children );
+check( count( $testimonial_root_children ) === 2 && ! in_array( 'wpae-bento-grid', $testimonial_pipeline_root_classes, true ), 'Complete Testimonials fallback pipeline keeps the badge and full-width content shell above the repeatable grid' );
+check( $testimonial_pipeline_grid_count === 1, 'Complete Testimonials fallback pipeline creates one two-card grid inside the content shell' );
 
 $services_message = "Блок услуг\nЗаголовок: «Наши услуги»\nНадзаголовок: «УСЛУГИ»\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
 $services_colon_prompt = 'Услуги: стратегия проекта — формулируем задачу и согласуем план работ; архитектура и дизайн — разрабатываем решение под заданный контекст; сопровождение — проверяем соответствие согласованному проекту.';
