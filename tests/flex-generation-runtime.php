@@ -837,6 +837,31 @@ $collect_portfolio_card_grids = static function ( array $nodes, bool $inside_gri
 $collect_portfolio_card_grids( $portfolio_layout );
 check( $portfolio_nested_card_grids === 0, 'Repeatable card layout nested icon/heading/copy into extra bento containers' );
 
+$testimonial_shell = [
+	[
+		'id' => 'testimonial-root',
+		'elType' => 'container',
+		'settings' => [ 'flex_direction' => 'column' ],
+		'elements' => [
+			[ 'id' => 'badge-shell', 'elType' => 'container', 'settings' => [], 'elements' => [ [ 'id' => 'badge', 'elType' => 'widget', 'widgetType' => 'heading', 'settings' => [ '_css_classes' => 'wpae-generated-badge', 'title' => 'ОТЗЫВЫ' ], 'elements' => [] ] ] ],
+			[ 'id' => 'content-shell', 'elType' => 'container', 'settings' => [], 'elements' => [
+				[ 'id' => 'section-heading', 'elType' => 'widget', 'widgetType' => 'heading', 'settings' => [ 'title' => 'Что говорят клиенты' ], 'elements' => [] ],
+				[ 'id' => 'quote-card-1', 'elType' => 'container', 'settings' => [], 'elements' => [] ],
+				[ 'id' => 'quote-card-2', 'elType' => 'container', 'settings' => [], 'elements' => [] ],
+			] ],
+		],
+	],
+];
+$testimonial_bento_changed = 0;
+$testimonial_shell = wpae_llm_apply_bento_layout( $testimonial_shell, 'testimonials', $testimonial_bento_changed );
+$testimonial_root = $testimonial_shell[0];
+$testimonial_root_classes = preg_split( '/\s+/', trim( (string) ( $testimonial_root['settings']['_css_classes'] ?? '' ) ) );
+$testimonial_content = $testimonial_root['elements'][1] ?? [];
+$testimonial_grid = $testimonial_content['elements'][1] ?? [];
+$testimonial_grid_classes = preg_split( '/\s+/', trim( (string) ( $testimonial_grid['settings']['_css_classes'] ?? '' ) ) );
+check( ( $testimonial_root['settings']['flex_direction'] ?? '' ) === 'column' && ! in_array( 'wpae-bento-grid', $testimonial_root_classes, true ), 'Testimonial badge/content shells were incorrectly converted into peer cards' );
+check( in_array( 'wpae-bento-grid', $testimonial_grid_classes, true ) && count( (array) ( $testimonial_grid['elements'] ?? [] ) ) === 2, 'Testimonial quote cards were not laid out as a grid inside the content shell' );
+
 $wrong_provider_action = $action;
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][0]['settings']['title'] = 'Нерелевантный заголовок';
 $wrong_provider_action['elements'][0]['elements'][0]['elements'][1]['settings']['editor'] = 'Нерелевантное описание';

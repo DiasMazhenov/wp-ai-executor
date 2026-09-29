@@ -9629,6 +9629,27 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
         $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
         $is_grid = is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true );
+		$has_structural_child = false;
+		foreach ( $children as $child ) {
+			if ( ! is_array( $child ) || ( $child['elType'] ?? '' ) !== 'container' ) {
+				continue;
+			}
+			$child_settings = is_array( $child['settings'] ?? null ) ? $child['settings'] : [];
+			$child_classes = preg_split( '/\\s+/', trim( (string) ( $child_settings['_css_classes'] ?? '' ) ) );
+			$grandchildren = is_array( $child['elements'] ?? null ) ? $child['elements'] : [];
+			$grandchild_containers = array_filter( $grandchildren, static fn( $grandchild ): bool => is_array( $grandchild ) && ( $grandchild['elType'] ?? '' ) === 'container' );
+			$has_badge = is_array( $child_classes ) && in_array( 'wpae-generated-badge', $child_classes, true );
+			foreach ( $grandchildren as $grandchild ) {
+				if ( is_array( $grandchild ) && is_array( $grandchild['settings'] ?? null ) ) {
+					$grandchild_classes = preg_split( '/\\s+/', trim( (string) ( $grandchild['settings']['_css_classes'] ?? '' ) ) );
+					$has_badge = $has_badge || ( is_array( $grandchild_classes ) && in_array( 'wpae-generated-badge', $grandchild_classes, true ) );
+				}
+			}
+			if ( $has_badge || count( $grandchild_containers ) >= 2 ) {
+				$has_structural_child = true;
+				break;
+			}
+		}
 		$is_pricing_section = $archetype === 'pricing' && ! $inside_bento_grid && is_array( $classes ) && ( in_array( 'wpae-pricing-composition', $classes, true ) || in_array( 'wpae-generated-pricing', $classes, true ) );
 		if ( $is_pricing_section ) {
 			$settings['flex_direction'] = 'column';
@@ -9650,6 +9671,16 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
             $elements[ $index ] = $element;
             continue;
         }
+        // A section shell may hold a badge and a content shell whose own
+        // children are the repeatable cards. Do not promote those two shells
+        // into peer cards; recursion below will normalize the real card grid.
+        if ( $has_structural_child && ! $is_grid ) {
+			if ( is_array( $element['elements'] ?? null ) ) {
+				$element['elements'] = wpae_llm_apply_bento_layout( $element['elements'], $archetype, $changed, false );
+			}
+			$elements[ $index ] = $element;
+			continue;
+		}
         $child_containers = [];
         foreach ( $children as $child_index => $child ) {
             if ( is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) {
