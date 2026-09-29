@@ -722,6 +722,12 @@ $benefits_requested = wpae_llm_extract_requested_content( $benefits_message );
 check( ! in_array( 'Точная работа с пространством — Планируем каждый метр и сохраняем ощущение воздуха', $benefits_requested, true ), 'Benefits requested-content extraction retained a redundant unsplit pair line' );
 
 $faq_message = 'Создай FAQ «Частые вопросы». «Как начать?» — «Оставьте заявку, и мы согласуем встречу». «Можно работать дистанционно?» — «Да, обсуждения и согласования проводим онлайн». «Что входит в проект?» — «Планировка, концепция и согласованный комплект материалов». Сохрани точные вопросы, ответы и порядок. Адаптируй блок для телефона.';
+$faq_natural_brief = wpae_brief_ir_parse( 'FAQ: два вопроса — «Как проходит работа?» — «Сначала обсуждаем задачу, затем согласуем проект и сроки»; «Можно ли внести правки?» — «Да, изменения согласуем до финальной версии».' );
+$faq_natural_roles = array_column( (array) ( $faq_natural_brief['content'] ?? [] ), 'role' );
+check( $faq_natural_roles === [ 'faq_question', 'faq_answer', 'faq_question', 'faq_answer' ], 'FAQ parser did not pair short natural question/answer copy separated by an em dash' );
+$faq_natural_plan = wpae_design_plan_from_brief( $faq_natural_brief );
+$faq_natural_items = (array) ( $faq_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( count( $faq_natural_items ) === 2 && $faq_natural_items[0]['question_ref'] === 'faq_question' && $faq_natural_items[0]['answer_ref'] === 'faq_answer' && $faq_natural_items[1]['question_ref'] === 'faq_question_2' && $faq_natural_items[1]['answer_ref'] === 'faq_answer_2', 'FAQ natural inline pairs were not assembled into two ordered Accordion items' );
 $faq_pairs = wpae_llm_extract_faq_content( $faq_message );
 check( count( $faq_pairs ) === 3, 'FAQ parser did not extract three quoted question/answer pairs' );
 check( ( $faq_pairs[0]['label'] ?? '' ) === 'Как начать' && ( $faq_pairs[0]['content'] ?? '' ) === 'Оставьте заявку, и мы согласуем встречу', 'FAQ parser did not strip punctuation while preserving the first pair' );

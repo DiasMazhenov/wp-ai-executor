@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v3';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v4';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -338,6 +338,8 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$quote_matches = [];
 	preg_match_all( $quote_pattern, $source_text, $quote_matches, PREG_OFFSET_CAPTURE );
 	$cta_index = 0;
+	$previous_quote_inner = null;
+	$previous_quote_end = null;
 	foreach ( $quote_matches[0] ?? [] as $match_index => $full_match ) {
 		$full = (string) ( $full_match[0] ?? '' );
 		$start = (int) ( $full_match[1] ?? 0 );
@@ -361,6 +363,19 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$before = substr( $source_text, 0, $start );
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		$role = wpae_brief_ir_label_role( $prefix );
+		$gap_from_previous = $previous_quote_end !== null ? substr( $source_text, $previous_quote_end, max( 0, $start - $previous_quote_end ) ) : '';
+		$after_quote_end = $start + strlen( $full );
+		$next_quote_start_for_role = isset( $quote_matches[0][ $match_index + 1 ][1] )
+			? (int) $quote_matches[0][ $match_index + 1 ][1]
+			: strlen( $source_text );
+		$gap_to_next = substr( $source_text, $after_quote_end, max( 0, $next_quote_start_for_role - $after_quote_end ) );
+		if ( $archetype === 'faq' && $role === 'text' ) {
+			if ( is_string( $previous_quote_inner ) && preg_match( '/[?؟]\s*$/u', $previous_quote_inner ) && preg_match( '/^\s*[—–-]\s*$/u', $gap_from_previous ) ) {
+				$role = 'faq_answer';
+			} elseif ( preg_match( '/[?؟]\s*$/u', $inner ) && preg_match( '/^\s*[—–-]\s*$/u', $gap_to_next ) ) {
+				$role = 'faq_question';
+			}
+		}
 		$repeated = wpae_brief_ir_repeated_slot( $prefix );
 		$group_id = (string) ( $repeated['group_id'] ?? '' );
 		$id_override = $group_id !== '' ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial)_/', '', $role ) : '';
@@ -400,6 +415,8 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
 			];
 		}
+		$previous_quote_inner = $inner;
+		$previous_quote_end = $start + strlen( $full );
 	}
 
 	$plain_line_offset = 0;
