@@ -1,15 +1,155 @@
-# Services library template — v02.11.181 и исправление краткого prompt в v02.11.182
+# Визуальный провал Process / Pricing / CTA в v02.11.185; локальные исправления v02.11.186
 
-Срез: **2026-09-29 03:11 +05:00 (Asia/Almaty)**. Эталон не ограничен документацией: исполняемый JSON находится в `includes/elementor/imported-templates/services-photo-cards.json`, зарегистрирован в `manifest.json` как `template-services-photo-cards-v1` и включён в hash manifest `wpae-package.json`. `context.md` хранит только визуальное описание и provenance.
+Срез: **2026-09-29 15:55 +05:00 (Asia/Almaty)**. Источник — присланные public screenshots и сохранённые кадры [`docs/audits/2026-09-29-other-blocks-v185`](</Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185>). Наблюдаемые roots относятся к старой генерации; на момент повторного чтения текущие editor canvas и public page post=5214 пусты. Ничего на странице не создавалось и не сохранялось.
 
-v02.11.181 (`fd19a1d`) committed, pushed to `origin/main`, installed via WP Pusher. Existing editor page reloaded and showed `v02.11.181`. Local fixes in `includes/llm/llm.php` protect the user’s imported nested photo-card composition through library adaptation and validation. The plugin candidate is selected by the AI agent’s allowlisted library route; no direct Elementor JSON import was used.
+## Подтверждённые дефекты старых кадров
 
-Первая краткая live-генерация на post `5214` завершилась до записи: operation identity `6e0ebd79-b9ae-4086-93e4-8cd63552aded`; `plan_errors=services_items_out_of_range, services_service_item_count_out_of_range`. Это не отказ модели и не сбой write boundary: `wpae_brief_ir_parse()` с parser v2 распознавал целый Services-запрос, но регулярное выражение группировало услугу только когда она занимала отдельную строку. После запроса в одну строку grouped items оказались пустыми и DesignPlan корректно запретил запись. Никакой root не создан, Elementor canvas остался пустым; root ID, save/readback и скриншота нового дизайна нет.
+| Семейство | Старые operation/root IDs | Что видно и что сломалось |
+|---|---|---|
+| Process | `wpae-20260929013810-33227ecd` / `a5b622d` | `wpae-process-timeline-left` разложил этапы в высокую вертикальную колонку на desktop, хотя вертикальный stack был предназначен только mobile. |
+| Pricing | `wpae-20260929014918-2771c94c` / `9f70c06` | Секция потеряла вертикальную оболочку: первый тариф «Старт» занял место большого заголовка, pill оказался в том же горизонтальном потоке, что заголовок/карточки. В месячной цене перенос разделил `/мес`. |
+| CTA | `wpae-20260929020038-34f8d422` / `1efa6a7` | В заголовок и описание попали подписи полей запроса; две кнопки стали раздельными вертикальными элементами и ссылка `#projects` не сохранилась в общей URL-aware группе. |
 
-Причина устранена локально для v02.11.182 в общем `includes/llm/brief-ir.php`: парсер принимает соседние quoted service pairs в одном абзаце, сохраняет точный текст и spans, а незакрытая пара по-прежнему создаёт явную ambiguity. Parser version увеличена до v3. Regression в `tests/flex-generation-runtime.php` покрывает краткий полный inline prompt, exact copy/order, успешный typed plan и явную ambiguity; `tests/design-pipeline-contract.php` фиксирует parser v3.
+Сохранённые неудачные кадры — **historical failure evidence, не текущий live render**. Их PNG canvas `1253×705`; фактический `window.innerWidth/innerHeight` для этих кадров не был сохранён отдельно, поэтому CSS viewport задним числом не утверждается.
 
-Локальные проверки v182-кандидата: flex runtime 480 checks, design pipeline 261 checks, Node 6/6, catalog 158 manifest entries / 156 retrievable previews, package probe 249 files / 0 hash mismatches, PHP syntax checks и `git diff --check` — PASS. Source v182 ещё не committed/pushed/installed; live generation и визуальная приёмка нового шаблона не пройдены. В открытом editor canvas пуст и кнопка публикации отключена; страницу после отказа не сохранял.
+### Process — public, прежняя генерация
 
+![Process v185 — failure evidence](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185/process-public-desktop.png)
+
+[Открыть PNG — Process v185](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185/process-public-desktop.png)
+
+### Pricing — public, прежняя генерация
+
+![Pricing v185 — failure evidence](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185/pricing-public-desktop.png)
+
+[Открыть PNG — Pricing v185](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185/pricing-public-desktop.png)
+
+### CTA — public, прежняя генерация
+
+![CTA v185 — failure evidence](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185/cta-public-desktop-failed.png)
+
+[Открыть PNG — CTA v185](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-other-blocks-v185/cta-public-desktop-failed.png)
+
+## Исправления в source и регрессии
+
+- `wpae_llm_process_timeline_layout()` теперь отличает вертикальный stack на mobile от намеренно вертикального desktop. Финальный process write contract покрыт behavioral check: desktop row, mobile column; явный desktop vertical по-прежнему остаётся vertical.
+- `wpae_llm_extract_section_title()` не принимает название первого тарифного плана за section heading, если запрос не размечает заголовок явно. `wpae_llm_apply_bento_layout()` сохраняет pricing root как column shell и карточный grid как row; semantic badge в начале секции распознаётся как часть shell.
+- CTA-классификатор принимает отдельную строку `CTA`; parser сохраняет роль, label и URL из `->`. Quality gate отклоняет видимые поля `Заголовок секции`, `Описание секции`, `Основная кнопка`, `Вторичная кнопка`; production-path восстанавливает semantic fallback и помещает обе CTA в одну native responsive Flex-группу.
+- Regression проверяет компилированные структуры и production CTA write boundary, а не только совпадение строк.
+
+Локальные проверки после исправлений: `tests/flex-generation-runtime.php` — **497 checks PASS**; `tests/design-pipeline-contract.php` — **261 checks PASS**; `tests/elementor-patch-guard.php` — **PASS**; `node --test tests/*.test.js` — **6/6 PASS**; PHP lint изменённых файлов — **PASS**; `docs/audits/2026-09-12/package-probe.php` — **249 package files, 0 hash mismatches**.
+
+## Текущая live-граница и версии
+
+- Source до этого патча: HEAD `0368a0e74281dec4482b527adad33c35b436a5f8`, v02.11.185. Source после патча подготовлен как v02.11.186; изменения ещё не закоммичены/не опубликованы на момент этого отчёта.
+- WordPress Settings показывает установленную v02.11.185. Открытый editor остаётся на URL с `wpae_release=185`; его canvas пуст и кнопка Publish отключена. Public страница post=5214 также пустая. Поэтому три старых operation/root IDs выше не являются текущими roots и не были изменены.
+- `git ls-remote origin refs/heads/main` не завершился: DNS lookup `github.com` вернул `Could not resolve host`. Remote tip, push, WP Pusher update и live acceptance v186 пока не подтверждены.
+- Новые live roots/screenshots, save/reload, Vision и итоговый layout после source-патча — **NOT RUN**. Старые PNG выше подтверждают только визуальный FAIL v185.
+
+| Проверка | Статус |
+|---|---|
+| Process desktop/mobile layout regression | PASS local; live v186 NOT RUN |
+| Pricing shell/card-grid regression | PASS local; live v186 NOT RUN |
+| CTA text/URL/group regression | PASS local; live v186 NOT RUN |
+| Состояние post=5214 при последнем read-only осмотре | editor/public пусты; запись не выполнялась |
+| Source v02.11.186 package/hash | PASS local |
+| Push / WP Pusher / editor v186 | BLOCKED: GitHub host DNS недоступен; повтор после доступности сети не выполнялся |
+| Vision, public mobile, screenshot после v186 save/reload | NOT RUN |
+
+---
+
+# Services — исправление расхождения с визуальным эталоном, v02.11.185
+
+Срез: **2026-09-29 05:58 +05:00 (Asia/Almaty)**. Проверялась существующая страница post=5214. Новые страницы, drafts и roots не создавались.
+
+## Что было не так
+
+Снимок пользователя был сделан в старой editor-вкладке с URL wpae_release=180. В ней оставался Services root 672fbb9 с нулевыми боковыми полями: ширина root в preview составляла 1010 CSS px, pill занимал 1010 px, то есть всю ширину секции. Это объясняет растянутый pill и слишком прижатую к краям композицию на присланном кадре. Старую вкладку не перезагружал и не менял.
+
+В свежей вкладке v185 после reload та же секция уже имела боковые поля. В DOM обеих редакторских моделей размер текста карточек считался 22 px; после reload заголовки и содержимое помещались в карточки. Отдельную ошибку размера шрифта повторно подтвердить не удалось. Поэтому исправление ограничено доказанной причиной — сброшенными полями внешнего Services root.
+
+## Шаблон и исправление кода
+
+Сам эталон хранится в плагине, а не в context.md: includes/elementor/imported-templates/services-photo-cards.json; manifest ID template-services-photo-cards-v1; файл включён в wpae-package.json. context.md фиксирует его происхождение, а не заменяет JSON.
+
+В общей функции includes/llm/llm.php, wpae_llm_normalize_library_layout(), структурные контейнеры раньше теряли горизонтальный padding. Исправление сохраняет padding для верхнего контейнера archetype Services и продолжает нормализовать прочие структурные контейнеры. Параметры исходного шаблона подтверждены behavioral regression: desktop 4.5rem, tablet 0, mobile 2rem по бокам. Проверка добавлена в tests/flex-generation-runtime.php.
+
+## Live repair без нового root
+
+В редакторе через существующий selected-root patch flow обновлён только root 672fbb9. UI диагностики: команда patch_elements, post_id=5214, три patch-операции, HTTP 200, operation ID wpae-patch-f5248df45d986835. Первый OpenRouter запрос оказался недоступен; UI выполнил один автоматический повтор, который завершился записью. Диагностика связывает запись и read-back с durable operation; отдельный GET ledger endpoint в этом срезе не вызывался.
+
+Состав страницы после reload сохранён: root 672fbb9; pill f39a08e; карточки 3c2fc2e, b12f025, c01b6c0. Новых roots не добавлено, удалений и изменений соседних roots не выполнялось. Elementor Publish отключён после reload.
+
+Точный content остался прежним:
+- Стратегия проекта — Формулируем задачу и согласуем план работ.
+- Архитектура и дизайн — Разрабатываем решение под заданный контекст.
+- Сопровождение — Проверяем соответствие согласованному проекту.
+
+## DOM и render после reload
+
+Public URL: https://mazhenov.kz/pricing-contract-live-v123/. CSS viewport 1203×923. Services root занимает 1203×645 CSS px с padding 72 px по сторонам. Три карточки расположены в desktop row, каждая около 339.7×338.6 px, gap 20 px. Computed background каждой — белый; border — #d1d5db; radius — 16 px; card heading — 22 px. Все три изображения загружены, alt присутствует. Exact copy сохранён. documentElement.scrollWidth равен clientWidth 1203; горизонтального overflow нет.
+
+Editor mobile после reload: CSS viewport iframe 360×632; root шириной 345 px и высотой 1218.2 px; боковые поля 32 px; все карточки шириной 281 px и сложены вертикально на y=147, 506.7 и 866.5 px. documentElement.scrollWidth и clientWidth равны 345. Два кадра editor preview покрывают весь блок.
+
+Public mobile — BLOCKED. Документированный Browser Use viewport override на 390×844 не изменил window.innerWidth публичной страницы: после reload оно осталось 1203×923. Временный override затем сброшен. Editor mobile не засчитывается за public mobile.
+
+В чате Elementor показан advisory Vision score 95 и confidence 98%; это не operation-bound Vision review.
+
+## Скриншоты после save/reload
+
+PNG получены из свежих Browser Use JPEG bytes через sips; signatures и форматы проверены file, размеры проверены sips, каждый файл открыт и визуально проверен. CSS viewport указан отдельно от canvas PNG.
+
+### Public desktop
+
+Источник: public page; post=5214; root=672fbb9; operation wpae-patch-f5248df45d986835; CSS viewport 1203×923; PNG canvas 1144×923. WordPress admin bar и плавающий чат видны; блок не перекрыт.
+
+![Services v185 — public desktop, post 5214, root 672fbb9](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-public-desktop.png)
+
+[Открыть PNG — public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-public-desktop.png)
+
+### Elementor editor mobile — верх блока
+
+Источник: editor preview; post=5214; root=672fbb9; operation wpae-patch-f5248df45d986835; CSS viewport 360×632; scrollY=0; PNG canvas 1280×720. Виден верх секции и карточка 1.
+
+![Services v185 — editor mobile, кадр 1](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-top.png)
+
+[Открыть PNG — editor mobile, кадр 1](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-top.png)
+
+### Elementor editor mobile — карточки 2 и 3
+
+Источник, post/root/operation и CSS viewport те же; scrollY=632; PNG canvas 1280×720. В кадре видны карточки 2 и 3 целиком.
+
+![Services v185 — editor mobile, кадр 2](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-middle.png)
+
+[Открыть PNG — editor mobile, кадр 2](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-middle.png)
+
+## Версии и проверки
+
+- Source HEAD: 0368a0e74281dec4482b527adad33c35b436a5f8; plugin source version v02.11.185.
+- Push в origin/main завершился успешно при выпуске. Последующая попытка read-only git ls-remote не завершилась из-за DNS-ошибки github.com, поэтому актуальный remote tip отдельно не подтверждён.
+- WP Pusher установил v02.11.185; после обычного reload существующий editor показал inline version v02.11.185. Старая вкладка release=180 оставлена нетронутой.
+- PHP lint: includes/llm/llm.php, tests/flex-generation-runtime.php, wp-ai-executor.php — PASS.
+- tests/flex-generation-runtime.php — 483 checks PASS.
+- tests/design-pipeline-contract.php — 261 checks PASS.
+- tests/elementor-patch-guard.php — PASS.
+- node --test tests/*.test.js — 6/6 PASS.
+- package SHA-256 manifest — 249 files, 0 mismatches.
+- git diff --check — PASS до документного обновления; итоговый результат проверен после записи отчёта отдельно.
+
+| Область | Статус |
+|---|---|
+| Причина full-width pill / тесной композиции | CONFIRMED: старая вкладка v180 показывала 0px padding и pill шириной 100% root |
+| Runtime исправление и regression | PASS |
+| WP Pusher / inline editor v185 | PASS |
+| Targeted operation / новый root | PASS: один существующий root изменён; новый root не создан |
+| Save/reload, точный текст, изображения | PASS |
+| Public desktop DOM и screenshot | PASS |
+| Editor mobile stack и screenshot | PASS |
+| Public mobile | BLOCKED: документированный viewport override не изменил public innerWidth |
+| Vision | ADVISORY ONLY |
+| Новый heading/font-size defect | NOT REPRODUCED: current DOM card heading 22px, текст помещается |
+
+---
 # Исторический handoff — Services live snapshot v02.11.180
 
 Фактический срез: **2026-09-29 01:47 +05:00 (Asia/Almaty)**. Работа выполнена на существующем WordPress post `5214`; новые pages/drafts не создавались.

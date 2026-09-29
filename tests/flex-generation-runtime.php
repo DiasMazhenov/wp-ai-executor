@@ -308,6 +308,32 @@ check( ( $two_cta_hero_buttons[0]['settings']['text'] ?? '' ) === 'Обсуди�
 $natural_hero_message = 'Создай на пустой странице hero-блок для архитектурной студии «Тихая форма». Используй эти точные тексты: надзаголовок «АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ», заголовок «Пространство для вашей жизни», описание «Проектируем спокойные, светлые интерьеры с вниманием к каждой детали». Основная кнопка «Обсудить проект» со ссылкой #contact; вторичная «Смотреть проекты» со ссылкой #projects. Сделай композицию 40/60, выравнивание по центру и адаптацию для телефона.';
 $natural_ctas = wpae_llm_extract_requested_ctas( $natural_hero_message );
 check( count( $natural_ctas ) === 2 && ( $natural_ctas[0]['text'] ?? '' ) === 'Обсудить проект' && ( $natural_ctas[0]['url'] ?? '' ) === '#contact' && ( $natural_ctas[1]['text'] ?? '' ) === 'Смотреть проекты' && ( $natural_ctas[1]['url'] ?? '' ) === '#projects', 'Natural-language hero CTA parser lost a role, label, or URL' );
+$standalone_cta_message = "CTA\nЗаголовок секции: «Обсудим проект»\nОписание секции: «Опишите задачу и выберите следующий шаг»\nОсновная кнопка: «Связаться» -> #contact\nВторичная кнопка: «Смотреть проекты» -> #projects";
+$standalone_ctas = wpae_llm_extract_requested_ctas( $standalone_cta_message );
+check( wpae_llm_detect_block_archetype( $standalone_cta_message ) === 'cta' && wpae_brief_ir_archetype( $standalone_cta_message ) === 'cta', 'Standalone CTA with two links was routed into the hero archetype' );
+check( wpae_llm_extract_section_title( $standalone_cta_message ) === 'Обсудим проект' && array_column( $standalone_ctas, 'url' ) === [ '#contact', '#projects' ], 'CTA field labels or arrow targets were lost during prompt parsing' );
+$standalone_cta_action = wpae_llm_build_fallback_action( $standalone_cta_message, 42 );
+$standalone_cta_copy = wpae_llm_collect_action_content( (array) ( $standalone_cta_action['elements'] ?? [] ) );
+$standalone_cta_root = (array) ( $standalone_cta_action['elements'][0] ?? [] );
+$standalone_cta_group = [];
+foreach ( (array) ( $standalone_cta_root['elements'] ?? [] ) as $cta_child ) {
+	if ( is_array( $cta_child ) && str_contains( (string) ( $cta_child['settings']['_css_classes'] ?? '' ), 'wpae-cta-actions' ) ) { $standalone_cta_group = $cta_child; }
+}
+$standalone_cta_buttons = (array) ( $standalone_cta_group['elements'] ?? [] );
+check( str_contains( $standalone_cta_copy, 'Обсудим проект' ) && str_contains( $standalone_cta_copy, 'Опишите задачу и выберите следующий шаг' ) && ! str_contains( $standalone_cta_copy, 'Заголовок секции:' ) && ! str_contains( $standalone_cta_copy, 'Описание секции:' ), 'Standalone CTA published field labels or lost the exact requested copy' );
+check( count( $standalone_cta_buttons ) === 2 && ( $standalone_cta_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $standalone_cta_group['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'Standalone CTA did not compile both native buttons into a responsive Flex group' );
+check( ( $standalone_cta_buttons[0]['settings']['text'] ?? '' ) === 'Связаться' && ( $standalone_cta_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $standalone_cta_buttons[1]['settings']['text'] ?? '' ) === 'Смотреть проекты' && ( $standalone_cta_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects' && ( $standalone_cta_buttons[0]['settings']['background_color'] ?? '' ) !== 'transparent' && ( $standalone_cta_buttons[1]['settings']['background_color'] ?? '' ) === 'transparent', 'Standalone CTA lost button order, URL, or primary/secondary styling' );
+$leaked_cta_provider = [ container_node( 'leaked-cta-provider', [ 'container_type' => 'flex' ], [
+	widget( 'leaked-cta-heading', 'heading', [ 'title' => 'Заголовок секции: «Обсудим проект»' ] ),
+	widget( 'leaked-cta-copy', 'text-editor', [ 'editor' => 'Описание секции: «Опишите задачу и выберите следующий шаг»' ] ),
+	widget( 'leaked-cta-primary', 'button', [ 'text' => 'Основная кнопка: «Связаться»', 'link' => [ 'url' => '#contact' ] ] ),
+	widget( 'leaked-cta-secondary', 'button', [ 'text' => 'Вторичная кнопка: «Смотреть проекты»', 'link' => [ 'url' => '#projects' ] ] ),
+] ) ];
+$leaked_cta_quality = wpae_llm_provider_composition_quality( $standalone_cta_message, $leaked_cta_provider, 'cta' );
+check( empty( $leaked_cta_quality['ok'] ) && in_array( 'CTA field labels were published as visible copy', (array) $leaked_cta_quality['failures'], true ), 'CTA provider tree with field labels passed composition quality' );
+$leaked_cta_fallback = wpae_llm_build_fallback_action( $standalone_cta_message, 42 );
+$leaked_cta_fallback_copy = wpae_llm_collect_action_content( (array) ( $leaked_cta_fallback['elements'] ?? [] ) );
+check( str_contains( $leaked_cta_fallback_copy, 'Обсудим проект' ) && str_contains( $leaked_cta_fallback_copy, 'Опишите задачу и выберите следующий шаг' ) && ! preg_match( '/(?:Заголовок|Описание) секции:|(?:Основная|Вторичная) кнопка:/u', $leaked_cta_fallback_copy ), 'CTA recovery fallback leaked field labels instead of publishing the semantic content' );
 $natural_hero_copy = wpae_llm_extract_hero_copy( $natural_hero_message );
 check( ( $natural_hero_copy['title'] ?? '' ) === 'Пространство для вашей жизни' && ( $natural_hero_copy['body'] ?? '' ) === 'Проектируем спокойные, светлые интерьеры с вниманием к каждой детали' && ( $natural_hero_copy['visual'] ?? '' ) === 'АРХИТЕКТУРА ПОВСЕДНЕВНОСТИ', 'Natural-language hero copy parser did not preserve labeled eyebrow, title, and body' );
 $natural_hero_action = wpae_llm_build_fallback_action( $natural_hero_message, 42 );
@@ -866,6 +892,13 @@ $find_price_first_runtime_grid( $price_first_runtime_elements );
 $price_first_runtime_cards = array_values( array_filter( (array) ( $price_first_runtime_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
 check( count( $price_first_runtime_cards ) === 3 && ( $price_first_runtime_grid['settings']['flex_wrap'] ?? '' ) === 'nowrap' && ( $price_first_runtime_grid['settings']['flex_wrap_mobile'] ?? '' ) === 'wrap', 'Production pricing contract allowed the three-card grid to wrap on desktop' );
 check( count( array_filter( $price_first_runtime_cards, static fn( $card ): bool => ( $card['settings']['background_color'] ?? '' ) === '#ffffff' && (float) ( $card['settings']['width']['size'] ?? 0 ) === 30.0 ) ) === 3, 'Production pricing contract did not preserve neutral 30 percent cards' );
+$price_first_runtime_root = (array) ( $price_first_runtime_elements[0] ?? [] );
+$price_first_runtime_root_classes = preg_split( '/\s+/', trim( (string) ( $price_first_runtime_root['settings']['_css_classes'] ?? '' ) ) );
+check( ( $price_first_runtime_root['settings']['flex_direction'] ?? '' ) === 'column' && ! in_array( 'wpae-bento-grid', $price_first_runtime_root_classes, true ) && ( $price_first_runtime_grid['settings']['flex_direction'] ?? '' ) === 'row', 'Pricing visual normalizer turned the full section into a horizontal grid instead of preserving a vertical shell around the tier row' );
+$no_title_pricing_message = 'Тарифы: «Старт» — «Для быстрой задачи» — «от 50 000 ₸»; «Проект» — «Для большого проекта» — «от 150 000 ₸».';
+$no_title_pricing_action = wpae_llm_build_fallback_action( $no_title_pricing_message, 42 );
+$no_title_pricing_json = (string) wp_json_encode( $no_title_pricing_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+check( wpae_llm_extract_section_title( $no_title_pricing_message ) === '' && str_contains( $no_title_pricing_json, '"title":"Тарифы"' ) && ! str_contains( $no_title_pricing_json, '"title":"Старт","header_size":"h2"' ), 'Pricing without an explicit section heading promoted the first tier to the oversized section title' );
 
 $multiline_pricing_message = "Создай блок: «Выберите формат работы» с бейджем: «ТАРИФЫ».\n«Старт» — «Для небольшой задачи: быстро и понятно.» — «от 50 000 ₸» — кнопка «Выбрать Старт», ссылка #start.\n«Проект» — «Для комплексной работы, от идеи до результата?» — «от 150 000 ₸» — кнопка «Обсудить проект», ссылка #project.\n«Поддержка» — «Для регулярных задач и развития проекта.» — «от 80 000 ₸/мес» — кнопка «Подключить поддержку», ссылка #support.";
 $multiline_pricing_contract = wpae_llm_extract_pricing_content( $multiline_pricing_message );
@@ -957,6 +990,14 @@ check( array_column( $detailed_steps, 'label' ) === [ 'Замысел', 'Съё�
 $content_only_process_message = 'Создай горизонтальный блок «Как мы работаем» с бейджем «ПРОЦЕСС». Четыре этапа строго в таком порядке: «Замысел», «Съёмка», «Монтаж», «Публикация». Между этапами используй native Divider, на телефоне расположи карточки вертикально.';
 $content_only_process_steps = wpae_llm_process_timeline_steps( $content_only_process_message );
 check( array_column( $content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Quoted process shell labels were incorrectly promoted to timeline cards' );
+$mobile_stack_process_message = 'Создай блок процесса «Как мы работаем». На desktop покажи этапы в ряд; на mobile расположи карточки вертикально.';
+$mobile_stack_process = wpae_llm_build_process_timeline( wpae_llm_process_timeline_steps( $mobile_stack_process_message ), 'mobile-stack-process', wpae_llm_process_timeline_layout( $mobile_stack_process_message ) );
+check( wpae_llm_process_timeline_layout( $mobile_stack_process_message ) === 'horizontal' && ( $mobile_stack_process['elements'][2]['settings']['flex_direction'] ?? '' ) === 'row' && ( $mobile_stack_process['elements'][2]['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'Mobile vertical stacking instruction incorrectly made the desktop process timeline vertical' );
+$mobile_stack_final_changed = 0;
+$mobile_stack_final = wpae_llm_enforce_process_timeline_contract( [ $mobile_stack_process ], $mobile_stack_process_message, $mobile_stack_final_changed );
+check( ( $mobile_stack_final[0]['elements'][2]['settings']['flex_direction'] ?? '' ) === 'row' && ( $mobile_stack_final[0]['elements'][2]['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'Final process write contract reversed the desktop row/mobile stack layout' );
+$desktop_vertical_process_message = 'Создай блок процесса «Как мы работаем». На desktop расположи этапы вертикально.';
+check( wpae_llm_process_timeline_layout( $desktop_vertical_process_message ) === 'left', 'Explicit desktop vertical process layout was overridden by the horizontal default' );
 $generated_process_message = 'Создай блок «Как мы работаем». Над заголовком добавь бейдж «ПРОЦЕСС». Этапы: «Замысел», «Съёмка», «Монтаж», «Публикация». Добавь к каждому этапу короткое описание.';
 $generated_process_steps = wpae_llm_process_timeline_steps( $generated_process_message );
 check( array_column( $generated_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Generated process labels changed order or content' );
@@ -1868,6 +1909,11 @@ $services_library_fixture = [
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services' ] ],
 	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 0, 'bundled_fixture_id' => 'template-services-photo-cards-v1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
 ];
+$leaked_cta_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'elements' => $leaked_cta_provider ];
+$leaked_cta_route = $run_services_route( $standalone_cta_message, [ provider_reply( wp_json_encode( $leaked_cta_provider_action, JSON_UNESCAPED_UNICODE ) ) ], [], 'cta-label-leak-identity', false, 'off', 'off' );
+$leaked_cta_written_copy = wpae_llm_collect_action_content( [ (array) $leaked_cta_route['written'] ] );
+check( ! empty( $leaked_cta_route['response']['ok'] ) && ( $leaked_cta_route['response']['diagnostics']['action_path'] ?? '' ) === 'fallback' && $leaked_cta_route['calls'] === 1 && $leaked_cta_route['writes'] === 1, 'A malformed CTA provider composition did not recover through one existing write boundary' );
+check( str_contains( $leaked_cta_written_copy, 'Обсудим проект' ) && str_contains( $leaked_cta_written_copy, 'Связаться' ) && str_contains( $leaked_cta_written_copy, 'Смотреть проекты' ) && ! preg_match( '/(?:Заголовок|Описание) секции:|(?:Основная|Вторичная) кнопка:/u', $leaked_cta_written_copy ), 'Production CTA route wrote visible instruction labels instead of the deterministic semantic fallback' );
 $services_ambiguous_route = $run_services_route( $services_message . "\nУслуга 4: «Дополнение» — описание без закрытой пары", [], $services_library_fixture, 'services-ambiguous-identity' );
 check( ( $services_ambiguous_route['error']['code'] ?? '' ) === 'wpae_design_plan_rejected' && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'Изменения не записаны' ) && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'services-ambiguous-identity' ), 'Production route explains ambiguous Services input and exposes the request identity before provider/write' );
 check( $services_ambiguous_route['calls'] === 0 && $services_ambiguous_route['writes'] === 0 && $services_ambiguous_route['roots'] === array_column( $legacy_page, 'id' ) && ( $services_ambiguous_route['error']['data']['details']['operation_identity'] ?? '' ) === 'services-ambiguous-identity', 'Ambiguous Services input cannot call a provider or cross the write boundary' );

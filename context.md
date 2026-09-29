@@ -1,20 +1,50 @@
 # WP AI Executor — context
 
-Последнее обновление: **2026-09-29 03:11 +05:00 (Asia/Almaty)**.
+Последнее обновление: **2026-09-29 05:58 +05:00 (Asia/Almaty)**.
 
 ## Предпочтение к generation prompts
 
 Пиши коротко и естественно: что создать, точный пользовательский контент и только важный видимый результат. Не перегружай запрос внутренними названиями полей, схемами, маршрутизацией, write-boundary, множеством запретов и повторяющимися требованиями. Такие гарантии обеспечивает pipeline плагина, а не текст prompt.
 
-## Services — пользовательский визуальный эталон
+## Services — эталон хранится в плагине
 
-Пользовательский screenshot и экспортированный root `3dc3822` от 2026-09-29 задают нужную композицию: pill-бейдж «УСЛУГИ», отдельный заголовок секции «Наши услуги», затем три равные desktop-карточки. В каждой карточке: широкое native-фото сверху, горизонтальная строка «иконка + тёмное название», ниже приглушённое описание; светлая поверхность, тонкая серая рамка, скругление и мягкая тень. Это визуальный ориентир, а не подтверждение свежего save/reload или mobile render.
+Канонический исполняемый шаблон находится в библиотеке плагина: includes/elementor/imported-templates/services-photo-cards.json; manifest ID — template-services-photo-cards-v1; файл включён в SHA-256 package manifest wpae-package.json. context.md хранит описание и результаты, но не сам шаблон.
 
-Исполняемый шаблон находится в библиотеке плагина: `includes/elementor/imported-templates/services-photo-cards.json`, catalog id `template-services-photo-cards-v1` в `includes/elementor/imported-templates/manifest.json`, SHA-256 указан в `wpae-package.json`. Этот JSON, а не `context.md`, является шаблоном. v02.11.181 (`fd19a1d`) отправлена в `origin/main` и установлена через WP Pusher; после reload текущий editor показывает v181. Первая короткая live-генерация отклонена до записи: `wpae-6e0ebd79-b9ae-4086-93e4-8cd63552aded`, local BriefIR v2 не сгруппировал три услуги без переносов строк. Root не создан; editor canvas остаётся пустым.
+Эталон пользователя: pill «УСЛУГИ», отдельный heading «Наши услуги», три равные desktop-карточки; native Image сверху, затем иконка рядом с тёмным названием и приглушённое описание; светлая поверхность, тонкая серая рамка, скругление, мягкая тень. На mobile карточки складываются вертикально.
 
-Исходник v02.11.182 содержит исправление BriefIR для inline-пар «Услуга N: название — описание», с сохранением provenance и ambiguity gate. Изменение пока локальное; выпуск и повторная live-генерация v182 не подтверждены. Скриншоты дизайна для не записанной операции отсутствуют.
+## Текущий live Services repair — v02.11.185
 
-В переданном JSON описание второй карточки ошибочно повторяет первое. Для генерации сохранять ранее заданную точную пару для «Архитектура и дизайн»: «Разрабатываем решение под заданный контекст». Не переносить ошибочную копию текста вместе со стилем и не изменять текущий live root без отдельной задачи.
+- Source HEAD: 0368a0e74281dec4482b527adad33c35b436a5f8, branch main. Runtime commit запушен в origin/main; WP Pusher установил v02.11.185; после reload существующий editor подтвердил inline-конфигурацию v02.11.185. Повторный git ls-remote в текущем срезе не завершился: DNS не разрешил github.com.
+- Подтверждённая причина скриншота пользователя: старая editor-вкладка с URL wpae_release=180 всё ещё загружала root 672fbb9 с нулевыми боковыми padding. Ширина preview root — 1010 CSS px, pill — 1010 px (100% root). Эта вкладка не перезагружалась и не изменялась.
+- В includes/llm/llm.php исправлено общее правило wpae_llm_normalize_library_layout(): структурные контейнеры по умолчанию теряли horizontal padding; верхний Services root теперь сохраняет эталонные значения. Regression находится в tests/flex-generation-runtime.php. Plugin template остаётся источником композиции.
+- Через existing selected-root WPAE patch path обновлён только root 672fbb9; operation ID wpae-patch-f5248df45d986835, распознаны 3 patch-операции, HTTP 200. Новых roots не добавлено. Card roots: 3c2fc2e, b12f025, c01b6c0; pill: f39a08e.
+- После reload editor и public DOM показывают прежний root, три заданные пары текста и три native images с alt. Publish в редакторе неактивен. Точный текст: «Стратегия проекта» / «Формулируем задачу и согласуем план работ»; «Архитектура и дизайн» / «Разрабатываем решение под заданный контекст»; «Сопровождение» / «Проверяем соответствие согласованному проекту».
+- Public desktop CSS viewport 1203×923: root 1203×645 CSS px, padding 72 px; карточки примерно 339.7×338.6 px, gap 20 px, белые, border #d1d5db, radius 16 px, headings 22 px; все фото загружены и имеют alt; document scrollWidth равен viewport. Отдельное переполнение heading в текущем DOM не воспроизведено.
+- Editor mobile CSS viewport внутри preview — 360×632. Root шириной 345 px с боковыми полями 32 px; карточки width 281 px, последовательно стоят на y=147, 506.7 и 866.5 CSS px; scrollWidth=clientWidth=345. Это editor mobile, не public mobile.
+- Public mobile BLOCKED: документированный Browser Use viewport override 390×844 не изменил фактический window.innerWidth=1203 после reload; временный override сброшен. Не считать editor preview доказательством public mobile.
+- Vision показал advisory score 95/confidence 98% в чате. Operation-bound Vision review не подтверждён.
+
+### Свежие screenshots после patch и reload
+
+Public desktop: post 5214, root 672fbb9, operation wpae-patch-f5248df45d986835; CSS viewport 1203×923; PNG 1144×923; public source. В кадре WordPress admin bar и чат, сам блок не перекрыт.
+
+![Services v185 — public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-public-desktop.png)
+
+[Открыть public desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-public-desktop.png)
+
+Editor mobile, кадр 1: post 5214, root 672fbb9, operation wpae-patch-f5248df45d986835; preview CSS viewport 360×632; PNG canvas 1280×720; editor source; scrollY=0.
+
+![Services v185 — editor mobile, верх блока](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-top.png)
+
+[Открыть editor mobile PNG — кадр 1](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-top.png)
+
+Editor mobile, кадр 2: тот же post/root/operation и CSS viewport; scrollY=632 показывает карточки 2 и 3 целиком.
+
+![Services v185 — editor mobile, карточки 2 и 3](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-middle.png)
+
+[Открыть editor mobile PNG — кадр 2](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-29-services-v185/services-editor-mobile-middle.png)
+
+Runtime проверки после release: PHP lint на includes/llm/llm.php, tests/flex-generation-runtime.php и wp-ai-executor.php — PASS; flex runtime 483 checks, design pipeline contract 261 checks, Elementor patch guard PASS, Node 6/6, package hashes 249 файлов / 0 mismatches, git diff --check PASS.
 
 ## Исторический live Services на post=5214 — snapshot v02.11.180
 
