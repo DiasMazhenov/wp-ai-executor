@@ -288,6 +288,14 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
     $cta_requirements = wpae_llm_extract_requested_ctas( $message );
     $non_cta_units = array_values( array_filter( $units, static fn( $unit ): bool => ! wpae_llm_is_cta_copy( (string) $unit ) ) );
     $expected_copy_slots = count( $non_cta_units ) + count( $cta_requirements );
+    if ( $archetype === 'cta' && function_exists( 'wpae_brief_ir_parse' ) ) {
+        $brief = wpae_brief_ir_parse( $message );
+        $copy_roles = [ 'title', 'body', 'eyebrow', 'cta', 'cta_2' ];
+        $expected_copy_slots = count( array_filter(
+            (array) ( $brief['content'] ?? [] ),
+            static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), $copy_roles, true )
+        ) );
+    }
     $faq_accordion_covers_content = $archetype === 'faq' && $counts['accordion_items'] >= 2;
     if ( ! empty( $units ) && $counts['widgets'] < 3 && ! $faq_accordion_covers_content ) {
         $failures[] = 'provider returned too few native widgets';
@@ -1605,6 +1613,11 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     $semantic_scope = $plan_copy !== '' ? 'explicit_content' : 'scaffold_only';
     if ( $semantic_scope === 'explicit_content' ) {
         foreach ( wpae_llm_content_archetype_markers() as $candidate_archetype => $marker ) {
+            // A generic "следующий шаг" is common CTA copy, not evidence that
+            // the generated section is an unrelated process/timeline block.
+            if ( $archetype === 'cta' && $candidate_archetype === 'process' ) {
+                $marker = '/\b(процесс\w*|этап\w*|таймлайн\w*|process|timeline)\b/iu';
+            }
             $plan_has_marker = (bool) preg_match( $marker, $plan_copy );
             if ( ! $plan_has_marker && preg_match( $marker, $tree_copy ) && $candidate_archetype !== $archetype ) {
                 $semantic_conflicts[] = 'unrequested ' . $candidate_archetype . ' semantics appear in ' . $archetype . ' composition';

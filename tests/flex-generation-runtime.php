@@ -358,6 +358,19 @@ $leaked_cta_provider = [ container_node( 'leaked-cta-provider', [ 'container_typ
 ] ) ];
 $leaked_cta_quality = wpae_llm_provider_composition_quality( $standalone_cta_message, $leaked_cta_provider, 'cta' );
 check( empty( $leaked_cta_quality['ok'] ) && in_array( 'CTA field labels were published as visible copy', (array) $leaked_cta_quality['failures'], true ), 'CTA provider tree with field labels passed composition quality' );
+$natural_cta_message = 'Секция призыва к действию: «Обсудим проект». Текст: «Опишите задачу». Основная кнопка «Связаться» → #contact. Вторичная кнопка «Проекты» → #projects.';
+$natural_cta_provider = container_node( 'natural-cta-root', [ 'container_type' => 'flex' ], [
+	widget( 'natural-cta-heading', 'heading', [ 'title' => 'Обсудим проект' ] ),
+	widget( 'natural-cta-body', 'text-editor', [ 'editor' => 'Опишите задачу' ] ),
+	widget( 'natural-cta-primary', 'button', [ 'text' => 'Связаться', 'link' => [ 'url' => '#contact' ] ] ),
+	widget( 'natural-cta-secondary', 'button', [ 'text' => 'Проекты', 'link' => [ 'url' => '#projects' ] ] ),
+] );
+$natural_cta_quality = wpae_llm_provider_composition_quality( $natural_cta_message, [ $natural_cta_provider ], 'cta' );
+check( ! empty( $natural_cta_quality['ok'] ) && (int) ( $natural_cta_quality['expected_copy_slots'] ?? 0 ) === 4, 'CTA quality gate counted instruction fragments instead of its four parsed copy roles: ' . wp_json_encode( [ $natural_cta_quality, wpae_brief_ir_parse( $natural_cta_message )['content'] ?? [] ], JSON_UNESCAPED_UNICODE ) );
+$natural_cta_plan = wpae_llm_content_plan( $natural_cta_message, 'cta' );
+$natural_cta_fallback = wpae_llm_build_fallback_action( $natural_cta_message, 42 );
+$natural_cta_audit = wpae_llm_content_plan_audit( $natural_cta_plan, (array) ( $natural_cta_fallback['elements'] ?? [] ) );
+check( ! empty( $natural_cta_audit['ok'] ), 'CTA plan audit treated generic next-step copy as an unrelated process section: ' . wp_json_encode( $natural_cta_audit['failures'] ?? [], JSON_UNESCAPED_UNICODE ) );
 $leaked_cta_fallback = wpae_llm_build_fallback_action( $standalone_cta_message, 42 );
 $leaked_cta_fallback_copy = wpae_llm_collect_action_content( (array) ( $leaked_cta_fallback['elements'] ?? [] ) );
 check( str_contains( $leaked_cta_fallback_copy, 'Обсудим проект' ) && str_contains( $leaked_cta_fallback_copy, 'Опишите задачу и выберите следующий шаг' ) && ! preg_match( '/(?:Заголовок|Описание) секции:|(?:Основная|Вторичная) кнопка:/u', $leaked_cta_fallback_copy ), 'CTA recovery fallback leaked field labels instead of publishing the semantic content' );
