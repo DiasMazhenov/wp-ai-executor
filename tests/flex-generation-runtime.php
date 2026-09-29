@@ -849,12 +849,28 @@ $inline_pricing_action = wpae_llm_build_fallback_action( $inline_pricing_message
 $inline_pricing_fidelity = wpae_llm_content_fidelity( $inline_pricing_message, $inline_pricing_action['elements'] );
 check( ! empty( $inline_pricing_fidelity['ok'] ), 'Inline quoted pricing fallback failed exact content fidelity' );
 $inline_pricing_json = (string) wp_json_encode( $inline_pricing_action['elements'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+$inline_direct_changed = 0;
+$inline_direct_layout = wpae_llm_build_pricing_pair_layout( [], $inline_pricing_contract, $inline_direct_changed );
+check( ! empty( wpae_llm_content_fidelity( $inline_pricing_message, $inline_direct_layout )['ok'] ), 'Pricing amount plus separate monthly period did not satisfy exact content fidelity' );
 check( substr_count( $inline_pricing_json, '"widgetType":"button"' ) === 3, 'Inline quoted pricing fallback lost native CTA widgets' );
 check( strpos( $inline_pricing_json, '"url":"#start"' ) !== false, 'Inline quoted pricing fallback lost the #start CTA URL' );
 check( strpos( $inline_pricing_json, '"title":"от 150 000 ₸"' ) !== false, 'Inline quoted pricing fallback lost the quoted amount field' );
 check( strpos( $inline_pricing_json, '"title":"Выберите формат работы"' ) !== false, 'Inline quoted pricing fallback lost the requested section title' );
 check( strpos( $inline_pricing_json, '"title":"ТАРИФЫ"' ) !== false, 'Inline quoted pricing fallback lost the requested badge label' );
-check( strpos( $inline_pricing_json, '"title":"от 80 000 ₸/мес"' ) !== false && strpos( $inline_pricing_json, '"editor":"Для регулярных задач и развития проекта"' ) !== false, 'Inline quoted pricing fallback merged the monthly price and description' );
+$inline_monthly_group = null;
+$find_inline_monthly_group = static function ( array $nodes ) use ( &$find_inline_monthly_group, &$inline_monthly_group ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'container' && str_contains( (string) ( $node['settings']['_css_classes'] ?? '' ), 'wpae-pricing-price-group' ) ) { $inline_monthly_group = $node; return; }
+		$find_inline_monthly_group( (array) ( $node['elements'] ?? [] ) );
+		if ( is_array( $inline_monthly_group ) ) { return; }
+	}
+};
+$find_inline_monthly_group( $inline_pricing_action['elements'] );
+$inline_monthly_widgets = (array) ( $inline_monthly_group['elements'] ?? [] );
+check( count( $inline_monthly_widgets ) === 2 && ( $inline_monthly_widgets[0]['settings']['title'] ?? '' ) === 'от 80 000 ₸' && ( $inline_monthly_widgets[1]['settings']['title'] ?? '' ) === '/мес', 'Monthly price is not represented as a compact amount plus period pair' );
+check( ( $inline_monthly_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $inline_monthly_group['settings']['flex_direction_mobile'] ?? '' ) === 'row' && ( $inline_monthly_group['settings']['flex_wrap'] ?? '' ) === 'nowrap' && ( $inline_monthly_group['settings']['flex_align_items'] ?? '' ) === 'baseline' && ( $inline_monthly_widgets[0]['settings']['_flex_grow'] ?? -1 ) === 0, 'Monthly price and period can wrap or stretch as full-width widgets' );
+check( strpos( $inline_pricing_json, '"editor":"Для регулярных задач и развития проекта"' ) !== false, 'Inline quoted pricing fallback merged the monthly price and description' );
 $price_first_pricing_message = 'Добавь отдельный pricing-блок в конец текущей страницы, не удаляй существующие элементы. Точные тексты: надзаголовок «ТАРИФЫ», заголовок «Выберите формат работы». Три карточки: «Старт» — «от 50 000 ₸» — «Для небольшой задачи с понятным объёмом» — кнопка «Выбрать Старт» со ссылкой #start; «Проект» — «от 150 000 ₸» — «Для комплексной работы от идеи до результата» — кнопка «Обсудить проект» со ссылкой #project; «Поддержка» — «от 80 000 ₸/мес» — «Для регулярных задач и развития проекта» — кнопка «Подключить поддержку» со ссылкой #support. Используй native Elementor Flexbox и сохрани остальные элементы страницы.';
 $price_first_contract = wpae_llm_extract_pricing_content( $price_first_pricing_message );
 $compact_live_pricing_message = 'Тарифы: Старт — от 50 000 ₸ — Для регулярных задач и развития проекта; Проект — от 150 000 ₸ — Для небольшой задачи с понятным объёмом; Поддержка — от 80 000 ₸/мес — Для комплексной работы от идеи до результата.';
@@ -1032,6 +1048,8 @@ check( $bare_process_archetype === 'process', 'Content-only process shell was mi
 $bare_content_only_process_steps = wpae_llm_process_timeline_steps( $bare_content_only_process_message );
 check( array_column( $bare_content_only_process_steps, 'label' ) === [ 'Замысел', 'Съёмка', 'Монтаж', 'Публикация' ], 'Bare content-only process lines did not stay in order' );
 check( wpae_llm_process_timeline_layout( $bare_content_only_process_message ) === 'horizontal', 'Content-only process brief did not infer horizontal layout' );
+$standard_timeline_message = 'Сделай стандартный таймлайн.';
+check( wpae_llm_detect_block_archetype( $standard_timeline_message ) === 'process' && wpae_llm_process_timeline_layout( $standard_timeline_message ) === 'horizontal', 'Bare standard timeline request did not use the reference desktop row by default' );
 check( is_array( wpae_llm_process_timeline_steps( null, false ) ), 'Null retry message crashed the shared process parser' );
 $content_only_process_timeline = wpae_llm_build_process_timeline( $content_only_process_steps, 'content-only-process', 'horizontal', 'Как мы работаем' );
 $content_only_process_json = wp_json_encode( $content_only_process_timeline );
@@ -1919,11 +1937,37 @@ $services_library_fixture = [
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services' ] ],
 	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 0, 'bundled_fixture_id' => 'template-services-photo-cards-v1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
 ];
+$pricing_library_message = 'Тарифы: Старт — от 50 000 ₸ — Для регулярных задач и развития проекта; Проект — от 150 000 ₸ — Для небольшой задачи с понятным объёмом; Поддержка — от 80 000 ₸/мес — Для комплексной работы от идеи до результата.';
+$incompatible_pricing_fixture = [
+	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
+	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Incompatible pricing block', 'category' => 'pricing' ] ],
+	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 0, 'title' => 'Incompatible pricing block', 'category' => 'pricing', 'template_type' => 'section-pricing', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => [ container_node( 'unrelated-faq-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-faq-library-root' ], [] ), container_node( 'unrelated-hero-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-hero-library-root' ], [] ) ] ] ],
+];
+$pricing_provider_action = wpae_llm_build_fallback_action( $pricing_library_message, 42 );
+$pricing_provider_action['library_choice'] = 'candidate_1';
+$pricing_provider_action['elements'][0]['settings']['_css_classes'] = 'wpae-provider-pricing-root';
+unset( $pricing_provider_action['fallback_archetype'], $pricing_provider_action['fallback_variant'] );
+$pricing_after_incompatible_choice = $run_services_route( $pricing_library_message, [ provider_reply( wp_json_encode( $pricing_provider_action, JSON_UNESCAPED_UNICODE ) ) ], $incompatible_pricing_fixture, 'pricing-incompatible-library-choice' );
+check( ! empty( $pricing_after_incompatible_choice['response']['ok'] ) && $pricing_after_incompatible_choice['calls'] === 1 && $pricing_after_incompatible_choice['writes'] === 1, 'A model-selected pricing candidate without a repeatable group does not abort a valid production composition before the shared write boundary' );
+check( ( $pricing_after_incompatible_choice['response']['diagnostics']['action_path'] ?? '' ) !== 'library_agent' && $pricing_after_incompatible_choice['roots'] === array_merge( array_column( $legacy_page, 'id' ), [ $pricing_after_incompatible_choice['written']['id'] ?? '' ] ) && str_contains( wpae_llm_collect_action_content( [ $pricing_after_incompatible_choice['written'] ] ), '80 000 ₸/мес' ), 'Incompatible library choice falls through to validated pricing output, preserves neighboring roots, and keeps the monthly price together' );
 $leaked_cta_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'elements' => $leaked_cta_provider ];
 $leaked_cta_route = $run_services_route( $standalone_cta_message, [ provider_reply( wp_json_encode( $leaked_cta_provider_action, JSON_UNESCAPED_UNICODE ) ) ], [], 'cta-label-leak-identity', false, 'off', 'off' );
 $leaked_cta_written_copy = wpae_llm_collect_action_content( [ (array) $leaked_cta_route['written'] ] );
 check( ! empty( $leaked_cta_route['response']['ok'] ) && ( $leaked_cta_route['response']['diagnostics']['action_path'] ?? '' ) === 'fallback' && $leaked_cta_route['calls'] === 1 && $leaked_cta_route['writes'] === 1, 'A malformed CTA provider composition did not recover through one existing write boundary' );
 check( str_contains( $leaked_cta_written_copy, 'Обсудим проект' ) && str_contains( $leaked_cta_written_copy, 'Связаться' ) && str_contains( $leaked_cta_written_copy, 'Смотреть проекты' ) && ! preg_match( '/(?:Заголовок|Описание) секции:|(?:Основная|Вторичная) кнопка:/u', $leaked_cta_written_copy ), 'Production CTA route wrote visible instruction labels instead of the deterministic semantic fallback' );
+$leaked_cta_route_actions = [];
+$collect_leaked_cta_actions = static function ( array $nodes ) use ( &$collect_leaked_cta_actions, &$leaked_cta_route_actions ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'container' && str_contains( (string) ( $node['settings']['_css_classes'] ?? '' ), 'wpae-cta-actions' ) ) { $leaked_cta_route_actions[] = $node; }
+		$collect_leaked_cta_actions( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_leaked_cta_actions( [ (array) $leaked_cta_route['written'] ] );
+$leaked_cta_route_buttons = (array) ( $leaked_cta_route_actions[0]['elements'] ?? [] );
+check( count( $leaked_cta_route_actions ) === 1 && count( $leaked_cta_route_buttons ) === 2 && ( $leaked_cta_route_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $leaked_cta_route_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects', 'Production CTA fallback did not keep both exact links together in one responsive group' );
+$no_fallback_cta_route = $run_services_route( $standalone_cta_message . "\nНе используй fallback.", [ provider_reply( wp_json_encode( $leaked_cta_provider_action, JSON_UNESCAPED_UNICODE ) ) ], [], 'cta-no-fallback-identity', false, 'off', 'off' );
+check( ( $no_fallback_cta_route['error']['code'] ?? '' ) === 'wpae_llm_composition_rejected' && $no_fallback_cta_route['writes'] === 0 && $no_fallback_cta_route['roots'] === array_column( $legacy_page, 'id' ), 'A rejected CTA composition crossed the write boundary when fallback was forbidden' );
 $services_ambiguous_route = $run_services_route( $services_message . "\nУслуга 4: «Дополнение» — описание без закрытой пары", [], $services_library_fixture, 'services-ambiguous-identity' );
 check( ( $services_ambiguous_route['error']['code'] ?? '' ) === 'wpae_design_plan_rejected' && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'Изменения не записаны' ) && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'services-ambiguous-identity' ), 'Production route explains ambiguous Services input and exposes the request identity before provider/write' );
 check( $services_ambiguous_route['calls'] === 0 && $services_ambiguous_route['writes'] === 0 && $services_ambiguous_route['roots'] === array_column( $legacy_page, 'id' ) && ( $services_ambiguous_route['error']['data']['details']['operation_identity'] ?? '' ) === 'services-ambiguous-identity', 'Ambiguous Services input cannot call a provider or cross the write boundary' );

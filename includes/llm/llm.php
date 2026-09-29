@@ -311,6 +311,9 @@ function wpae_llm_provider_composition_quality( string $message, array $elements
             $failures[] = 'hero body copy contains multiple semantic units in one text-editor';
         }
     }
+    if ( $archetype === 'cta' && count( $cta_requirements ) > 0 && $counts['buttons'] < count( $cta_requirements ) ) {
+        $failures[] = 'CTA requirements were collapsed into too few buttons';
+    }
     if ( in_array( $archetype, [ 'benefits', 'team', 'portfolio', 'testimonials' ], true ) && count( $non_cta_units ) >= 4 && $counts['copy_widgets'] < 4 && ! $repeatable_widget ) {
         $failures[] = 'repeatable block content is not represented by separate native items';
     }
@@ -2403,6 +2406,22 @@ function wpae_llm_collect_action_content( array $elements ): string {
                 $content[] = wpae_llm_collect_action_content( $element[ $child_key ] );
             }
         }
+        $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
+        if ( ( $element['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-pricing-price-group', $classes, true ) ) {
+            $price_parts = [];
+            foreach ( (array) ( $element['elements'] ?? [] ) as $price_part ) {
+                $price_settings = is_array( $price_part['settings'] ?? null ) ? $price_part['settings'] : [];
+                $price_value = trim( (string) ( $price_settings['title'] ?? '' ) );
+                if ( $price_value !== '' ) {
+                    $price_parts[] = $price_value;
+                }
+            }
+            if ( count( $price_parts ) > 1 ) {
+                // The month suffix is a separate native widget for layout, but
+                // remains one uninterrupted price in the user's content.
+                $content[] = implode( '', $price_parts );
+            }
+        }
     }
     return implode( ' ', $content );
 }
@@ -4365,7 +4384,26 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pr
 		if ( $label === '' || $price === '' ) {
 			continue;
 		}
-        $card_id = 'wpae-pricing-card-' . (string) ( $index + 1 );
+		$card_id = 'wpae-pricing-card-' . (string) ( $index + 1 );
+		$price_amount = $price;
+		$price_period = '';
+		if ( preg_match( '/^(.*?)\s*(\/\s*(?:мес(?:\.)?|месяц(?:а|ев)?|month(?:ly)?))$/iu', $price, $period_match ) ) {
+			$price_amount = trim( (string) $period_match[1] );
+			$price_period = trim( (string) $period_match[2] );
+		}
+		$price_heading = $widget( $card_id . '-price', 'heading', [
+			'title' => $price_amount,
+			'header_size' => 'h3',
+			'_css_classes' => 'wpae-pricing-price',
+			'typography_typography' => 'custom',
+			'typography_font_size' => [ 'unit' => 'rem', 'size' => 2 ],
+			'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 1.8 ],
+			'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.6 ],
+			'typography_line_height' => [ 'unit' => 'em', 'size' => 1.05 ],
+			'typography_line_height_tablet' => [ 'unit' => 'em', 'size' => 1.05 ],
+			'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.1 ],
+			'typography_font_weight' => '800',
+		] );
         $card_elements = [
             $widget( $card_id . '-label', 'heading', [
                 'title' => $label,
@@ -4379,20 +4417,43 @@ function wpae_llm_build_pricing_pair_layout( array $template_elements, array $pr
                 'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.15 ],
                 'typography_font_weight' => '700',
             ] ),
-            $widget( $card_id . '-price', 'heading', [
-                'title' => $price,
-                'header_size' => 'h3',
-                '_css_classes' => 'wpae-pricing-price',
-                'typography_typography' => 'custom',
-                'typography_font_size' => [ 'unit' => 'rem', 'size' => 2.25 ],
-                'typography_font_size_tablet' => [ 'unit' => 'rem', 'size' => 2 ],
-                'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 1.75 ],
-                'typography_line_height' => [ 'unit' => 'em', 'size' => 1.05 ],
-                'typography_line_height_tablet' => [ 'unit' => 'em', 'size' => 1.05 ],
-                'typography_line_height_mobile' => [ 'unit' => 'em', 'size' => 1.1 ],
-                'typography_font_weight' => '800',
-            ] ),
         ];
+		if ( $price_period !== '' ) {
+			$card_elements[] = [
+				'id' => $card_id . '-price-group',
+				'elType' => 'container',
+				'settings' => [
+					'_css_classes' => 'wpae-pricing-price-group',
+					'container_type' => 'flex',
+					'content_width' => 'full',
+					'flex_direction' => 'row',
+					'flex_direction_mobile' => 'row',
+					'flex_wrap' => 'nowrap',
+					'flex_wrap_mobile' => 'nowrap',
+					'flex_align_items' => 'baseline',
+					'flex_gap' => [ 'column' => '0.25', 'row' => '0.25', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.25' ],
+					'flex_gap_mobile' => [ 'column' => '0.2', 'row' => '0.2', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.2' ],
+				],
+				'elements' => [
+					array_replace_recursive( $price_heading, [ 'settings' => [ '_element_width' => 'initial', '_flex_grow' => 0, '_flex_shrink' => 0 ] ] ),
+					$widget( $card_id . '-period', 'heading', [
+						'title' => $price_period,
+						'header_size' => 'h5',
+						'_css_classes' => 'wpae-pricing-period',
+						'_element_width' => 'initial',
+						'_flex_grow' => 0,
+						'_flex_shrink' => 0,
+						'typography_typography' => 'custom',
+						'typography_font_size' => [ 'unit' => 'rem', 'size' => 0.95 ],
+						'typography_font_size_mobile' => [ 'unit' => 'rem', 'size' => 0.9 ],
+						'typography_line_height' => [ 'unit' => 'em', 'size' => 1.2 ],
+						'typography_font_weight' => '500',
+					] ),
+				],
+			];
+		} else {
+			$card_elements[] = $price_heading;
+		}
         if ( $description !== '' ) {
             $card_elements[] = $widget( $card_id . '-description', 'text-editor', [
                 'editor' => $description,
@@ -5311,13 +5372,13 @@ function wpae_llm_process_timeline_layout( ?string $message ): string {
 	if ( preg_match( '/центр\w*|чередующ\w*|alternat\w*|center\w*/iu', $message ) ) {
 		return 'alternating';
 	}
-	$mobile_vertical_stack = (bool) preg_match( '/(?:\bmobile\b|мобильн\w*|телефон\w*)[^\n]{0,80}(?:вертикаль\w*|stack)|(?:вертикаль\w*|stack)[^\n]{0,80}(?:\bmobile\b|мобильн\w*|телефон\w*)/iu', $message );
-	$explicit_desktop_vertical = (bool) preg_match( '/(?:\bdesktop\b|десктоп\w*)[^\n]{0,80}вертикаль\w*|вертикаль\w*[^\n]{0,80}(?:\bdesktop\b|десктоп\w*)/iu', $message );
-	if ( preg_match( '/\bпроцесс\w*/iu', $message ) && ( $mobile_vertical_stack || ( ! $explicit_desktop_vertical && ! preg_match( '/чередующ\w*|\bслева\b/iu', $message ) ) ) ) {
-		return 'horizontal';
-	}
-	if ( $explicit_desktop_vertical || preg_match( '/вертикаль\w*|\bслева\b/iu', $message ) ) {
+	$mobile_vertical_stack = (bool) preg_match( '/(?:\bmobile\b|мобильн\w*|телефон\w*)[^;.!?\n]{0,80}(?:вертикаль\w*|stack)|(?:вертикаль\w*|stack)[^;.!?\n]{0,80}(?:\bmobile\b|мобильн\w*|телефон\w*)/iu', $message );
+	$explicit_desktop_vertical = (bool) preg_match( '/(?:\bdesktop\b|десктоп\w*)[^;.!?\n]{0,80}вертикаль\w*|вертикаль\w*[^;.!?\n]{0,80}(?:\bdesktop\b|десктоп\w*)/iu', $message );
+	if ( $explicit_desktop_vertical || ( ! $mobile_vertical_stack && preg_match( '/вертикаль\w*|\bслева\b/iu', $message ) ) ) {
 		return 'left';
+	}
+	if ( $mobile_vertical_stack || wpae_llm_is_process_request( $message ) ) {
+		return 'horizontal';
 	}
 	return 'left';
 }
@@ -10945,6 +11006,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $library_preserve_design = false;
         $template_source_fingerprint = [];
         $template_fidelity = [ 'ok' => true, 'schema' => 'wpae-template-fidelity-v1', 'status' => 'not_applicable', 'failures' => [] ];
+		$library_quality = [ 'ok' => true, 'failures' => [] ];
 		$library_choice_resolution = wpae_llm_resolve_library_choice( $library_retrieval, $provider_library_choice );
 		$library_selection_source = (string) ( $library_choice_resolution['source'] ?? 'no_model_choice' );
 		$selected_library = is_array( $library_choice_resolution['selected'] ?? null ) ? $library_choice_resolution['selected'] : [];
@@ -11003,7 +11065,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $library_shape = wpae_llm_validate_action_shape( $library_action, $post_id );
                 $library_fidelity = wpae_llm_content_fidelity( $message, $library_elements );
                 $library_plan_audit = wpae_llm_content_plan_audit( $content_plan, $library_elements );
-                if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) && ! empty( $library_plan_audit['ok'] ) ) {
+				if ( $action_archetype === 'cta' ) {
+					$library_quality = wpae_llm_provider_composition_quality( $message, $library_elements, $action_archetype );
+				}
+				if ( ! empty( $library_shape['ok'] ) && wpae_llm_count_widgets( $library_elements ) > 0 && ! empty( $library_fidelity['ok'] ) && ! empty( $library_plan_audit['ok'] ) && ! empty( $library_quality['ok'] ) ) {
                     $action['elements'] = $library_elements;
                     $library_applied = true;
                     $action_fallback = false;
@@ -11035,7 +11100,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$requires_library_template = wpae_llm_requires_verified_library_template( $message );
 		$fallback_forbidden = wpae_llm_forbids_fallback( $message );
 		$active_library_route = ( $design_generation_route['action_path'] ?? '' ) === 'library_agent';
-		if ( ( $requires_library_template && ! $library_applied ) || ( $fallback_forbidden && $action_fallback && ! $library_applied ) || ( $active_library_route && ! $library_applied ) ) {
+		if ( ( $requires_library_template && ! $library_applied ) || ( $fallback_forbidden && $action_fallback && ! $library_applied ) || ( $active_library_route && $library_selection_source === 'invalid_model_choice' ) ) {
 			$reason = $library_selection_source === 'model_declined'
 				? 'Модель отказалась от предложенных шаблонов.'
 				: ( $library_selection_source === 'invalid_model_choice'
@@ -11065,8 +11130,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         if ( $provider_design ) {
             $action['elements'] = WPAE_LLM_Design::normalize( $action['elements'], $provider_design_changed );
             $provider_quality = wpae_llm_provider_composition_quality( $message, (array) $action['elements'], $action_archetype );
-            $cta_field_label_leak = $action_archetype === 'cta' && in_array( 'CTA field labels were published as visible copy', (array) ( $provider_quality['failures'] ?? [] ), true );
-            if ( ! $targeted_edit && ( wpae_llm_is_content_only_brief( $message ) || $cta_field_label_leak ) && empty( $provider_quality['ok'] ) ) {
+			$cta_composition_failed = $action_archetype === 'cta' && empty( $provider_quality['ok'] );
+			if ( ! $targeted_edit && ( wpae_llm_is_content_only_brief( $message ) || $cta_composition_failed ) && empty( $provider_quality['ok'] ) ) {
+				if ( $fallback_forbidden ) {
+					return new WP_Error( 'wpae_llm_composition_rejected', 'Композиция не прошла проверку, а запасной вариант запрещён запросом. Изменения не записаны.', [ 'status' => 422, 'details' => [ 'provider_quality' => $provider_quality, 'operation_identity' => $operation_identity, 'write_count' => 0 ] ] );
+				}
                 $provider_action_diagnostics = (array) $action_diagnostics;
                 $action = wpae_llm_build_fallback_action( $message, $post_id );
                 $action_fallback = true;
@@ -11086,6 +11154,20 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 }
             }
         }
+		$pricing_contract = $action_archetype === 'pricing' ? wpae_llm_extract_pricing_content( $message ) : [];
+		if ( ! $library_applied && $action_archetype === 'pricing' && count( (array) ( $pricing_contract['items'] ?? [] ) ) >= 2 && ! $fallback_forbidden ) {
+			$pricing_layout_changed = 0;
+			$pricing_layout = wpae_llm_build_pricing_pair_layout( (array) ( $action['elements'] ?? [] ), $pricing_contract, $pricing_layout_changed );
+			if ( ! empty( $pricing_layout ) ) {
+				$action['elements'] = $pricing_layout;
+				$action_fallback = true;
+				$provider_design = false;
+				$action_diagnostics = array_merge( (array) $action_diagnostics, [
+					'response_type' => 'deterministic_fallback',
+					'fallback_reason' => 'The selected library composition was not adaptable; parsed pricing tiers were compiled into the existing native card layout.',
+				] );
+			}
+		}
         $provider_design = ! $action_fallback && ! $library_applied;
         if ( is_array( $action['elements'] ?? null ) && ! ( $library_applied && $action_archetype === 'services' ) && ! $library_preserve_design && ! $provider_design ) {
             $action['elements'] = wpae_llm_normalize_generated_typography( $action['elements'], $action_archetype, 0, $typography_changed );
@@ -11439,7 +11521,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         }
         $execution_variation_seed = $library_applied || $provider_design ? -1 : ( isset( $variation_seed ) ? (int) $variation_seed : -1 );
         $action_steps[] = [ 'id' => 'design_source', 'status' => 'ok', 'message' => $design_engine_active ? 'Typed EDDE-план скомпилирован существующим native Elementor-пайплайном.' : ( $provider_design ? 'Композиция, палитра и типографика модели сохранены; заполнены недостающие native responsive-настройки.' : 'Применена проверенная запасная композиция.' ), 'details' => [ 'source' => $design_engine_active ? 'edde' : ( $provider_design ? 'provider' : ( $library_applied ? 'library' : 'fallback' ) ) ] ];
-		$resolved_action_path = ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' ? 'library_agent' : ( $design_engine_active ? 'edde' : ( $library_applied ? 'library' : ( $action_repair ? 'repair' : ( $action_fallback ? 'fallback' : 'provider' ) ) ) );
+		$resolved_action_path = $library_applied
+			? ( ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' ? 'library_agent' : 'library' )
+			: ( $action_fallback ? 'fallback' : ( $action_repair ? 'repair' : ( $design_engine_active ? 'edde' : 'provider' ) ) );
 		$response_diagnostics = wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] );
 		$usage = is_array( $response_diagnostics['usage'] ?? null ) ? $response_diagnostics['usage'] : [];
 		$routing_policy = function_exists( 'wpae_llm_route_policy' ) ? wpae_llm_route_policy( $action_request ? 'elementor_write' : 'draft', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ) : [];
