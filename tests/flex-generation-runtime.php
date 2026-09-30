@@ -826,6 +826,21 @@ $faq_patch_message = 'Измени текст: «Как заказать про�
 $faq_generic_patch_tree = [ widget( 'faq-patch-accordion', 'accordion', [ 'tabs' => [ [ '_id' => 'q1', 'tab_title' => 'Аккордеон #1', 'tab_content' => 'Kafka placeholder' ], [ '_id' => 'q2', 'tab_title' => 'Аккордеон #2', 'tab_content' => 'More placeholder' ] ] ] ) ];
 $faq_patch_fidelity = wpae_llm_content_fidelity( $faq_patch_message, $faq_generic_patch_tree );
 check( empty( $faq_patch_fidelity['ok'] ) && in_array( 'Как заказать проект?', $faq_patch_fidelity['missing'], true ) && in_array( 'Сколько длится работа?', $faq_patch_fidelity['missing'], true ), 'targeted Accordion content with generic questions fails exact requested-content fidelity' );
+$faq_target_root = container_node( 'faq-target-root', [ '_css_classes' => 'wpae-generated-root' ], [ $faq_generic_patch_tree[0] ] );
+$faq_copy_neighbor = container_node( 'faq-copy-neighbor', [], [ widget( 'faq-copy-neighbor-accordion', 'accordion', [ 'tabs' => [ [ '_id' => 'n1', 'tab_title' => 'Как заказать проект?', 'tab_content' => 'Оставьте заявку, и мы свяжемся с вами' ], [ '_id' => 'n2', 'tab_title' => 'Сколько длится работа?', 'tab_content' => 'Срок зависит от состава и объёма проекта' ] ] ] ) ] );
+check( empty( wpae_llm_content_fidelity( $faq_patch_message, [ $faq_target_root, $faq_copy_neighbor ] )['missing'] ) && ! empty( wpae_llm_content_fidelity_for_roots( $faq_patch_message, [ $faq_target_root, $faq_copy_neighbor ], [ 'faq-target-root' ] )['missing'] ), 'FAQ exact copy in a neighboring root cannot satisfy selected-root content fidelity' );
+$GLOBALS['page_data'] = [ $faq_target_root, $faq_copy_neighbor ];
+$GLOBALS['options'][ WPAE_DESIGN_OPERATION_OPTION ] = [];
+$GLOBALS['options']['wp_ai_executor_rollback_snapshots'] = [];
+$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$faq_partial_target_patch = wpae_llm_execute_patch_action(
+	[ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'faq-patch-accordion', 'path' => 'settings.tabs[0].tab_title', 'op' => 'set', 'value' => 'Как заказать проект?' ] ] ],
+	42,
+	[ 'faq-target-root' ],
+	$faq_patch_message,
+	[ 'operation_identity' => 'faq-scope-fidelity-regression' ]
+);
+check( empty( $faq_partial_target_patch['ok'] ) && empty( $GLOBALS['writes'] ) && ( $GLOBALS['page_data'][0]['elements'][0]['settings']['tabs'][0]['tab_title'] ?? '' ) === 'Аккордеон #1', 'targeted FAQ patch with matching copy only in a sibling root is rejected before the write boundary' );
 $faq_library_source = [ container_node( 'faq-library-root', [], [
 	widget( 'faq-library-heading', 'heading', [ 'title' => 'Template questions' ] ),
 	widget( 'faq-library-accordion', 'accordion', [ 'tabs' => [ [ '_id' => 'oldtab1', 'tab_title' => 'Old question', 'tab_content' => 'Old answer' ], [ '_id' => 'oldtab2', 'tab_title' => 'Another old question', 'tab_content' => 'Another old answer' ] ] ] ),

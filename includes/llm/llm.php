@@ -890,6 +890,17 @@ function wpae_llm_patch_operation_snapshot( string $operation_id, string $operat
 	return null;
 }
 
+function wpae_llm_content_fidelity_for_roots( string $message, array $elements, array $root_ids ): array {
+	$root_ids = array_fill_keys( array_values( array_filter( array_map( 'sanitize_key', $root_ids ) ) ), true );
+	$target_roots = [];
+	foreach ( $elements as $element ) {
+		if ( is_array( $element ) && isset( $root_ids[ sanitize_key( (string) ( $element['id'] ?? '' ) ) ] ) ) {
+			$target_roots[] = $element;
+		}
+	}
+	return wpae_llm_content_fidelity( $message, $target_roots );
+}
+
 function wpae_llm_execute_patch_action( array $action, int $post_id, array $selected_ids = [], string $message = '', array $operation_context = [] ): array {
 	$patches = is_array( $action['patches'] ?? null ) ? array_slice( $action['patches'], 0, 12 ) : [];
 	$selected_ids = array_values( array_filter( array_map( 'sanitize_key', $selected_ids ) ) );
@@ -946,7 +957,7 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
 		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview отклонён до записи.', 'status' => $preview_status, 'details' => $preview_data, 'steps' => $steps ];
 	}
 	$compiled_data = is_array( $preview_data['elementor_data'] ?? null ) ? $preview_data['elementor_data'] : [];
-	$content_fidelity = wpae_llm_content_fidelity( $message, $compiled_data );
+	$content_fidelity = wpae_llm_content_fidelity_for_roots( $message, $compiled_data, $root_ids );
 	if ( empty( $content_fidelity['ok'] ) ) {
 		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview не сохранил запрошенный текст; запись остановлена.', 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'write_count' => 0 ], 'steps' => array_merge( $steps, [ [ 'id' => 'content_fidelity', 'status' => 'failed', 'message' => 'Точный текст проверен на compiled read-back до write boundary.', 'details' => $content_fidelity ] ] ) ];
 	}
@@ -1013,19 +1024,20 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
 	$changed_ids = array_values( array_unique( array_map( static fn( $item ) => sanitize_key( (string) ( $item['element_id'] ?? '' ) ), $changes ) ) );
 	$saved_data = wpae_get_elementor_data_for_post( $post_id );
 	$saved_hash = is_array( $saved_data ) ? hash( 'sha256', (string) wp_json_encode( $saved_data ) ) : '';
+	$saved_content_fidelity = is_array( $saved_data ) ? wpae_llm_content_fidelity_for_roots( $message, $saved_data, $root_ids ) : [ 'ok' => false, 'missing' => wpae_llm_extract_requested_content( $message ) ];
 	$fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : '';
 	$snapshot = wpae_llm_patch_operation_snapshot( $operation_id, $operation_identity, $post_id, $root_ids );
 	$snapshot_matches_write = is_array( $snapshot ) && (string) $snapshot['id'] === (string) ( $data['rollback_snapshot_id'] ?? '' ) && $fingerprint !== '' && hash_equals( sanitize_text_field( (string) ( $snapshot['snapshot']['after_hashes'][ $post_id ] ?? '' ) ), $fingerprint );
 	$operation = wpae_design_operation_update( $operation_id, [
-		'current_state' => is_array( $saved_data ) && $saved_hash === $compiled_hash && $snapshot_matches_write ? 'written' : 'unknown',
+		'current_state' => is_array( $saved_data ) && $saved_hash === $compiled_hash && $snapshot_matches_write && ! empty( $saved_content_fidelity['ok'] ) ? 'written' : 'unknown',
 		'saved_hash' => $saved_hash,
 		'target_fingerprint' => $fingerprint,
 		'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? '',
-		'last_error' => is_array( $saved_data ) && $saved_hash === $compiled_hash && $snapshot_matches_write ? '' : 'patch_readback_or_rollback_mismatch',
+		'last_error' => is_array( $saved_data ) && $saved_hash === $compiled_hash && $snapshot_matches_write && ! empty( $saved_content_fidelity['ok'] ) ? '' : ( empty( $saved_content_fidelity['ok'] ) ? 'patch_target_content_mismatch' : 'patch_readback_or_rollback_mismatch' ),
 	] ) ?: $operation;
 	$target_status = is_array( $saved_data ) ? wpae_design_operation_target_status( $operation, $post_id, $saved_data ) : [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'readback_unavailable' ];
 	if ( ( $operation['current_state'] ?? '' ) !== 'written' || empty( $target_status['reviewable'] ) ) {
-		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch записан, но сохранённое состояние не прошло read-back для этой операции.', 'status' => 409, 'details' => $target_status, 'operation_ledger' => $operation, 'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null, 'steps' => $steps ];
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch записан, но сохранённое состояние не прошло read-back для этой операции.', 'status' => 409, 'details' => [ 'target_status' => $target_status, 'content_fidelity' => $saved_content_fidelity ], 'operation_ledger' => $operation, 'rollback_snapshot_id' => $data['rollback_snapshot_id'] ?? null, 'steps' => $steps ];
 	}
 	$steps[] = [ 'id' => 'elementor_patch', 'status' => 'ok', 'message' => 'Точечные native-свойства записаны и read-back привязан к durable operation.', 'details' => [ 'operation_id' => $operation_id, 'http_status' => $status, 'changes' => $changes, 'changed_ids' => $changed_ids, 'selected_scope_count' => count( $scope_ids ) ] ];
 	return [
