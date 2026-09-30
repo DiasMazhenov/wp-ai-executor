@@ -249,6 +249,30 @@ function wpae_apply_elementor_patch_to_element( array &$elements, string $elemen
                 $op = 'set';
             }
 
+			if ( preg_match( '/^settings\.tabs\[(\d{1,3})\]\.(tab_title|tab_content)$/', $property_path, $accordion_match ) ) {
+				$tab_index = (int) $accordion_match[1];
+				$tabs = $element['settings']['tabs'] ?? null;
+				if (
+					( $element['elType'] ?? '' ) !== 'widget' ||
+					( $element['widgetType'] ?? '' ) !== 'accordion' ||
+					$op !== 'set' ||
+					! is_array( $tabs ) ||
+					! array_key_exists( $tab_index, $tabs ) ||
+					! is_array( $tabs[ $tab_index ] ) ||
+					! is_scalar( $patch['value'] ?? null ) ||
+					strlen( (string) $patch['value'] ) > 20000
+				) {
+					$report['errors'][] = [
+						'element_id' => $element_id,
+						'path' => $property_path,
+						'message' => 'Accordion patches may set a bounded title or content value on an existing native Accordion tab only.',
+					];
+					return true;
+				}
+
+				$property_path = 'settings.tabs.' . $tab_index . '.' . $accordion_match[2];
+			}
+
             if ( ! wpae_is_allowed_elementor_patch_path( $property_path ) ) {
                 $report['errors'][] = [
                     'element_id' => $element_id,
