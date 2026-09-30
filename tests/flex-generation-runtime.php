@@ -350,6 +350,15 @@ $standalone_cta_buttons = (array) ( $standalone_cta_group['elements'] ?? [] );
 check( str_contains( $standalone_cta_copy, 'Обсудим проект' ) && str_contains( $standalone_cta_copy, 'Опишите задачу и выберите следующий шаг' ) && ! str_contains( $standalone_cta_copy, 'Заголовок секции:' ) && ! str_contains( $standalone_cta_copy, 'Описание секции:' ), 'Standalone CTA published field labels or lost the exact requested copy' );
 check( count( $standalone_cta_buttons ) === 2 && ( $standalone_cta_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $standalone_cta_group['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'Standalone CTA did not compile both native buttons into a responsive Flex group' );
 check( ( $standalone_cta_buttons[0]['settings']['text'] ?? '' ) === 'Связаться' && ( $standalone_cta_buttons[0]['settings']['link']['url'] ?? '' ) === '#contact' && ( $standalone_cta_buttons[1]['settings']['text'] ?? '' ) === 'Смотреть проекты' && ( $standalone_cta_buttons[1]['settings']['link']['url'] ?? '' ) === '#projects' && ( $standalone_cta_buttons[0]['settings']['background_color'] ?? '' ) !== 'transparent' && ( $standalone_cta_buttons[1]['settings']['background_color'] ?? '' ) === 'transparent', 'Standalone CTA lost button order, URL, or primary/secondary styling' );
+$natural_labeled_cta = 'CTA: «Обсудим проект». Опишите задачу и выберите следующий шаг. Кнопка «Связаться» → #contact; вторичная кнопка «Посмотреть проекты» → #projects.';
+$natural_labeled_cta_brief = wpae_brief_ir_parse( $natural_labeled_cta );
+$natural_labeled_cta_content = (array) ( $natural_labeled_cta_brief['content'] ?? [] );
+$natural_labeled_cta_plan = wpae_design_plan_from_brief( $natural_labeled_cta_brief );
+$natural_labeled_cta_errors = array_values( array_filter( (array) ( wpae_design_plan_validate( $natural_labeled_cta_plan, $natural_labeled_cta_brief )['errors'] ?? [] ), static fn( string $error ): bool => str_starts_with( $error, 'cta_' ) ) );
+$natural_labeled_cta_roles = array_column( $natural_labeled_cta_content, 'role' );
+$natural_labeled_cta_buttons = array_values( array_filter( $natural_labeled_cta_content, static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2' ], true ) ) );
+check( ( $natural_labeled_cta_brief['intent']['archetype'] ?? '' ) === 'cta' && in_array( 'title', $natural_labeled_cta_roles, true ) && in_array( 'body', $natural_labeled_cta_roles, true ), 'Natural CTA: heading and unquoted body were not separated from the section label' );
+check( count( $natural_labeled_cta_buttons ) === 2 && array_column( $natural_labeled_cta_buttons, 'url' ) === [ '#contact', '#projects' ] && ! $natural_labeled_cta_errors, 'Natural CTA: primary/secondary links did not satisfy the production design-plan validator: ' . wp_json_encode( [ 'content' => $natural_labeled_cta_content, 'errors' => $natural_labeled_cta_errors ], JSON_UNESCAPED_UNICODE ) );
 $leaked_cta_provider = [ container_node( 'leaked-cta-provider', [ 'container_type' => 'flex' ], [
 	widget( 'leaked-cta-heading', 'heading', [ 'title' => 'Заголовок секции: «Обсудим проект»' ] ),
 	widget( 'leaked-cta-copy', 'text-editor', [ 'editor' => 'Описание секции: «Опишите задачу и выберите следующий шаг»' ] ),
@@ -798,6 +807,19 @@ check( ! in_array( 'Дизайн только для этого нового к�
 $faq_live_qa_action = wpae_llm_build_fallback_action( $faq_live_qa_message, 42 );
 $faq_live_qa_widget = (array) ( $faq_live_qa_action['elements'][0]['elements'][1] ?? [] );
 check( ( $faq_live_qa_widget['widgetType'] ?? '' ) === 'accordion' && count( (array) ( $faq_live_qa_widget['settings']['tabs'] ?? [] ) ) === 3 && empty( wpae_llm_content_fidelity( $faq_live_qa_message, $faq_live_qa_action['elements'] )['missing'] ), 'FAQ live QA fallback did not pass content fidelity with one native three-item Accordion' );
+$faq_library_source = [ container_node( 'faq-library-root', [], [
+	widget( 'faq-library-heading', 'heading', [ 'title' => 'Template questions' ] ),
+	widget( 'faq-library-accordion', 'accordion', [ 'tabs' => [ [ '_id' => 'oldtab1', 'tab_title' => 'Old question', 'tab_content' => 'Old answer' ], [ '_id' => 'oldtab2', 'tab_title' => 'Another old question', 'tab_content' => 'Another old answer' ] ] ] ),
+] ) ];
+$faq_library_changes = 0;
+$faq_library_adapted = wpae_llm_apply_library_template( $faq_library_source, $faq_answer_labeled_message, 'faq', $faq_library_changes );
+$faq_library_accordion = $faq_library_adapted[0]['elements'][1] ?? [];
+$faq_library_tabs = (array) ( $faq_library_accordion['settings']['tabs'] ?? [] );
+$faq_library_audit = wpae_llm_content_plan_audit( wpae_llm_content_plan( $faq_answer_labeled_message, 'faq' ), $faq_library_adapted );
+$faq_library_tab_ids = array_column( $faq_library_tabs, '_id' );
+check( count( $faq_library_adapted ) === 1 && ( $faq_library_accordion['widgetType'] ?? '' ) === 'accordion' && count( $faq_library_tabs ) === 2, 'Selected FAQ library template was rejected instead of adapting its native Accordion' );
+check( ( $faq_library_tabs[0]['tab_title'] ?? '' ) === 'Как начать проект?' && ( $faq_library_tabs[0]['tab_content'] ?? '' ) === 'Оставьте заявку, и мы обсудим задачу' && ( $faq_library_tabs[1]['tab_title'] ?? '' ) === 'Сколько стоит работа?' && ( $faq_library_tabs[1]['tab_content'] ?? '' ) === 'Стоимость зависит от объёма и сроков', 'FAQ library adaptation changed exact copy or question/answer order' );
+check( count( array_unique( $faq_library_tab_ids ) ) === 2 && $faq_library_tab_ids[0] !== 'oldtab1' && $faq_library_tab_ids[1] !== 'oldtab2' && ! empty( $faq_library_audit['ok'] ), 'FAQ library adaptation reused template tab IDs or failed the production semantic audit: ' . wp_json_encode( [ 'ids' => $faq_library_tab_ids, 'audit' => $faq_library_audit ], JSON_UNESCAPED_UNICODE ) );
 
 $portfolio_message = 'Создай блок «Наши проекты» с тремя работами: «Квартира у парка» — «Светлый интерьер для семьи»; «Дом у озера» — «Природные материалы и открытые пространства»; «Городская студия» — «Компактная планировка для одного человека». Сохрани три работы, точные описания и порядок. Используй редактируемые элементы Elementor. Не выдумывай фотографии выполненных проектов. Адаптируй для телефона.';
 $portfolio_pairs = wpae_llm_extract_labeled_content( $portfolio_message );

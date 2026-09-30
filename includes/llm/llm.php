@@ -1505,7 +1505,7 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     $repeatable_container_count = 0;
     $accordion_item_count = 0;
     $repeatable_archetypes = [ 'benefits', 'services', 'pricing', 'testimonials', 'team', 'process', 'portfolio' ];
-    $walk = static function ( array $nodes ) use ( &$walk, &$counts, &$button_texts ): void {
+    $walk = static function ( array $nodes ) use ( &$walk, &$counts, &$button_texts, &$accordion_item_count ): void {
         foreach ( $nodes as $element ) {
             if ( ! is_array( $element ) ) {
                 continue;
@@ -1513,8 +1513,11 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
             if ( ( $element['elType'] ?? '' ) === 'widget' ) {
                 $widget_type = sanitize_key( (string) ( $element['widgetType'] ?? '' ) );
                 $counts[ $widget_type ] = (int) ( $counts[ $widget_type ] ?? 0 ) + 1;
+                $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+                if ( $widget_type === 'accordion' ) {
+                    $accordion_item_count += count( (array) ( $settings['tabs'] ?? [] ) );
+                }
                 if ( $widget_type === 'button' ) {
-                    $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
                     $button_texts[] = trim( sanitize_text_field( (string) ( $settings['text'] ?? '' ) ) );
                 }
             }
@@ -1548,9 +1551,6 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
                     }
                     if ( $has_copy || in_array( $widget_type, [ 'image', 'image-box', 'image-carousel', 'icon', 'icon-list', 'price-list', 'testimonial', 'accordion' ], true ) ) {
                         $meaningful_widgets++;
-                    }
-                    if ( $widget_type === 'accordion' ) {
-                        $accordion_item_count += count( (array) ( $settings['tabs'] ?? [] ) );
                     }
                 }
                 if ( empty( $child_containers ) && $meaningful_widgets > 0 ) {
@@ -4956,6 +4956,57 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
 	}
 	$pricing_contract = wpae_llm_extract_pricing_content( $message );
 	$pairs = wpae_llm_extract_labeled_content( $message );
+	if ( $archetype === 'faq' ) {
+		$faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 8 );
+		if ( count( $faq_pairs ) < 2 ) {
+			return [];
+		}
+		$template_elements = array_map( static fn( $element ): array => is_array( $element ) ? $clone_with_ids( $element, 'library-faq' ) : [], $template_elements );
+		$apply_faq_items = static function ( array &$nodes ) use ( &$apply_faq_items, $faq_pairs, &$changed ): bool {
+			foreach ( $nodes as &$node ) {
+				if ( ! is_array( $node ) ) {
+					continue;
+				}
+				if ( ( $node['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $node['widgetType'] ?? '' ) ) === 'accordion' ) {
+					$settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+					$source_tabs = array_values( array_filter( (array) ( $settings['tabs'] ?? [] ), 'is_array' ) );
+					$source_tab = $source_tabs[0] ?? [];
+					$tabs = [];
+					foreach ( $faq_pairs as $index => $pair ) {
+						$question = trim( sanitize_text_field( (string) ( $pair['label'] ?? '' ) ) );
+						$answer = trim( sanitize_text_field( (string) ( $pair['content'] ?? '' ) ) );
+						if ( $question === '' || $answer === '' ) {
+							continue;
+						}
+						if ( ! preg_match( '/[?؟]$/u', $question ) ) {
+							$question .= '?';
+						}
+						$tab = $source_tab;
+						$tab['_id'] = substr( md5( 'library-faq-tab-' . (string) ( $node['id'] ?? 'accordion' ) . '-' . (string) $index ), 0, 7 );
+						$tab['tab_title'] = $question;
+						$tab['tab_content'] = $answer;
+						$tabs[] = $tab;
+					}
+					if ( count( $tabs ) < 2 ) {
+						return false;
+					}
+					$settings['tabs'] = $tabs;
+					$node['settings'] = $settings;
+					$changed += count( $tabs );
+					return true;
+				}
+				if ( is_array( $node['elements'] ?? null ) && $apply_faq_items( $node['elements'] ) ) {
+					return true;
+				}
+			}
+			unset( $node );
+			return false;
+		};
+		if ( $apply_faq_items( $template_elements ) ) {
+			return $template_elements;
+		}
+		return [];
+	}
 	if ( $archetype === 'pricing' && count( (array) ( $pricing_contract['items'] ?? [] ) ) >= 2 ) {
 		$pricing_layout = wpae_llm_build_pricing_pair_layout( $template_elements, $pricing_contract, $changed );
         if ( ! empty( $pricing_layout ) ) {

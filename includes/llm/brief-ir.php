@@ -363,6 +363,10 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$before = substr( $source_text, 0, $start );
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		$role = wpae_brief_ir_label_role( $prefix );
+		// A leading "CTA:" names the section; it is not itself a button label.
+		if ( $archetype === 'cta' && $cta_index === 0 && $role === 'cta' && preg_match( '/^\s*(?:cta|call\s+to\s+action)\s*[:\-]?\s*$/iu', $prefix ) ) {
+			$role = 'title';
+		}
 		if ( $archetype === 'cta' && $role === 'text' && $cta_index === 0 && preg_match( '/(?:\bcta\b|call\s+to\s+action|призыв\w*\s+к\s+действи\w*|cta[-\s]+секци\w*|секци\w*\s+cta)/iu', $prefix ) ) {
 			$role = 'title';
 		}
@@ -427,6 +431,34 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$previous_quote_inner = $inner;
 		$previous_quote_end = $start + strlen( $full );
+	}
+	if ( $archetype === 'cta' ) {
+		$title = null;
+	$first_button = null;
+		foreach ( $content as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			if ( ( $item['role'] ?? '' ) === 'title' && $title === null ) {
+				$title = $item;
+			}
+			if ( in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2' ], true ) && ( $first_button === null || (int) ( $item['source_span'][0] ?? PHP_INT_MAX ) < (int) ( $first_button['source_span'][0] ?? PHP_INT_MAX ) ) ) {
+				$first_button = $item;
+			}
+		}
+		$has_body = (bool) array_filter( $content, static fn( $item ): bool => is_array( $item ) && ( $item['role'] ?? '' ) === 'body' );
+		if ( $title !== null && $first_button !== null && ! $has_body ) {
+			$body_start = (int) ( $title['source_span'][1] ?? 0 );
+			$body_end = (int) ( $first_button['source_span'][0] ?? $body_start );
+			$body_source = substr( $source_text, $body_start, max( 0, $body_end - $body_start ) );
+			$body_source = preg_replace( '/\s*(?:(?:основн\w*|вторичн\w*)\s+)?(?:кнопк\w*|button|cta)\s*[:\-]?\s*$/iu', '', $body_source ) ?? $body_source;
+			$body_text = ltrim( $body_source, " \t\n\r\0\x0B.!?—–-" );
+			$leading_trim = strlen( $body_source ) - strlen( $body_text );
+			$body_text = rtrim( $body_text );
+			if ( $body_text !== '' ) {
+				$add_content( 'body', $body_text, $body_start + $leading_trim, strlen( $body_text ), null, 0.9, false );
+			}
+		}
 	}
 	if ( $archetype === 'benefits' && ! array_filter( $content, static fn( $item ): bool => ( $item['role'] ?? '' ) === 'feature_title' ) ) {
 		// Accept compact unquoted lists such as "Title — description; Title — description"
