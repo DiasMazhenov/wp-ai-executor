@@ -1825,6 +1825,10 @@ $team_library_preflight = wpae_llm_preflight_library_candidates( [
 	],
 ], $team_library_prompt, 'team', wpae_llm_content_plan( $team_library_prompt, 'team' ), 42 );
 check( count( (array) ( $team_library_preflight['selection_candidates'] ?? [] ) ) === 1 && ( $team_library_preflight['selection_candidates'][0]['choice_key'] ?? '' ) === 'candidate_1' && ( $team_library_preflight['selection_candidates'][0]['title'] ?? '' ) === 'Adaptable team', 'Library agent is offered only candidates that pass the production adapter, native shape, fidelity, and semantic checks' );
+$team_preflight_elements = (array) ( $team_library_preflight['selection_candidates'][0]['_wpae_preflight_elements'] ?? [] );
+$team_preflight_resolution = wpae_llm_resolve_library_choice( $team_library_preflight, 'candidate_1' );
+$team_selected_preflight_elements = (array) ( $team_preflight_resolution['selected']['_wpae_preflight_elements'] ?? [] );
+check( ! empty( $team_preflight_elements ) && ! empty( $team_preflight_resolution['ok'] ) && wp_json_encode( $team_selected_preflight_elements ) === wp_json_encode( $team_preflight_elements ) && wpae_llm_content_plan_audit( wpae_llm_content_plan( $team_library_prompt, 'team' ), $team_selected_preflight_elements )['ok'], 'Library selection carries forward the exact server-adapted tree that passed preflight, rather than adapting the chosen candidate again after the provider response' );
 $testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
 check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
 $testimonial_plan = wpae_llm_content_plan( $testimonials_prompt, 'testimonials' );

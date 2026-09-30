@@ -10073,6 +10073,8 @@ function wpae_llm_preflight_library_candidates( array $retrieval, string $messag
 			|| ( $archetype === 'cta' && empty( wpae_llm_provider_composition_quality( $message, $elements, $archetype )['ok'] ) ) ) {
 			continue;
 		}
+		$candidate['_wpae_preflight_elements'] = $elements;
+		$candidate['_wpae_preflight_changed'] = $changed;
 		$compatible[] = $candidate;
 		if ( count( $compatible ) === 3 ) {
 			break;
@@ -10085,7 +10087,7 @@ function wpae_llm_preflight_library_candidates( array $retrieval, string $messag
 		$key = 'candidate_' . ( $index + 1 );
 		$candidate['choice_key'] = $key;
 		$retrieval['selection_candidates'][] = $candidate;
-		$retrieval['candidates'][] = array_diff_key( $candidate, [ 'elementor_data' => true ] );
+		$retrieval['candidates'][] = array_diff_key( $candidate, [ 'elementor_data' => true, '_wpae_preflight_elements' => true, '_wpae_preflight_changed' => true ] );
 	}
 	$retrieval['compatible_candidate_count'] = count( $compatible );
 	if ( empty( $compatible ) ) {
@@ -11549,7 +11551,14 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             );
         }
         if ( ( $action_fallback || $library_selection_source === 'model_choice' ) && ! $vision_fallback_mode && ! empty( $selected_library['elementor_data'] ) && is_array( $selected_library['elementor_data'] ) ) {
-            $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
+            $preflight_elements = $selected_library['_wpae_preflight_elements'] ?? null;
+            if ( is_array( $preflight_elements ) ) {
+                // Reuse the exact tree that passed server preflight; a second adapter pass can diverge from the candidate contract the model selected.
+                $library_elements = $preflight_elements;
+                $library_changed = (int) ( $selected_library['_wpae_preflight_changed'] ?? 0 );
+            } else {
+                $library_elements = wpae_llm_apply_library_template( $selected_library['elementor_data'], $message, $action_archetype, $library_changed, ! empty( $selected_library['trusted_bundled'] ) );
+            }
             if ( ! empty( $library_elements ) ) {
                 $template_source_fingerprint = wpae_llm_template_fingerprint( $library_elements );
                 $library_action = [
@@ -11616,6 +11625,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 					'library_selection_source' => $library_selection_source,
 					'library_skip_reason' => $library_skip_reason,
 					'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ),
+					'compatible_candidate_count' => (int) ( $library_retrieval['compatible_candidate_count'] ?? 0 ),
+					'offered_candidate_count' => count( (array) ( $library_retrieval['selection_candidates'] ?? [] ) ),
+					'selected_candidate_key' => sanitize_key( $provider_library_choice ),
+					'selected_candidate_preflighted' => is_array( $selected_library['_wpae_preflight_elements'] ?? null ),
 					'provider_call_count' => count( $provider_attempts ) + count( $repair_attempts ),
 					'write_count' => 0,
 				],
