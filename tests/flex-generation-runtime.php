@@ -1818,6 +1818,10 @@ foreach ( (array) ( $services_inline_brief['content'] ?? [] ) as $item ) {
 	if ( is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'service_title', 'service_body' ], true ) ) { $services_inline_copy[] = (string) ( $item['exact_text'] ?? '' ); }
 }
 check( $services_inline_copy === [ 'Стратегия проекта', 'Формулируем задачу и согласуем план работ', 'Архитектура и дизайн', 'Разрабатываем решение под заданный контекст', 'Сопровождение', 'Проверяем соответствие согласованному проекту' ], 'Single-paragraph Services extraction preserves the exact requested six values in order' );
+$services_semicolon_prompt = 'Блок услуг. Услуга 1: «Архитектурное проектирование» — «Концепция и планировка»; Услуга 2: «Рабочая документация» — «Чертежи и спецификации»; Услуга 3: «Авторский надзор» — «Контроль соответствия проекту».';
+$services_semicolon_brief = wpae_brief_ir_parse( $services_semicolon_prompt );
+$services_semicolon_pairs = wpae_llm_extract_services_content( $services_semicolon_prompt );
+check( ( $services_semicolon_brief['intent']['archetype'] ?? '' ) === 'services' && count( $services_semicolon_pairs ) === 3 && ( $services_semicolon_pairs[2]['label'] ?? '' ) === 'Авторский надзор' && ( $services_semicolon_pairs[2]['content'] ?? '' ) === 'Контроль соответствия проекту', 'Inline Services pairs separated by semicolons preserve all three exact service slots' );
 $services_inline_ambiguous = wpae_brief_ir_parse( 'Блок услуг. Услуга 1: «Стратегия проекта» — «Формулируем задачу». Услуга 2: «Архитектура» — описание без кавычек.' );
 check( ! empty( array_filter( (array) ( $services_inline_ambiguous['ambiguities'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['kind'] ?? '' ) === 'incomplete_service_pair' ) ), 'An incomplete inline service pair remains an explicit ambiguity instead of disappearing silently' );
 $services_ambiguous_brief = wpae_brief_ir_parse( "Услуга 1: «Стратегия проекта» — без кавычек" );

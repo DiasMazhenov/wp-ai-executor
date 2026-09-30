@@ -1,4 +1,85 @@
-## Текущий срез — live проверка семейств и исправления parser/audit
+## Текущий срез — post=5214 live-проверка семейств, source v207 / editor v204
+
+Срез: **2026-09-30 15:16 +05:00 (Asia/Almaty)**. Генерации выполнялись на существующем `post=5214` в одной вкладке Elementor. Новые страницы/drafts/editor tabs не создавались; чужие настройки и соседние плагины не менялись.
+
+### Версии и выпуск
+
+- Source checkout: plugin version candidate `v02.11.208`. Предыдущий commit `cc0cf1b473128187fc744845c34a5c25903709f1` (`v02.11.207`) исправляет CTA archetype recognition для заголовка с точкой (`CTA.`), чтобы generic hero heuristic не перехватывал самостоятельный CTA; regression проверяет самостоятельный CTA и hero с кнопками. В текущем candidate `includes/llm/brief-ir.php` принимает `;` как границу между однозначно заключёнными в кавычки Services-парами и поднимает BriefIR parser provenance до v8. Ошибка воспроизведена на production prompt: semicolon-separated пары были отвергнуты, тогда как тот же список с переносами строки был принят. В `tests/flex-generation-runtime.php` добавлен regression на три точные пары; `tests/design-pipeline-contract.php` проверяет актуальную parser provenance.
+- Ранее в этой рабочей серии source v206 распределил process cards по desktop row (`9e14777`); v207 содержит v206 и более ранний Team audit fix.
+- Git push для source commit `cc0cf1b` в `main` был выполнен ранее в этой рабочей серии. Текущий v208 candidate ещё не закоммичен и не отправлен. Локальная remote-tracking ссылка на момент фиксации отчёта отставала (`origin/main` локально указывает `50c2e97`), поэтому remote tip здесь не считался независимо подтверждённым.
+- Открытая вкладка Elementor и inline config/LLM UI сообщают `v02.11.204`; пользователь ранее сообщил v201, это сообщение не совпадает с текущим браузерным наблюдением. Установка v207 через открытую вкладку WP Pusher не подтверждена: `cua.getTab('15', {browser:'iab'})` вернул `Timed out running CDP command "Emulation.setFocusEmulationEnabled" for tab 15`. Установка и настройки сайта не менялись обходным транспортом.
+- v208 candidate локально проверен после parser fix: `php -l includes/llm/brief-ir.php`, `php -l wp-ai-executor.php`, `php -l tests/design-pipeline-contract.php` — PASS; `tests/flex-generation-runtime.php` — 566 checks PASS; `tests/design-pipeline-contract.php` — 270 PASS; `tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — 6/6 PASS; package probe — 249 файлов, 0 hash mismatches; `git diff --check` — PASS. v208 не установлен live. В этом отчётном обновлении также сохранены screenshot PNGs и описано наблюдаемое состояние.
+
+### Источники и финальное состояние страницы
+
+После save/reload существующей страницы `post=5214` свежий Editor preview и public DOM показали одинаковые roots: Hero `b51107f`, Services `bb1e7c1`. Это текущая наблюдаемая пара источников. Более ранние операции этой серии сообщали успешную запись других roots; после итогового reload их в этих двух DOM источниках не обнаружено. Их дальнейшую судьбу этим чтением не устанавливаем. Другие user roots не удалялись.
+
+#### Hero — `b51107f`
+
+Запрос: `Hero. Надзаголовок: «АРХИТЕКТУРА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект» → #contact. Добавь фотографию с Unsplash.` Operation `wpae-20260930095358-d20cea3a`. В production route построен Hero через deterministic fallback после того, как provider-композиция не прошла semantic quality gate. HTTP save/reload подтверждён; editor/public DOM содержат точный надзаголовок, заголовок, описание, ссылку `#contact` и native image из Unsplash с alt `Современный архитектурный интерьер.`. Public desktop визуально показывает текст слева, изображение справа. Автоматический Vision capture — FAIL (`wpae_vision_capture_failed`), поэтому operation-bound Vision PASS нет. Public mobile для этого root в текущем цикле — NOT RUN.
+
+![Hero — editor после reload, post=5214, root=b51107f, operation=wpae-20260930095358-d20cea3a, viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/hero-v204-editor.png)
+
+[Открыть Hero editor PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/hero-v204-editor.png)
+
+![Hero — public после reload, post=5214, root=b51107f, operation=wpae-20260930095358-d20cea3a, CSS viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/hero-v204-public.png)
+
+[Открыть Hero public PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/hero-v204-public.png)
+
+#### Services — `bb1e7c1`
+
+Два более ранних запроса отклонены до записи парсером: IDs `4c742d46-75b8-4c9a-9dd8-890d96bbcc57` и `d0e94eb7-9547-4755-86d9-592c566fb246`; в обоих краткая/разделённая точкой с запятой запись не образовала однозначные пары. Успешный запрос отдельными строками:
+
+Это подтверждённое ограничение parser: обычный `;` между закрытыми парами не распознавался как граница, хотя line-break и inline-with-period варианты поддерживаются. Source candidate v208 добавил эту границу с regression; на текущем live editor v204 исправление не загружено и повтор через live путь не выполнялся.
+
+```text
+Блок услуг.
+Услуга 1: «Архитектурное проектирование» — «Концепция и планировка»
+Услуга 2: «Рабочая документация» — «Чертежи и спецификации»
+Услуга 3: «Авторский надзор» — «Контроль соответствия проекту»
+```
+
+Operation `wpae-20260930100353-46a09c81`; root `bb1e7c1`. После Elementor save/reload editor preview и public DOM содержат три точных title/body пары и изображения native Image. Advisory Vision сообщил score 94/confidence98 и положительную проверку трёх колонок; это текстовый advisory в чате, не приложенный operation-bound review. Browser Use inspection: public desktop — три равные карточки в строке, тонкая рамка/скругление, точный текст; mobile — одна карточка на строку без горизонтального overflow. Плавающая кнопка AI-Dana видна в углу mobile кадров, поверх текста не закрывает.
+
+Фактический public desktop CSS viewport `1228×923`; PNG canvas `1228×923`. Mobile viewport по `window.innerWidth/innerHeight` — `390×844`; `documentElement.scrollWidth=375`, то есть horizontal overflow не выявлен. Browser screenshot canvas для mobile `375×812` из-за масштаба поверхности; это физический размер файла, а не CSS viewport. Для полного stack сохранены два кадра: первый показывает услуги 1–2, второй — услуги 1–3. Editor canvas занимает уменьшенную ширину рядом с панелью Elementor, поэтому край третьей карточки виден у границы; public является основанием визуальной оценки.
+
+![Services — editor после reload, post=5214, root=bb1e7c1, operation=wpae-20260930100353-46a09c81, viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-editor.png)
+
+[Открыть Services editor PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-editor.png)
+
+![Services — public desktop после reload, post=5214, root=bb1e7c1, operation=wpae-20260930100353-46a09c81, viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-public.png)
+
+[Открыть Services public desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-public.png)
+
+![Services — public mobile, кадр 1, post=5214, root=bb1e7c1, operation=wpae-20260930100353-46a09c81, CSS viewport 390×844](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-mobile-1.png)
+
+[Открыть Services mobile кадр 1 PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-mobile-1.png)
+
+![Services — public mobile, кадр 2, post=5214, root=bb1e7c1, operation=wpae-20260930100353-46a09c81, CSS viewport 390×844](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-mobile-2.png)
+
+[Открыть Services mobile кадр 2 PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v207/services-v204-mobile-2.png)
+
+### Матрица live coverage (текущая source/live граница)
+
+| Archetype | Наблюдение | Итоговый статус |
+|---|---|---|
+| Hero | root `b51107f`, operation `wpae-20260930095358-d20cea3a`; точный copy/CTA/photo, save/reload, public desktop PNG | Content/save PASS; desktop визуально приемлем; mobile NOT RUN; operation-bound Vision FAIL capture |
+| Services | root `bb1e7c1`, operation `wpae-20260930100353-46a09c81`; exact 3 pairs, native images, save/reload, public desktop/mobile PNG | Content/save PASS; desktop/mobile layout PASS; advisory 94/98 не review |
+| Benefits | Ранее в этом run записан root `dca2ada`, operation `wpae-20260930001144-04ef4a4b`, advisory 95/98; отсутствует в финальных editor/public roots | Generation PASS на шаге write; durable presence после итогового reload не подтверждена; свежие responsive screenshots NOT RUN |
+| Process | root `eb4e94c`, operation `wpae-20260930003211-7b7c315f`, advisory 90/98; прежний кадр показал cards с малой desktop шириной; source v206 содержит flex-grow fix, live runtime v204 | Content/save в operation logs PASS; visual FAIL/partial; v206 fix не установлен live; отсутствует в финальных roots |
+| Pricing | root `d6ff183`, operation `wpae-20260930005611-25214a08`, advisory 90/98; public screenshot сохранён из предыдущего среза | Content/save в operation logs PASS; новый save/reload не подтверждён финальным DOM; отсутствует в финальных roots |
+| CTA | root `8da0ce5`, operation `wpae-20260930010520-035f7118`; ранее был ошибочно классифицирован как Hero, beige visual placeholder и пустая правая область | Visual FAIL; source v207 содержит classifier fix для `CTA.`; не установлен, live repair не проверен, root отсутствует в финальном DOM |
+| Testimonials | В прежних live циклах сохранение было подтверждено, визуально показан bento split с отдельным pill/контентом | Visual FAIL исторической проверки; свежий root/save/reload в финальном срезе отсутствует |
+| Team | На editor v204 две попытки остановлены до write validation; request IDs `7b48c99a-acc4-40b6-b69c-12f7e7a646d5`, `5debc17b-f50b-4bd9-a7ea-ea5d813e3e2c` | FAIL до write на runtime v204; source fix не был подтверждён live |
+| FAQ | На editor v204 две попытки остановлены до write `faq_questions_and_answers_required`; request IDs `4a2fad56-6167-4cab-80a7-1487bfde036e`, `e1f3e947-d4bf-468f-bc89-c34ccb33e396` | FAIL до write на runtime v204; обновлённый parser не проверен live |
+
+В текущем финальном document set два root ID (`b51107f`, `bb1e7c1`). Generation logs прежних operations не считаются доказательством, что их roots остаются в сохранённом документе. Каталог заявляет 158 manifest entries, но все JSON-кандидаты отдельно не генерировались и не приёмались; фактически прошёл live render только один Hero и один Services fallback. Успешное применение library template не подтверждено для этих двух roots.
+
+### Проверки артефактов
+
+Все четыре Services screenshot bytes пришли из Browser Use как JPEG (`FF D8 FF E0`), сохранены во временные raw файлы, конвертированы штатным `sips` в PNG, `file` подтвердил PNG и размеры `1228×923` desktop / `375×812` mobile; каждый PNG открыт и визуально проверен. Hero editor/public PNG были также открыты и просмотрены. Файл отчёта содержит inline изображение и абсолютную ссылку на каждый проверенный кадр. Для Services мобильного кадра CSS viewport указан отдельно от физического canvas размера.
+
+## Исторический срез — live проверка семейств и исправления parser/audit (v202–v204)
 
 Срез: **2026-09-30 04:46 +05:00 (Asia/Almaty)**. Работа велась в существующем `post=5214` и одной Elementor-вкладке. Новые страницы, drafts и вкладки редактора не создавались.
 

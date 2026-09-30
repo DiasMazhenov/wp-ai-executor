@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v7';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v8';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -267,7 +267,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 
 	$service_quote_spans = [];
 	if ( $archetype === 'services' ) {
-		$service_line_pattern = '/(?<![\p{L}\p{N}_])Услуга[ \t]+#?(\d+)[ \t]*:[ \t]*(?<title_quote>«(?<title_angle>[^»\r\n]{1,240})»|“(?<title_curly>[^”\r\n]{1,240})”|"(?<title_plain>[^"\r\n]{1,240})")[ \t]*[—–-][ \t]*(?<body_quote>«(?<body_angle>[^»\r\n]{1,400})»|“(?<body_curly>[^”\r\n]{1,400})”|"(?<body_plain>[^"\r\n]{1,400})")[.!]?(?=[ \t]*(?:Услуга[ \t]+#?\d+[ \t]*:|$)|\r?\n)/iu';
+		$service_line_pattern = '/(?<![\p{L}\p{N}_])Услуга[ \t]+#?(\d+)[ \t]*:[ \t]*(?<title_quote>«(?<title_angle>[^»\r\n]{1,240})»|“(?<title_curly>[^”\r\n]{1,240})”|"(?<title_plain>[^"\r\n]{1,240})")[ \t]*[—–-][ \t]*(?<body_quote>«(?<body_angle>[^»\r\n]{1,400})»|“(?<body_curly>[^”\r\n]{1,400})”|"(?<body_plain>[^"\r\n]{1,400})")[.!]?(?:[ \t]*;)?(?=[ \t]*(?:Услуга[ \t]+#?\d+[ \t]*:|$)|\r?\n)/iu';
 		$service_lines = [];
 		preg_match_all( $service_line_pattern, $source_text, $service_lines, PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL );
 		$service_numbers = [];
