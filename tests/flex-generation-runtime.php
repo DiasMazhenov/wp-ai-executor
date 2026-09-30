@@ -210,8 +210,8 @@ check( count( $unsafe_accordion_patches['report']['errors'] ) === 2 && ( $unsafe
 
 $library_selection_fixture = [
 	'selection_candidates' => [
-		[ 'choice_key' => 'candidate_1', 'title' => 'Шаблон A', 'elementor_data' => [ [ 'id' => 'tree-a' ] ] ],
-		[ 'choice_key' => 'candidate_2', 'title' => 'Шаблон B', 'elementor_data' => [ [ 'id' => 'tree-b' ] ] ],
+		[ 'choice_key' => 'candidate_1', 'title' => 'Шаблон A', 'description' => 'Карточки команды с портретом и должностью.', 'structure' => [ [ 'container' => 'row', 'children' => [ 'image', 'heading', 'text-editor' ] ] ], 'elementor_data' => [ [ 'id' => 'tree-a' ] ] ],
+		[ 'choice_key' => 'candidate_2', 'title' => 'Шаблон B', 'description' => 'Список FAQ в аккордеоне.', 'structure' => [ [ 'container' => 'column', 'children' => [ 'heading', 'accordion' ] ] ], 'elementor_data' => [ [ 'id' => 'tree-b' ] ] ],
 	],
 ];
 $library_choice = wpae_llm_resolve_library_choice( $library_selection_fixture, 'candidate_2' );
@@ -220,6 +220,7 @@ $library_invalid_choice = wpae_llm_resolve_library_choice( $library_selection_fi
 check( empty( $library_invalid_choice['ok'] ) && ( $library_invalid_choice['source'] ?? '' ) === 'invalid_model_choice' && empty( $library_invalid_choice['selected'] ), 'Agent library choice accepted an unlisted template key' );
 $library_choice_prompt = wpae_llm_library_decision_prompt( $library_selection_fixture );
 check( strpos( $library_choice_prompt, 'candidate_2' ) !== false && strpos( $library_choice_prompt, 'tree-b' ) === false, 'Library decision prompt failed to expose bounded choices without raw Elementor JSON' );
+check( strpos( $library_choice_prompt, 'Карточки команды' ) !== false && strpos( $library_choice_prompt, '"container":"row"' ) !== false && strpos( $library_choice_prompt, 'Выбери ровно один лучший подходящий choice_key' ) !== false, 'Library choice prompt provides compact candidate semantics and layout structure so the model can compare templates instead of guessing from titles alone' );
 check( strpos( $library_choice_prompt, 'elements: []' ) !== false && strpos( $library_choice_prompt, 'явно откажись от записи' ) !== false && strpos( $library_choice_prompt, 'Не заменяй отказ собственной native-композицией' ) !== false, 'Library decision prompt requires a no-write refusal instead of native fallback when offered templates do not fit' );
 $library_only_envelope = wpae_llm_validate_library_choice_action( [ 'action' => 'insert_elements', 'post_id' => 42, 'library_choice' => 'candidate_2', 'elements' => [] ], 42, $library_selection_fixture );
 $library_wrong_target_envelope = wpae_llm_validate_library_choice_action( [ 'action' => 'insert_elements', 'post_id' => 99, 'library_choice' => 'candidate_2', 'elements' => [] ], 42, $library_selection_fixture );

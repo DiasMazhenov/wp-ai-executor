@@ -199,6 +199,34 @@ function wpae_block_library_collect_stats( array $elements ): array {
     return $stats;
 }
 
+function wpae_block_library_prompt_structure( array $elements, int $depth = 0, int &$budget = 18 ): array {
+    $profile = [];
+    foreach ( array_slice( $elements, 0, 8 ) as $element ) {
+        if ( ! is_array( $element ) || $budget <= 0 ) {
+            break;
+        }
+        $budget--;
+        if ( ( $element['elType'] ?? '' ) === 'widget' ) {
+            $profile[] = sanitize_key( (string) ( $element['widgetType'] ?? '' ) ) ?: 'widget';
+            continue;
+        }
+        $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        $direction = sanitize_key( (string) ( $settings['flex_direction'] ?? '' ) );
+        if ( ! in_array( $direction, [ 'row', 'column', 'row_reverse', 'column_reverse' ], true ) ) {
+            $direction = '';
+        }
+        $node = [ 'container' => $direction ?: 'layout', 'children' => [] ];
+        if ( $depth < 3 && is_array( $element['elements'] ?? null ) ) {
+            $node['children'] = wpae_block_library_prompt_structure( $element['elements'], $depth + 1, $budget );
+        }
+        $profile[] = $node;
+    }
+    if ( count( $elements ) > 8 ) {
+        $profile[] = '…';
+    }
+    return $profile;
+}
+
 function wpae_block_library_compatibility_report( array $elementor_data ): array {
     $raw_errors = wpae_validate_elementor_data_array( $elementor_data );
     $normalized = wpae_elementor_normalize_data( $elementor_data );
@@ -1001,6 +1029,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
             'widget_types' => array_slice( array_values( array_map( 'sanitize_key', (array) ( $compatibility_stats['widget_types'] ?? [] ) ) ), 0, 12 ),
             'root_count' => count( (array) ( $candidate['elementor_data'] ?? [] ) ),
             'media_reference_count' => count( (array) ( $compatibility_stats['media_references'] ?? [] ) ),
+            'structure' => wpae_block_library_prompt_structure( (array) ( $candidate['elementor_data'] ?? [] ) ),
             'score' => (int) $candidate['score'],
             'matched_terms' => $candidate['matched_terms'],
             'status' => (string) ( $candidate['summary']['status'] ?? '' ),

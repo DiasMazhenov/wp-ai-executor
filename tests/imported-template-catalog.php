@@ -69,6 +69,13 @@ $manifest = wpae_block_library_imported_template_manifest();
 imported_template_check( count( $manifest ) === 158, 'The plugin manifest must include all 158 imported JSON files.' );
 $records = wpae_block_library_imported_template_records( '', [] );
 imported_template_check( count( $records ) === 156, 'Only the 156 exports with Elementor content trees should enter retrieval.' );
+$profile = wpae_block_library_prompt_structure( [
+	[ 'elType' => 'container', 'settings' => [ 'flex_direction' => 'row', '_css_classes' => 'must-not-leak' ], 'id' => 'private-root-id', 'elements' => [
+		[ 'elType' => 'widget', 'widgetType' => 'image', 'id' => 'private-image-id', 'settings' => [ 'title' => 'Private template copy' ] ],
+		[ 'elType' => 'container', 'settings' => [ 'flex_direction' => 'column' ], 'elements' => [ [ 'elType' => 'widget', 'widgetType' => 'heading' ] ] ],
+	] ],
+] );
+imported_template_check( ( $profile[0]['container'] ?? '' ) === 'row' && ( $profile[0]['children'][0] ?? '' ) === 'image' && ( $profile[0]['children'][1]['container'] ?? '' ) === 'column' && ! str_contains( wp_json_encode( $profile ), 'private-root-id' ) && ! str_contains( wp_json_encode( $profile ), 'Private template copy' ), 'The selection profile summarizes widget/layout topology without copying IDs, classes, or template text.' );
 
 $ids = [];
 foreach ( $records as $record ) {
