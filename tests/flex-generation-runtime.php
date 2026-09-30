@@ -2061,14 +2061,19 @@ $services_root_padding_mobile = (array) ( $services_command_tree[0]['settings'][
 check( ( $services_root_padding['left'] ?? null ) === '4.5' && ( $services_root_padding['right'] ?? null ) === '4.5' && ( $services_root_padding_tablet['left'] ?? null ) === '0' && ( $services_root_padding_tablet['right'] ?? null ) === '0' && ( $services_root_padding_mobile['left'] ?? null ) === '2' && ( $services_root_padding_mobile['right'] ?? null ) === '2', 'Services outer container preserves reference horizontal padding on desktop, tablet, and mobile' );
 $services_command_json = wp_json_encode( $services_command_tree, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 $services_command_headings = [];
+$services_command_badges = [];
 $services_command_spacers = 0;
 $services_command_dividers = 0;
 $services_command_globals = 0;
 
-$collect_services_command_nodes = static function ( array $nodes ) use ( &$collect_services_command_nodes, &$services_command_headings, &$services_command_spacers, &$services_command_dividers, &$services_command_globals ): void {
+$collect_services_command_nodes = static function ( array $nodes ) use ( &$collect_services_command_nodes, &$services_command_headings, &$services_command_badges, &$services_command_spacers, &$services_command_dividers, &$services_command_globals ): void {
 	foreach ( $nodes as $node ) {
 		if ( ! is_array( $node ) ) { continue; }
-		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' ) { $services_command_headings[] = trim( (string) ( $node['settings']['title'] ?? '' ) ); }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' ) {
+			$services_command_headings[] = trim( (string) ( $node['settings']['title'] ?? '' ) );
+			$classes = preg_split( '/\\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+			if ( in_array( 'wpae-generated-badge-label', $classes, true ) ) { $services_command_badges[] = trim( (string) ( $node['settings']['title'] ?? '' ) ); }
+		}
 		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'spacer' ) { $services_command_spacers++; }
 		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'divider' ) { $services_command_dividers++; }
 		if ( ! empty( $node['settings']['__globals__'] ) ) { $services_command_globals++; }
@@ -2077,6 +2082,7 @@ $collect_services_command_nodes = static function ( array $nodes ) use ( &$colle
 };
 $collect_services_command_nodes( $services_command_tree );
 check( in_array( 'Стратегия проекта', $services_command_headings, true ) && ! in_array( 'Услуги', $services_command_headings, true ) && ! str_contains( $services_command_json, 'Создай отдельную секцию услуг на post=5214' ), 'Services instruction-only first line is removed instead of becoming a fabricated section heading' );
+check( $services_command_badges === [ 'УСЛУГИ' ] && ! empty( wpae_llm_template_fingerprint( $services_command_tree )['has_badge'] ), 'Library cleanup preserves the generated Services pill while removing other unrequested copy' );
 $services_explicit_title_prompt = "Создай отдельную секцию услуг\nЗаголовок: «Услуги архитектурной студии»\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»";
 $services_explicit_title_changes = 0;
 $services_explicit_title_tree = wpae_llm_apply_library_template( $services_template_data, $services_explicit_title_prompt, 'services', $services_explicit_title_changes );
@@ -2273,6 +2279,15 @@ $services_library_fixture = [
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services' ] ],
 	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 0, 'bundled_fixture_id' => 'template-services-photo-cards-v1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
 ];
+$natural_services_library_message = "Услуги:\nСтратегия проекта — Формулируем задачу и согласуем план работ\nАрхитектура и дизайн — Разрабатываем решение под заданный контекст\nСопровождение — Проверяем соответствие согласованному проекту";
+$natural_services_library_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [] ];
+$natural_services_library_result = $run_services_route( $natural_services_library_message, [ provider_reply( wp_json_encode( $natural_services_library_action, JSON_UNESCAPED_UNICODE ) ) ], $services_library_fixture, 'services-natural-library-identity' );
+$natural_services_library_trace = (array) ( $natural_services_library_result['response']['library'] ?? [] );
+$natural_services_library_written = (array) ( $natural_services_library_result['written'] ?? [] );
+$natural_services_library_text = wpae_llm_collect_action_content( [ $natural_services_library_written ] );
+check( ! empty( $natural_services_library_result['response']['ok'] ) && ( $natural_services_library_trace['selection_source'] ?? '' ) === 'model_choice' && ( $natural_services_library_trace['status'] ?? '' ) === 'applied' && $natural_services_library_result['calls'] === 1 && $natural_services_library_result['writes'] === 1, 'A plain Services brief completes the model-selected library route through one existing writer' );
+check( ! empty( $natural_services_library_trace['fidelity']['ok'] ) && ! empty( $natural_services_library_trace['source_fingerprint']['has_badge'] ) && ! empty( wpae_llm_template_fingerprint( [ $natural_services_library_written ] )['has_badge'] ) && str_contains( $natural_services_library_text, 'УСЛУГИ' ), 'The chosen Services template retains its reference pill through copy cleanup and structural fidelity checks' );
+check( str_contains( $natural_services_library_text, 'Стратегия проекта' ) && str_contains( $natural_services_library_text, 'Формулируем задачу и согласуем план работ' ) && str_contains( $natural_services_library_text, 'Архитектура и дизайн' ) && str_contains( $natural_services_library_text, 'Разрабатываем решение под заданный контекст' ) && str_contains( $natural_services_library_text, 'Сопровождение' ) && str_contains( $natural_services_library_text, 'Проверяем соответствие согласованному проекту' ), 'The plain Services library route preserves the exact three ordered card pairs' );
 $pricing_library_message = 'Тарифы: Старт — от 50 000 ₸ — Для регулярных задач и развития проекта; Проект — от 150 000 ₸ — Для небольшой задачи с понятным объёмом; Поддержка — от 80 000 ₸/мес — Для комплексной работы от идеи до результата.';
 $incompatible_pricing_fixture = [
 	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,

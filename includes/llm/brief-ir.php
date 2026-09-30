@@ -311,6 +311,32 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$add_content( 'service_title', (string) $title_capture[0], (int) $title_capture[1], strlen( (string) $title_capture[0] ), null, 0.98, true, false, $group_id . '_title', false, $group_id );
 			$add_content( 'service_body', (string) $body_capture[0], (int) $body_capture[1], strlen( (string) $body_capture[0] ), null, 0.98, true, false, $group_id . '_body', false, $group_id );
 		}
+		if ( empty( $service_numbers ) ) {
+			$natural_pairs = [];
+			$line_offset = 0;
+			foreach ( preg_split( '/\n/', $source_text ) ?: [] as $line_index => $line ) {
+				if ( $line_index === 0 || preg_match( '/[«»“”"]|Услуга\s*#?\d+/iu', $line ) ) {
+					$line_offset += strlen( $line ) + 1;
+					continue;
+				}
+				if ( preg_match( '/^\s*(?<title>[^—–-]{2,180}?)\s*[—–-]\s*(?<body>[^\r\n]{2,400}?)\s*$/u', $line, $pair, PREG_OFFSET_CAPTURE ) ) {
+					$natural_pairs[] = [
+						'title' => (string) $pair['title'][0],
+						'title_start' => $line_offset + (int) $pair['title'][1],
+						'body' => (string) $pair['body'][0],
+						'body_start' => $line_offset + (int) $pair['body'][1],
+					];
+				}
+				$line_offset += strlen( $line ) + 1;
+			}
+			if ( count( $natural_pairs ) >= 2 ) {
+				foreach ( $natural_pairs as $index => $pair ) {
+					$group_id = 'service_' . (string) ( $index + 1 );
+					$add_content( 'service_title', $pair['title'], $pair['title_start'], strlen( $pair['title'] ), null, 0.9, true, false, $group_id . '_title', false, $group_id );
+					$add_content( 'service_body', $pair['body'], $pair['body_start'], strlen( $pair['body'] ), null, 0.9, true, false, $group_id . '_body', false, $group_id );
+				}
+			}
+		}
 		if ( preg_match_all( '/(?<![\p{L}\p{N}_])Услуга[ \t]+#?\d+[ \t]*:/iu', $source_text, $service_like_lines, PREG_OFFSET_CAPTURE ) ) {
 			foreach ( $service_like_lines[0] as $service_like_line ) {
 				$line = (string) $service_like_line[0];

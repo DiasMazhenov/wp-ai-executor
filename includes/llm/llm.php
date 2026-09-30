@@ -2704,7 +2704,10 @@ function wpae_llm_clear_unrequested_library_copy( array &$elements, string $mess
                 $keep = false;
                 if ( $widget_type === 'heading' ) {
                     $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
-                    if ( ! $title_set && $title !== '' && ( ! is_array( $classes ) || ! in_array( 'wpae-generated-badge-label', $classes, true ) ) ) {
+                    $is_generated_badge = is_array( $classes ) && in_array( 'wpae-generated-badge-label', $classes, true );
+                    if ( $is_generated_badge ) {
+                        $keep = true;
+                    } elseif ( ! $title_set && $title !== '' ) {
                         $settings['title'] = $title;
                         $title_set = true;
                         $keep = true;

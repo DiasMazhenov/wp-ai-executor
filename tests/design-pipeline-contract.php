@@ -784,6 +784,12 @@ $service_content_for = static function ( array $card ): array {
 	}
 	return [];
 };
+$natural_services_prompt = "Услуги:\nСтратегия проекта — Формулируем задачу и согласуем план работ\nАрхитектура и дизайн — Разрабатываем решение под заданный контекст\nСопровождение — Проверяем соответствие согласованному проекту";
+[ $natural_services_brief, $natural_services_plan, $natural_services_validation, $natural_services_compiled, $natural_services_nodes ] = $compile_prompt( $natural_services_prompt, 'services-natural-pairs' );
+$natural_services_cards = (array) ( array_values( array_filter( $natural_services_compiled['elementor_data'][0]['elements'] ?? [], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-service_cards' ) )[0]['elements'] ?? [] );
+$natural_services_copy = array_map( $service_content_for, $natural_services_cards );
+$check( $natural_services_brief['intent']['archetype'] === 'services' && count( $natural_services_plan['sections'][0]['children'][0]['items'] ?? [] ) === 3 && $natural_services_validation['ok'] && ! empty( $natural_services_compiled['ok'] ), 'plain multiline Services title/body pairs pass BriefIR, DesignPlan and native compiler without numbered field labels' );
+$check( array_map( static fn( array $panel ): array => [ (string) ( $panel['elements'][0]['settings']['title'] ?? '' ), trim( (string) ( $panel['elements'][1]['settings']['editor'] ?? '' ) ) ], $natural_services_copy ) === [ [ 'Стратегия проекта', 'Формулируем задачу и согласуем план работ' ], [ 'Архитектура и дизайн', 'Разрабатываем решение под заданный контекст' ], [ 'Сопровождение', 'Проверяем соответствие согласованному проекту' ] ], 'plain Services pairs preserve exact labels and descriptions in order' );
 foreach ( [ 2, 3, 4 ] as $service_count ) {
 	$service_prompt = "Блок услуг\nЗаголовок: «Услуги студии»\n";
 	for ( $service_index = 1; $service_index <= $service_count; $service_index++ ) {
