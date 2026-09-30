@@ -84,7 +84,7 @@ function wpae_brief_ir_archetype( string $source_text ): string {
 		'hero' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:новый\s+)?(?:hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран)\b/iu',
 		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
 		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
-		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*(?:[:\-]|$)|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
+		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*(?:[.:\-–—]|$)|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
 	];
 	foreach ( $explicit as $candidate => $pattern ) {
 		if ( preg_match( $pattern, $intent_head ) ) {
