@@ -1136,7 +1136,7 @@ foreach ( $reference_items['elements'] as $reference_index => $reference_card ) 
     $card_classes = preg_split( '/\s+/', trim( (string) ( $card_settings['_css_classes'] ?? '' ) ) );
     check( in_array( 'wpae-process-content', $card_classes, true ), 'Reference timeline child is not a process-content card' );
     check( $card_settings['border_radius']['unit'] === 'px' && $card_settings['border_radius']['top'] === '20' && $card_settings['border_radius']['right'] === '20' && $card_settings['border_radius']['bottom'] === '20' && $card_settings['border_radius']['left'] === '20', 'Reference card radius does not match the supplied JSON' );
-    check( (float) $card_settings['width']['size'] === 22.0 && (float) $card_settings['width_mobile']['size'] === 100.0, 'Reference card width is not 22% desktop / 100% mobile' );
+	check( ! isset( $card_settings['width'] ) && ( $card_settings['_flex_size'] ?? '' ) === 'grow' && (int) ( $card_settings['_flex_grow'] ?? 0 ) === 1 && (float) $card_settings['width_mobile']['size'] === 100.0 && ( $card_settings['_flex_size_mobile'] ?? '' ) === 'custom', 'Reference cards do not evenly fill the desktop row and stack at full width on mobile' );
     check( count( $reference_card['elements'] ) === 3, 'Reference card child order/count does not match marker-row, heading, copy' );
     $marker_row = $reference_card['elements'][0];
     check( $marker_row['elType'] === 'container' && $marker_row['settings']['flex_direction'] === 'row' && ( $marker_row['settings']['padding']['top'] ?? null ) === '0', 'Reference marker row is not a native zero-padding Flex row' );

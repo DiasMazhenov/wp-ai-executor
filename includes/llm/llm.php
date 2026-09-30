@@ -6012,7 +6012,6 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		$timeline['settings']['flex_align_items'] = 'stretch';
 		$timeline['settings']['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
-		$step_width = max( 14, min( 22, 92 / max( 1, $step_count ) ) );
 		$horizontal_cards = [];
 
 		foreach ( $timeline_steps as $index => $source_step ) {
@@ -6123,9 +6122,17 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				'border_radius' => [ 'unit' => 'px', 'size' => 20, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ],
 				'padding' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ],
 				'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ],
+				'_element_width' => 'initial',
+				'_flex_size' => 'grow',
+				'_flex_grow' => 1,
+				'_flex_shrink' => 1,
+				'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+				'_element_width_mobile' => 'initial',
+				'_element_custom_width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
+				'_flex_size_mobile' => 'custom',
+				'_flex_grow_mobile' => 0,
+				'_flex_shrink_mobile' => 1,
 			];
-			wpae_llm_set_variant_container_width( $card_settings, $step_width );
-			$card_settings['_flex_shrink_mobile'] = 1;
 
 			$horizontal_cards[] = [
 				'id' => $id . '-content-' . (string) $step_number,
