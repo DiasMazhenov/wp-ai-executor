@@ -10016,7 +10016,7 @@ function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 	return "\nКандидаты приватной библиотеки (только совместимые; это метаданные, не факты для публикации): "
 		. wp_json_encode( $options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
 		. $services_media_note
-		. '. Как агент, сравни эти варианты и обязательно верни поле "library_choice" со значением одного choice_key или null. Не выбирай только по совпадению названия; учитывай тип секции, набор native widgets и наличие нужной структуры. Сервер адаптирует пользовательский контент в выбранный шаблон и повторно проверит точный текст, native shape и совместимость. Выбор не обходит эти проверки. Если ни один вариант не подходит, верни null и используй свою native-композицию.';
+		. '. Сравни варианты по типу секции, native widgets и структуре. Если подходит кандидат, верни его choice_key и elements: []: сервер сам адаптирует и проверит именно это дерево; не генерируй вторую композицию. Если ни один не подходит, верни library_choice: null и полное native-дерево в elements.';
 }
 
 function wpae_llm_resolve_library_choice( array $library_retrieval, string $choice ): array {
@@ -10031,6 +10031,17 @@ function wpae_llm_resolve_library_choice( array $library_retrieval, string $choi
 		return [ 'ok' => true, 'source' => 'model_choice', 'selected' => $candidate, 'choice_key' => $choice ];
 	}
 	return [ 'ok' => false, 'source' => 'invalid_model_choice', 'selected' => null, 'choice_key' => $choice ];
+}
+
+function wpae_llm_validate_library_choice_action( array $action, int $post_id, array $library_retrieval ): array {
+	$choice = sanitize_key( (string) ( $action['library_choice'] ?? '' ) );
+	$resolution = wpae_llm_resolve_library_choice( $library_retrieval, $choice );
+	$valid_command = (string) ( $action['action'] ?? '' ) === 'insert_elements'
+		&& $post_id > 0
+		&& absint( $action['post_id'] ?? 0 ) === $post_id
+		&& ! empty( $resolution['ok'] )
+		&& ! empty( $resolution['selected']['elementor_data'] );
+	return [ 'ok' => $valid_command, 'resolution' => $resolution ];
 }
 
 function wpae_llm_decode_action( string $reply, int $post_id = 0 ): array {
@@ -10961,7 +10972,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $system_prompt .= $targeted_edit ? ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только JSON-объект patch_elements. Не возвращай URL, endpoint, пояснения или markdown.' : ' КРИТИЧЕСКОЕ ПРАВИЛО: ответом должен быть только сам JSON-объект команды insert_elements. Не возвращай URL, HTTP-запросы, названия endpoint, пояснения, markdown или текст вроде POST /wp-json/... .';
         if ( ! $targeted_edit ) {
 			if ( ! empty( $library_retrieval['selection_candidates'] ) ) {
-				$system_prompt .= ' Корневое поле "library_choice" является обязательной частью JSON-команды insert_elements: выбери один из предложенных choice_key или укажи null, если ни один не подходит.';
+			$system_prompt .= ' Корневое поле "library_choice" является обязательной частью JSON-команды insert_elements: выбери один из предложенных choice_key или укажи null, если ни один не подходит. При выборе кандидата верни elements: [] — сервер применит выбранный шаблон; полное дерево elements нужно только при library_choice: null.';
 			}
 			$system_prompt .= wpae_llm_library_decision_prompt( $library_retrieval );
 		}
@@ -11213,15 +11224,17 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
         $decoded_shape = wpae_llm_validate_action_shape( $action, $post_id );
         $decoded_content_fidelity = wpae_llm_content_fidelity( $message, $decoded_elements );
         $initial_validation = wpae_llm_build_action_validation_diagnostics( $action, $post_id, $message );
-		$preselected_library_choice = wpae_llm_resolve_library_choice( $library_retrieval, $provider_library_choice );
-		$valid_model_selected_library = ! empty( $preselected_library_choice['ok'] )
-			&& is_array( $preselected_library_choice['selected']['elementor_data'] ?? null )
-			&& ! empty( $preselected_library_choice['selected']['elementor_data'] );
-		if ( $valid_model_selected_library && ! empty( $decoded_shape['ok'] ) ) {
-			// The provider tree is discarded when the model picks an allowlisted
-			// library candidate; validate the envelope here and the adapted tree below.
+		$preselected_library_action = wpae_llm_validate_library_choice_action( $action, $post_id, $library_retrieval );
+		$valid_model_selected_library = ! empty( $preselected_library_action['ok'] );
+		if ( $valid_model_selected_library ) {
+			// A server-allowlisted library tree replaces any provider-authored tree.
+			// Validate only the command envelope here; validate the adapted template below.
+			$action['elements'] = [];
+			$decoded_elements = [];
+			$decoded_widget_count = 0;
 			$initial_validation['ok'] = true;
 			$initial_validation['failed_checks'] = [];
+			$initial_validation['checks'] = [ 'library_choice_allowlisted' => true, 'target_post_matches' => true ];
 			$initial_validation['validation_scope'] = 'allowlisted_library_choice';
 			$initial_validation['provider_tree_ignored'] = true;
 			$initial_validation['content_validation_deferred_to_library_tree'] = true;
@@ -11290,10 +11303,18 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $candidate_action = (string) ( $candidate['action'] ?? $candidate['type'] ?? $candidate['command'] ?? '' );
                 $candidate_post_id = absint( $candidate['post_id'] ?? 0 );
                 $candidate_widget_count = wpae_llm_count_widgets( $candidate_elements );
-                $candidate_shape = wpae_llm_validate_action_shape( $candidate, $post_id );
-                $candidate_content_fidelity = wpae_llm_content_fidelity( $message, $candidate_elements );
-                $candidate_validation = wpae_llm_build_action_validation_diagnostics( $candidate, $post_id, $message );
-                $candidate_valid = ! empty( $candidate_validation['ok'] ) && $candidate_action === 'insert_elements' && $candidate_post_id === $post_id && count( $candidate_elements ) <= 12;
+				$candidate_library_action = wpae_llm_validate_library_choice_action( $candidate, $post_id, $library_retrieval );
+				$candidate_validation = wpae_llm_build_action_validation_diagnostics( $candidate, $post_id, $message );
+				$candidate_library_only = ! empty( $candidate_library_action['ok'] );
+				$candidate_valid = $candidate_library_only || ( ! empty( $candidate_validation['ok'] ) && $candidate_action === 'insert_elements' && $candidate_post_id === $post_id && count( $candidate_elements ) <= 12 );
+				if ( $candidate_library_only ) {
+					$candidate['elements'] = [];
+					$candidate_validation['ok'] = true;
+					$candidate_validation['failed_checks'] = [];
+					$candidate_validation['checks'] = [ 'library_choice_allowlisted' => true, 'target_post_matches' => true ];
+					$candidate_validation['validation_scope'] = 'allowlisted_library_choice';
+					$candidate_validation['provider_tree_ignored'] = true;
+				}
                 $repair_attempts[] = [
                     'attempt' => $repair_attempt,
                     'status' => $candidate_valid ? 'accepted' : 'rejected',

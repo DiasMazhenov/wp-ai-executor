@@ -220,6 +220,10 @@ $library_invalid_choice = wpae_llm_resolve_library_choice( $library_selection_fi
 check( empty( $library_invalid_choice['ok'] ) && ( $library_invalid_choice['source'] ?? '' ) === 'invalid_model_choice' && empty( $library_invalid_choice['selected'] ), 'Agent library choice accepted an unlisted template key' );
 $library_choice_prompt = wpae_llm_library_decision_prompt( $library_selection_fixture );
 check( strpos( $library_choice_prompt, 'candidate_2' ) !== false && strpos( $library_choice_prompt, 'tree-b' ) === false, 'Library decision prompt failed to expose bounded choices without raw Elementor JSON' );
+check( strpos( $library_choice_prompt, 'elements: []' ) !== false && strpos( $library_choice_prompt, 'полное native-дерево в elements' ) !== false, 'Library decision prompt distinguishes selected-template output from native fallback output' );
+$library_only_envelope = wpae_llm_validate_library_choice_action( [ 'action' => 'insert_elements', 'post_id' => 42, 'library_choice' => 'candidate_2', 'elements' => [] ], 42, $library_selection_fixture );
+$library_wrong_target_envelope = wpae_llm_validate_library_choice_action( [ 'action' => 'insert_elements', 'post_id' => 99, 'library_choice' => 'candidate_2', 'elements' => [] ], 42, $library_selection_fixture );
+check( ! empty( $library_only_envelope['ok'] ) && empty( $library_wrong_target_envelope['ok'] ), 'Library-only choice accepts an allowlisted candidate but still enforces the target post' );
 $services_library_prompt = wpae_llm_library_decision_prompt( [
 	'selection_candidates' => [
 		[ 'choice_key' => 'candidate_1', 'category' => 'services', 'template_type' => 'section-services', 'media_reference_count' => 0 ],
@@ -1969,7 +1973,7 @@ $GLOBALS['library'] = [
 ];
 $library_agent_action = [
 	'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_2',
-	'elements' => [ container_node( 'provider-tree-ignored', [ 'container_type' => 'flex' ], [ widget( 'provider-copy', 'text-editor', [ 'editor' => $library_agent_message ] ) ] ) ],
+	'elements' => [],
 ];
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
 $GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
@@ -1999,6 +2003,7 @@ $find_library_agent_button_url = static function ( array $nodes ) use ( &$find_l
 $library_agent_button_url = $find_library_agent_button_url( [ $library_agent_written_root ] );
 check( ! empty( $library_agent_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'active supported pipeline delegates one library decision, then uses one existing write boundary' );
 check( ( $library_agent_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['provider_calls'] ?? null ) === 1 && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['precedence'] ?? '' ) === 'active_pipeline_library_decision', 'active pipeline diagnostics expose the bounded library-agent route without invoking EDDE in parallel' );
+check( ( $library_agent_data['diagnostics']['initial_validation']['validation_scope'] ?? '' ) === 'allowlisted_library_choice' && ! empty( $library_agent_data['diagnostics']['initial_validation']['provider_tree_ignored'] ), 'A library-only model choice bypasses duplicate provider-tree validation and defers checks to the selected server template' );
 check( ( $library_agent_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_agent_trace['model_choice'] ?? '' ) === 'candidate_2' && ( $library_agent_trace['selected']['title'] ?? '' ) === 'Импортированный hero' && ( $library_agent_trace['status'] ?? '' ) === 'applied' && strpos( $library_agent_root_json, 'wpae-library-agent-fixture-candidate-two' ) !== false && strpos( $library_agent_root_json, 'wpae-library-agent-candidate-one' ) === false, 'the model can select a non-first ranked template and that exact tree reaches the write boundary' );
 check( strpos( $library_agent_written_copy, 'Пространство для идей' ) !== false && strpos( $library_agent_written_copy, 'Опишите задачу и получите понятный первый шаг' ) !== false && strpos( $library_agent_written_copy, 'Начать проект' ) !== false && $library_agent_button_url === '#contact', 'active library-agent adaptation preserves exact brief copy and CTA URL' );
 $GLOBALS['library'] = [];
