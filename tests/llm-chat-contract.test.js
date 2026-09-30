@@ -1192,13 +1192,18 @@ const staleRepair = runTargetedRepair(
     repairMessage,
     [{ id: 'eb0103a' }]
 );
-assert.equal(staleRepair.replaceExistingRoot, undefined, 'stale or missing targets cannot enter replacement mode');
+assert.equal(staleRepair, null, 'stale or missing targets stay on the normal guarded edit route');
 const foreignRepair = runTargetedRepair(
     { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
     repairMessage,
     [{ id: 'neighbor-root' }]
 );
-assert.equal(foreignRepair.replaceExistingRoot, undefined, 'a selected neighboring root cannot be replaced');
+assert.equal(foreignRepair, null, 'a selected neighboring root stays on the normal guarded edit route');
+assert.equal(runTargetedRepair(
+    { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
+    repairMessage,
+    [{ id: 'eb0103a' }, { id: 'neighbor-root' }]
+), null, 'multiple selected roots cannot be mislabeled as a single-root replacement');
 assert.equal(runTargetedRepair({ root_ids: ['eb0103a'], reviewable: true }, 'Добавь новый CTA блок', []), null, 'new append requests keep the normal route');
 
 const liveSelectionStart = js.indexOf('    var selectedModelCache = []');

@@ -809,16 +809,15 @@
         var selectedIds = (Array.isArray(selected) ? selected : []).map(function (item) {
             return item && typeof item === 'object' ? String(item.id || item.element_id || '') : String(item || '');
         }).filter(Boolean);
-        var repair = { targetedDesignRepair: true };
-        if (config.pendingOperation && config.pendingOperation.reviewable === true && roots.length === 1 && selectedIds.length === 1 && selectedIds[0] === roots[0]) {
-            repair.replaceExistingRoot = true;
-            repair.replacesOperation = {
-                operation_id: String(config.pendingOperation.operation_id || ''),
-                operation_identity: String(config.pendingOperation.operation_identity || ''),
-                revision: Number(config.pendingOperation.revision || 0),
-                root_ids: roots
-            };
-        }
+        var pending = config.pendingOperation || {};
+        if (pending.reviewable !== true || !pending.operation_id || !pending.operation_identity || Number(pending.revision) < 1 || roots.length !== 1 || selectedIds.length !== 1 || selectedIds[0] !== roots[0]) return null;
+        var repair = { targetedDesignRepair: true, replaceExistingRoot: true };
+        repair.replacesOperation = {
+            operation_id: String(pending.operation_id),
+            operation_identity: String(pending.operation_identity),
+            revision: Number(pending.revision),
+            root_ids: roots
+        };
         return repair;
     }
     function refreshSelectionHint() {
