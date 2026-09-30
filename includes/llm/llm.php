@@ -10055,7 +10055,8 @@ function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 
 function wpae_llm_preflight_library_candidates( array $retrieval, string $message, string $archetype, array $content_plan, int $post_id ): array {
 	$compatible = [];
-	foreach ( array_slice( (array) ( $retrieval['selection_candidates'] ?? [] ), 0, 3 ) as $candidate ) {
+	$ranked_candidates = (array) ( $retrieval['preflight_candidates'] ?? $retrieval['selection_candidates'] ?? [] );
+	foreach ( $ranked_candidates as $candidate ) {
 		if ( ! is_array( $candidate ) || empty( $candidate['elementor_data'] ) || ! is_array( $candidate['elementor_data'] ) ) {
 			continue;
 		}
@@ -10073,7 +10074,11 @@ function wpae_llm_preflight_library_candidates( array $retrieval, string $messag
 			continue;
 		}
 		$compatible[] = $candidate;
+		if ( count( $compatible ) === 3 ) {
+			break;
+		}
 	}
+	unset( $retrieval['preflight_candidates'] );
 	$retrieval['selection_candidates'] = [];
 	$retrieval['candidates'] = [];
 	foreach ( $compatible as $index => $candidate ) {
@@ -10608,11 +10613,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		'selection_candidates' => [],
 		'selected' => null,
 	];
+	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	$library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
 	if ( $library_retrieval_enabled ) {
-		$library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
+		$library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype, ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' );
 	}
-	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	if ( $library_retrieval_enabled && ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' && ! empty( $library_retrieval['selection_candidates'] ) ) {
 		$library_retrieval = wpae_llm_preflight_library_candidates( $library_retrieval, $message, $action_archetype, $content_plan, $post_id );
 		if ( empty( $library_retrieval['selection_candidates'] ) ) {

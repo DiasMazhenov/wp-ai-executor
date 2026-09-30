@@ -845,7 +845,7 @@ function wpae_block_library_retrieval_aliases( string $archetype ): array {
     return $aliases[ $archetype ] ?? [];
 }
 
-function wpae_block_library_retrieve_for_prompt( string $message, string $archetype = '' ): array {
+function wpae_block_library_retrieve_for_prompt( string $message, string $archetype = '', bool $include_preflight_candidates = false ): array {
     $result = [
         'status' => 'no_match',
         'reason' => 'No approved or trusted bundled library block matched the request.',
@@ -1013,6 +1013,9 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
         return strcasecmp( (string) ( $left_summary['title'] ?? '' ), (string) ( $right_summary['title'] ?? '' ) );
     } );
     $result['candidate_count'] = count( $ranked );
+    if ( $include_preflight_candidates ) {
+        $result['preflight_candidates'] = $ranked;
+    }
     foreach ( array_slice( $ranked, 0, 3 ) as $index => $candidate ) {
         $summary = (array) ( $candidate['summary'] ?? [] );
         $choice_key = 'candidate_' . (string) ( $index + 1 );
