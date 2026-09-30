@@ -10019,7 +10019,7 @@ function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 	return "\nКандидаты приватной библиотеки (только совместимые; это метаданные, не факты для публикации): "
 		. wp_json_encode( $options, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
 		. $services_media_note
-		. '. Сравни варианты по типу секции, native widgets и структуре. Если подходит кандидат, верни его choice_key и elements: []: сервер сам адаптирует и проверит именно это дерево; не генерируй вторую композицию. Если ни один не подходит, верни library_choice: null и полное native-дерево в elements.';
+		. '. Сравни варианты по типу секции, native widgets и структуре. Если подходит кандидат, верни его choice_key и elements: []: сервер сам адаптирует и проверит именно это дерево; не генерируй вторую композицию. Если ни один не подходит, верни library_choice: null и elements: []; явно откажись от записи. Не заменяй отказ собственной native-композицией.';
 }
 
 function wpae_llm_resolve_library_choice( array $library_retrieval, string $choice ): array {
@@ -11511,7 +11511,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$requires_library_template = wpae_llm_requires_verified_library_template( $message );
 		$fallback_forbidden = wpae_llm_forbids_fallback( $message );
 		$active_library_route = ( $design_generation_route['action_path'] ?? '' ) === 'library_agent';
-		if ( ( $requires_library_template && ! $library_applied ) || ( $fallback_forbidden && $action_fallback && ! $library_applied ) || ( $active_library_route && $library_selection_source === 'invalid_model_choice' ) ) {
+		$offered_library_choice_required = $active_library_route && ! empty( $library_retrieval['selection_candidates'] ) && ! $library_applied;
+		if ( $offered_library_choice_required || ( $requires_library_template && ! $library_applied ) || ( $fallback_forbidden && $action_fallback && ! $library_applied ) || ( $active_library_route && $library_selection_source === 'invalid_model_choice' ) ) {
 			$reason = $library_selection_source === 'model_declined'
 				? 'Модель отказалась от предложенных шаблонов.'
 				: ( $library_selection_source === 'invalid_model_choice'

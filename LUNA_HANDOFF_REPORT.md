@@ -976,3 +976,118 @@ Post 5214; root 12ccaa9; operation wpae-20260927005852-d8030cc1. Editor outer vi
 Проверки runtime-релиза, уже выполненные до этого продолжения: php -d error_reporting=E_ALL tests/flex-generation-runtime.php — 418 checks; php -d error_reporting=E_ALL tests/design-pipeline-contract.php — 246 checks; node --test tests/*.test.js — 6/6; php -d error_reporting=E_ALL tests/imported-template-catalog.php — 157 manifest, 155 retrievable, 155 instantiated; PHP lint PASS; package probe PASS — 248 files, 0 hash mismatches, 4 scenarios; git diff --check PASS. В probe остаётся известный сбой полного diagnostic serialization при malformed UTF-8; компактная проверка проходит. В этом продолжении runtime не менялся и тесты повторно не запускались.
 
 Не выполнены: public mobile; operation-bound Vision; durable ledger readback для новых operation IDs; проверка всех 155 JSON-кандидатов как отдельных live генераций; live применение импортированного template из shortlist. Эти статусы не подменяются fallback-generation PASS.
+## Текущий срез — библиотечный выбор Services, source/editor inline v218
+
+**2026-09-30 23:30 +05:00 (Asia/Almaty).** Продолжена диагностика production-пути встроенной библиотеки WPAE на существующем `post=5214`.
+
+### Подтверждённая причина и исправление
+
+Services шаблон `Services — Photo Cards` выбирался моделью как `candidate_1`, но его adaptation блокировалась fidelity-проверкой: общий `wpae_llm_clear_unrequested_library_copy()` удалял pill `УСЛУГИ`, потому что текст бейджа не повторялся в пользовательском запросе. Параллельно BriefIR отвергал обычные unquoted строки вида `Название — Описание`, возвращая `services_items_out_of_range` до передачи compatible candidates library agent.
+
+В v02.11.218 общий cleaner сохраняет только системный `wpae-generated-badge-label`, а BriefIR добавляет группы Services из простых строк с парами. Точная формулировка и порядок карточек проверяются; существующий library choice и единственная writer/transaction boundary сохранены. Ручная вставка candidate и fallback за модель не добавлялись.
+
+### Изменённые файлы и локальная проверка
+
+- `includes/llm/brief-ir.php` — разбор natural multiline title/body pairs.
+- `includes/llm/llm.php` — pill из выбранного шаблона сохраняется при общей очистке.
+- `tests/design-pipeline-contract.php`, `tests/flex-generation-runtime.php` — parser, exact content, badge fidelity и production-route regressions.
+- `wp-ai-executor.php`, `wpae-package.json` — v02.11.218 и соответствующие SHA-256.
+
+Результаты: flex runtime **587 checks PASS**; design pipeline **274 PASS**; Elementor patch guard **PASS**; Node **6/6 PASS**; PHP lint **PASS**; `git diff --check` **PASS**; package probe **249 files, 0 mismatches, 4 scenarios PASS**. Probe дополнительно выявляет `full_result_json_encode=false` из-за malformed UTF-8 полного диагностического результата; compact summary JSON кодируется успешно. Это отдельное известное ограничение diagnostics, не связанное с выбором шаблона.
+
+Source commit `4628b9032b4df26719a46dd09673f3f1776e63f5`, push to `origin/main` **PASS** (`d372c08..4628b90`). На существующей WP Pusher вкладке один раз нажато `Update plugin`; старый Elementor tab после reload остался на inline v217. По пользовательскому правилу та же editor страница открыта в новой вкладке, и её inline payload подтвердил **v02.11.218**; старый editor tab закрыт. Сейчас одна editor tab (id 33). Plugins UI после обновления прочитать не удалось из-за Browser Use/CDP timeout, поэтому поле `installed version via Plugins UI` — **NOT VERIFIED**; live editor inline — **v218 CONFIRMED**. Кнопку Pusher не нажимали повторно.
+
+### Live состояние и скриншоты
+
+На v217 выполнена Process генерация: `post=5214`, root `901dd36`, operation `wpae-20260930163936-69d42463`, diagnostics `archetype=process`, `action_path=repair`, один provider call, одна запись, HTTP 200. `library_applied=false`.
+
+На inline v218 один раз отправлен короткий запрос Services с тремя exact title/body pairs. Live operation `wpae-20260930171931-3091d801` создала root `5f0b9a7`; после Elementor reload сохранённый preview содержит Process `901dd36` и Services `5f0b9a7`, все три точные пары текста, pill `УСЛУГИ` и три native Image widgets. Save/reload content **PASS**.
+
+Однако operation использовала `action_path=fallback`, `library_applied=false`: OpenRouter/free завершился `cURL error 28` после 90 секунд, HTTP status `0`, completed response отсутствовал. Поэтому живого выбора compatible candidate не было; отображённый блок — deterministic native fallback, не библиотечный шаблон. Встроенный Vision advisory `82/95` посчитал третью карточку обрезанной относительно capture и запустил targeted replacement. Ownership/saved-state guard не смог подтвердить заменяемый root и остановил repair; сохранённая страница не перезаписана, исходный Process и новый Services root остались.
+
+Editor desktop screenshot снят через Browser Use после save/reload, сохранён как JPEG bytes, преобразован в PNG через `sips`, проверен `file` и открыт для осмотра. Host CSS viewport `1280×720`; preview iframe CSS rectangle `1025×657`; PNG `1280×720`. Собственный осмотр видит pill и все три карточки целиком, точный текст, фото и три карточки в одном ряду. В кадре видны toolbar, selected outline и минимизированная error badge; они не закрывают услуги. Vision advisory — не отдельный прикреплённый operation-bound review.
+
+![Services editor после save/reload, post=5214, root=5f0b9a7, operation=wpae-20260930171931-3091d801, inline v02.11.218; CSS viewport 1280×720, preview iframe 1025×657](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/services-editor-after-reload-clean.png)
+
+[Открыть Services editor PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/services-editor-after-reload-clean.png)
+
+Public desktop navigation завершилась `net::ERR_ABORTED`; повторный переход в существующей служебной вкладке остановился Browser Use timeout. Поэтому public desktop/mobile screenshot и public visual acceptance — **BLOCKED / NOT RUN**; editor mobile — **NOT RUN**. Content/save PASS, live library choice FAIL/NOT PROVEN, editor desktop визуально приемлем по текущему кадру, public responsive и operation-bound Vision не подтверждены.
+
+## Исправление визуально невалидных library-route результатов — 2026-10-01, source v219
+
+Пользователь справедливо указал, что предыдущие CTA, Team и ряд карточных выводов не проходят визуальную приёмку. CTA разносил содержимое по секции, у вторичной кнопки пропадал контраст; Team выводил имена и должности без композиции карточек; Benefits не показывал ожидаемую поверхность карточек. Все эти генерации сохранились после reload, но не являются visual PASS. CTA и Team guarded replacement не прошёл проверку владельца/сохранённого состояния; существующие live roots не тронуты.
+
+Подтверждённая общая причина — активный library agent видел совместимые candidates, однако общий `wpae_llm_library_decision_prompt()` разрешал модели отказаться от них и вернуть произвольное native-дерево. Дальше такое дерево могло пройти provider/fallback write path, хотя оно не было ни выбранным шаблоном, ни подтверждённой адаптацией библиотеки. Это расхождение контракта, а не проблема Elementor renderer.
+
+В `includes/llm/llm.php` активный library route теперь допускает write только после выбора предложенного allowlisted candidate и успешной адаптации/валидации его дерева. При отказе/пропуске выбора, неверном ключе или невалидном результате возвращается `wpae_llm_library_selection_required` с `write_count=0`. Инструкция модели требует `elements: []` и отказ от записи, не предлагает native fallback. Остальные маршруты и единственная transaction/write boundary сохранены. Тесты проверяют успешный library choice, отказ без записи, сохранность соседних roots при невалидном шаблоне, а также неизменное legacy-поведение.
+
+Проверки source: `php -l` для entrypoint/runtime/harness PASS; `php tests/flex-generation-runtime.php` — 589 checks PASS; `php tests/design-pipeline-contract.php` — 274 PASS; `php tests/elementor-patch-guard.php` PASS; `php tests/imported-template-catalog.php` — 158 manifest / 156 retrievable / 156 previews PASS; `node --test tests/*.test.js` — 6/6 PASS; package hashes — 249 файлов, 0 mismatches; `git diff --check` PASS. Runtime version bumped to `v02.11.219`; SHA-256 package manifest updated.
+
+На момент внесения отчёта v219 — source candidate. Push/WP Pusher/editor inline install и повторная live generation **ещё не подтверждены**. Скриншоты `docs/audits/2026-09-30-library-live-v218/` показывают pre-fix baseline; они не засчитываются как доказательство исправления. Существующие восемь roots тестовой страницы сохранены без изменений. Кодовый фикс предотвращает повторную запись неподтверждённой native-композиции вместо library candidate, но не изменяет уже сохранённые visual FAIL roots.
+
+## Продолжение: проверка остальных семейств библиотеки — 2026-09-30, inline v218
+
+Работа велась на существующей странице `post=5214` и в единственной Elementor editor вкладке. До генераций live canvas был пуст; Process, Services и Hero в этом проходе не тестировались. После всех операций editor inline по-прежнему показывал `v02.11.218`. Source HEAD — `4628b9032b4df26719a46dd09673f3f1776e63f5`; runtime-код/версия не менялись. Изменены только этот отчёт и `context.md`; `git diff --check` PASS.
+
+### Результаты production pipeline
+
+| Family / root | Operation / маршрут | Результат |
+|---|---|---|
+| Testimonials / `bc084a1` | `wpae-20260930180813-97d6d352`; provider native tree, 5 widgets | Save/reload и точные два quote/author набора PASS; Vision advisory 85. Модель отказалась от library candidates (`library_applied=false`). |
+| Pricing / `7b38e6d` | `wpae-20260930181707-5987f56e`; deterministic native fallback, 12 widgets | Три названия, суммы, `/мес` и описания сохранены. Первый свободный ответ потерял пунктуацию в последнем описании, repair timeout `cURL error 28` после 67.7s; финальная fidelity проверка PASS. Vision advisory 92. Library template не применён. |
+| CTA / `c82bb53` | `wpae-20260930182339-dec43451`; provider tree, 4 widgets | Content/URL/save PASS; visual **FAIL**, Vision 65. Public root settings используют row + `space-between`, а heading/body/two buttons — отдельные siblings без общего CTA wrapper. Computed style secondary link: белый текст на белом фоне, хотя JSON просил синий. Targeted replacement остановлен ownership/saved-state guard; root сохранён. |
+| Benefits / `c096a96` | `wpae-20260930182819-2f3e3163`; provider tree, 6 widgets | Три точные пары title/body, save PASS, 3-column layout; Vision advisory 88. На public кадре это простые текстовые колонки без выраженной карточной поверхности. Library template не применён. |
+| FAQ / `f135761` | `wpae-20260930182945-7eaf2532`; deterministic native fallback после потери текста provider tree | Native Accordion, save/reload PASS. Каждый ответ открыт отдельно и проверен по точному тексту. Vision advisory 92. Активный заголовок зелёный из Elementor kit global accent `--e-global-color-accent: #61CE70`; значение принадлежит site kit. |
+| Team / `1a97037` | `wpae-20260930183331-7e4e4983`; provider tree, 5 widgets | Имена и должности точные, save PASS; visual **FAIL**, Vision 68: отсутствуют member card wrappers/поверхность, типографическая иерархия слабая. Автоматический guarded replacement не смог подтвердить root ownership/saved state и остановился; root сохранён. |
+
+Все шесть roots после Elementor reload обнаружены в public DOM с указанными `data-id`; исходно пустая страница перед тестами была источником вставок. В генерациях, которые дошли до записи, live library choice ни разу не был применён. Эти результаты подтверждают production generation/save отдельных семейств, но **не** подтверждают реальное использование импортированных JSON templates.
+
+### Предзаписные отказы и неподходящие категории
+
+- Portfolio operation `661e3a48-4ce2-4d97-80b4-5b80804540cf` не создала root: BriefIR/DesignPlan не включают portfolio; validation отклонила композицию (`portfolio composition contains unrelated pricing semantics`). Дополнительно исходники показывают, что слово «ценность» слишком широко попадает под pricing semantic matcher. Это подтверждённый typed-pipeline gap/false-positive, без runtime-патча в этом проходе.
+- Первый Pricing prompt завершился `pricing_tiers_required`; последующий компактный `Тарифы: name — amount — description; …` извлёк tiers и прошёл. Первые CTA/Benefits формы тоже были отклонены до записи из-за отсутствующих typed title/URL или повторяемых item pairs; повторные короткие запросы использовали формы, уже проверенные в существующих harnesses.
+- About prompt был обработан как обычный chat response, без operation/write. `about`, `custom` и `mega_menu` отсутствуют среди поддерживаемых typed `DesignPlan` archetypes. В manifest эти категории смешивают полноценные pages, archives/global styles, headers/footers/popups и отдельные logo/stat sections; прямую вставку whole-page/navigation candidates в тело тестовой страницы не выполнял. Их live generation остаётся NOT RUN/unsupported.
+
+### Состояние и границы приёмки
+
+Public DOM roots в порядке страницы: `bc084a1`, `7b38e6d`, `c82bb53`, `c096a96`, `f135761`, `1a97037`. Ничего из этих тестовых roots не удалялось; соседние семейства не перезаписывались. Public screenshot viewport на всех кадрах — CSS `1228×923`; PNG canvas `1213×912`. Кадры включают WordPress admin bar и плавающий AI-Dana; CTA-кнопку частично перекрывает чат на соседнем composite кадре. Editor screenshot — CSS viewport `1228×923`, PNG `1228×923`, Elementor controls и WPAE chat перекрывают часть canvas. Public mobile/editor mobile — **NOT RUN**. Vision значения — только advisory из чата, не operation-bound review. Сохранность roots подтверждена public DOM/editor canvas после reload, но отдельный durable ledger readback не выполнялся.
+
+#### Public desktop evidence — post=5214, CSS viewport 1228×923
+
+Testimonials `bc084a1`, operation `wpae-20260930180813-97d6d352`:
+
+![Testimonials, public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/testimonials-public-desktop.png)
+[Открыть PNG — Testimonials](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/testimonials-public-desktop.png)
+
+Pricing `7b38e6d`, operation `wpae-20260930181707-5987f56e`:
+
+![Pricing, public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/pricing-public-desktop.png)
+[Открыть PNG — Pricing](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/pricing-public-desktop.png)
+
+CTA `c82bb53`, operation `wpae-20260930182339-dec43451` (visual FAIL):
+
+![CTA, public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/cta-public-desktop.png)
+[Открыть PNG — CTA](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/cta-public-desktop.png)
+
+Benefits `c096a96`, operation `wpae-20260930182819-2f3e3163`:
+
+![Benefits, public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/benefits-public-desktop.png)
+[Открыть PNG — Benefits](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/benefits-public-desktop.png)
+
+FAQ `f135761`, operation `wpae-20260930182945-7eaf2532`; answers captured open individually:
+
+![FAQ: первый ответ открыт](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/faq-answer-1-open-public.png)
+[Открыть PNG — FAQ, первый ответ](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/faq-answer-1-open-public.png)
+
+![FAQ: второй ответ открыт](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/faq-answer-2-open-public.png)
+[Открыть PNG — FAQ, второй ответ](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/faq-answer-2-open-public.png)
+
+Team `1a97037`, operation `wpae-20260930183331-7e4e4983` (visual FAIL):
+
+![Team, public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/team-public-desktop.png)
+[Открыть PNG — Team](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/team-public-desktop.png)
+
+Editor diagnostic after reload:
+
+![Team editor после failed guarded repair, post=5214 root=1a97037 operation=wpae-20260930183331-7e4e4983; CSS viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/team-editor-failed-after-repair.png)
+[Открыть PNG — Team editor](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/team-editor-failed-after-repair.png)
