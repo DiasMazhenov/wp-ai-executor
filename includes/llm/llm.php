@@ -946,6 +946,10 @@ function wpae_llm_execute_patch_action( array $action, int $post_id, array $sele
 		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview отклонён до записи.', 'status' => $preview_status, 'details' => $preview_data, 'steps' => $steps ];
 	}
 	$compiled_data = is_array( $preview_data['elementor_data'] ?? null ) ? $preview_data['elementor_data'] : [];
+	$content_fidelity = wpae_llm_content_fidelity( $message, $compiled_data );
+	if ( empty( $content_fidelity['ok'] ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'Patch preview не сохранил запрошенный текст; запись остановлена.', 'status' => 422, 'details' => [ 'content_fidelity' => $content_fidelity, 'write_count' => 0 ], 'steps' => array_merge( $steps, [ [ 'id' => 'content_fidelity', 'status' => 'failed', 'message' => 'Точный текст проверен на compiled read-back до write boundary.', 'details' => $content_fidelity ] ] ) ];
+	}
 	$compiled_hash = hash( 'sha256', (string) wp_json_encode( $compiled_data ) );
 	$operation = wpae_design_operation_create( [
 		'operation_id' => $operation_id,

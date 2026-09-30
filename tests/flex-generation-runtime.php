@@ -817,6 +817,10 @@ check( ! in_array( 'Дизайн только для этого нового к�
 $faq_live_qa_action = wpae_llm_build_fallback_action( $faq_live_qa_message, 42 );
 $faq_live_qa_widget = (array) ( $faq_live_qa_action['elements'][0]['elements'][1] ?? [] );
 check( ( $faq_live_qa_widget['widgetType'] ?? '' ) === 'accordion' && count( (array) ( $faq_live_qa_widget['settings']['tabs'] ?? [] ) ) === 3 && empty( wpae_llm_content_fidelity( $faq_live_qa_message, $faq_live_qa_action['elements'] )['missing'] ), 'FAQ live QA fallback did not pass content fidelity with one native three-item Accordion' );
+$faq_patch_message = 'Измени текст: «Как заказать проект?» — «Оставьте заявку, и мы свяжемся с вами»; «Сколько длится работа?» — «Срок зависит от состава и объёма проекта».';
+$faq_generic_patch_tree = [ widget( 'faq-patch-accordion', 'accordion', [ 'tabs' => [ [ '_id' => 'q1', 'tab_title' => 'Аккордеон #1', 'tab_content' => 'Kafka placeholder' ], [ '_id' => 'q2', 'tab_title' => 'Аккордеон #2', 'tab_content' => 'More placeholder' ] ] ] ) ];
+$faq_patch_fidelity = wpae_llm_content_fidelity( $faq_patch_message, $faq_generic_patch_tree );
+check( empty( $faq_patch_fidelity['ok'] ) && in_array( 'Как заказать проект?', $faq_patch_fidelity['missing'], true ) && in_array( 'Сколько длится работа?', $faq_patch_fidelity['missing'], true ), 'targeted Accordion content with generic questions fails exact requested-content fidelity' );
 $faq_library_source = [ container_node( 'faq-library-root', [], [
 	widget( 'faq-library-heading', 'heading', [ 'title' => 'Template questions' ] ),
 	widget( 'faq-library-accordion', 'accordion', [ 'tabs' => [ [ '_id' => 'oldtab1', 'tab_title' => 'Old question', 'tab_content' => 'Old answer' ], [ '_id' => 'oldtab2', 'tab_title' => 'Another old question', 'tab_content' => 'Another old answer' ] ] ] ),
@@ -2368,6 +2372,9 @@ $cta_targeted_edit = new WP_REST_Request();
 $cta_targeted_edit->set_param( 'message', 'Измени кнопки в выбранном CTA-блоке: основная «Связаться», вторичная «Посмотреть проекты».' );
 $cta_targeted_edit->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'cta-targeted-patch-identity', 'selected_elements' => [ [ 'id' => 'selected-cta-root' ] ] ] );
 $GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ] ) ) ];
+$cta_wrong_copy_response = wpae_llm_chat_request( $cta_targeted_edit );
+check( $cta_wrong_copy_response instanceof WP_Error && $cta_wrong_copy_response->get_error_code() === 'wpae_llm_action_failed' && count( $GLOBALS['writes'] ) === 0 && ( $GLOBALS['page_data'][1]['elements'][0]['settings']['text'] ?? '' ) === 'Связаться', 'targeted patch rejects provider copy that conflicts with exact requested CTA text before write' );
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Связаться' ] ] ] ) ) ];
 $cta_targeted_response = wpae_llm_chat_request( $cta_targeted_edit );
 $cta_after_ids = array_column( $GLOBALS['page_data'], 'id' );
 check( $cta_targeted_response instanceof WP_REST_Response && ( $cta_targeted_response->get_data()['action'] ?? '' ) === 'patch_elements', 'targeted CTA button edit routes to the selected patch action rather than append: ' . wp_json_encode( [ 'error' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_code() : '', 'message' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_message() : '', 'data' => $cta_targeted_response instanceof WP_Error ? $cta_targeted_response->get_error_data() : [] ] ) );
@@ -2382,7 +2389,7 @@ check( $cta_snapshot_id !== '' && ( $cta_snapshot['operation_id'] ?? '' ) === ( 
 $cta_retry = new WP_REST_Request();
 $cta_retry->set_param( 'message', $cta_targeted_edit->get_param( 'message' ) );
 $cta_retry->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'cta-targeted-patch-identity', 'selected_elements' => [ [ 'id' => 'selected-cta-root' ] ] ] );
-$GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ] ) ) ];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( [ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Связаться' ] ] ] ) ) ];
 $cta_retry_response = wpae_llm_chat_request( $cta_retry );
 check( $cta_retry_response instanceof WP_REST_Response && ( $cta_retry_response->get_data()['operation_id'] ?? '' ) === ( $cta_operation['operation_id'] ?? '' ) && ! empty( $cta_retry_response->get_data()['write']['idempotent'] ) && count( $GLOBALS['writes'] ) === 1, 'same request identity reconciles the saved patch without a second write' );
 
@@ -2406,7 +2413,7 @@ $library_placeholder_result = wpae_llm_normalize_library_layout( [ container_nod
 check( count( $library_placeholder_result[0]['elements'] ?? [] ) === 1 && ( $library_placeholder_result[0]['elements'][0]['settings']['title'] ?? '' ) === 'Алия Садыкова' && $library_placeholder_changes > 0, 'Library template normalization removes an empty Team image slot instead of filling it with an invented stock portrait' );
 
 $independent_patch = wpae_llm_execute_patch_action(
-	[ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Обсудить проект' ] ] ],
+	[ 'action' => 'patch_elements', 'post_id' => 42, 'patches' => [ [ 'element_id' => 'cta-primary', 'path' => 'settings.text', 'op' => 'set', 'value' => 'Связаться' ] ] ],
 	42,
 	[ 'selected-cta-root' ],
 	'Измени кнопки в выбранном CTA-блоке: основная «Связаться», вторичная «Посмотреть проекты».',
@@ -2424,7 +2431,7 @@ $independent_undo->set_param( 'root_ids', $independent_operation['root_ids'] );
 $independent_undo->set_param( 'rollback_snapshot_id', $independent_patch['rollback_snapshot_id'] );
 $independent_undo->set_param( 'operation_event', 'user_undo' );
 $conflicted_undo = wpae_llm_undo( $independent_undo );
-check( $conflicted_undo->get_status() === 409 && ( $conflicted_undo->get_data()['code'] ?? '' ) === 'wpae_undo_conflict' && ( $GLOBALS['page_data'][0]['elements'][0]['settings']['title'] ?? '' ) === 'Пользовательская правка после patch' && ( $GLOBALS['page_data'][1]['elements'][0]['settings']['text'] ?? '' ) === 'Обсудить проект', 'Undo refuses a stale full-page snapshot and preserves both the later neighbor edit and target patch' );
+check( $conflicted_undo->get_status() === 409 && ( $conflicted_undo->get_data()['code'] ?? '' ) === 'wpae_undo_conflict' && ( $GLOBALS['page_data'][0]['elements'][0]['settings']['title'] ?? '' ) === 'Пользовательская правка после patch' && ( $GLOBALS['page_data'][1]['elements'][0]['settings']['text'] ?? '' ) === 'Связаться', 'Undo refuses a stale full-page snapshot and preserves both the later neighbor edit and target patch' );
 
 $permission = new WP_REST_Request();
 $permission->set_param( 'post_id', 42 );
