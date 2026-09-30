@@ -381,7 +381,7 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
     }
 
 	$property_signal = (bool) preg_match( '/\b(шрифт|типограф|размер|кегл|цвет|фон|отступ|padding|margin|радиус\w*|скругл\w*|угл\w*|высот|ширин|выравнив|интервал|текст|заголов|кнопк|иконк)/iu', $message );
-	$selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран\w*|выделен\w*|текущ\w*|внутри|содержим|дочерн\w*)/iu', $message );
+	$selection_signal = (bool) preg_match( '/\b(этот|эту|этого|выбран\w*|выделен\w*|текущ\w*|существующ\w*|внутри|содержим|дочерн\w*)/iu', $message );
 	$insert_signal = wpae_llm_has_explicit_root_insert_intent( $message );
 	// A selected process timeline may need native children added inside its
 	// existing root (for example the standard badge, section heading, or
