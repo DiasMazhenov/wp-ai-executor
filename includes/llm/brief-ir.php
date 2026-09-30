@@ -383,6 +383,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$cta_index = 0;
 	$previous_quote_inner = null;
 	$previous_quote_end = null;
+	$previous_testimonial_group = '';
 	foreach ( $quote_matches[0] ?? [] as $match_index => $full_match ) {
 		$full = (string) ( $full_match[0] ?? '' );
 		$start = (int) ( $full_match[1] ?? 0 );
@@ -435,6 +436,10 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$repeated = wpae_brief_ir_repeated_slot( $prefix );
 		$group_id = (string) ( $repeated['group_id'] ?? '' );
+		if ( $archetype === 'testimonials' && $role === 'text' && $previous_testimonial_group !== '' && preg_match( '/(?:автор|author)\s*[:\-]?\s*$/iu', $prefix ) ) {
+			$role = 'testimonial_author';
+			$group_id = $previous_testimonial_group;
+		}
 		$id_override = $group_id !== '' ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial)_/', '', $role ) : '';
 		$url = null;
 		$url_requested = false;
@@ -464,6 +469,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$required = in_array( $role, [ 'title', 'body', 'cta' ], true ) || str_starts_with( $role, 'cta_' ) || in_array( $role, [ 'service_title', 'service_body', 'team_name', 'team_position', 'testimonial_quote', 'testimonial_author' ], true );
 		$confidence = $role === 'text' ? 0.62 : 0.98;
 		$add_content( $role, $inner, $start, strlen( $full ), $url_requested ? $url : null, $confidence, $required, $url_requested, $id_override, $group_id === '' , $group_id );
+		if ( $archetype === 'testimonials' && $role === 'testimonial_quote' && $group_id !== '' ) {
+			$previous_testimonial_group = $group_id;
+		}
 		if ( $role === 'text' ) {
 			$ambiguities[] = [
 				'kind' => 'unlabeled_quote',

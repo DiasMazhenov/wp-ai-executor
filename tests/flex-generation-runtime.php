@@ -1761,6 +1761,12 @@ check( count( $team_fallback_cards ) === 2, 'Team deterministic fallback groups 
 check( $team_fallback_rows === [ [ 'name' => 'Синтетический участник 1', 'position' => 'Демо-архитектор' ], [ 'name' => 'Синтетический участник 2', 'position' => 'Демо-руководитель проекта' ] ], 'Team fallback preserves exact member copy in the matching native heading and text widgets: ' . wp_json_encode( $team_fallback_rows, JSON_UNESCAPED_UNICODE ) );
 
 $testimonials_prompt = 'Создай блок отзывов: отзыв 1 — текст «Согласование прошло легко и спокойно»; отзыв 1 — автор «Динара»; отзыв 2 — текст «Получили ясный план действий»; отзыв 2 — автор «Марат».';
+$testimonials_compact_prompt = 'Блок отзывов: отзыв 1 — текст «Понятно, как проходит работа», автор «Алия». Отзыв 2 — текст «План быстро согласовали», автор «Тимур».';
+$testimonials_compact_brief = wpae_brief_ir_parse( $testimonials_compact_prompt );
+$testimonials_compact_plan = wpae_design_plan_from_brief( $testimonials_compact_brief );
+$testimonials_compact_validation = wpae_design_plan_validate( $testimonials_compact_plan, $testimonials_compact_brief );
+$testimonials_compact_items = (array) ( $testimonials_compact_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( empty( $testimonials_compact_validation['errors'] ) && count( $testimonials_compact_items ) === 2 && array_column( $testimonials_compact_items, 'author_ref' ) === [ 'testimonial_1_author', 'testimonial_2_author' ], 'Compact review quote/author pairs must compile into two correctly grouped valid testimonial items: ' . wp_json_encode( [ 'errors' => $testimonials_compact_validation['errors'] ?? [], 'items' => $testimonials_compact_items ] ) );
 $testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
 check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
 $testimonial_plan = wpae_llm_content_plan( $testimonials_prompt, 'testimonials' );
