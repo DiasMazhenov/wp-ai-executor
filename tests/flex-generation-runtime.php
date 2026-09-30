@@ -1661,6 +1661,21 @@ $team_natural_validation = wpae_design_plan_validate( $team_natural_plan, $team_
 check( empty( $team_natural_validation['errors'] ), 'Team parser lost a position that follows a quoted name in one natural member entry: ' . wp_json_encode( $team_natural_validation['errors'] ?? [] ) );
 $team_natural_items = (array) ( $team_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
 check( count( $team_natural_items ) === 2 && $team_natural_items[0]['name_ref'] === 'team_1_name' && $team_natural_items[0]['position_ref'] === 'team_1_position' && $team_natural_items[1]['name_ref'] === 'team_2_name' && $team_natural_items[1]['position_ref'] === 'team_2_position', 'Team natural member entries were not grouped into exact name/position pairs' );
+$team_audit_message = "Блок команды. Участник 1 — имя: «Тестовый архитектор». Участник 1 — должность: «Архитектор». Участник 2 — имя: «Тестовый инженер». Участник 2 — должность: «Инженер-конструктор».";
+$team_audit_plan = wpae_llm_content_plan( $team_audit_message, 'team' );
+$team_audit_cards = container_node( 'team-audit-root', [], [
+	container_node( 'team-audit-card-1', [], [ widget( 'team-audit-name-1', 'heading', [ 'title' => 'Тестовый архитектор' ] ), widget( 'team-audit-role-1', 'text-editor', [ 'editor' => 'Архитектор' ] ) ] ),
+	container_node( 'team-audit-card-2', [], [ widget( 'team-audit-name-2', 'heading', [ 'title' => 'Тестовый инженер' ] ), widget( 'team-audit-role-2', 'text-editor', [ 'editor' => 'Инженер-конструктор' ] ) ] ),
+] );
+$team_audit = wpae_llm_content_plan_audit( $team_audit_plan, [ $team_audit_cards ] );
+check( $team_audit_plan['repeatable_units'] === 2 && count( $team_audit_plan['content_pairs'] ) === 2 && ! empty( $team_audit['ok'] ), 'Team audit must count each grouped person once rather than counting name and role as separate cards: ' . wp_json_encode( [ 'units' => $team_audit_plan['repeatable_units'], 'pairs' => count( $team_audit_plan['content_pairs'] ), 'audit' => $team_audit ], JSON_UNESCAPED_UNICODE ) );
+$team_icon_box_changes = 0;
+$team_icon_box_tree = [ container_node( 'team-icon-box-root', [], [ widget( 'team-icon-box', 'icon-box', [ 'title_text' => 'Тестовый архитектор', 'description_text' => 'Архитектор', 'selected_icon' => [ 'value' => 'fas fa-user', 'library' => 'fa-solid' ] ] ) ] ) ];
+$team_native_tree = wpae_llm_convert_icon_boxes_to_native_widgets( $team_icon_box_tree, $team_icon_box_changes, false );
+$team_native_widgets = [];
+$walk_team_native = static function ( array $nodes ) use ( &$walk_team_native, &$team_native_widgets ): void { foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } if ( ( $node['elType'] ?? '' ) === 'widget' ) { $team_native_widgets[] = $node['widgetType'] ?? ''; } $walk_team_native( (array) ( $node['elements'] ?? [] ) ); } };
+$walk_team_native( $team_native_tree );
+check( ! in_array( 'icon', $team_native_widgets, true ) && ! in_array( 'icon-box', $team_native_widgets, true ) && in_array( 'heading', $team_native_widgets, true ) && in_array( 'text-editor', $team_native_widgets, true ), 'Team icon-box normalization must retain native name/role copy without introducing forbidden icon widgets: ' . wp_json_encode( $team_native_widgets ) );
 $team_fallback_prompt = "Блок команды\nУчастник 1 — имя: «Синтетический участник 1»\nУчастник 1 — должность: «Демо-архитектор»\nУчастник 2 — имя: «Синтетический участник 2»\nУчастник 2 — должность: «Демо-руководитель проекта»";
 $team_requested_content = wpae_llm_extract_requested_content( $team_fallback_prompt );
 check( $team_requested_content === [ 'Синтетический участник 1', 'Демо-архитектор', 'Синтетический участник 2', 'Демо-руководитель проекта' ], 'Team content fidelity treats quoted name and position values as content, not their field labels: ' . wp_json_encode( $team_requested_content, JSON_UNESCAPED_UNICODE ) );

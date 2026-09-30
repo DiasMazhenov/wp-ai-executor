@@ -1411,6 +1411,40 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
             ];
         }
     }
+    if ( $archetype === 'team' ) {
+        // A person is one repeatable unit, not separate name and role fields.
+        $members = [];
+        foreach ( (array) ( $brief_ir['content'] ?? [] ) as $item ) {
+            if ( ! is_array( $item ) || empty( $item['group_id'] ) ) {
+                continue;
+            }
+            $group_id = sanitize_key( (string) $item['group_id'] );
+            if ( ! str_starts_with( $group_id, 'team_' ) ) {
+                continue;
+            }
+            $role = sanitize_key( (string) ( $item['role'] ?? '' ) );
+            if ( ! in_array( $role, [ 'team_name', 'team_position', 'team_bio' ], true ) ) {
+                continue;
+            }
+            $members[ $group_id ][ $role ] = trim( sanitize_text_field( (string) ( $item['exact_text'] ?? '' ) ) );
+        }
+        $content_pairs = [];
+        foreach ( $members as $member ) {
+            $name = (string) ( $member['team_name'] ?? '' );
+            $position = (string) ( $member['team_position'] ?? '' );
+            if ( $name === '' || $position === '' ) {
+                continue;
+            }
+            $content_pairs[] = [
+                'label' => $name,
+                'content' => $position,
+                'description' => (string) ( $member['team_bio'] ?? '' ),
+                'price_text' => '',
+                'cta_text' => '',
+                'cta_url' => '',
+            ];
+        }
+    }
     if ( $archetype === 'faq' ) {
         // FAQ prompts use question/answer pairs whose question mark is inside
         // the quoted label. Prefer that parser over the generic dash parser so
@@ -7353,7 +7387,7 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
     };
     $walk( $elements );
     if ( $archetype === 'team' ) {
-        $elements = wpae_llm_convert_icon_boxes_to_native_widgets( $elements, $changed );
+        $elements = wpae_llm_convert_icon_boxes_to_native_widgets( $elements, $changed, false );
     }
     return $elements;
 }
@@ -8073,7 +8107,7 @@ function wpae_llm_enforce_preserved_library_badge( array $elements, string $arch
         $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
         $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => $archetype === 'team' ? '1.5' : '0', 'bottom' => '0', 'left' => $archetype === 'team' ? '1.5' : '0', 'isLinked' => false ];
         $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => $archetype === 'team' ? '1.25' : '0', 'bottom' => '0', 'left' => $archetype === 'team' ? '1.25' : '0', 'isLinked' => false ];
-        $content_shell['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( (array) ( $content_shell['elements'] ?? [] ), $changed );
+        $content_shell['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( (array) ( $content_shell['elements'] ?? [] ), $changed, $archetype !== 'team' );
         if ( $archetype === 'team' ) {
             $content_shell['settings'] = is_array( $content_shell['settings'] ?? null ) ? $content_shell['settings'] : [];
             foreach ( [ 'padding' => '1.5', 'padding_mobile' => '1.25' ] as $padding_key => $top ) {
@@ -8158,7 +8192,7 @@ function wpae_llm_card_heading_widget( string $id, array $source ): array {
     ];
 }
 
-function wpae_llm_convert_icon_boxes_to_native_widgets( array $elements, int &$changed ): array {
+function wpae_llm_convert_icon_boxes_to_native_widgets( array $elements, int &$changed, bool $keep_icons = true ): array {
     $normalized = [];
     $has_visual_sibling = wpae_llm_card_has_visual_icon( $elements );
     foreach ( $elements as $element ) {
@@ -8171,7 +8205,7 @@ function wpae_llm_convert_icon_boxes_to_native_widgets( array $elements, int &$c
             $title = trim( wp_strip_all_tags( (string) ( $settings['title_text'] ?? '' ) ) );
             $description = trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) );
             $replacement = [];
-            if ( ! $has_visual_sibling && ! empty( $settings['selected_icon']['value'] ) ) {
+            if ( $keep_icons && ! $has_visual_sibling && ! empty( $settings['selected_icon']['value'] ) ) {
                 $replacement[] = wpae_llm_card_icon_widget( (string) ( $element['id'] ?? 'wpae-card' ) . '-icon', $element );
             }
             if ( $title !== '' ) {
@@ -8199,7 +8233,7 @@ function wpae_llm_convert_icon_boxes_to_native_widgets( array $elements, int &$c
             continue;
         }
         if ( is_array( $element['elements'] ?? null ) ) {
-            $element['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( $element['elements'], $changed );
+            $element['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( $element['elements'], $changed, $keep_icons );
         }
         $normalized[] = $element;
     }
@@ -8469,7 +8503,7 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         }
         $root['elements'] = $content_shell ? [ $badge, $content_shell ] : array_merge( [ $badge ], $content_elements );
         $root['elements'] = wpae_llm_normalize_card_heading_icons( $root['elements'], 0, $changed, $archetype );
-        $root['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( $root['elements'], $changed );
+        $root['elements'] = wpae_llm_convert_icon_boxes_to_native_widgets( $root['elements'], $changed, $archetype !== 'team' );
         $badge = $root['elements'][0] ?? $badge;
         $content_shell = null;
         $content_elements = [];
