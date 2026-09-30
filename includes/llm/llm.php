@@ -10053,6 +10053,45 @@ function wpae_llm_library_decision_prompt( array $library_retrieval ): string {
 		. '. Выбери ровно один лучший подходящий choice_key и верни его с elements: []: сервер сам адаптирует и проверит именно это дерево; не генерируй вторую композицию. Если ни один не подходит, верни library_choice: null и elements: []; явно откажись от записи. Не заменяй отказ собственной native-композицией.';
 }
 
+function wpae_llm_preflight_library_candidates( array $retrieval, string $message, string $archetype, array $content_plan, int $post_id ): array {
+	$compatible = [];
+	foreach ( array_slice( (array) ( $retrieval['selection_candidates'] ?? [] ), 0, 3 ) as $candidate ) {
+		if ( ! is_array( $candidate ) || empty( $candidate['elementor_data'] ) || ! is_array( $candidate['elementor_data'] ) ) {
+			continue;
+		}
+		$changed = 0;
+		$elements = wpae_llm_apply_library_template( $candidate['elementor_data'], $message, $archetype, $changed, ! empty( $candidate['trusted_bundled'] ) );
+		if ( empty( $elements ) ) {
+			continue;
+		}
+		$action = [ 'action' => 'insert_elements', 'post_id' => $post_id, 'position' => 'end', 'elements' => $elements ];
+		if ( empty( wpae_llm_validate_action_shape( $action, $post_id )['ok'] )
+			|| wpae_llm_count_widgets( $elements ) < 1
+			|| empty( wpae_llm_content_fidelity( $message, $elements )['ok'] )
+			|| empty( wpae_llm_content_plan_audit( $content_plan, $elements )['ok'] )
+			|| ( $archetype === 'cta' && empty( wpae_llm_provider_composition_quality( $message, $elements, $archetype )['ok'] ) ) ) {
+			continue;
+		}
+		$compatible[] = $candidate;
+	}
+	$retrieval['selection_candidates'] = [];
+	$retrieval['candidates'] = [];
+	foreach ( $compatible as $index => $candidate ) {
+		$key = 'candidate_' . ( $index + 1 );
+		$candidate['choice_key'] = $key;
+		$retrieval['selection_candidates'][] = $candidate;
+		$retrieval['candidates'][] = array_diff_key( $candidate, [ 'elementor_data' => true ] );
+	}
+	$retrieval['compatible_candidate_count'] = count( $compatible );
+	if ( empty( $compatible ) ) {
+		$retrieval['status'] = 'no_compatible_candidate';
+		$retrieval['reason'] = 'Ranked library candidates did not pass the production adapter and content checks.';
+	} else {
+		$retrieval['selected'] = null;
+	}
+	return $retrieval;
+}
+
 function wpae_llm_resolve_library_choice( array $library_retrieval, string $choice ): array {
 	$choice = sanitize_key( $choice );
 	if ( $choice === '' ) {
@@ -10574,6 +10613,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype );
 	}
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
+	if ( $library_retrieval_enabled && ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' && ! empty( $library_retrieval['selection_candidates'] ) ) {
+		$library_retrieval = wpae_llm_preflight_library_candidates( $library_retrieval, $message, $action_archetype, $content_plan, $post_id );
+		if ( empty( $library_retrieval['selection_candidates'] ) ) {
+			return new WP_Error( 'wpae_llm_no_compatible_library_candidate', 'Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны.', [ 'status' => 422, 'details' => [ 'post_id' => $post_id, 'archetype' => $action_archetype, 'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ), 'compatible_candidate_count' => 0, 'provider_call_count' => 0, 'write_count' => 0 ] ] );
+		}
+	}
 	if ( $vision_regenerate && $design_pipeline_mode === 'active' && ( $design_generation_route['action_path'] ?? '' ) === 'pipeline' && $selected_post_id > 0 && $deterministic_archetype && ! $replacement_requested ) {
 		return new WP_Error( 'wpae_vision_replacement_scope_required', 'У Vision regeneration отсутствует подтверждённый operation-owned root; добавление нового root запрещено.', [ 'status' => 409 ] );
 	}

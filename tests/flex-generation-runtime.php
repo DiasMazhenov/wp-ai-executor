@@ -1815,6 +1815,14 @@ $team_library_changes = 0;
 $team_library_adapted = wpae_llm_apply_library_template( $team_library_template, $team_library_prompt, 'team', $team_library_changes );
 $team_library_copy = wpae_llm_collect_action_content( $team_library_adapted );
 check( count( $team_library_adapted ) === 1 && str_contains( $team_library_copy, 'Алия' ) && str_contains( $team_library_copy, 'архитектор' ) && str_contains( $team_library_copy, 'Тимур' ) && str_contains( $team_library_copy, 'дизайнер' ), 'Library adaptation must use typed BriefIR member pairs for the compact natural Team brief' );
+$team_library_preflight = wpae_llm_preflight_library_candidates( [
+	'status' => 'matched', 'candidate_count' => 2,
+	'selection_candidates' => [
+		[ 'choice_key' => 'candidate_1', 'title' => 'Not adaptable', 'elementor_data' => [ container_node( 'team-invalid-root', [], [ widget( 'team-invalid-text', 'text-editor', [ 'editor' => 'Unrelated' ] ) ] ) ] ],
+		[ 'choice_key' => 'candidate_2', 'title' => 'Adaptable team', 'elementor_data' => $team_library_template ],
+	],
+], $team_library_prompt, 'team', wpae_llm_content_plan( $team_library_prompt, 'team' ), 42 );
+check( count( (array) ( $team_library_preflight['selection_candidates'] ?? [] ) ) === 1 && ( $team_library_preflight['selection_candidates'][0]['choice_key'] ?? '' ) === 'candidate_1' && ( $team_library_preflight['selection_candidates'][0]['title'] ?? '' ) === 'Adaptable team', 'Library agent is offered only candidates that pass the production adapter, native shape, fidelity, and semantic checks' );
 $testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
 check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
 $testimonial_plan = wpae_llm_content_plan( $testimonials_prompt, 'testimonials' );
