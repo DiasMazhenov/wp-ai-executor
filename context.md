@@ -1,10 +1,22 @@
-## Текущий срез — live тестирование на post=5214, 2026-09-30
+## Текущий срез — FAQ live defect и source fix, 2026-09-30
+
+Срез: **2026-09-30 15:48 +05:00 (Asia/Almaty)**. Использовались существующие tabs 13/14/15 и `post=5214`; новые страницы/drafts/tabs не создавались.
+
+- Source candidate: `v02.11.209`, на базе HEAD `9b8ab31`; FAQ guard, test и version bump пока локальны. Вкладка Elementor фактически сообщает inline version `v02.11.204` (URL query `wpae_release=193`), хотя пользователь сообщил v201.
+- Live FAQ prompt: `FAQ: «Как заказать проект?» — «Оставьте заявку, и мы свяжемся с вами». «Сколько длится работа?» — «Срок зависит от состава и объёма проекта».` Operation `wpae-20260930103313-01565d9d`, root `4c23da3`. Runtime v204 сохранил невалидный native Accordion с заголовками `Аккордеон #1/#2` и Kafka-placeholder вместо точных пар. Editor preview root ID подтверждён; iframe viewport 1025×860 CSS px, вкладка 1228×923.
+- Причина: общий semantic audit разрешал двум generic repeatable containers заместить обязательные FAQ items в native Accordion. Исправление в `includes/llm/llm.php` теперь требует не меньше ожидаемого числа native Accordion items; регрессия в `tests/flex-generation-runtime.php` подтверждает отказ при пустом `tabs`, даже если generic containers присутствуют. `tests/llm-chat-contract.test.js` синхронизирован с новым отказом. Это блокирует дефектный результат до write на исправленном runtime.
+- Screenshot дефекта (не PASS): ![FAQ v204 — невалидный Accordion](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v209/faq-v204-invalid-editor.png) [PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v209/faq-v204-invalid-editor.png). Browser Use вернул JPEG bytes; PNG после `sips` проверен и открыт.
+- Локально: flex runtime 567 checks, design-pipeline 270, patch guard PASS, Node 6/6, PHP lint и 249 package hashes PASS, `git diff --check` PASS. v209 пока не push/install; live исправление FAQ и остальные непрошедшие семейства не подтверждены.
+
+Предыдущий срез v208 ниже — исторический baseline. Его сохранённые Hero/Services факты остаются сведениями предыдущего save/reload; публичное состояние после последнего FAQ write ещё не проверено.
+
+## Исторический baseline — live тестирование на post=5214, 2026-09-30
 
 Срез: **2026-09-30 15:16 +05:00 (Asia/Almaty)**. Использовались только существующие вкладки и post `5214`; новые страницы/drafts и вкладки редактора не создавались.
 
-- Source release: `v02.11.208`, HEAD `88a9c1b` (`fix: accept semicolon-separated services`), push `origin/main` завершён. Он включает предыдущий v207 CTA-classifier fix и исправление Services `;` delimiter. Installed runtime в одной открытой вкладке показывает **v02.11.204**. Пользователь сообщал v201, но текущая фактическая inline-конфигурация — v204.
-- WP Pusher установленную версию обновить не удалось: Browser Use на существующей вкладке Pusher завершился `Timed out running CDP command "Emulation.setFocusEmulationEnabled" for tab 15`. Установку source v207 не подтверждать. Другой транспорт для установки не использовался.
-- Последний save/reload `post=5214`: editor preview и public DOM содержат только Hero `b51107f` и Services `bb1e7c1`. Это фактический текущий набор, независимо от более ранних operation log сообщений.
+- Source release тогда был `v02.11.208`, HEAD `88a9c1b`; editor inline config `v02.11.204`.
+- WP Pusher ранее завершался ошибкой `Timed out running CDP command "Emulation.setFocusEmulationEnabled" for tab 15`; обновление не было подтверждено.
+- После тогдашнего save/reload roots были Hero `b51107f` и Services `bb1e7c1`; после последующего FAQ write набор нужно перечитать.
 - Hero prompt: `Hero. Надзаголовок: «АРХИТЕКТУРА». Заголовок: «Пространство для идей». Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект» → #contact. Добавь фотографию с Unsplash.` Operation `wpae-20260930095358-d20cea3a`, root `b51107f`; точный copy, CTA и Unsplash Image присутствуют после reload. Production path сгенерировал fallback после провала provider semantic quality gate. Автоматический Vision screenshot завершился `wpae_vision_capture_failed`; это не operation-bound Vision PASS. Public desktop вручную проверен.
 - Services сначала дважды безопасно отклонён до записи из-за формата пар строк. Финальный точный запрос: `Блок услуг.` и далее отдельные строки `Услуга 1: «Архитектурное проектирование» — «Концепция и планировка»`, `Услуга 2: «Рабочая документация» — «Чертежи и спецификации»`, `Услуга 3: «Авторский надзор» — «Контроль соответствия проекту»`. Operation `wpae-20260930100353-46a09c81`, root `bb1e7c1`; после reload сохранены точные три пары и три native Image. Public desktop — три равные карточки; mobile — естественный вертикальный stack. На mobile `window.innerWidth=390`, `innerHeight=844`, `documentElement.scrollWidth=375` (overflow отсутствует). Ветка live использовала deterministic fallback; AI Vision advisory: score 94/confidence98, не operation-bound review.
 - Services screenshot artifacts: editor/public desktop CSS viewport `1228×923`; public mobile CSS viewport `390×844`, browser screenshot canvas `375×812`, два кадра покрывают карточки 1–2 и 1–3. Editor кадр показывает панель управления и горизонтально суженный canvas; public кадры показывают render без большой панели чата.

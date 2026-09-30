@@ -1,4 +1,17 @@
-## Текущий срез — post=5214 live-проверка семейств, source v207 / editor v204
+## Текущий срез — FAQ дефект, guard и проверка v209, 2026-09-30
+
+Срез: **2026-09-30 15:48 +05:00 (Asia/Almaty)**. Использованы существующие browser tabs 13/14/15 и `post=5214`; новые tabs, pages и drafts не создавались. Настройки WordPress и соседних плагинов не менялись.
+
+### Версии и изменения
+
+- Source candidate: `v02.11.209`, основан на `9b8ab31` (`docs: record v208 live family checks`). Изменённый FAQ guard и version bump ещё не закоммичены/не отправлены в origin. Открытый Elementor editor реально сообщает inline `v02.11.204`; URL query `wpae_release=193`. Сообщённая пользователем v201 не совпадает с наблюдаемой inline-конфигурацией.
+- Подтверждён production defect на v204: prompt `FAQ: «Как заказать проект?» — «Оставьте заявку, и мы свяжемся с вами». «Сколько длится работа?» — «Срок зависит от состава и объёма проекта».` записан как operation `wpae-20260930103313-01565d9d`, root `4c23da3`, но native Accordion содержал `Аккордеон #1`, Kafka placeholder copy и `Аккордеон #2`, а не заданные пары.
+- Причина в `wpae_llm_content_plan_audit()` (`includes/llm/llm.php`): FAQ проходил, когда число generic repeatable containers было достаточным, даже при `accordion_item_count=0`. Теперь обязательным считается только число native Accordion items; generic containers больше не могут подменить Accordion. Regression в `tests/flex-generation-runtime.php` очищает Accordion `tabs` при сохранённых generic containers и требует отказа. Статическая проверка в `tests/llm-chat-contract.test.js` проверяет диагностическое сообщение.
+- Screenshot — фактический invalid editor результат, не приёмка: вкладка `1228×923` CSS px, Elementor preview iframe `1025×860`; post `5214`, root `4c23da3`, operation `wpae-20260930103313-01565d9d`. ![FAQ v204 — дефект native Accordion](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v209/faq-v204-invalid-editor.png) [Открыть PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-live-family-v209/faq-v204-invalid-editor.png). Capture bytes были JPEG, формат проверен и сконвертирован `sips`; PNG открыт и визуально сверён.
+- Проверки после guard: `php -l includes/llm/llm.php`, `php -l tests/flex-generation-runtime.php`, `php -l wp-ai-executor.php` — PASS; `php -d memory_limit=512M tests/flex-generation-runtime.php` — 567 PASS; `php tests/design-pipeline-contract.php` — 270 PASS; `php tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — 6/6 PASS; package probe — 249 файлов, 0 mismatches, 4 сценария; `git diff --check` — PASS.
+- После FAQ save public и durable ledger не перечитаны. Невалидный временный root остаётся наблюдаемым в editor; targeted repair/retry ещё не выполнен. До получения установленного runtime с guard новые блоки не проверялись. Все 158 каталогизированных template entries не являются протестированными: приёмка идёт по девяти production archetypes и конкретным generated results.
+
+## Исторический baseline — post=5214, source v208 / editor v204
 
 Срез: **2026-09-30 15:16 +05:00 (Asia/Almaty)**. Генерации выполнялись на существующем `post=5214` в одной вкладке Elementor. Новые страницы/drafts/editor tabs не создавались; чужие настройки и соседние плагины не менялись.
 

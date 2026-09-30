@@ -174,7 +174,7 @@ assert.match(llm, /\$pricing_pattern = '\/\(\?:\^\|\[\.!\?;\\n\]\\s\*\|:\\s\+\)/
 assert.match(llm, /preg_match_all\( \$pricing_pattern, trim\( \$message \), \$matches, PREG_SET_ORDER \)/);
 assert.match(llm, /Content-only briefs often put all tiers into one paragraph/);
 assert.match(llm, /repeatable content units are not separated into distinct containers/);
-assert.match(llm, /FAQ questions and answers are not separated into distinct units/);
+assert.match(llm, /FAQ questions and answers are not represented by native Accordion items/);
 assert.match(llm, /Decoded provider tree failed the semantic structure contract/);
 assert.match(llm, /wpae_llm_clear_unrequested_library_copy\( \$template_elements, \$message, \$changed \)/);
 assert.match(llm, /wpae_llm_apply_library_narrative_content\( \$template_elements, \$missing, \$changed, true \)/);

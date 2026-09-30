@@ -1691,8 +1691,8 @@ function wpae_llm_content_plan_audit( array $plan, array $elements ): array {
     }
     if ( $archetype === 'faq' && $repeatable_units >= 2 ) {
         $required_faq_count = min( 8, max( 2, $repeatable_units ) );
-        if ( max( $repeatable_container_count, $accordion_item_count ) < $required_faq_count ) {
-            $failures[] = 'FAQ questions and answers are not separated into distinct units';
+        if ( $accordion_item_count < $required_faq_count ) {
+            $failures[] = 'FAQ questions and answers are not represented by native Accordion items';
         }
     }
     $semantic_conflicts = [];

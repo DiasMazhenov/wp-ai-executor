@@ -805,6 +805,10 @@ check( strpos( $faq_json, 'Как начать' ) !== false && strpos( $faq_json
 check( strpos( $faq_json, 'Можно работать дистанционно' ) !== false && strpos( $faq_json, 'Да, обсуждения и согласования проводим онлайн' ) !== false, 'FAQ fallback lost the second exact question or answer' );
 check( strpos( $faq_json, 'Что входит в проект' ) !== false && strpos( $faq_json, 'Планировка, концепция и согласованный комплект материалов' ) !== false, 'FAQ fallback lost the third exact question or answer' );
 check( empty( wpae_llm_content_fidelity( $faq_message, $faq_action['elements'] )['missing'] ), 'FAQ fallback failed final content fidelity' );
+$faq_without_accordion_items = $faq_action['elements'];
+$faq_without_accordion_items[0]['elements'][1]['settings']['tabs'] = [];
+$faq_without_accordion_audit = wpae_llm_content_plan_audit( $faq_plan, $faq_without_accordion_items );
+check( empty( $faq_without_accordion_audit['ok'] ) && in_array( 'FAQ questions and answers are not represented by native Accordion items', (array) ( $faq_without_accordion_audit['failures'] ?? [] ), true ), 'FAQ semantic audit accepted copy outside the required native Accordion items' );
 
 $faq_live_qa_message = 'Создай FAQ «FAQ · QA». «Это настоящие данные компании?» — «Нет, это синтетический QA-текст только для проверки виджета Accordion». «Как проверить раскрытие?» — «Нажмите на вопрос: ответ должен открываться и закрываться». «Что нужно увидеть после перезагрузки?» — «Те же три вопроса в том же порядке внутри одного native Accordion». Дизайн только для этого нового корня: чистая белая поверхность, тонкая светло-серая обводка и скругление 12px; не задавай глобальные цвета сайта. Существующие элементы страницы не меняй.';
 $faq_live_qa_requested = wpae_llm_extract_requested_content( $faq_live_qa_message );
