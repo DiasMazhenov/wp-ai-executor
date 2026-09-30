@@ -1,3 +1,29 @@
+## Текущий результат — почему library-agent не доходил до шаблона
+
+Срез: **2026-09-30 21:18 +05:00 (Asia/Almaty)**. Работа велась локально над плагином и в уже существующих вкладках; WordPress страницы не сохранялись и не генерировались.
+
+### Подтверждённая причина и исправление
+
+Для library-agent провайдеру одновременно предписывалось выбрать `library_choice` и вернуть полноценное native `elements` дерево. Сервер затем отбрасывал дерево провайдера в пользу выбранного JSON-шаблона, но сначала требовал, чтобы это ненужное дерево прошло `wpae_llm_validate_action_shape()`. Поэтому ответ вида «выбрал candidate, `elements: []`» считался невалидным и уходил в repair/fallback. Это мешало прямому использованию библиотеки и создавало лишнюю возможность получить не тот дизайн.
+
+В `includes/llm/llm.php` исправлен общий контракт: разрешённый candidate key вместе с правильным `post_id` и `insert_elements` считается валидным envelope; provider `elements` очищается/игнорируется, а native shape, exact content и semantic plan проверяются уже на адаптированном серверном шаблоне. В decision prompt теперь сказано: при выбранном шаблоне вернуть `elements: []`; полное native дерево требуется при `library_choice: null`. Repair responses поддерживают тот же candidate-only вариант. Выбранный шаблон всё ещё проходит adaptation и gates; write идёт через прежнюю transaction boundary.
+
+### Проверки и публикация
+
+- Regression в `tests/flex-generation-runtime.php` воспроизводит candidate-only selection с `elements: []`: allowlisted шаблон выбран, его дерево доходит до production write boundary, выполняется ровно один write; неверный target post не принимается.
+- Каталог локально: manifest 158 файлов, 156 retrievable templates/previews; FAQ candidates 5, Services candidates 2. Новых WordPress records/pages не создавалось.
+- `php -d memory_limit=512M tests/flex-generation-runtime.php` — **583 checks PASS**.
+- `php -d memory_limit=512M tests/design-pipeline-contract.php` — **270 PASS**; `tests/imported-template-catalog.php` — PASS; `tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — **6/6 PASS**.
+- PHP lint `includes/llm/llm.php`, `tests/flex-generation-runtime.php`, `wp-ai-executor.php` — PASS; package probe — **249 files / 0 hash mismatches / 4 scenarios PASS**; `git diff --check` — PASS.
+- Source release v216 commit `c1355a8` (`fix: allow model-selected library-only commands`) запушен в `origin/main` — PASS.
+- Перед действием WP Pusher был виден на открытой вкладке: `WP AI Executor`, branch `main`, Push-to-Deploy enabled. Запрос кнопки `Update plugin` не удалось визуально подтвердить: Browser Use завершился timeout на tab 29 при фокусе/чтении этой вкладки. Plugins UI всё ещё показывал v215; существующий editor без reload показывал inline **v02.11.215**. Следовательно v216 live install — **BLOCKED / NOT CONFIRMED**.
+
+### Live состояние страницы и evidence
+
+- До изменений кода редактор post=5214 сообщил inline version v215, CSS viewport `1228×923`. Состав сохранённых roots этим запуском не устанавливался; ранее видимый в editor FAQ не удалялся и не заменялся.
+- После изменения source live generation, save/reload, root diff, public/mobile render и screenshots — **NOT RUN**: v216 не подтверждён установленным в редакторе. Скриншоты не создавались и старые кадры не засчитывались как evidence этого исправления.
+- Этот source patch исправляет контракт выбора библиотеки; он сам по себе не доказывает, что модель выберет подходящую композицию, что конкретная секция визуально корректна или что прежние Process/FAQ FAIL устранены.
+
 ## Текущий срез — source v215 / live v213, Process и FAQ на post=5214
 
 Срез: **2026-09-30 20:32 +05:00 (Asia/Almaty)**. Живые наблюдения относятся к существующей странице `post=5214`; новые страницы/drafts не создавались. Редактор после прошлого обновления заменялся одной вкладкой; в этом цикле WP Pusher не смог открыть UI.

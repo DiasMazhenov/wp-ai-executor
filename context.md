@@ -1,3 +1,16 @@
+## Текущий срез — library-only selection fix v216; live install pending
+
+Срез: **2026-09-30 21:18 +05:00 (Asia/Almaty)**. Workspace `/Users/diasmazhenov/vibecode/wp-ai-executor`; текущая вкладка Elementor — существующий `post=5214`, viewport браузера `1228×923` CSS px. До записи кода подтверждено: inline editor/plugin version `v02.11.215`; страница не изменялась этим запуском.
+
+- Подтверждён дефект контракта library-agent: system prompt требовал от модели одновременно выбрать `library_choice` и сформировать второе полное Elementor-дерево. Сервер сбрасывал provider tree, но принимал library choice только когда это лишнее дерево проходило `wpae_llm_validate_action_shape()`. Ответ с валидным allowlisted choice и `elements: []` поэтому ошибочно запускал repair/fallback вместо выбранного шаблона.
+- Исправлено в `includes/llm/llm.php`: allowlisted выбор проверяет `insert_elements`, target post и серверный candidate key; дерево модели отбрасывается, content/shape checks отложены до адаптированного server-side шаблона. Prompt теперь позволяет вернуть `elements: []` при выборе кандидата и требует полное native-дерево только при `library_choice: null`. Та же развилка поддержана в repair response. Единственная Elementor transaction/write boundary не менялась.
+- Regression в `tests/flex-generation-runtime.php`: candidate-only selection доходит через production request до выбранного шаблона и единственной записи; wrong post отклоняется; при null путь требует complete native tree. `583` runtime checks PASS.
+- Установлен source v216, package hashes обновлены; commit/push `c1355a8` (`fix: allow model-selected library-only commands`) в `origin/main` PASS.
+- Live v216 **NOT INSTALLED**: в уже открытой вкладке WP Pusher на действие `Update plugin` не удалось получить актуальное состояние; Browser Use сообщил timeout `Emulation.setFocusEmulationEnabled` для tab 29. Повторно одинаковое действие не выполнялось. Plugins UI по-прежнему показывает v215; editor после проверки без reload также показывает inline v215. Live generation/save/reload и screenshots не выполнялись; страница этим запуском не менялась.
+- Imported catalog local probe: 158 файлов в manifest, 156 retrievable trees и previews, FAQ candidates 5, Services candidates 2; WordPress records/pages не создавались. Это проверяет наличие каталога/retrieval, не live выбор каждым запросом и не визуальный результат.
+- Проверки: `flex-generation-runtime.php` 583 PASS; `design-pipeline-contract.php` 270 PASS; imported-template-catalog PASS; Elementor patch guard PASS; Node 6/6 PASS; PHP lint для runtime/test/entrypoint PASS; package probe 249 файлов, 0 hash mismatches, 4 scenarios PASS; `git diff --check` PASS.
+- Остаток: подтвердить WP Pusher install и editor inline v216, затем провести одну live generation на существующем post=5214 с подтверждением roots до/после и screenshot по процедуре ниже. Предыдущие Process/FAQ live FAIL из среза v213/v215 этим патчем не считаются исправленными.
+
 ## Текущий срез — source v215 / live v213, Process и FAQ на post=5214
 
 Срез: **2026-09-30 20:32 +05:00 (Asia/Almaty)**. Живые наблюдения относятся к существующей странице `post=5214`; новые страницы/drafts не создавались. Редактор после прошлого обновления заменялся одной вкладкой; в этом цикле WP Pusher не смог открыть UI.
