@@ -1706,6 +1706,11 @@ $team_natural_validation = wpae_design_plan_validate( $team_natural_plan, $team_
 check( empty( $team_natural_validation['errors'] ), 'Team parser lost a position that follows a quoted name in one natural member entry: ' . wp_json_encode( $team_natural_validation['errors'] ?? [] ) );
 $team_natural_items = (array) ( $team_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
 check( count( $team_natural_items ) === 2 && $team_natural_items[0]['name_ref'] === 'team_1_name' && $team_natural_items[0]['position_ref'] === 'team_1_position' && $team_natural_items[1]['name_ref'] === 'team_2_name' && $team_natural_items[1]['position_ref'] === 'team_2_position', 'Team natural member entries were not grouped into exact name/position pairs' );
+$team_compact_brief = wpae_brief_ir_parse( 'Блок команды: Алия — архитектор, Тимур — дизайнер.' );
+$team_compact_plan = wpae_design_plan_from_brief( $team_compact_brief );
+$team_compact_validation = wpae_design_plan_validate( $team_compact_plan, $team_compact_brief );
+$team_compact_items = (array) ( $team_compact_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( empty( $team_compact_validation['errors'] ) && count( $team_compact_items ) === 2 && [ $team_compact_items[0]['name_ref'], $team_compact_items[0]['position_ref'], $team_compact_items[1]['name_ref'], $team_compact_items[1]['position_ref'] ] === [ 'team_1_name', 'team_1_position', 'team_2_name', 'team_2_position' ], 'Compact name-role team pairs must enter the typed DesignPlan without out-of-range errors' );
 $team_audit_message = "Блок команды. Участник 1 — имя: «Тестовый архитектор». Участник 1 — должность: «Архитектор». Участник 2 — имя: «Тестовый инженер». Участник 2 — должность: «Инженер-конструктор».";
 $team_audit_plan = wpae_llm_content_plan( $team_audit_message, 'team' );
 $team_audit_cards = container_node( 'team-audit-root', [], [

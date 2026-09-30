@@ -475,6 +475,23 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$previous_quote_inner = $inner;
 		$previous_quote_end = $start + strlen( $full );
 	}
+	if ( $archetype === 'team' && ! array_filter( $content, static fn( array $item ): bool => str_starts_with( (string) ( $item['role'] ?? '' ), 'team_' ) ) && preg_match( '/команд[аы]\s*[:—-]\s*/iu', $source_text, $team_heading, PREG_OFFSET_CAPTURE ) ) {
+		$members_start = (int) $team_heading[0][1] + strlen( (string) $team_heading[0][0] );
+		$members_text = substr( $source_text, $members_start );
+		$member_index = 0;
+		foreach ( preg_split( '/[,;\r\n]+/u', $members_text, -1, PREG_SPLIT_OFFSET_CAPTURE ) ?: [] as [ $member_text, $member_offset ] ) {
+			if ( ! preg_match( '/^\s*(.{2,80}?)\s+[—–-]\s+(.{2,120}?)\s*$/u', (string) $member_text, $member_match ) ) {
+				continue;
+			}
+			$member_index++;
+			$group_id = 'team_' . $member_index;
+			$member_start = $members_start + (int) $member_offset;
+			$name = trim( (string) $member_match[1] );
+			$position = trim( (string) $member_match[2] );
+			$add_content( 'team_name', $name, $member_start, strlen( $name ), null, 0.9, true, false, $group_id . '_name', false, $group_id );
+			$add_content( 'team_position', $position, $member_start + strlen( (string) $member_match[0] ) - strlen( $position ), strlen( $position ), null, 0.9, true, false, $group_id . '_position', false, $group_id );
+		}
+	}
 	if ( $archetype === 'cta' ) {
 		$title = null;
 	$first_button = null;
