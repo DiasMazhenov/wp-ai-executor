@@ -2218,6 +2218,18 @@ function wpae_llm_extract_pricing_content( string $message ): array {
 		return wpae_llm_pricing_contract_from_pairs( array_slice( array_values( $pairs ), 0, 8 ), $message );
     }
 
+	// Simple briefs often describe each tier as "Name — amount, description"
+	// and separate tiers with sentence punctuation instead of semicolons.
+	if ( preg_match_all( '/(?:^|:\s+|[.!?;]\s*)([^—–:;,.]{2,80}?)\s*[—–-]\s*((?:от\s+)?\d[\d\s]*(?:₸|\$|€|₽)(?:\s*\/\s*[\p{L}\w]+)?)\s*,\s*(?:«([^»]{2,240})»|"([^"\n]{2,240})")(?=\s*(?:[.!?;]|$))/u', trim( $message ), $compact_description_matches, PREG_SET_ORDER ) ) {
+		foreach ( $compact_description_matches as $match ) {
+			$description = (string) ( $match[3] !== '' ? $match[3] : ( $match[4] ?? '' ) );
+			$append_pair( $pairs, (string) ( $match[1] ?? '' ), (string) ( $match[2] ?? '' ), $description );
+		}
+	}
+	if ( count( $pairs ) >= 2 ) {
+		return wpae_llm_pricing_contract_from_pairs( array_slice( array_values( $pairs ), 0, 8 ), $message );
+	}
+
 	// Compact requests often put several unquoted tiers on one line, separated
 	// by semicolons. Keep the optional section label out of the first tier.
 	foreach ( preg_split( '/;\s*/u', trim( $message ), -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $segment ) {
