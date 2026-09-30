@@ -10980,6 +10980,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 			$system_prompt .= wpae_llm_library_decision_prompt( $library_retrieval );
 		}
     }
+	if ( $action_request && ! $targeted_edit && ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' && ! empty( $library_retrieval['selection_candidates'] ) ) {
+		$system_prompt = 'Выбери один наиболее подходящий шаблон из предложенных compatible candidates для запроса пользователя. Оцени только соответствие типа секции, числа элементов и структуры; содержимое выбранного шаблона сервер адаптирует сам. Если ни один кандидат не подходит, выбери null. ' . wpae_llm_library_decision_prompt( $library_retrieval )
+			. ' Верни только JSON без markdown по схеме {"action":"insert_elements","post_id":' . (string) $selected_post_id . ',"position":"end","library_choice":"точный choice_key или null","elements":[]}. Не создавай Elementor JSON, собственную композицию или fallback.';
+	}
     $messages = [ [
         'role' => 'system',
         'content' => $system_prompt,
