@@ -333,6 +333,23 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			}
 		}
 	}
+	if ( $archetype === 'process' ) {
+		$line_offset = 0;
+		foreach ( preg_split( '/\n/', $source_text ) ?: [] as $line ) {
+			$matches = [];
+			if ( ! str_contains( $line, '«' ) && ! str_contains( $line, '“' ) && ! str_contains( $line, '"' ) && preg_match( '/^\s*(?:\d{1,2}[.)]\s*)?(?<label>[^—–-]{1,100}?)\s*[—–-]\s*(?<copy>[^\r\n]{1,500}?)\s*$/u', $line, $matches, PREG_OFFSET_CAPTURE ) ) {
+				$label = trim( (string) ( $matches['label'][0] ?? '' ) );
+				$copy  = trim( (string) ( $matches['copy'][0] ?? '' ) );
+				if ( $label !== '' && $copy !== '' ) {
+					$label_offset = strpos( $line, $label );
+					$copy_offset  = strpos( $line, $copy, (int) ( $matches['copy'][1] ?? 0 ) );
+					$add_content( 'label', $label, $line_offset + ( $label_offset === false ? 0 : $label_offset ), strlen( $label ), null, 0.98, true );
+					$add_content( 'text', $copy, $line_offset + ( $copy_offset === false ? 0 : $copy_offset ), strlen( $copy ), null, 0.98, false );
+				}
+			}
+			$line_offset += strlen( $line ) + 1;
+		}
+	}
 
 	$quote_pattern = '~«([^»]{1,500})»|“([^”]{1,500})”|"([^"]{1,500})"~su';
 	$quote_matches = [];
