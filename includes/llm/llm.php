@@ -6029,6 +6029,7 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 		$timeline['settings']['flex_gap'] = [ 'column' => '0.5', 'row' => '0.5', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.5' ];
 		$timeline['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
 		$horizontal_cards = [];
+		$desktop_card_width = 100 / max( 1, $step_count );
 
 		foreach ( $timeline_steps as $index => $source_step ) {
 			$step_number = $index + 1;
@@ -6138,9 +6139,11 @@ function wpae_llm_build_process_timeline( array $steps, string $id = 'wpae-proce
 				'border_radius' => [ 'unit' => 'px', 'size' => 20, 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => true ],
 				'padding' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1.25', 'left' => '0.75', 'isLinked' => true ],
 				'padding_mobile' => [ 'unit' => 'rem', 'top' => '1', 'right' => '0.75', 'bottom' => '1', 'left' => '0.75', 'isLinked' => true ],
+				'width' => [ 'unit' => '%', 'size' => $desktop_card_width, 'sizes' => [] ],
 				'_element_width' => 'initial',
-				'_flex_size' => 'grow',
-				'_flex_grow' => 1,
+				'_element_custom_width' => [ 'unit' => '%', 'size' => $desktop_card_width, 'sizes' => [] ],
+				'_flex_size' => 'custom',
+				'_flex_grow' => 0,
 				'_flex_shrink' => 1,
 				'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ],
 				'_element_width_mobile' => 'initial',

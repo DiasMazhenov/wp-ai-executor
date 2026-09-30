@@ -1170,7 +1170,8 @@ foreach ( $reference_items['elements'] as $reference_index => $reference_card ) 
     $card_classes = preg_split( '/\s+/', trim( (string) ( $card_settings['_css_classes'] ?? '' ) ) );
     check( in_array( 'wpae-process-content', $card_classes, true ), 'Reference timeline child is not a process-content card' );
     check( $card_settings['border_radius']['unit'] === 'px' && $card_settings['border_radius']['top'] === '20' && $card_settings['border_radius']['right'] === '20' && $card_settings['border_radius']['bottom'] === '20' && $card_settings['border_radius']['left'] === '20', 'Reference card radius does not match the supplied JSON' );
-	check( ! isset( $card_settings['width'] ) && ( $card_settings['_flex_size'] ?? '' ) === 'grow' && (int) ( $card_settings['_flex_grow'] ?? 0 ) === 1 && (float) $card_settings['width_mobile']['size'] === 100.0 && ( $card_settings['_flex_size_mobile'] ?? '' ) === 'custom', 'Reference cards do not evenly fill the desktop row and stack at full width on mobile' );
+	check( ( $card_settings['width']['unit'] ?? '' ) === '%' && abs( (float) $card_settings['width']['size'] - 25.0 ) < 0.001 && ( $card_settings['_flex_size'] ?? '' ) === 'custom' && (int) ( $card_settings['_flex_grow'] ?? -1 ) === 0 && (float) $card_settings['width_mobile']['size'] === 100.0 && ( $card_settings['_flex_size_mobile'] ?? '' ) === 'custom', 'Reference cards lack equal native desktop widths or full-width mobile stacking' );
+	check( ( $card_settings['_element_custom_width']['unit'] ?? '' ) === '%' && abs( (float) $card_settings['_element_custom_width']['size'] - 25.0 ) < 0.001 && (float) $card_settings['_element_custom_width_mobile']['size'] === 100.0, 'Reference process cards do not use Elementor native custom-width controls at both breakpoints' );
     check( count( $reference_card['elements'] ) === 3, 'Reference card child order/count does not match marker-row, heading, copy' );
     $marker_row = $reference_card['elements'][0];
     check( $marker_row['elType'] === 'container' && $marker_row['settings']['flex_direction'] === 'row' && ( $marker_row['settings']['padding']['top'] ?? null ) === '0', 'Reference marker row is not a native zero-padding Flex row' );
@@ -1285,6 +1286,8 @@ $provider_process_result = wpae_llm_enforce_process_timeline_contract( [ $provid
 $provider_process_json = (string) wp_json_encode( $provider_process_result, JSON_UNESCAPED_UNICODE );
 check( $provider_process_changed === 1 && str_contains( $provider_process_json, 'wpae-process-items' ) && substr_count( $provider_process_json, 'wpae-process-content' ) === 3, 'Markerless provider Process root bypassed the canonical responsive timeline contract' );
 check( str_contains( $provider_process_json, 'QA: запрос поступил' ) && str_contains( $provider_process_json, 'QA: детали проверены' ) && str_contains( $provider_process_json, 'QA: следующий шаг согласован' ), 'Canonical Process rebuild lost explicit provider content' );
+$provider_process_cards = (array) ( $provider_process_result[0]['elements'][2]['elements'] ?? [] );
+check( count( $provider_process_cards ) === 3 && array_reduce( $provider_process_cards, static fn( bool $ok, array $card ): bool => $ok && abs( (float) ( $card['settings']['width']['size'] ?? 0 ) - ( 100 / 3 ) ) < 0.001 && (float) ( $card['settings']['width_mobile']['size'] ?? 0 ) === 100.0, true ), 'Three-step Process repair did not assign equal desktop widths with a mobile stack' );
 $repair_root = $reference_timeline;
 $repair_root['id'] = 'repair-root';
 $repair_root['settings']['_css_classes'] = 'wpae-system-test';
