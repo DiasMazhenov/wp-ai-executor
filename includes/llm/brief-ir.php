@@ -380,6 +380,41 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$quote_pattern = '~«([^»]{1,500})»|“([^”]{1,500})”|"([^"]{1,500})"~su';
 	$quote_matches = [];
 	preg_match_all( $quote_pattern, $source_text, $quote_matches, PREG_OFFSET_CAPTURE );
+	$simple_testimonial_groups = [];
+	$simple_testimonial_quote_offsets = [];
+	if ( $archetype === 'testimonials' && ! array_filter( $content, static fn( array $item ): bool => ( $item['role'] ?? '' ) === 'testimonial_quote' ) ) {
+		$simple_testimonial_pattern = '~(?<quote>«(?<angle>[^»\r\n]{2,500})»|“(?<curly>[^”\r\n]{2,500})”|"(?<plain>[^"\r\n]{2,500})")\s*[—–-]\s*(?<author>[^;.!?\r\n]{2,80}?)(?=\s*(?:;|[.!?]?$))~u';
+		preg_match_all( $simple_testimonial_pattern, $source_text, $simple_testimonial_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL );
+		foreach ( $simple_testimonial_matches as $index => $match ) {
+			$quote = '';
+			foreach ( [ 'angle', 'curly', 'plain' ] as $quote_key ) {
+				if ( isset( $match[ $quote_key ][1] ) && $match[ $quote_key ][1] >= 0 ) {
+					$quote = (string) $match[ $quote_key ][0];
+					break;
+				}
+			}
+			$author = trim( (string) ( $match['author'][0] ?? '' ) );
+			if ( $quote === '' || $author === '' ) {
+				continue;
+			}
+			$group_id = 'testimonial_' . (string) ( $index + 1 );
+			$quote_start = (int) ( $match['angle'][1] ?? -1 );
+			if ( $quote_start < 0 ) {
+				$quote_start = (int) ( $match['curly'][1] ?? -1 );
+			}
+			if ( $quote_start < 0 ) {
+				$quote_start = (int) ( $match['plain'][1] ?? -1 );
+			}
+			$simple_testimonial_quote_offsets[] = (int) $match['quote'][1];
+			$simple_testimonial_groups[] = [
+				'group_id' => $group_id,
+				'quote' => $quote,
+				'quote_start' => $quote_start,
+				'author' => $author,
+				'author_start' => (int) $match['author'][1] + strlen( (string) $match['author'][0] ) - strlen( $author ),
+			];
+		}
+	}
 	$cta_index = 0;
 	$previous_quote_inner = null;
 	$previous_quote_end = null;
@@ -395,6 +430,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			}
 		}
 		if ( $claimed_service_quote ) {
+			continue;
+		}
+		if ( in_array( $start, $simple_testimonial_quote_offsets, true ) ) {
 			continue;
 		}
 		$inner = '';
@@ -482,6 +520,11 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$previous_quote_inner = $inner;
 		$previous_quote_end = $start + strlen( $full );
+	}
+	foreach ( $simple_testimonial_groups as $simple_testimonial ) {
+		$group_id = (string) $simple_testimonial['group_id'];
+		$add_content( 'testimonial_quote', (string) $simple_testimonial['quote'], (int) $simple_testimonial['quote_start'], strlen( (string) $simple_testimonial['quote'] ), null, 0.9, true, false, $group_id . '_quote', false, $group_id );
+		$add_content( 'testimonial_author', (string) $simple_testimonial['author'], (int) $simple_testimonial['author_start'], strlen( (string) $simple_testimonial['author'] ), null, 0.9, true, false, $group_id . '_author', false, $group_id );
 	}
 	if ( $archetype === 'team' && ! array_filter( $content, static fn( array $item ): bool => str_starts_with( (string) ( $item['role'] ?? '' ), 'team_' ) ) && preg_match( '/команд[аы]\s*[:—-]\s*/iu', $source_text, $team_heading, PREG_OFFSET_CAPTURE ) ) {
 		$members_start = (int) $team_heading[0][1] + strlen( (string) $team_heading[0][0] );

@@ -1079,6 +1079,11 @@ check( ( $compact_live_pricing_brief['pricing_items'][2]['period_ref'] ?? '' ) !
 $simple_live_pricing_message = 'Блок тарифов: Старт — 50 000 ₸, «Для регулярных задач». Проект — 150 000 ₸, «Для небольшой задачи». Поддержка — 80 000 ₸/мес, «Для комплексной работы».';
 $simple_live_pricing_contract = wpae_llm_extract_pricing_content( $simple_live_pricing_message );
 check( count( $simple_live_pricing_contract['items'] ?? [] ) === 3 && array_column( $simple_live_pricing_contract['items'], 'label' ) === [ 'Старт', 'Проект', 'Поддержка' ] && ( $simple_live_pricing_contract['items'][2]['price_text'] ?? '' ) === '80 000 ₸/мес' && ( $simple_live_pricing_contract['items'][2]['description'] ?? '' ) === 'Для комплексной работы', 'Simple live pricing brief lost tier, monthly period, or quoted description' );
+check( wpae_llm_detect_block_archetype( $simple_live_pricing_message ) === 'pricing', 'Simple live pricing brief was classified as the wrong block family' );
+$simple_pricing_adapted_changes = 0;
+$simple_pricing_adapted = wpae_llm_apply_library_template( [ container_node( 'simple-pricing-source', [ 'container_type' => 'flex' ], [ widget( 'simple-pricing-placeholder', 'heading', [ 'title' => 'Source pricing' ] ) ] ) ], $simple_live_pricing_message, 'pricing', $simple_pricing_adapted_changes );
+$simple_pricing_adapted_copy = wpae_llm_collect_action_content( $simple_pricing_adapted );
+check( count( $simple_pricing_adapted ) === 1 && substr_count( wp_json_encode( $simple_pricing_adapted ), 'wpae-pricing-card-' ) >= 3 && strpos( $simple_pricing_adapted_copy, 'Старт' ) !== false && strpos( $simple_pricing_adapted_copy, 'Проект' ) !== false && strpos( $simple_pricing_adapted_copy, 'Поддержка' ) !== false, 'Simple live pricing brief did not adapt into three native pricing cards' );
 $price_first_items = (array) ( $price_first_contract['items'] ?? [] );
 check( count( $price_first_items ) === 3 && ( $price_first_contract['heading'] ?? '' ) === 'Выберите формат работы' && ( $price_first_contract['badge'] ?? '' ) === 'ТАРИФЫ', 'Price-first recovery prompt did not preserve the explicit pricing heading and eyebrow' );
 check( $price_first_items[0]['price_text'] === 'от 50 000 ₸' && $price_first_items[1]['description'] === 'Для комплексной работы от идеи до результата' && array_column( $price_first_items, 'cta_url' ) === [ '#start', '#project', '#support' ], 'Price-first recovery prompt lost a price, description, or paired CTA URL' );
@@ -1770,6 +1775,37 @@ $testimonials_compact_plan = wpae_design_plan_from_brief( $testimonials_compact_
 $testimonials_compact_validation = wpae_design_plan_validate( $testimonials_compact_plan, $testimonials_compact_brief );
 $testimonials_compact_items = (array) ( $testimonials_compact_plan['sections'][0]['children'][0]['items'] ?? [] );
 check( empty( $testimonials_compact_validation['errors'] ) && count( $testimonials_compact_items ) === 2 && array_column( $testimonials_compact_items, 'author_ref' ) === [ 'testimonial_1_author', 'testimonial_2_author' ], 'Compact review quote/author pairs must compile into two correctly grouped valid testimonial items: ' . wp_json_encode( [ 'errors' => $testimonials_compact_validation['errors'] ?? [], 'items' => $testimonials_compact_items ] ) );
+$testimonials_natural_prompt = 'Отзывы: «Понятно, как проходит работа» — Алия; «План быстро согласовали» — Тимур.';
+$testimonials_natural_brief = wpae_brief_ir_parse( $testimonials_natural_prompt );
+$testimonials_natural_plan = wpae_design_plan_from_brief( $testimonials_natural_brief );
+$testimonials_natural_validation = wpae_design_plan_validate( $testimonials_natural_plan, $testimonials_natural_brief );
+$testimonials_natural_items = (array) ( $testimonials_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
+check( empty( $testimonials_natural_validation['errors'] ) && count( $testimonials_natural_items ) === 2 && array_column( $testimonials_natural_items, 'author_ref' ) === [ 'testimonial_1_author', 'testimonial_2_author' ] && array_column( $testimonials_natural_items, 'quote_ref' ) === [ 'testimonial_1_quote', 'testimonial_2_quote' ], 'Natural quote-dash-author testimonial briefs must group each quote with its author and pass DesignPlan validation' );
+$testimonials_library_template = [ container_node( 'testimonial-library-root', [], [
+	container_node( 'testimonial-library-card-1', [], [ widget( 'testimonial-library-widget-1', 'testimonial', [ 'testimonial_content' => 'Source quote one', 'testimonial_name' => 'Source author one' ] ) ] ),
+	container_node( 'testimonial-library-card-2', [], [ widget( 'testimonial-library-widget-2', 'testimonial', [ 'testimonial_content' => 'Source quote two', 'testimonial_name' => 'Source author two' ] ) ] ),
+] ) ];
+$testimonials_library_changes = 0;
+$testimonials_library_adapted = wpae_llm_apply_library_template( $testimonials_library_template, $testimonials_compact_prompt, 'testimonials', $testimonials_library_changes );
+$testimonials_library_widgets = [];
+$collect_testimonials_library_widgets = static function ( array $nodes ) use ( &$collect_testimonials_library_widgets, &$testimonials_library_widgets ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'testimonial' ) { $testimonials_library_widgets[] = (array) ( $node['settings'] ?? [] ); }
+		$collect_testimonials_library_widgets( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_testimonials_library_widgets( $testimonials_library_adapted );
+check( count( $testimonials_library_widgets ) === 2 && array_column( $testimonials_library_widgets, 'testimonial_name' ) === [ 'Алия', 'Тимур' ] && array_column( $testimonials_library_widgets, 'testimonial_content' ) === [ 'Понятно, как проходит работа', 'План быстро согласовали' ], 'Library adaptation must use typed BriefIR quote-author pairs instead of generic unrelated label pairs' );
+$team_library_prompt = 'Блок команды: Алия — архитектор, Тимур — дизайнер.';
+$team_library_template = [ container_node( 'team-library-root', [], [
+	container_node( 'team-library-card-1', [], [ widget( 'team-library-name-1', 'heading', [ 'title' => 'Source name one' ] ), widget( 'team-library-position-1', 'text-editor', [ 'editor' => 'Source role one' ] ) ] ),
+	container_node( 'team-library-card-2', [], [ widget( 'team-library-name-2', 'heading', [ 'title' => 'Source name two' ] ), widget( 'team-library-position-2', 'text-editor', [ 'editor' => 'Source role two' ] ) ] ),
+] ) ];
+$team_library_changes = 0;
+$team_library_adapted = wpae_llm_apply_library_template( $team_library_template, $team_library_prompt, 'team', $team_library_changes );
+$team_library_copy = wpae_llm_collect_action_content( $team_library_adapted );
+check( count( $team_library_adapted ) === 1 && str_contains( $team_library_copy, 'Алия' ) && str_contains( $team_library_copy, 'архитектор' ) && str_contains( $team_library_copy, 'Тимур' ) && str_contains( $team_library_copy, 'дизайнер' ), 'Library adaptation must use typed BriefIR member pairs for the compact natural Team brief' );
 $testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
 check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
 $testimonial_plan = wpae_llm_content_plan( $testimonials_prompt, 'testimonials' );

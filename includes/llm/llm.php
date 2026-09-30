@@ -5021,6 +5021,12 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
 	}
 	$pricing_contract = wpae_llm_extract_pricing_content( $message );
 	$pairs = wpae_llm_extract_labeled_content( $message );
+	if ( in_array( $archetype, [ 'team', 'testimonials' ], true ) ) {
+		$typed_pairs = (array) ( wpae_llm_content_plan( $message, $archetype )['content_pairs'] ?? [] );
+		if ( count( $typed_pairs ) >= 2 ) {
+			$pairs = $typed_pairs;
+		}
+	}
 	if ( $archetype === 'faq' ) {
 		$faq_pairs = array_slice( wpae_llm_extract_faq_content( $message ), 0, 8 );
 		if ( count( $faq_pairs ) < 2 ) {
