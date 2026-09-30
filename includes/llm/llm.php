@@ -2504,8 +2504,21 @@ function wpae_llm_extract_services_content( string $message ): array {
 
 function wpae_llm_extract_faq_content( string $message ): array {
     $message = trim( sanitize_text_field( $message ) );
-    $message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $message );
-    $message = preg_replace( '/^\s*(?:faq|частые вопросы|вопросы)\s*:\s*/iu', '', $message );
+	$message = preg_replace( '/^\s*(?:добавь|добавить|создай|создать|сделай|сформируй)\b[^:]{0,160}:\s*/iu', '', $message );
+	$message = preg_replace( '/^\s*(?:faq|частые вопросы|вопросы)\s*:\s*/iu', '', $message );
+	$explicit_pairs = [];
+	if ( preg_match_all( '/(?:вопрос|question)\s*\d*\s*[:：]\s*[«"]([^»"]{2,240})[»"]\s*(?:ответ|answer)\s*\d*\s*[:：]\s*[«"]([^»"]{3,320})[»"]/iu', (string) $message, $explicit_matches, PREG_SET_ORDER ) ) {
+		foreach ( $explicit_matches as $match ) {
+			$label = trim( sanitize_text_field( preg_replace( '/[?؟\s]+$/u', '', (string) ( $match[1] ?? '' ) ) ) );
+			$content = trim( sanitize_text_field( preg_replace( '/[.!?؟\s]+$/u', '', (string) ( $match[2] ?? '' ) ) ) );
+			if ( $label !== '' && $content !== '' ) {
+				$explicit_pairs[] = [ 'label' => $label, 'content' => $content ];
+			}
+		}
+	}
+	if ( ! empty( $explicit_pairs ) ) {
+		return array_slice( $explicit_pairs, 0, 12 );
+	}
 	$quoted_pairs = [];
 	if ( preg_match_all( '/(?:«([^»]{2,240})»|"([^"\n]{2,240})")\s*[—–-]\s*(?:(?:ответ|answer)\s*[:：]?\s*)?(?:«([^»]{3,320})»|"([^"\n]{3,320})")/iu', (string) $message, $quoted_matches, PREG_SET_ORDER ) ) {
 		foreach ( $quoted_matches as $match ) {

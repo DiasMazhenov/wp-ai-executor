@@ -859,6 +859,15 @@ $faq_library_tab_ids = array_column( $faq_library_tabs, '_id' );
 check( count( $faq_library_adapted ) === 1 && ( $faq_library_accordion['widgetType'] ?? '' ) === 'accordion' && count( $faq_library_tabs ) === 2, 'Selected FAQ library template was rejected instead of adapting its native Accordion' );
 check( ( $faq_library_tabs[0]['tab_title'] ?? '' ) === 'Как начать проект?' && ( $faq_library_tabs[0]['tab_content'] ?? '' ) === 'Оставьте заявку, и мы обсудим задачу' && ( $faq_library_tabs[1]['tab_title'] ?? '' ) === 'Сколько стоит работа?' && ( $faq_library_tabs[1]['tab_content'] ?? '' ) === 'Стоимость зависит от объёма и сроков', 'FAQ library adaptation changed exact copy or question/answer order' );
 check( count( array_unique( $faq_library_tab_ids ) ) === 2 && $faq_library_tab_ids[0] !== 'oldtab1' && $faq_library_tab_ids[1] !== 'oldtab2' && ! empty( $faq_library_audit['ok'] ), 'FAQ library adaptation reused template tab IDs or failed the production semantic audit: ' . wp_json_encode( [ 'ids' => $faq_library_tab_ids, 'audit' => $faq_library_audit ], JSON_UNESCAPED_UNICODE ) );
+$faq_explicit_labels = 'Блок FAQ. Вопрос: «Как начать работу?» Ответ: «Оставьте заявку, и мы обсудим задачу». Вопрос: «Можно ли менять сайт после запуска?» Ответ: «Да, контент редактируется в Elementor».';
+$faq_explicit_pairs = wpae_llm_extract_faq_content( $faq_explicit_labels );
+$faq_explicit_changes = 0;
+$faq_explicit_adapted = wpae_llm_apply_library_template( $faq_library_source, $faq_explicit_labels, 'faq', $faq_explicit_changes );
+$faq_explicit_tabs = (array) ( $faq_explicit_adapted[0]['elements'][1]['settings']['tabs'] ?? [] );
+$faq_explicit_audit = wpae_llm_content_plan_audit( wpae_llm_content_plan( $faq_explicit_labels, 'faq' ), $faq_explicit_adapted );
+check( count( $faq_explicit_pairs ) === 2 && ( $faq_explicit_pairs[0]['label'] ?? '' ) === 'Как начать работу' && ( $faq_explicit_pairs[1]['content'] ?? '' ) === 'Да, контент редактируется в Elementor', 'FAQ parser rejected adjacent labeled question/answer pairs from the live prompt' );
+check( count( $faq_explicit_tabs ) === 2 && ( $faq_explicit_tabs[0]['tab_title'] ?? '' ) === 'Как начать работу?' && ( $faq_explicit_tabs[1]['tab_content'] ?? '' ) === 'Да, контент редактируется в Elementor', 'FAQ library adapter did not transfer labeled pairs into native Accordion items' );
+check( ! empty( $faq_explicit_audit['ok'] ), 'FAQ content plan audit rejected the exact explicit-label prompt: ' . wp_json_encode( $faq_explicit_audit, JSON_UNESCAPED_UNICODE ) );
 
 $portfolio_message = 'Создай блок «Наши проекты» с тремя работами: «Квартира у парка» — «Светлый интерьер для семьи»; «Дом у озера» — «Природные материалы и открытые пространства»; «Городская студия» — «Компактная планировка для одного человека». Сохрани три работы, точные описания и порядок. Используй редактируемые элементы Elementor. Не выдумывай фотографии выполненных проектов. Адаптируй для телефона.';
 $portfolio_pairs = wpae_llm_extract_labeled_content( $portfolio_message );
