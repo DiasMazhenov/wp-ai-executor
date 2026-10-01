@@ -292,7 +292,7 @@ assert.match(llm, /wpae_llm_process_timeline_steps\( \$message, false \)/);
 assert.match(llm, /function wpae_llm_process_timeline_steps\( \?string \$message, bool \$allow_default = true \)/);
 assert.match(llm, /\$context_original_message = is_array\( \$editor_context_input \)/);
 assert.match(llm, /if \( \$message === '' && \$context_original_message !== '' \)/);
-assert.match(llm, /if \( empty\( \$matches \) && ! \$navigation_request && \( ! \$process_request \|\| ! empty\( \$process_steps \) \) \)/);
+assert.match(llm, /if \( empty\( \$matches \) && ! \$navigation_request && ! \$carousel_request && \( ! \$process_request \|\| ! empty\( \$process_steps \) \) \)/);
 assert.match(llm, /foreach \( wpae_llm_content_units\( \$message \) as \$unit \)/);
 assert.match(llm, /обсудить\|обсудите\|получить\|получите/);
 assert.match(llm, /\$card_elements = is_array\( \$card\['elements'\] \?\? null \)/);

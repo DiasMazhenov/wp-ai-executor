@@ -93,7 +93,7 @@ function wpae_brief_ir_archetype( string $source_text ): string {
 	}
 	if ( function_exists( 'wpae_llm_detect_block_archetype' ) ) {
 		$detected = sanitize_key( (string) wpae_llm_detect_block_archetype( $source_text ) );
-		if ( in_array( $detected, [ 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta' ], true ) ) {
+		if ( in_array( $detected, [ 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta', 'about', 'portfolio', 'mega_menu', 'carousel' ], true ) ) {
 			return $detected;
 		}
 	}

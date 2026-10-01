@@ -1200,6 +1200,10 @@ function wpae_llm_detect_block_archetype( string $message ): string {
 		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
 		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
 		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*(?:[.:\-–—]|$)|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
+		'mega_menu' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:(?:нов\w*|отдельн\w*)\s+)*(?:(?:библиотечн\w*|library)\s+)?(?:(?:блок|секци\w*|раздел|block|section)\s+(?:для\s+)?)?(?:мега[\s-]*меню|mega[\s-]*menu|навигац\w*|navigation|header)\b/iu',
+		'carousel' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:(?:нов\w*|отдельн\w*)\s+)*(?:(?:библиотечн\w*|library)\s+)?(?:(?:блок|секци\w*|раздел|block|section)\s+(?:для\s+)?)?(?:карусел\w*|слайдер\w*|carousel|slider)\b/iu',
+		'about' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:(?:нов\w*|отдельн\w*)\s+)*(?:(?:библиотечн\w*|library)\s+)?(?:(?:блок|секци\w*|раздел|block|section)\s+(?:для\s+)?)?(?:о\s+компани\w*|о\s+нас|кто\s+мы|about(?:\s+us)?|о\s+(?:нашей\s+)?студи\w*)\b/iu',
+		'portfolio' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:(?:нов\w*|отдельн\w*)\s+)*(?:(?:библиотечн\w*|library)\s+)?(?:(?:блок|секци\w*|раздел|block|section)\s+(?:для\s+)?)?(?:портфолио|наши\s+проект\w*|кейс\w*|portfolio|case\s+stud(?:y|ies)|projects?)\b/iu',
 	];
 	foreach ( $explicit_archetypes as $archetype => $pattern ) {
 		if ( preg_match( $pattern, $intent_head ) ) {
@@ -1377,7 +1381,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
     $archetype = $archetype !== '' ? sanitize_key( $archetype ) : wpae_llm_detect_block_archetype( $message );
     $units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_content_units( $message ) ) ) );
     $brief_ir = function_exists( 'wpae_brief_ir_parse' ) ? wpae_brief_ir_parse( $message ) : [];
-    if ( $archetype === 'services' && ( $brief_ir['intent']['archetype'] ?? '' ) === 'services' ) {
+    if ( in_array( $archetype, [ 'services', 'mega_menu', 'carousel' ], true ) ) {
         $units = array_values( array_filter( array_map( static fn( $unit ): string => trim( sanitize_text_field( (string) $unit ) ), wpae_llm_extract_requested_content( $message ) ) ) );
     }
     $pairs = array_slice( array_map( static function ( $pair ): array {
@@ -1871,6 +1875,10 @@ function wpae_llm_requires_verified_library_template( string $message ): bool {
 	return $library_template && $verified_only;
 }
 
+function wpae_llm_requires_library_template( string $message ): bool {
+	return (bool) preg_match( '/\b(?:библиотечн\w*\s+(?:блок|шаблон)|(?:блок|шаблон)\s+(?:из\s+)?библиотек\w*|library[\s-]+(?:block|template))\b/iu', $message );
+}
+
 function wpae_llm_forbids_fallback( string $message ): bool {
 	return (bool) preg_match( '/\bне\s+(?:используй|применяй|создавай|подставляй)\s+(?:fallback|фолбэк|запасн\w*)|\bне\s+использовать\s+(?:fallback|фолбэк|запасн\w*)/iu', $message );
 }
@@ -1879,6 +1887,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
     $matches = [];
     $services_request = false;
     $navigation_request = false;
+	$carousel_request = false;
     $process_request = wpae_llm_is_process_request( $message );
     $process_steps = [];
     foreach ( [ '/«([^»]{2,240})»/u', '/"([^"\\n]{2,240})"/u' ] as $pattern ) {
@@ -2021,6 +2030,15 @@ function wpae_llm_extract_requested_content( string $message ): array {
             $matches[] = $navigation['cta'];
         }
     }
+	if ( preg_match( '/\b(карусел\w*|слайдер\w*|carousel|slider|логотип\w*)\b/iu', $message ) ) {
+		$carousel_request = true;
+		$carousel_copy = wpae_llm_extract_carousel_content( $message );
+		$matches = array_values( array_filter( array_merge(
+			[ (string) ( $carousel_copy['title'] ?? '' ), (string) ( $carousel_copy['description'] ?? '' ) ],
+			(array) ( $carousel_copy['partners'] ?? [] )
+		) ) );
+		$structured_pairs = [];
+	}
     if ( count( $structured_pairs ) < 2 && preg_match( '/\?|؟/u', $message ) ) {
         $structured_pairs = wpae_llm_extract_faq_content( $message );
     }
@@ -2073,7 +2091,7 @@ function wpae_llm_extract_requested_content( string $message ): array {
             }
         }
     }
-    if ( empty( $matches ) && ! $navigation_request && ( ! $process_request || ! empty( $process_steps ) ) ) {
+    if ( empty( $matches ) && ! $navigation_request && ! $carousel_request && ( ! $process_request || ! empty( $process_steps ) ) ) {
         $matches = wpae_llm_content_units( $message );
     }
     $content = [];
@@ -2098,6 +2116,21 @@ function wpae_llm_extract_navigation_content( string $message ): array {
     }
 
     $items = [];
+	if ( preg_match( '/(?:пункты(?:\s+меню)?|ссылки|menu\s+items|items|links)\s*:\s*([^\r\n]+)/iu', $message, $list_match ) ) {
+		$list_text = (string) ( $list_match[1] ?? '' );
+		$quoted_items = [];
+		if ( preg_match_all( '/«([^»]{2,80})»|“([^”]{2,80})”|"([^"\n]{2,80})"/u', $list_text, $quoted_matches, PREG_SET_ORDER ) ) {
+			foreach ( $quoted_matches as $quoted_match ) {
+				$item = trim( sanitize_text_field( (string) ( $quoted_match[1] !== '' ? $quoted_match[1] : ( $quoted_match[2] !== '' ? $quoted_match[2] : ( $quoted_match[3] ?? '' ) ) ) ) );
+				if ( $item !== '' ) {
+					$quoted_items[ wpae_llm_normalize_content_text( $item ) ] = $item;
+				}
+			}
+		}
+		if ( ! empty( $quoted_items ) ) {
+			return [ 'items' => array_slice( array_values( $quoted_items ), 0, 8 ), 'cta' => $cta ];
+		}
+	}
     foreach ( preg_split( '/(?:\r?\n+|[,;|]+)/u', $message, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $segment ) {
         $item = trim( sanitize_text_field( (string) $segment ), " \t\n\r\0\x0B.,:;|\"«»" );
         if ( $item === '' || preg_match( '/^(?:добавь|добавить|создай|создать|сделай|сформируй|меню|навигац\w*)\b/iu', $item ) || ( ! $has_explicit_list && preg_match( '/^(?:мега[\s-]*меню|mega[\s-]*menu)\b/iu', $item ) ) ) {
@@ -2110,6 +2143,41 @@ function wpae_llm_extract_navigation_content( string $message ): array {
     }
 
     return [ 'items' => array_slice( array_values( $items ), 0, 8 ), 'cta' => $cta ];
+}
+
+function wpae_llm_extract_carousel_content( string $message ): array {
+	$copy = [ 'title' => '', 'description' => '', 'partners' => [] ];
+	if ( preg_match( '/(?:заголовок|название)(?:\s+(?:секции|раздела|блока))?\s*:?\s*[«"]([^»"\n]{2,240})[»"]/iu', $message, $match ) ) {
+		$copy['title'] = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+	}
+	if ( preg_match( '/(?:описание|подзаголовок|текст)(?:\s+(?:секции|раздела|блока))?\s*:?\s*[«"]([^»"\n]{3,500})[»"]/iu', $message, $match ) ) {
+		$copy['description'] = trim( sanitize_text_field( (string) ( $match[1] ?? '' ) ) );
+	}
+	if ( preg_match( '/(?:партн[её]ры|логотипы)\s*:\s*([^.!?\r\n]+)/iu', $message, $match ) ) {
+		$list_text = trim( (string) ( $match[1] ?? '' ) );
+		$quoted_partners = [];
+		if ( preg_match_all( '/«([^»]{2,80})»|“([^”]{2,80})”|"([^"\n]{2,80})"/u', $list_text, $quoted_matches, PREG_SET_ORDER ) ) {
+			foreach ( $quoted_matches as $quoted_match ) {
+				$partner = trim( sanitize_text_field( (string) ( $quoted_match[1] !== '' ? $quoted_match[1] : ( $quoted_match[2] !== '' ? $quoted_match[2] : ( $quoted_match[3] ?? '' ) ) ) ) );
+				if ( $partner !== '' ) {
+					$quoted_partners[ wpae_llm_normalize_content_text( $partner ) ] = $partner;
+				}
+			}
+		}
+		if ( ! empty( $quoted_partners ) ) {
+			$copy['partners'] = array_slice( array_values( $quoted_partners ), 0, 8 );
+		} else {
+			$list_text = preg_replace( '/\s+и\s+/iu', ', ', $list_text );
+			foreach ( preg_split( '/\s*[,;|]\s*/u', $list_text, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $candidate ) {
+				$partner = trim( sanitize_text_field( (string) $candidate ), " \t\n\r\0\x0B.,;:«»\"" );
+				if ( $partner !== '' && ! preg_match( '/^(?:не\s+|сохрани\b|используй\b|добавь\b|создай\b|do\s+not\b)/iu', $partner ) ) {
+					$copy['partners'][ wpae_llm_normalize_content_text( $partner ) ] = $partner;
+				}
+			}
+			$copy['partners'] = array_slice( array_values( $copy['partners'] ), 0, 8 );
+		}
+	}
+	return $copy;
 }
 
 function wpae_llm_normalize_pricing_contract( array $contract ): array {
@@ -4843,38 +4911,29 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                 $settings['_css_classes'] = wpae_append_css_classes( $settings['_css_classes'] ?? '', [ 'wpae-library-carousel' ] );
                 $carousel['settings'] = $settings;
                 $wrapper_id = 'library-carousel-' . substr( md5( (string) ( $carousel['id'] ?? 'carousel' ) ), 0, 7 );
-                $requested_content = trim( sanitize_text_field( $message ) );
-                $heading_text = 'Партнёры проекта';
-                if ( preg_match( '/^\s*([^:]{3,80}):/u', $requested_content, $heading_match ) ) {
-                    $heading_text = trim( sanitize_text_field( (string) ( $heading_match[1] ?? '' ) ) );
-                }
-                $partner_names = [];
-                if ( preg_match( '/(?:партн[её]ры|логотипы)\s*:\s*([^.!?]+)/iu', $requested_content, $partner_match ) ) {
-                    $partner_text = trim( (string) ( $partner_match[1] ?? '' ) );
-                    $partner_text = preg_replace( '/\s+и\s+/iu', ', ', $partner_text );
-                    foreach ( preg_split( '/,\s*/u', (string) $partner_text, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $partner_name ) {
-                        $partner_name = trim( sanitize_text_field( (string) $partner_name ) );
-                        if ( $partner_name !== '' ) {
-                            $partner_names[ wpae_llm_normalize_content_text( $partner_name ) ] = $partner_name;
-                        }
-                    }
-                }
+				$carousel_copy = wpae_llm_extract_carousel_content( $message );
+				$partner_names = [];
+				foreach ( (array) ( $carousel_copy['partners'] ?? [] ) as $partner_name ) {
+					$partner_names[ wpae_llm_normalize_content_text( (string) $partner_name ) ] = (string) $partner_name;
+				}
                 $content_elements = [
                     [
                         'id' => 'library-carousel-heading',
                         'elType' => 'widget',
                         'widgetType' => 'heading',
-                        'settings' => [ 'title' => $heading_text, 'header_size' => 'h2' ],
-                        'elements' => [],
-                    ],
-                    [
-                        'id' => 'library-carousel-copy',
-                        'elType' => 'widget',
-                        'widgetType' => 'text-editor',
-                        'settings' => [ 'editor' => $requested_content ],
+                        'settings' => [ 'title' => (string) ( $carousel_copy['title'] ?? '' ) !== '' ? (string) $carousel_copy['title'] : 'Партнёры проекта', 'header_size' => 'h2' ],
                         'elements' => [],
                     ],
                 ];
+				if ( (string) ( $carousel_copy['description'] ?? '' ) !== '' ) {
+					$content_elements[] = [
+						'id' => 'library-carousel-copy',
+						'elType' => 'widget',
+						'widgetType' => 'text-editor',
+						'settings' => [ 'editor' => (string) $carousel_copy['description'] ],
+						'elements' => [],
+					];
+				}
                 if ( count( $partner_names ) >= 2 ) {
                     $partner_labels = [];
                     foreach ( array_slice( array_values( $partner_names ), 0, 8 ) as $partner_index => $partner_name ) {
@@ -10616,6 +10675,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	$design_pipeline_mode = function_exists( 'wpae_design_pipeline_mode' ) ? wpae_design_pipeline_mode() : 'off';
 	$edde_mode = function_exists( 'wpae_llm_design_engine_mode' ) ? wpae_llm_design_engine_mode() : 'off';
 	$deterministic_archetype = in_array( $action_archetype, function_exists( 'wpae_design_plan_schema' ) ? wpae_design_plan_schema()['archetypes'] : [ 'hero', 'process', 'pricing', 'faq', 'benefits' ], true );
+	$library_only_archetype = ! $deterministic_archetype && array_key_exists( $action_archetype, wpae_llm_content_archetype_catalog() );
 	$content_plan = $action_request ? wpae_llm_content_plan( $message, $action_archetype ) : [];
 	$library_retrieval = [
 		'status' => 'skipped',
@@ -10626,10 +10686,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		'selection_candidates' => [],
 		'selected' => null,
 	];
-	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
+	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype || $library_only_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	$library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
 	$library_preflight_enabled = $design_pipeline_mode === 'active'
-		&& $deterministic_archetype
+		&& ( $deterministic_archetype || $library_only_archetype )
 		&& $selected_post_id > 0
 		&& ! $targeted_edit
 		&& ! $vision_repair
@@ -10697,7 +10757,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$design_pipeline_trace['status'] = empty( $brief_validation['ok'] ) || empty( $plan_validation['ok'] ) ? 'invalid_plan' : 'planned';
 	}
 	$library_agent_eligible = $design_pipeline_mode === 'active'
-		&& $deterministic_archetype
+		&& ( $deterministic_archetype || $library_only_archetype )
 		&& $selected_post_id > 0
 		&& ! $targeted_edit
 		&& ! $vision_repair
@@ -10705,11 +10765,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ! $replacement_requested
 		&& (int) ( $library_retrieval['candidate_count'] ?? 0 ) > 0
 		&& ! empty( $design_pipeline_trace['brief']['validation']['ok'] )
-		&& ! empty( $design_pipeline_trace['plan']['validation']['ok'] )
-		&& ! empty( $design_pipeline_trace['layout']['ok'] );
+		&& ( $library_only_archetype || ( ! empty( $design_pipeline_trace['plan']['validation']['ok'] ) && ! empty( $design_pipeline_trace['layout']['ok'] ) ) );
 	if ( $library_agent_eligible && function_exists( 'wpae_design_generation_route' ) ) {
 		$design_generation_route = wpae_design_generation_route( $design_pipeline_mode, $edde_mode, true, $action_archetype === 'hero', true );
 		$design_pipeline_trace['route_decision'] = $design_generation_route;
+		if ( $library_only_archetype ) {
+			$design_pipeline_trace['status'] = 'library_route';
+		}
 		$design_pipeline_trace['routing'] = function_exists( 'wpae_llm_route_diagnostics' ) && function_exists( 'wpae_llm_route_policy' )
 			? wpae_llm_route_diagnostics( wpae_llm_route_policy( 'elementor_write', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ), [ 'source' => 'pending', 'provider_calls' => $design_generation_route['provider_calls'], 'action_path' => 'library_agent' ] )
 			: [ 'source' => 'pending', 'provider_calls' => $design_generation_route['provider_calls'], 'action_path' => 'library_agent' ];
@@ -10719,6 +10781,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		if ( empty( $library_retrieval['selection_candidates'] ) ) {
 			return new WP_Error( 'wpae_llm_no_compatible_library_candidate', 'Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны.', [ 'status' => 422, 'details' => [ 'post_id' => $selected_post_id, 'archetype' => $action_archetype, 'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ), 'compatible_candidate_count' => 0, 'provider_call_count' => 0, 'write_count' => 0 ] ] );
 		}
+	}
+	$requires_library_template = wpae_llm_requires_verified_library_template( $message ) || wpae_llm_requires_library_template( $message );
+	if ( $action_request && $requires_library_template && $design_pipeline_mode === 'active' && $selected_post_id > 0 && ! $targeted_edit && ! $vision_repair && ! $vision_regenerate && ! $replacement_requested && ! $library_agent_eligible ) {
+		return new WP_Error( 'wpae_llm_no_compatible_library_candidate', 'Для этого запроса нет допустимого library-agent маршрута; изменения не записаны.', [ 'status' => 422, 'details' => [ 'post_id' => $selected_post_id, 'archetype' => $action_archetype, 'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ), 'compatible_candidate_count' => (int) ( $library_retrieval['compatible_candidate_count'] ?? 0 ), 'provider_call_count' => 0, 'write_count' => 0 ] ] );
 	}
 	$active_pipeline_eligible = $action_request
 		&& $design_pipeline_trace['mode'] === 'active'
@@ -11620,7 +11686,6 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 $library_skip_reason = 'The selected library block has no repeatable content group that can be adapted.';
             }
         }
-		$requires_library_template = wpae_llm_requires_verified_library_template( $message );
 		$fallback_forbidden = wpae_llm_forbids_fallback( $message );
 		$active_library_route = ( $design_generation_route['action_path'] ?? '' ) === 'library_agent';
 		$offered_library_choice_required = $active_library_route && ! empty( $library_retrieval['selection_candidates'] ) && ! $library_applied;
@@ -11804,7 +11869,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
             $template_fidelity = wpae_llm_compare_template_fingerprint( $template_source_fingerprint, wpae_llm_template_fingerprint( (array) $action['elements'] ), $action_archetype );
         }
 		$action_steps = [
-			[ 'id' => 'design_pipeline', 'status' => ( $design_pipeline_trace['mode'] ?? 'off' ) === 'off' ? 'skipped' : ( $design_pipeline_trace['status'] === 'invalid_plan' ? 'failed' : 'ok' ), 'message' => ( $design_pipeline_trace['mode'] ?? 'off' ) === 'off' ? 'Новый BriefIR/DesignPlan pipeline выключен feature flag; сохранен legacy path.' : 'BriefIR, typed DesignPlan и LayoutReport собраны до legacy write boundary.', 'details' => $design_pipeline_trace ],
+			[ 'id' => 'design_pipeline', 'status' => ( $design_pipeline_trace['mode'] ?? 'off' ) === 'off' ? 'skipped' : ( $design_pipeline_trace['status'] === 'invalid_plan' ? 'failed' : 'ok' ), 'message' => ( $design_pipeline_trace['mode'] ?? 'off' ) === 'off' ? 'Новый BriefIR/DesignPlan pipeline выключен feature flag; сохранен legacy path.' : ( $design_pipeline_trace['status'] === 'library_route' ? 'Для этого archetype используется production library adapter и write boundary.' : 'BriefIR, typed DesignPlan и LayoutReport собраны до legacy write boundary.' ), 'details' => $design_pipeline_trace ],
 			[ 'id' => 'guided_context', 'status' => 'ok', 'message' => 'Загружены актуальные guide, skills и capabilities сайта.', 'details' => [ 'guide_version' => WPAE_GUIDE_VERSION, 'custom_skills_count' => count( $guided_context['custom_skills'] ?? [] ), 'elementor_writes' => ! empty( $guided_context['capabilities']['capability_toggles']['elementor_writes'] ) ] ],
             [ 'id' => 'semantic_plan', 'status' => ! empty( $content_plan_audit['ok'] ) ? 'ok' : 'failed', 'message' => ! empty( $content_plan_audit['ok'] ) ? 'Смысловой план контента подтвержден до записи.' : 'Композиция нарушает смысловой план контента.', 'details' => [ 'plan' => $content_plan, 'audit' => $content_plan_audit ] ],
             [ 'id' => 'provider_response', 'status' => 'ok', 'message' => $design_engine_active ? 'Typed EDDE-план скомпилирован в native Elementor-команду.' : 'Ответ LLM-провайдера получен.', 'details' => wpae_llm_response_diagnostics( is_array( $body ) ? $body : [] ) ],

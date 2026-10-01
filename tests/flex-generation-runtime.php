@@ -2029,6 +2029,25 @@ $services_wrong_third_audit = wpae_llm_content_plan_audit( $services_fallback_pl
 check( empty( $services_wrong_third_audit['ok'] ) && ( $services_wrong_third_audit['structural_container_count'] ?? 0 ) === 4 && ( $services_wrong_third_audit['service_card_count'] ?? 0 ) === 2, 'Structural containers, including the new pill, cannot mask one incorrect service title/body pair from semantic validation: ' . wp_json_encode( $services_wrong_third_audit, JSON_UNESCAPED_UNICODE ) );
 $services_library_only_message = $services_message . "\nПусть ИИ-агент сам выберет подходящий шаблон из встроенной библиотеки и использует только проверенный вариант.";
 check( wpae_llm_requires_verified_library_template( $services_library_only_message ) && wpae_llm_forbids_fallback( 'Не используй fallback при отказе провайдера.' ), 'Library-only and explicit no-fallback requests are recognized as write constraints' );
+$explicit_library_family_prompts = [
+	'mega_menu' => 'Создай отдельный библиотечный блок Мега Меню: пункты «О нас», «Портфолио». В меню есть цены, не меняй тему сайта.',
+	'about' => 'Создай отдельный библиотечный блок О нас: заголовок «Наша студия». Цена проекта обсуждается отдельно.',
+	'portfolio' => 'Создай отдельный библиотечный блок Портфолио: проект «Дом у озера». Бюджет проекта не публикуй.',
+	'carousel' => 'Создай отдельный библиотечный блок Carousel: заголовок секции «С кем мы работаем». Партнёры: «Альфа», «Бета». Описание: «Надёжные партнёры проекта». Глобальную тему сайта не меняй.',
+];
+foreach ( $explicit_library_family_prompts as $expected_archetype => $family_prompt ) {
+	check( wpae_llm_detect_block_archetype( $family_prompt ) === $expected_archetype && ( wpae_brief_ir_parse( $family_prompt )['intent']['archetype'] ?? '' ) === $expected_archetype, 'Explicit library family must outrank incidental pricing copy in both production classifiers: ' . $expected_archetype );
+}
+check( wpae_llm_requires_library_template( $explicit_library_family_prompts['carousel'] ), 'An explicit library block request is a no-fallback write constraint' );
+$carousel_copy_probe = wpae_llm_extract_carousel_content( $explicit_library_family_prompts['carousel'] );
+$carousel_requested_content = wpae_llm_extract_requested_content( $explicit_library_family_prompts['carousel'] );
+check( $carousel_copy_probe === [ 'title' => 'С кем мы работаем', 'description' => 'Надёжные партнёры проекта', 'partners' => [ 'Альфа', 'Бета' ] ] && $carousel_requested_content === [ 'С кем мы работаем', 'Надёжные партнёры проекта', 'Альфа', 'Бета' ], 'Carousel parser keeps exact labeled copy and partner names while excluding page-wide instructions: ' . wp_json_encode( [ 'copy' => $carousel_copy_probe, 'content' => $carousel_requested_content ], JSON_UNESCAPED_UNICODE ) );
+$carousel_source_widget = widget( 'carousel-source', 'image-carousel', [ 'carousel' => [ [ 'id' => 1, 'url' => 'https://example.test/media/partner-one.png' ], [ 'id' => 2, 'url' => 'https://example.test/media/partner-two.png' ] ] ] );
+$carousel_adapter_changes = 0;
+$carousel_adapted_probe = wpae_llm_apply_library_template( [ $carousel_source_widget ], $explicit_library_family_prompts['carousel'], 'carousel', $carousel_adapter_changes );
+$carousel_adapter_json = (string) wp_json_encode( $carousel_adapted_probe, JSON_UNESCAPED_UNICODE );
+$carousel_adapter_copy = wpae_llm_collect_action_content( $carousel_adapted_probe );
+check( $carousel_adapter_changes > 0 && str_contains( $carousel_adapter_copy, 'С кем мы работаем' ) && str_contains( $carousel_adapter_copy, 'Надёжные партнёры проекта' ) && str_contains( $carousel_adapter_copy, 'Альфа' ) && str_contains( $carousel_adapter_copy, 'Бета' ) && ! str_contains( $carousel_adapter_json, 'Глобальную тему сайта не меняй' ) && ! str_contains( $carousel_adapter_json, 'цены сайта' ), 'Carousel library adapter writes only requested content and never publishes the user instructions: ' . $carousel_adapter_json );
 
 $library_agent_message = '«Пространство для идей». Hero. Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
 $library_agent_root = container_node( 'imported-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-fixture-candidate-two wpae-generated-badge' ], [
@@ -2411,6 +2430,33 @@ $services_library_fixture = [
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services' ] ],
 	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 0, 'bundled_fixture_id' => 'template-services-photo-cards-v1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => $services_template_data ] ],
 ];
+$carousel_library_candidate = [
+	'choice_key' => 'candidate_1', 'id' => 781, 'title' => 'Partner Logo Carousel', 'category' => 'carousel', 'template_type' => 'section-logo-carousel', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false,
+	'elementor_data' => [ $carousel_source_widget ],
+];
+$carousel_library_fixture = [
+	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
+	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Partner Logo Carousel', 'category' => 'carousel' ] ],
+	'selection_candidates' => [ $carousel_library_candidate ],
+	'preflight_candidates' => [ $carousel_library_candidate ],
+];
+$carousel_choice_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [] ];
+$carousel_library_route = $run_services_route( $explicit_library_family_prompts['carousel'], [ provider_reply( wp_json_encode( $carousel_choice_action, JSON_UNESCAPED_UNICODE ) ) ], $carousel_library_fixture, 'carousel-library-route-identity' );
+$carousel_library_route_copy = wpae_llm_collect_action_content( [ $carousel_library_route['written'] ] );
+$carousel_library_route_json = (string) wp_json_encode( $carousel_library_route['written'], JSON_UNESCAPED_UNICODE );
+$carousel_library_widgets = [];
+$collect_carousel_widgets = static function ( array $nodes ) use ( &$collect_carousel_widgets, &$carousel_library_widgets ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' ) { $carousel_library_widgets[] = (string) ( $node['widgetType'] ?? '' ); }
+		$collect_carousel_widgets( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+if ( ! empty( $carousel_library_route['written'] ) ) { $collect_carousel_widgets( [ $carousel_library_route['written'] ] ); }
+check( ! empty( $carousel_library_route['response']['ok'] ) && ( $carousel_library_route['response']['diagnostics']['action_path'] ?? '' ) === 'library_agent' && $carousel_library_route['calls'] === 1 && $carousel_library_route['writes'] === 1 && ! empty( $carousel_library_route['response']['operation_id'] ), 'Carousel runs through the production library-agent route and crosses the existing write boundary once with an operation ID: ' . wp_json_encode( $carousel_library_route, JSON_UNESCAPED_UNICODE ) );
+check( str_contains( $carousel_library_route_copy, 'С кем мы работаем' ) && str_contains( $carousel_library_route_copy, 'Надёжные партнёры проекта' ) && str_contains( $carousel_library_route_copy, 'Альфа' ) && str_contains( $carousel_library_route_copy, 'Бета' ) && ! str_contains( $carousel_library_route_json, 'Глобальную тему сайта не меняй' ) && in_array( 'image-carousel', $carousel_library_widgets, true ) && in_array( 'heading', $carousel_library_widgets, true ), 'Production Carousel adapter preserves the native carousel and exact copy without leaking instructions: ' . wp_json_encode( [ 'copy' => $carousel_library_route_copy, 'widgets' => $carousel_library_widgets ], JSON_UNESCAPED_UNICODE ) );
+$carousel_without_candidate = $run_services_route( $explicit_library_family_prompts['carousel'], [], [], 'carousel-no-candidate-identity' );
+check( ( $carousel_without_candidate['error']['code'] ?? '' ) === 'wpae_llm_no_compatible_library_candidate' && ( $carousel_without_candidate['error']['data']['details']['write_count'] ?? null ) === 0 && $carousel_without_candidate['calls'] === 0 && $carousel_without_candidate['writes'] === 0 && $carousel_without_candidate['roots'] === array_column( $legacy_page, 'id' ), 'Explicit library request with no compatible candidate stops before provider dispatch and preserves existing roots' );
 $natural_services_library_message = "Услуги:\nСтратегия проекта — Формулируем задачу и согласуем план работ\nАрхитектура и дизайн — Разрабатываем решение под заданный контекст\nСопровождение — Проверяем соответствие согласованному проекту";
 $natural_services_library_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [] ];
 $natural_services_library_result = $run_services_route( $natural_services_library_message, [ provider_reply( wp_json_encode( $natural_services_library_action, JSON_UNESCAPED_UNICODE ) ) ], $services_library_fixture, 'services-natural-library-identity' );
