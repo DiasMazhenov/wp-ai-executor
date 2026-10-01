@@ -4957,9 +4957,24 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
             }
             if ( count( $slides ) >= 2 ) {
                 $settings['carousel'] = $slides;
-                $settings['slides_to_show'] = '1';
-                $settings['slides_to_show_tablet'] = '3';
-                $settings['slides_to_show_mobile'] = '2';
+                $slide_total = count( $slides );
+                foreach ( [
+                    'slides_to_show' => [ 'desktop', 'десктоп' ],
+                    'slides_to_show_tablet' => [ 'tablet', 'планшет' ],
+                    'slides_to_show_mobile' => [ 'mobile', 'мобильн' ],
+                ] as $setting_key => $device_terms ) {
+                    $fallback = $setting_key === 'slides_to_show' ? 4 : ( $setting_key === 'slides_to_show_tablet' ? 3 : 2 );
+                    $requested = 0;
+                    foreach ( $device_terms as $device_term ) {
+                        if ( preg_match( '/([1-9][0-9]?)\\s*(?:слайд(?:а|ов)?|логотип(?:а|ов)?)?\\s*(?:на\\s*)?(?:' . $device_term . '\\w*)/iu', $message, $count_match ) || preg_match( '/(?:' . $device_term . '\\w*)[^0-9]{0,24}([1-9][0-9]?)/iu', $message, $count_match ) ) {
+                            $requested = absint( $count_match[1] ?? 0 );
+                            break;
+                        }
+                    }
+                    $source_count = absint( $settings[ $setting_key ] ?? 0 );
+                    $resolved_count = $requested > 0 ? $requested : ( $source_count > 0 ? $source_count : $fallback );
+                    $settings[ $setting_key ] = (string) min( $slide_total, max( 1, $resolved_count ) );
+                }
                 $settings['navigation'] = (string) ( $settings['navigation'] ?? 'none' );
                 $settings['autoplay'] = (string) ( $settings['autoplay'] ?? 'yes' );
                 $settings['infinite'] = (string) ( $settings['infinite'] ?? 'yes' );
@@ -12219,7 +12234,51 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'library_applied' => $library_applied,
             ],
         ];
-		$execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $design_engine_active || $provider_design || $action_fallback || $library_authored_design_preserved, [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [] ] );
+		$library_operation_ledger = [];
+		if ( $library_applied && function_exists( 'wpae_design_operation_create' ) && function_exists( 'wpae_design_operation_idempotency_key' ) ) {
+			$brief_hash = hash( 'sha256', $message );
+			$library_operation_type = $vision_regenerate ? 'design_repair' : 'design';
+			$library_operation_ledger = wpae_design_operation_create( [
+				'operation_id' => 'wpae-' . substr( hash( 'sha256', $operation_identity . '|' . $brief_hash ), 0, 16 ),
+				'idempotency_key' => wpae_design_operation_idempotency_key( $post_id, $brief_hash, 'page', $library_operation_type, $operation_identity ),
+				'operation_identity' => $operation_identity,
+				'operation_type' => $library_operation_type,
+				'post_id' => $post_id,
+				'selected_scope' => 'page',
+				'brief_hash' => $brief_hash,
+				'plan_hash' => hash( 'sha256', (string) wp_json_encode( $content_plan ) ),
+				'compiled_hash' => hash( 'sha256', (string) wp_json_encode( $action['elements'] ?? [] ) ),
+				'provider' => $runtime['provider'] ?? '',
+				'model' => $runtime['model'] ?? '',
+				'current_state' => 'generated',
+			] );
+			if ( ! empty( $library_operation_ledger['reconciled'] ) || ! empty( $library_operation_ledger['lock_conflict'] ) || empty( $library_operation_ledger['operation_id'] ) ) {
+				return new WP_Error( 'wpae_design_operation_pending', 'Эта библиотечная операция уже существует или ledger занят; новый root не записан.', [ 'status' => 409, 'details' => [ 'operation' => $library_operation_ledger, 'write_count' => 0 ] ] );
+			}
+			foreach ( [ 'normalized', 'validated' ] as $next_state ) {
+				$library_operation_ledger = wpae_design_operation_update( (string) $library_operation_ledger['operation_id'], [ 'current_state' => $next_state ] ) ?: [];
+				if ( empty( $library_operation_ledger['operation_id'] ) || ( $library_operation_ledger['current_state'] ?? '' ) !== $next_state ) {
+					return new WP_Error( 'wpae_design_operation_ledger_failed', 'Ledger не подтвердил состояние операции; запись остановлена.', [ 'status' => 409, 'details' => [ 'operation' => $library_operation_ledger, 'write_count' => 0 ] ] );
+				}
+			}
+			$generation_diagnostics['operation_ledger'] = $library_operation_ledger;
+		}
+		$execution_context = [ 'replace_root_ids' => $vision_regenerate ? $operation_owned_root_ids : [], 'operation_identity' => $operation_identity ];
+		if ( ! empty( $library_operation_ledger['operation_id'] ) ) {
+			$execution_context['operation_id'] = $library_operation_ledger['operation_id'];
+		}
+		$execution = wpae_llm_execute_action( $action, $post_id, $action_archetype, $execution_variation_seed, $message, $design_engine_active || $provider_design || $action_fallback || $library_authored_design_preserved, $execution_context );
+		if ( ! empty( $library_operation_ledger['operation_id'] ) ) {
+			$saved_data = ! empty( $execution['ok'] ) && function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : [];
+			$library_operation_ledger = wpae_design_operation_update( (string) $library_operation_ledger['operation_id'], [
+				'current_state' => ! empty( $execution['ok'] ) ? 'written' : 'failed',
+				'saved_hash' => is_array( $saved_data ) ? hash( 'sha256', (string) wp_json_encode( $saved_data ) ) : '',
+				'root_ids' => $execution['editor_sync']['operation_owned_root_ids'] ?? [],
+				'rollback_snapshot_id' => $execution['rollback_snapshot_id'] ?? '',
+				'target_fingerprint' => ! empty( $execution['ok'] ) && function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : '',
+			] ) ?: $library_operation_ledger;
+			$generation_diagnostics['operation_ledger'] = $library_operation_ledger;
+		}
         $execution['steps'] = array_merge( $action_steps, is_array( $execution['steps'] ?? null ) ? $execution['steps'] : [] );
         $generation_diagnostics['execution'] = [
             'ok' => ! empty( $execution['ok'] ),

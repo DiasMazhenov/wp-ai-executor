@@ -2074,7 +2074,7 @@ $explicit_library_family_prompts = [
 	'mega_menu' => 'Создай отдельный библиотечный блок Мега Меню: пункты «О нас», «Портфолио». В меню есть цены, не меняй тему сайта.',
 	'about' => 'Создай отдельный библиотечный блок О нас: заголовок «Наша студия». Цена проекта обсуждается отдельно.',
 	'portfolio' => 'Создай отдельный библиотечный блок Портфолио: проект «Дом у озера». Бюджет проекта не публикуй.',
-	'carousel' => 'Создай отдельный библиотечный блок Carousel: заголовок секции «С кем мы работаем». Партнёры: «Альфа», «Бета». Описание: «Надёжные партнёры проекта». Глобальную тему сайта не меняй.',
+	'carousel' => 'Создай отдельный библиотечный блок Carousel: заголовок секции «С кем мы работаем». Партнёры: «Альфа», «Бета». Описание: «Надёжные партнёры проекта». Показывай 4 логотипа на desktop, 3 на tablet и 2 на mobile. Глобальную тему сайта не меняй.',
 ];
 foreach ( $explicit_library_family_prompts as $expected_archetype => $family_prompt ) {
 	check( wpae_llm_detect_block_archetype( $family_prompt ) === $expected_archetype && ( wpae_brief_ir_parse( $family_prompt )['intent']['archetype'] ?? '' ) === $expected_archetype, 'Explicit library family must outrank incidental pricing copy in both production classifiers: ' . $expected_archetype );
@@ -2083,12 +2083,23 @@ check( wpae_llm_requires_library_template( $explicit_library_family_prompts['car
 $carousel_copy_probe = wpae_llm_extract_carousel_content( $explicit_library_family_prompts['carousel'] );
 $carousel_requested_content = wpae_llm_extract_requested_content( $explicit_library_family_prompts['carousel'] );
 check( $carousel_copy_probe === [ 'title' => 'С кем мы работаем', 'description' => 'Надёжные партнёры проекта', 'partners' => [ 'Альфа', 'Бета' ] ] && $carousel_requested_content === [ 'С кем мы работаем', 'Надёжные партнёры проекта', 'Альфа', 'Бета' ], 'Carousel parser keeps exact labeled copy and partner names while excluding page-wide instructions: ' . wp_json_encode( [ 'copy' => $carousel_copy_probe, 'content' => $carousel_requested_content ], JSON_UNESCAPED_UNICODE ) );
-$carousel_source_widget = widget( 'carousel-source', 'image-carousel', [ 'carousel' => [ [ 'id' => 1, 'url' => 'https://example.test/media/partner-one.png' ], [ 'id' => 2, 'url' => 'https://example.test/media/partner-two.png' ] ] ] );
+$carousel_source_widget = widget( 'carousel-source', 'image-carousel', [ 'carousel' => [ [ 'id' => 1, 'url' => 'https://example.test/media/partner-one.png' ], [ 'id' => 2, 'url' => 'https://example.test/media/partner-two.png' ], [ 'id' => 3, 'url' => 'https://example.test/media/partner-three.png' ], [ 'id' => 4, 'url' => 'https://example.test/media/partner-four.png' ], [ 'id' => 5, 'url' => 'https://example.test/media/partner-five.png' ] ], 'slides_to_show' => '1', 'slides_to_show_tablet' => '3', 'slides_to_show_mobile' => '2' ] );
 $carousel_adapter_changes = 0;
 $carousel_adapted_probe = wpae_llm_apply_library_template( [ $carousel_source_widget ], $explicit_library_family_prompts['carousel'], 'carousel', $carousel_adapter_changes );
 $carousel_adapter_json = (string) wp_json_encode( $carousel_adapted_probe, JSON_UNESCAPED_UNICODE );
 $carousel_adapter_copy = wpae_llm_collect_action_content( $carousel_adapted_probe );
 check( $carousel_adapter_changes > 0 && str_contains( $carousel_adapter_copy, 'С кем мы работаем' ) && str_contains( $carousel_adapter_copy, 'Надёжные партнёры проекта' ) && str_contains( $carousel_adapter_copy, 'Альфа' ) && str_contains( $carousel_adapter_copy, 'Бета' ) && ! str_contains( $carousel_adapter_json, 'Глобальную тему сайта не меняй' ) && ! str_contains( $carousel_adapter_json, 'цены сайта' ), 'Carousel library adapter writes only requested content and never publishes the user instructions: ' . $carousel_adapter_json );
+$find_carousel_widget = static function ( array $nodes ) use ( &$find_carousel_widget ): array {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image-carousel' ) { return $node; }
+		$found = $find_carousel_widget( (array) ( $node['elements'] ?? [] ) );
+		if ( ! empty( $found ) ) { return $found; }
+	}
+	return [];
+};
+$carousel_adapted_widget = $find_carousel_widget( $carousel_adapted_probe );
+check( ( $carousel_adapted_widget['settings']['slides_to_show'] ?? '' ) === '4' && ( $carousel_adapted_widget['settings']['slides_to_show_tablet'] ?? '' ) === '3' && ( $carousel_adapted_widget['settings']['slides_to_show_mobile'] ?? '' ) === '2', 'Carousel adapter honors explicit desktop/tablet/mobile logo counts instead of forcing one desktop slide: ' . wp_json_encode( $carousel_adapted_widget['settings'] ?? [], JSON_UNESCAPED_UNICODE ) );
 
 $mega_menu_native_prompt = 'Создай отдельный библиотечный блок Mega Menu. Existing WordPress menu slug: best-service. Заголовок «Услуги», пункты: «Веб-дизайн», «Разработка», «Брендинг», «Поддержка». Заголовок второй группы «Компания», пункты: «О нас», «Портфолио», «Контакты». Не меняй меню сайта.';
 $mega_menu_navigation = wpae_llm_extract_navigation_content( $mega_menu_native_prompt );
@@ -2519,6 +2530,8 @@ $collect_carousel_widgets = static function ( array $nodes ) use ( &$collect_car
 };
 if ( ! empty( $carousel_library_route['written'] ) ) { $collect_carousel_widgets( [ $carousel_library_route['written'] ] ); }
 check( ! empty( $carousel_library_route['response']['ok'] ) && ( $carousel_library_route['response']['diagnostics']['action_path'] ?? '' ) === 'library_agent' && $carousel_library_route['calls'] === 1 && $carousel_library_route['writes'] === 1 && ! empty( $carousel_library_route['response']['operation_id'] ), 'Carousel runs through the production library-agent route and crosses the existing write boundary once with an operation ID: ' . wp_json_encode( $carousel_library_route, JSON_UNESCAPED_UNICODE ) );
+$carousel_operation_ledger = (array) ( $carousel_library_route['response']['diagnostics']['operation_ledger'] ?? [] );
+check( ( $carousel_operation_ledger['current_state'] ?? '' ) === 'written' && ( $carousel_operation_ledger['operation_id'] ?? '' ) === ( $carousel_library_route['response']['operation_id'] ?? '' ) && ( $carousel_operation_ledger['post_id'] ?? 0 ) === 42 && ( $carousel_operation_ledger['root_ids'] ?? [] ) === [ (string) ( $carousel_library_route['written']['id'] ?? '' ) ] && ( $carousel_operation_ledger['saved_hash'] ?? '' ) !== '', 'Successful library-agent write returns a durable ledger bound to its post, operation, root, and saved state: ' . wp_json_encode( $carousel_operation_ledger, JSON_UNESCAPED_UNICODE ) );
 check( str_contains( $carousel_library_route_copy, 'С кем мы работаем' ) && str_contains( $carousel_library_route_copy, 'Надёжные партнёры проекта' ) && str_contains( $carousel_library_route_copy, 'Альфа' ) && str_contains( $carousel_library_route_copy, 'Бета' ) && ! str_contains( $carousel_library_route_json, 'Глобальную тему сайта не меняй' ) && in_array( 'image-carousel', $carousel_library_widgets, true ) && in_array( 'heading', $carousel_library_widgets, true ), 'Production Carousel adapter preserves the native carousel and exact copy without leaking instructions: ' . wp_json_encode( [ 'copy' => $carousel_library_route_copy, 'widgets' => $carousel_library_widgets ], JSON_UNESCAPED_UNICODE ) );
 $carousel_without_candidate = $run_services_route( $explicit_library_family_prompts['carousel'], [], [], 'carousel-no-candidate-identity' );
 check( ( $carousel_without_candidate['error']['code'] ?? '' ) === 'wpae_llm_no_compatible_library_candidate' && ( $carousel_without_candidate['error']['data']['details']['write_count'] ?? null ) === 0 && $carousel_without_candidate['calls'] === 0 && $carousel_without_candidate['writes'] === 0 && $carousel_without_candidate['roots'] === array_column( $legacy_page, 'id' ), 'Explicit library request with no compatible candidate stops before provider dispatch and preserves existing roots' );
