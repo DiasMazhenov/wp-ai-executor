@@ -390,7 +390,8 @@ function wpae_llm_is_targeted_edit_request( string $message ): bool {
 	$embedded_process_addition = $selection_signal
 		&& wpae_llm_is_process_request( $message )
 		&& (bool) preg_match( '/\b(бейдж\w*|заголов\w*|разделител\w*|divider|коннектор\w*|карточ\w*|этап\w*)\b/iu', $message );
-	if ( $insert_signal && ! $selection_signal && ! $property_signal && ! $embedded_process_addition ) {
+	$explicit_selected_edit = (bool) preg_match( '/\b(измени|поменяй|поставь|сделай|увеличь|уменьши|замени|настрой|улучши|обнови|оформи|перестрой|скругл\w*|закругл\w*|округл\w*)\b[^.!?;\n]{0,80}\b(этот|эту|этого|выбран\w*|выделен\w*)\b/iu', $message );
+	if ( $insert_signal && ! $embedded_process_addition && ! $explicit_selected_edit ) {
 		return false;
 	}
 	return $selection_signal || $property_signal;

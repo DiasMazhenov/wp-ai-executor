@@ -2591,6 +2591,8 @@ $conflict_response = wpae_llm_chat_request( $conflicting_insert );
 check( is_wp_error( $conflict_response ) && $conflict_response->get_error_code() === 'wpae_llm_conflicting_scope', 'contradictory selected edit plus separate root is rejected before generation' );
 check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 0 && array_column( $GLOBALS['page_data'], 'id' ) === $before_route_roots, 'conflicting scopes perform no provider call, no write, and preserve both roots' );
 check( wpae_llm_has_explicit_root_insert_intent( 'Добавь отдельный новый root процесса.' ), 'explicit independent root insertion remains detectable' );
+$mega_menu_new_root_prompt = 'Создай отдельный библиотечный блок Mega Menu на текущей странице. Используй существующий menu slug best-service; сделай horizontal layout и штатное responsive-поведение.';
+check( wpae_llm_has_explicit_root_insert_intent( $mega_menu_new_root_prompt ) && ! wpae_llm_is_targeted_edit_request( $mega_menu_new_root_prompt ), 'explicit Mega Menu root generation stays an insert when stale selection context and layout verbs are present' );
 $independent_insert_prompt = 'Создай новый таймлайн процесса: шаг «Заявка» — описание «Получить вводные»; шаг «Уточнение» — описание «Согласовать детали». Добавь отдельным блоком в конец страницы.';
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [];
