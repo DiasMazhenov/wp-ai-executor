@@ -127,6 +127,9 @@ foreach ( $records as $record ) {
 $faq = wpae_block_library_imported_template_records( 'faq', [ 'faq' ] );
 imported_template_check( count( $faq ) === 5, 'Archetype lookup should load only the five FAQ-tagged source files.' );
 imported_template_check( count( array_filter( $faq, static fn( array $record ): bool => (string) ( $record['category'] ?? '' ) !== 'faq' ) ) === 0, 'Archetype lookup leaked a non-FAQ template.' );
+$mega_menu_categories = wpae_block_library_retrieval_categories( 'mega_menu' );
+$mega_menu = wpae_block_library_imported_template_records( 'mega_menu', $mega_menu_categories );
+imported_template_check( in_array( 'mega_menu', $mega_menu_categories, true ) && count( $mega_menu ) === 8 && count( array_filter( $mega_menu, static fn( array $record ): bool => (string) ( $record['category'] ?? '' ) !== 'mega_menu' ) ) === 0, 'Mega Menu retrieval should load all eight imported templates with the canonical underscore category.' );
 $service_records = wpae_block_library_imported_template_records( 'services', [ 'services' ] );
 $service_candidates = array_values( array_filter( $service_records, static fn( array $record ): bool => wpae_block_library_has_service_card_groups( (array) ( $record['elementor_data'] ?? [] ) ) ) );
 imported_template_check( count( $service_candidates ) === 2 && in_array( 'template-a40df0dcc7c5642d', array_column( $service_candidates, 'bundled_fixture_id' ), true ) && in_array( 'template-services-photo-cards-v1', array_column( $service_candidates, 'bundled_fixture_id' ), true ), 'Services retrieval should offer both compatible plugin-local card sections while excluding unadaptable roots and whole pages.' );

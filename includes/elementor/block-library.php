@@ -845,6 +845,25 @@ function wpae_block_library_retrieval_aliases( string $archetype ): array {
     return $aliases[ $archetype ] ?? [];
 }
 
+function wpae_block_library_retrieval_categories( string $archetype ): array {
+    $categories = [
+        'hero' => [ 'hero', 'home' ],
+        'benefits' => [ 'benefits' ],
+        'services' => [ 'services' ],
+        'pricing' => [ 'pricing' ],
+        'testimonials' => [ 'testimonials', 'reviews' ],
+        'team' => [ 'team' ],
+        'about' => [ 'about' ],
+        'faq' => [ 'faq' ],
+        'process' => [ 'process', 'events' ],
+        'portfolio' => [ 'portfolio', 'blog', 'project' ],
+        'carousel' => [ 'carousel' ],
+        'mega_menu' => [ 'mega_menu', 'mega-menu', 'navigation', 'header' ],
+        'cta' => [ 'cta', 'contact', 'form', 'footer', '404' ],
+    ];
+    return $categories[ $archetype ] ?? [];
+}
+
 function wpae_block_library_retrieve_for_prompt( string $message, string $archetype = '', bool $include_preflight_candidates = false ): array {
     $result = [
         'status' => 'no_match',
@@ -862,22 +881,7 @@ function wpae_block_library_retrieve_for_prompt( string $message, string $archet
     $prompt_tokens = wpae_block_library_retrieval_tokens( $message );
     $archetype = sanitize_key( $archetype );
     $aliases = wpae_block_library_retrieval_aliases( $archetype );
-    $category_aliases = [
-        'hero' => [ 'hero', 'home' ],
-        'benefits' => [ 'benefits' ],
-        'services' => [ 'services' ],
-        'pricing' => [ 'pricing' ],
-        'testimonials' => [ 'testimonials', 'reviews' ],
-        'team' => [ 'team' ],
-        'about' => [ 'about' ],
-        'faq' => [ 'faq' ],
-        'process' => [ 'process', 'events' ],
-        'portfolio' => [ 'portfolio', 'blog', 'project' ],
-        'carousel' => [ 'carousel' ],
-        'mega_menu' => [ 'mega-menu', 'navigation', 'header' ],
-        'cta' => [ 'cta', 'contact', 'form', 'footer', '404' ],
-    ];
-    $allowed_categories = $category_aliases[ $archetype ] ?? [];
+    $allowed_categories = wpae_block_library_retrieval_categories( $archetype );
     $prompt_requests_vocario = (bool) preg_match( '/\b(?:vocario|template[\s-]*kit)\b/iu', $message );
     $records = ! empty( $allowed_categories )
         ? wpae_block_library_imported_template_records( $archetype, $allowed_categories )
