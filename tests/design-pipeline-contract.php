@@ -451,7 +451,7 @@ $faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
 $faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
-$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v8', 'BriefIR provenance version tracks semicolon-separated Services parsing' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v9', 'BriefIR provenance version tracks the current prompt parser contract' );
 $check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['ok'] ) && ( $faq_widget['widgetType'] ?? '' ) === 'accordion', 'FAQ uses the existing typed pipeline and compiles to Elementor Accordion' );
 $check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
 $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ 'Сначала согласуем задачу, затем соберём страницу.', 'Да, каждый текст остаётся редактируемым.' ], 'Accordion preserves exact questions and answers in source order' );

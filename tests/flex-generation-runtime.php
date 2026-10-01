@@ -1803,10 +1803,21 @@ $testimonials_natural_plan = wpae_design_plan_from_brief( $testimonials_natural_
 $testimonials_natural_validation = wpae_design_plan_validate( $testimonials_natural_plan, $testimonials_natural_brief );
 $testimonials_natural_items = (array) ( $testimonials_natural_plan['sections'][0]['children'][0]['items'] ?? [] );
 check( empty( $testimonials_natural_validation['errors'] ) && count( $testimonials_natural_items ) === 2 && array_column( $testimonials_natural_items, 'author_ref' ) === [ 'testimonial_1_author', 'testimonial_2_author' ] && array_column( $testimonials_natural_items, 'quote_ref' ) === [ 'testimonial_1_quote', 'testimonial_2_quote' ], 'Natural quote-dash-author testimonial briefs must group each quote with its author and pass DesignPlan validation' );
+$testimonials_numbered_prompt = 'Отзывы: цитата 1 — «Тестовая цитата один.» — автор «Тестовый автор 1»; цитата 2 — «Тестовая цитата два.» — автор «Тестовый автор 2».';
+$testimonials_numbered_plan = wpae_llm_content_plan( $testimonials_numbered_prompt, 'testimonials' );
+$testimonials_numbered_pairs = (array) ( $testimonials_numbered_plan['content_pairs'] ?? [] );
+check( count( $testimonials_numbered_pairs ) === 2 && array_column( $testimonials_numbered_pairs, 'label' ) === [ 'Тестовый автор 1', 'Тестовый автор 2' ] && array_column( $testimonials_numbered_pairs, 'content' ) === [ 'Тестовая цитата один.', 'Тестовая цитата два.' ], 'Numbered quote labels must group each testimonial quote and author into its own exact content pair' );
 $testimonials_library_template = [ container_node( 'testimonial-library-root', [], [
 	container_node( 'testimonial-library-card-1', [], [ widget( 'testimonial-library-widget-1', 'testimonial', [ 'testimonial_content' => 'Source quote one', 'testimonial_name' => 'Source author one' ] ) ] ),
 	container_node( 'testimonial-library-card-2', [], [ widget( 'testimonial-library-widget-2', 'testimonial', [ 'testimonial_content' => 'Source quote two', 'testimonial_name' => 'Source author two' ] ) ] ),
-] ) ];
+	] ) ];
+$testimonials_numbered_changes = 0;
+$testimonials_numbered_adapted = wpae_llm_apply_library_template( $testimonials_library_template, $testimonials_numbered_prompt, 'testimonials', $testimonials_numbered_changes );
+$testimonials_numbered_preflight = wpae_llm_preflight_library_candidates( [
+	'candidate_count' => 1,
+	'preflight_candidates' => [ [ 'title' => 'Numbered testimonial fixture', 'elementor_data' => $testimonials_library_template ] ],
+], $testimonials_numbered_prompt, 'testimonials', $testimonials_numbered_plan, 5214 );
+check( ( $testimonials_numbered_preflight['compatible_candidate_count'] ?? 0 ) === 1 && ! empty( wpae_llm_content_fidelity( $testimonials_numbered_prompt, $testimonials_numbered_adapted )['ok'] ) && ! empty( wpae_llm_content_plan_audit( $testimonials_numbered_plan, $testimonials_numbered_adapted )['ok'] ), 'Numbered quote labels must pass the production library adapter, fidelity, and semantic preflight' );
 $testimonials_library_changes = 0;
 $testimonials_library_adapted = wpae_llm_apply_library_template( $testimonials_library_template, $testimonials_compact_prompt, 'testimonials', $testimonials_library_changes );
 $testimonials_library_widgets = [];

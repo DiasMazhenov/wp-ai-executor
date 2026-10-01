@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v8';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v9';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -382,6 +382,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	preg_match_all( $quote_pattern, $source_text, $quote_matches, PREG_OFFSET_CAPTURE );
 	$simple_testimonial_groups = [];
 	$simple_testimonial_quote_offsets = [];
+	$simple_testimonial_author_quote_offsets = [];
 	if ( $archetype === 'testimonials' && ! array_filter( $content, static fn( array $item ): bool => ( $item['role'] ?? '' ) === 'testimonial_quote' ) ) {
 		$simple_testimonial_pattern = '~(?<quote>«(?<angle>[^»\r\n]{2,500})»|“(?<curly>[^”\r\n]{2,500})”|"(?<plain>[^"\r\n]{2,500})")\s*[—–-]\s*(?<author>[^;.!?\r\n]{2,80}?)(?=\s*(?:;|[.!?]?$))~u';
 		preg_match_all( $simple_testimonial_pattern, $source_text, $simple_testimonial_matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL );
@@ -393,7 +394,28 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					break;
 				}
 			}
-			$author = trim( (string) ( $match['author'][0] ?? '' ) );
+			$author_source = (string) ( $match['author'][0] ?? '' );
+			$author_offset = (int) ( $match['author'][1] ?? -1 );
+			$author_leading = strlen( $author_source ) - strlen( ltrim( $author_source ) );
+			$author_source = ltrim( $author_source );
+			$author_offset += $author_leading;
+			if ( preg_match( '/^(?:автор|имя|author|name)\s*[:\-]?\s*/iu', $author_source, $author_label ) ) {
+				$author_offset += strlen( (string) $author_label[0] );
+				$author_source = substr( $author_source, strlen( (string) $author_label[0] ) );
+			}
+			$author = trim( $author_source );
+			$author_quote_start = $author_offset;
+			$author_name_pattern = '~^(?:«(?<angle>[^»]{1,80})»|“(?<curly>[^”]{1,80})”|"(?<plain>[^"]{1,80})")$~u';
+			if ( preg_match( $author_name_pattern, $author, $author_name, PREG_OFFSET_CAPTURE ) ) {
+				foreach ( [ 'angle', 'curly', 'plain' ] as $author_key ) {
+					if ( isset( $author_name[ $author_key ][1] ) && $author_name[ $author_key ][1] >= 0 ) {
+						$author = (string) $author_name[ $author_key ][0];
+						$author_offset += (int) $author_name[ $author_key ][1];
+						$simple_testimonial_author_quote_offsets[] = $author_quote_start;
+						break;
+					}
+				}
+			}
 			if ( $quote === '' || $author === '' ) {
 				continue;
 			}
@@ -411,7 +433,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				'quote' => $quote,
 				'quote_start' => $quote_start,
 				'author' => $author,
-				'author_start' => (int) $match['author'][1] + strlen( (string) $match['author'][0] ) - strlen( $author ),
+				'author_start' => $author_offset,
 			];
 		}
 	}
@@ -432,7 +454,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		if ( $claimed_service_quote ) {
 			continue;
 		}
-		if ( in_array( $start, $simple_testimonial_quote_offsets, true ) ) {
+		if ( in_array( $start, $simple_testimonial_quote_offsets, true ) || in_array( $start, $simple_testimonial_author_quote_offsets, true ) ) {
 			continue;
 		}
 		$inner = '';
