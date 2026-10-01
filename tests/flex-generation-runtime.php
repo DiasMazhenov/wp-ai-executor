@@ -35,6 +35,12 @@ function sanitize_textarea_field( $value ) { return trim( preg_replace( '/\r\n?/
 function wp_strip_all_tags( $value ) { return strip_tags( (string) $value ); }
 function esc_url_raw( $value ) { return (string) $value; }
 function wp_json_encode( $value, $flags = 0 ) { return json_encode( $value, $flags ); }
+function wp_get_nav_menu_items( $menu, $args = [] ) { return $GLOBALS['test_nav_menus'][sanitize_key( (string) $menu )] ?? []; }
+function wp_get_nav_menu_object( $menu ) {
+	$key = sanitize_key( (string) $menu );
+	$name = $GLOBALS['test_nav_menu_names'][ $key ] ?? '';
+	return $name !== '' ? (object) [ 'name' => $name ] : null;
+}
 function wp_parse_url( $url ) { return parse_url( $url ); }
 function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
 function home_url( $path = '' ) { return 'https://example.test' . $path; }
@@ -2048,6 +2054,30 @@ $carousel_adapted_probe = wpae_llm_apply_library_template( [ $carousel_source_wi
 $carousel_adapter_json = (string) wp_json_encode( $carousel_adapted_probe, JSON_UNESCAPED_UNICODE );
 $carousel_adapter_copy = wpae_llm_collect_action_content( $carousel_adapted_probe );
 check( $carousel_adapter_changes > 0 && str_contains( $carousel_adapter_copy, 'С кем мы работаем' ) && str_contains( $carousel_adapter_copy, 'Надёжные партнёры проекта' ) && str_contains( $carousel_adapter_copy, 'Альфа' ) && str_contains( $carousel_adapter_copy, 'Бета' ) && ! str_contains( $carousel_adapter_json, 'Глобальную тему сайта не меняй' ) && ! str_contains( $carousel_adapter_json, 'цены сайта' ), 'Carousel library adapter writes only requested content and never publishes the user instructions: ' . $carousel_adapter_json );
+
+$mega_menu_native_prompt = 'Создай отдельный библиотечный блок Mega Menu. Existing WordPress menu slug: best-service. Заголовок «Услуги», пункты: «Веб-дизайн», «Разработка», «Брендинг», «Поддержка». Заголовок второй группы «Компания», пункты: «О нас», «Портфолио», «Контакты». Не меняй меню сайта.';
+$mega_menu_navigation = wpae_llm_extract_navigation_content( $mega_menu_native_prompt );
+$mega_menu_requested_copy = wpae_llm_extract_requested_content( $mega_menu_native_prompt );
+$mega_menu_labels = [ 'Услуги', 'Веб-дизайн', 'Разработка', 'Брендинг', 'Поддержка', 'Компания', 'О нас', 'Портфолио', 'Контакты' ];
+check( wpae_llm_extract_wordpress_menu_reference( $mega_menu_native_prompt ) === 'best-service' && ( $mega_menu_navigation['headings'] ?? [] ) === [ 'Услуги', 'Компания' ] && ( $mega_menu_navigation['items'] ?? [] ) === [ 'Веб-дизайн', 'Разработка', 'Брендинг', 'Поддержка', 'О нас', 'Портфолио', 'Контакты' ] && $mega_menu_requested_copy === $mega_menu_labels, 'Mega Menu parser keeps both group headings and every exact link while extracting an explicit existing menu slug: ' . wp_json_encode( [ 'navigation' => $mega_menu_navigation, 'content' => $mega_menu_requested_copy ], JSON_UNESCAPED_UNICODE ) );
+$GLOBALS['test_nav_menus'] = [ 'best-service' => array_map( static fn( $title ): object => (object) [ 'title' => $title ], $mega_menu_labels ) ];
+$GLOBALS['test_nav_menu_names'] = [ 'best-service' => 'Menu' ];
+$mega_menu_source = container_node( 'mega-menu-nav-root', [ 'container_type' => 'flex' ], [ widget( 'mega-menu-nav-widget', 'nav-menu', [ 'menu' => '', 'menu_name' => 'Menu', 'layout' => 'vertical' ] ) ] );
+$mega_menu_adapter_changes = 0;
+$mega_menu_adapted = wpae_llm_apply_library_template( [ $mega_menu_source ], $mega_menu_native_prompt, 'mega_menu', $mega_menu_adapter_changes );
+$mega_menu_adapted_widget = $mega_menu_adapted[0]['elements'][0] ?? [];
+$mega_menu_adapted_settings = (array) ( $mega_menu_adapted_widget['settings'] ?? [] );
+$mega_menu_adapter_fidelity = wpae_llm_content_fidelity( $mega_menu_native_prompt, $mega_menu_adapted );
+$mega_menu_global_snapshot = wp_json_encode( $GLOBALS['test_nav_menus'], JSON_UNESCAPED_UNICODE );
+check( $mega_menu_adapter_changes > 0 && ( $mega_menu_adapted_widget['widgetType'] ?? '' ) === 'nav-menu' && ( $mega_menu_adapted_settings['menu'] ?? '' ) === 'best-service' && ( $mega_menu_adapted_settings['menu_name'] ?? '' ) === 'Menu' && ! empty( $mega_menu_adapter_fidelity['ok'] ) && str_contains( wpae_llm_collect_action_content( $mega_menu_adapted ), 'Контакты' ) && wp_json_encode( $GLOBALS['test_nav_menus'], JSON_UNESCAPED_UNICODE ) === $mega_menu_global_snapshot, 'Native WordPress Menu adapter references the supplied existing menu, validates its actual labels, and leaves its global items untouched: ' . wp_json_encode( [ 'settings' => $mega_menu_adapted_settings, 'fidelity' => $mega_menu_adapter_fidelity ], JSON_UNESCAPED_UNICODE ) );
+$mega_menu_preflight = wpae_llm_preflight_library_candidates( [ 'candidate_count' => 1, 'preflight_candidates' => [ [ 'id' => 'native-menu-fixture', 'elementor_data' => [ $mega_menu_source ] ] ] ], $mega_menu_native_prompt, 'mega_menu', wpae_llm_content_plan( $mega_menu_native_prompt, 'mega_menu' ), 5214 );
+$mega_menu_preflight_element = $mega_menu_preflight['selection_candidates'][0]['_wpae_preflight_elements'][0]['elements'][0] ?? [];
+check( ( $mega_menu_preflight['compatible_candidate_count'] ?? 0 ) === 1 && ( $mega_menu_preflight_element['widgetType'] ?? '' ) === 'nav-menu' && ( $mega_menu_preflight_element['settings']['menu'] ?? '' ) === 'best-service', 'The native WordPress Menu template passes production library preflight only after its existing menu copy resolves exactly' );
+$mega_menu_missing_copy = wpae_llm_content_fidelity( $mega_menu_native_prompt, [ widget( 'missing-menu', 'nav-menu', [ 'menu' => 'missing-menu' ] ) ] );
+check( empty( $mega_menu_missing_copy['ok'] ) && in_array( 'Услуги', (array) ( $mega_menu_missing_copy['missing'] ?? [] ), true ) && in_array( 'Контакты', (array) ( $mega_menu_missing_copy['missing'] ?? [] ), true ), 'A native menu whose resolved WordPress items do not match the brief fails content fidelity before library write' );
+$mega_menu_no_slug_prompt = str_replace( 'Existing WordPress menu slug: best-service. ', '', $mega_menu_native_prompt );
+$mega_menu_unresolved_preflight = wpae_llm_preflight_library_candidates( [ 'candidate_count' => 1, 'preflight_candidates' => [ [ 'id' => 'unresolved-menu-fixture', 'elementor_data' => [ container_node( 'unresolved-menu-root', [ 'container_type' => 'flex' ], [ widget( 'unresolved-menu-widget', 'nav-menu', [ 'menu' => 'missing-menu' ] ) ] ) ] ] ] ], $mega_menu_no_slug_prompt, 'mega_menu', wpae_llm_content_plan( $mega_menu_no_slug_prompt, 'mega_menu' ), 5214 );
+check( ( $mega_menu_unresolved_preflight['compatible_candidate_count'] ?? -1 ) === 0 && empty( $mega_menu_unresolved_preflight['selection_candidates'] ), 'A native menu with unresolved or mismatched items is excluded before it can be offered to the library agent' );
 
 $library_agent_message = '«Пространство для идей». Hero. Описание: «Опишите задачу и получите понятный первый шаг». Кнопка: «Начать проект», ссылка #contact.';
 $library_agent_root = container_node( 'imported-hero-library-root', [ 'container_type' => 'flex', '_css_classes' => 'wpae-library-agent-fixture-candidate-two wpae-generated-badge' ], [

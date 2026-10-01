@@ -1526,7 +1526,7 @@ function wpae_llm_content_plan( string $message, string $archetype = '' ): array
         'process' => [ 'heading', 'text-editor', 'icon-list', 'divider' ],
         'portfolio' => [ 'heading', 'text-editor', 'image', 'button' ],
         'carousel' => [ 'heading', 'text-editor', 'image-carousel' ],
-        'mega_menu' => [ 'image', 'mega-menu', 'button' ],
+        'mega_menu' => [ 'image', 'mega-menu', 'nav-menu', 'button' ],
         'cta' => [ 'heading', 'text-editor', 'button' ],
     ];
     $media_intent = '';
@@ -2023,6 +2023,9 @@ function wpae_llm_extract_requested_content( string $message ): array {
     if ( preg_match( '/\b(мега[\s-]*меню|mega[\s-]*menu|навигац\w*|шапк\w*|header)\b/iu', $message ) ) {
         $navigation_request = true;
         $navigation = wpae_llm_extract_navigation_content( $message );
+        foreach ( (array) ( $navigation['headings'] ?? [] ) as $heading ) {
+			$matches[] = $heading;
+		}
         foreach ( (array) ( $navigation['items'] ?? [] ) as $item ) {
             $matches[] = $item;
         }
@@ -2115,20 +2118,31 @@ function wpae_llm_extract_navigation_content( string $message ): array {
         $message = trim( (string) preg_replace( '/(?:кнопка|cta|button)\s*:\s*[^.;\n]+/iu', '', $message ) );
     }
 
-    $items = [];
+    $headings = [];
+	if ( preg_match_all( '/(?:заголовок|название)(?:\s+(?:(?:перв\w*|втор\w*|треть\w*)\s+)?групп\w*)?\s*[:=]?\s*[«"“]([^»"”\n]{2,80})[»"”]/iu', $message, $heading_matches ) ) {
+		foreach ( (array) ( $heading_matches[1] ?? [] ) as $heading ) {
+			$heading = trim( sanitize_text_field( (string) $heading ) );
+			if ( $heading !== '' ) {
+				$headings[ wpae_llm_normalize_content_text( $heading ) ] = $heading;
+			}
+		}
+	}
+
+	$items = [];
 	if ( preg_match( '/(?:пункты(?:\s+меню)?|ссылки|menu\s+items|items|links)\s*:\s*([^\r\n]+)/iu', $message, $list_match ) ) {
 		$list_text = (string) ( $list_match[1] ?? '' );
 		$quoted_items = [];
 		if ( preg_match_all( '/«([^»]{2,80})»|“([^”]{2,80})”|"([^"\n]{2,80})"/u', $list_text, $quoted_matches, PREG_SET_ORDER ) ) {
 			foreach ( $quoted_matches as $quoted_match ) {
 				$item = trim( sanitize_text_field( (string) ( $quoted_match[1] !== '' ? $quoted_match[1] : ( $quoted_match[2] !== '' ? $quoted_match[2] : ( $quoted_match[3] ?? '' ) ) ) ) );
-				if ( $item !== '' ) {
-					$quoted_items[ wpae_llm_normalize_content_text( $item ) ] = $item;
+				$normalized_item = wpae_llm_normalize_content_text( $item );
+				if ( $item !== '' && ! isset( $headings[ $normalized_item ] ) ) {
+					$quoted_items[ $normalized_item ] = $item;
 				}
 			}
 		}
 		if ( ! empty( $quoted_items ) ) {
-			return [ 'items' => array_slice( array_values( $quoted_items ), 0, 8 ), 'cta' => $cta ];
+			return [ 'items' => array_slice( array_values( $quoted_items ), 0, 8 ), 'headings' => array_slice( array_values( $headings ), 0, 4 ), 'cta' => $cta ];
 		}
 	}
     foreach ( preg_split( '/(?:\r?\n+|[,;|]+)/u', $message, -1, PREG_SPLIT_NO_EMPTY ) ?: [] as $segment ) {
@@ -2142,7 +2156,40 @@ function wpae_llm_extract_navigation_content( string $message ): array {
         }
     }
 
-    return [ 'items' => array_slice( array_values( $items ), 0, 8 ), 'cta' => $cta ];
+    return [ 'items' => array_slice( array_values( $items ), 0, 8 ), 'headings' => array_slice( array_values( $headings ), 0, 4 ), 'cta' => $cta ];
+}
+
+function wpae_llm_extract_wordpress_menu_reference( string $message ): string {
+	$patterns = [
+		'/\b(?:existing|current)\s+(?:wordpress|wp)\s+menu(?:\s+(?:slug|id))?\s*[:=]\s*([a-z0-9][a-z0-9_-]{0,79})/iu',
+		'/\bсуществующ\w*\s+(?:wordpress|wp)\s+меню(?:\s+(?:slug|слаг|id))?\s*[:=]\s*([a-z0-9][a-z0-9_-]{0,79})/iu',
+	];
+	foreach ( $patterns as $pattern ) {
+		if ( preg_match( $pattern, $message, $match ) ) {
+			return sanitize_key( (string) ( $match[1] ?? '' ) );
+		}
+	}
+	return '';
+}
+
+function wpae_llm_collect_wordpress_menu_content( string $menu_reference ): string {
+	$menu_reference = trim( $menu_reference );
+	if ( $menu_reference === '' || ! function_exists( 'wp_get_nav_menu_items' ) ) {
+		return '';
+	}
+	$items = wp_get_nav_menu_items( $menu_reference );
+	if ( ! is_array( $items ) ) {
+		return '';
+	}
+	$labels = [];
+	foreach ( $items as $item ) {
+		$title = is_array( $item ) ? ( $item['title'] ?? '' ) : ( $item->title ?? '' );
+		$title = trim( sanitize_text_field( (string) $title ) );
+		if ( $title !== '' ) {
+			$labels[] = $title;
+		}
+	}
+	return implode( ' ', $labels );
 }
 
 function wpae_llm_extract_carousel_content( string $message ): array {
@@ -2636,6 +2683,13 @@ function wpae_llm_collect_action_content( array $elements ): string {
             continue;
         }
         $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+        if ( ( $element['elType'] ?? '' ) === 'widget' && sanitize_key( (string) ( $element['widgetType'] ?? '' ) ) === 'nav-menu' ) {
+			$menu_reference = (string) ( $settings['menu'] ?? $settings['menu_name'] ?? '' );
+			$menu_content = wpae_llm_collect_wordpress_menu_content( $menu_reference );
+			if ( $menu_content !== '' ) {
+				$content[] = $menu_content;
+			}
+		}
         foreach ( [ 'title', 'title_text', 'description_text', 'editor', 'text', 'tab_title', 'tab_content', 'item_title' ] as $key ) {
             if ( is_scalar( $settings[ $key ] ?? null ) ) {
                 $content[] = (string) $settings[ $key ];
@@ -5049,8 +5103,9 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
         $navigation = wpae_llm_extract_navigation_content( $message );
         $navigation_items = (array) ( $navigation['items'] ?? [] );
         $navigation_cta = trim( (string) ( $navigation['cta'] ?? '' ) );
+		$wordpress_menu_reference = wpae_llm_extract_wordpress_menu_reference( $message );
         $template_elements = array_map( static fn( $element ): array => is_array( $element ) ? $clone_with_ids( $element, 'library-mega-menu' ) : [], $template_elements );
-        $apply_navigation = static function ( array &$elements ) use ( &$apply_navigation, $navigation_items, $navigation_cta, &$changed ): void {
+        $apply_navigation = static function ( array &$elements ) use ( &$apply_navigation, $navigation_items, $navigation_cta, $wordpress_menu_reference, &$changed ): void {
             foreach ( $elements as &$element ) {
                 if ( ! is_array( $element ) ) {
                     continue;
@@ -5072,6 +5127,15 @@ function wpae_llm_apply_library_template( array $template_elements, string $mess
                         $settings['menu_items'] = $next_items;
                         $changed++;
                     }
+				} elseif ( $widget_type === 'nav-menu' && $wordpress_menu_reference !== '' && (string) ( $settings['menu'] ?? '' ) !== $wordpress_menu_reference ) {
+					$settings['menu'] = $wordpress_menu_reference;
+					if ( function_exists( 'wp_get_nav_menu_object' ) ) {
+						$menu_object = wp_get_nav_menu_object( $wordpress_menu_reference );
+						if ( is_object( $menu_object ) && isset( $menu_object->name ) ) {
+							$settings['menu_name'] = sanitize_text_field( (string) $menu_object->name );
+						}
+					}
+					$changed++;
                 } elseif ( $widget_type === 'button' && $navigation_cta !== '' && (string) ( $settings['text'] ?? '' ) !== $navigation_cta ) {
                     $settings['text'] = $navigation_cta;
                     $changed++;
