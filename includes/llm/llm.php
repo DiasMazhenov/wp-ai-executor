@@ -2796,7 +2796,7 @@ function wpae_llm_clear_unrequested_library_copy( array &$elements, string $mess
     }
 
     $requested_text = wpae_llm_normalize_content_text( implode( ' ', $requested ) );
-    $title = trim( (string) ( wpae_llm_content_units( $message )[0] ?? ( $requested[0] ?? '' ) ) );
+    $title = wpae_llm_extract_section_title( $message );
     if ( $services_request ) {
         // An imperative first line is routing context, not a heading. Only put
         // a section title in the design when the user labeled one explicitly.
@@ -6756,7 +6756,7 @@ function wpae_llm_normalize_image_usage( array $elements, string $message, strin
 		}
 	}
 	$allowed_urls = array_values( array_unique( $allowed_urls ) );
-	$walk = static function ( array $nodes ) use ( &$walk, &$changed, $allowed_urls ): array {
+	$walk = static function ( array $nodes ) use ( &$walk, &$changed, $allowed_urls, $archetype ): array {
 		$normalized = [];
 		foreach ( $nodes as $element ) {
 			if ( ! is_array( $element ) ) {
@@ -6767,7 +6767,7 @@ function wpae_llm_normalize_image_usage( array $elements, string $message, strin
 				$image = is_array( $settings['image'] ?? null ) ? $settings['image'] : [];
 				$image_url = trim( (string) ( $image['url'] ?? $settings['image_url'] ?? '' ) );
 				$image_id = absint( $image['id'] ?? $settings['image_id'] ?? 0 );
-				$library_attachment = $image_id > 0 && sanitize_key( (string) ( $image['source'] ?? '' ) ) === 'library';
+				$library_attachment = $archetype !== 'team' && $image_id > 0 && sanitize_key( (string) ( $image['source'] ?? '' ) ) === 'library';
 				if ( ( $image_url === '' || ! in_array( $image_url, $allowed_urls, true ) ) && ! $library_attachment ) {
 					$changed++;
 					if ( ( $element['widgetType'] ?? '' ) === 'image' ) {
@@ -10200,6 +10200,8 @@ function wpae_llm_preflight_library_candidates( array $retrieval, string $messag
 		if ( empty( $elements ) ) {
 			continue;
 		}
+		$elements = wpae_llm_enforce_flex_layout_contract( $elements, $archetype, $changed );
+		$elements = wpae_llm_normalize_native_visual_contract( $elements, $message, $archetype, $changed );
 		$action = [ 'action' => 'insert_elements', 'post_id' => $post_id, 'position' => 'end', 'elements' => $elements ];
 		if ( empty( wpae_llm_validate_action_shape( $action, $post_id )['ok'] )
 			|| wpae_llm_count_widgets( $elements ) < 1

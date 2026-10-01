@@ -1842,6 +1842,41 @@ $team_preflight_elements = (array) ( $team_library_preflight['selection_candidat
 $team_preflight_resolution = wpae_llm_resolve_library_choice( $team_library_preflight, 'candidate_1' );
 $team_selected_preflight_elements = (array) ( $team_preflight_resolution['selected']['_wpae_preflight_elements'] ?? [] );
 check( ! empty( $team_preflight_elements ) && ! empty( $team_preflight_resolution['ok'] ) && wp_json_encode( $team_selected_preflight_elements ) === wp_json_encode( $team_preflight_elements ) && wpae_llm_content_plan_audit( wpae_llm_content_plan( $team_library_prompt, 'team' ), $team_selected_preflight_elements )['ok'], 'Library selection carries forward the exact server-adapted tree that passed preflight, rather than adapting the chosen candidate again after the provider response' );
+$live_team_prompt = 'Создай отдельный библиотечный блок Team на текущей странице. Точный заголовок секции: «Команда проекта». Участник 1 — имя: «Дизайнер продукта», должность: «Проектирование интерфейсов». Участник 2 — имя: «Веб-разработчик», должность: «Разработка цифровых продуктов». Участник 3 — имя: «Руководитель проекта», должность: «Координация проекта». Это тестовые карточки ролей, не реальные сотрудники: без личных имён, портретов, соцсетей и выдуманной биографии. Используй штатный production library agent, точный текст и native Elementor structure. Существующие roots, глобальную тему и меню не меняй. Если совместимый library template, структура или content fidelity не проходят preflight, откажись без fallback и записи.';
+$load_imported_template = static function ( string $filename ): array {
+	$document = json_decode( (string) file_get_contents( __DIR__ . '/../includes/elementor/imported-templates/' . $filename ), true );
+	return wpae_elementor_normalize_data( (array) ( $document['content'] ?? [] ) )['data'];
+};
+$live_team_preflight = wpae_llm_preflight_library_candidates( [
+	'candidate_count' => 1,
+	'preflight_candidates' => [ [ 'title' => 'Imported Team', 'trusted_bundled' => true, 'elementor_data' => $load_imported_template( 'our-team.json' ) ] ],
+], $live_team_prompt, 'team', wpae_llm_content_plan( $live_team_prompt, 'team' ), 5214 );
+$live_team_elements = (array) ( $live_team_preflight['selection_candidates'][0]['_wpae_preflight_elements'] ?? [] );
+$live_team_types = [];
+$live_team_count_widgets = static function ( array $nodes ) use ( &$live_team_count_widgets, &$live_team_types ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' ) { $live_team_types[] = sanitize_key( (string) ( $node['widgetType'] ?? '' ) ); }
+		$live_team_count_widgets( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$live_team_count_widgets( $live_team_elements );
+$live_team_copy = wpae_llm_collect_action_content( $live_team_elements );
+check( ( $live_team_preflight['compatible_candidate_count'] ?? 0 ) === 1 && ! empty( wpae_llm_content_fidelity( $live_team_prompt, $live_team_elements )['ok'] ) && ! empty( wpae_llm_content_plan_audit( wpae_llm_content_plan( $live_team_prompt, 'team' ), $live_team_elements )['ok'] ) && ! in_array( 'icon-box', $live_team_types, true ) && ! in_array( 'icon', $live_team_types, true ) && ! in_array( 'image', $live_team_types, true ) && ! str_contains( $live_team_copy, 'Создай отдельный библиотечный блок Team' ), 'Production preflight adapts a real bundled Team template to exact section/member copy, strips unrequested portraits and forbidden widgets, and keeps prompt instructions out of the design' );
+$live_benefits_prompt = 'Создай отдельный библиотечный блок Benefits. Заголовок: «Понятный процесс». Преимущество 1: «Прозрачные этапы» — «Каждый шаг согласован до начала работы». Преимущество 2: «Удобное редактирование» — «Содержание доступно в native Elementor widgets». Преимущество 3: «Адаптация под экран» — «Карточки складываются в одну колонку на телефоне». Используй только совместимый native Elementor template через штатный production library agent; передавай точный текст. Existing roots, global theme and WordPress menu remain untouched. Если template не проходит production preflight/content fidelity, откажись до provider write, без fallback.';
+$live_benefits_preflight = wpae_llm_preflight_library_candidates( [
+	'candidate_count' => 2,
+	'preflight_candidates' => [
+		[ 'title' => 'Imported course boxes', 'trusted_bundled' => true, 'elementor_data' => $load_imported_template( 'block-course-boxes.json' ) ],
+		[ 'title' => 'Imported feature grid', 'trusted_bundled' => true, 'elementor_data' => $load_imported_template( 'block-feature-grid.json' ) ],
+	],
+], $live_benefits_prompt, 'benefits', wpae_llm_content_plan( $live_benefits_prompt, 'benefits' ), 5214 );
+$live_benefits_tree_ok = true;
+foreach ( (array) ( $live_benefits_preflight['selection_candidates'] ?? [] ) as $live_benefits_candidate ) {
+	$live_benefits_tree = (array) ( $live_benefits_candidate['_wpae_preflight_elements'] ?? [] );
+	$live_benefits_tree_ok = $live_benefits_tree_ok && ! empty( wpae_llm_content_fidelity( $live_benefits_prompt, $live_benefits_tree )['ok'] ) && ! empty( wpae_llm_content_plan_audit( wpae_llm_content_plan( $live_benefits_prompt, 'benefits' ), $live_benefits_tree )['ok'] );
+}
+check( ( $live_benefits_preflight['compatible_candidate_count'] ?? 0 ) === 2 && $live_benefits_tree_ok && ! str_contains( wpae_llm_collect_action_content( (array) ( $live_benefits_preflight['selection_candidates'][0]['_wpae_preflight_elements'] ?? [] ) ), 'Создай отдельный библиотечный блок Benefits' ), 'Production preflight offers real bundled Benefits layouts with the exact section title and all requested benefit copy, without leaking the intent line' );
 $testimonial_requested = wpae_llm_extract_requested_content( $testimonials_prompt );
 check( $testimonial_requested === [ 'Согласование прошло легко и спокойно', 'Динара', 'Получили ясный план действий', 'Марат' ], 'Testimonials fidelity extracts only quoted semantic fields, not slot labels: ' . wp_json_encode( $testimonial_requested, JSON_UNESCAPED_UNICODE ) );
 $testimonial_plan = wpae_llm_content_plan( $testimonials_prompt, 'testimonials' );
