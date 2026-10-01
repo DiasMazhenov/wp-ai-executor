@@ -86,7 +86,14 @@ function wpae_get_project_design_tokens() {
 }
 function wpae_get_design_system_required_classes() { return [ 'wpae-system-test' ]; }
 function wpae_get_design_system_id() { return 'test'; }
-function wpae_block_library_retrieve_for_prompt( ...$args ) { return $GLOBALS['library']; }
+function wpae_block_library_retrieve_for_prompt( ...$args ) {
+	$GLOBALS['library_retrieval_calls'][] = $args;
+	$library = $GLOBALS['library'];
+	if ( empty( $args[2] ) ) {
+		unset( $library['preflight_candidates'] );
+	}
+	return $library;
+}
 function wpae_count_elementor_validation_errors_by_type( array $errors ) { return []; }
 function wpae_elementor_update( $request ) {
     $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ) ] );
@@ -2034,25 +2041,61 @@ $library_agent_first_root = container_node( 'unselected-hero-library-root', [ 'c
 	widget( 'unselected-hero-copy', 'text-editor', [ 'editor' => 'Другой вариант.' ] ),
 	widget( 'unselected-hero-button', 'button', [ 'text' => 'Смотреть', 'link' => [ 'url' => '#other' ] ] ),
  ] );
+$library_agent_ranked_good = [
+	'score' => 9,
+	'matched_terms' => [ 'hero' ],
+	'summary' => [
+		'id' => 503,
+		'title' => 'Импортированный hero',
+		'description' => 'Hero с заголовком, описанием и CTA',
+		'category' => 'hero',
+		'template_type' => 'section-hero',
+		'tags' => [ 'hero' ],
+		'source' => 'plugin_template',
+		'status' => 'published',
+		'compatibility' => [ 'stats' => [ 'widget_types' => [ 'container', 'heading', 'text-editor', 'button' ], 'media_references' => [] ] ],
+	],
+	'trusted_bundled' => false,
+	'elementor_data' => [ $library_agent_root ],
+];
+$library_agent_unadaptable = static fn( int $id, string $title ): array => [
+	'choice_key' => 'candidate_' . $id,
+	'id' => $id,
+	'title' => $title,
+	'category' => 'hero',
+	'source' => 'plugin_template',
+	'status' => 'published',
+	'trusted_bundled' => false,
+	'elementor_data' => [],
+];
 $GLOBALS['library'] = [
-	'status' => 'matched', 'available_count' => 2, 'candidate_count' => 2,
+	'status' => 'matched', 'available_count' => 4, 'candidate_count' => 4,
 	'candidates' => [
-		[ 'choice_key' => 'candidate_1', 'title' => 'Локально ранжированный вариант', 'category' => 'hero' ],
-		[ 'choice_key' => 'candidate_2', 'title' => 'Импортированный hero', 'category' => 'hero' ],
+		[ 'choice_key' => 'candidate_1', 'title' => 'Неадаптируемый 1', 'category' => 'hero' ],
+		[ 'choice_key' => 'candidate_2', 'title' => 'Неадаптируемый 2', 'category' => 'hero' ],
+		[ 'choice_key' => 'candidate_3', 'title' => 'Неадаптируемый 3', 'category' => 'hero' ],
 	],
 	'selection_candidates' => [
-		[ 'choice_key' => 'candidate_1', 'id' => 500, 'title' => 'Локально ранжированный вариант', 'category' => 'hero', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => [ $library_agent_first_root ] ],
-		[ 'choice_key' => 'candidate_2', 'id' => 501, 'title' => 'Импортированный hero', 'category' => 'hero', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => false, 'elementor_data' => [ $library_agent_root ] ],
+		$library_agent_unadaptable( 500, 'Неадаптируемый 1' ),
+		$library_agent_unadaptable( 501, 'Неадаптируемый 2' ),
+		$library_agent_unadaptable( 502, 'Неадаптируемый 3' ),
+	],
+	'preflight_candidates' => [
+		$library_agent_unadaptable( 500, 'Неадаптируемый 1' ),
+		$library_agent_unadaptable( 501, 'Неадаптируемый 2' ),
+		$library_agent_unadaptable( 502, 'Неадаптируемый 3' ),
+		$library_agent_ranked_good,
 	],
 ];
 $library_agent_action = [
-	'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_2',
+	'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1',
 	'elements' => [],
 ];
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
 $GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+$GLOBALS['library_retrieval_calls'] = [];
 $GLOBALS['responses'] = [ provider_reply( wp_json_encode( $library_agent_action ) ) ];
 $library_agent_request = new WP_REST_Request();
 $library_agent_request->set_param( 'message', $library_agent_message );
@@ -2078,9 +2121,9 @@ $find_library_agent_button_url = static function ( array $nodes ) use ( &$find_l
 $library_agent_button_url = $find_library_agent_button_url( [ $library_agent_written_root ] );
 check( ! empty( $library_agent_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'active supported pipeline delegates one library decision, then uses one existing write boundary' );
 check( ( $library_agent_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['provider_calls'] ?? null ) === 1 && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['precedence'] ?? '' ) === 'active_pipeline_library_decision', 'active pipeline diagnostics expose the bounded library-agent route without invoking EDDE in parallel' );
-check( strpos( $library_agent_system_prompt, '"library_choice":"точный choice_key или null"' ) !== false && strpos( $library_agent_system_prompt, 'candidate_1' ) !== false && strpos( $library_agent_system_prompt, 'candidate_2' ) !== false && strpos( $library_agent_system_prompt, 'Семантический план контента' ) === false && strpos( $library_agent_system_prompt, 'Elementor native Flexbox container/widget objects' ) === false, 'active library agent receives only the allowlisted selection contract, not conflicting full-tree generation instructions' );
+check( ( $GLOBALS['library_retrieval_calls'][0][2] ?? false ) === true && count( (array) ( $library_agent_trace['candidates'] ?? [] ) ) === 1 && strpos( $library_agent_system_prompt, '"library_choice":"точный choice_key или null"' ) !== false && strpos( $library_agent_system_prompt, 'candidate_1' ) !== false && strpos( $library_agent_system_prompt, 'candidate_2' ) === false && strpos( $library_agent_system_prompt, 'Импортированный hero' ) !== false && strpos( $library_agent_system_prompt, 'Семантический план контента' ) === false && strpos( $library_agent_system_prompt, 'Elementor native Flexbox container/widget objects' ) === false, 'the post-plan library route retrieves all ranked candidates, preflights before provider dispatch, and offers only the later compatible template with its metadata' );
 check( ( $library_agent_data['diagnostics']['initial_validation']['validation_scope'] ?? '' ) === 'allowlisted_library_choice' && ! empty( $library_agent_data['diagnostics']['initial_validation']['provider_tree_ignored'] ), 'A library-only model choice bypasses duplicate provider-tree validation and defers checks to the selected server template' );
-check( ( $library_agent_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_agent_trace['model_choice'] ?? '' ) === 'candidate_2' && ( $library_agent_trace['selected']['title'] ?? '' ) === 'Импортированный hero' && ( $library_agent_trace['status'] ?? '' ) === 'applied' && strpos( $library_agent_root_json, 'wpae-library-agent-fixture-candidate-two' ) !== false && strpos( $library_agent_root_json, 'wpae-library-agent-candidate-one' ) === false, 'the model can select a non-first ranked template and that exact tree reaches the write boundary' );
+check( ( $library_agent_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_agent_trace['model_choice'] ?? '' ) === 'candidate_1' && ( $library_agent_trace['selected']['title'] ?? '' ) === 'Импортированный hero' && ( $library_agent_trace['status'] ?? '' ) === 'applied' && strpos( $library_agent_root_json, 'wpae-library-agent-fixture-candidate-two' ) !== false && strpos( $library_agent_root_json, 'wpae-library-agent-candidate-one' ) === false, 'the model selects the compatible fourth ranked template and the exact preflighted tree reaches the write boundary' );
 check( strpos( $library_agent_written_copy, 'Пространство для идей' ) !== false && strpos( $library_agent_written_copy, 'Опишите задачу и получите понятный первый шаг' ) !== false && strpos( $library_agent_written_copy, 'Начать проект' ) !== false && $library_agent_button_url === '#contact', 'active library-agent adaptation preserves exact brief copy and CTA URL' );
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
@@ -2388,7 +2431,7 @@ $pricing_provider_action['library_choice'] = 'candidate_1';
 $pricing_provider_action['elements'][0]['settings']['_css_classes'] = 'wpae-provider-pricing-root';
 unset( $pricing_provider_action['fallback_archetype'], $pricing_provider_action['fallback_variant'] );
 $pricing_after_incompatible_choice = $run_services_route( $pricing_library_message, [ provider_reply( wp_json_encode( $pricing_provider_action, JSON_UNESCAPED_UNICODE ) ) ], $incompatible_pricing_fixture, 'pricing-incompatible-library-choice' );
-check( ( $pricing_after_incompatible_choice['error']['code'] ?? '' ) === 'wpae_llm_library_selection_required' && $pricing_after_incompatible_choice['calls'] === 1 && $pricing_after_incompatible_choice['writes'] === 0, 'An incompatible selected template is rejected instead of being replaced by an unrelated generated composition' );
+check( ( $pricing_after_incompatible_choice['error']['code'] ?? '' ) === 'wpae_llm_no_compatible_library_candidate' && $pricing_after_incompatible_choice['calls'] === 0 && $pricing_after_incompatible_choice['writes'] === 0 && ( $pricing_after_incompatible_choice['error']['data']['details']['write_count'] ?? null ) === 0, 'An incompatible library shortlist is rejected before provider dispatch instead of allowing an unrelated composition: ' . wp_json_encode( $pricing_after_incompatible_choice, JSON_UNESCAPED_UNICODE ) );
 check( $pricing_after_incompatible_choice['roots'] === array_column( $legacy_page, 'id' ) && ( $pricing_after_incompatible_choice['error']['data']['details']['write_count'] ?? null ) === 0, 'Incompatible library output leaves all neighboring roots untouched and never crosses the write boundary' );
 $leaked_cta_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'elements' => $leaked_cta_provider ];
 $leaked_cta_route = $run_services_route( $standalone_cta_message, [ provider_reply( wp_json_encode( $leaked_cta_provider_action, JSON_UNESCAPED_UNICODE ) ) ], [], 'cta-label-leak-identity', false, 'off', 'off' );

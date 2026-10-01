@@ -10060,6 +10060,17 @@ function wpae_llm_preflight_library_candidates( array $retrieval, string $messag
 		if ( ! is_array( $candidate ) || empty( $candidate['elementor_data'] ) || ! is_array( $candidate['elementor_data'] ) ) {
 			continue;
 		}
+		$summary = (array) ( $candidate['summary'] ?? [] );
+		if ( ! empty( $summary ) ) {
+			$candidate = array_merge( $summary, $candidate );
+			$compatibility_stats = (array) ( $summary['compatibility']['stats'] ?? [] );
+			$candidate['widget_types'] = array_values( (array) ( $compatibility_stats['widget_types'] ?? [] ) );
+			$candidate['root_count'] = count( $candidate['elementor_data'] );
+			$candidate['media_reference_count'] = count( (array) ( $compatibility_stats['media_references'] ?? [] ) );
+			$candidate['structure'] = function_exists( 'wpae_block_library_prompt_structure' )
+				? wpae_block_library_prompt_structure( $candidate['elementor_data'] )
+				: [];
+		}
 		$changed = 0;
 		$elements = wpae_llm_apply_library_template( $candidate['elementor_data'], $message, $archetype, $changed, ! empty( $candidate['trusted_bundled'] ) );
 		if ( empty( $elements ) ) {
@@ -10617,14 +10628,15 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	];
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	$library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
+	$library_preflight_enabled = $design_pipeline_mode === 'active'
+		&& $deterministic_archetype
+		&& $selected_post_id > 0
+		&& ! $targeted_edit
+		&& ! $vision_repair
+		&& ! $vision_regenerate
+		&& ! $replacement_requested;
 	if ( $library_retrieval_enabled ) {
-		$library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype, ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' );
-	}
-	if ( $library_retrieval_enabled && ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' && ! empty( $library_retrieval['selection_candidates'] ) ) {
-		$library_retrieval = wpae_llm_preflight_library_candidates( $library_retrieval, $message, $action_archetype, $content_plan, $post_id );
-		if ( empty( $library_retrieval['selection_candidates'] ) ) {
-			return new WP_Error( 'wpae_llm_no_compatible_library_candidate', 'Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны.', [ 'status' => 422, 'details' => [ 'post_id' => $post_id, 'archetype' => $action_archetype, 'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ), 'compatible_candidate_count' => 0, 'provider_call_count' => 0, 'write_count' => 0 ] ] );
-		}
+		$library_retrieval = wpae_block_library_retrieve_for_prompt( $message, $action_archetype, $library_preflight_enabled );
 	}
 	if ( $vision_regenerate && $design_pipeline_mode === 'active' && ( $design_generation_route['action_path'] ?? '' ) === 'pipeline' && $selected_post_id > 0 && $deterministic_archetype && ! $replacement_requested ) {
 		return new WP_Error( 'wpae_vision_replacement_scope_required', 'У Vision regeneration отсутствует подтверждённый operation-owned root; добавление нового root запрещено.', [ 'status' => 409 ] );
@@ -10701,6 +10713,12 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$design_pipeline_trace['routing'] = function_exists( 'wpae_llm_route_diagnostics' ) && function_exists( 'wpae_llm_route_policy' )
 			? wpae_llm_route_diagnostics( wpae_llm_route_policy( 'elementor_write', (string) ( $runtime['provider'] ?? '' ), (string) ( $runtime['model'] ?? '' ) ), [ 'source' => 'pending', 'provider_calls' => $design_generation_route['provider_calls'], 'action_path' => 'library_agent' ] )
 			: [ 'source' => 'pending', 'provider_calls' => $design_generation_route['provider_calls'], 'action_path' => 'library_agent' ];
+	}
+	if ( $library_retrieval_enabled && ( $design_generation_route['action_path'] ?? '' ) === 'library_agent' && ! empty( $library_retrieval['selection_candidates'] ) ) {
+		$library_retrieval = wpae_llm_preflight_library_candidates( $library_retrieval, $message, $action_archetype, $content_plan, $selected_post_id );
+		if ( empty( $library_retrieval['selection_candidates'] ) ) {
+			return new WP_Error( 'wpae_llm_no_compatible_library_candidate', 'Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны.', [ 'status' => 422, 'details' => [ 'post_id' => $selected_post_id, 'archetype' => $action_archetype, 'candidate_count' => (int) ( $library_retrieval['candidate_count'] ?? 0 ), 'compatible_candidate_count' => 0, 'provider_call_count' => 0, 'write_count' => 0 ] ] );
+		}
 	}
 	$active_pipeline_eligible = $action_request
 		&& $design_pipeline_trace['mode'] === 'active'
