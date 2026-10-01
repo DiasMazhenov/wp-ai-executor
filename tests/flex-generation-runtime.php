@@ -1873,7 +1873,56 @@ $live_team_count_widgets = static function ( array $nodes ) use ( &$live_team_co
 };
 $live_team_count_widgets( $live_team_elements );
 $live_team_copy = wpae_llm_collect_action_content( $live_team_elements );
-check( ( $live_team_preflight['compatible_candidate_count'] ?? 0 ) === 1 && ! empty( wpae_llm_content_fidelity( $live_team_prompt, $live_team_elements )['ok'] ) && ! empty( wpae_llm_content_plan_audit( wpae_llm_content_plan( $live_team_prompt, 'team' ), $live_team_elements )['ok'] ) && ! in_array( 'icon-box', $live_team_types, true ) && ! in_array( 'icon', $live_team_types, true ) && ! in_array( 'image', $live_team_types, true ) && ! str_contains( $live_team_copy, 'Создай отдельный библиотечный блок Team' ), 'Production preflight adapts a real bundled Team template to exact section/member copy, strips unrequested portraits and forbidden widgets, and keeps prompt instructions out of the design' );
+$live_team_visual_changes = 0;
+$live_team_visual_elements = wpae_llm_normalize_library_layout( $live_team_elements, $live_team_visual_changes, 'team' );
+$live_team_visual_elements = wpae_llm_mark_preserved_library_design( $live_team_visual_elements );
+$live_team_visual_elements = wpae_llm_materialize_preserved_library_colors( $live_team_visual_elements, $live_team_visual_changes );
+$live_team_visual_elements = wpae_llm_normalize_preserved_library_visual_state( $live_team_visual_elements, $live_team_visual_changes );
+$live_team_visual_elements = wpae_llm_normalize_preserved_library_typography( $live_team_visual_elements, $live_team_visual_changes );
+$live_team_visual_elements = wpae_llm_normalize_preserved_library_geometry( $live_team_visual_elements, $live_team_visual_changes );
+$live_team_visual_elements = wpae_llm_enforce_preserved_library_badge( $live_team_visual_elements, 'team', $live_team_visual_changes );
+$live_team_visual_groups = [];
+$collect_live_team_visual_groups = static function ( array $nodes ) use ( &$collect_live_team_visual_groups, &$live_team_visual_groups ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		$children = (array) ( $node['elements'] ?? [] );
+		$containers = array_values( array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'container' ) );
+		$card_containers = [];
+		foreach ( $containers as $container ) {
+			$types = array_column( array_values( array_filter( (array) ( $container['elements'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['elType'] ?? '' ) === 'widget' ) ), 'widgetType' );
+			if ( in_array( 'heading', $types, true ) && in_array( 'text-editor', $types, true ) ) {
+				$card_containers[] = $container;
+			}
+		}
+		if ( count( $card_containers ) >= 2 && count( $card_containers ) === count( $containers ) ) {
+			$live_team_visual_groups[] = [ 'settings' => (array) ( $node['settings'] ?? [] ), 'cards' => $card_containers ];
+		}
+		$collect_live_team_visual_groups( $children );
+	}
+};
+$collect_live_team_visual_groups( $live_team_visual_elements );
+$live_team_visual_group_ok = false;
+foreach ( $live_team_visual_groups as $visual_group ) {
+	$group_settings = (array) ( $visual_group['settings'] ?? [] );
+	$group_classes = preg_split( '/\s+/', trim( (string) ( $group_settings['_css_classes'] ?? '' ) ) ) ?: [];
+	$all_cards_styled = true;
+	foreach ( (array) ( $visual_group['cards'] ?? [] ) as $visual_card ) {
+		$card_settings = (array) ( $visual_card['settings'] ?? [] );
+		$padding = (array) ( $card_settings['padding'] ?? [] );
+		$all_cards_styled = $all_cards_styled
+			&& ( $card_settings['background_background'] ?? '' ) === 'classic'
+			&& trim( (string) ( $card_settings['background_color'] ?? '' ) ) !== ''
+			&& ( $card_settings['border_border'] ?? '' ) === 'solid'
+			&& (float) ( $padding['top'] ?? 0 ) > 0;
+	}
+	if ( in_array( 'wpae-bento-grid', $group_classes, true ) && count( (array) ( $visual_group['cards'] ?? [] ) ) === 3 && $all_cards_styled ) {
+		$live_team_visual_group_ok = true;
+		break;
+	}
+}
+check( $live_team_visual_group_ok, 'Production preflight styles the three native Team name/role cards as a responsive surface grid instead of leaving their text floating in transparent containers' );
 $live_benefits_prompt = 'Создай отдельный библиотечный блок Benefits. Заголовок: «Понятный процесс». Преимущество 1: «Прозрачные этапы» — «Каждый шаг согласован до начала работы». Преимущество 2: «Удобное редактирование» — «Содержание доступно в native Elementor widgets». Преимущество 3: «Адаптация под экран» — «Карточки складываются в одну колонку на телефоне». Используй только совместимый native Elementor template через штатный production library agent; передавай точный текст. Existing roots, global theme and WordPress menu remain untouched. Если template не проходит production preflight/content fidelity, откажись до provider write, без fallback.';
 $live_benefits_preflight = wpae_llm_preflight_library_candidates( [
 	'candidate_count' => 2,

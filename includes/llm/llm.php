@@ -9438,6 +9438,26 @@ function wpae_llm_normalize_library_layout( array $elements, int &$changed = 0, 
 			$service_copy_flags = $collect_service_copy_flags( $nodes );
 			return $service_copy_flags['title'] && $service_copy_flags['description'];
 		}
+		if ( $archetype === 'team' ) {
+			// ponytail: match direct member widget pairs; extend to nested card wrappers when a Team library template needs them.
+			$has_name = false;
+			$has_role = false;
+			foreach ( $nodes as $node ) {
+				if ( ! is_array( $node ) || ( $node['elType'] ?? '' ) !== 'widget' ) {
+					continue;
+				}
+				$widget_type = sanitize_key( (string) ( $node['widgetType'] ?? '' ) );
+				$settings = is_array( $node['settings'] ?? null ) ? $node['settings'] : [];
+				if ( $widget_type === 'heading' && trim( wp_strip_all_tags( (string) ( $settings['title'] ?? '' ) ) ) !== '' ) {
+					$has_name = true;
+				} elseif ( $widget_type === 'text-editor' && trim( wp_strip_all_tags( (string) ( $settings['editor'] ?? '' ) ) ) !== '' ) {
+					$has_role = true;
+				} elseif ( $widget_type === 'icon-box' && trim( wp_strip_all_tags( (string) ( $settings['title_text'] ?? '' ) ) ) !== '' && trim( wp_strip_all_tags( (string) ( $settings['description_text'] ?? '' ) ) ) !== '' ) {
+					return true;
+				}
+			}
+			return $has_name && $has_role;
+		}
         $has_service_title = false;
         $has_service_description = false;
         foreach ( $nodes as $node ) {
@@ -10217,6 +10237,8 @@ function wpae_llm_preflight_library_candidates( array $retrieval, string $messag
 		}
 		$elements = wpae_llm_enforce_flex_layout_contract( $elements, $archetype, $changed );
 		$elements = wpae_llm_normalize_native_visual_contract( $elements, $message, $archetype, $changed );
+		// Pass the same native library layout rules before selection that the chosen tree receives before write.
+		$elements = wpae_llm_normalize_library_layout( $elements, $changed, $archetype );
 		$action = [ 'action' => 'insert_elements', 'post_id' => $post_id, 'position' => 'end', 'elements' => $elements ];
 		if ( empty( wpae_llm_validate_action_shape( $action, $post_id )['ok'] )
 			|| wpae_llm_count_widgets( $elements ) < 1
