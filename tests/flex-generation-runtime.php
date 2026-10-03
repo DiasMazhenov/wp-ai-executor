@@ -110,6 +110,11 @@ function wpae_elementor_update( $request ) {
         $GLOBALS['fail_write_boundary'] = false;
         return new WP_Error( 'wpae_test_write_failed', 'simulated write boundary failure' );
     }
+    if ( ! $request->get_param( 'dry_run' ) && is_array( $GLOBALS['services_boundary_refusal'] ?? null ) ) {
+        $refusal = $GLOBALS['services_boundary_refusal'];
+        $GLOBALS['services_boundary_refusal'] = null;
+        return new WP_REST_Response( [ 'ok' => false, 'code' => (string) ( $refusal['code'] ?? 'wpae_test_transaction_refused' ), 'error' => (string) ( $refusal['message'] ?? 'simulated protected transaction refusal' ) ], (int) ( $refusal['status'] ?? 409 ) );
+    }
     if ( ! $request->get_param( 'dry_run' ) ) {
         $GLOBALS['writes'][] = $request->get_param( 'elementor_data' );
         $GLOBALS['page_data'] = $request->get_param( 'elementor_data' );
@@ -1694,7 +1699,7 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	$GLOBALS['responses'] = [];
 	$case_request = new WP_REST_Request();
 	$case_request->set_param( 'message', $case_prompt );
-	$case_request->set_param( 'context', [ 'post_id' => 42 ] );
+	$case_request->set_param( 'context', [ 'post_id' => 42 ] + ( $case_name === 'services' ? [ 'audience' => 'architectural studio audience' ] : [] ) );
 	$case_response = wpae_llm_chat_request( $case_request );
 	$case_data = $case_response instanceof WP_REST_Response ? $case_response->get_data() : [];
 	check( ! empty( $case_data['ok'] ) && ( $case_data['diagnostics']['action_path'] ?? '' ) === 'pipeline', $case_name . ' takes the active production pipeline when EDDE is also active: ' . wp_json_encode( [ 'ok' => $case_data['ok'] ?? false, 'action_path' => $case_data['diagnostics']['action_path'] ?? '', 'error' => $case_response instanceof WP_Error ? $case_response->get_error_code() : '', 'message' => $case_response instanceof WP_Error ? $case_response->get_error_message() : '', 'data' => $case_response instanceof WP_Error ? $case_response->get_error_data() : [] ] ) );
@@ -1719,6 +1724,10 @@ foreach ( $production_design_cases as [ $case_name, $case_prompt, $expected_widg
 	$case_data = $case_response instanceof WP_REST_Response ? $case_response->get_data() : [];
 	check( in_array( $expected_widget, $case_widgets, true ) && ( $case_tree[0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ) && count( $case_generated_roots ) === 1, $case_name . ' compiles a native widget into exactly one new root while keeping existing roots: ' . wp_json_encode( [ 'expected_widget' => $expected_widget, 'widgets' => $case_widgets, 'generated_roots' => count( $case_generated_roots ), 'first_root' => $case_tree[0]['id'] ?? '', 'ok' => $case_data['ok'] ?? false, 'action_path' => $case_data['diagnostics']['action_path'] ?? '', 'error' => $case_response instanceof WP_Error ? $case_response->get_error_code() : '' ] ) );
 	check( count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1 && ( $case_data['diagnostics']['provider_calls'] ?? null ) === 0, $case_name . ' uses exactly one production write and no provider calls' );
+	if ( $case_name === 'services' ) {
+		$service_trace = (array) ( $case_data['diagnostics']['design_pipeline'] ?? [] );
+		check( ( $service_trace['brief']['hash'] ?? '' ) === ( $service_trace['content_plan']['brief_hash'] ?? null ) && ( $service_trace['content_plan']['item_count'] ?? 0 ) === 3 && ( $service_trace['content_plan']['validation']['ok'] ?? false ) === true, 'Production Services intake derives and validates its content plan from the same audience-scoped Brief exactly once' );
+	}
 	if ( $case_name === 'cta' ) {
 		$cta_trace = $case_data['diagnostics']['design_pipeline'] ?? [];
 		$cta_classes = preg_split( '/\s+/', trim( (string) ( $case_generated_roots[0]['settings']['_css_classes'] ?? '' ) ) ) ?: [];
@@ -2382,97 +2391,62 @@ $GLOBALS['library'] = [
 	'candidates' => [ [ 'choice_key' => 'candidate_1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template' ] ],
 	'selection_candidates' => [ [ 'choice_key' => 'candidate_1', 'id' => 0, 'bundled_fixture_id' => 'template-services-photo-cards-v1', 'title' => 'Services — Photo Cards (User Reference)', 'category' => 'services', 'template_type' => 'section-services', 'source' => 'plugin_template', 'status' => 'published', 'trusted_bundled' => true, 'elementor_data' => $services_template_data ] ],
 ];
-$services_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [ $services_provider_root ] ];
 $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
 $GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
-$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $services_provider_action ) ) ];
+$GLOBALS['responses'] = [];
 $GLOBALS['test_project_typography_tokens'] = true;
+$services_retrieval_before = count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) );
 $services_request = new WP_REST_Request();
 $services_request->set_param( 'message', $services_message );
-$services_request->set_param( 'context', [ 'post_id' => 42 ] );
+$services_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'services-active-default-identity' ] );
 $services_response = wpae_llm_chat_request( $services_request );
 unset( $GLOBALS['test_project_typography_tokens'] );
 $services_response_data = $services_response instanceof WP_REST_Response ? $services_response->get_data() : [];
-$services_trace = (array) ( $services_response_data['library'] ?? [] );
+$services_trace = (array) ( $services_response_data['diagnostics']['design_pipeline']['services'] ?? [] );
 $services_written = array_slice( (array) $GLOBALS['page_data'], count( $legacy_page ) );
 $services_written_json = wp_json_encode( $services_written, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 $services_heading_values = [];
 $services_text_values = [];
-$collect_services_written = static function ( array $nodes ) use ( &$collect_services_written, &$services_heading_values, &$services_text_values ): void {
+$services_written_widgets = [];
+$collect_services_written = static function ( array $nodes ) use ( &$collect_services_written, &$services_heading_values, &$services_text_values, &$services_written_widgets ): void {
 	foreach ( $nodes as $node ) {
 		if ( ! is_array( $node ) ) { continue; }
-		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' ) { $services_heading_values[] = (string) ( $node['settings']['title'] ?? '' ); }
-		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'text-editor' ) { $services_text_values[] = trim( wp_strip_all_tags( (string) ( $node['settings']['editor'] ?? '' ) ) ); }
+		if ( ( $node['elType'] ?? '' ) === 'widget' ) {
+			$type = (string) ( $node['widgetType'] ?? '' );
+			$services_written_widgets[] = $type;
+			if ( $type === 'heading' ) { $services_heading_values[] = (string) ( $node['settings']['title'] ?? '' ); }
+			if ( $type === 'text-editor' ) { $services_text_values[] = trim( wp_strip_all_tags( (string) ( $node['settings']['editor'] ?? '' ) ) ); }
+		}
 		$collect_services_written( (array) ( $node['elements'] ?? [] ) );
 	}
 };
 $collect_services_written( $services_written );
-$services_card_heading_settings = [];
-$services_badge_settings = [];
-$collect_services_layout_controls = static function ( array $nodes ) use ( &$collect_services_layout_controls, &$services_card_heading_settings, &$services_badge_settings ): void {
+$find_service_class_nodes = static function ( array $nodes, string $class ) use ( &$find_service_class_nodes ): array {
+	$found = [];
 	foreach ( $nodes as $node ) {
 		if ( ! is_array( $node ) ) { continue; }
-		$settings = (array) ( $node['settings'] ?? [] );
-	$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) ) ?: [];
-		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' && in_array( 'wpae-card-heading', $classes, true ) ) { $services_card_heading_settings[] = $settings; }
-		if ( ( $node['elType'] ?? '' ) === 'container' && in_array( 'wpae-generated-badge', $classes, true ) ) { $services_badge_settings[] = $settings; }
-		$collect_services_layout_controls( (array) ( $node['elements'] ?? [] ) );
+		$classes = preg_split( '/\\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( in_array( $class, $classes, true ) ) { $found[] = $node; }
+		$found = array_merge( $found, $find_service_class_nodes( (array) ( $node['elements'] ?? [] ), $class ) );
 	}
+	return $found;
 };
-$collect_services_layout_controls( $services_written );
-$services_reference_type_matches = count( $services_card_heading_settings ) === 3 && count( array_filter( $services_card_heading_settings, static fn( $settings ): bool => ( $settings['header_size'] ?? '' ) === 'div' && ( $settings['typography_font_size']['unit'] ?? '' ) === 'px' && (float) ( $settings['typography_font_size']['size'] ?? 0 ) === 22.0 && ( $settings['typography_font_size_tablet']['unit'] ?? '' ) === 'rem' && (float) ( $settings['typography_font_size_tablet']['size'] ?? 0 ) === 1.75 && ( $settings['typography_font_size_mobile']['unit'] ?? '' ) === 'rem' && (float) ( $settings['typography_font_size_mobile']['size'] ?? 0 ) === 1.5 ) ) === 3;
-check( $services_reference_type_matches, 'Production Services write preserves the reference 22px / 1.75rem / 1.5rem card titles instead of mapping them to the 3.5rem display token: ' . wp_json_encode( $services_card_heading_settings ) );
-check( count( $services_badge_settings ) === 1 && ( $services_badge_settings[0]['align_self'] ?? '' ) === 'flex-start' && ( $services_badge_settings[0]['_element_width'] ?? '' ) === 'initial' && (float) ( $services_badge_settings[0]['_flex_grow'] ?? -1 ) === 0.0 && (float) ( $services_badge_settings[0]['width']['size'] ?? 0 ) === 10.0 && ( $services_badge_settings[0]['width']['unit'] ?? '' ) === '%' && (float) ( $services_badge_settings[0]['width_tablet']['size'] ?? 0 ) === 120.0 && ( $services_badge_settings[0]['width_tablet']['unit'] ?? '' ) === 'px' && (float) ( $services_badge_settings[0]['width_mobile']['size'] ?? 0 ) === 120.0 && ( $services_badge_settings[0]['width_mobile']['unit'] ?? '' ) === 'px' && ( $services_badge_settings[0]['_flex_size'] ?? null ) === '' && ( $services_badge_settings[0]['_flex_size_mobile'] ?? null ) === '', 'Production Services write keeps the reference pill narrow with native responsive container widths' );
-check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'Imported Services design uses the agent library decision route and the single existing writer: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'library' => $services_response_data['library'] ?? [], 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '', 'message' => $services_response instanceof WP_Error ? $services_response->get_error_message() : '', 'error_data' => $services_response instanceof WP_Error ? $services_response->get_error_data() : [] ] ) );
-$services_step_statuses = [];
-$services_library_diagnostics = [];
-foreach ( (array) ( $services_response_data['steps'] ?? [] ) as $service_step ) {
-	$services_step_statuses[] = [ 'id' => $service_step['id'] ?? '', 'status' => $service_step['status'] ?? '', 'message' => $service_step['message'] ?? '' ];
-	if ( ( $service_step['id'] ?? '' ) === 'library_retrieval' ) { $services_library_diagnostics = (array) ( $service_step['details'] ?? [] ); }
-}
-check( ( $services_trace['selection_source'] ?? '' ) === 'model_choice' && ( $services_trace['model_choice'] ?? '' ) === 'candidate_1' && ( $services_trace['selected']['title'] ?? '' ) === 'Services — Photo Cards (User Reference)' && ( $services_trace['status'] ?? '' ) === 'applied', 'The model-selected user Services reference reaches production adaptation: ' . wp_json_encode( [ 'source' => $services_trace['selection_source'] ?? '', 'choice' => $services_trace['model_choice'] ?? '', 'title' => $services_trace['selected']['title'] ?? '', 'status' => $services_trace['status'] ?? '', 'reason' => $services_trace['reason'] ?? '', 'fidelity' => $services_trace['fidelity'] ?? [], 'library_diagnostics' => $services_library_diagnostics, 'root_count' => count( $services_written ), 'steps' => $services_step_statuses ] ) );
-check( ! empty( $services_trace['design_preserved'] ) && ( $services_trace['design_preservation_scope'] ?? '' ) === 'authored_layout_after_project_palette_adaptation' && str_contains( $services_written_json, 'wpae-preserve-library-design' ), 'The bundled Services reference keeps its authored composition after safe palette adaptation' );
-check( count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'сам выберет подходящий шаблон' ) && ! str_contains( $services_written_json, 'временный QA-блок' ), 'Imported Services cards retain exact requested text without exposing the prompt instructions' );
-$services_written_widgets = [];
-$collect_services_widget_types = static function ( array $nodes ) use ( &$collect_services_widget_types, &$services_written_widgets ): void {
-	foreach ( $nodes as $node ) {
-		if ( ! is_array( $node ) ) { continue; }
-		if ( ( $node['elType'] ?? '' ) === 'widget' ) { $services_written_widgets[] = (string) ( $node['widgetType'] ?? '' ); }
-		$collect_services_widget_types( (array) ( $node['elements'] ?? [] ) );
-	}
-};
-$collect_services_widget_types( $services_written );
-check( in_array( 'Наши услуги', $services_heading_values, true ) && in_array( 'УСЛУГИ', $services_heading_values, true ) && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'image' ) ) === 3 && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3, 'Model-selected Services reference keeps its section heading, badge, and three native photo/icon pairs' );
-$services_card_surfaces = [];
-$collect_service_card_descendants = static function ( array $nodes, array &$types, string &$body_color ) use ( &$collect_service_card_descendants ): void {
-	foreach ( $nodes as $node ) {
-		if ( ! is_array( $node ) ) { continue; }
-		$type = (string) ( $node['widgetType'] ?? '' );
-		if ( $type !== '' ) { $types[] = $type; }
-		if ( $type === 'text-editor' && $body_color === '' ) { $body_color = strtolower( (string) ( $node['settings']['text_color'] ?? '' ) ); }
-		$collect_service_card_descendants( (array) ( $node['elements'] ?? [] ), $types, $body_color );
-	}
-};
-$collect_services_card_surfaces = static function ( array $nodes ) use ( &$collect_services_card_surfaces, &$collect_service_card_descendants, &$services_card_surfaces ): void {
-	foreach ( $nodes as $node ) {
-		if ( ! is_array( $node ) ) { continue; }
-		if ( ( $node['elType'] ?? '' ) === 'container' ) {
-			$settings = (array) ( $node['settings'] ?? [] );
-			$types = [];
-			$service_text = '';
-			$collect_service_card_descendants( (array) ( $node['elements'] ?? [] ), $types, $service_text );
-			if ( in_array( 'image', $types, true ) && in_array( 'heading', $types, true ) && in_array( 'text-editor', $types, true ) && ( $settings['border_color'] ?? '' ) === '#d1d5db' ) {
-				$services_card_surfaces[] = [ 'background' => $settings['background_background'] ?? '', 'color' => strtolower( (string) ( $settings['background_color'] ?? '' ) ), 'text_color' => $service_text ];
-			}
-		}
-		$collect_services_card_surfaces( (array) ( $node['elements'] ?? [] ) );
-	}
-};
-$collect_services_card_surfaces( $services_written );
-check( count( $services_card_surfaces ) === 3 && count( array_filter( $services_card_surfaces, static fn( $card ): bool => ( $card['background'] ?? '' ) === 'classic' && ( $card['color'] ?? '' ) === '#ffffff' && ( $card['text_color'] ?? '' ) === '#6b7280' ) ) === 3, 'All imported Services cards reset dark/source-token fills and green source text to one readable surface palette: ' . wp_json_encode( $services_card_surfaces ) );
-check( count( $services_written ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ), 'Imported Services generation appends one root and preserves the pre-existing page root' );
+$services_typed_list = $find_service_class_nodes( $services_written, 'wpae-services-text-icon-list' );
+$services_typed_rows = $find_service_class_nodes( $services_written, 'wpae-services-text-icon-row' );
+$services_readback = wpae_get_elementor_data_for_post( 42 );
+$services_operation_ledger = (array) ( $services_response_data['diagnostics']['operation_ledger'] ?? [] );
+$services_brief_hash = (string) ( $services_response_data['diagnostics']['design_pipeline']['brief']['hash'] ?? '' );
+$services_content_plan_hash = (string) ( $services_response_data['diagnostics']['design_pipeline']['content_plan']['brief_hash'] ?? '' );
+$services_plan_brief_hash = (string) ( $services_response_data['diagnostics']['design_pipeline']['plan']['brief_hash'] ?? '' );
+$services_readback_matches = wp_json_encode( $services_readback ) === wp_json_encode( $GLOBALS['page_data'] );
+check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'pipeline' && ( $services_response_data['diagnostics']['provider_calls'] ?? -1 ) === 0 && count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, 'Active ordinary Services chat with a retrieved library candidate takes the typed pipeline and one mocked write: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'services' => $services_trace, 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '' ] ) );
+check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) > $services_retrieval_before && ( $services_trace['effective_route'] ?? '' ) === 'services_typed_recipe_pipeline' && ( $services_trace['recipe_id'] ?? '' ) === 'services.text_icon_list' && ( $services_trace['recipe_source'] ?? '' ) === 'documented_default' && empty( $services_trace['library_required'] ) && empty( $services_trace['library_applied'] ), 'Candidate presence does not route ordinary Services into library-agent or claim library application' );
+check( $services_brief_hash !== '' && $services_brief_hash === $services_content_plan_hash && $services_brief_hash === $services_plan_brief_hash && ( $services_operation_ledger['brief_hash'] ?? '' ) === $services_brief_hash, 'One canonical Brief hash is shared by content plan, DesignPlan and durable operation ledger' );
+check( count( $services_written ) === 1 && count( (array) $services_readback ) === count( (array) $GLOBALS['page_data'] ) && $services_readback_matches && ( $services_operation_ledger['current_state'] ?? '' ) === 'written' && ( $services_operation_ledger['root_ids'] ?? [] ) === [ (string) ( $services_written[0]['id'] ?? '' ) ] && ( $services_operation_ledger['saved_hash'] ?? '' ) === hash( 'sha256', (string) wp_json_encode( $services_readback ) ), 'One successful transaction has a matching saved readback and operation/root/hash record' );
+check( count( $services_typed_list ) === 1 && count( $services_typed_rows ) === 3 && ! $find_service_class_nodes( $services_written, 'wpae-services-photo-grid' ) && ! $find_service_class_nodes( $services_written, 'wpae-services-split-lead' ) && ! $find_service_class_nodes( $services_written, 'wpae-bento-grid' ) && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3 && ! in_array( 'image', $services_written_widgets, true ), 'Existing execute normalizers preserve the selected text/icon recipe topology through mocked write/readback' );
+check( in_array( 'Наши услуги', $services_heading_values, true ) && in_array( 'УСЛУГИ', $services_heading_values, true ) && count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'Сам выберет подходящий шаблон' ), 'Typed Services route preserves exact section and ordered service copy without leaking instructions' );
 $find_services_grid = static function ( array $nodes ) use ( &$find_services_grid ): array {
 	foreach ( $nodes as $node ) {
 		if ( ! is_array( $node ) ) { continue; }
@@ -2484,15 +2458,6 @@ $find_services_grid = static function ( array $nodes ) use ( &$find_services_gri
 	}
 	return [];
 };
-$services_grid = $find_services_grid( $services_written );
-$services_grid_cards = array_values( array_filter( (array) ( $services_grid['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'container' ) );
-$services_card_spacers = 0;
-foreach ( $services_grid_cards as $service_card ) {
-	$services_card_spacers += count( array_filter( (array) ( $service_card['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'spacer' ) );
-}
-check( count( $services_grid_cards ) === 3 && ( $services_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $services_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && $services_card_spacers === 0, 'Production Services template is normalized into a desktop card row, a mobile stack, and no spacer-driven card gaps: ' . wp_json_encode( [ 'archetype' => $services_response_data['diagnostics']['archetype'] ?? null, 'grid_settings' => $services_grid['settings'] ?? [], 'card_count' => count( $services_grid_cards ), 'card_ids' => array_column( $services_grid_cards, 'id' ), 'card_widgets' => array_map( static fn( $card ): array => array_map( static fn( $node ): string => (string) ( $node['widgetType'] ?? $node['elType'] ?? '' ), (array) ( $card['elements'] ?? [] ) ), $services_grid_cards ), 'spacers' => $services_card_spacers ] ) );
-$services_styled_card_count = count( array_filter( $services_grid_cards, static fn( $card ): bool => ( $card['settings']['container_type'] ?? '' ) === 'flex' && ( $card['settings']['flex_direction'] ?? '' ) === 'column' && ( $card['settings']['flex_direction_mobile'] ?? '' ) === 'column' && (float) ( $card['settings']['width']['size'] ?? 0 ) >= 30 && (float) ( $card['settings']['width_tablet']['size'] ?? 0 ) === 48.0 && (float) ( $card['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ( $card['settings']['background_background'] ?? '' ) === 'classic' && ( $card['settings']['background_color'] ?? '' ) === '#ffffff' && ( $card['settings']['margin']['right'] ?? null ) === '0' && ( $card['settings']['margin_mobile']['left'] ?? null ) === '0' ) );
-check( $services_styled_card_count === 3, 'All three Services cards use native vertical Flex content, gap-aware responsive widths, zero imported side margins, and a consistent readable surface' );
 $services_layout_changes = 0;
 $services_layout_normalized = wpae_llm_normalize_library_layout( (array) ( $services_layout_fallback['elements'] ?? [] ), $services_layout_changes, 'services' );
 $services_layout_grid = $find_services_grid( $services_layout_normalized );
@@ -2528,9 +2493,9 @@ wpae_llm_normalize_bento_grid( $services_explicit_media_grid, $services_preserve
 $services_first_card_images = array_values( array_filter( (array) ( $services_explicit_media_grid['elements'][0]['elements'] ?? [] ), static fn( $node ): bool => is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) );
 check( count( $services_first_card_images ) === 1 && ( $services_first_card_images[0]['settings']['image']['url'] ?? '' ) === 'https://example.com/owner-photo.jpg', 'Services visual normalization preserves an existing user-supplied image and does not add a duplicate: ' . wp_json_encode( [ 'card_count' => count( (array) ( $services_explicit_media_grid['elements'] ?? [] ) ), 'images' => array_map( static fn( $node ): string => (string) ( $node['settings']['image']['url'] ?? '' ), $services_first_card_images ) ] ) );
 
-$run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active' ) use ( $legacy_page ): array {
+$run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active', array $context_overrides = [], ?array $boundary_refusal = null ) use ( $legacy_page ): array {
 	$previous_globals = [];
-	foreach ( [ 'library', 'options', 'page_data', 'http_calls', 'writes', 'responses', 'fail_write_boundary' ] as $global_key ) {
+	foreach ( [ 'library', 'options', 'page_data', 'http_calls', 'writes', 'responses', 'fail_write_boundary', 'services_boundary_refusal', 'library_retrieval_calls' ] as $global_key ) {
 		$previous_globals[ $global_key ] = $GLOBALS[ $global_key ] ?? null;
 	}
 	$GLOBALS['library'] = $library;
@@ -2540,16 +2505,20 @@ $run_services_route = static function ( string $message, array $responses, array
 	$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 	$GLOBALS['responses'] = $responses;
 	$GLOBALS['fail_write_boundary'] = $fail_write;
+	$GLOBALS['services_boundary_refusal'] = $boundary_refusal;
 	$request = new WP_REST_Request();
 	$request->set_param( 'message', $message );
-	$request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => $operation_identity ] );
+	$request->set_param( 'context', array_merge( [ 'post_id' => 42, 'operation_identity' => $operation_identity ], $context_overrides ) );
 	$response = wpae_llm_chat_request( $request );
 	$result = [
 		'response' => $response instanceof WP_REST_Response ? $response->get_data() : [],
 		'error' => $response instanceof WP_Error ? [ 'code' => $response->get_error_code(), 'message' => $response->get_error_message(), 'data' => $response->get_error_data() ] : [],
 		'calls' => count( $GLOBALS['http_calls'] ),
 		'writes' => count( $GLOBALS['writes'] ),
+		'provider_call_count' => count( $GLOBALS['http_calls'] ),
+		'library_retrieval_count' => count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ),
 		'roots' => array_column( (array) $GLOBALS['page_data'], 'id' ),
+		'page_data' => (array) $GLOBALS['page_data'],
 		'written' => (array) ( $GLOBALS['page_data'][ count( $legacy_page ) ] ?? [] ),
 	];
 	foreach ( $previous_globals as $global_key => $value ) {
@@ -2595,15 +2564,81 @@ check( ( $carousel_operation_ledger['current_state'] ?? '' ) === 'written' && ( 
 check( str_contains( $carousel_library_route_copy, 'С кем мы работаем' ) && str_contains( $carousel_library_route_copy, 'Надёжные партнёры проекта' ) && str_contains( $carousel_library_route_copy, 'Альфа' ) && str_contains( $carousel_library_route_copy, 'Бета' ) && ! str_contains( $carousel_library_route_json, 'Глобальную тему сайта не меняй' ) && in_array( 'image-carousel', $carousel_library_widgets, true ) && in_array( 'heading', $carousel_library_widgets, true ), 'Production Carousel adapter preserves the native carousel and exact copy without leaking instructions: ' . wp_json_encode( [ 'copy' => $carousel_library_route_copy, 'widgets' => $carousel_library_widgets ], JSON_UNESCAPED_UNICODE ) );
 $carousel_without_candidate = $run_services_route( $explicit_library_family_prompts['carousel'], [], [], 'carousel-no-candidate-identity' );
 check( ( $carousel_without_candidate['error']['code'] ?? '' ) === 'wpae_llm_no_compatible_library_candidate' && ( $carousel_without_candidate['error']['data']['details']['write_count'] ?? null ) === 0 && $carousel_without_candidate['calls'] === 0 && $carousel_without_candidate['writes'] === 0 && $carousel_without_candidate['roots'] === array_column( $legacy_page, 'id' ), 'Explicit library request with no compatible candidate stops before provider dispatch and preserves existing roots' );
-$natural_services_library_message = "Услуги:\nСтратегия проекта — Формулируем задачу и согласуем план работ\nАрхитектура и дизайн — Разрабатываем решение под заданный контекст\nСопровождение — Проверяем соответствие согласованному проекту";
-$natural_services_library_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'library_choice' => 'candidate_1', 'elements' => [] ];
-$natural_services_library_result = $run_services_route( $natural_services_library_message, [ provider_reply( wp_json_encode( $natural_services_library_action, JSON_UNESCAPED_UNICODE ) ) ], $services_library_fixture, 'services-natural-library-identity' );
-$natural_services_library_trace = (array) ( $natural_services_library_result['response']['library'] ?? [] );
-$natural_services_library_written = (array) ( $natural_services_library_result['written'] ?? [] );
-$natural_services_library_text = wpae_llm_collect_action_content( [ $natural_services_library_written ] );
-check( ! empty( $natural_services_library_result['response']['ok'] ) && ( $natural_services_library_trace['selection_source'] ?? '' ) === 'model_choice' && ( $natural_services_library_trace['status'] ?? '' ) === 'applied' && $natural_services_library_result['calls'] === 1 && $natural_services_library_result['writes'] === 1, 'A plain Services brief completes the model-selected library route through one existing writer' );
-check( ! empty( $natural_services_library_trace['fidelity']['ok'] ) && ! empty( $natural_services_library_trace['source_fingerprint']['has_badge'] ) && ! empty( wpae_llm_template_fingerprint( [ $natural_services_library_written ] )['has_badge'] ) && str_contains( $natural_services_library_text, 'УСЛУГИ' ), 'The chosen Services template retains its reference pill through copy cleanup and structural fidelity checks' );
-check( str_contains( $natural_services_library_text, 'Стратегия проекта' ) && str_contains( $natural_services_library_text, 'Формулируем задачу и согласуем план работ' ) && str_contains( $natural_services_library_text, 'Архитектура и дизайн' ) && str_contains( $natural_services_library_text, 'Разрабатываем решение под заданный контекст' ) && str_contains( $natural_services_library_text, 'Сопровождение' ) && str_contains( $natural_services_library_text, 'Проверяем соответствие согласованному проекту' ), 'The plain Services library route preserves the exact three ordered card pairs' );
+$services_recipe_assets = [
+	[ 'asset_id' => 'services_photo_one', 'group_id' => 'service_1', 'source_url' => 'https://assets.example.test/services/one.jpg', 'alt' => 'Схема проекта для услуги Стратегия.' ],
+	[ 'asset_id' => 'services_photo_two', 'group_id' => 'service_2', 'source_url' => 'https://assets.example.test/services/two.jpg', 'alt' => 'Чертёж для услуги Архитектура.' ],
+	[ 'asset_id' => 'services_photo_three', 'group_id' => 'service_3', 'source_url' => 'https://assets.example.test/services/three.jpg', 'alt' => 'Объект для услуги Сопровождение.' ],
+];
+$route_find_class = static function ( array $nodes, string $class ) use ( &$route_find_class ): array {
+	$found = [];
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$classes = preg_split( '/\\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( in_array( $class, $classes, true ) ) { $found[] = $node; }
+		$found = array_merge( $found, $route_find_class( (array) ( $node['elements'] ?? [] ), $class ) );
+	}
+	return $found;
+};
+$services_photo_message = $services_message . "\nИспользуй photo_cards.";
+$services_photo_route = $run_services_route( $services_photo_message, [], $services_library_fixture, 'services-photo-chat-identity', false, 'active', 'active', [ 'media_references' => $services_recipe_assets ] );
+$services_photo_trace = (array) ( $services_photo_route['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+$services_photo_cards = $route_find_class( [ $services_photo_route['written'] ], 'wpae-services-photo-card' );
+$services_photo_images = [];
+$collect_services_photo_images = static function ( array $nodes ) use ( &$collect_services_photo_images, &$services_photo_images ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) { $services_photo_images[] = (array) ( $node['settings']['image'] ?? [] ); }
+		$collect_services_photo_images( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$collect_services_photo_images( [ $services_photo_route['written'] ] );
+check( ! empty( $services_photo_route['response']['ok'] ) && $services_photo_route['provider_call_count'] === 0 && $services_photo_route['writes'] === 1 && ( $services_photo_route['response']['diagnostics']['action_path'] ?? '' ) === 'pipeline' && ( $services_photo_trace['recipe_id'] ?? '' ) === 'services.photo_cards' && ( $services_photo_trace['recipe_source'] ?? '' ) === 'explicit_request', 'Explicit photo_cards travels through the actual active chat entrypoint and one transaction: ' . wp_json_encode( [ 'ok' => $services_photo_route['response']['ok'] ?? false, 'provider_call_count' => $services_photo_route['provider_call_count'], 'writes' => $services_photo_route['writes'], 'action_path' => $services_photo_route['response']['diagnostics']['action_path'] ?? '', 'trace' => $services_photo_trace, 'error' => $services_photo_route['error'] ] , JSON_UNESCAPED_UNICODE ) );
+check( count( $services_photo_cards ) === 3 && count( $services_photo_images ) === 3 && array_column( $services_photo_images, 'url' ) === array_column( $services_recipe_assets, 'source_url' ) && count( array_filter( $services_photo_images, static fn( array $image ): bool => trim( (string) ( $image['alt'] ?? '' ) ) !== '' ) ) === 3, 'Photo recipe keeps each of the three validated service assets in its own native Image slot' );
+check( ( $services_photo_trace['media_status'] ?? '' ) === 'resolved_per_service' && ! empty( $services_photo_trace['media_resolved'] ) && empty( $services_photo_trace['library_required'] ) && empty( $services_photo_trace['library_applied'] ) && ! $route_find_class( [ $services_photo_route['written'] ], 'wpae-services-text-icon-list' ), 'Photo recipe reports resolved per-service media and keeps native photo-card topology' );
+$services_split_message = $services_message . "\nРедакционный сплит.";
+$services_split_asset = [ 'asset_id' => 'services_split_lead', 'source_url' => 'https://assets.example.test/services/lead.jpg', 'alt' => 'Чертёж проекта для ведущей услуги.' ];
+$services_split_route = $run_services_route( $services_split_message, [], $services_library_fixture, 'services-split-chat-identity', false, 'active', 'active', [ 'services_lead_service_ref' => 'service_2', 'media_references' => [ $services_split_asset ] ] );
+$services_split_trace = (array) ( $services_split_route['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+check( ! empty( $services_split_route['response']['ok'] ) && $services_split_route['provider_call_count'] === 0 && $services_split_route['writes'] === 1 && ( $services_split_trace['recipe_id'] ?? '' ) === 'services.split_editorial' && ( $services_split_trace['recipe_source'] ?? '' ) === 'explicit_request', 'Explicit split_editorial reaches the production chat/compiler path: ' . wp_json_encode( [ 'ok' => $services_split_route['response']['ok'] ?? false, 'error' => $services_split_route['error'], 'trace' => $services_split_trace, 'calls' => $services_split_route['provider_call_count'], 'writes' => $services_split_route['writes'] ] , JSON_UNESCAPED_UNICODE ) );
+$services_split_json = wp_json_encode( $services_split_route['written'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+$services_split_urls = [];
+preg_match_all( '/https?:[^"\\\\]+/', (string) $services_split_json, $services_split_url_matches );
+$services_split_urls = (array) ( $services_split_url_matches[0] ?? [] );
+check( count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-split-lead' ) ) === 1 && count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-editorial-row' ) ) === 2 && str_contains( (string) $services_split_json, (string) $services_split_asset['source_url'] ) && ( $services_split_trace['media_status'] ?? '' ) === 'resolved_per_service', 'Split lead keeps one exact lead image with the selected service and leaves the other services as ordered rows: ' . wp_json_encode( [ 'lead_nodes' => count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-split-lead' ) ), 'rows' => count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-editorial-row' ) ), 'expected_url' => $services_split_asset['source_url'], 'urls' => $services_split_urls, 'media_status' => $services_split_trace['media_status'] ?? '' ], JSON_UNESCAPED_UNICODE ) );
+$services_split_without_lead = $run_services_route( $services_split_message, [], $services_library_fixture, 'services-split-no-lead-identity', false, 'active', 'active', [ 'media_references' => [ $services_split_asset ] ] );
+check( ( $services_split_without_lead['error']['code'] ?? '' ) === 'wpae_services_brief_or_recipe_invalid' && ( $services_split_without_lead['error']['data']['details']['refusal_reason'] ?? '' ) === 'services_split_editorial_lead_service_ref_required' && $services_split_without_lead['provider_call_count'] === 0 && $services_split_without_lead['writes'] === 0, 'A single image never invents a split lead ref or silently chooses split_editorial' );
+$services_recipe_conflict = $run_services_route( $services_message . "\nИспользуй photo_cards и services.text_icon_list.", [], $services_library_fixture, 'services-recipe-conflict-identity' );
+check( ( $services_recipe_conflict['error']['code'] ?? '' ) === 'wpae_services_brief_or_recipe_invalid' && ( $services_recipe_conflict['error']['data']['details']['refusal_reason'] ?? '' ) === 'services_recipe_selection_conflict' && ( $services_recipe_conflict['error']['data']['details']['write_count'] ?? null ) === 0 && array_key_exists( 'media_status', (array) ( $services_recipe_conflict['error']['data']['details'] ?? [] ) ) && $services_recipe_conflict['provider_call_count'] === 0 && $services_recipe_conflict['writes'] === 0 && $services_recipe_conflict['roots'] === array_column( $legacy_page, 'id' ), 'Conflicting recipe choices stop at canonical Brief decision without hidden legacy generator or write' );
+$services_text_icon_message = $services_message . "\nСписок услуг с иконками. Не добавляй фото.";
+$services_text_icon_route = $run_services_route( $services_text_icon_message, [], $services_library_fixture, 'services-text-icon-chat-identity' );
+$services_text_icon_trace = (array) ( $services_text_icon_route['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+check( ! empty( $services_text_icon_route['response']['ok'] ) && $services_text_icon_route['provider_call_count'] === 0 && $services_text_icon_route['writes'] === 1 && ( $services_text_icon_trace['recipe_id'] ?? '' ) === 'services.text_icon_list' && ( $services_text_icon_trace['recipe_source'] ?? '' ) === 'explicit_request', 'Explicit text/icon request is selected once from canonical Brief constraints' );
+check( count( $route_find_class( [ $services_text_icon_route['written'] ], 'wpae-services-text-icon-row' ) ) === 3 && ! $route_find_class( [ $services_text_icon_route['written'] ], 'wpae-services-photo-grid' ) && ! $route_find_class( [ $services_text_icon_route['written'] ], 'wpae-services-split-lead' ), 'Explicit text/icon path survives write normalization with three rows and no media layout' );
+$services_photo_required_message = $services_message . "\nДобавь фото для каждой услуги. Fallback запрещён.";
+$services_photo_required = $run_services_route( $services_photo_required_message, [], $services_library_fixture, 'services-media-unresolved-identity' );
+$services_photo_required_details = (array) ( $services_photo_required['error']['data']['details'] ?? [] );
+$services_photo_required_trace = (array) ( $services_photo_required_details['services'] ?? [] );
+check( ( $services_photo_required['error']['code'] ?? '' ) === 'wpae_services_media_unresolved' && ( $services_photo_required_trace['media_status'] ?? '' ) === 'unresolved' && ( $services_photo_required_trace['fallback_policy'] ?? '' ) === 'forbidden' && $services_photo_required['provider_call_count'] === 0 && $services_photo_required['writes'] === 0 && $services_photo_required['roots'] === array_column( $legacy_page, 'id' ), 'Required missing photos return unresolved-media diagnostics and never enter fallback or write' );
+$services_library_only_success_message = $services_message . "\nТолько проверенный шаблон из библиотеки. Fallback запрещён.";
+$services_library_only_success = $run_services_route( $services_library_only_success_message, [], $services_library_fixture, 'services-library-only-mapped-identity', false, 'active', 'active', [ 'media_references' => $services_recipe_assets ] );
+$services_library_only_trace = (array) ( $services_library_only_success['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+check( ! empty( $services_library_only_success['response']['ok'] ) && $services_library_only_success['provider_call_count'] === 0 && $services_library_only_success['writes'] === 1 && ( $services_library_only_trace['effective_route'] ?? '' ) === 'services_mapped_library_recipe_pipeline' && ! empty( $services_library_only_trace['library_required'] ) && ! empty( $services_library_only_trace['library_applied'] ), 'Library-only uses the verified slot map through the same recipe compiler and one existing transaction: ' . wp_json_encode( [ 'trace' => $services_library_only_trace, 'error' => $services_library_only_success['error'], 'response' => $services_library_only_success['response'], 'calls' => $services_library_only_success['provider_call_count'], 'writes' => $services_library_only_success['writes'] ], JSON_UNESCAPED_UNICODE ) );
+check( ( $services_library_only_trace['library_template_id'] ?? '' ) === 'template-services-photo-cards-v1' && ( $services_library_only_trace['library_adaptation'] ?? '' ) === 'verified_reference_slots_recompiled_by_native_services_recipe' && ( $services_library_only_trace['recipe_id'] ?? '' ) === 'services.photo_cards' && str_contains( wp_json_encode( $services_library_only_success['written'] ), 'wpae-services-photo-card' ), 'Mapped library result reports its exact template ID, adaptation and native recipe structure' );
+$services_library_only_incompatible = $run_services_route( $services_text_icon_message . "\nТолько проверенный шаблон из библиотеки.", [], $services_library_fixture, 'services-library-only-incompatible-identity' );
+check( ( $services_library_only_incompatible['error']['code'] ?? '' ) === 'wpae_services_library_only_unsupported' && $services_library_only_incompatible['provider_call_count'] === 0 && $services_library_only_incompatible['writes'] === 0 && $services_library_only_incompatible['roots'] === array_column( $legacy_page, 'id' ), 'Library-only text/icon mismatch refuses before write instead of accepting the photo compiler default' );
+$services_context_recipe = $run_services_route( $services_message, [], $services_library_fixture, 'services-context-recipe-identity', false, 'active', 'active', [ 'services_recipe_id' => 'services.text_icon_list' ] );
+$services_context_trace = (array) ( $services_context_recipe['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+check( ! empty( $services_context_recipe['response']['ok'] ) && ( $services_context_trace['recipe_source'] ?? '' ) === 'explicit_context' && ( $services_context_trace['recipe_id'] ?? '' ) === 'services.text_icon_list', 'Planning context can supply the one explicit recipe decision without a second downstream selector' );
+$services_unknown_fallback = $run_services_route( $services_message, [], $services_library_fixture, 'services-unknown-policy-identity', false, 'active', 'active', [], [ 'code' => 'wpae_test_transaction_stale_revision', 'message' => 'Stale revision', 'status' => 409 ] );
+$services_unknown_policy_trace = (array) ( $services_unknown_fallback['error']['data']['details']['pipeline']['services'] ?? [] );
+check( ( $services_unknown_policy_trace['fallback_policy'] ?? '' ) === 'unspecified' && $services_unknown_fallback['provider_call_count'] === 0 && $services_unknown_fallback['writes'] === 0, 'An unspecified fallback policy is not converted into a legacy fallback after transaction refusal' );
+$services_wrong_post = $run_services_route( $services_message, [], $services_library_fixture, 'services-wrong-post-identity', false, 'active', 'active', [ 'post_id' => 99 ] );
+check( empty( $services_wrong_post['response']['ok'] ) && $services_wrong_post['provider_call_count'] === 0 && $services_wrong_post['writes'] === 0 && $services_wrong_post['roots'] === array_column( $legacy_page, 'id' ), 'The real execute permission guard rejects a wrong post before the mocked write boundary' );
+$services_stale_revision = $run_services_route( $services_message, [], $services_library_fixture, 'services-stale-revision-identity', false, 'active', 'active', [], [ 'code' => 'wpae_test_transaction_stale_revision', 'message' => 'Stale revision', 'status' => 409 ] );
+$services_protected_zone = $run_services_route( $services_message, [], $services_library_fixture, 'services-protected-zone-identity', false, 'active', 'active', [], [ 'code' => 'wpae_test_protected_zone', 'message' => 'Protected zone mismatch', 'status' => 422 ] );
+check( empty( $services_stale_revision['response']['ok'] ) && $services_stale_revision['provider_call_count'] === 0 && $services_stale_revision['writes'] === 0 && $services_stale_revision['roots'] === array_column( $legacy_page, 'id' ) && str_contains( wp_json_encode( $services_stale_revision['error']['data'] ?? [] ), 'stale_revision' ), 'A stale-revision response from the existing transaction stops without a second generator or write' );
+check( empty( $services_protected_zone['response']['ok'] ) && $services_protected_zone['provider_call_count'] === 0 && $services_protected_zone['writes'] === 0 && $services_protected_zone['roots'] === array_column( $legacy_page, 'id' ) && str_contains( wp_json_encode( $services_protected_zone['error']['data'] ?? [] ), 'protected_zone' ), 'A protected-zone refusal from the existing transaction preserves the page and cannot trigger repair/fallback writes' );
+
 $pricing_library_message = 'Тарифы: Старт — от 50 000 ₸ — Для регулярных задач и развития проекта; Проект — от 150 000 ₸ — Для небольшой задачи с понятным объёмом; Поддержка — от 80 000 ₸/мес — Для комплексной работы от идеи до результата.';
 $incompatible_pricing_fixture = [
 	'status' => 'matched', 'available_count' => 1, 'candidate_count' => 1,
@@ -2638,17 +2673,6 @@ check( ( $no_fallback_cta_route['error']['code'] ?? '' ) === 'wpae_llm_compositi
 $services_ambiguous_route = $run_services_route( $services_message . "\nУслуга 4: «Дополнение» — описание без закрытой пары", [], $services_library_fixture, 'services-ambiguous-identity' );
 check( ( $services_ambiguous_route['error']['code'] ?? '' ) === 'wpae_design_plan_rejected' && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'Изменения не записаны' ) && str_contains( (string) ( $services_ambiguous_route['error']['message'] ?? '' ), 'services-ambiguous-identity' ), 'Production route explains ambiguous Services input and exposes the request identity before provider/write' );
 check( $services_ambiguous_route['calls'] === 0 && $services_ambiguous_route['writes'] === 0 && $services_ambiguous_route['roots'] === array_column( $legacy_page, 'id' ) && ( $services_ambiguous_route['error']['data']['details']['operation_identity'] ?? '' ) === 'services-ambiguous-identity', 'Ambiguous Services input cannot call a provider or cross the write boundary' );
-$services_declined_action = $services_provider_action;
-$services_declined_action['library_choice'] = null;
-$services_declined = $run_services_route( $services_library_only_message, [ provider_reply( wp_json_encode( $services_declined_action ) ) ], $services_library_fixture, 'services-declined-identity' );
-check( ( $services_declined['error']['code'] ?? '' ) === 'wpae_llm_library_selection_required' && str_contains( (string) ( $services_declined['error']['message'] ?? '' ), 'Модель отказалась' ) && str_contains( (string) ( $services_declined['error']['message'] ?? '' ), 'services-declined-identity' ), 'Library-only Services request surfaces the model refusal and existing request identity' );
-check( ( $services_declined['error']['data']['details']['write_count'] ?? null ) === 0 && $services_declined['writes'] === 0 && $services_declined['roots'] === array_column( $legacy_page, 'id' ), 'Model decline does not locally select a template, invoke fallback, or write the page' );
-$services_unknown_action = $services_provider_action;
-$services_unknown_action['library_choice'] = 'candidate_not_offered';
-$services_unknown = $run_services_route( $services_library_only_message, [ provider_reply( wp_json_encode( $services_unknown_action ) ) ], $services_library_fixture, 'services-unknown-identity' );
-check( ( $services_unknown['error']['data']['details']['library_selection_source'] ?? '' ) === 'invalid_model_choice' && str_contains( (string) ( $services_unknown['error']['message'] ?? '' ), 'неизвестный ID шаблона' ) && $services_unknown['writes'] === 0, 'Unknown model template ID is rejected before the existing write boundary' );
-$services_timeout = $run_services_route( $services_library_only_message, [ new WP_Error( 'http_request_failed', 'simulated provider timeout' ) ], $services_library_fixture, 'services-timeout-identity' );
-check( ( $services_timeout['error']['data']['details']['library_selection_source'] ?? '' ) === 'no_model_choice' && ( $services_timeout['error']['data']['details']['action_path'] ?? '' ) === 'library_agent' && ( $services_timeout['error']['data']['details']['provider_call_count'] ?? 0 ) === 1 && $services_timeout['writes'] === 0, 'Provider timeout cannot trigger a local template selection or unapproved fallback write' );
 $services_forbidden_timeout = $run_services_route( $services_fallback_message . "\nНе используй fallback при отказе или timeout.", [ new WP_Error( 'http_request_failed', 'simulated provider timeout' ) ], [], 'services-no-fallback-identity', false, 'off', 'off' );
 check( ( $services_forbidden_timeout['error']['code'] ?? '' ) === 'wpae_llm_library_selection_required' && str_contains( (string) ( $services_forbidden_timeout['error']['message'] ?? '' ), 'Изменения не записаны' ) && $services_forbidden_timeout['writes'] === 0, 'Explicit no-fallback instruction stops the deterministic recovery path after timeout' );
 
@@ -2803,5 +2827,155 @@ $permission->set_param( 'context', [ 'post_id' => 99 ] );
 check( is_wp_error( wpae_llm_chat_permission( $permission ) ), 'Nested editor context bypassed post authorization' );
 $permission->set_param( 'context', [ 'post_id' => 42 ] );
 check( wpae_llm_chat_permission( $permission ) === true, 'Authorized editor blocked' );
+
+$services_labeled_message = "Блок услуг\nНе меняй глобальную тему и меню сайта.\nЗаголовок секции: «Наши услуги»\nОписание секции: «От задачи до результата.»\nУслуга 1 — название: «Стратегия»\nУслуга 1 — описание: «Собираем требования и формируем план.»\nУслуга 1 — кнопка: «Обсудить», ссылка #strategy\nУслуга 2 — название: «Разработка»\nУслуга 2 — описание: «Создаём продукт по согласованному плану.»\nУслуга 2 — кнопка: «Запустить», ссылка #build\nНе добавляй фото.\nТолько из библиотеки; fallback запрещён.";
+$services_one_line_message = str_replace( "\n", ' ', $services_labeled_message );
+$services_multiline_brief = wpae_brief_ir_parse( $services_labeled_message );
+$services_one_line_brief = wpae_brief_ir_parse( $services_one_line_message );
+$services_semantic_projection = static function ( array $brief ): array {
+	$content = [];
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( is_array( $item ) ) { $content[ sanitize_key( (string) ( $item['id'] ?? '' ) ) ] = $item; }
+	}
+	$groups = [];
+	foreach ( (array) ( $brief['groups'] ?? [] ) as $group ) {
+		if ( ! is_array( $group ) ) { continue; }
+		$title = $content[ sanitize_key( (string) ( $group['title_ref'] ?? '' ) ) ] ?? [];
+		$body = $content[ sanitize_key( (string) ( $group['body_ref'] ?? '' ) ) ] ?? [];
+		$cta = $content[ sanitize_key( (string) ( $group['cta_ref'] ?? '' ) ) ] ?? [];
+		$groups[] = [ 'group_id' => $group['group_id'] ?? '', 'title' => $title['exact_text'] ?? '', 'description' => $body['exact_text'] ?? '', 'cta_text' => $cta['exact_text'] ?? '', 'cta_url' => $cta['url'] ?? '' ];
+	}
+	$section = [];
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( ! is_array( $item ) ) { continue; }
+		$role = (string) ( $item['role'] ?? '' );
+		if ( in_array( $role, [ 'title', 'body', 'eyebrow' ], true ) ) { $section[ $role ] = (string) ( $item['exact_text'] ?? '' ); }
+	}
+	return [ 'section' => $section, 'groups' => $groups, 'media_intent' => array_values( array_filter( (array) ( $brief['layout_constraints'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['kind'] ?? '' ) === 'media_intent' ) )[0]['value'] ?? '', 'policy' => [ 'library' => $brief['policy']['library']['source'] ?? '', 'fallback' => $brief['policy']['fallback']['source'] ?? '' ] ];
+};
+$services_semantic_content = $services_semantic_projection( $services_multiline_brief );
+check( $services_semantic_content === $services_semantic_projection( $services_one_line_brief ), 'Multiline and single-line Services prompts normalize to the same ordered content, CTA links, media intent, and policies' );
+check( ! empty( wpae_brief_ir_validate( $services_multiline_brief )['ok'] ) && count( $services_multiline_brief['groups'] ?? [] ) === 2, 'Canonical Services Brief validates complete source-backed groups' );
+$services_plan_from_brief = wpae_llm_content_plan( 'unrelated message without service copy', 'services', $services_multiline_brief );
+check( ( $services_plan_from_brief['brief_hash'] ?? '' ) === wpae_brief_ir_hash( $services_multiline_brief ) && ( $services_plan_from_brief['title'] ?? '' ) === 'Наши услуги' && ( $services_plan_from_brief['media_intent'] ?? '' ) === 'forbidden', 'Services content plan consumes the supplied Brief even when raw message text disagrees' );
+$services_supplied_brief_content = wpae_llm_extract_requested_content( 'Команда: «Неподходящий сырой текст»', $services_multiline_brief );
+check( $services_supplied_brief_content === (array) ( $services_plan_from_brief['content_units'] ?? [] ), 'Services fidelity extraction consumes the supplied Brief and skips unrelated Team or Testimonials Brief reparsing: ' . wp_json_encode( [ 'actual' => $services_supplied_brief_content, 'expected' => $services_plan_from_brief['content_units'] ?? [] ], JSON_UNESCAPED_UNICODE ) );
+check( wpae_llm_requires_library_template( 'no library instruction', $services_multiline_brief ) && wpae_llm_forbids_fallback( 'fallback разрешён', $services_multiline_brief ), 'Services write gates honor the canonical library and no-fallback policy even when the compatibility message disagrees' );
+check( ( $services_plan_from_brief['policy']['library_source'] ?? '' ) === 'required' && ( $services_plan_from_brief['policy']['fallback'] ?? '' ) === 'forbidden' && empty( $services_plan_from_brief['policy']['fallback_allowed'] ), 'Derived Services policy keeps library-only and forbidden fallback explicit' );
+check( ( $services_plan_from_brief['expected_items'][0]['title'] ?? '' ) === 'Стратегия' && ( $services_plan_from_brief['expected_items'][0]['description'] ?? '' ) === 'Собираем требования и формируем план.' && ( $services_plan_from_brief['expected_items'][0]['cta_url'] ?? '' ) === '#strategy' && ( $services_plan_from_brief['expected_items'][1]['title'] ?? '' ) === 'Разработка' && ( $services_plan_from_brief['expected_items'][1]['description'] ?? '' ) === 'Создаём продукт по согласованному плану.' && ( $services_plan_from_brief['expected_items'][1]['cta_url'] ?? '' ) === '#build', 'Service title/body/CTA links stay in their own ordered groups' );
+check( count( array_filter( (array) ( $services_multiline_brief['explicit_constraints'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['exact_text'] ?? '' ) === 'Не меняй глобальную тему и меню сайта.' ) ) === 1 && ( $services_plan_from_brief['title'] ?? '' ) !== 'Не меняй глобальную тему и меню сайта.', 'Preservation instruction is retained as a source constraint and never becomes the section heading' );
+foreach ( (array) ( $services_multiline_brief['content'] ?? [] ) as $services_content_item ) {
+	if ( ! is_array( $services_content_item ) || ! in_array( (string) ( $services_content_item['role'] ?? '' ), [ 'service_title', 'service_body', 'service_cta', 'title', 'body' ], true ) ) { continue; }
+	$source_span = (array) ( $services_content_item['source_span'] ?? [] );
+	check( ( $services_content_item['copy_status'] ?? '' ) === 'explicit' && ( $services_content_item['provenance']['source'] ?? '' ) === 'prompt' && count( $source_span ) === 2 && substr( $services_multiline_brief['source_text'], (int) $source_span[0], (int) $source_span[1] - (int) $source_span[0] ) === (string) ( $services_content_item['exact_text'] ?? '' ), 'Every Services copy ref carries exact copy status, provenance, and its byte-accurate source span: ' . ( $services_content_item['id'] ?? '' ) );
+}
+$services_one_item_brief = wpae_brief_ir_parse( "Блок услуг\nУслуга 1: «Аудит» — «Проверяем текущую систему.»" );
+check( in_array( 'services_unsupported_count_one', (array) ( wpae_brief_ir_validate( $services_one_item_brief )['errors'] ?? [] ), true ), 'One service returns the explicit unsupported-count validation error' );
+$services_incomplete_brief = wpae_brief_ir_parse( "Блок услуг\nУслуга 1 — название: «Стратегия»\nУслуга 1 — описание: «Формируем план.»\nУслуга 2 — название: «Разработка»" );
+$services_incomplete_plan = wpae_llm_services_content_plan_from_brief( $services_incomplete_brief );
+check( empty( $services_incomplete_plan['validation']['ok'] ) && in_array( 'service_2_missing_body_ref', (array) ( $services_incomplete_plan['validation']['errors'] ?? [] ), true ), 'A missing required service body remains an explicit ambiguity/error' );
+$services_media_unresolved_brief = wpae_brief_ir_parse( "Блок услуг\nУслуга 1: «Аудит» — «Проверяем процессы.»\nУслуга 2: «Разработка» — «Создаём продукт.»\nДобавь фото для каждой услуги." );
+$services_media_unresolved_plan = wpae_llm_services_content_plan_from_brief( $services_media_unresolved_brief );
+check( ( $services_media_unresolved_plan['media_intent'] ?? '' ) === 'required' && ( $services_media_unresolved_plan['media_resolution'] ?? '' ) === 'unresolved' && empty( $services_media_unresolved_brief['media_references'] ), 'Requested service photos without supplied assets stay unresolved and add no default references' );
+$services_forbidden_brief = wpae_brief_ir_parse( "Блок услуг\nУслуга 1: «Аудит» — «Проверяем процессы.»\nУслуга 2: «Разработка» — «Создаём продукт.»\nНе добавляй фото." );
+$services_forbidden_media = array_values( array_filter( (array) $services_forbidden_brief['layout_constraints'], static fn( array $constraint ): bool => ( $constraint['kind'] ?? '' ) === 'media_intent' ) )[0] ?? [];
+$services_forbidden_media_span = (array) ( $services_forbidden_media['source_span'] ?? [] );
+$services_forbidden_media_excerpt = isset( $services_forbidden_media_span[0], $services_forbidden_media_span[1] ) ? substr( $services_forbidden_brief['source_text'], (int) $services_forbidden_media_span[0], (int) $services_forbidden_media_span[1] - (int) $services_forbidden_media_span[0] ) : '';
+check( ( $services_forbidden_brief['policy']['fallback']['source'] ?? '' ) === 'unspecified' && ( $services_forbidden_media['value'] ?? '' ) === 'forbidden' && $services_forbidden_media_excerpt === 'Не добавляй фото' && empty( wpae_brief_ir_validate( $services_forbidden_brief )['errors'] ), 'Forbidden media intent retains its exact byte-accurate source span and remains distinct from unspecified fallback permission: ' . wp_json_encode( [ 'policy' => $services_forbidden_brief['policy']['fallback']['source'] ?? '', 'media' => $services_forbidden_media, 'excerpt' => $services_forbidden_media_excerpt, 'errors' => wpae_brief_ir_validate( $services_forbidden_brief )['errors'] ?? [] ], JSON_UNESCAPED_UNICODE ) );
+$services_policy_conflict = wpae_brief_ir_policy( 'Только проверенный шаблон из библиотеки, но библиотека не обязательна; fallback запрещён, при этом разрешён fallback.' );
+check( ( $services_policy_conflict['library']['source'] ?? '' ) === 'conflict' && ( $services_policy_conflict['fallback']['source'] ?? '' ) === 'conflict', 'Conflicting explicit Services policies stay unresolved instead of becoming permission' );
+
+$services_natural_message = 'Услуги: «Проектирование интерьеров» помогает согласовать планировки. «Сопровождение реализации» контролирует качество работ до сдачи.';
+$services_structured_payload = [
+	'family' => 'services', 'eyebrow' => null, 'section_title' => null, 'section_intro' => null,
+	'items' => [
+		[ 'group_id' => 'service_1', 'title' => 'Проектирование интерьеров', 'description' => 'помогает согласовать планировки.', 'cta_text' => null, 'cta_url' => null, 'cta_url_requested' => false, 'media_asset_id' => null ],
+		[ 'group_id' => 'service_2', 'title' => 'Сопровождение реализации', 'description' => 'контролирует качество работ до сдачи.', 'cta_text' => null, 'cta_url' => null, 'cta_url_requested' => false, 'media_asset_id' => null ],
+	],
+	'media_intent' => 'unspecified', 'library_policy' => 'unspecified', 'fallback_policy' => 'unspecified', 'constraints' => [], 'ambiguities' => [],
+];
+$saved_services_options = $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] ?? null;
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$services_adapter_writes_before = count( (array) ( $GLOBALS['writes'] ?? [] ) );
+$GLOBALS['http_calls'] = [];
+$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $services_structured_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ];
+$services_structured_result = wpae_brief_ir_services_structured_extract( $services_natural_message );
+check( ! empty( $services_structured_result['ok'] ) && ( $services_structured_result['brief']['extraction']['mode'] ?? '' ) === 'structured' && ! empty( wpae_brief_ir_validate( $services_structured_result['brief'] )['ok'] ), 'Mocked provider response passes transport, source validator, Brief normalizer, and canonical Brief validator' );
+$services_structured_plan = wpae_llm_content_plan( 'different raw request', 'services', $services_structured_result['brief'] );
+check( ( $services_structured_plan['expected_items'][0]['title'] ?? '' ) === 'Проектирование интерьеров' && ( $services_structured_plan['expected_items'][1]['description'] ?? '' ) === 'контролирует качество работ до сдачи.' && ( $services_structured_plan['brief_hash'] ?? '' ) === wpae_brief_ir_hash( $services_structured_result['brief'] ), 'Structured extraction produces the same grouped content contract consumed by the derived plan' );
+check( count( $GLOBALS['http_calls'] ) === 1 && ( $GLOBALS['http_calls'][0]['body']['response_format']['type'] ?? '' ) === 'json_object' && strpos( (string) ( $GLOBALS['http_calls'][0]['body']['messages'][0]['content'] ?? '' ), 'Do not return Elementor JSON' ) !== false && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === $services_adapter_writes_before, 'Explicit local extraction makes one JSON Brief transport call, excludes Elementor trees, and performs no writes' );
+$invalid_services_payloads = [];
+$duplicate_services_payload = $services_structured_payload;
+$duplicate_services_payload['items'][1]['group_id'] = 'service_1';
+$invalid_services_payloads['duplicate_group'] = [ $duplicate_services_payload, [] ];
+$incomplete_services_payload = $services_structured_payload;
+$incomplete_services_payload['items'][1]['description'] = null;
+$invalid_services_payloads['incomplete_item'] = [ $incomplete_services_payload, [] ];
+$invented_services_payload = $services_structured_payload;
+$invented_services_payload['items'][1]['description'] = 'Гарантируем идеальный результат.';
+$invalid_services_payloads['generated_copy'] = [ $invented_services_payload, [] ];
+$unauthorized_services_asset = $services_structured_payload;
+$unauthorized_services_asset['items'][0]['media_asset_id'] = 'not-in-catalog';
+$invalid_services_payloads['unknown_asset'] = [ $unauthorized_services_asset, [ 'asset_catalog' => [ [ 'asset_id' => 'approved', 'attachment_id' => 812, 'allowed_reuse' => true ] ] ] ];
+foreach ( $invalid_services_payloads as $invalid_name => [ $invalid_payload, $invalid_context ] ) {
+	check( empty( wpae_brief_ir_services_structured_payload_validate( $invalid_payload, $services_natural_message, $invalid_context )['ok'] ), 'Structured Services extraction rejects ' . $invalid_name );
+}
+$services_cta_source = 'Услуги: «Проектирование» создаёт планировки. Кнопка «Подробнее» → #plan. «Сопровождение» контролирует проект. Кнопка «Записаться» → #consult.';
+$services_cta_payload = $services_structured_payload;
+$services_cta_payload['items'][0] = [ 'group_id' => 'service_1', 'title' => 'Проектирование', 'description' => 'создаёт планировки.', 'cta_text' => 'Подробнее', 'cta_url' => '#plan', 'cta_url_requested' => true, 'media_asset_id' => null ];
+$services_cta_payload['items'][1] = [ 'group_id' => 'service_2', 'title' => 'Сопровождение', 'description' => 'контролирует проект.', 'cta_text' => 'Записаться', 'cta_url' => '#consult', 'cta_url_requested' => true, 'media_asset_id' => null ];
+check( ! empty( wpae_brief_ir_services_structured_payload_validate( $services_cta_payload, $services_cta_source )['ok'] ), 'Structured Services extraction accepts source-anchored CTA links in their matching service clauses' );
+$services_cta_brief = wpae_brief_ir_services_brief_from_structured( $services_cta_payload, $services_cta_source );
+$services_button_root = container_node( 'services-cta-root', [], [
+	widget( 'services-cta-1', 'button', [ 'text' => 'Старая кнопка', 'link' => [ 'url' => '#plan' ] ] ),
+	widget( 'services-cta-2', 'button', [ 'text' => 'Старая кнопка', 'link' => [ 'url' => '#consult' ] ] ),
+] );
+$services_button_changed = 0;
+$services_button_root = wpae_llm_normalize_requested_cta( [ $services_button_root ], 'сырой текст без CTA', $services_button_changed, false, $services_cta_brief );
+check( ( $services_button_root[0]['elements'][0]['settings']['text'] ?? '' ) === 'Подробнее' && ( $services_button_root[0]['elements'][0]['settings']['link']['url'] ?? '' ) === '#plan' && ( $services_button_root[0]['elements'][1]['settings']['text'] ?? '' ) === 'Записаться' && ( $services_button_root[0]['elements'][1]['settings']['link']['url'] ?? '' ) === '#consult', 'Services CTA normalization reuses canonical CTA-to-link refs when raw compatibility text disagrees' );
+$services_cta_payload['items'][0]['cta_url'] = '#consult';
+$services_cta_payload['items'][1]['cta_url'] = '#plan';
+$services_cta_swapped_validation = wpae_brief_ir_services_structured_payload_validate( $services_cta_payload, $services_cta_source );
+check( empty( $services_cta_swapped_validation['ok'] ) && in_array( 'item_1_cta_url_not_anchored_to_cta', (array) $services_cta_swapped_validation['errors'], true ), 'Structured Services extraction rejects links swapped across different CTAs' );
+$services_asset_context = [ 'asset_catalog' => [
+	[ 'asset_id' => 'asset_strategy', 'attachment_id' => 812, 'group_id' => 'service_1', 'role' => 'card_image', 'alt' => 'Стратегия', 'allowed_reuse' => true ],
+	[ 'asset_id' => 'asset_delivery', 'attachment_id' => 813, 'group_id' => 'service_2', 'role' => 'card_image', 'alt' => 'Сопровождение', 'allowed_reuse' => true ],
+] ];
+$services_with_assets_payload = $services_structured_payload;
+$services_with_assets_payload['media_intent'] = 'required';
+$services_with_assets_payload['items'][0]['media_asset_id'] = 'asset_strategy';
+$services_with_assets_payload['items'][1]['media_asset_id'] = 'asset_delivery';
+$services_asset_source = $services_natural_message . ' Добавь фото для каждой услуги.';
+$services_with_assets_payload_validation = wpae_brief_ir_services_structured_payload_validate( $services_with_assets_payload, $services_asset_source, $services_asset_context );
+$services_with_assets_brief = wpae_brief_ir_services_brief_from_structured( $services_with_assets_payload, $services_asset_source, $services_asset_context );
+check( ! empty( $services_with_assets_payload_validation['ok'] ) && is_array( $services_with_assets_brief ) && ( $services_with_assets_brief['groups'][0]['media_ref'] ?? '' ) === 'asset_strategy' && ( $services_with_assets_brief['groups'][1]['media_ref'] ?? '' ) === 'asset_delivery', 'Structured media refs resolve only to supplied usable assets and remain grouped by service' );
+$services_forbidden_asset_payload = $services_structured_payload;
+$services_forbidden_asset_payload['media_intent'] = 'forbidden';
+$services_forbidden_asset_payload['items'][0]['media_asset_id'] = 'asset_strategy';
+check( ! empty( wpae_brief_ir_services_structured_payload_validate( $services_forbidden_asset_payload, $services_natural_message, $services_asset_context )['errors'] ), 'Structured Services extraction rejects a supplied image ref when photos are forbidden' );
+$GLOBALS['responses'] = [ new WP_Error( 'http_request_failed', 'simulated structured extraction timeout' ) ];
+$services_timeout_adapter = wpae_brief_ir_services_structured_extract( $services_natural_message );
+$GLOBALS['responses'] = [ provider_reply( 'not valid json' ) ];
+$services_invalid_json_adapter = wpae_brief_ir_services_structured_extract( $services_natural_message );
+check( empty( $services_timeout_adapter['ok'] ) && empty( $services_invalid_json_adapter['ok'] ) && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === $services_adapter_writes_before, 'Structured extraction timeout and invalid JSON return refusals without crossing any write boundary' );
+if ( $saved_services_options === null ) { unset( $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] ); } else { $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = $saved_services_options; }
+if ( getenv( 'WPAE_SERVICES_BRIEF_DEMO' ) === '1' ) {
+	$services_demo_brief = array_diff_key( $services_multiline_brief, [ 'source_text' => true ] );
+	$services_demo_brief['validation'] = wpae_brief_ir_validate( $services_multiline_brief );
+	$services_demo_payload = [ 'input' => $services_labeled_message, 'canonical_brief' => $services_demo_brief, 'derived_content_plan' => [ 'title' => $services_plan_from_brief['title'], 'items' => $services_plan_from_brief['expected_items'], 'media_intent' => $services_plan_from_brief['media_intent'], 'policy' => $services_plan_from_brief['policy'], 'validation' => $services_plan_from_brief['validation'] ] ];
+	echo "services brief reproduction: " . wp_json_encode( $services_demo_payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";
+}
+if ( getenv( 'WPAE_SERVICES_CHAT_DEMO' ) === '1' ) {
+	$services_demo_pipeline = (array) ( $services_response_data['diagnostics']['design_pipeline'] ?? [] );
+	$services_chat_demo = [
+		'entrypoint' => 'wpae_llm_chat_request',
+		'route' => (string) ( $services_response_data['diagnostics']['action_path'] ?? '' ),
+		'brief_hash' => $services_brief_hash,
+		'recipe' => [ 'id' => (string) ( $services_trace['recipe_id'] ?? '' ), 'source' => (string) ( $services_trace['recipe_source'] ?? '' ) ],
+		'validation' => [ 'brief' => ! empty( $services_demo_pipeline['brief']['validation']['ok'] ), 'content_plan' => ! empty( $services_demo_pipeline['content_plan']['validation']['ok'] ), 'design_plan' => ! empty( $services_demo_pipeline['plan']['validation']['ok'] ), 'layout' => ! empty( $services_demo_pipeline['layout']['ok'] ), 'elementor_ir' => ! empty( $services_demo_pipeline['elementor_ir']['validation']['ok'] ), 'compiler' => ! empty( $services_demo_pipeline['elementor_ir']['compiled'] ) ],
+		'mock_transaction' => [ 'provider_calls' => (int) ( $services_response_data['diagnostics']['provider_calls'] ?? 0 ), 'write_count' => (int) ( $services_response_data['diagnostics']['write_count'] ?? 0 ), 'readback_matches' => $services_readback_matches, 'operation_id' => (string) ( $services_response_data['operation_id'] ?? '' ), 'state' => (string) ( $services_operation_ledger['current_state'] ?? '' ), 'root_ids' => array_values( (array) ( $services_operation_ledger['root_ids'] ?? [] ) ) ],
+	];
+	echo 'services chat demo: ' . wp_json_encode( $services_chat_demo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";
+}
 
 echo 'flex generation runtime: ' . $GLOBALS['checks'] . " checks OK\n";

@@ -55,7 +55,7 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "149074b80d999e97f591428a4d2b3040e92d496a48e9985057fa67a919ec68e0",
-    "includes/elementor/elementor-ir.php": "447ce6f34ab7f0dc779b0e9d0ae517029fb6aa078aee219627d05d467c9f3b66",
+    "includes/elementor/elementor-ir.php": "b55201fb28bcc127c9fd03ca2d941a7be94bd95da5de87992f5bc43e9c4c486d",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
     "includes/elementor/imported-templates/03-pricing.json": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
@@ -215,7 +215,7 @@
     "includes/elementor/imported-templates/theme-builder-footer-elementor-pro-cfbed702.json": "cfbed7020e2c74b80c15b217c50accf90f40d74823649475810974c3304873e1",
     "includes/elementor/imported-templates/theme-builder-header-elementor-pro-43da6d96.json": "43da6d9619da2be8bad1fb500ba98a6772305666cb386de6ce2b80946c46f745",
     "includes/elementor/imported-templates/venue.json": "3f91487de940fb3789237c85099da0918cf37ccdb488e79022d293d07cfa3c36",
-    "includes/elementor/layout-report.php": "3049a8d96bea27a4d1e72fd013bc605fbbd3ca7029c99addfc1fc60dec65ad1b",
+    "includes/elementor/layout-report.php": "04807cd751ab3775c7daa47fcc9fecd14b32b449c00e720b219c092838614824",
     "includes/elementor/native-compiler.php": "819facedb8944c91c6be8020d11b4614a687fd943a790b6dcb6d092f263b5492",
     "includes/elementor/normalize.php": "85b4992d3cabbf92b85f9236c5a422cc69a9d514cd156a89ab6355cebc2fa01a",
     "includes/elementor/operation-ledger.php": "56493f183cc69c1cb200f02cad8aaed8b5bea80de78d38501e389b04888106b3",
@@ -234,11 +234,12 @@
     "includes/guide/guide.php": "d4ea713d153a7434f82fbb28b13dc9b9b2d22b4b4f973208d51b8b7dc3bfd56d",
     "includes/guide/session.php": "dc32b4ee36b0dcc03e85c339c75a2928a3cc806246dd166c5229edc93edc50ff",
     "includes/health/diagnostics.php": "d9d0b8685aea35edcd37b0a98e1e92fc42021e23523cf6675468c0c1c5134b29",
-    "includes/llm/brief-ir.php": "fa02c108bb252beccc075aef6c66f80b93378d56b95f6570ea45b9e920d6eabc",
+    "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
+    "includes/llm/brief-ir.php": "cb88e5aa006aa53cb157a272d888121e4fd7dd22519afff41a1530456b7bc2fb",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "5b5bd258f133f31f94b1025f9434fddc7124c357f6d5ab73a0379ebbaf8e3ac0",
+    "includes/llm/design-plan.php": "6d9a465806e0dd0f86710b6af9d1c6448ba1d843331bfdb95a134110251c2731",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "6fb54e3c66b58f7dca92c2af62be8929b29339ac1d460aa4c60eb52401448baf",
+    "includes/llm/llm.php": "854b0532139d2085a30483f7f6ba43a9c2d65f3fb9a1b65003a8af630c601865",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
     "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -251,6 +252,6 @@
     "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-    "wp-ai-executor.php": "cc60b01032d04154b4b9f5c325b43dd87de9780a87af87396f76ed9d92d6fba5"
+    "wp-ai-executor.php": "5b827c92cbadc9a7d01927e9ff7eb23b72abc9cc6a1e78b95a78c654874e5e15"
   }
 }

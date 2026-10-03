@@ -46,6 +46,105 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 	$section = is_array( $plan['sections'][0] ?? null ) ? $plan['sections'][0] : [];
 	$composition = sanitize_key( (string) ( $section['composition'] ?? 'stacked_left' ) );
 	$children = (array) ( $section['children'] ?? [] );
+	$recipe_layout = [];
+	$recipe_id = (string) ( $plan['recipe_id'] ?? '' );
+	if ( $recipe_id !== '' ) {
+		$recipe_child = [];
+		foreach ( $children as $child ) {
+			if ( is_array( $child ) && str_starts_with( (string) ( $child['role'] ?? '' ), 'services_' ) ) {
+				$recipe_child = $child;
+				break;
+			}
+		}
+		$item_count = count( (array) ( $recipe_child['items'] ?? [] ) );
+		$recipe_layout = [
+			'recipe_id' => $recipe_id,
+			'evidence' => 'static_plan',
+			'visual_render_verified' => false,
+			'item_count' => $item_count,
+			'card_or_row_padding_px' => $recipe_id === 'services.photo_cards' ? [ 'desktop' => 24, 'tablet' => 22, 'mobile' => 20 ] : [ 'desktop' => 0, 'tablet' => 0, 'mobile' => 0 ],
+			'geometry_assumptions' => [ 'section_padding_px' => [ 'desktop' => 32, 'tablet' => 32, 'mobile' => 16 ], 'container_width_samples_px' => array_values( (array) ( $options['container_widths'] ?? [ 320, 390, 480, 768, 1024, 1200 ] ) ), 'basis_measurement' => 'native_Elementor_container_width_percent_with_flex_gap', 'elementor_thresholds_source' => 'static_desktop_tablet_mobile_labels; site runtime breakpoints are not queried by this source-only report' ],
+			'native_breakpoint_controls' => [],
+			'geometry_samples' => [],
+			'breakpoints' => [],
+		];
+		$recipe_layout['native_breakpoint_controls'] = $recipe_id === 'services.photo_cards'
+			? [ 'grid' => [ 'desktop' => [ 'flex_direction' => 'row', 'flex_wrap' => 'wrap', 'column_basis_percent' => $item_count === 3 ? 31.5 : 48, 'gap_px' => 24 ], 'tablet' => [ 'flex_direction' => 'row', 'flex_wrap' => 'wrap', 'column_basis_percent' => 48, 'gap_px' => 20 ], 'mobile' => [ 'flex_direction' => 'column', 'flex_wrap' => 'nowrap', 'column_basis_percent' => 100, 'gap_px' => 16 ] ], 'card_padding_px' => [ 'desktop' => 24, 'tablet' => 22, 'mobile' => 20 ] ]
+			: ( $recipe_id === 'services.split_editorial'
+				? [ 'lead' => [ 'desktop' => [ 'flex_direction' => 'row', 'flex_wrap' => 'nowrap', 'copy_basis_percent' => 52, 'image_basis_percent' => 44, 'gap_px' => 32, 'flex_shrink' => 1 ], 'tablet' => [ 'flex_direction' => 'column', 'child_basis_percent' => 100, 'gap_px' => 24 ], 'mobile' => [ 'flex_direction' => 'column', 'child_basis_percent' => 100, 'gap_px' => 20 ] ] ]
+				: [ 'list' => [ 'desktop' => [ 'flex_direction' => 'column', 'gap_px' => 24 ], 'tablet' => [ 'flex_direction' => 'column', 'gap_px' => 24 ], 'mobile' => [ 'flex_direction' => 'column', 'gap_px' => 20 ] ], 'row' => [ 'flex_direction' => 'row', 'icon_width_px' => 36, 'copy_basis_percent' => 90, 'copy_min_width_px' => 0, 'gap_px' => 24 ] ] );
+		$container_width_samples = array_map( 'intval', (array) ( $options['container_widths'] ?? [ 320, 390, 480, 768, 1024, 1200 ] ) );
+		$container_width_samples = array_values( array_unique( array_filter( $container_width_samples, static fn( int $width ): bool => $width > 0 ) ) );
+		foreach ( $container_width_samples as $container_sample ) {
+			$device = $container_sample <= 767 ? 'mobile' : ( $container_sample <= 1024 ? 'tablet' : 'desktop' );
+			$outer_padding = $device === 'mobile' ? 16 : 32;
+			$available = max( 0.0, $container_sample - ( 2 * $outer_padding ) );
+			$overflow = false;
+			$sample = [ 'container_width_px' => $container_sample, 'device_assumption' => $device, 'outer_horizontal_padding_px' => $outer_padding, 'available_content_width_px' => round( $available, 2 ), 'recipe_id' => $recipe_id ];
+			if ( $recipe_id === 'services.photo_cards' ) {
+				$gap = $device === 'mobile' ? 16 : ( $device === 'tablet' ? 20 : 24 );
+				$basis = $device === 'mobile' ? 100.0 : ( $device === 'tablet' ? 48.0 : ( $item_count === 3 ? 31.5 : 48.0 ) );
+				$card_basis_width = $available * $basis / 100;
+				$columns = $device === 'mobile' ? 1 : max( 1, (int) floor( ( $available + $gap ) / max( 1, $card_basis_width + $gap ) ) );
+				$columns = min( max( 1, $item_count ), $columns );
+				$row_width = $columns * $card_basis_width + $gap * max( 0, $columns - 1 );
+				$overflow = $row_width > $available + 0.01;
+				$sample += [ 'gap_px' => $gap, 'card_basis_percent' => $basis, 'card_basis_width_px' => round( $card_basis_width, 2 ), 'items_per_row_after_native_wrap' => $columns, 'row_count' => $item_count > 0 ? (int) ceil( $item_count / $columns ) : 0, 'row_required_width_px' => round( $row_width, 2 ), 'overflow' => $overflow ];
+			} elseif ( $recipe_id === 'services.split_editorial' ) {
+				$stack = $device !== 'desktop';
+				$gap = $stack ? ( $device === 'mobile' ? 20 : 24 ) : 32;
+				$copy_basis = $stack ? $available : $available * 0.52;
+				$image_basis = $stack ? $available : $available * 0.44;
+				$raw_required = $stack ? $available : $copy_basis + $image_basis + $gap;
+				$shrink = $stack ? 0.0 : max( 0.0, $raw_required - $available );
+				$copy_effective = $stack ? $available : max( 0.0, $copy_basis - ( $shrink > 0 && $raw_required > $gap ? $shrink * $copy_basis / ( $copy_basis + $image_basis ) : 0 ) );
+				$image_effective = $stack ? $available : max( 0.0, $image_basis - ( $shrink > 0 && $raw_required > $gap ? $shrink * $image_basis / ( $copy_basis + $image_basis ) : 0 ) );
+				$required_width = $stack ? max( $copy_effective, $image_effective ) : $copy_effective + $image_effective + $gap;
+				$overflow = $required_width > $available + 0.01;
+				$sample += [ 'axis' => $stack ? 'column' : 'row', 'gap_px' => $gap, 'raw_copy_basis_width_px' => round( $copy_basis, 2 ), 'raw_image_basis_width_px' => round( $image_basis, 2 ), 'native_flex_shrink_adjustment_px' => round( $shrink, 2 ), 'effective_copy_width_px' => round( $copy_effective, 2 ), 'effective_image_width_px' => round( $image_effective, 2 ), 'required_width_after_native_shrink_px' => round( $required_width, 2 ), 'overflow' => $overflow ];
+			} else {
+				$gap = $device === 'mobile' ? 20 : 24;
+				$row_gap = 24;
+				$icon_width = 36.0;
+				$copy_basis = $available * 0.9;
+				$copy_effective = max( 0.0, min( $copy_basis, $available - $icon_width - $gap ) );
+				$sample += [ 'list_gap_px' => $row_gap, 'item_axis' => 'row', 'item_gap_px' => $gap, 'icon_width_px' => $icon_width, 'copy_basis_percent' => 90, 'copy_effective_width_px' => round( $copy_effective, 2 ), 'overflow' => ( $icon_width + $gap + $copy_effective ) > $available + 0.01 ];
+			}
+			$sample['card_or_row_inner_padding_px'] = $recipe_layout['card_or_row_padding_px'][ $device ] ?? 0;
+			$recipe_layout['geometry_samples'][] = $sample;
+			if ( $overflow ) {
+				$violations[] = [ 'breakpoint' => $device, 'kind' => 'services_recipe_container_overflow', 'container_width_px' => $container_sample, 'recipe_id' => $recipe_id, 'required_width_px' => $sample['row_required_width_px'] ?? $sample['required_width_after_native_shrink_px'] ?? 0, 'available_width_px' => $available ];
+			}
+		}
+		foreach ( wpae_layout_report_breakpoints() as $breakpoint ) {
+			$viewport = (int) $breakpoint['width'];
+			$mobile = $breakpoint['id'] === 'mobile';
+			$tablet = in_array( $breakpoint['id'], [ 'tablet', 'laptop' ], true );
+			$outer = min( $viewport, 1200 );
+			$content_width = max( 0, $outer - ( $mobile ? 32 : 64 ) );
+			$columns = $recipe_id === 'services.photo_cards' ? ( $mobile ? 1 : ( $tablet ? 2 : ( $item_count === 3 ? 3 : 2 ) ) ) : 1;
+			$gap = $recipe_id === 'services.photo_cards' ? ( $mobile ? 16 : ( $tablet ? 20 : 24 ) ) : ( $mobile ? 20 : 24 );
+			$column_width = $columns > 0 ? max( 0, ( $content_width - ( $gap * max( 0, $columns - 1 ) ) ) / $columns ) : 0;
+			$recipe_layout['breakpoints'][] = [
+				'breakpoint' => $breakpoint['id'],
+				'viewport_width' => $viewport,
+				'container_width' => $content_width,
+				'columns' => $columns,
+				'column_gap_px' => $gap,
+				'column_basis_percent' => $recipe_id === 'services.photo_cards'
+					? ( $columns === 3 ? 31.5 : 48 )
+					: ( $recipe_id === 'services.split_editorial'
+						? ( ! $tablet && ! $mobile ? [ 'copy' => 52, 'image' => 44 ] : [ 'copy' => 100 ] )
+						: [ 'icon' => 10, 'copy' => 90 ] ),
+				'estimated_column_width_px' => round( $column_width, 2 ),
+				'axis' => $recipe_id === 'services.photo_cards'
+					? ( $columns > 1 ? 'row_wrap' : 'vertical_stack' )
+					: ( $recipe_id === 'services.split_editorial'
+						? ( ! $tablet && ! $mobile ? 'lead_row_then_editorial_stack' : 'vertical_stack' )
+						: 'vertical_list_with_horizontal_item_rows' ),
+			];
+		}
+	}
 	$has_media_child = (bool) array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media' );
 	foreach ( wpae_layout_report_breakpoints() as $breakpoint ) {
 		$viewport = (int) $breakpoint['width'];
@@ -141,6 +240,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 	return [
 		'schema' => WPAE_LAYOUT_REPORT_SCHEMA,
 		'archetype' => $archetype,
+		'recipe_layout' => $recipe_layout,
 		'evidence' => 'static_plan',
 		'visual_render_verified' => false,
 		'breakpoint_source' => 'static_assumptions; runtime Elementor breakpoints must be checked in browser',

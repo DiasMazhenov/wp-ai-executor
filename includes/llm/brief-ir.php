@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v9';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v10';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -216,6 +216,158 @@ function wpae_brief_ir_id_for_role( string $role, int $index = 0 ): string {
 	return $index > 0 ? $base . '_' . ( $index + 1 ) : $base;
 }
 
+/**
+ * Extract write-source policy once from the request. Missing policy stays
+ * unspecified; downstream code must not interpret it as permission.
+ */
+function wpae_brief_ir_policy( string $source_text ): array {
+	$library_patterns = [
+		'required' => '/\b(?:только\s+(?:из\s+)?(?:библиотеки|проверенн\w*\s+шаблон\w*)|библиотечн\w*\s+(?:блок|шаблон)|(?:блок|шаблон)\s+(?:из\s+)?библиотек\w*|library[-\s]?only|library[\s-]+(?:block|template)|only\s+(?:a\s+)?(?:verified\s+)?(?:library\s+)?templates?)\b/iu',
+		'not_required' => '/\b(?:не\s+обязательно\s+из\s+библиотеки|библиотека\s+не\s+обязательна|library\s+not\s+required)\b/iu',
+	];
+	$fallback_patterns = [
+		'forbidden' => '/\b(?:без\s+(?:детерминированн\w*\s+)?(?:fallback|фолбэк|запасн\w*)|fallback\s+(?:запрещ\w*|forbidden|disallowed)|не\s+(?:используй|применяй|создавай|подставляй|разрешай|разрешать)\s+(?:fallback|фолбэк|запасн\w*)|не\s+использовать\s+(?:fallback|фолбэк|запасн\w*)|no\s+fallback|fallback\s+is\s+not\s+allowed)\b/iu',
+		'allowed' => '/\b(?:разреш\w*\s+(?:использовать\s+)?fallback|можно\s+использовать\s+fallback|allow\s+fallback|fallback\s+allowed)\b/iu',
+	];
+	$find = static function ( array $patterns ) use ( $source_text ): array {
+		$matches = [];
+		foreach ( $patterns as $value => $pattern ) {
+			if ( preg_match_all( $pattern, $source_text, $found, PREG_OFFSET_CAPTURE ) ) {
+				foreach ( $found[0] as $match ) {
+					$matches[] = [ 'value' => $value, 'source_span' => [ (int) $match[1], (int) $match[1] + strlen( (string) $match[0] ) ] ];
+				}
+			}
+		}
+		return $matches;
+	};
+	$library = $find( $library_patterns );
+	$fallback = $find( $fallback_patterns );
+	$library_values = array_values( array_unique( array_column( $library, 'value' ) ) );
+	$fallback_values = array_values( array_unique( array_column( $fallback, 'value' ) ) );
+	$ambiguities = [];
+	if ( count( $library_values ) > 1 ) {
+		$library_policy = 'conflict';
+		$ambiguities[] = [ 'kind' => 'conflicting_library_policy', 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
+	} else {
+		$library_policy = in_array( 'required', $library_values, true ) ? 'required' : 'unspecified';
+	}
+	if ( count( $fallback_values ) > 1 ) {
+		$fallback_policy = 'conflict';
+		$ambiguities[] = [ 'kind' => 'conflicting_fallback_policy', 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
+	} else {
+		$fallback_policy = (string) ( $fallback_values[0] ?? 'unspecified' );
+	}
+	return [
+		'library' => [ 'source' => $library_policy, 'evidence' => $library ],
+		'fallback' => [ 'source' => $fallback_policy, 'evidence' => $fallback ],
+		'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+		'ambiguities' => $ambiguities,
+	];
+}
+
+/** Extract explicit preservation and prohibition statements without inventing copy. */
+function wpae_brief_ir_explicit_user_constraints( string $source_text ): array {
+	$patterns = [
+		'/(?<![\p{L}\p{N}_])не\s+(?:меняй|изменяй|трогай|удаляй|добавляй|используй|применяй|создавай|переписывай|заменяй|публикуй|менять|изменять|трогать|удалять|добавлять|использовать|применять|создавать|переписывать|заменять)\b[^.!?\n]{0,240}[.!?]?/iu',
+		'/(?<![\p{L}\p{N}_])(?:сохрани|сохранить|оставь|оставить)\b[^.!?\n]{0,240}[.!?]?/iu',
+	];
+	$constraints = [];
+	foreach ( $patterns as $pattern ) {
+		$matches = [];
+		if ( ! preg_match_all( $pattern, $source_text, $matches, PREG_OFFSET_CAPTURE ) ) {
+			continue;
+		}
+		foreach ( $matches[0] as $match ) {
+			$exact_text = trim( (string) $match[0] );
+			if ( $exact_text === '' ) {
+				continue;
+			}
+			$start = (int) $match[1];
+			$constraints[] = [
+				'kind' => 'explicit_user_constraint',
+				'value' => $exact_text,
+				'exact_text' => $exact_text,
+				'source_span' => [ $start, $start + strlen( (string) $match[0] ) ],
+				'provenance' => [ 'source' => 'prompt', 'source_span' => [ $start, $start + strlen( (string) $match[0] ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+			];
+		}
+	}
+	return $constraints;
+}
+
+/** Build stable service groups from the canonical Brief content references. */
+function wpae_brief_ir_service_groups( array $content, array $media_references = [] ): array {
+	$groups = [];
+	$field_by_role = [ 'service_title' => 'title_ref', 'service_body' => 'body_ref', 'service_cta' => 'cta_ref' ];
+	foreach ( $content as $item ) {
+		if ( ! is_array( $item ) ) {
+			continue;
+		}
+		$group_id = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
+		$field = $field_by_role[ sanitize_key( (string) ( $item['role'] ?? '' ) ) ] ?? '';
+		if ( $field === '' || ! preg_match( '/^service_\d+$/', $group_id ) ) {
+			continue;
+		}
+		if ( ! isset( $groups[ $group_id ] ) ) {
+			$groups[ $group_id ] = [
+				'group_id' => $group_id,
+				'title_ref' => '',
+				'body_ref' => '',
+				'cta_ref' => '',
+				'media_ref' => '',
+				'source_order' => (int) ( $item['source_span'][0] ?? PHP_INT_MAX ),
+				'provenance' => [ 'source' => 'brief', 'item_id' => $group_id, 'source_spans' => [] ],
+				'errors' => [],
+			];
+		}
+		if ( $groups[ $group_id ][ $field ] !== '' ) {
+			$groups[ $group_id ]['errors'][] = 'duplicate_' . $field;
+			continue;
+		}
+		$groups[ $group_id ][ $field ] = sanitize_key( (string) ( $item['id'] ?? '' ) );
+		$groups[ $group_id ]['source_order'] = min( (int) $groups[ $group_id ]['source_order'], (int) ( $item['source_span'][0] ?? PHP_INT_MAX ) );
+		$groups[ $group_id ]['provenance']['source_spans'][ $field ] = (array) ( $item['source_span'] ?? [] );
+	}
+	foreach ( $media_references as $media ) {
+		if ( ! is_array( $media ) ) {
+			continue;
+		}
+		$group_id = sanitize_key( (string) ( $media['group_id'] ?? '' ) );
+		if ( ! preg_match( '/^service_\d+$/', $group_id ) ) {
+			continue;
+		}
+		if ( ! isset( $groups[ $group_id ] ) ) {
+			$groups[ $group_id ] = [
+				'group_id' => $group_id,
+				'title_ref' => '',
+				'body_ref' => '',
+				'cta_ref' => '',
+				'media_ref' => '',
+				'source_order' => (int) ( $media['provenance']['source_span'][0] ?? PHP_INT_MAX ),
+				'provenance' => [ 'source' => 'brief', 'item_id' => $group_id, 'source_spans' => [] ],
+				'errors' => [],
+			];
+		}
+		if ( $groups[ $group_id ]['media_ref'] !== '' ) {
+			$groups[ $group_id ]['errors'][] = 'duplicate_media_ref';
+			continue;
+		}
+		$groups[ $group_id ]['media_ref'] = sanitize_key( (string) ( $media['asset_id'] ?? '' ) );
+		$media_span = (array) ( $media['provenance']['source_span'] ?? [] );
+		if ( isset( $media_span[0] ) ) {
+			$groups[ $group_id ]['source_order'] = min( (int) $groups[ $group_id ]['source_order'], (int) $media_span[0] );
+			$groups[ $group_id ]['provenance']['source_spans']['media_ref'] = $media_span;
+		}
+	}
+	$groups = array_values( $groups );
+	usort( $groups, static fn( array $left, array $right ): int => (int) $left['source_order'] <=> (int) $right['source_order'] );
+	foreach ( $groups as &$group ) {
+		unset( $group['source_order'] );
+	}
+	unset( $group );
+	return $groups;
+}
+
 function wpae_brief_ir_parse( string $source_text, array $context = [] ): array {
 	$source_text = wpae_brief_ir_source_text( $source_text );
 	$locale = wpae_brief_ir_locale( $source_text );
@@ -245,6 +397,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			'id' => $id,
 			'role' => $role,
 			'exact_text' => $exact_text,
+			'copy_status' => 'explicit',
 			'normalized_text' => wpae_brief_ir_normalize_text( $exact_text ),
 			'url' => $url,
 			'url_requested' => $url_requested,
@@ -528,7 +681,18 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$required = in_array( $role, [ 'title', 'body', 'cta' ], true ) || str_starts_with( $role, 'cta_' ) || in_array( $role, [ 'service_title', 'service_body', 'team_name', 'team_position', 'testimonial_quote', 'testimonial_author' ], true );
 		$confidence = $role === 'text' ? 0.62 : 0.98;
-		$add_content( $role, $inner, $start, strlen( $full ), $url_requested ? $url : null, $confidence, $required, $url_requested, $id_override, $group_id === '' , $group_id );
+		$content_start = $start;
+		$content_length = strlen( $full );
+		if ( $archetype === 'services' ) {
+			foreach ( [ 1, 2, 3 ] as $capture_index ) {
+				if ( isset( $quote_matches[ $capture_index ][ $match_index ][1] ) && (int) $quote_matches[ $capture_index ][ $match_index ][1] >= 0 && (string) $quote_matches[ $capture_index ][ $match_index ][0] === $inner ) {
+					$content_start = (int) $quote_matches[ $capture_index ][ $match_index ][1];
+					$content_length = strlen( $inner );
+					break;
+				}
+			}
+		}
+		$add_content( $role, $inner, $content_start, $content_length, $url_requested ? $url : null, $confidence, $required, $url_requested, $id_override, $group_id === '' , $group_id );
 		if ( $archetype === 'testimonials' && $role === 'testimonial_quote' && $group_id !== '' ) {
 			$previous_testimonial_group = $group_id;
 		}
@@ -691,13 +855,34 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	}
 
 	$constraints = [];
+	if ( $archetype === 'services' ) {
+		$recipe_patterns = [
+			'services.photo_cards' => '/(?:services[._ -]photo[._ -]cards|photo[._ -]?cards|фото[ -]?карточк\w*|карточк\w*[^\n]{0,40}с\s+(?:фото|изображен\w*))/iu',
+			'services.split_editorial' => '/(?:services[._ -]split[._ -]editorial|split[._ -]?editorial|редакционн\w*\s+сплит|сплит\w*\s+редакционн\w*)/iu',
+			'services.text_icon_list' => '/(?:services[._ -]text[._ -]icon[._ -]list|text[._ -]?icon[._ -]?list|текстов\w*\s+список(?:\s+с\s+иконк\w*)?|список\s+услуг\s+с\s+иконк\w*)/iu',
+		];
+		foreach ( $recipe_patterns as $recipe_id => $recipe_pattern ) {
+			if ( preg_match_all( $recipe_pattern, $source_text, $recipe_matches, PREG_OFFSET_CAPTURE ) ) {
+				foreach ( $recipe_matches[0] as $recipe_match ) {
+					$recipe_span = [ (int) $recipe_match[1], (int) $recipe_match[1] + strlen( (string) $recipe_match[0] ) ];
+					$constraints[] = [
+						'id' => 'services_recipe_' . str_replace( '.', '_', $recipe_id ),
+						'kind' => 'services_recipe',
+						'value' => $recipe_id,
+						'source_span' => $recipe_span,
+						'provenance' => [ 'source' => 'prompt', 'source_span' => $recipe_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+					];
+				}
+			}
+		}
+	}
 	$media_forbidden_match = [];
 	$media_required_match = [];
 	$media_forbidden = preg_match( '/\b(?:без\s+(?:любых?\s+)?(?:изображен\w*|фото)|(?:не\s+)?(?:добавляй|добавлять|используй|использовать|нужн\w*|требу\w*)\s+(?:изображен\w*|фото)|(?:изображен\w*|фото)\s+не\s+(?:добавляй|добавлять|используй|использовать)|no\s+(?:image|images|photo|photos)|without\s+(?:an?\s+)?(?:image|photo)|do\s+not\s+(?:add|use|include)\s+(?:an?\s+)?(?:image|photo)|don.t\s+(?:add|use|include)\s+(?:an?\s+)?(?:image|photo))\b/iu', $source_text, $media_forbidden_match, PREG_OFFSET_CAPTURE );
 	$media_required = preg_match( '/\b(?:обязательн\w*\s+(?:изображен\w*|фото)|добавь\s+(?:изображен\w*|фото)|с\s+(?:изображен\w*|фото)|изображен\w*\s+(?:обязательн\w*|нужн\w*)|include\s+(?:an?\s+)?(?:image|photo)|with\s+(?:an?\s+)?(?:image|photo)|(?:image|photo)\s+required)\b/iu', $source_text, $media_required_match, PREG_OFFSET_CAPTURE );
 	$media_intent = $media_forbidden && $media_required ? 'conflict' : ( $media_forbidden ? 'forbidden' : ( $media_required ? 'required' : 'unspecified' ) );
 	$media_match = $media_forbidden ? $media_forbidden_match : $media_required_match;
-	$media_match_span = isset( $media_match[0][0][1] ) ? [ (int) $media_match[0][0][1], (int) $media_match[0][0][1] + strlen( (string) $media_match[0][0][0] ) ] : [ 0, 0 ];
+	$media_match_span = isset( $media_match[0][0], $media_match[0][1] ) ? [ (int) $media_match[0][1], (int) $media_match[0][1] + strlen( (string) $media_match[0][0] ) ] : [ 0, 0 ];
 	$constraints[] = [
 		'id' => 'media_intent',
 		'kind' => 'media_intent',
@@ -900,6 +1085,24 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	if ( function_exists( 'wpae_reference_set_normalize' ) ) {
 		$media_references = array_map( 'wpae_reference_set_normalize', $media_references );
 	}
+	$policy = wpae_brief_ir_policy( $source_text );
+	$ambiguities = array_merge( $ambiguities, (array) ( $policy['ambiguities'] ?? [] ) );
+	$service_groups = $archetype === 'services' ? wpae_brief_ir_service_groups( $content, $media_references ) : [];
+	$explicit_constraints = [];
+	foreach ( $constraints as $constraint ) {
+		if ( ! is_array( $constraint ) ) {
+			continue;
+		}
+		$span = (array) ( $constraint['source_span'] ?? [] );
+		$excerpt = isset( $span[0], $span[1] ) ? substr( $source_text, (int) $span[0], max( 0, (int) $span[1] - (int) $span[0] ) ) : '';
+		if ( trim( $excerpt ) === '' ) {
+			continue;
+		}
+		$explicit_constraints[] = $constraint + [ 'exact_text' => $excerpt ];
+	}
+	if ( $archetype === 'services' ) {
+		$explicit_constraints = array_merge( $explicit_constraints, wpae_brief_ir_explicit_user_constraints( $source_text ) );
+	}
 
 	return [
 		'schema' => WPAE_BRIEF_IR_SCHEMA,
@@ -911,10 +1114,13 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			'audience' => sanitize_text_field( (string) ( $context['audience'] ?? '' ) ),
 		],
 		'content' => array_values( $content ),
+		'groups' => array_values( $service_groups ),
 		'pricing_items' => array_values( $pricing_items ),
 		'style_references' => array_values( $style_references ),
 		'layout_constraints' => array_values( $constraints ),
+		'explicit_constraints' => array_values( $explicit_constraints ),
 		'media_references' => array_values( $media_references ),
+		'policy' => $policy,
 		'ambiguities' => array_values( $ambiguities ),
 		'warnings' => array_values( array_unique( $warnings ) ),
 		'parser_version' => WPAE_BRIEF_IR_PARSER_VERSION,
@@ -924,6 +1130,167 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			'parser' => WPAE_BRIEF_IR_PARSER_VERSION,
 		],
 	];
+}
+
+/** Return a byte-accurate source span for an exact explicit excerpt. */
+function wpae_brief_ir_find_explicit_span( string $source_text, string $exact_text, array $used_spans = [], int $minimum_start = 0 ): array {
+	$exact_text = trim( $exact_text );
+	if ( $exact_text === '' ) {
+		return [];
+	}
+	$offset = max( 0, $minimum_start );
+	while ( $offset <= strlen( $source_text ) ) {
+		$start = strpos( $source_text, $exact_text, $offset );
+		if ( $start === false ) {
+			return [];
+		}
+		$span = [ (int) $start, (int) $start + strlen( $exact_text ) ];
+		$overlap = false;
+		foreach ( $used_spans as $used ) {
+			if ( is_array( $used ) && isset( $used[0], $used[1] ) && $span[0] < (int) $used[1] && $span[1] > (int) $used[0] ) {
+				$overlap = true;
+				break;
+			}
+		}
+		if ( ! $overlap ) {
+			return $span;
+		}
+		$offset = $span[1];
+	}
+	return [];
+}
+
+function wpae_brief_ir_validate_services( array $brief ): array {
+	$errors = [];
+	$source_text = (string) ( $brief['source_text'] ?? '' );
+	$content_by_id = [];
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( ! is_array( $item ) || empty( $item['id'] ) ) {
+			continue;
+		}
+		$id = sanitize_key( (string) $item['id'] );
+		if ( isset( $content_by_id[ $id ] ) ) {
+			$errors[] = 'services_duplicate_content_id_' . $id;
+			continue;
+		}
+		$content_by_id[ $id ] = $item;
+	}
+	$groups = array_values( (array) ( $brief['groups'] ?? [] ) );
+	$count = count( $groups );
+	if ( $count === 0 ) {
+		$errors[] = 'services_missing_items';
+	} elseif ( $count === 1 ) {
+		$errors[] = 'services_unsupported_count_one';
+	} elseif ( $count > 6 ) {
+		$errors[] = 'services_item_count_out_of_range';
+	}
+	$seen_groups = [];
+	foreach ( $groups as $index => $group ) {
+		if ( ! is_array( $group ) ) {
+			$errors[] = 'services_group_' . ( $index + 1 ) . '_invalid';
+			continue;
+		}
+		$group_id = sanitize_key( (string) ( $group['group_id'] ?? '' ) );
+		if ( ! preg_match( '/^service_\d+$/', $group_id ) || isset( $seen_groups[ $group_id ] ) ) {
+			$errors[] = 'services_group_' . ( $index + 1 ) . '_duplicate_or_invalid_id';
+			continue;
+		}
+		$seen_groups[ $group_id ] = true;
+		foreach ( [ 'title_ref' => 'service_title', 'body_ref' => 'service_body', 'cta_ref' => 'service_cta' ] as $field => $expected_role ) {
+			$ref = sanitize_key( (string) ( $group[ $field ] ?? '' ) );
+			if ( $ref === '' ) {
+				if ( in_array( $field, [ 'title_ref', 'body_ref' ], true ) ) {
+					$errors[] = $group_id . '_missing_' . $field;
+				}
+				continue;
+			}
+			$item = $content_by_id[ $ref ] ?? [];
+			if ( empty( $item ) || ( $item['role'] ?? '' ) !== $expected_role || ( $item['group_id'] ?? '' ) !== $group_id ) {
+				$errors[] = $group_id . '_invalid_' . $field;
+				continue;
+			}
+			$span = (array) ( $item['source_span'] ?? [] );
+			if ( count( $span ) !== 2 || (int) $span[0] < 0 || (int) $span[1] > strlen( $source_text ) || (int) $span[1] < (int) $span[0] ) {
+				$errors[] = $group_id . '_invalid_' . $field . '_span';
+			} else {
+				$source_value = trim( substr( $source_text, (int) $span[0], (int) $span[1] - (int) $span[0] ) );
+				if ( $source_value !== (string) ( $item['exact_text'] ?? '' ) ) {
+					$errors[] = $group_id . '_non_exact_' . $field . '_span';
+				}
+			}
+			if ( ( $item['copy_status'] ?? 'explicit' ) !== 'explicit' || ( $item['provenance']['source'] ?? '' ) !== 'prompt' ) {
+				$errors[] = $group_id . '_non_explicit_' . $field;
+			}
+			if ( $field === 'cta_ref' && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
+				$errors[] = $group_id . '_invalid_cta_link';
+			}
+		}
+		if ( ! empty( $group['errors'] ) ) {
+			foreach ( (array) $group['errors'] as $group_error ) {
+				$errors[] = $group_id . '_' . sanitize_key( (string) $group_error );
+			}
+		}
+		$media_ref = sanitize_key( (string) ( $group['media_ref'] ?? '' ) );
+		if ( $media_ref !== '' ) {
+			$media_matches = array_filter( (array) ( $brief['media_references'] ?? [] ), static fn( $media ): bool => is_array( $media ) && sanitize_key( (string) ( $media['asset_id'] ?? '' ) ) === $media_ref && sanitize_key( (string) ( $media['group_id'] ?? '' ) ) === $group_id );
+			if ( count( $media_matches ) !== 1 ) {
+				$errors[] = $group_id . '_invalid_media_ref';
+			}
+		}
+	}
+	$policy = is_array( $brief['policy'] ?? null ) ? $brief['policy'] : [];
+	if ( ! in_array( (string) ( $policy['library']['source'] ?? '' ), [ 'required', 'unspecified', 'conflict' ], true ) ) {
+		$errors[] = 'services_invalid_library_policy';
+	}
+	if ( ! in_array( (string) ( $policy['fallback']['source'] ?? '' ), [ 'forbidden', 'allowed', 'unspecified', 'conflict' ], true ) ) {
+		$errors[] = 'services_invalid_fallback_policy';
+	}
+	$media_intent = 'unspecified';
+	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) {
+		if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
+			$media_intent = sanitize_key( (string) ( $constraint['value'] ?? 'unspecified' ) );
+			break;
+		}
+	}
+	if ( ! in_array( $media_intent, [ 'forbidden', 'required', 'unspecified', 'conflict' ], true ) ) {
+		$errors[] = 'services_invalid_media_intent';
+	}
+	if ( $media_intent === 'conflict' ) {
+		$errors[] = 'services_conflicting_media_intent';
+	}
+	if ( $media_intent === 'required' ) {
+		foreach ( $groups as $group ) {
+			if ( is_array( $group ) && trim( (string) ( $group['media_ref'] ?? '' ) ) === '' ) {
+				$errors[] = 'services_requested_media_unresolved';
+				break;
+			}
+		}
+	}
+	foreach ( (array) ( $brief['ambiguities'] ?? [] ) as $ambiguity ) {
+		if ( ! is_array( $ambiguity ) ) {
+			continue;
+		}
+		$kind = sanitize_key( (string) ( $ambiguity['kind'] ?? '' ) );
+		if ( in_array( $kind, [ 'incomplete_service_pair', 'duplicate_service_index', 'conflicting_library_policy', 'conflicting_fallback_policy', 'conflicting_media_intent' ], true ) ) {
+			$errors[] = 'services_ambiguity_' . $kind;
+		}
+	}
+	foreach ( (array) ( $brief['explicit_constraints'] ?? [] ) as $index => $constraint ) {
+		if ( ! is_array( $constraint ) ) {
+			$errors[] = 'services_explicit_constraint_' . ( (int) $index + 1 ) . '_invalid';
+			continue;
+		}
+		$span = (array) ( $constraint['source_span'] ?? [] );
+		if ( count( $span ) !== 2 || (int) $span[0] < 0 || (int) $span[1] > strlen( $source_text ) || (int) $span[1] < (int) $span[0]
+			|| trim( substr( $source_text, (int) ( $span[0] ?? 0 ), max( 0, (int) ( $span[1] ?? 0 ) - (int) ( $span[0] ?? 0 ) ) ) ) !== (string) ( $constraint['exact_text'] ?? '' )
+			|| ( $constraint['provenance']['source'] ?? '' ) !== 'prompt' ) {
+			$errors[] = 'services_explicit_constraint_' . ( (int) $index + 1 ) . '_not_source_exact';
+		}
+	}
+	if ( $media_intent === 'forbidden' && ! empty( $brief['media_references'] ) ) {
+		$errors[] = 'services_media_present_while_forbidden';
+	}
+	return [ 'ok' => empty( $errors ), 'errors' => array_values( array_unique( $errors ) ), 'item_count' => $count ];
 }
 
 function wpae_brief_ir_validate( array $brief ): array {
@@ -942,7 +1309,12 @@ function wpae_brief_ir_validate( array $brief ): array {
 			$errors[] = 'content_' . (int) $index . '_invalid_explicit_url';
 		}
 	}
-	return [ 'ok' => empty( $errors ), 'errors' => array_values( $errors ) ];
+	$services_validation = [];
+	if ( ( $brief['intent']['archetype'] ?? '' ) === 'services' ) {
+		$services_validation = wpae_brief_ir_validate_services( $brief );
+		$errors = array_merge( $errors, (array) ( $services_validation['errors'] ?? [] ) );
+	}
+	return [ 'ok' => empty( $errors ), 'errors' => array_values( array_unique( $errors ) ), 'services' => $services_validation ];
 }
 
 function wpae_brief_ir_hash( array $brief ): string {

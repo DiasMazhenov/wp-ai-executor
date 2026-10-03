@@ -116,6 +116,94 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 	return $cards;
 }
 
+function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id, array $items, array $tokens, string $lead_group_id = '' ): array {
+	$make_copy = static function ( string $id, array $item, string $copy_role ) use ( $tokens ): array {
+		$children = [];
+		foreach ( [ 'title_ref' => [ 'services_recipe_title', 'heading' ], 'body_ref' => [ 'service_body', 'text-editor' ], 'cta_ref' => [ 'service_cta', 'button' ] ] as $field => [ $field_role, $widget ] ) {
+			$ref = sanitize_key( (string) ( $item[ $field ] ?? '' ) );
+			if ( $ref === '' ) {
+				continue;
+			}
+			$field_node = wpae_elementor_ir_node( $id . '-' . $field_role, $field_role, $widget, [ $ref ], $tokens, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+			$field_node['provenance']['item_id'] = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
+			$children[] = $field_node;
+		}
+		$copy = wpae_elementor_ir_node( $id, $copy_role, 'container', [], $tokens, $children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+		$copy['provenance']['item_id'] = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
+		return $copy;
+	};
+	$make_image = static function ( string $id, array $item, string $image_role ): array {
+		$media_ref = sanitize_key( (string) ( $item['media_ref'] ?? '' ) );
+		return wpae_elementor_ir_node( $id, $image_role, 'image', [], [ 'radius.card' ], [], [ 'min_width' => 0, 'max_width' => 100, 'aspect_ratio' => '4:3' ], [ 'strategy' => 'stack', 'media_refs' => $media_ref !== '' ? [ $media_ref ] : [], 'editable_fields' => [ 'media', 'alt' ] ] );
+	};
+	if ( $role === 'services_photo_grid' ) {
+		$cards = [];
+		foreach ( array_values( $items ) as $index => $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
+			$card_id = $node_id . '-' . $group_id . '-photo-card';
+			$panel = $make_copy( $card_id . '-panel', $item, 'services_photo_panel' );
+			$cards[] = wpae_elementor_ir_node( $card_id, 'services_photo_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], [ $make_image( $card_id . '-image', $item, 'services_photo_image' ), $panel ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id, 'border_radius' => '16px', 'border_radius_mobile' => '16px' ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
+		}
+		return [ wpae_elementor_ir_node( $node_id, 'services_photo_grid', 'container', [], $tokens, $cards, [ 'min_width' => 0, 'max_width' => 100, 'grid_gap_desktop' => 24, 'grid_gap_tablet' => 20, 'grid_gap_mobile' => 16 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] ) ];
+	}
+	if ( $role === 'services_split_editorial' ) {
+		$lead = null;
+		$secondary = [];
+		foreach ( array_values( $items ) as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			if ( (string) ( $item['group_id'] ?? '' ) === $lead_group_id ) {
+				$lead = $item;
+			} else {
+				$secondary[] = $item;
+			}
+		}
+		$nodes = [];
+		if ( is_array( $lead ) ) {
+			$lead_id = $node_id . '-' . sanitize_key( $lead_group_id ) . '-lead';
+			$copy = $make_copy( $lead_id . '-copy', $lead, 'services_split_copy' );
+			$copy['layout_constraints']['desktop_width'] = 52;
+			$image = $make_image( $lead_id . '-image', $lead, 'services_split_image' );
+			$image_panel = wpae_elementor_ir_node( $lead_id . '-image-panel', 'services_split_image_panel', 'container', [], [ 'color.surface', 'radius.card' ], [ $image ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'media', 'alt' ] ] );
+			$nodes[] = wpae_elementor_ir_node( $lead_id, 'services_split_lead', 'container', [], $tokens, [ $copy, $image_panel ], [ 'min_width' => 0, 'max_width' => 100, 'composition' => 'split_60_40', 'copy_width' => 52, 'media_width' => 44, 'media_side' => 'right', 'item_id' => $lead_group_id ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
+		}
+		if ( ! empty( $secondary ) ) {
+			$rows = [];
+			foreach ( $secondary as $index => $item ) {
+				$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
+				$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-editorial-row', 'services_editorial_row', 'container', [], $tokens, [ $make_copy( $node_id . '-' . $group_id . '-editorial-copy', $item, 'services_editorial_copy' ) ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+				if ( $index < count( $secondary ) - 1 ) {
+					$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-editorial-divider', 'services_editorial_divider', 'divider', [], [ 'color.border' ], [], [ 'reference' => 'services-editorial-row-v1' ], [ 'strategy' => 'stack' ] );
+				}
+			}
+			$nodes[] = wpae_elementor_ir_node( $node_id . '-secondary-editorial-rows', 'services_editorial_rows', 'container', [], $tokens, $rows, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+		}
+		return [ wpae_elementor_ir_node( $node_id, 'services_split_editorial', 'container', [], $tokens, $nodes, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] ) ];
+	}
+	if ( $role === 'services_text_icon_list' ) {
+		$rows = [];
+		foreach ( array_values( $items ) as $index => $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
+			$copy = $make_copy( $node_id . '-' . $group_id . '-text-copy', $item, 'services_text_icon_copy' );
+			$copy['layout_constraints']['list_copy_width'] = 90;
+			$row = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-icon-row', 'services_text_icon_row', 'container', [], $tokens, [ wpae_elementor_ir_node( $node_id . '-' . $group_id . '-icon', 'services_list_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle', 'fixed_width' => 36 ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ), $copy ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+			$rows[] = $row;
+			if ( $index < count( $items ) - 1 ) {
+				$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-divider', 'services_text_icon_divider', 'divider', [], [ 'color.border' ], [], [ 'reference' => 'services-text-icon-list-v1' ], [ 'strategy' => 'stack' ] );
+			}
+		}
+		return [ wpae_elementor_ir_node( $node_id, 'services_text_icon_list', 'container', [], $tokens, $rows, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] ) ];
+	}
+	return [];
+}
+
 function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $context = [] ): array {
 	$content_map = wpae_elementor_ir_content_map( $brief );
 	$nodes = [];
@@ -147,7 +235,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					if ( $item_role === 'brand' ) {
 						$widgets['brand'] = wpae_elementor_ir_node( $child_id . '-brand', 'brand', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
-						$title_role = $role === 'cta_copy_group' ? 'cta_section_title' : 'title';
+						$title_role = $role === 'cta_copy_group' ? 'cta_section_title' : ( str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' ) ? 'services_section_title' : 'title' );
 						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', $title_role, 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'eyebrow' ) {
 						if ( ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) {
@@ -230,6 +318,11 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$step_children[] = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-card', 'process_card', 'container', [], [ 'color.surface', 'color.border', 'space.component' ], $card_children, [ 'reference' => 'process-card-v1' ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'process_steps', 'container', [], $token_refs, $step_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+			} elseif ( in_array( $role, [ 'services_photo_grid', 'services_split_editorial', 'services_text_icon_list' ], true ) ) {
+				$recipe_nodes = wpae_elementor_ir_services_recipe_nodes( $role, $child_id, (array) ( $child['items'] ?? [] ), $token_refs, (string) ( $plan['recipe_selection']['lead_service_ref'] ?? '' ) );
+				foreach ( $recipe_nodes as $recipe_node ) {
+					$section_children[] = $recipe_node;
+				}
 			} elseif ( $role === 'pricing_cards' ) {
 				$intro_widgets = [];
 				foreach ( $content_refs as $content_ref ) {
@@ -315,6 +408,10 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 	return [
 		'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
 		'archetype' => sanitize_key( (string) ( $plan['archetype'] ?? 'unknown' ) ),
+		'recipe_id' => (string) ( $plan['recipe_id'] ?? '' ),
+		'recipe_selection' => (array) ( $plan['recipe_selection'] ?? [] ),
+		'slot_bindings' => (array) ( $plan['slot_bindings'] ?? [] ),
+		'media_compatibility' => (array) ( $plan['media_compatibility'] ?? [] ),
 		'media_intent' => sanitize_key( (string) ( $plan['media_intent'] ?? 'unspecified' ) ),
 		'media_references' => array_values( (array) ( $plan['media_references'] ?? $brief['media_references'] ?? [] ) ),
 		'nodes' => $nodes,
@@ -323,7 +420,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 	];
 }
 
-function wpae_elementor_ir_validate( array $ir ): array {
+function wpae_elementor_ir_validate( array $ir, array $brief = [] ): array {
 	$errors = [];
 	$widgets = [];
 	$walk = static function ( array $nodes ) use ( &$walk, &$errors, &$widgets ): void {
@@ -381,6 +478,105 @@ function wpae_elementor_ir_validate( array $ir ): array {
 		}
 		if ( ( $ir['media_intent'] ?? 'unspecified' ) === 'required' && empty( $media_nodes ) ) {
 			$errors[] = 'required_media_asset_missing';
+		}
+	}
+	$recipe_id = (string) ( $ir['recipe_id'] ?? '' );
+	if ( $recipe_id !== '' ) {
+		$known_recipes = [ 'services.photo_cards', 'services.split_editorial', 'services.text_icon_list' ];
+		if ( ! in_array( $recipe_id, $known_recipes, true ) || ( $ir['archetype'] ?? '' ) !== 'services' ) {
+			$errors[] = 'services_recipe_unknown_or_archetype_mismatch';
+		} else {
+			$flat = [];
+			$collect = static function ( array $nodes ) use ( &$collect, &$flat ): void {
+				foreach ( $nodes as $node ) {
+					if ( ! is_array( $node ) ) {
+						continue;
+					}
+					$flat[ (string) ( $node['role'] ?? '' ) ][] = $node;
+					$collect( (array) ( $node['children'] ?? [] ) );
+				}
+			};
+			$collect( (array) ( $ir['nodes'] ?? [] ) );
+			$recipe_roles = [ 'services.photo_cards' => 'services_photo_grid', 'services.split_editorial' => 'services_split_editorial', 'services.text_icon_list' => 'services_text_icon_list' ];
+			$expected_role = $recipe_roles[ $recipe_id ] ?? '';
+			$recipe_items = array_values( array_filter( (array) ( $ir['slot_bindings']['services'] ?? [] ), 'is_array' ) );
+			$expected_group_ids = array_values( array_map( static fn( array $item ): string => sanitize_key( (string) ( $item['group_id'] ?? '' ) ), $recipe_items ) );
+			if ( count( $expected_group_ids ) < 2 || count( $expected_group_ids ) > 6 || count( $expected_group_ids ) !== count( array_unique( $expected_group_ids ) ) ) {
+				$errors[] = 'services_recipe_slot_bindings_invalid';
+			}
+			if ( count( (array) ( $flat[ $expected_role ] ?? [] ) ) !== 1 || ! empty( $flat['service_cards'] ) ) {
+				$errors[] = 'services_recipe_topology_invalid';
+			}
+			foreach ( $recipe_items as $item ) {
+				$group_id = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
+				foreach ( [ 'services_recipe_title' => 'title_ref', 'service_body' => 'body_ref', 'service_cta' => 'cta_ref' ] as $node_role => $field ) {
+					$matches = array_values( array_filter( (array) ( $flat[ $node_role ] ?? [] ), static fn( array $node ): bool => ( $node['provenance']['item_id'] ?? '' ) === $group_id ) );
+					$expected_ref = sanitize_key( (string) ( $item[ $field ] ?? '' ) );
+					if ( ( $expected_ref === '' && ! empty( $matches ) ) || ( $expected_ref !== '' && ( count( $matches ) !== 1 || (array) ( $matches[0]['content_refs'] ?? [] ) !== [ $expected_ref ] ) ) ) {
+						$errors[] = $group_id . '_recipe_' . $field . '_ir_binding_invalid';
+					}
+				}
+			}
+			if ( $recipe_id === 'services.photo_cards' ) {
+				$cards = (array) ( $flat['services_photo_card'] ?? [] );
+				$card_group_ids = array_values( array_map( static fn( array $node ): string => sanitize_key( (string) ( $node['layout_constraints']['item_id'] ?? '' ) ), $cards ) );
+				if ( count( $cards ) < 2 || count( $cards ) > 6 || $card_group_ids !== $expected_group_ids || count( $flat['services_photo_image'] ?? [] ) !== count( $cards ) || count( $flat['services_photo_panel'] ?? [] ) !== count( $cards ) ) {
+					$errors[] = 'services_photo_card_structure_invalid';
+				}
+				foreach ( $cards as $card ) {
+					$direct = array_values( (array) ( $card['children'] ?? [] ) );
+					$group_id = sanitize_key( (string) ( $card['layout_constraints']['item_id'] ?? '' ) );
+					$slot = array_values( array_filter( $recipe_items, static fn( array $item ): bool => ( $item['group_id'] ?? '' ) === $group_id ) )[0] ?? [];
+					if ( ( $direct[0]['role'] ?? '' ) !== 'services_photo_image' || ( $direct[1]['role'] ?? '' ) !== 'services_photo_panel' || (array) ( $direct[0]['media_refs'] ?? [] ) !== [ sanitize_key( (string) ( $slot['media_ref'] ?? '' ) ) ] ) {
+						$errors[] = 'services_photo_image_not_above_content';
+					}
+				}
+			}
+			if ( $recipe_id === 'services.split_editorial' ) {
+				$lead_nodes = (array) ( $flat['services_split_lead'] ?? [] );
+				$lead_id = sanitize_key( (string) ( $ir['recipe_selection']['lead_service_ref'] ?? '' ) );
+				$lead_slot = array_values( array_filter( $recipe_items, static fn( array $item ): bool => ( $item['group_id'] ?? '' ) === $lead_id ) )[0] ?? [];
+				$secondary_ids = array_values( array_filter( $expected_group_ids, static fn( string $group_id ): bool => $group_id !== $lead_id ) );
+				$rows_node = (array) ( $flat['services_editorial_rows'][0] ?? [] );
+				$row_ids = array_values( array_map( static fn( array $node ): string => sanitize_key( (string) ( $node['layout_constraints']['item_id'] ?? '' ) ), array_filter( (array) ( $rows_node['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_editorial_row' ) ) );
+				$lead_images = array_values( array_filter( (array) ( $flat['services_split_image'] ?? [] ), static fn( array $node ): bool => ( $node['media_refs'][0] ?? '' ) === ( $lead_slot['media_ref'] ?? '' ) ) );
+				if ( count( $lead_nodes ) !== 1 || ( $lead_nodes[0]['layout_constraints']['item_id'] ?? '' ) !== $lead_id || count( $lead_images ) !== 1 || count( $flat['services_editorial_rows'] ?? [] ) !== 1 || $row_ids !== $secondary_ids ) {
+					$errors[] = 'services_split_editorial_structure_invalid';
+				}
+			}
+			if ( $recipe_id === 'services.text_icon_list' ) {
+				$rows = (array) ( $flat['services_text_icon_row'] ?? [] );
+				$row_ids = array_values( array_map( static fn( array $node ): string => sanitize_key( (string) ( $node['layout_constraints']['item_id'] ?? '' ) ), $rows ) );
+				if ( count( $rows ) < 2 || count( $rows ) > 6 || $row_ids !== $expected_group_ids || count( $flat['services_list_icon'] ?? [] ) !== count( $rows ) || ! empty( $flat['services_photo_image'] ) || ! empty( $flat['services_split_image'] ) ) {
+					$errors[] = 'services_text_icon_list_structure_invalid';
+				}
+			}
+			if ( $brief ) {
+				$content_map = wpae_elementor_ir_content_map( $brief );
+				$expected_by_group = [];
+				foreach ( (array) ( $brief['groups'] ?? [] ) as $group ) {
+					if ( is_array( $group ) ) {
+						$expected_by_group[ sanitize_key( (string) ( $group['group_id'] ?? '' ) ) ] = $group;
+					}
+				}
+				foreach ( [ 'services_recipe_title' => [ 'title_ref', 'service_title' ], 'service_body' => [ 'body_ref', 'service_body' ], 'service_cta' => [ 'cta_ref', 'service_cta' ] ] as $role => [ $field, $brief_role ] ) {
+					foreach ( (array) ( $flat[ $role ] ?? [] ) as $node ) {
+						$ref = sanitize_key( (string) ( $node['content_refs'][0] ?? '' ) );
+						$group_id = sanitize_key( (string) ( $node['provenance']['item_id'] ?? '' ) );
+						$belongs = false;
+						foreach ( (array) ( $node['content_refs'] ?? [] ) as $candidate_ref ) {
+							$content = $content_map[ sanitize_key( (string) $candidate_ref ) ] ?? [];
+							if ( ! empty( $content ) && ( $content['group_id'] ?? '' ) === $group_id && ( $content['role'] ?? '' ) === $brief_role ) {
+								$belongs = true;
+								break;
+							}
+						}
+						if ( ! $belongs || ( $ref !== '' && empty( $content_map[ $ref ] ) ) ) {
+							$errors[] = 'services_recipe_content_group_mismatch';
+						}
+					}
+				}
+			}
 		}
 	}
 	$capabilities = function_exists( 'wpae_widget_capability_report' ) ? wpae_widget_capability_report( $widgets ) : [ 'ok' => true, 'unavailable' => [], 'downgrades' => [] ];
@@ -550,7 +746,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['background_color'] = $surface_override;
 			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
 		}
-		if ( in_array( $role, [ 'copy_group', 'service_cards', 'team_cards', 'testimonial_cards', 'cta_copy_group', 'cta_actions' ], true ) ) {
+		if ( in_array( $role, [ 'copy_group', 'service_cards', 'team_cards', 'testimonial_cards', 'cta_copy_group', 'cta_actions', 'services_photo_grid', 'services_editorial_rows', 'services_text_icon_list' ], true ) ) {
 			unset( $settings['background_color'], $settings['background_background'] );
 		}
 		if ( $role === 'faq_surface' ) {
@@ -601,6 +797,59 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'service_cards' ) {
 			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
 			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
+		}
+		if ( $role === 'services_photo_grid' ) {
+			$settings['_css_classes'] = 'wpae-services-photo-grid';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'row';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'wrap';
+			$settings['flex_wrap_tablet'] = 'wrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
+			$settings['flex_gap_tablet'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 16, 'column' => '16', 'row' => '16', 'isLinked' => true ];
+		}
+		if ( $role === 'services_split_lead' ) {
+			$settings['_css_classes'] = 'wpae-services-split-lead';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'column';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_wrap_tablet'] = 'nowrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
+			$settings['flex_align_items'] = 'center';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 32, 'column' => '32', 'row' => '32', 'isLinked' => true ];
+			$settings['flex_gap_tablet'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
+		}
+		if ( $role === 'services_editorial_rows' || $role === 'services_text_icon_list' ) {
+			$settings['_css_classes'] = $role === 'services_editorial_rows' ? 'wpae-services-editorial-rows' : 'wpae-services-text-icon-list';
+			$settings['flex_direction'] = 'column';
+			$settings['flex_direction_tablet'] = 'column';
+			$settings['flex_direction_mobile'] = 'column';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_wrap_tablet'] = 'nowrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
+		}
+		if ( $role === 'services_editorial_row' ) {
+			$settings['_css_classes'] = 'wpae-services-editorial-row';
+			$settings['flex_direction'] = 'column';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 12, 'column' => '12', 'row' => '12', 'isLinked' => true ];
+		}
+		if ( $role === 'services_text_icon_row' ) {
+			$settings['_css_classes'] = 'wpae-services-text-icon-row';
+			$settings['flex_direction'] = 'row';
+			$settings['flex_direction_tablet'] = 'row';
+			$settings['flex_direction_mobile'] = 'row';
+			$settings['flex_wrap'] = 'nowrap';
+			$settings['flex_wrap_mobile'] = 'nowrap';
+			$settings['flex_align_items'] = 'flex-start';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 16, 'column' => '16', 'row' => '16', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 12, 'column' => '12', 'row' => '12', 'isLinked' => true ];
 		}
 		if ( $role === 'cta' ) {
 			$settings['_css_classes'] = 'wpae-cta-section';
@@ -711,7 +960,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['_flex_shrink'] = 0;
 			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
 		}
-		if ( in_array( $role, [ 'pricing_card', 'feature_card', 'service_card', 'team_card', 'testimonial_card' ], true ) ) {
+		if ( in_array( $role, [ 'pricing_card', 'feature_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card' ], true ) ) {
 			$settings['border_border'] = 'solid';
 			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
 			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
@@ -749,6 +998,36 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0', 'isLinked' => true ];
 			$settings['flex_gap_mobile'] = $settings['flex_gap'];
 			$settings['overflow'] = 'hidden';
+		}
+		if ( $role === 'services_photo_card' ) {
+			$settings['_css_classes'] = 'wpae-services-photo-card';
+			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( (string) ( $node['layout_constraints']['border_radius'] ?? '16px' ), 'px', 16 );
+			$settings['border_radius_mobile'] = wpae_elementor_ir_dimension_control( (string) ( $node['layout_constraints']['border_radius_mobile'] ?? '16px' ), 'px', 16 );
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+			$settings['padding_tablet'] = $settings['padding'];
+			$settings['padding_mobile'] = $settings['padding'];
+			$settings['overflow'] = 'hidden';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
+		}
+		if ( $role === 'services_photo_panel' ) {
+			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '24', 'right' => '24', 'bottom' => '24', 'left' => '24', 'isLinked' => false ];
+			$settings['padding_tablet'] = $settings['padding'];
+			$settings['padding_mobile'] = [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => false ];
+			$settings['flex_direction'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 10, 'column' => '10', 'row' => '10', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
+		}
+		if ( $role === 'services_split_image_panel' ) {
+			$settings['_css_classes'] = 'wpae-services-split-image-panel';
+			$settings['background_color'] = 'transparent';
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '16px', 'px', 16 );
+			$settings['overflow'] = 'hidden';
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+			$settings['padding_mobile'] = $settings['padding'];
 		}
 		if ( $role === 'service_content' ) {
 			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
@@ -906,8 +1185,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			}
 		}
 		$text = implode( "\n", $values );
-		if ( $requested_widget_type === 'heading' && $text !== '' ) {
-			$tag = in_array( $role, [ 'brand', 'eyebrow' ], true ) ? 'h6' : 'h1';
+	if ( $requested_widget_type === 'heading' && $text !== '' ) {
+			$tag = [ 'brand' => 'h6', 'eyebrow' => 'h6', 'services_section_title' => 'h2', 'services_recipe_title' => 'h3' ][ $role ] ?? 'h1';
 			$settings['editor'] = '<' . $tag . '>' . nl2br( htmlspecialchars( $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8' ), false ) . '</' . $tag . '>';
 			$heading_color = $role === 'brand' ? 'color.muted' : ( $role === 'eyebrow' ? 'color.primary' : 'color.text' );
 			$settings['text_color'] = (string) ( $token_values[ $heading_color ] ?? '#111827' );
@@ -948,7 +1227,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$report['errors'][] = [ 'node_id' => sanitize_key( (string) ( $node['node_id'] ?? '' ) ), 'widget_type' => 'image', 'reason' => 'media_asset_missing_or_invalid' ];
 			return [];
 		}
-		if ( $role === 'service_image' && is_array( $source_parts ) && strtolower( (string) ( $source_parts['host'] ?? '' ) ) === 'images.unsplash.com' ) {
+		if ( in_array( $role, [ 'service_image', 'services_photo_image', 'services_split_image' ], true ) && is_array( $source_parts ) && strtolower( (string) ( $source_parts['host'] ?? '' ) ) === 'images.unsplash.com' ) {
 			$query = [];
 			parse_str( (string) ( $source_parts['query'] ?? '' ), $query );
 			$query['fit'] = 'crop';
@@ -960,10 +1239,17 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['image_size'] = 'full';
 		$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 		$settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+		if ( in_array( $role, [ 'services_photo_image', 'services_split_image' ], true ) ) {
+			$settings['height'] = [ 'unit' => 'px', 'size' => 260, 'sizes' => [] ];
+			$settings['height_tablet'] = [ 'unit' => 'px', 'size' => 240, 'sizes' => [] ];
+			$settings['height_mobile'] = [ 'unit' => 'px', 'size' => 220, 'sizes' => [] ];
+			$settings['object-fit'] = 'cover';
+			$settings['object-position'] = sanitize_text_field( (string) ( $media['focal_point'] ?? 'center center' ) );
+		}
 		$settings['image_border_radius'] = $role === 'service_image'
 			? wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius'] ?? '16px' ) )
 			: wpae_elementor_ir_dimension_control( $token_values['radius.card'] ?? '0.5rem', 'rem', 0.5 );
-		if ( $role === 'service_image' ) {
+		if ( in_array( $role, [ 'service_image', 'services_photo_image' ], true ) ) {
 			$settings['image_border_radius_mobile'] = wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius_mobile'] ?? $node['layout_constraints']['card_border_radius'] ?? '16px' ) );
 		}
 		if ( in_array( (string) ( $media['object_fit'] ?? '' ), [ 'cover', 'contain', 'fill' ], true ) ) {
@@ -988,6 +1274,13 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['align'] = 'left';
 			$settings['color'] = '#000000';
 			$settings['gap'] = [ 'unit' => 'px', 'size' => 15, 'sizes' => [] ];
+		} elseif ( in_array( ( $node['layout_constraints']['reference'] ?? '' ), [ 'services-editorial-row-v1', 'services-text-icon-list-v1' ], true ) ) {
+			$settings['style'] = 'solid';
+			$settings['weight'] = [ 'unit' => 'px', 'size' => 1, 'sizes' => [] ];
+			$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+			$settings['align'] = 'left';
+			$settings['color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
+			$settings['gap'] = [ 'unit' => 'px', 'size' => 0, 'sizes' => [] ];
 		} else {
 			$settings['border_color'] = (string) ( $token_values['color.border'] ?? '#d1d5db' );
 		}
@@ -1040,6 +1333,15 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'feature_icon' ) {
 			$settings['align'] = 'left';
 		}
+		if ( $role === 'services_list_icon' ) {
+			$settings['align'] = 'left';
+			$settings['width'] = [ 'unit' => 'px', 'size' => 36, 'sizes' => [] ];
+			$settings['_element_width'] = 'initial';
+			$settings['_element_custom_width'] = [ 'unit' => 'px', 'size' => 36, 'sizes' => [] ];
+			$settings['_flex_size'] = 'custom';
+			$settings['_flex_grow'] = 0;
+			$settings['_flex_shrink'] = 0;
+		}
 	}
 	$compiled_children = [];
 	foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
@@ -1061,6 +1363,13 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'pricing_cards' && count( $compiled_children ) === 3 ) {
 			// Three percentage columns plus two native gaps otherwise wrap at common desktop widths.
 			$composition_basis = [ 31.5, 31.5, 31.5 ];
+		}
+		if ( $role === 'services_photo_grid' ) {
+			$desktop_basis = count( $compiled_children ) === 3 ? 31.5 : 48;
+			$composition_basis = array_fill( 0, count( $compiled_children ), $desktop_basis );
+		}
+		if ( $role === 'services_split_lead' && count( $compiled_children ) === 2 ) {
+			$composition_basis = [ 52, 44 ];
 		}
 		if ( in_array( $role, [ 'service_cards', 'team_cards', 'testimonial_cards' ], true ) ) {
 			if ( count( $compiled_children ) === 2 ) {
@@ -1094,7 +1403,14 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			}
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
 			$tablet_is_stack = ( $settings['flex_direction_tablet'] ?? '' ) === 'column';
-			$tablet_basis = $tablet_is_stack ? 100 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 );
+			$tablet_basis = $tablet_is_stack ? 100 : ( $role === 'services_photo_grid' ? 48 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
+			if ( $role === 'services_photo_grid' && $child_index < count( $compiled_children ) ) {
+				$tablet_basis = 48;
+			}
+			if ( $role === 'services_text_icon_row' && $child_role === 'services_text_icon_copy' ) {
+				$basis = 90;
+				$tablet_basis = 90;
+			}
 			if ( $role === 'cta' && ! $cta_has_media && $child_role === 'cta_copy_group' ) {
 				$basis = 72;
 				$tablet_basis = 84;
@@ -1157,7 +1473,7 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 			return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => [ 'explicit_cta_url_invalid:' . sanitize_key( (string) ( $item['id'] ?? 'cta' ) ) ] ];
 		}
 	}
-	$validation = wpae_elementor_ir_validate( $ir );
+	$validation = wpae_elementor_ir_validate( $ir, $brief );
 	if ( empty( $validation['ok'] ) ) {
 		return [ 'ok' => false, 'errors' => $validation['errors'], 'validation' => $validation ];
 	}

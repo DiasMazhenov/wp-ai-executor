@@ -1,3 +1,138 @@
+## Live-продолжение библиотечных категорий — 2026-10-01
+
+В существующем Elementor editor на `post=5214` после reload подтверждена inline-версия `v02.11.230`; до продолжения был один root Pricing `c2efc28`. FAQ, Services, Hero и Process не запускались. Новых вкладок не создавали.
+
+Во всех трёх запросах общий BriefIR/DesignPlan ошибочно выбирал archetype `pricing` и валидировался с `pricing_tiers_required`, хотя отдельный semantic plan распознавал About, Portfolio и Mega Menu соответственно.
+
+| Категория | Итог |
+|---|---|
+| About | Retrieval: 25 доступных / 8 кандидатов; модель не выбрала шаблон. OpenRouter timed out через 90 001 ms. Два fidelity-поля расходятся о пропуске (сводное называет описание, вложенное — CTA); обе проверки показали 6/7. Отказ до записи; operation ID и `write_count` в UI отсутствовали, root set не изменился. |
+| Portfolio | Retrieval: 33 доступных / 15 кандидатов; шаблон не выбран. OpenRouter timed out через 90 000 ms; fallback не сохранил literal label `карточка 1` (16/17). Отказ до записи; operation ID и `write_count` не показаны. |
+| Mega Menu | Fallback добавил root `8c9f2dc`, operation `wpae-20261001010249-7a9bb16d`, HTTP 200. `library_applied=false`. Editor reload подтвердил сохранение; рядом остаётся исходный Pricing root `c2efc28`, root count теперь 2. |
+
+После замечания пользователя выполнен ещё один запрос Carousel на существующей v02.11.230 вкладке. Retrieval: 19 доступных шаблонов, 1 кандидат `copyelement-image-carousel-a4516bb`; модель не выбрала шаблон, OpenRouter timed out через 90 001 ms. BriefIR выдал `archetype=unknown` и DesignPlan errors `archetype` / `sections`, при том что `semantic_plan=carousel`. Provider validation совпала с 14/16 content needles; fallback — 12/16. Content-fidelity gate остановил запрос до write. Диагностика UI не содержит `write_count` или operation ID; поскольку write boundary не достигнут, effective `write_count=0`. Read-only Browser Use preview после отказа показывает прежние два roots (`c2efc28`, `8c9f2dc`), новых roots нет.
+
+Mega Menu — generation/write произошли, но design acceptance **FAIL**. Исходный provider JSON провалил однокорневую форму; repair provider timed out после 57 115 ms. Записанный fallback имеет один Flex root и 13 native widgets (2 heading + 11 text-editor), однако видимый контент включает утёкшие инструкции «глобальную тему и меню сайта не меняй…», heading `пункты: «О нас`, плоский список вместо оформленного multi-column меню. Browser Use Vision дал 45/100, confidence 95%, critical prompt leakage. Автоматическая root replacement была отклонена prewrite: ownership/saved fingerprint не подтвердились; второй write не выполнялся.
+
+Read-only viewport после reload: editor outer `1228×923` CSS px, DPR `2`; preview iframe rect `1025×860`. Свежий screenshot editor был показан Browser Use и визуально осмотрен. API возвращает JPEG; локальный PNG не создан, signature и локальный файл не проверены, public screenshot отсутствует. Поэтому screenshot-artifact acceptance остаётся **SCREENSHOT BLOCKED**, full visual PASS не заявлен. WordPress settings, plugins и существующие пользовательские roots не менялись и не удалялись.
+
+## Live-генерации библиотечных блоков — 2026-10-01, post=5214
+
+Текущий source checkout: `fb02557`, plugin source `v02.11.230`. В существующих вкладках до reload отображалась v02.11.229; после reload существующих editor и Plugins tabs обе подтвердили v02.11.230. Новые вкладки, страницы и drafts не создавались; настройки WordPress и другие плагины не менялись.
+
+### No-write проверки
+
+На v229 короткие естественные briefs Benefits, Team и CTA остановились на DesignPlan до записи:
+
+| Семейство | Operation | Отказ |
+|---|---|---|
+| Benefits | `5c5128f8-9b56-4e6b-9e16-16f326bca00c` | `benefits_require_two_to_six_complete_items`; diagnostic не вывел `write_count`, pipeline остановился до write (effective 0). |
+| Team | `7abfc1f6-1645-457d-8ec5-ba47ebddc6ed` | Неверно выделен archetype testimonials; `testimonials_items_out_of_range`, `testimonials_testimonial_item_count_out_of_range`; до write. |
+| CTA | `0783e331-de9b-4a90-941f-4ef16746a871` | `cta_requires_one_or_two_buttons`; до write. |
+
+Parser-friendly briefs Benefits, Team и CTA на v229 затем остановились в library adapter preflight: пары `candidate_count / compatible_candidate_count / provider_call_count / write_count` были `20/0/0/0`, `8/0/0/0` и `22/0/0/0`. Их compact diagnostics не содержали operation identity.
+
+На подтверждённой v230 выполнены следующие family checks:
+
+| Семейство | Operation / root | Результат |
+|---|---|---|
+| Pricing | `wpae-20261001003747-b4291ba6` / `c2efc28` | Pipeline успешно записал один root (HTTP 200); после editor reload root сохранился. 12 native widgets. |
+| Benefits | — | `20/0/0/0`, безопасный preflight отказ. |
+| Team | — | `8/0/0/0`, безопасный preflight отказ. |
+| Testimonials | — | `7/0/0/0`, безопасный preflight отказ. |
+| CTA | — | `22/0/0/0`, безопасный preflight отказ. |
+
+No-write diagnostics v230 не содержали operation identity; во всех четырёх случаях `write_count=0`. После попыток остался один root Pricing `c2efc28`; отказные family requests страницу не меняли.
+
+### Pricing save/readback и структура
+
+Источник: `post=5214`, public URL `https://mazhenov.kz/pricing-contract-live-v123/`. Запрошены три тарифа: Старт — 50 000 ₸; Проект — 150 000 ₸; Поддержка — 80 000 ₸/мес, с точными описаниями. После write и обычного editor reload iframe содержит один root `c2efc28` с видимыми всеми названиями, ценами и описаниями. DOM показывает Flex root, три `wpae-pricing-card` Flex containers, 9 `heading.default` и 3 `text-editor.default` native widgets. У третьего тарифа `/мес` — отдельный native heading, визуально стоит рядом с суммой; у последнего description отображается финальная точка. Поэтому content semantics подтверждены, буквальная посимвольная идентичность этих двух деталей — нет.
+
+Public DOM после reload: actual CSS viewport `945×923`, DPR `2`; root box `945×390`; три карточки `302×173` с промежутками около `20px`, все помещаются в row; `documentElement.scrollWidth=clientWidth=945`. Editor outer viewport `1228×923`; iframe CSS viewport `1025×860`. Свежий editor кадр показал правую карточку у границы editor canvas; public кадр показывает три карточки целиком. AI Vision сообщил 90/95, но это advisory.
+
+### Screenshot status
+
+Browser Use создал свежие JPEG кадры после save/reload: editor `1228×923`, public `945×923`; сигнатура `FF D8 FF E0`. Оба кадра показаны в tool output и визуально просмотрены. Сохранить returned bytes локальным PNG не удалось: Browser Use policy заблокировала навигацию на `data:` URL (разрешены только `http:`/`https:`), сообщив не обходить блок через workaround/alternate transport. Editor URL восстановлен; последняя проверка показывает inline v02.11.230 и единственный root `c2efc28`. Файлы PNG не создавались, поэтому screenshot deliverable и полный visual acceptance имеют статус **SCREENSHOT BLOCKED**; ссылок на несуществующие файлы нет.
+
+FAQ, Services, Hero и Process в этом проходе не запускались.
+
+## Повторная проверка Browser Use и охвата библиотеки — 2026-10-01
+
+- Source checkout по-прежнему на commit `9499472`, plugin version `v02.11.229`; установка на сайте всё ещё не подтверждена. В Browser Use найдены только существующие WP Pusher `1`, Elementor `2` (`post=5214`) и Plugins `3`. Метаданные tab `1` читаются, но DOM snapshot/read-only evaluate завершились CDP timeout, а screenshot текущей WP Pusher вкладки превысил 30 секунд. Не менял вкладки и не использовал другой transport.
+- Актуальный bundled manifest содержит **158 templates**: `about 6`, `benefits 20`, `cta 25`, `custom 28`, `faq 5`, `hero 23`, `mega_menu 8`, `portfolio 14`, `pricing 10`, `process 5`, `services 1`, `team 7`, `testimonials 6`. DesignPlan перечисляет девять typed archetypes: Hero, Process, Pricing, FAQ, Benefits, Services, Team, Testimonials, CTA. Retrieval aliases также распознают About, Portfolio, Mega menu и Carousel; Carousel как отдельная bundled category отсутствует. Эти данные задают source-level объём проверки и не являются live acceptance.
+- В этом проходе generation, operation/root creation, save/reload и block screenshots не выполнялись; **SCREENSHOT BLOCKED**, design/native acceptance **NOT RUN**. Последняя подтверждённая Plugins/editor версия остаётся v02.11.228.
+
+## Source v02.11.229 отправлен; live-продолжение остановлено Browser Use — 2026-10-01
+
+- Commit `9499472` (`fix: reuse preflighted library candidates`) успешно отправлен в `origin/main`; push подтвердил переход `8de11b0..9499472`. Исправлен повторный вызов адаптера выбранного library template: финальная запись переиспользует именно то adapted tree, которое прошло production preflight. Добавлена runtime regression на идентичность preflight-результата и успешный audit.
+- Source проверки: `tests/flex-generation-runtime.php` — **604 checks PASS**; `tests/design-pipeline-contract.php` — **274 PASS**; imported-template catalog — **158 manifest / 156 retrievable / 156 previews**; `tests/elementor-patch-guard.php` PASS; Node **6/6**; package hashes **249/249**; PHP lint и `git diff --check` PASS.
+- v02.11.229 ещё не установлена/не подтверждена на сайте. Последняя проверенная ранее Plugins и inline editor version — v02.11.228. Вкладки не создавались: inventory по Browser Use показывает WP Pusher `1`, Elementor editor `2` (`post=5214`) и Plugins `3`. Три чтения/привязки существующей WP Pusher вкладки завершились тайм-аутом `Emulation.setFocusEmulationEnabled`; перехода на другой browser transport не было.
+- Из-за этого в текущем продолжении live generation не запускалась. Новые operations/roots/записи отсутствуют; save/reload, точный content/native audit и design screenshots для v229 **NOT RUN**. Новых скриншотов нет; **SCREENSHOT BLOCKED**. Последний ранее подтверждённый canvas был пустым; получить свежее состояние canvas в этом запуске не удалось. WordPress settings, плагины и содержимое страницы этим запуском не менялись.
+
+## Продолжение live-проверок библиотечных блоков — 2026-10-01, v228
+
+В существующей Elementor-вкладке `2` на `post=5214` после подтверждённой ранее установки v02.11.228 выполнены пять новых запросов через штатный production pipeline. Ни один запрос не создал root или запись:
+
+| Семейство | Operation / identity | Production-диагностика | Итог |
+|---|---|---|---|
+| Benefits | `f2e3d011-c656-44d7-9502-6bf285dee7bb` | `action_path=library_agent`, `library_selection_source=model_declined`, `candidate_count=20`, `provider_call_count=2`, `write_count=0` | Отказ модели на компактном brief `название — описание`. |
+| Team | `e3ea4f1c-bfc5-4d60-8cf6-374c4273038f` | `library_agent`, `model_declined`, 8 candidates, 2 provider calls, `write_count=0` | Отказ модели на синтетическом team brief с явными полями участник/имя/должность. |
+| Pricing | `4ad415d3-6250-4345-9661-a79ca1f7843b` | `library_agent`, `model_choice`, 10 candidates, 1 provider call, `write_count=0`; `The selected library block has no repeatable content group that can be adapted.` | Parser-compatible tiers дошли до выбора, но выбранный шаблон отклонён адаптером. |
+| Testimonials | `9e43d7f2-fbda-4c88-9853-a7513c5b0af0` | `library_agent`, `model_choice`, 7 candidates, 1 provider call, `write_count=0`; `Adapted library block failed the native shape, content-fidelity, or semantic structure check.` | Parser-compatible синтетические цитаты/авторы не прошли проверку адаптированного блока. |
+| CTA | `718bcd44-0483-4ccb-9779-d1ccaeec6d2e` | `library_agent`, `model_choice`, 22 candidates, 3 provider calls, `write_count=0`; selected block has no adaptable repeatable content group | Отказ проверки даже для упрощённой секции с одной кнопкой. |
+
+Текущая вкладка inline показывает v02.11.228, canvas остаётся пустым. Для всех пяти операций сохранение/перезагрузка, selected JSON, public render, native structure и блоковые screenshots **NOT RUN**: записанных блоков нет. Свежий Browser Use screenshot пустого editor canvas получен, но локальный PNG deliverable **SCREENSHOT BLOCKED**: доступный CUA API показал изображение в tool output и не предоставил способ сохранить screenshot bytes в workspace. Кадр подтверждает только пустой canvas/отказ, не успешный блок. Другие элементы страницы не менялись; FAQ, Services, Hero и Process не тестировались.
+
+## Live-проверки библиотечных блоков после установки v228 — 2026-10-01
+
+Альхамдулиллах, live-версия подтверждена: в уже открытой WP Pusher вкладке для `WP AI Executor` была нажата `Update plugin` (branch `main`, Push-to-Deploy enabled). Немедленное чтение этой вкладки завершилось timeout, поэтому результат установки не предполагался по самому нажатию. Затем существующая Plugins tab показала активный `WP AI Executor`, **v02.11.228**. Существующая Elementor tab `2` на `post=5214` была перезагружена; после reload чат показал inline `Версия: v02.11.228`. Дополнительные editor tabs не создавались.
+
+До генераций editor показывал пустой canvas. Все five разрешённых live-запросов завершились до записи; ни один root не создан. По окончании canvas остался пустым. Ни FAQ, Services, Hero, ни Process в этой сессии не запрашивались.
+
+| Семейство | Operation / identity | Production-диагностика | Итог |
+|---|---|---|---|
+| Team | `bcbc4242-9d94-4a83-9224-a70acccc7aa3` | Brief прошёл; DesignPlan errors `team_items_out_of_range`, `team_team_item_count_out_of_range`; чат сообщил, что запись и legacy path остановлены. Диагностика не содержит `write_count`; pre-write gate означает 0 записей. | Отказ до library-agent; root отсутствует. |
+| Benefits | `86ce87bd-764f-483f-8594-78da4a7eba08` | `action_path=library_agent`, `library_selection_source=model_choice`, `candidate_count=20`, `provider_call_count=1`, `write_count=0`; выбранный шаблон не имел адаптируемой repeatable group. | Отказ после выбора, без записи. Это не подтверждает успешность v228 preflight для этого результата; диагностика не раскрыла конкретный candidate ID и compatible count. |
+| Pricing | `b3fc6a9e-bb85-4e95-acfd-ff5eb01ac4e8` | Brief прошёл; DesignPlan error `pricing_tiers_required`; запрос остановлен до library/provider/write. `write_count=0` по pre-write gate. | Отказ парсинга/плана; root отсутствует. |
+| Testimonials | `3e10d45c-9a5f-492c-ad86-048272c67fda` | `action_path=library_agent`, `library_selection_source=model_choice`, `candidate_count=7`, `provider_call_count=1`, `write_count=0`; адаптированный шаблон не прошёл native shape/content-fidelity/semantic check. | Отказ после выбора, без записи. |
+| CTA | `4a78a24a-f9a7-4bea-b065-70d87097b189` | `action_path=library_agent`, `library_selection_source=model_declined`, `candidate_count=22`, `provider_call_count=3`, `write_count=0`. | Модель отказалась от предложенных шаблонов; root отсутствует. |
+
+После каждого отказа одинаковый prompt повторно не отправлялся и append вместо repair не использовался. Финальный Browser Use/CUA кадр показывал пустой editor canvas и диагностику CTA; он был осмотрен inline, но не сохранялся как deliverable PNG. Успешных root нет, поэтому design save/reload, selected Elementor JSON, public render, desktop/mobile design screenshots и Vision review для этого запуска **NOT RUN**. Страница не получила новых записей.
+
+Итог: WP Pusher/Plugins/editor подтверждают установленный v228; live library acceptance для пяти оставшихся семейств **FAIL / NOT ACCEPTED** из-за отказов до write. До этого прохода существовавшие user changes и untracked artifacts сохранены; код, другие плагины и настройки WordPress не менялись.
+
+---
+
+## Доработка выбора imported templates — 2026-10-01, source v220
+
+**Вывод:** прежние invalid live designs были реальным visual FAIL. v219 запретил опасный fallback: отказ модели больше не превращается в произвольный native output. В live diagnostics v219 новые selections часто заканчивались `model_declined`/`no_model_choice`; при этом prompt показывал только названия, tags и widget types, без вложенной структуры. Это ограничивало доказательства, на основе которых агент выбирал, но точная причина каждого отказа (структурная неопределённость, поведение провайдера или другой фактор) отдельно не подтверждена. v219 защищает данные, но не даёт live visual PASS.
+
+### Изменение
+
+`wpae_block_library_retrieve_for_prompt()` теперь формирует короткий профиль структуры кандидата: native widget types и ограниченные Flex directions без IDs, classes или исходного текста. `wpae_llm_library_decision_prompt()` включает описания и структурный профиль, а также уточняет правило: при явной просьбе создать блок выбрать лучший совместимый кандидат; отказываться только при реальной несовместимости архетипа или обязательных слотов. Allowlisted `choice_key`, серверная адаптация/валидация, ownership guards и единая transaction/write boundary сохранены. Произвольный native fallback не добавлялся.
+
+Добавлены regressions структуры и prompt. Существующие проверки подтверждают, что валидный model choice применяет выбранный template, а decline не пишет ничего и не меняет соседние roots.
+
+### Проверки и release
+
+- Source commit `cc294aa` (`fix: give library selector template structure`), `main → origin/main` PASS; source version **v02.11.220**.
+- PHP lint — PASS; `flex-generation-runtime.php` — 590 checks; `design-pipeline-contract.php` — 274; `elementor-patch-guard.php` — PASS; imported catalog — 158 manifest / 156 retrievable / 156 previews; Node — 6/6; SHA-256 manifest — 249 files / 0 mismatches; `git diff --check` — PASS.
+- Live editor подтверждает только **v02.11.219**. WP Pusher update не подтверждён: после reload вкладки 36 и чтения второй уже открытой WP Pusher вкладки 37 Browser Use завершился `Timed out running CDP command "Emulation.setFocusEmulationEnabled"` для обеих вкладок; Update не нажимал. Обходным транспортом не пользовался. v220 installation — **BLOCKED / NOT CONFIRMED**.
+
+### Live-контроль данных
+
+До изменения prompt на v219 библиотечные попытки завершались `model_declined`/`no_model_choice` (`write_count: 0`) либо DesignPlan validation до write boundary. Подтверждённый пример: `post=5214`, operation `89f8013c-e1b8-466a-9fe8-1dbaaac1e577`, ошибки `team_items_out_of_range` и `team_team_item_count_out_of_range`. В chat AX часть prompt/response текстов отображалась рядом с несовпадающими IDs; без ledger корреляцию спорных пар не считаю подтверждённой.
+
+После reload editor preview и public DOM содержат **0 roots**. Public CSS viewport `1228×923`; пользователь ранее подтвердил, что очистил страницу. Существующие invalid designs этого изменением не переписывались; новые pages/drafts/roots не создавались. Значит, historical invalid screenshots v218 остаются **FAIL**, а live генерации с v220 пока не было.
+
+Свежий Browser Use кадр ниже фиксирует только пустой Elementor editor и no-write validation error на live v219, не дизайн. Исходные bytes JPEG преобразованы в PNG через `sips`; `file` подтвердил PNG `1228×923`, PNG открыт и визуально проверен. `post=5214`, editor CSS viewport `1228×923`, operation `89f8013c-e1b8-466a-9fe8-1dbaaac1e577`. Public design screenshot, mobile capture и successful root operation **NOT RUN**.
+
+![Пустой editor после отказа без записи; post=5214, root отсутствует, operation 89f8013c-e1b8-466a-9fe8-1dbaaac1e577; editor v219, CSS viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-selection-gate-v220/editor-empty-after-safe-refusals.png)
+
+[Открыть PNG пустого editor после отказа без записи](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-selection-gate-v220/editor-empty-after-safe-refusals.png)
+
+**Статусы:** source tests PASS; commit/push PASS; live v220 install BLOCKED; candidate choice на v219 declined/failed; write protection PASS (`write_count=0`); v220 save/readback NOT RUN; visual design, public desktop/mobile и Vision NOT RUN. Страница осталась пустой.
+
 ## Текущий результат — почему library-agent не доходил до шаблона
 
 Срез: **2026-09-30 21:18 +05:00 (Asia/Almaty)**. Работа велась локально над плагином и в уже существующих вкладках; WordPress страницы не сохранялись и не генерировались.
@@ -1091,3 +1226,321 @@ Editor diagnostic after reload:
 
 ![Team editor после failed guarded repair, post=5214 root=1a97037 operation=wpae-20260930183331-7e4e4983; CSS viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/team-editor-failed-after-repair.png)
 [Открыть PNG — Team editor](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-09-30-library-live-v218/team-editor-failed-after-repair.png)
+
+## Диагностика library-selection / адаптера, 2026-10-01
+
+Проверка продолжена на существующем editor tab `39`, post `5214`; новые WordPress pages, drafts и roots не создавались. После всех операций canvas остался пустым (`0` `.elementor-element[data-id]`), publish/save не выполнялись.
+
+### Найденный дефект и локальное исправление
+
+`wpae_llm_content_plan()` уже строил семантически сгруппированные пары отзыва с автором и участника с должностью через BriefIR. При адаптации выбранного элемента библиотеки `wpae_llm_apply_library_template()` игнорировал эти typed pairs и читал только generic `wpae_llm_extract_labeled_content()`. В результате валидная библиотечная selection могла прийти из одной provider call, но адаптация возвращала пустой tree и production route сообщал, что у шаблона нет повторяемой группы.
+
+В `v02.11.225` adapter использует typed BriefIR pairs для `team` и `testimonials`; parser дополнен компактной формой `Отзывы: «цитата» — автор; «цитата» — автор`. Runtime regression проверяет DesignPlan grouping, content fidelity при привязке к native testimonial widgets и адаптацию Team title/body в повторяемые карточки.
+
+### Live-попытки до исправления и версия
+
+| Семейство / операция | Editor v224 | Результат и запись |
+|---|---|---|
+| Pricing `b8faa43d-56f1-4bcc-8c88-87d2b9b2d300` | `library_agent`, `model_choice`, 10 кандидатов, 1 provider call | Адаптер отклонил выбранный шаблон; `write_count=0`. |
+| Pricing `a26602e9-ecb5-4b14-8548-0cffdbec097d` | Та же route/selection статистика | Тот же отказ до write, несмотря на brief, поддержанный локальным parser regression. Причина на сервере ещё не доказана. |
+| Team `4cab65ad-a97c-460c-97ad-36e54ddb6710` | Диалог показал library selection validation отказ | Записи нет; подробная диагностика выбора в DOM не отобразилась. |
+| Testimonials `cff45675-df47-4180-ade2-dee215daa48a` | Краткий вариант `«цитата» — автор` | Запрос остановлен DesignPlan gate до записи: BriefIR ещё не распознавал этот короткий синтаксис. |
+| Testimonials `83fe35fb-3c7d-43ed-836a-b4ac05a032d8` | Явные `отзыв N — текст/автор`, local contract-supported формат | Дошёл до library selection, но выбранный шаблон отклонён адаптером до записи. Этот path исправлен локально в v225, но live retest не выполнен. |
+
+Source HEAD и `origin/main`: `8468dc6`, plugin source `v02.11.225`. Existing editor inline config при последней проверке сообщал `v02.11.224` после обычного reload. WP Pusher и Plugins UI версию v225 подтвердить не удалось: Browser Use на tab `37` вернул `Timed out running CDP command "Emulation.setFocusEmulationEnabled" for tab 37`; последующий DOM/body readback на том же tab завершился `CDP operation exceeded its deadline before command dispatch`. Это техническая ошибка Browser Use, не отказ HTTP и не подтверждение установки. Я не переключал плагины/настройки и не использовал другой транспорт. Поэтому v225 live execution, save/reload и rendered design — **NOT RUN**.
+
+### Локальные проверки
+
+Успешно: PHP lint для `brief-ir.php`, `llm.php`, `wp-ai-executor.php`; `tests/flex-generation-runtime.php` — `599 checks OK`; `tests/design-pipeline-contract.php` — `274 checks OK`; `tests/elementor-patch-guard.php`; catalog — `158` manifest entries, `156` retrievable/instantiated previews; `node --test tests/*.test.js` — `6/6`; package hash probe; `git diff --check`.
+
+### Editor failure evidence
+
+Все кадры — editor source, post `5214`, CSS viewport `1228×923`, devicePixelRatio `2`; PNG фактического размера `1228×923`. Интерфейс Elementor/chat остаётся виден. Это диагностика до release v225, не визуальный PASS. Во всех кадрах canvas пуст и неповреждён.
+
+Pricing и Team failures (`b8faa43d…`, `a26602e9…`, `4cab65ad…`):
+
+![Editor v224: Pricing и Team candidate adaptation отказы, post=5214; canvas пуст](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-tests-v224/editor-pricing-team-after-refusal-v224.png)
+[Открыть PNG — Pricing/Team failures](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-tests-v224/editor-pricing-team-after-refusal-v224.png)
+
+Testimonials short phrase stopped by DesignPlan (`cff45675-df47-4180-ade2-dee215daa48a`):
+
+![Editor v224: Testimonials short brief rejected before write, post=5214](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-tests-v224/editor-testimonials-plan-rejection-v224.png)
+[Открыть PNG — Testimonials plan failure](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-tests-v224/editor-testimonials-plan-rejection-v224.png)
+
+Testimonials adapter failure with typed brief (`83fe35fb-3c7d-43ed-836a-b4ac05a032d8`):
+
+![Editor v224: выбранный Testimonials candidate отклонён до write, post=5214](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-tests-v224/editor-testimonials-adapter-rejection-v224.png)
+[Открыть PNG — Testimonials adapter failure](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-01-library-tests-v224/editor-testimonials-adapter-rejection-v224.png)
+
+Public screenshots, mobile acceptance, successful library-backed save/reload, operation-bound Vision review и exact Pricing rejection cause остаются **NOT RUN / NOT CONFIRMED**. Ни одна из перечисленных live операций не создала root; source patch локально проверен и уже опубликован в GitHub, но не установлен на WordPress.
+
+## Обновление диагностики, 2026-10-01 — фильтрация совместимости библиотеки
+
+### Новое подтверждение и исправление
+
+На установленном v226 повторные Team (`2551b8a9-c509-44e3-bfbe-35ee65a28bf2`) и Benefits (`83922fde-392b-4204-9d0a-08b7c396cb91`) завершились отказом адаптера до записи, `write_count=0`; canvas остался пуст. Пользователь отдельно попросил больше не тестировать FAQ. После этого указания FAQ не запускался.
+
+Подтверждённая архитектурная причина: `wpae_block_library_retrieve_for_prompt()` ранжировал шаблоны по категории и базовой структуре Elementor, затем отдавал первые три кандидата ИИ-агенту. Проверка через общий production adapter `wpae_llm_apply_library_template()` и семантические/content проверки происходила лишь после выбора агентом. Поэтому агент мог выбрать формально совместимый Elementor JSON, который генератор не мог адаптировать под текущий запрос. Исходный диагностический текст ошибки показывал точку отказа, а пропущенный preflight подтверждён исходниками. Конкретные сохранённые JSON ID в отказавших v226 операциях не были зафиксированы, поэтому не утверждается, что каждый из них сам по себе был некорректен.
+
+В `v02.11.228` изменён этот общий путь: ранжированный список проверяется тем же production adapter, native shape, content fidelity и semantic audit до вызова модели; проверяются ранжированные позиции за пределами первых трёх, пока не найдены максимум три допустимых. ИИ-агент получает только эти прошедшие кандидаты с точными серверными `choice_key`. Если ни один не проходит, запрос отказывается до provider call и до write. Никакая другая transaction/write boundary не создана. Изменены `includes/elementor/block-library.php`, `includes/llm/llm.php`, `tests/flex-generation-runtime.php`, `tests/llm-chat-contract.test.js`, `wp-ai-executor.php`, `wpae-package.json`.
+
+Regression в Team runtime harness ставит три неадаптируемых кандидата перед валидным четвёртым и проверяет, что модели предлагается только последний как `candidate_1`. Это проверяет общий механизм, а не отдельный live-дизайн.
+
+### Релиз и live-граница
+
+- `v02.11.227`, commit `08a229e`, был промежуточным вариантом этого исправления; дополнение, проходящее весь ranked list до выдачи топ-3, выпущено в `v02.11.228`, local HEAD `8de11b0`. Команда `git push` сообщила `08a229e..8de11b0 main -> main`, но remote readback не удалось подтвердить: локальная tracking-ссылка `origin/main` осталась на `50c2e97` (не предок HEAD), а `git ls-remote` завершился DNS-ошибкой `Could not resolve host: github.com`. Текущий GitHub HEAD поэтому **не подтверждён**.
+- PHP lint изменённых PHP-файлов — PASS; `tests/flex-generation-runtime.php` — **603 checks PASS**; `tests/design-pipeline-contract.php` — **274 PASS**; `tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — **6/6 PASS**; package probe — **249 файлов, 0 несовпадающих hashes**; `git diff --check` — PASS.
+- WP Plugins и существующая Elementor-вкладка подтверждают только установленный inline/plugin `v02.11.226`. Установка v228 через WP Pusher не состоялась/не подтверждена: Browser Use на уже открытой WP Pusher tab 3 выдал `Timed out running CDP command "Emulation.setFocusEmulationEnabled" for tab 3`. После одной попытки reload той же вкладки чтение истекло по timeout и перезапустило Node REPL; одинаковые запросы не повторялись. Это сбой Browser Use до чтения UI, не HTTP-ошибка и не явный запрет инструмента. Другие плагины и настройки не открывались и не изменялись.
+- Поскольку редактор остался на v226, live-тесты нового фильтра намеренно не запускались. Для v228 нет generation operation IDs, roots, save/reload, editor/public screenshots или Vision review: live acceptance — **NOT RUN**. Новых записей на post=5214 нет; существующая страница осталась пустой.
+- Нужен восстановленный доступ Browser Use к уже открытой WP Pusher tab, чтобы установить v228 штатным способом; после этого можно продолжить live-тесты других семейств. FAQ остаётся исключённым по просьбе пользователя.
+
+## Продолжение live library QA — source v02.11.231 (2026-10-01)
+
+### Изменения и локальные доказательства
+
+В `includes/llm/llm.php` явные названия Mega Menu, Carousel, About и Portfolio классифицируются до ценовых упоминаний. `includes/llm/brief-ir.php` допускает их в BriefIR allowlist, чтобы библиотечный маршрут не падал на `unknown/pricing`. Carousel copy разбирается только из маркированных полей и партнёрского списка; adapter удалил запись целого user prompt в `text-editor`. Для явного библиотечного запроса, когда нет допустимого library-agent маршрута/совместимых кандидатов, добавлен отказ до provider/write. `tests/flex-generation-runtime.php` проверяет classifier precedence, точное извлечение Carousel copy, сохранение `image-carousel`, production library-agent route в in-memory harness и no-candidate отказ с нулём provider calls и writes. Эти проверки не подтверждают live Elementor render.
+
+Source release: commit `eb563ffc565008a3abd8d7c939d0b11840d4f00e`, message `fix: keep library-only generations fail-closed`, plugin `v02.11.231`. `git push origin main` сообщил об отправке `fb02557..eb563ff main -> main`. Отдельный `git ls-remote origin refs/heads/main` не состоялся из-за DNS `Could not resolve host: github.com`; remote readback не подтверждён.
+
+Локальные проверки: PHP lint изменённых PHP-файлов — PASS; `tests/flex-generation-runtime.php` — **614 checks PASS**; `tests/design-pipeline-contract.php` — **274 checks PASS**; `tests/elementor-patch-guard.php` — PASS; `node --test tests/*.test.js` — **6/6 PASS**; package SHA-256 — **249 entries, 0 mismatches**; `git diff --check` — PASS.
+
+### Browser Use / live status
+
+Browser Use inventory показал три существующие вкладки: WP Pusher tab `4`, Elementor editor tab `6` на post `5214`, Plugins tab `7`. Попытка привязать WP Pusher по tab ID `4` и по `providerTabId` завершилась одинаковым `Timed out running CDP command "Emulation.setFocusEmulationEnabled" for tab 4`. После ошибки inventory подтвердил, что вкладки остались открыты. Альтернативный browser transport не применялся; WordPress settings/plugins не открывались и не изменялись.
+
+v231 через WP Pusher не установлена или не подтверждена. Последняя известная inline-версия Elementor editor до этого прохода — v02.11.230; из-за Browser Use timeout её не перечитал. На post=5214 в этом проходе новых generation requests не было: новых operation/root IDs нет, save/reload не выполнялись, существующие roots не изменялись. FAQ, Services, Hero и Process не тестировались. Свежих v231 editor/public screenshot PNG, проверенных bytes, save/reload evidence или Vision review нет; v231 live acceptance остаётся **NOT RUN**.
+
+## Library QA update — source v02.11.232, 2026-10-01
+
+Пользовательский кадр Mega Menu показывает провал: вместо штатной навигации выведен плоский список, а часть формулировки запроса попала в контент. Пользователь передал Elementor JSON виджета `WordPress Menu` (`nav-menu`, menu slug `best-service`, horizontal, burger). Предыдущий результат не принят.
+
+Исправление в `includes/llm/llm.php` добавляет `nav-menu` к допустимой native-структуре Mega Menu, извлекает заголовки групп отдельно от link labels и сверяет адаптированный виджет с реальными пунктами явно указанного существующего меню через read-only WordPress API. При несовпадении preflight исключает кандидат до выбора/записи; пользовательское меню не изменяется. Runtime regression покрывает точные заголовки/ссылки, совпадающие и отсутствующие пункты, preflight и неизменность menu data.
+
+Релиз `v02.11.232`, commit `f298008` (`fix: adapt library menu templates to native nav menu`). `git push origin main` сообщил об успехе (`eb563ff..f298008 main -> main`); последующий `git ls-remote origin refs/heads/main` не выполнился: DNS `Could not resolve host: github.com`, поэтому remote readback отдельно не подтверждён. Локально: PHP lint PASS; runtime — **619 checks PASS**; DesignPlan — **274 PASS**; Elementor patch guard PASS; Node — **6/6 PASS**; package hashes — **249 entries, 0 mismatches**; `git diff --check` PASS.
+
+Live-граница: Browser Use подтвердил инвентарь прежних tabs WP Pusher `4`, Elementor `6` на `post=5214`, Plugins `7`; активной/выбранной была editor tab. Чтение WP Pusher DOM/screenshot не удалось из-за CDP `Emulation.setFocusEmulationEnabled` timeout. На последнем доступном editor readback была inline-версия `v02.11.230`. Установка v232 не подтверждена; генерация Mega Menu/других семейств на v232, save/reload, свежие screenshots/PNG, native DOM и public source в этом проходе не получены. Новых live operations/roots не создавалось; текущие Pricing `c2efc28` и неудачный Mega Menu `8c9f2dc` не менялись. Live acceptance **NOT RUN**.
+
+## Live library continuation — verified editor v02.11.232, 2026-10-01
+
+Browser Use confirmed v02.11.232 in the existing Plugins tab and inline in the existing Elementor tab `6` for post `5214`. No new Elementor tab was opened. After reload the editor DOM contains the existing Partners/Carousel root `68ff481` and the generated About root `3271f43`; no roots were deleted and the WordPress menu/settings were not edited.
+
+### Partners reference
+
+The user-provided canonical Elementor JSON identifies root `68ff481`, badge `ПАРТНЁРЫ`, title `С кем мы работаем`, native `image-carousel`, and five slides. The current editor DOM matches those labels and shows five carousel slides. The rendered images are generic Logo Ipsum placeholders, so only the native structure and copy match; Partners is not accepted as a finished content block.
+
+### About generation and targeted patches
+
+The production request created root `3271f43` on post `5214`, operation `wpae-20261001123654-666b979a`, through `action_path=library_agent`, with one provider call and one write. Provider output contained zero elements and `provider_design=false`; the saved library result used deterministic fallback. Its first title leaked the request preamble, and the imported root included unrelated demo video/image settings.
+
+Targeted patch `wpae-patch-6938b90091861944` changed five root properties and removed the video/overlay treatment. Patch `wpae-patch-4dfabac11970df8d` changed native heading `b58c6a1` to exact text `О нас`. Patch `wpae-patch-92492429b19c0edf` reported a write for `title_color=#111827`, but after editor reload the Style control still showed `#FFFFFF`; the title was not visibly legible on the white surface. The exact title and requested description are present in editor DOM after reload, but visual acceptance is **FAIL**.
+
+### Further production requests
+
+- CTA: runtime diagnostics were `candidate_count=22`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`; no operation or root was created.
+- Mega Menu native `nav-menu` with existing slug `best-service`: diagnostics were `candidate_count=0`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`.
+- A fuller Mega Menu request containing the exact link groups was refused before write because the assistant continued to report `Выбрано: 1 объект` while the prompt requested a new root. Escape, blank-canvas click, reload of the existing editor tab, and collapsing/reopening the assistant removed the visible canvas outline but did not clear its selected-object context. No menu mutation or root write occurred.
+
+### Screenshot and source boundary
+
+Fresh Browser Use editor captures were shown inline and visually inspected during this session. Their bytes were not persisted locally: the available CUA screenshot API displayed the image but exposed no documented filesystem writer. Therefore no PNG signature check, saved-file open/inspection, or clickable PNG artifact exists for these latest states; screenshot artifact acceptance is **SCREENSHOT BLOCKED**. The displayed screenshot canvas was 1228×923 px. Actual CSS viewport was not re-measured in this continuation; the last known values were outer editor 1228×923 CSS px and preview iframe 1025×860 CSS px. No public-source render was opened or accepted.
+
+No code changed. FAQ, Services, Hero, and Process were not tested. Existing user roots, settings, and unrelated working-tree changes were preserved.
+
+## Source v02.11.233 — исправление stale-selection classifier и статус установки, 2026-10-01
+
+Пользователь прислал canonical Elementor JSON Partners. В нём root `68ff481` содержит badge `ПАРТНЁРЫ`, heading `С кем мы работаем`, один native `image-carousel` и пять slides; carousel настроен на 4 slides, без navigation, autoplay/infinite, speed 500 ms. Existing editor ранее подтвердил тот же root, labels и пять slides. Generic Logo Ipsum media не даёт полного content/design acceptance. JSON использовался как read-only reference, не вставлялся.
+
+Корневая причина остановки отдельного Mega Menu root — общий targeted-edit classifier принимал stale selection плюс «текущая страница»/layout verb за patch scope, хотя пользователь явно просил создать отдельный root. В `includes/llm/llm.php` классификатор теперь пропускает явный root-insert intent, кроме запроса, где явно сказано изменить выбранный элемент и одновременно создать отдельный root; такой конфликт остаётся fail-closed. Regression check добавлен в `tests/flex-generation-runtime.php`.
+
+Release source `v02.11.233`, commit `4444e72` (`fix: preserve explicit library root insertion intent`). `git push origin main` сообщил `f298008..4444e72`; отдельный remote readback подтвердил `4444e729491c419f2335a6a86f20b698ecb03ce6`. Source checks: PHP lint PASS; `tests/flex-generation-runtime.php` — 620; `tests/design-pipeline-contract.php` — 274; `tests/elementor-patch-guard.php` PASS; imported template catalog — 158 manifests / 156 retrievable / 156 previews; Node 6/6; package hashes 249 files / 0 mismatch; `git diff --check` PASS.
+
+Live установка не завершена. Browser Use не смог привязаться к существующей WP Pusher tab `4`: `Emulation.setFocusEmulationEnabled` timeout повторился и в штатном Browser Use binding. Alternative browser transport, настройки WordPress и другие плагины не трогались. Read-only проверка существующей Elementor tab `6` подтверждает `post=5214`, inline version `v02.11.232`, outer CSS viewport `1228×923` при DPR 2, preview iframe rect `1025×860`. Следовательно v233 live generation не запускалась; новых operation/root, save/reload, block screenshots и public-source evidence нет. Existing roots and menu remained untouched.
+
+## Повторная production-проверка Team и Benefits на v02.11.232 — 2026-10-01
+
+На существующей Elementor tab `6`, post `5214`, выполнены последовательные запросы в production library pipeline. Панель по-прежнему показывала один выбранный объект; запросы Team и Benefits были классифицированы как generation и дошли до adapter preflight, а не до targeted-root patch.
+
+- Team prompt использовал три явно обозначенные тестовые role-card: «Дизайнер продукта», «Веб-разработчик», «Руководитель проекта»; fake personal names, portraits, social links and biographies были запрещены. Диагностика: `candidate_count=8`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`. Отказ: «Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны».
+- Benefits prompt содержал точные три пары: «Прозрачные этапы» / «Каждый шаг согласован до начала работы»; «Удобное редактирование» / «Содержание доступно в native Elementor widgets»; «Адаптация под экран» / «Карточки складываются в одну колонку на телефоне». Диагностика: `candidate_count=20`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`, тот же prewrite adapter refusal.
+
+Ни для одной попытки operation/root ID не создан. Root set не менялся, Elementorsave/reload не выполнялся, screenshots successful roots отсутствуют. Повторных запросов и manual fallback не было. Это результаты установленной v02.11.232; source v02.11.233 ещё не установлен.
+
+## Source v02.11.234 — library adapter preflight fix, 2026-10-01
+
+Повторный parse пользовательского Partners JSON подтвердил reference структуру: root `68ff481`, badge `ПАРТНЁРЫ`, heading `С кем мы работаем`, один native `image-carousel`, пять изображений; настройки 4/3/2 slides на desktop/tablet/mobile, navigation none, autoplay/infinite on, speed 500 ms. Reference не вставлялся.
+
+Корневой дефект находился в общем library-copy cleanup: первая content unit могла быть строкой команды («Создай отдельный блок…») и попадала в heading вместо явного section title. Cleanup теперь получает title через `wpae_llm_extract_section_title()`. Production preflight запускает общий native Flex layout contract и native visual contract до shape/fidelity/semantic gates; Team-шаблоны больше не проводят импортированные library portraits без URL из явного BriefIR media reference и используют уже существующую native-конверсию Icon Box.
+
+Regression использует bundled `our-team.json`, `block-course-boxes.json`, `block-feature-grid.json`: Team проходит с точным заголовком и ролями, без утечки prompt, портретов и запрещённых widgets; два Benefits templates проходят с точным заголовком и парами. Локальные проверки: PHP lint PASS; `flex-generation-runtime.php` 622; DesignPlan 274; patch guard PASS; imported catalog 158/156/156; Node 6/6; package manifest 249 files, 0 mismatches; `git diff --check` PASS.
+
+Source commit `0f02121` (`fix: preflight normalized library candidates`), version `v02.11.234`; push сообщил `4444e72..0f02121 main -> main`, remote readback подтвердил `0f0212189d54141ae3e1f668d19a4bc8cb7f3eca`.
+
+### Live status on post=5214
+
+WP Pusher installation is not confirmed. Browser Use could not bind the existing Pusher tab `4` and returned `Emulation.setFocusEmulationEnabled` timeout. No alternate browser transport was used. The existing Elementor tab `6` still displays inline v02.11.232. Its fresh Browser Use screenshot showed a blank canvas and empty Structure panel alongside the previous Benefits diagnostics `candidate_count=20`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`. The capture returned JPEG bytes only; no PNG artifact was saved. No v234 generations, operations, roots, save/reload, or successful-block screenshots were created in this turn. FAQ, Services, Hero, and Process remained untested. No existing roots, WordPress settings/menu, or other plugins were changed.
+
+## Browser Use recheck and Partners reference — 2026-10-01
+
+The user's supplied Partners Elementor JSON was read as a read-only reference and not inserted. It describes root `68ff481`: a section container with badge/title and native `image-carousel`, five slides, 4/3/2 visible slides at desktop/tablet/mobile, no navigation, autoplay and infinite enabled, speed 500 ms. This is structural reference only; it does not authorize restoring or mutating the root.
+
+A fresh Browser Use read of existing Elementor tab `6` confirms post `5214`, inline plugin `v02.11.232`, viewport `1228×923` CSS px at DPR 2, and preview iframe rectangle `1025×860` CSS px. The accessibility snapshot shows an empty preview canvas and empty Structure panel. This is a current editor observation and does not establish the persisted server-side root set. WP Pusher tab `4` could not be bound through Browser Use by tab ID, URL, or the browser tab API; each attempt timed out while setting focus emulation. No browser transport other than Browser Use was used, no WordPress/plugin settings were changed, and no generation/save was run against v232. Latest source remains v02.11.234 at remote commit `0f0212189d54141ae3e1f668d19a4bc8cb7f3eca`; installation and live acceptance remain unconfirmed.
+
+
+## Source v02.11.235 и live Partners reference — 2026-10-02
+
+Source release: `v02.11.235`, commit `a1d17801d2383e30f6997d39cef7bbc12c5bc113` (`fix: track library writes and carousel slides`). `git push` сообщил `0f02121..a1d1780 main -> main`; remote HEAD отдельно не перечитывался. Изменение в `includes/llm/llm.php` добавляет durable ledger для library write operations и native responsive slide counts в carousel adapter. Локальные проверки: PHP lint PASS; flex runtime 624; DesignPlan 274; Elementor patch guard PASS; Node 6/6; package hashes 249/249; `git diff --check` PASS.
+
+### Установка
+
+Существующая Plugins tab `8` показывает WP AI Executor `v02.11.234`; существующий Elementor tab `6` на `post=5214` также сообщает inline `v02.11.234`. Попытка прочитать WP Pusher через существующую tab `4` посредством Browser Use завершилась `Emulation.setFocusEmulationEnabled` timeout. Альтернативный browser transport не использовался; WordPress settings и сторонние плагины не менялись. Установка v235 не подтверждена, live generation на v235 не запускалась.
+
+### Partners root и операции
+
+Пользовательский JSON — read-only native reference; вручную его не вставляли. Существующий Partners root `d0f9b01` создан generation operation `wpae-20261001185616-2ee16760`. Первичная отдельная library-agent попытка выбора: identity `8eb88034-b744-4065-a7ad-c314beb69b9c`, `action_path=library_agent`, candidates `1/1`, selected key пустой, provider calls `3`, `write_count=0`; модель не выбрала шаблон, и та попытка остановилась без записи.
+
+Для уже существующего root выполнен один exact-scope native patch: operation `wpae-patch-52a87ba1aecaee01`, operation identity `6fd53740-12ea-4669-9741-da971ce7a648`, post `5214`, type `targeted_edit`, state `written`, saved hash `aec71f5b1c0003e066ca779d489c97c4c49fb24751b1d5187886fe27e14d6514`, root `d0f9b01`. Editor readback после reload подтверждает top-level root, badge `ПАРТНЁРЫ`, heading `С кем мы работаем` и native `image-carousel` `cfb197b`. Число URL — 5; порядок совпадает с переданным JSON (`4-2.png`, `2-2.png`, `1-2.png`, `3-2.png`, `5-2.png`). Native settings readback: desktop/tablet/mobile slides `4/3/2`, navigation `none`, autoplay `yes`, autoplay speed `5000`, infinite `yes`, speed `500`; reference spacing custom `83px` desktop / `60px` tablet также сохранён. Existing Team root присутствует и не менялся.
+
+### Screenshots и acceptance
+
+Свежий Browser Use editor screenshot был получен после reload и визуально осмотрен в tool output. Последний capture: JPEG `FF D8 FF E0`, `1228×923` px, 87,957 bytes. Outer editor CSS viewport — `1228×923` при DPR 2; последняя точная геометрия iframe, измеренная до скрытия панели editor, — `1025×860` CSS px. Кадр показывает секцию Partners и placeholder logos из эталонных assets. Байты не сохранены в PNG: недоступный screenshot API выводит JPEG в tool output без локального writer. PNG signature/file open/inspection и clickable PNG link отсутствуют, поэтому **SCREENSHOT BLOCKED**; public source capture — **NOT RUN**. Не отмечать полный visual/public PASS.
+
+В текущем срезе FAQ, Services, Hero и Process не тестировались; других roots и глобальные настройки/меню не меняли. Отчёт фиксирует события этого среза без инструкций следующему агенту.
+
+## Live library QA: отказ Benefits — 2026-10-02
+
+Live generation выполнена в существующей editor tab `6` на `post=5214`, inline plugin `v02.11.234`; локальный source HEAD `a1d1780` содержит v02.11.235, но эта версия на сайте не подтверждена. WP Pusher и другие вкладки/настройки WordPress не менялись.
+
+Пользовательский Partners JSON прочитан как read-only reference. Он задаёт badge `ПАРТНЁРЫ`, heading `С кем мы работаем`, native `image-carousel`, 5 изображений в заданном порядке, responsive slide count `4/3/2`, autoplay/infinite on, no navigation и speed 500 ms. Текущий Partners root не импортировался и не менялся.
+
+Запрос Benefits: новый top-level root с заголовком `Наши преимущества` и тремя точными title/body парами. `action_path=library_agent`; identity `2b68dc56-12fb-4729-ab7e-b63b34601caa`; source `model_declined`; candidates `20`, compatible `2`, offered `2`, provider calls `2`, selected key пустой, `write_count=0`. Модель отказалась от предложенных шаблонов; записи не было, root/operation/save/reload отсутствуют. Никаких повторных append-запросов не делалось; существующие roots сохранены.
+
+Fresh Browser Use screenshot сделан из текущего editor на outer CSS viewport `1228×923`, DPR 2. Сохранённый JPEG (`113771` bytes) преобразован через `sips` в PNG `1228×923`; `file`, PNG signature и размеры проверены. PNG открыт и визуально осмотрен. Кадр показывает текущие Team/Partners и diagnostics/error чат; это evidence отказа, не успешного дизайна. Public render не снимался. FAQ, Services, Hero и Process не запускались.
+
+![Benefits refusal — editor, post=5214, CSS viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-02-benefits-refusal/benefits-refusal-editor.png)
+[Открыть PNG — Benefits refusal](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-02-benefits-refusal/benefits-refusal-editor.png)
+
+### Testimonials: отказ production preflight — 2026-10-02
+
+На установленной inline v02.11.234 через текущую editor tab `6` отправлен отдельный Testimonials request на post `5214` с двумя явно тестовыми quote/author парами. Production preflight отказал до provider: archetype `testimonials`, `candidate_count=7`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`. UI сообщил: «Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны». Диагностика не показала operation identity/ID; новый root отсутствует. Запрос не повторялся, существующие roots не менялись.
+
+Fresh Browser Use editor screenshot получен в outer CSS viewport `1228×923`, DPR 2; JPEG `109034` bytes конвертирован в PNG `1228×923`, `file`/signature/размеры проверены, PNG открыт и визуально осмотрен. Кадр подтверждает preflight отказ и `write_count=0`; public source и successful-block checks — NOT RUN.
+
+![Testimonials refusal — editor, post=5214, CSS viewport 1228×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-02-benefits-refusal/testimonials-refusal-editor.png)
+[Открыть PNG — Testimonials refusal](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-02-benefits-refusal/testimonials-refusal-editor.png)
+
+## Source v02.11.236 and live installation status — 2026-10-02
+
+The user's supplied Partners page JSON was parsed read-only. It describes the accepted native block structure: badge `ПАРТНЁРЫ`, heading `С кем мы работаем`, one native image carousel with five media items, desktop/tablet/mobile slide counts `4/3/2`, navigation disabled, autoplay and infinite enabled. It was not imported or inserted. Existing Partners root `d0f9b01` and image-carousel widget `cfb197b` were not modified.
+
+The v02.11.234 Testimonials preflight refusal was caused by the generated test wording `— автор «Имя»`: the BriefIR parser left `автор` in the label, then treated the quoted author name as an additional quote; the plan consequently lost the complete second pairing and no candidate passed semantic preflight. The parser now removes supported author labels, unwraps quoted names, and excludes paired author spans from independent quote collection. The regression checks exact two-pair extraction and the production library adapter, fidelity, and semantic preflight.
+
+Source v02.11.236 is commit `4760c006caadd3754a4fbc4379d5589cf5148f2d`, `fix: preserve testimonial quote and author pairs`. `git push origin main` reported `a1d1780..4760c00 main -> main`; subsequent `git ls-remote origin refs/heads/main` failed with `Could not resolve host: github.com`, so independent remote HEAD confirmation is unavailable. Local verification: PHP lint PASS; flex runtime 626 checks; DesignPlan 274; Elementor patch guard PASS; Node contracts PASS (6/6); package SHA validation 249/249; `git diff --check` PASS.
+
+WP Pusher installation and live retest were not completed. Browser Use `domSnapshot` on existing Pusher tabs `4` and `7`, Browser Use screenshot on tab `4`, and CUA binding to existing tab `4` all timed out with `Emulation.setFocusEmulationEnabled`. No alternate browser transport was used and no new tab was created. The last captured editor inline version is v02.11.234; installation of v02.11.236 remains unconfirmed. No post-fix generation, operation/root, save/reload, or public-source evidence exists.
+
+Benefits live refusal on v02.11.234: `candidate_count=20`, `compatible_candidate_count=2`, `offered_candidate_count=2`, `provider_call_count=2`, `write_count=0`, `library_selection_source=model_declined`. Testimonials live refusal on v02.11.234: `candidate_count=7`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`. Both were pre-write failures with no operation/root and no page mutation. Fresh refusal screenshots are verified PNGs at `docs/audits/2026-10-02-benefits-refusal/benefits-refusal-editor.png` and `docs/audits/2026-10-02-benefits-refusal/testimonials-refusal-editor.png`, each 1228×923 px. These prove refusal state only; no generated-block PASS is claimed. No instructions to a future agent are included in this report.
+
+## Source v02.11.237 — shared Team library visual fix and live status, 2026-10-02
+
+The bundled `our-team.json` regression reproduced the same native structure measured in the existing Team root: a 48% title column and a 48% column holding three 31% member cards. Those member containers each contain a heading and text-editor pair but had no card background, border, or padding. The shared library classifier only recognized Icon Box/Testimonial widgets; additionally, the library selection preflight did not run the same layout normalizer applied after candidate selection. This allowed a candidate with valid copy/shape checks but unstyled Team items to reach selection.
+
+The production preflight now applies `wpae_llm_normalize_library_layout()` before fidelity/shape gating and selection. Team card detection recognizes direct member heading/text-editor pairs or complete Icon Box pairs, allowing the existing normalizer to produce three responsive native card surfaces. The production-preservation chain regression confirms the selected tree retains white surfaces, solid borders, and 1.5rem/1.25rem padding after trusted-library styling. The current live Team root was not edited; visual improvement is local/preflight evidence only until installed and generated live.
+
+Source v02.11.237 is commit `9b93295e45b1de4c456212e9870d8fb9ac87af31`, `fix: normalize team library cards before selection`. `git push origin main` reported `4760c00..9b93295 main -> main`. Local verification: PHP lint PASS; flex runtime 626; DesignPlan 274; Elementor patch guard PASS; imported catalog 158 manifests / 156 retrievable / 156 previews; Node contracts PASS (6/6); package manifest hashes 249/249; `git diff --check` PASS.
+
+Installation and post-fix live testing remain unconfirmed. Browser Use refreshed its runtime and listed existing tabs `4`, `6`, `7`, `8`; reading or reloading WP Pusher tab `4` failed again with `Emulation.setFocusEmulationEnabled` timeout. Earlier calls against tab `7` failed identically. No alternate browser transport, new tab, WordPress setting, global menu, plugin, or page root was changed. Last captured editor inline version is v02.11.234; v02.11.237 has not been verified in Plugins or the editor. No live post-v237 operation/root, save/reload, or public-source evidence exists.
+
+The live refusal results remain on v02.11.234: Benefits offered two compatible choices from 20 candidates, received two provider calls, and stopped with `model_declined` / `write_count=0`; Testimonials had 7 candidates, 0 compatible, 0 provider calls, `write_count=0`. Both existing-editor refusal screenshots remain verified local PNG evidence; neither is a generated block. FAQ, Services, Hero, and Process were not run.
+
+
+## WP Pusher update attempt and user Partners JSON — 2026-10-02
+
+The user's additional Partners Elementor JSON was parsed read-only: one root `68ff481`, headings `ПАРТНЁРЫ` and `С кем мы работаем`, a native `image-carousel` (`6febd42`) with five media URLs, responsive slides `4/3/2`, navigation disabled, autoplay and infinite enabled, speed 500 ms. It was not imported. Existing live root `d0f9b01` and carousel widget `cfb197b` were not changed.
+
+Using official Browser Use, the existing Plugins tab `8` navigated in place to WP Pusher Plugins; its repository row showed `DiasMazhenov/wp-ai-executor`, branch `main`. Only the WP AI Executor row's `Update plugin` button was clicked. Browser Use timed out during CDP `Runtime.evaluate` on tab `8`. Follow-up snapshot/reload attempts on existing WP Pusher tabs `4` and `8` failed with `Emulation.setFocusEmulationEnabled`; no other plugin was touched and no tab was created.
+
+The existing Elementor tab `6` was reloaded through Browser Use. Its inline helper still reports `v02.11.234`, so installation of v02.11.237 is not confirmed. No post-v237 live generation or operation/root was created. The reloaded editor shows the earlier Benefits and Testimonials pre-write refusals, each with `write_count=0`; no page root was changed. No generation screenshot is applicable to this update attempt.
+
+
+## Browser Use selected tab and current editor version — 2026-10-02
+
+A fresh Browser Use tab list shows existing WP Pusher Plugins tabs `4`, `7`, `8`, and Elementor post `5214` in tab `6`. The documented `tabs.selected()` result is tab `6` (the editor). A Browser Use accessibility read against existing background Pusher tab `8` again failed with `Emulation.setFocusEmulationEnabled` timeout. This runtime's documented tab API includes `get/list/new/selected`, with no documented way to activate another existing tab. No new tab, alternate transport, or repeated unverified Update plugin click was used.
+
+A fresh Browser Use accessibility read of selected editor tab `6` confirms inline `v02.11.234` and the existing Testimonials preflight refusal (`candidate_count=7`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`). This continuation created no generation operation/root and made no page write; existing roots and the Partners reference were left unchanged.
+
+## Mega Menu retrieval correction and live install state — 2026-10-02
+
+The newly supplied Partners Elementor JSON was parsed read-only. It identifies native root `68ff481` with badge `ПАРТНЁРЫ`, heading `С кем мы работаем`, five `image-carousel` items, responsive slides `4/3/2`, navigation disabled, autoplay/infinite enabled, and 500 ms speed. No JSON was inserted. Browser Use on the existing editor tab `6` still shows both exact headings and five carousel slides on post `5214`; current Partners root `d0f9b01` / widget `cfb197b` was not changed. Its generic placeholder logos prevent visual acceptance.
+
+The prior v234 Mega Menu request stopped before provider/write with `candidate_count=0`, `compatible_candidate_count=0`, `provider_call_count=0`, `write_count=0`. The source catalogue contains eight imported records categorized `mega_menu`, but retrieval's category allowlist had only `mega-menu`, `navigation`, and `header`. The shared retrieval category map now accepts the canonical underscore category, with a regression asserting all eight records are returned. No fallback or manual insertion was added.
+
+Source `v02.11.238`, commit `e758651` (`fix: retrieve mega menu library templates`), was pushed; `git push origin main` reported `9b93295..e758651 main -> main`. Independent `git ls-remote origin refs/heads/main` failed with DNS `Could not resolve host: github.com`, so remote HEAD readback is unconfirmed. Local checks passed: PHP lint; imported-template catalog (158 manifests, 156 retrievable trees, 156 previews); flex runtime (626 checks); DesignPlan (274 checks); Elementor patch guard; Node (6/6); package probe (249 files, no hash mismatches); and `git diff --check`.
+
+Installation is not confirmed. Fresh Browser Use measurement of existing Elementor tab `6` confirms inline `v02.11.234`, outer CSS viewport `1228×923` at DPR 2, and preview iframe `1025×860`. WP Pusher tabs `4`, `7`, and `8` remain background tabs; Browser Use read of the background Pusher surface fails with `Emulation.setFocusEmulationEnabled` timeout. No alternate browser transport was used. This continuation performed no generation, operation/root creation, page write, save/reload, or new screenshot capture. Existing roots, WordPress settings, global menu, and other plugins remain unchanged.
+
+## Services generation architecture audit — 2026-10-03
+
+Created `docs/architecture/services-generation-migration.md` from a source-only review of checkout `e758651` / `v02.11.238`. The proposed Services production path is one canonical BriefIR → recipe-aware DesignPlan → ElementorIR → native compiler flow through the existing guarded write/readback transaction. Confirmed current-code conflicts include repeated raw-message parsing for Services, candidate-presence-driven library routing, and legacy fallback behavior inconsistent with route metadata. The document distinguishes source facts, historical live observations, and hypotheses; defines photo-card, split/editorial, and text/icon contracts; maps owners/files and retired Services paths; and provides rollback, metrics, and a 12-scenario regression matrix. This pass made no WordPress/editor/runtime changes, performed no live generation, and ran no tests; installation/version claims above remain unchanged.
+
+## Services canonical BriefIR implementation stage 2 — 2026-10-03
+
+Local working-tree changes are based on source `e758651` / `v02.11.238`; there is no release version bump, commit, push, deployment or WP Pusher update in this step. The canonical Services BriefIR contract is parser v10. Its content entries retain exact explicit copy, source spans and prompt provenance; stable `service_N` groups link title, body, optional CTA/link and optional media refs. The derived content plan reads the supplied Brief only, and the primary chat intake passes the same Brief into DesignPlan, fidelity, diagnostics, library preflight/adapter, fallback gate and CTA/media normalization. The production regression confirms equality between Brief and content-plan hashes.
+
+An optional `brief-ir-structured.php` adapter performs one JSON-only call through the existing provider transport when explicitly invoked by local tests. Its response passes schema/type, exact source-copy, group/order, allowed-link and CTA-link binding, supplied asset catalog, media/policy consistency and canonical Brief validation. It does not emit Elementor structures and is not called by production generation. A mocked response verifies the transport and normalization contract only; it is not evidence of real-model semantic quality.
+
+No-Brief compatibility wrappers still accept raw messages (`wpae_llm_content_plan`, `wpae_llm_extract_requested_content`, `wpae_llm_extract_services_content`). Initial raw family classification, some library-query wording and `wpae_llm_requires_verified_library_template()` remain text-based. The migrated Services content plan/fidelity and downstream native validators use the canonical Brief. Existing global route policy was not changed: the explicit no-fallback policy is enforced by the migrated Services gate, while a legacy unspecified-policy path can still retain its former fallback behavior. The broader route migration is therefore not complete.
+
+Local evidence: `php tests/flex-generation-runtime.php` — `661 checks OK`; `php tests/design-pipeline-contract.php` — `274 checks OK`; `node --test tests/*.test.js` — `6/6`; `php tests/elementor-patch-guard.php` — PASS; PHP lint and `git diff --check` — PASS; `docs/audits/2026-09-12/package-probe.php` — PASS, 250 packaged files and zero SHA mismatches. The repeatable input → canonical Brief → derived plan → validation run is `WPAE_SERVICES_BRIEF_DEMO=1 php tests/flex-generation-runtime.php`.
+
+The regression covers multiline/single-line equivalence, content/group binding and order, instruction exclusion, CTA/link mismatch refusal, policy conflicts, forbidden/unresolved media, library-only/no-fallback, one-item/incomplete/duplicate/invented/unknown-asset refusal, timeout and invalid structured JSON with zero writes, and same-Brief production intake. The full schema/example and exact raw compatibility call sites are in `docs/architecture/services-generation-migration.md`.
+
+This implementation did not access WordPress, post `5214`, other pages, settings or plugins; it created no operation/root/page write and produced no screenshots. Production activation evidence remains absent: real-model calibration against the architecture matrix, field-group/source-fidelity results, call-count/latency data, and no-write proofs for malformed model results. Any later live acceptance also needs version confirmation, operation/root plus save/readback/native tree evidence and fresh measured-viewport editor/public screenshots. No live claim is made from these local checks.
+
+The reproducible demo exposed a media-intent source-span indexing bug: nested `PREG_OFFSET_CAPTURE` data was read from the wrong level and could yield only the first UTF-8 byte. The parser was corrected to retain the exact byte range for the full `Не добавляй фото` excerpt, and the runtime now asserts that source match. The `brief-ir.php` package digest includes this final correction.
+
+
+## Services recipe compiler — implementation stage 3, local-only — 2026-10-04
+
+Implemented three explicitly selected Services compositions over the preserved BriefIR v10 work. Source remains local HEAD `e758651` / `v02.11.238`; no release bump, commit, push, deploy, production route switch, WordPress operation, or page write was performed.
+
+The planning context field is `services_recipe_id`. Recipe DesignPlans record `recipe_id`, `recipe_selection`, ordered `slot_bindings`, media compatibility/consumption, and the semantic split lead ref. `services_lead_service_ref` selects the split lead. Existing callers without an explicit recipe retain the legacy Services `service_cards` plan. Content is resolved by canonical Brief refs and group provenance; no raw-message extraction or stock-image fallback was added to this typed compiler.
+
+Stage-3 PHP changes are in `includes/llm/design-plan.php`, `includes/elementor/elementor-ir.php`, and `includes/elementor/layout-report.php`; contract coverage and the synthetic demo are in `tests/design-pipeline-contract.php`; package digests are updated in `wpae-package.json`. The pre-existing stage-2 `brief-ir.php` / `llm.php` changes were retained.
+
+Results: photo cards compile to image-first native cards with a separate opaque copy panel, matching per-service title/body/CTA/media, explicit alt, gap-safe 3-column or 2-column wrap and 100% mobile stack; split/editorial compiles the non-first `service_2` lead with its matching image/copy/CTA and remaining rows in source order; text/icon list preserves service order and each row's text/CTA with dividers and no media widgets. Media extras are explicitly reported as unconsumed. Invalid recipe/ref/group, duplicate items, missing/bad photo assets, missing lead image, forbidden/required-media conflicts and item counts outside 2–6 are refused. Repeat compilation preserves semantic output when generated element IDs are ignored.
+
+A synthetic compiled tree was run through the existing execute boundary, native normalization, design-token mapping, final Bento normalization and dry-run preview. The final update mock returns HTTP 409, so the checked persistent write count remains zero. All three recipe structures retain their distinct markers; this validates only the mocked execute boundary. The recipe choice is not connected to production chat routing or library selection.
+
+Demo command: `WPAE_SERVICES_RECIPE_DEMO=1 php tests/design-pipeline-contract.php`. It prints the canonical synthetic Brief, three Plans, three IRs, native trees and validation without provider or WordPress calls. Output checked at 491,866 bytes; each recipe passed plan, IR and native compile validation.
+
+Local results on 2026-10-04: Design Pipeline Contract 305 checks; Flex Generation Runtime 661 checks; Node 6/6; Elementor patch guard PASS; PHP lint PASS; package probe PASS with 250 files and zero SHA mismatches; `git diff --check` PASS. Package SHA entries for `design-plan.php`, `elementor-ir.php`, and `layout-report.php` match their contents.
+
+The LayoutReport labels its output `static_plan` and `visual_render_verified=false`; its breakpoints and column widths are estimates from the plan, not DOM measurements. The work did not open or modify WordPress, post `5214`, editor tabs, settings, or live roots; there is no live generation, operation/root, save/reload, screenshot, or visual acceptance. Legacy raw-message wrappers, old route behavior when media policy is unspecified, and production recipe routing remain unchanged.
+
+## Services chat/router integration — stage 4, local mocked evidence — 2026-10-04
+
+The active Services create path now runs through wpae_llm_chat_request(): one canonical BriefIR, one recipe decision, DesignPlan, ElementorIR/native compiler, then the existing execute/transaction and readback. Ordinary Services remains action_path=pipeline when library candidates exist; library-agent eligibility explicitly excludes Services. Active Brief/recipe/media/plan/compiler/transaction failures return before legacy provider/fallback branches. Services content planning consumes the supplied Brief; raw-message compatibility wrappers remain available outside this active route.
+
+Recipe source is retained as explicit_request, explicit_context or documented_default. Photo cards require image+alt for every service. Split needs a valid explicitly chosen lead ref and matching image. Text/icon has no image widgets and rejects required-media conflict. Without explicit composition, a complete grouped image set selects photo cards; no images and no required media select text/icon. Missing required media and conflicting recipe constraints produce zero-write refusals. No stock URLs are added.
+
+Library-only uses one verified map for bundled template-services-photo-cards-v1 (manifest.json:files, exact SHA and native slot topology). It maps only to services.photo_cards and records adaptation verified_reference_slots_recompiled_by_native_services_recipe. Incompatible recipes return wpae_services_library_only_unsupported instead of silently using compiler default. The manifest key and grid lookup depth were corrected after the active route test exposed both defects.
+
+Geometry report samples 320, 390, 480, 768, 1024 and 1200 px with padding/gaps and item counts 2/3/4/6. It records native breakpoint assumptions and stays static (visual_render_verified=false). Stacked split width is now measured on its cross axis. Native compiler assertions cover Elementor desktop/tablet/mobile controls; the report does not query live breakpoints or claim rendered DOM.
+
+Demo command: WPAE_SERVICES_CHAT_DEMO=1 php -d memory_limit=512M tests/flex-generation-runtime.php. Result: pipeline → services.text_icon_list/documented_default, Brief hash f1f9a358be188a72717b6fdaa67f82aaee53ee951fc9d332df683c475313451f, all validations true, 0 provider calls, exactly 1 mock write, exact readback match, ledger written, operation wpae-9adaa5bdb5e58254, root 25b921e (mock post 42 in memory). Additional chat cases cover successful mapped library-only write, explicit photo/split/text-icon trees, conflicts, missing media, invalid lead, incompatible library-only recipe, wrong post, stale revision and protected zone. Rejected transactions do not trigger a second write or provider fallback.
+
+Local verification: Design Pipeline Contract 307 checks; Flex Generation Runtime 667 checks; Node 6/6; PHP lint PASS; Elementor patch guard PASS; package/hash probe 250 files, zero mismatches; git diff --check PASS.
+
+Cumulative stage-2–4 source/test files retained in the working tree: includes/llm/brief-ir.php (canonical recipe constraints in wpae_brief_ir_parse), includes/llm/brief-ir-structured.php (existing opt-in adapter), includes/llm/design-plan.php (wpae_design_plan_services_photo_template_slot_map and wpae_design_plan_services_recipe_decision), includes/llm/llm.php (wpae_llm_services_content_plan_from_brief and active Services orchestration in wpae_llm_chat_request), includes/elementor/elementor-ir.php (wpae_elementor_ir_services_recipe_nodes), includes/elementor/layout-report.php (wpae_layout_report_for_plan), tests/design-pipeline-contract.php, tests/flex-generation-runtime.php, tests/llm-chat-contract.test.js, and wpae-package.json. The architecture note, context.md and this report also contain stage-4 facts. The untracked structured adapter and all unrelated user files remain present.
+
+Source-only and in-memory mock evidence. No release bump, commit/push, deploy, WP Pusher, settings, editor tab, post 5214, live page write, real operation/root, save/reload, DOM, screenshot or visual acceptance. Structured extraction remains opt-in; real-model quality was not tested. Off uses its legacy provider/fallback route. Shadow compiles the typed diagnostic result, then continues the old route, which can write. Other archetypes were not intentionally changed.
+
+## Services stage 5: release preparation and live acceptance status — 2026-10-04
+
+Release source version is `v02.11.239` (plugin header and `WPAE_VERSION`). `brief-ir-structured.php` is packaged, hash-verified, and loaded by `includes/llm/llm.php`. The release package probe validates 250 files with zero SHA mismatches and four validation scenarios passing. It still reports its pre-existing full-result JSON serialization diagnostic as malformed UTF-8; compact summary serialization passes.
+
+Checks on this exact source tree: Design Pipeline Contract `307 checks OK`; Flex Generation Runtime `667 checks OK`; Node `6/6`; production Elementor patch before-hash guard PASS; imported template catalog `158` manifest files, `156` retrievable trees, `156` previews; PHP lint PASS for the plugin entrypoint and six changed/required PHP files; `git diff --check` PASS. The fresh mocked chat demo reports `wpae_llm_chat_request` → `pipeline` → `services.text_icon_list/documented_default`, Brief hash `f1f9a358be188a72717b6fdaa67f82aaee53ee951fc9d332df683c475313451f`, all six validations true, `provider_calls=0`, `write_count=1`, readback match, mock operation `wpae-9adaa5bdb5e58254`, root `25b921e`, in-memory post 42. This is not live WordPress evidence.
+
+Live acceptance of `services.photo_cards`, `services.split_editorial`, and `services.text_icon_list` was not run. This Codex session did not expose Browser Use tools for the existing embedded tab; the available screen-context function is restricted to active voice chat. No alternate browser transport was used. Installed PHP/runtime and editor JavaScript versions are **NOT VERIFIED**. The state/root set and unsaved/saved content of post=5214 were not read during this pass; no live operation, generation or write was issued by this pass. The three exact scenario prompts were not sent, no media assets were selected, and no save/reload or DOM measurement occurred.
+
+No fresh block screenshots were produced or saved. **SCREENSHOT BLOCKED**: there was no permitted Browser Use capture path in this session. There are no operation/root IDs for post=5214 and no live PASS claim. The source implementation, deterministic zero-provider mock path, real model design quality, and site/editor acceptance remain separate evidence levels.

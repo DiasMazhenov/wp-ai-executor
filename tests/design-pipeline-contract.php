@@ -46,6 +46,12 @@ if ( ! function_exists( 'apply_filters' ) ) {
 			: $value;
 	}
 }
+if ( ! function_exists( 'add_action' ) ) {
+	function add_action( string $hook, $callback, int $priority = 10, int $accepted_args = 1 ): bool { return true; }
+}
+if ( ! function_exists( 'sanitize_html_class' ) ) {
+	function sanitize_html_class( string $class ): string { return preg_replace( '/[^A-Za-z0-9_\-]/', '', $class ) ?? ''; }
+}
 if ( ! function_exists( 'did_action' ) ) {
 	function did_action( $tag ): int {
 		global $wpae_test_actions;
@@ -102,11 +108,41 @@ if ( ! class_exists( 'WP_Error' ) ) {
 		public function get_error_data(): array { return $this->data; }
 	}
 }
+if ( ! function_exists( 'is_wp_error' ) ) {
+	function is_wp_error( $value ): bool { return $value instanceof WP_Error; }
+}
 if ( ! class_exists( 'WP_REST_Request' ) ) {
 	class WP_REST_Request {
 		private $params;
-		public function __construct( array $params = [] ) { $this->params = $params; }
+		public function __construct( $method_or_params = [], string $route = '' ) { $this->params = is_array( $method_or_params ) ? $method_or_params : []; }
 		public function get_param( string $name ) { return $this->params[ $name ] ?? null; }
+		public function set_param( string $name, $value ): void { $this->params[ $name ] = $value; }
+	}
+}
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	class WP_REST_Response {
+		private $data;
+		private $status;
+		public function __construct( $data = null, int $status = 200 ) { $this->data = $data; $this->status = $status; }
+		public function get_data() { return $this->data; }
+		public function get_status(): int { return $this->status; }
+	}
+}
+if ( ! function_exists( 'wpae_capability_enabled' ) ) {
+	function wpae_capability_enabled( string $capability ): bool { return $capability === 'elementor_writes'; }
+}
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+	function is_user_logged_in(): bool { return false; }
+}
+if ( ! function_exists( 'wpae_elementor_update' ) ) {
+	function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
+		global $wpae_recipe_execute_mock;
+		$dry_run = (bool) $request->get_param( 'dry_run' );
+		$wpae_recipe_execute_mock['calls'][] = [ 'dry_run' => $dry_run, 'post_id' => (int) $request->get_param( 'post_id' ), 'elementor_data' => (array) $request->get_param( 'elementor_data' ) ];
+		if ( $dry_run ) {
+			return new WP_REST_Response( [ 'ok' => true, 'preflight' => [ 'mock' => true ] ], 200 );
+		}
+		return new WP_REST_Response( [ 'ok' => false, 'error' => 'contract_harness_write_block' ], 409 );
 	}
 }
 if ( ! function_exists( 'current_user_can' ) ) {
@@ -137,8 +173,12 @@ require_once __DIR__ . '/../includes/elementor/layout-report.php';
 require_once __DIR__ . '/../includes/elementor/elementor-ir.php';
 require_once __DIR__ . '/../includes/elementor/native-compiler.php';
 require_once __DIR__ . '/../includes/elementor/operation-ledger.php';
+require_once __DIR__ . '/../includes/elementor/css-native.php';
 require_once __DIR__ . '/../includes/elementor/token-map.php';
 require_once __DIR__ . '/../includes/llm/routing.php';
+require_once __DIR__ . '/../includes/design/system.php';
+require_once __DIR__ . '/../includes/elementor/validation-rules.php';
+require_once __DIR__ . '/../includes/elementor/normalize.php';
 
 $checks = 0;
 $check = static function ( bool $condition, string $message ) use ( &$checks ): void {
@@ -451,7 +491,7 @@ $faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
 $faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
-$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v9', 'BriefIR provenance version tracks the current prompt parser contract' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v10', 'BriefIR provenance version tracks the current prompt parser contract' );
 $check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['ok'] ) && ( $faq_widget['widgetType'] ?? '' ) === 'accordion', 'FAQ uses the existing typed pipeline and compiles to Elementor Accordion' );
 $check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
 $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ 'Сначала согласуем задачу, затем соберём страницу.', 'Да, каждый текст остаётся редактируемым.' ], 'Accordion preserves exact questions and answers in source order' );
@@ -949,5 +989,352 @@ $invalid_cta_brief = wpae_brief_ir_parse( "Самостоятельный CTA\n�
 $invalid_cta_plan = wpae_design_plan_from_brief( $invalid_cta_brief );
 $invalid_cta_validation = wpae_design_plan_validate( $invalid_cta_plan, $invalid_cta_brief );
 $check( ! $invalid_cta_validation['ok'] && in_array( 'cta_button_1_explicit_url_required', $invalid_cta_validation['errors'], true ), 'standalone CTA rejects a missing explicit destination before compilation' );
+
+$services_recipe_prompt = "Блок услуг\nНадзаголовок: «КАК МЫ ПОМОГАЕМ»\nЗаголовок: «Услуги для вашего проекта»\nОписание: «Подробное вступление к списку услуг.»\nУслуга 1 — название: «Стратегия»\nУслуга 1 — описание: «Длинное описание стратегии с несколькими важными этапами и результатами для проекта. Оно должно оставаться рядом только со своей карточкой.»\nУслуга 1 — кнопка: «Подробнее», ссылка #strategy\nУслуга 2 — название: «Дизайн»\nУслуга 2 — описание: «Создаем ясное визуальное решение, сохраняя детали и удобство.»\nУслуга 2 — кнопка: «Подробнее», ссылка #design\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем проектные решения и координируем ключевые этапы.»\nУслуга 3 — кнопка: «Подробнее», ссылка #support";
+$services_recipe_brief = wpae_brief_ir_parse( $services_recipe_prompt );
+$services_recipe_alias_cases = [
+	[ 'phrase' => 'photo_cards', 'recipe_id' => 'services.photo_cards' ],
+	[ 'phrase' => 'services.split_editorial', 'recipe_id' => 'services.split_editorial' ],
+	[ 'phrase' => 'Список услуг с иконками', 'recipe_id' => 'services.text_icon_list' ],
+];
+$services_recipe_alias_ok = true;
+foreach ( $services_recipe_alias_cases as $recipe_alias_case ) {
+	$alias_source = $services_recipe_prompt . "\nКомпозиция: " . $recipe_alias_case['phrase'];
+	$alias_brief = wpae_brief_ir_parse( $alias_source );
+	$recipe_constraints = array_values( array_filter( (array) ( $alias_brief['layout_constraints'] ?? [] ), static fn( array $constraint ): bool => ( $constraint['kind'] ?? '' ) === 'services_recipe' ) );
+	$recipe_constraint = (array) ( $recipe_constraints[0] ?? [] );
+	$source_span = array_values( (array) ( $recipe_constraint['source_span'] ?? [] ) );
+	$span_text = count( $source_span ) === 2 ? substr( $alias_source, (int) $source_span[0], (int) $source_span[1] - (int) $source_span[0] ) : '';
+	$services_recipe_alias_ok = $services_recipe_alias_ok && count( $recipe_constraints ) === 1 && ( $recipe_constraint['value'] ?? '' ) === $recipe_alias_case['recipe_id'] && $span_text === $recipe_alias_case['phrase'] && ( $recipe_constraint['provenance']['source_span'] ?? [] ) === $source_span && ( $recipe_constraint['provenance']['parser'] ?? '' ) === WPAE_BRIEF_IR_PARSER_VERSION;
+}
+$services_recipe_conflict_brief = wpae_brief_ir_parse( $services_recipe_prompt . "\nВыбери photo_cards и services.text_icon_list." );
+$services_recipe_conflict_decision = wpae_design_plan_services_recipe_decision( $services_recipe_conflict_brief );
+$check( $services_recipe_alias_ok && count( array_filter( (array) ( $services_recipe_conflict_brief['layout_constraints'] ?? [] ), static fn( array $constraint ): bool => ( $constraint['kind'] ?? '' ) === 'services_recipe' ) ) === 2 && empty( $services_recipe_conflict_decision['ok'] ) && ( $services_recipe_conflict_decision['reason'] ?? '' ) === 'services_recipe_selection_conflict', 'canonical Brief captures each explicit recipe alias once with byte-accurate source span and refuses conflicting recipe choices' );
+$services_recipe_assets = [];
+for ( $asset_index = 1; $asset_index <= 6; $asset_index++ ) {
+	$services_recipe_assets[] = [
+		'asset_id' => 'services_recipe_photo_' . $asset_index,
+		'attachment_id' => null,
+		'source_url' => 'https://example.com/fixture/service-' . $asset_index . '.jpg',
+		'role' => 'card_image',
+		'group_id' => 'service_' . $asset_index,
+		'alt' => 'Synthetic service image ' . $asset_index,
+		'license' => 'Contract fixture',
+		'attribution' => 'Contract fixture',
+		'allowed_reuse' => true,
+		'provenance' => [ 'source' => 'synthetic_test_fixture' ],
+	];
+}
+$services_recipe_tokens = [ 'palette' => [ 'paper' => '#f6f0e6', 'surface' => '#ffffff', 'ink' => '#111827', 'muted' => '#4b5563', 'accent' => '#4460ec', 'border' => '#d1d5db' ] ];
+$services_recipe_compile = static function ( array $brief, string $recipe_id, array $assets, string $seed, string $lead_ref = '' ) use ( $services_recipe_tokens ): array {
+	$context = [ 'services_recipe_id' => $recipe_id, 'media_references' => $assets ];
+	if ( $lead_ref !== '' ) {
+		$context['services_lead_service_ref'] = $lead_ref;
+	}
+	$plan = wpae_design_plan_from_brief( $brief, $context );
+	$plan_validation = wpae_design_plan_validate( $plan, $brief );
+	$ir = wpae_elementor_ir_from_design_plan( $plan, $brief, $context );
+	$ir_validation = wpae_elementor_ir_validate( $ir, $brief );
+	$compiled = wpae_native_elementor_compile( $ir, $brief, $services_recipe_tokens, [ 'id_seed' => $seed ] );
+	return [ 'plan' => $plan, 'plan_validation' => $plan_validation, 'ir' => $ir, 'ir_validation' => $ir_validation, 'compiled' => $compiled ];
+};
+$walk_ir_nodes = static function ( array $nodes ) use ( &$walk_ir_nodes ): array {
+	$all = [];
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		$all[] = $node;
+		$all = array_merge( $all, $walk_ir_nodes( (array) ( $node['children'] ?? [] ) ) );
+	}
+	return $all;
+};
+$strip_elementor_ids = static function ( array $nodes ) use ( &$strip_elementor_ids ): array {
+	foreach ( $nodes as &$node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		unset( $node['id'] );
+		if ( is_array( $node['elements'] ?? null ) ) {
+			$node['elements'] = $strip_elementor_ids( $node['elements'] );
+		}
+	}
+	unset( $node );
+	return $nodes;
+};
+$services_recipe_ids = [ 'services.photo_cards', 'services.split_editorial', 'services.text_icon_list' ];
+$services_recipe_results = [];
+foreach ( $services_recipe_ids as $recipe_index => $recipe_id ) {
+	$services_recipe_results[ $recipe_id ] = $services_recipe_compile( $services_recipe_brief, $recipe_id, array_slice( $services_recipe_assets, 0, 3 ), 'services-recipe-' . ( $recipe_index + 1 ), 'service_2' );
+}
+$photo_recipe_result = $services_recipe_results['services.photo_cards'];
+$split_recipe_result = $services_recipe_results['services.split_editorial'];
+$text_recipe_result = $services_recipe_results['services.text_icon_list'];
+$legacy_services_plan = wpae_design_plan_from_brief( $services_recipe_brief );
+$legacy_services_roles = array_column( (array) ( $legacy_services_plan['sections'][0]['children'] ?? [] ), 'role' );
+$check( empty( $legacy_services_plan['recipe_id'] ) && in_array( 'service_cards', $legacy_services_roles, true ), 'existing Services planning calls keep the legacy default when no explicit recipe is selected' );
+$services_brief_media_intent = (array) ( array_values( array_filter( (array) ( $services_recipe_brief['layout_constraints'] ?? [] ), static fn( array $constraint ): bool => ( $constraint['kind'] ?? '' ) === 'media_intent' ) )[0] ?? [] );
+$check( $services_recipe_brief['intent']['archetype'] === 'services' && ( $services_brief_media_intent['value'] ?? '' ) === 'unspecified' && array_reduce( $services_recipe_results, static fn( bool $ok, array $result ): bool => $ok && ! empty( $result['plan_validation']['ok'] ) && ! empty( $result['ir_validation']['ok'] ) && ! empty( $result['compiled']['ok'] ), true ), 'the same canonical Services Brief validates through all three explicitly selected recipes without changing production defaults' );
+$check( array_column( array_map( static fn( array $result ): array => [ 'recipe_id' => $result['plan']['recipe_id'], 'role' => $result['plan']['sections'][0]['children'][1]['role'] ?? '' ], array_values( $services_recipe_results ) ), 'recipe_id' ) === $services_recipe_ids && array_column( array_map( static fn( array $result ): array => [ 'recipe_id' => $result['plan']['recipe_id'], 'role' => $result['plan']['sections'][0]['children'][1]['role'] ?? '' ], array_values( $services_recipe_results ) ), 'role' ) === [ 'services_photo_grid', 'services_split_editorial', 'services_text_icon_list' ], 'opt-in recipe selection produces three different typed DesignPlan compositions' );
+$photo_root = $photo_recipe_result['compiled']['elementor_data'][0] ?? [];
+$photo_grid = array_values( array_filter( (array) ( $photo_root['elements'] ?? [] ), static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-photo-grid' ) )[0] ?? [];
+$photo_cards = (array) ( $photo_grid['elements'] ?? [] );
+$photo_nodes = $walk_elements( (array) ( $photo_recipe_result['compiled']['elementor_data'] ?? [] ) );
+$photo_text_values = array_values( array_filter( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? $node['settings']['editor'] ?? '' ), $photo_nodes ), static fn( string $text ): bool => $text !== '' ) );
+$check( in_array( 'КАК МЫ ПОМОГАЕМ', $photo_text_values, true ) && in_array( 'Услуги для вашего проекта', $photo_text_values, true ) && in_array( 'Подробное вступление к списку услуг.', $photo_text_values, true ), 'photo composition retains exact Brief-backed section eyebrow, heading and description' );
+$photo_ir_images = array_values( array_filter( $walk_ir_nodes( (array) ( $photo_recipe_result['ir']['nodes'] ?? [] ) ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_photo_image' ) );
+$check( count( $photo_ir_images ) === 3 && ! array_filter( $photo_ir_images, static fn( array $node ): bool => ( $node['layout_constraints']['aspect_ratio'] ?? '' ) !== '4:3' ), 'photo Image nodes carry the shared 4:3 aspect-ratio composition target' );
+$photo_images = array_values( array_filter( $photo_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) );
+$photo_buttons = array_values( array_filter( $photo_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+$photo_item_fidelity = count( $photo_cards ) === 3;
+foreach ( $photo_cards as $index => $card ) {
+	$direct = (array) ( $card['elements'] ?? [] );
+	$panel_widgets = (array) ( $direct[1]['elements'] ?? [] );
+	$expected_group = $services_recipe_brief['groups'][ $index ] ?? [];
+	$expected_content = [ $expected_group['title_ref'] ?? '', $expected_group['body_ref'] ?? '' ];
+	$actual_content = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? $node['settings']['editor'] ?? '' ), array_filter( $panel_widgets, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'heading', 'text-editor' ], true ) ) ) );
+	$expected_text = array_map( static fn( string $ref ): string => (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === $ref ) )[0]['exact_text'] ?? '' ), $expected_content );
+	$expected_url = (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === ( $expected_group['cta_ref'] ?? '' ) ) )[0]['url'] ?? '' );
+	$card_button = array_values( array_filter( $panel_widgets, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
+	$expected_media_ref = (string) ( $photo_recipe_result['plan']['sections'][0]['children'][1]['items'][ $index ]['media_ref'] ?? '' );
+	$expected_asset = array_values( array_filter( $services_recipe_assets, static fn( array $asset ): bool => ( $asset['asset_id'] ?? '' ) === $expected_media_ref ) )[0] ?? [];
+	$actual_image = (array) ( $direct[0] ?? [] );
+	$expected_source = (string) ( $expected_asset['source_url'] ?? '' );
+	$actual_source = (string) ( $actual_image['settings']['image']['url'] ?? '' );
+	$source_matches = $expected_source !== '' && parse_url( $actual_source, PHP_URL_HOST ) === parse_url( $expected_source, PHP_URL_HOST ) && parse_url( $actual_source, PHP_URL_PATH ) === parse_url( $expected_source, PHP_URL_PATH );
+	if ( parse_url( $expected_source, PHP_URL_HOST ) === 'images.unsplash.com' ) {
+		parse_str( (string) parse_url( $actual_source, PHP_URL_QUERY ), $source_query );
+		$source_matches = $source_matches && ( $source_query['fit'] ?? '' ) === 'crop' && (int) ( $source_query['w'] ?? 0 ) === 1200 && (int) ( $source_query['h'] ?? 0 ) === 900;
+	}
+	$photo_item_fidelity = $photo_item_fidelity && ( $actual_image['widgetType'] ?? '' ) === 'image' && $source_matches && ( $actual_image['settings']['image']['alt'] ?? '' ) === ( $expected_asset['alt'] ?? null ) && $actual_content === $expected_text && ( $card_button['settings']['link']['url'] ?? '' ) === $expected_url;
+}
+$photo_id_values = array_column( $photo_nodes, 'id' );
+$check( $photo_item_fidelity && count( $photo_images ) === 3 && count( $photo_buttons ) === 3 && count( array_unique( $photo_id_values ) ) === count( $photo_id_values ), 'photo cards keep image first, exact matching title/body/CTA URLs, and unique native Elementor IDs per source service' );
+$check( ( $photo_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $photo_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $photo_grid['settings']['flex_gap']['unit'] ?? '' ) === 'px' && (float) ( $photo_grid['settings']['flex_gap']['size'] ?? 0 ) === 24.0 && (float) ( $photo_grid['settings']['flex_gap_mobile']['size'] ?? 0 ) === 16.0 && ( $photo_cards[0]['settings']['_element_custom_width']['unit'] ?? '' ) === '%' && (float) ( $photo_cards[0]['settings']['_element_custom_width']['size'] ?? 0 ) === 31.5, 'photo grid uses gap-safe native three-column desktop wrap and a one-column mobile stack' );
+$check( ( $photo_images[0]['settings']['object-fit'] ?? '' ) === 'cover' && ( $photo_images[0]['settings']['height']['unit'] ?? '' ) === 'px' && (float) ( $photo_images[0]['settings']['height']['size'] ?? 0 ) > 0 && ( $photo_images[0]['settings']['height_mobile']['unit'] ?? '' ) === 'px' && (float) ( $photo_images[0]['settings']['height_mobile']['size'] ?? 0 ) > 0 && ( $photo_cards[0]['settings']['border_radius_mobile']['unit'] ?? '' ) === 'px' && (float) ( $photo_cards[0]['settings']['border_radius_mobile']['top'] ?? 0 ) === 16.0 && ( $photo_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_2', 'services_recipe_photo_3' ], 'photo recipe consumes explicit assets with native pixel crop heights and responsive rounded-card controls' );
+$repeat_compile_checks = [];
+foreach ( $services_recipe_results as $recipe_index => $recipe_result ) {
+	$repeat_result = $services_recipe_compile( $services_recipe_brief, $recipe_index, array_slice( $services_recipe_assets, 0, 3 ), 'services-recipe-repeat-' . count( $repeat_compile_checks ), 'service_2' );
+	$repeat_compile_checks[] = ! empty( $repeat_result['compiled']['ok'] )
+		&& $strip_elementor_ids( (array) ( $repeat_result['compiled']['elementor_data'] ?? [] ) ) === $strip_elementor_ids( (array) ( $recipe_result['compiled']['elementor_data'] ?? [] ) )
+		&& ( $repeat_result['plan']['slot_bindings'] ?? [] ) === ( $recipe_result['plan']['slot_bindings'] ?? [] )
+		&& ( $repeat_result['plan']['recipe_selection'] ?? [] ) === ( $recipe_result['plan']['recipe_selection'] ?? [] );
+}
+$check( ! in_array( false, $repeat_compile_checks, true ), 'repeated compilation preserves each recipe topology, content, decisions and slot bindings when generated Elementor IDs are ignored' );
+$split_root = $split_recipe_result['compiled']['elementor_data'][0] ?? [];
+$split_nodes = $walk_ir_nodes( (array) ( $split_recipe_result['ir']['nodes'] ?? [] ) );
+$split_lead_ir = array_values( array_filter( $split_nodes, static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_split_lead' ) )[0] ?? [];
+$split_rows_ir = array_values( array_filter( $split_nodes, static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_editorial_rows' ) )[0] ?? [];
+$split_row_order = array_values( array_map( static fn( array $node ): string => (string) ( $node['layout_constraints']['item_id'] ?? '' ), array_filter( (array) ( $split_rows_ir['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_editorial_row' ) ) );
+$split_lead = array_values( array_filter( $walk_elements( (array) ( $split_recipe_result['compiled']['elementor_data'] ?? [] ) ), static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-split-lead' ) )[0] ?? [];
+$split_lead_nodes = $walk_elements( [ $split_lead ] );
+$split_lead_group = array_values( array_filter( $services_recipe_brief['groups'], static fn( array $group ): bool => ( $group['group_id'] ?? '' ) === 'service_2' ) )[0] ?? [];
+$split_lead_text = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? $node['settings']['editor'] ?? '' ), array_filter( $split_lead_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'heading', 'text-editor' ], true ) ) ) );
+$split_lead_content = array_map( static fn( string $ref ): string => (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === $ref ) )[0]['exact_text'] ?? '' ), array_filter( [ $split_lead_group['title_ref'] ?? '', $split_lead_group['body_ref'] ?? '' ] ) );
+$split_lead_image = array_values( array_filter( $split_lead_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+$split_lead_button = array_values( array_filter( $split_lead_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
+$split_buttons = array_values( array_filter( $walk_elements( (array) ( $split_recipe_result['compiled']['elementor_data'] ?? [] ) ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+$split_editorial_rows = array_values( array_filter( $walk_elements( (array) ( $split_recipe_result['compiled']['elementor_data'] ?? [] ) ), static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-editorial-row' ) );
+$split_editorial_fidelity = count( $split_editorial_rows ) === count( $split_row_order );
+foreach ( $split_editorial_rows as $index => $row ) {
+	$group_id = $split_row_order[ $index ] ?? '';
+	$expected_group = array_values( array_filter( $services_recipe_brief['groups'], static fn( array $group ): bool => ( $group['group_id'] ?? '' ) === $group_id ) )[0] ?? [];
+	$expected_refs = array_filter( [ $expected_group['title_ref'] ?? '', $expected_group['body_ref'] ?? '' ] );
+	$expected_item_text = array_map( static fn( string $ref ): string => (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === $ref ) )[0]['exact_text'] ?? '' ), $expected_refs );
+	$row_nodes = $walk_elements( [ $row ] );
+	$actual_item_text = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? $node['settings']['editor'] ?? '' ), array_filter( $row_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'heading', 'text-editor' ], true ) ) ) );
+	$expected_cta = (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === ( $expected_group['cta_ref'] ?? '' ) ) )[0]['url'] ?? '' );
+	$row_button = array_values( array_filter( $row_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
+	$split_editorial_fidelity = $split_editorial_fidelity && $actual_item_text === $expected_item_text && ( $row_button['settings']['link']['url'] ?? '' ) === $expected_cta;
+}
+$split_photo_count = count( array_filter( $walk_elements( (array) ( $split_recipe_result['compiled']['elementor_data'] ?? [] ) ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) );
+$check( ( $split_lead_ir['layout_constraints']['item_id'] ?? '' ) === 'service_2' && $split_row_order === [ 'service_1', 'service_3' ] && count( array_filter( $split_buttons, static fn( array $node ): bool => in_array( (string) ( $node['settings']['link']['url'] ?? '' ), [ '#strategy', '#design', '#support' ], true ) ) ) === 3 && $split_editorial_fidelity, 'split editorial honors a selected non-first lead and keeps each secondary row content and CTA paired in source order' );
+$check( ( $split_lead['settings']['flex_direction'] ?? '' ) === 'row' && ( $split_lead['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $split_lead['settings']['flex_direction_mobile'] ?? '' ) === 'column' && (float) ( $split_lead['elements'][0]['settings']['_element_custom_width']['size'] ?? 0 ) === 52.0 && (float) ( $split_lead['elements'][1]['settings']['_element_custom_width']['size'] ?? 0 ) === 44.0 && ( $split_lead['elements'][1]['elements'][0]['widgetType'] ?? '' ) === 'image' && $split_photo_count === 1 && $split_lead_text === $split_lead_content && ( $split_lead_button['settings']['link']['url'] ?? '' ) === '#design' && ( $split_lead_image['settings']['image']['url'] ?? '' ) === ( $services_recipe_assets[1]['source_url'] ?? '' ), 'split lead binds service_2 exact title/body/link and matching image to a native 52/44 desktop row that stacks at tablet/mobile' );
+$check( ( $split_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_2' ] && ( $split_recipe_result['plan']['media_compatibility']['unconsumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_3' ], 'split recipe declares its lead image consumed and reports other supplied images as unconsumed' );
+$text_nodes = $walk_elements( (array) ( $text_recipe_result['compiled']['elementor_data'] ?? [] ) );
+$text_rows = array_values( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-text-icon-row' ) );
+$text_item_fidelity = count( $text_rows ) === count( $services_recipe_brief['groups'] );
+foreach ( $text_rows as $index => $row ) {
+	$expected_group = $services_recipe_brief['groups'][ $index ] ?? [];
+	$expected_refs = array_filter( [ $expected_group['title_ref'] ?? '', $expected_group['body_ref'] ?? '' ] );
+	$expected_item_text = array_map( static fn( string $ref ): string => (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === $ref ) )[0]['exact_text'] ?? '' ), $expected_refs );
+	$row_nodes = $walk_elements( [ $row ] );
+	$actual_item_text = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? $node['settings']['editor'] ?? '' ), array_filter( $row_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'heading', 'text-editor' ], true ) ) ) );
+	$expected_cta = (string) ( array_values( array_filter( $services_recipe_brief['content'], static fn( array $item ): bool => ( $item['id'] ?? '' ) === ( $expected_group['cta_ref'] ?? '' ) ) )[0]['url'] ?? '' );
+	$row_button = array_values( array_filter( $row_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
+	$text_item_fidelity = $text_item_fidelity && $actual_item_text === $expected_item_text && ( $row_button['settings']['link']['url'] ?? '' ) === $expected_cta;
+}
+$text_rows_ir = array_values( array_filter( $walk_ir_nodes( (array) ( $text_recipe_result['ir']['nodes'] ?? [] ) ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_text_icon_list' ) )[0] ?? [];
+$text_order = array_values( array_map( static fn( array $node ): string => (string) ( $node['layout_constraints']['item_id'] ?? '' ), array_filter( (array) ( $text_rows_ir['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_text_icon_row' ) ) );
+$check( $text_order === [ 'service_1', 'service_2', 'service_3' ] && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'icon' ) ) === 3 && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'divider' ) ) === 2 && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) ) === 0 && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) ) === 3, 'text/icon list is ordered native rows with separate icons and dividers, exact actions and no image widgets' );
+$check( $text_item_fidelity, 'compiled text/icon rows keep each service title, description and CTA URL inside its matching row' );
+$forbidden_media_services = $services_recipe_brief;
+foreach ( $forbidden_media_services['layout_constraints'] as &$constraint ) {
+	if ( ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
+		$constraint['value'] = 'forbidden';
+	}
+}
+unset( $constraint );
+$forbidden_text_recipe = $services_recipe_compile( $forbidden_media_services, 'services.text_icon_list', [], 'services-recipe-forbidden-media' );
+$forbidden_photo_plan = wpae_design_plan_from_brief( $forbidden_media_services, [ 'services_recipe_id' => 'services.photo_cards', 'media_references' => array_slice( $services_recipe_assets, 0, 3 ) ] );
+$forbidden_split_plan = wpae_design_plan_from_brief( $forbidden_media_services, [ 'services_recipe_id' => 'services.split_editorial', 'media_references' => array_slice( $services_recipe_assets, 0, 3 ), 'services_lead_service_ref' => 'service_2' ] );
+$forbidden_text_nodes = $walk_elements( (array) ( $forbidden_text_recipe['compiled']['elementor_data'] ?? [] ) );
+$check( ! empty( $forbidden_text_recipe['plan_validation']['ok'] ) && ! empty( $forbidden_text_recipe['ir_validation']['ok'] ) && ! empty( $forbidden_text_recipe['compiled']['ok'] ) && empty( $forbidden_text_recipe['plan']['media_compatibility']['consumed_asset_refs'] ) && count( array_filter( $forbidden_text_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'image', 'video', 'image-carousel' ], true ) ) ) === 0, 'explicitly forbidden media remains absent from the valid text/icon recipe with no media placeholders' );
+$check( ( $text_recipe_result['plan']['media_compatibility']['unconsumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_2', 'services_recipe_photo_3' ] && empty( $text_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ), 'optional supplied assets are explicitly declared unconsumed by the text-only recipe' );
+$services_recipe_layout = wpae_layout_report_for_plan( $photo_recipe_result['plan'] );
+$check( ( $services_recipe_layout['evidence'] ?? '' ) === 'static_plan' && empty( $services_recipe_layout['visual_render_verified'] ) && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 3 && ( $services_recipe_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 2 && ( $services_recipe_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1, 'recipe LayoutReport records static three/two/one column assumptions without claiming a rendered visual result' );
+$split_recipe_layout = wpae_layout_report_for_plan( $split_recipe_result['plan'] );
+$text_recipe_layout = wpae_layout_report_for_plan( $text_recipe_result['plan'] );
+$check( ( $split_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'lead_row_then_editorial_stack' && ( $split_recipe_layout['recipe_layout']['breakpoints'][3]['axis'] ?? '' ) === 'vertical_stack' && ( $split_recipe_layout['recipe_layout']['breakpoints'][0]['column_basis_percent'] ?? [] ) === [ 'copy' => 52, 'image' => 44 ] && ( $text_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'vertical_list_with_horizontal_item_rows' && ( $text_recipe_layout['recipe_layout']['breakpoints'][0]['column_basis_percent'] ?? [] ) === [ 'icon' => 10, 'copy' => 90 ], 'static LayoutReport distinguishes split stack and text-list row axes with declared basis assumptions' );
+$services_geometry_cases = [];
+foreach ( [ 'services.photo_cards' => $photo_recipe_result['plan'], 'services.split_editorial' => $split_recipe_result['plan'], 'services.text_icon_list' => $text_recipe_result['plan'] ] as $geometry_recipe_id => $geometry_plan ) {
+	$geometry_node_index = null;
+	foreach ( (array) ( $geometry_plan['sections'][0]['children'] ?? [] ) as $child_index => $child ) {
+		if ( is_array( $child ) && ( $child['role'] ?? '' ) === ( $geometry_recipe_id === 'services.photo_cards' ? 'services_photo_grid' : ( $geometry_recipe_id === 'services.split_editorial' ? 'services_split_editorial' : 'services_text_icon_list' ) ) ) {
+			$geometry_node_index = $child_index;
+			break;
+		}
+	}
+	foreach ( [ 2, 3, 4, 6 ] as $geometry_item_count ) {
+		$geometry_case_plan = $geometry_plan;
+		if ( $geometry_node_index !== null ) {
+			$source_item = (array) ( $geometry_case_plan['sections'][0]['children'][ $geometry_node_index ]['items'][0] ?? [] );
+			$geometry_case_plan['sections'][0]['children'][ $geometry_node_index ]['items'] = array_fill( 0, $geometry_item_count, $source_item );
+		}
+		$geometry_case_report = wpae_layout_report_for_plan( $geometry_case_plan );
+		$geometry_samples = (array) ( $geometry_case_report['recipe_layout']['geometry_samples'] ?? [] );
+		$services_geometry_cases[] = [ 'recipe' => $geometry_recipe_id, 'items' => $geometry_item_count, 'report' => $geometry_case_report, 'sample_count' => count( $geometry_samples ) ];
+	}
+}
+$services_geometry_ok = count( $services_geometry_cases ) === 12;
+foreach ( $services_geometry_cases as $geometry_case ) {
+	$geometry_report = (array) ( $geometry_case['report'] ?? [] );
+	$geometry_samples = (array) ( $geometry_report['recipe_layout']['geometry_samples'] ?? [] );
+	$services_geometry_ok = $services_geometry_ok && ! empty( $geometry_report['ok'] ) && empty( $geometry_report['visual_render_verified'] ) && ( $geometry_report['recipe_layout']['visual_render_verified'] ?? true ) === false && (int) ( $geometry_report['recipe_layout']['item_count'] ?? 0 ) === (int) $geometry_case['items'] && count( $geometry_samples ) === 6 && ! in_array( true, array_column( $geometry_samples, 'overflow' ), true );
+}
+$photo_1200_sample = array_values( array_filter( (array) ( $services_recipe_layout['recipe_layout']['geometry_samples'] ?? [] ), static fn( array $sample ): bool => ( $sample['container_width_px'] ?? 0 ) === 1200 ) )[0] ?? [];
+$split_1200_sample = array_values( array_filter( (array) ( $split_recipe_layout['recipe_layout']['geometry_samples'] ?? [] ), static fn( array $sample ): bool => ( $sample['container_width_px'] ?? 0 ) === 1200 ) )[0] ?? [];
+$split_768_sample = array_values( array_filter( (array) ( $split_recipe_layout['recipe_layout']['geometry_samples'] ?? [] ), static fn( array $sample ): bool => ( $sample['container_width_px'] ?? 0 ) === 768 ) )[0] ?? [];
+$check( $services_geometry_ok && (float) ( $photo_1200_sample['card_basis_percent'] ?? 0 ) === 31.5 && (float) ( $photo_1200_sample['gap_px'] ?? 0 ) === 24.0 && (float) ( $photo_1200_sample['outer_horizontal_padding_px'] ?? 0 ) === 32.0 && ( $photo_1200_sample['overflow'] ?? true ) === false && (float) ( $split_1200_sample['raw_copy_basis_width_px'] ?? 0 ) === 590.72 && (float) ( $split_1200_sample['raw_image_basis_width_px'] ?? 0 ) === 499.84 && (float) ( $split_1200_sample['gap_px'] ?? 0 ) === 32.0 && ( $split_1200_sample['overflow'] ?? true ) === false && ( $split_768_sample['axis'] ?? '' ) === 'column' && ( $split_768_sample['overflow'] ?? true ) === false, 'recipe geometry stays within width plus gaps and section padding for 2/3/4/6 items across 320–1200px containers; photo 31.5% × 3 and split 52/44% + 32px are gap-safe, with stacked tablet width measured on the cross axis' );
+
+$missing_photo_recipe = $services_recipe_compile( $services_recipe_brief, 'services.photo_cards', [], 'services-recipe-missing-photo' );
+$missing_split_plan = wpae_design_plan_from_brief( $services_recipe_brief, [ 'services_recipe_id' => 'services.split_editorial', 'services_lead_service_ref' => 'service_2' ] );
+$unknown_recipe_plan = wpae_design_plan_from_brief( $services_recipe_brief, [ 'services_recipe_id' => 'services.unknown' ] );
+$bad_reference_plan = $photo_recipe_result['plan'];
+$bad_reference_plan['sections'][0]['children'][1]['items'][0]['title_ref'] = 'service_999_title';
+$mismatched_asset = $services_recipe_assets[0];
+$mismatched_asset['group_id'] = 'service_99';
+$mismatched_media_plan = wpae_design_plan_from_brief( $services_recipe_brief, [ 'services_recipe_id' => 'services.photo_cards', 'media_references' => [ $mismatched_asset ] ] );
+$bad_alt_asset = $services_recipe_assets[0];
+$bad_alt_asset['alt'] = '';
+$bad_alt_plan = wpae_design_plan_from_brief( $services_recipe_brief, [ 'services_recipe_id' => 'services.photo_cards', 'media_references' => [ $bad_alt_asset ] ] );
+$duplicate_services_brief = $services_recipe_brief;
+$duplicate_services_brief['groups'][1]['group_id'] = $duplicate_services_brief['groups'][0]['group_id'];
+$duplicate_services_plan = wpae_design_plan_from_brief( $duplicate_services_brief, [ 'services_recipe_id' => 'services.text_icon_list' ] );
+$required_media_services = $services_recipe_brief;
+foreach ( $required_media_services['layout_constraints'] as &$constraint ) {
+	if ( ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
+		$constraint['value'] = 'required';
+	}
+}
+unset( $constraint );
+$required_text_recipe = wpae_design_plan_from_brief( $required_media_services, [ 'services_recipe_id' => 'services.text_icon_list' ] );
+$required_split_recipe = wpae_design_plan_from_brief( $required_media_services, [ 'services_recipe_id' => 'services.split_editorial', 'media_references' => array_slice( $services_recipe_assets, 0, 3 ) ] );
+$missing_photo_validation = $missing_photo_recipe['plan_validation'];
+$missing_split_validation = wpae_design_plan_validate( $missing_split_plan, $services_recipe_brief );
+$unknown_recipe_validation = wpae_design_plan_validate( $unknown_recipe_plan, $services_recipe_brief );
+$bad_reference_validation = wpae_design_plan_validate( $bad_reference_plan, $services_recipe_brief );
+$mismatched_media_validation = wpae_design_plan_validate( $mismatched_media_plan, $services_recipe_brief );
+$bad_alt_validation = wpae_design_plan_validate( $bad_alt_plan, $services_recipe_brief );
+$duplicate_services_validation = wpae_design_plan_validate( $duplicate_services_plan, $duplicate_services_brief );
+$required_text_validation = wpae_design_plan_validate( $required_text_recipe, $required_media_services );
+$required_split_validation = wpae_design_plan_validate( $required_split_recipe, $required_media_services );
+$forbidden_photo_validation = wpae_design_plan_validate( $forbidden_photo_plan, $forbidden_media_services );
+$forbidden_split_validation = wpae_design_plan_validate( $forbidden_split_plan, $forbidden_media_services );
+$check( empty( $missing_photo_validation['ok'] ) && in_array( 'services_recipe_service_1_photo_asset_required', $missing_photo_validation['errors'], true ), 'explicit photo recipe without required assets refuses before compile' );
+$check( empty( $missing_split_validation['ok'] ) && in_array( 'services_recipe_split_editorial_lead_photo_required', $missing_split_validation['errors'], true ), 'split recipe without its required lead image refuses before compile' );
+$check( empty( $unknown_recipe_validation['ok'] ) && in_array( 'services_recipe_unknown', $unknown_recipe_validation['errors'], true ), 'unknown recipe_id refuses validation' );
+$check( empty( $bad_reference_validation['ok'] ), 'recipe refuses an unknown content slot reference' );
+$check( empty( $mismatched_media_validation['ok'] ) && in_array( 'services_recipe_media_asset_group_unknown_service_99', $mismatched_media_validation['errors'], true ), 'recipe refuses an image bound to an unknown service group' );
+$check( empty( $bad_alt_validation['ok'] ), 'photo recipe refuses an image without alt text' );
+$check( empty( $duplicate_services_validation['ok'] ), 'recipe refuses duplicate service identities' );
+$check( empty( $required_text_validation['ok'] ) && in_array( 'text_icon_list_incompatible_with_required_media', $required_text_validation['errors'], true ), 'text/icon recipe refuses when images are explicitly required' );
+$check( empty( $required_split_validation['ok'] ) && in_array( 'required_media_assets_unconsumed', $required_split_validation['errors'], true ), 'split recipe refuses required supplied images left unconsumed' );
+$check( empty( $forbidden_photo_validation['ok'] ) && in_array( 'photo_cards_media_intent_incompatible', $forbidden_photo_validation['errors'], true ), 'photo recipe refuses when images are explicitly forbidden' );
+$check( empty( $forbidden_split_validation['ok'] ) && in_array( 'services_recipe_split_editorial_media_forbidden_or_conflicted', $forbidden_split_validation['errors'], true ), 'split recipe refuses when images are explicitly forbidden' );
+
+$count_recipe_results = [];
+foreach ( [ 1, 2, 6, 7 ] as $service_count ) {
+	$count_prompt = "Блок услуг\n";
+	for ( $service_index = 1; $service_index <= $service_count; $service_index++ ) {
+		$count_prompt .= 'Услуга ' . $service_index . ' — название: «Услуга ' . $service_index . '»' . "\n";
+		$count_prompt .= 'Услуга ' . $service_index . ' — описание: «Синтетическое описание услуги ' . $service_index . '»' . "\n";
+	}
+	$count_brief = wpae_brief_ir_parse( $count_prompt );
+	$count_recipe_results[ $service_count ] = $services_recipe_compile( $count_brief, 'services.photo_cards', array_slice( $services_recipe_assets, 0, $service_count ), 'services-recipe-count-' . $service_count );
+}
+$count_recipe_checks = [];
+foreach ( $count_recipe_results as $count => $result ) {
+	$recipe_child = array_values( array_filter( (array) ( $result['plan']['sections'][0]['children'] ?? [] ), static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'services_photo_grid' ) )[0] ?? [];
+	$count_ok = in_array( (int) $count, [ 2, 6 ], true )
+		? ( ! empty( $result['plan_validation']['ok'] ) && ! empty( $result['compiled']['ok'] ) && count( (array) ( $recipe_child['items'] ?? [] ) ) === (int) $count )
+		: ( empty( $result['plan_validation']['ok'] ) && in_array( 'services_recipe_items_out_of_range_or_incomplete', $result['plan_validation']['errors'] ?? [], true ) );
+	if ( in_array( (int) $count, [ 2, 6 ], true ) ) {
+		$count_nodes = $walk_elements( (array) ( $result['compiled']['elementor_data'] ?? [] ) );
+		$count_grid = array_values( array_filter( $count_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-photo-grid' ) )[0] ?? [];
+		$count_cards = array_values( array_filter( (array) ( $count_grid['elements'] ?? [] ), static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' ) );
+		$desktop_basis = (int) $count === 3 ? 31.5 : 48.0;
+		$count_ok = $count_ok && ( $count_grid['settings']['flex_wrap'] ?? '' ) === 'wrap'
+			&& count( $count_cards ) === (int) $count
+			&& (float) ( $count_cards[0]['settings']['_element_custom_width']['size'] ?? 0 ) === $desktop_basis
+			&& (float) ( $count_cards[0]['settings']['_element_custom_width_mobile']['size'] ?? 0 ) === 100.0
+			&& ( $desktop_basis * 2 + ( 24 * 100 / 1200 ) ) <= 100;
+		if ( (int) $count === 6 ) {
+			$count_layout = wpae_layout_report_for_plan( $result['plan'] );
+			$count_ok = $count_ok && ( $count_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 2
+				&& ( $count_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 2
+				&& ( $count_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1
+				&& ( $count_layout['recipe_layout']['card_or_row_padding_px']['desktop'] ?? 0 ) === 24
+				&& ( $count_layout['recipe_layout']['card_or_row_padding_px']['mobile'] ?? 0 ) === 20;
+		}
+	}
+	$count_recipe_checks[] = $count_ok;
+}
+$check( ! in_array( false, $count_recipe_checks, true ), 'photo recipes accept two and six services and reject counts outside the supported 2–6 range' );
+
+$wpae_test_readback_previous = $wpae_test_readback[ 5214 ] ?? null;
+$wpae_test_readback_had_5214 = array_key_exists( 5214, $wpae_test_readback );
+$wpae_test_readback[ 5214 ] = [];
+$wpae_recipe_execute_mock = [ 'calls' => [], 'persistent_write_count' => 0 ];
+$execute_recipe_checks = true;
+foreach ( $services_recipe_results as $recipe_id => $result ) {
+	$root = $result['compiled']['elementor_data'][0] ?? [];
+	$execute_result = wpae_llm_execute_action( [ 'action' => 'insert_elements', 'post_id' => 5214, 'elements' => [ $root ] ], 5214, 'services', -1, '', false, [ 'operation_id' => 'services-recipe-contract', 'operation_identity' => 'services-recipe-contract', 'deterministic_ids' => true ] );
+	$calls = (array) ( $wpae_recipe_execute_mock['calls'] ?? [] );
+	$normalized_root = (array) ( $calls[0]['elementor_data'][0] ?? [] );
+	$normalized_json = wp_json_encode( $normalized_root, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	$has_recipe_topology = $recipe_id === 'services.photo_cards'
+		? str_contains( $normalized_json, 'wpae-services-photo-grid' )
+		: ( $recipe_id === 'services.split_editorial' ? str_contains( $normalized_json, 'wpae-services-split-lead' ) : str_contains( $normalized_json, 'wpae-services-text-icon-list' ) );
+	$has_generic_service_cards = str_contains( $normalized_json, 'llm-services-grid' ) || str_contains( $normalized_json, 'wpae-service-cards' );
+	$preview_step = array_values( array_filter( (array) ( $execute_result['steps'] ?? [] ), static fn( array $step ): bool => ( $step['id'] ?? '' ) === 'preview' ) )[0] ?? [];
+	$execute_recipe_checks = $execute_recipe_checks && empty( $execute_result['ok'] ) && (int) ( $execute_result['status'] ?? 0 ) === 409 && ( $preview_step['status'] ?? '' ) === 'ok' && count( $calls ) === 2 && ! empty( $calls[0]['dry_run'] ) && empty( $calls[1]['dry_run'] ) && (int) ( $calls[0]['post_id'] ?? 0 ) === 5214 && (int) ( $calls[1]['post_id'] ?? 0 ) === 5214 && $has_recipe_topology && ! $has_generic_service_cards && (int) ( $wpae_recipe_execute_mock['persistent_write_count'] ?? -1 ) === 0;
+	$wpae_recipe_execute_mock['calls'] = [];
+}
+if ( $wpae_test_readback_had_5214 ) {
+	$wpae_test_readback[ 5214 ] = $wpae_test_readback_previous;
+} else {
+	unset( $wpae_test_readback[ 5214 ] );
+}
+$check( $execute_recipe_checks, 'all three recipe trees survive standard native/token/Bento execute normalization and dry-run preflight without collapsing into generic service cards; mocked final update refuses with write_count=0' );
+
+if ( getenv( 'WPAE_SERVICES_RECIPE_DEMO' ) === '1' ) {
+	$demo = [ 'brief' => $services_recipe_brief, 'results' => [] ];
+	foreach ( $services_recipe_ids as $recipe_id ) {
+		$result = $services_recipe_results[ $recipe_id ];
+		$demo['results'][ $recipe_id ] = [ 'plan' => $result['plan'], 'plan_validation' => $result['plan_validation'], 'ir' => $result['ir'], 'ir_validation' => $result['ir_validation'], 'compiled_native_tree' => $result['compiled']['elementor_data'] ?? [], 'compile_ok' => ! empty( $result['compiled']['ok'] ) ];
+	}
+	fwrite( STDOUT, "services recipe demo (synthetic; no provider/WP calls):\n" . wp_json_encode( $demo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT ) . "\n" );
+}
 
 fwrite( STDOUT, "design pipeline contract: {$checks} checks OK\n" );
