@@ -403,4 +403,12 @@ The requested live runs for `services.photo_cards`, `services.split_editorial`, 
 
 No live screenshot bytes or PNG files were produced. **SCREENSHOT BLOCKED** by the unavailable permitted Browser Use path. There are no post=5214 operation/root IDs from this pass. Source and mocked route assertions do not establish model design quality or live visual acceptance.
 
-Follow-up access check on 2026-10-04 after the request to complete the entire stage found no Browser Use, WP Pusher, Elementor, or screenshot-control tools in the current Codex tool catalog. The adjacent Page context reports `page_id=null`. The embedded authenticated editor is unavailable to this turn; no fallback transport or site mutation was attempted. Stage-5 live acceptance remains **NOT RUN**.
+## Browser Use/CUA capability audit — 2026-10-04
+
+The current Codex tool catalog has no Browser Use/CUA API for listing/selecting existing tabs, accessibility/DOM reads, page evaluation, click/keyboard input, actual viewport measurement or screenshot-byte export. `mcp__codex_app__open_in_codex` is documented as a UI opener and requires separate browser tools for inspection/interactions. `mcp__codex_app__capture_screen_context` is voice-chat-only and was not called. Remote Desktop Commander provides file/process/session tools, not GUI/browser control or screenshots.
+
+Historical Browser Use documentation in this report (2026-10-02) records `tabs.get/list/new/selected`, no documented activation method for another existing tab, and focus-emulation timeouts on background WP Pusher tabs. It does not show that Browser Use is loaded in the current task. The neighboring `page_id=null` signal is not evidence about browser-tool availability.
+
+The required connection is the documented Browser Use/CUA MCP surface attached to the existing authenticated browser profile, with enumeration and selection of existing WP Pusher/Plugins/Elementor tabs, DOM/read/evaluate and interaction methods, viewport metrics and screenshot bytes. No new browser tab is needed or authorized. Until connected, installation, installed/editor versions, pre-write post=5214 state, generation, save/readback, geometry and visual acceptance remain **NOT RUN**; this audit made no site writes.
+
+Runtime source has not changed since `979c9d0`; `git diff 979c9d0..HEAD` contains documentation only. No release or full test rerun was made.

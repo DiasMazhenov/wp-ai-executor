@@ -625,4 +625,8 @@ Live часть этапа 5 в этой сессии не запущена: Bro
 
 Source release commit `979c9d0` отправлен в `origin/main`; Git подтвердил переход `e758651..979c9d0 main -> main`. WP Pusher install, установленная PHP/runtime-версия и inline editor JS version не подтверждены и остаются отдельными статусами.
 
-Повторная проверка после просьбы пользователя завершить все пункты этапа: в текущем tool catalog нет Browser Use/WP Pusher/Elementor/screenshot управления, а контекст видимой Codex Page передал `page_id=null`. Live-доступ не появился; обходной transport не использовался и новых действий на сайте не было.
+Повторный Browser Use/CUA catalog audit (`2026-10-04`): в текущем `ALL_TOOLS` нет browser/CUA tool для перечисления/выбора существующих вкладок, accessibility/DOM/evaluate, click/type/keyboard, измерения viewport или получения screenshot bytes. `mcp__codex_app__open_in_codex` только показывает browser tab в Codex UI и прямо требует отдельные browser tools для inspect/interact; `mcp__codex_app__capture_screen_context` разрешён только в active voice chat; Remote Desktop Commander предоставляет file/process/session-команды, не GUI/CUA.
+
+Историческая запись Browser Use от `2026-10-02` описывает `tabs.get/list/new/selected`, но не activation другой существующей вкладки; фоновые WP Pusher tabs давали `Emulation.setFocusEmulationEnabled` timeout. Это не доказывает текущую доступность Browser Use. `page_id=null` не использован как признак отсутствия browser-доступа. Требуется Browser Use/CUA surface, подключённый к текущему авторизованному browser profile и предоставляющий existing-tab list/selection, page read/evaluate/interactions, фактический viewport и screenshot-byte capture для уже открытых WP Pusher/Plugins/Elementor вкладок; новые вкладки создавать нельзя.
+
+С `979c9d0` runtime-код не менялся (`git diff 979c9d0..HEAD` содержит только отчётные документы); новый release и полный набор тестов не запускались. Live-операций на сайте не было.
