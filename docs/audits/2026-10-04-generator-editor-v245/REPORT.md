@@ -29,3 +29,11 @@ At CSS viewport 1238×923, existing inline editor version v02.11.244, pendingOpe
 [Machine-readable matrix](evidence-matrix.json). A–J pending. Media must be verified from an existing authorized asset, not mock example.com URLs. Full requests, root/operation/trace, first-result rubric, readback/native/DOM, D/M screenshots and Undo outcomes are recorded only after actual actions. Missing saved state or a failed cleanup guard stops dependent writes.
 
 Source local checks complete; commit/push/install/editor/generation/save-readback/public desktop/public mobile/visual acceptance: pending. No live PASS or screenshot claim yet.
+
+## Live v245 and marker repair v246
+
+v245 source commit bd03882dc749476c5ecf5d7077750bbdc9d209ed independently matched origin/main. WP Pusher reported successful update; Plugins and reloaded editor confirmed v02.11.245, composition-ui-v1, 17 records, active mode. Actual PHP 8.3.22 (Site Health). Saved baseline valid_array, roots [], SHA256 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945; no unsaved changes before reload.
+
+A first result: FAIL before write, operation wpae-c1d5962e969af28c, hero.text_only/editorial_light, provider_calls=0, write_count=0, no root. frozen_decisions_changed_by_normalization: production required wpae-ds was added after compiler freeze. Diagnostic preserved in A-first-diagnostic.json; first-failure editor PNG 1238x923 visually inspected. No visual acceptance.
+
+v246 emits required root design-system classes before freeze in native compiler. Signature exclusions unchanged; author class mutation remains detected. Regression uses actual required classes and empty saved baseline matching live target; historical neighbor fixtures remain unchanged. Runtime 1075, DesignPlan 319, patch guard and package250/250 passed. Installation and affected live retry pending.

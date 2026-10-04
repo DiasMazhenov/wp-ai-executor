@@ -373,3 +373,11 @@ M2.1 publication: implementation commit `13315c0d5b0fce322eacda3110371fd74483b0e
 ## 15. M2.1 editor integration — v02.11.245, 2026-10-04
 
 Prepared source: safe server projection of 17 distinct composition records into WPAELLMChat; grouped composition/profile UI, immutable delivery snapshot/replay and busy guards, no selection on selected-element/targeted/replacement/Vision/off/shadow paths. Services automatic and API-key-only recipes authorization retained. Static LayoutReport uses accepted responsive gaps and boxed copy clamp; visual_render_verified=false. Runtime1072, DesignPlan319, Node8/8 and patch guard PASS. Separate install/readback/live matrix A–J is pending; current v244 editor/public render empty and initial document [], saved state still needs confirmation. [Report](../audits/2026-10-04-generator-editor-v245/REPORT.md). 776 foreign untracked files preserved.
+
+## Live v245 and marker repair v246
+
+v245 source commit bd03882dc749476c5ecf5d7077750bbdc9d209ed independently matched origin/main. WP Pusher reported successful update; Plugins and reloaded editor confirmed v02.11.245, composition-ui-v1, 17 records, active mode. Actual PHP 8.3.22 (Site Health). Saved baseline valid_array, roots [], SHA256 4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945; no unsaved changes before reload.
+
+A first result: FAIL before write, operation wpae-c1d5962e969af28c, hero.text_only/editorial_light, provider_calls=0, write_count=0, no root. frozen_decisions_changed_by_normalization: production required wpae-ds was added after compiler freeze. Diagnostic preserved in A-first-diagnostic.json; first-failure editor PNG 1238x923 visually inspected. No visual acceptance.
+
+v246 emits required root design-system classes before freeze in native compiler. Signature exclusions unchanged; author class mutation remains detected. Regression uses actual required classes and empty saved baseline matching live target; historical neighbor fixtures remain unchanged. Runtime 1075, DesignPlan 319, patch guard and package250/250 passed. Installation and affected live retry pending.

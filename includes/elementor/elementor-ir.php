@@ -1649,7 +1649,15 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 	$data = [];
 	foreach ( (array) ( $ir['nodes'] ?? [] ) as $node ) {
 		if ( is_array( $node ) ) {
-			$data[] = wpae_elementor_ir_compile_node( $node, $content_map, $media_map, $tokens, $seed, $report );
+			$compiled_root = wpae_elementor_ir_compile_node( $node, $content_map, $media_map, $tokens, $seed, $report );
+            if ( ! empty( $brief['canonical_create'] ) && ( $compiled_root['elType'] ?? '' ) === 'container' && function_exists( 'wpae_get_design_system_required_classes' ) ) {
+                // Resolve mandatory technical markers before the accepted signature.
+                // Normalization remains unable to change author classes or controls.
+                $markers = array_merge( wpae_get_design_system_required_classes(), [ 'wpae-block' ] );
+                $compiled_root['settings']['_css_classes'] = wpae_migrate_design_system_css_classes( $compiled_root['settings']['_css_classes'] ?? '', $markers )['classes'];
+                $compiled_root['settings']['_wpae_design_system_id'] = wpae_get_design_system_id();
+            }
+            $data[] = $compiled_root;
 		}
 	}
 	$counter = static function ( array $nodes ) use ( &$counter ): int {

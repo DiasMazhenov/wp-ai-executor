@@ -225,3 +225,16 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
 }
 $editor_catalog = wpae_composition_editor_catalog();
 check( count( $editor_catalog['records'] ) === 17 && ! in_array( 'benefits.linear', array_column( $editor_catalog['records'], 'id' ), true ), 'Editor projection has only distinct implemented records, no alias' );
+
+// Real design-system marker contract, absent from the historical harness stub.
+$GLOBALS['test_required_ds_classes'] = [ 'wpae-ds', 'wpae-system-test' ];
+$GLOBALS['test_page_baseline'] = []; // Matches the confirmed empty saved live target.
+$marker_case = $run_services_route( $m1_cases['hero_stack'][0], [], [], 'editor-real-ds-marker', false, 'active', 'active', [ 'composition_record' => 'hero.text_only', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+check( ! empty( $marker_case['response']['ok'] ) && $marker_case['writes'] === 1, 'Editor real wpae-ds marker contract survives frozen normalize/write/readback: ' . wp_json_encode( $marker_case['error'] ) );
+$marker_plan = wpae_design_plan_from_brief( $m2_results['hero.text_only']['brief'], [ 'canonical_create' => true, 'composition_record' => 'hero.text_only', 'visual_profile' => 'editorial_light' ] );
+$marker_ir = wpae_elementor_ir_from_design_plan( $marker_plan, $m2_results['hero.text_only']['brief'] );
+$marker_compile = wpae_native_elementor_compile( $marker_ir, $m2_results['hero.text_only']['brief'], [], [ 'resolved_visual' => $marker_plan['resolved_visual'] ] );
+check( str_contains( $marker_compile['elementor_data'][0]['settings']['_css_classes'] ?? '', 'wpae-ds' ) && wpae_llm_decision_signature( $marker_compile['elementor_data'] ) === wpae_llm_decision_signature( wpae_elementor_normalize_data( $marker_compile['elementor_data'] )['data'] ), 'Editor compiler emits technical root markers before freeze; normalizer does not add semantic class later' );
+$marker_mutation = $marker_compile['elementor_data']; $marker_mutation[0]['settings']['_css_classes'] .= ' author-layout-change';
+check( wpae_llm_decision_signature( $marker_mutation ) !== wpae_llm_decision_signature( $marker_compile['elementor_data'] ), 'Editor class decisions stay guarded, signature exclusions not broadened' );
+unset( $GLOBALS['test_required_ds_classes'], $GLOBALS['test_page_baseline'] );

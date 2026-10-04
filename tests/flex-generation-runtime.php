@@ -90,7 +90,7 @@ function wpae_get_project_design_tokens() {
     }
     return $tokens;
 }
-function wpae_get_design_system_required_classes() { return [ 'wpae-system-test' ]; }
+function wpae_get_design_system_required_classes() { return $GLOBALS['test_required_ds_classes'] ?? [ 'wpae-system-test' ]; }
 function wpae_get_design_system_id() { return 'test'; }
 function wpae_block_library_retrieve_for_prompt( ...$args ) {
 	$GLOBALS['library_retrieval_calls'][] = $args;
@@ -2488,7 +2488,7 @@ $run_services_route = static function ( string $message, array $responses, array
 	$GLOBALS['library'] = $library;
 	$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => $pipeline_mode, 'design_engine_mode' => $engine_mode ];
 	$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
-	$GLOBALS['page_data'] = $legacy_page;
+	$GLOBALS['page_data'] = $GLOBALS['test_page_baseline'] ?? $legacy_page;
 	$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 	$GLOBALS['m1_write_attempts'] = 0;
 	$GLOBALS['responses'] = $responses;
