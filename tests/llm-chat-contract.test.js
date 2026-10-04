@@ -1197,37 +1197,47 @@ const targetedRepairStart = js.indexOf('    function targetedDesignReplacement('
 const targetedRepairEnd = js.indexOf('    function refreshSelectionHint()', targetedRepairStart);
 assert.ok(targetedRepairStart >= 0 && targetedRepairEnd > targetedRepairStart, 'targeted repair helper is present');
 const targetedRepairSource = js.slice(targetedRepairStart, targetedRepairEnd);
-const runTargetedRepair = (pendingOperation, message, selected) => vm.runInNewContext(
-    `var config = ${JSON.stringify({ pendingOperation })};\n${targetedRepairSource}\ntargetedDesignReplacement(${JSON.stringify(message)}, ${JSON.stringify(selected)});`,
+const runTargetedRepair = (pendingOperation, message, selected, targetOperationsByRoot) => vm.runInNewContext(
+    `var config = ${JSON.stringify(Object.assign({ pendingOperation }, targetOperationsByRoot === undefined ? {} : { targetOperationsByRoot }))};\n${targetedRepairSource}\ntargetedDesignReplacement(${JSON.stringify(message)}, ${JSON.stringify(selected)});`,
     { String, Number, Array }
 );
 const repairMessage = 'Обнови выбранный CTA-блок: добавь фото справа и уменьши левый отступ';
+const generatedRootSelection = [{ id: 'eb0103a', settings: { _css_classes: 'wpae-generated-root' } }];
 const eligibleRepair = JSON.parse(JSON.stringify(runTargetedRepair(
-    { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
+    { operation_id: 'wpae-patch-stale-bootstrap', operation_identity: 'stale-bootstrap-identity', revision: 9, root_ids: ['3271f43'], reviewable: false },
     repairMessage,
-    [{ id: 'eb0103a' }]
+    generatedRootSelection,
+    { eb0103a: { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true } }
 )));
 assert.equal(eligibleRepair.replaceExistingRoot, true, 'selected current root is sent as a targeted replacement');
 assert.deepEqual(eligibleRepair.replacesOperation.root_ids, ['eb0103a']);
 assert.equal(eligibleRepair.replacesOperation.revision, 4);
+assert.equal(eligibleRepair.replacesOperation.operation_id, 'op-1', 'selected root resolves its own operation instead of the stale global bootstrap candidate');
 const staleRepair = runTargetedRepair(
-    { operation_id: 'op-stale', revision: 4, root_ids: ['eb0103a'], reviewable: false },
+    { operation_id: 'op-stale', operation_identity: 'stale-identity', revision: 4, root_ids: ['eb0103a'], reviewable: false },
     repairMessage,
-    [{ id: 'eb0103a' }]
+    generatedRootSelection,
+    {}
 );
-assert.equal(staleRepair, null, 'stale or missing targets stay on the normal guarded edit route');
+assert.deepEqual(JSON.parse(JSON.stringify(staleRepair)), { blocked: true, reason: 'no_current_owned_operation' }, 'a selected generated root with no exact current owner is blocked before provider or write calls');
 const foreignRepair = runTargetedRepair(
     { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
     repairMessage,
-    [{ id: 'neighbor-root' }]
+    [{ id: 'neighbor-root', settings: { _css_classes: '' } }],
+    { 'eb0103a': { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true } }
 );
 assert.equal(foreignRepair, null, 'a selected neighboring root stays on the normal guarded edit route');
-assert.equal(runTargetedRepair(
+assert.deepEqual(JSON.parse(JSON.stringify(runTargetedRepair(
     { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true },
     repairMessage,
-    [{ id: 'eb0103a' }, { id: 'neighbor-root' }]
-), null, 'multiple selected roots cannot be mislabeled as a single-root replacement');
+    [...generatedRootSelection, { id: 'another-generated-root', settings: { _css_classes: 'wpae-generated-root' } }],
+    { eb0103a: { operation_id: 'op-1', operation_identity: 'identity-1', revision: 4, root_ids: ['eb0103a'], reviewable: true } }
+))), { blocked: true, reason: 'multiple_selected_roots' }, 'multiple selected generated roots are blocked instead of being mislabeled as a single-root replacement');
 assert.equal(runTargetedRepair({ root_ids: ['eb0103a'], reviewable: true }, 'Добавь новый CTA блок', []), null, 'new append requests keep the normal route');
+const requestStart = js.indexOf('    function request(message, retried, options)');
+const requestEnd = js.indexOf('    function ', requestStart + 10);
+const requestSource = js.slice(requestStart, requestEnd > requestStart ? requestEnd : undefined);
+assert.ok(requestSource.indexOf('explicitReplacement.blocked') >= 0 && requestSource.indexOf('explicitReplacement.blocked') < requestSource.indexOf('fetch('), 'unsafe selected-root repairs stop before any provider request');
 
 const liveSelectionStart = js.indexOf('    var selectedModelCache = []');
 const liveSelectionEnd = js.indexOf('    function selectedModels()', liveSelectionStart);

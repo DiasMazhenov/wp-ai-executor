@@ -36,3 +36,31 @@ At diagnosis time, no site write, reload, root replacement, or new screenshot wa
 WP Pusher reported that WP AI Executor updated successfully. The active Plugins row showed `v02.11.243`; WordPress Site Health reported PHP `8.3.22`. The first reload of the existing editor still showed v242, so one fresh editor tab was opened for the same post. Its localized editor config and visible LLM chat badge both showed `v02.11.243`; only then was the stale editor tab closed. The existing public tab was restored. No other plugin or WordPress setting was changed.
 
 After installation, public readback still had post `5214` roots `[023bd70, e939025, 8b79d6c]`, three plain `УСЛУГИ` headings and no badge/pill nodes. CSS viewport was `1238×923`, client `1223×923`, DPR 2. The only current editor pending operation is `wpae-patch-6938b90091861944`, revision `4`, root `[3271f43]`; the durable guard says `reviewable=false`, `stale_target`, reason `root_missing`. The supported replacement path requires an exact current operation/root ownership match, so no request was submitted and no roots were replaced or appended (`write_count=0` for this continuation). v243 source, installation and editor config are verified; v243 generation, save/reload readback and post-fix visual acceptance remain **NOT RUN**.
+
+## Stage 5 follow-up — target association and wider visual defects — 2026-10-04
+
+### Fresh baseline
+
+The built-in Browser Plugin is documented through `mcp__node_repl__js`. Current `tabs.list()` showed public page tab `3` and Elementor `post=5214` tab `4`; WP Pusher was not among the open tabs. Public and editor were inspected without creating tabs or submitting writes. Installed/editor config remained v02.11.243 at capture.
+
+Public CSS viewport was `1238×923`, document client `1223×923`, DPR 2; the saved roots were exactly `[023bd70, e939025, 8b79d6c]` and document `scrollWidth=1223`. The exact CTA labels/targets and all three service-matched images remain present; images load at natural `1200×900` with correct alt and cover crop. Fresh Browser Plugin captures, original JPEG bytes and checked/visually inspected PNGs are stored at `../../2026-10-04-services-v243-target-compiler/`:
+
+- `public-baseline-viewport.png`: 1223×912 raster; actual CSS viewport 1238×923.
+- `public-baseline-fullpage.png`: 1223×2120 raster; actual CSS viewport 1238×923.
+- `editor-baseline-viewport.png`: 1238×923 raster; actual CSS viewport 1238×923.
+
+These are **pre-correction diagnostic** frames, not final save/reload acceptance screenshots. The editor capture shows an empty canvas; Publish and Update are disabled, and the iframe document was not readable. No editor reload or write was performed during this baseline pass.
+
+### Root cause split
+
+The eyebrow defect was fixed in v243: typed recipes now carry the outlined native pill. The public v243 baseline still contains v242-saved roots, so installation alone did not rewrite the page and there are still no pill nodes in the DOM.
+
+The additional split/text-icon defects came from compiler output: split lead and text/editorial rows had zero padding; the secondary rows were white unpadded bars; copy groups used a 24px flex gap; headings inherited `16px/400`. Text/icon set the Elementor widget wrapper to 36px while its native stacked icon emitted a 28px glyph and 14px half-em padding, creating a 56px circle that overlapped copy by 4px. Computed element margins were 0px, so these are generated settings/compiler defaults rather than a global margin rule.
+
+Local v244 source now sets a native 22px glyph/44px circle and wrapper, transparent editorial rows with 16px vertical padding, 8px copy rhythm, a white split lead panel with 24px padding/16px radius, and a distinct 18px/600 service title. Body copy retains the system `type.body` token or uses 16px/400/1.6. Valid explicit surface overrides remain supported, and v243 pill coverage remains in the three-recipe regression. These are source assertions only until the updated runtime is installed and the roots are safely replaced.
+
+### Operation distinction and limitation
+
+The observed stale bootstrap operation `wpae-patch-6938b90091861944` does not own the three current roots: it points to `3271f43`, revision 4, with `root_missing`. The old editor selection path could associate that one global pending candidate with an explicitly selected different root. v244 replaces that behavior with a current root→operation map computed by the existing server ledger and the strict replacement guard; the client blocks before provider/write if the selected generated root has no unique current owner. It does not relax `root_missing`, revision, saved hash, fingerprint, or ownership checks.
+
+The authenticated first-party diagnostics for historical generation IDs `wpae-27aafa3c2441a362`, `wpae-c6b6305322c4b71e`, and `wpae-62307e09f09d9216` were not read during this baseline capture. Therefore it is established that the bootstrap is stale, but **not** established that those ledger entries are absent or that any one has a current fingerprint conflict. No manual owner inference is allowed. There were zero submitted page writes in this continuation; root set is unchanged. v244 source and local tests are complete (Design Pipeline `319`, Flex Runtime `671`, Node `6/6`, patch guard, package hashes 250/250, catalog, PHP lint and diff-check PASS). Commit/push, install, selected-root map, guarded repair, save/reload and final visual screenshots remain separate and **NOT YET VERIFIED**.

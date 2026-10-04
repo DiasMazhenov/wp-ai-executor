@@ -809,7 +809,7 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 		'content_refs' => wpae_design_plan_group_refs( $recipe_items, [ 'title_ref', 'body_ref', 'cta_ref' ] ),
 		'items' => $recipe_items,
 		'item_errors' => array_values( array_unique( $errors ) ),
-		'token_refs' => [ 'color.surface', 'color.text', 'color.muted', 'color.primary', 'color.border', 'radius.card', 'space.component' ],
+		'token_refs' => [ 'color.surface', 'color.text', 'color.muted', 'color.primary', 'color.border', 'radius.card', 'space.component', 'type.display', 'type.body' ],
 		'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
 		'responsive_policy' => 'stack',
 		'media_refs' => [],

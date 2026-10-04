@@ -803,14 +803,25 @@
     }
     function targetedDesignReplacement(message, selected) {
         if (!/(?:обнови|переделай|исправь|улучши|перестрой|замени)[\s\S]{0,100}(?:выбран|выделен|этот|эту|текущ)/iu.test(String(message || ''))) return null;
-        var roots = config.pendingOperation && Array.isArray(config.pendingOperation.root_ids)
-            ? config.pendingOperation.root_ids.map(String).filter(Boolean).slice(0, 12)
-            : [];
-        var selectedIds = (Array.isArray(selected) ? selected : []).map(function (item) {
+        var selectedItems = Array.isArray(selected) ? selected : [];
+        var selectedIds = selectedItems.map(function (item) {
             return item && typeof item === 'object' ? String(item.id || item.element_id || '') : String(item || '');
         }).filter(Boolean);
-        var pending = config.pendingOperation || {};
-        if (pending.reviewable !== true || !pending.operation_id || !pending.operation_identity || Number(pending.revision) < 1 || roots.length !== 1 || selectedIds.length !== 1 || selectedIds[0] !== roots[0]) return null;
+        var generatedSelection = selectedItems.filter(function (item) {
+            var classes = item && item.settings ? String(item.settings._css_classes || '').split(/\s+/) : [];
+            return classes.indexOf('wpae-generated-root') !== -1;
+        });
+        var hasRootMap = Object.prototype.hasOwnProperty.call(config, 'targetOperationsByRoot') && config.targetOperationsByRoot && typeof config.targetOperationsByRoot === 'object';
+        if (selectedIds.length !== 1) {
+            return generatedSelection.length ? { blocked: true, reason: 'multiple_selected_roots' } : null;
+        }
+        var selectedId = selectedIds[0];
+        var isGeneratedRoot = generatedSelection.length === 1;
+        var pending = hasRootMap ? config.targetOperationsByRoot[selectedId] : config.pendingOperation;
+        var roots = pending && Array.isArray(pending.root_ids) ? pending.root_ids.map(String).filter(Boolean).slice(0, 12) : [];
+        if (!pending || pending.reviewable !== true || !pending.operation_id || !pending.operation_identity || Number(pending.revision) < 1 || roots.length !== 1 || roots[0] !== selectedId) {
+            return isGeneratedRoot ? { blocked: true, reason: 'no_current_owned_operation' } : null;
+        }
         var repair = { targetedDesignRepair: true, replaceExistingRoot: true };
         repair.replacesOperation = {
             operation_id: String(pending.operation_id),
@@ -1857,6 +1868,11 @@
         var requestSelection = options.selectedElements || selectedElements();
         if (!options.retryCurrentOperation && !options.visionRepair && !options.targetedDesignRepair) {
             var explicitReplacement = targetedDesignReplacement(message, requestSelection);
+            if (explicitReplacement && explicitReplacement.blocked) {
+                addMessage('assistant', strings.targetReplacementUnavailable || 'Безопасное обновление остановлено: для выбранного блока нет единственной текущей операции. Страница не изменена.');
+                status.textContent = strings.error;
+                return Promise.resolve(false);
+            }
             if (explicitReplacement) {
                 options = Object.assign({}, options, explicitReplacement, { selectedElements: requestSelection });
             }

@@ -1,0 +1,728 @@
+{
+  "date": "2026-10-04",
+  "source_head_at_capture": "3a694790f5926379416f1dd838cf52acd6af59d8",
+  "installed_editor_version": "v02.11.243",
+  "browser": {
+    "public_tab_id": "3",
+    "editor_tab_id": "4",
+    "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "editor_url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor&wpae_release=190&fresh=1791104833318"
+  },
+  "public": {
+    "badgeCount": 0,
+    "rootIds": [
+      "023bd70",
+      "e939025",
+      "8b79d6c"
+    ],
+    "roots": [
+      {
+        "buttons": [
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-services elementor-element elementor-element-023bd70 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+        "headings": [
+          {
+            "rect": {
+              "height": 58.796875,
+              "width": 357.0859375,
+              "x": 32,
+              "y": 105.6015625
+            },
+            "size": "56px",
+            "tag": "H3",
+            "text": "Наши услуги",
+            "weight": "700"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 315.078125,
+              "x": 57,
+              "y": 473.3984375
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Стратегия проекта",
+            "weight": "400"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 315.078125,
+              "x": 446.078125,
+              "y": 473.3984375
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Архитектура и дизайн",
+            "weight": "400"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 315.078125,
+              "x": 835.15625,
+              "y": 473.3984375
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Сопровождение",
+            "weight": "400"
+          }
+        ],
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "marker": null,
+        "rect": {
+          "height": 621.3984375,
+          "width": 1223,
+          "x": 0,
+          "y": 32
+        },
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект"
+      },
+      {
+        "buttons": [
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-services elementor-element elementor-element-e939025 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+        "headings": [
+          {
+            "rect": {
+              "height": 58.796875,
+              "width": 357.0859375,
+              "x": 32,
+              "y": 727
+            },
+            "size": "56px",
+            "tag": "H3",
+            "text": "Наши услуги",
+            "weight": "700"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 602.6796875,
+              "x": 32,
+              "y": 872.296875
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Архитектура и дизайн",
+            "weight": "400"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 1159,
+              "x": 32,
+              "y": 1093.796875
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Стратегия проекта",
+            "weight": "400"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 1159,
+              "x": 32,
+              "y": 1277.796875
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Сопровождение",
+            "weight": "400"
+          }
+        ],
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "marker": null,
+        "rect": {
+          "height": 783.3984375,
+          "width": 1223,
+          "x": 0,
+          "y": 653.3984375
+        },
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект"
+      },
+      {
+        "buttons": [
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "https://mazhenov.kz/pricing-contract-live-v123/#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-services elementor-element elementor-element-8b79d6c e-flex e-con-boxed e-con e-parent",
+        "headings": [
+          {
+            "rect": {
+              "height": 58.796875,
+              "width": 357.0859375,
+              "x": 32,
+              "y": 1510.3984375
+            },
+            "size": "56px",
+            "tag": "H3",
+            "text": "Наши услуги",
+            "weight": "700"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 1043.09375,
+              "x": 84,
+              "y": 1593.1953125
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Стратегия проекта",
+            "weight": "400"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 1043.09375,
+              "x": 84,
+              "y": 1777.1953125
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Архитектура и дизайн",
+            "weight": "400"
+          },
+          {
+            "rect": {
+              "height": 24,
+              "width": 1043.09375,
+              "x": 84,
+              "y": 1961.1953125
+            },
+            "size": "16px",
+            "tag": "H3",
+            "text": "Сопровождение",
+            "weight": "400"
+          }
+        ],
+        "id": "8b79d6c",
+        "images": [],
+        "marker": {
+          "fontSize": "28px",
+          "height": 56,
+          "padding": "14px",
+          "width": 56
+        },
+        "rect": {
+          "height": 683.3984375,
+          "width": 1223,
+          "x": 0,
+          "y": 1436.796875
+        },
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект"
+      }
+    ],
+    "viewport": {
+      "clientHeight": 923,
+      "clientWidth": 1223,
+      "dpr": 2,
+      "height": 923,
+      "scrollWidth": 1223,
+      "width": 1238
+    }
+  },
+  "spacing": [
+    {
+      "copy": {
+        "align": "normal",
+        "children": [
+          {
+            "height": 24,
+            "inner": [
+              {
+                "fontSize": "16px",
+                "height": 24,
+                "margin": "0px",
+                "tag": "H3",
+                "text": "Архитектура и дизайн",
+                "weight": "400",
+                "y": 872.296875
+              }
+            ],
+            "margin": "0px",
+            "widget": "heading.default",
+            "width": 602.6796875,
+            "y": 872.296875
+          },
+          {
+            "height": 24,
+            "inner": [],
+            "margin": "0px",
+            "widget": "text-editor.default",
+            "width": 602.6796875,
+            "y": 920.296875
+          },
+          {
+            "height": 39,
+            "inner": [
+              {
+                "fontSize": "15px",
+                "height": 39,
+                "margin": "0px",
+                "tag": "A",
+                "text": "Смотреть проекты",
+                "weight": "500",
+                "y": 968.296875
+              }
+            ],
+            "margin": "0px",
+            "widget": "button.default",
+            "width": 602.6796875,
+            "y": 968.296875
+          }
+        ],
+        "gap": "24px",
+        "height": 135,
+        "justify": "normal",
+        "padding": "0px",
+        "width": 602.6796875,
+        "y": 872.296875
+      },
+      "parent": "wpae-services-split-lead elementor-element elementor-element-cf77397 e-flex e-con-full e-con e-parent e-lazyloaded"
+    },
+    {
+      "copy": {
+        "align": "normal",
+        "children": [
+          {
+            "height": 24,
+            "inner": [
+              {
+                "fontSize": "16px",
+                "height": 24,
+                "margin": "0px",
+                "tag": "H3",
+                "text": "Стратегия проекта",
+                "weight": "400",
+                "y": 1093.796875
+              }
+            ],
+            "margin": "0px",
+            "widget": "heading.default",
+            "width": 1159,
+            "y": 1093.796875
+          },
+          {
+            "height": 24,
+            "inner": [],
+            "margin": "0px",
+            "widget": "text-editor.default",
+            "width": 1159,
+            "y": 1141.796875
+          },
+          {
+            "height": 39,
+            "inner": [
+              {
+                "fontSize": "15px",
+                "height": 39,
+                "margin": "0px",
+                "tag": "A",
+                "text": "Обсудить",
+                "weight": "500",
+                "y": 1189.796875
+              }
+            ],
+            "margin": "0px",
+            "widget": "button.default",
+            "width": 1159,
+            "y": 1189.796875
+          }
+        ],
+        "gap": "24px",
+        "height": 135,
+        "justify": "normal",
+        "padding": "0px",
+        "width": 1159,
+        "y": 1093.796875
+      },
+      "parent": "wpae-services-editorial-row elementor-element elementor-element-20ac54a e-flex e-con-full e-con e-parent e-lazyloaded"
+    },
+    {
+      "copy": {
+        "align": "normal",
+        "children": [
+          {
+            "height": 24,
+            "inner": [
+              {
+                "fontSize": "16px",
+                "height": 24,
+                "margin": "0px",
+                "tag": "H3",
+                "text": "Сопровождение",
+                "weight": "400",
+                "y": 1277.796875
+              }
+            ],
+            "margin": "0px",
+            "widget": "heading.default",
+            "width": 1159,
+            "y": 1277.796875
+          },
+          {
+            "height": 24,
+            "inner": [],
+            "margin": "0px",
+            "widget": "text-editor.default",
+            "width": 1159,
+            "y": 1325.796875
+          },
+          {
+            "height": 39,
+            "inner": [
+              {
+                "fontSize": "15px",
+                "height": 39,
+                "margin": "0px",
+                "tag": "A",
+                "text": "Обсудить проект",
+                "weight": "500",
+                "y": 1373.796875
+              }
+            ],
+            "margin": "0px",
+            "widget": "button.default",
+            "width": 1159,
+            "y": 1373.796875
+          }
+        ],
+        "gap": "24px",
+        "height": 135,
+        "justify": "normal",
+        "padding": "0px",
+        "width": 1159,
+        "y": 1277.796875
+      },
+      "parent": "wpae-services-editorial-row elementor-element elementor-element-e0681e6 e-flex e-con-full e-con e-parent e-lazyloaded"
+    },
+    {
+      "copy": {
+        "align": "normal",
+        "children": [
+          {
+            "height": 24,
+            "inner": [
+              {
+                "fontSize": "16px",
+                "height": 24,
+                "margin": "0px",
+                "tag": "H3",
+                "text": "Стратегия проекта",
+                "weight": "400",
+                "y": 1593.1953125
+              }
+            ],
+            "margin": "0px",
+            "widget": "heading.default",
+            "width": 1043.09375,
+            "y": 1593.1953125
+          },
+          {
+            "height": 24,
+            "inner": [],
+            "margin": "0px",
+            "widget": "text-editor.default",
+            "width": 1043.09375,
+            "y": 1641.1953125
+          },
+          {
+            "height": 39,
+            "inner": [
+              {
+                "fontSize": "15px",
+                "height": 39,
+                "margin": "0px",
+                "tag": "A",
+                "text": "Обсудить",
+                "weight": "500",
+                "y": 1689.1953125
+              }
+            ],
+            "margin": "0px",
+            "widget": "button.default",
+            "width": 1043.09375,
+            "y": 1689.1953125
+          }
+        ],
+        "gap": "24px",
+        "height": 135,
+        "justify": "normal",
+        "padding": "0px",
+        "width": 1043.09375,
+        "y": 1593.1953125
+      },
+      "parent": "wpae-services-text-icon-row elementor-element elementor-element-96491c6 e-flex e-con-full e-con e-parent e-lazyloaded"
+    },
+    {
+      "copy": {
+        "align": "normal",
+        "children": [
+          {
+            "height": 24,
+            "inner": [
+              {
+                "fontSize": "16px",
+                "height": 24,
+                "margin": "0px",
+                "tag": "H3",
+                "text": "Архитектура и дизайн",
+                "weight": "400",
+                "y": 1777.1953125
+              }
+            ],
+            "margin": "0px",
+            "widget": "heading.default",
+            "width": 1043.09375,
+            "y": 1777.1953125
+          },
+          {
+            "height": 24,
+            "inner": [],
+            "margin": "0px",
+            "widget": "text-editor.default",
+            "width": 1043.09375,
+            "y": 1825.1953125
+          },
+          {
+            "height": 39,
+            "inner": [
+              {
+                "fontSize": "15px",
+                "height": 39,
+                "margin": "0px",
+                "tag": "A",
+                "text": "Смотреть проекты",
+                "weight": "500",
+                "y": 1873.1953125
+              }
+            ],
+            "margin": "0px",
+            "widget": "button.default",
+            "width": 1043.09375,
+            "y": 1873.1953125
+          }
+        ],
+        "gap": "24px",
+        "height": 135,
+        "justify": "normal",
+        "padding": "0px",
+        "width": 1043.09375,
+        "y": 1777.1953125
+      },
+      "parent": "wpae-services-text-icon-row elementor-element elementor-element-1de00dd e-flex e-con-full e-con e-parent e-lazyloaded"
+    },
+    {
+      "copy": {
+        "align": "normal",
+        "children": [
+          {
+            "height": 24,
+            "inner": [
+              {
+                "fontSize": "16px",
+                "height": 24,
+                "margin": "0px",
+                "tag": "H3",
+                "text": "Сопровождение",
+                "weight": "400",
+                "y": 1961.1953125
+              }
+            ],
+            "margin": "0px",
+            "widget": "heading.default",
+            "width": 1043.09375,
+            "y": 1961.1953125
+          },
+          {
+            "height": 24,
+            "inner": [],
+            "margin": "0px",
+            "widget": "text-editor.default",
+            "width": 1043.09375,
+            "y": 2009.1953125
+          },
+          {
+            "height": 39,
+            "inner": [
+              {
+                "fontSize": "15px",
+                "height": 39,
+                "margin": "0px",
+                "tag": "A",
+                "text": "Обсудить проект",
+                "weight": "500",
+                "y": 2057.1953125
+              }
+            ],
+            "margin": "0px",
+            "widget": "button.default",
+            "width": 1043.09375,
+            "y": 2057.1953125
+          }
+        ],
+        "gap": "24px",
+        "height": 135,
+        "justify": "normal",
+        "padding": "0px",
+        "width": 1043.09375,
+        "y": 1961.1953125
+      },
+      "parent": "wpae-services-text-icon-row elementor-element elementor-element-f69a8a0 e-flex e-con-full e-con e-parent e-lazyloaded"
+    }
+  ],
+  "text_icon_marker": {
+    "circle": {
+      "height": 56,
+      "width": 56,
+      "x": 32,
+      "y": 1593.1953125
+    },
+    "copy": {
+      "height": 135,
+      "width": 1043.09375,
+      "x": 84,
+      "y": 1593.1953125
+    },
+    "copyLeftMinusCircleRight": -4,
+    "glyphFontSize": "28px",
+    "row": {
+      "height": 135,
+      "width": 1159,
+      "x": 32,
+      "y": 1593.1953125
+    },
+    "rowStyle": {
+      "background": "rgb(255, 255, 255)",
+      "gap": "16px",
+      "padding": "0px"
+    },
+    "widget": {
+      "height": 62,
+      "width": 36,
+      "x": 32,
+      "y": 1593.1953125
+    }
+  },
+  "editor": {
+    "unsaved_state": {
+      "publish_disabled": true,
+      "update_disabled": true
+    },
+    "iframe_document_readable": false,
+    "visible_canvas": "empty"
+  },
+  "pending_operation": {
+    "operation_id": "wpae-patch-6938b90091861944",
+    "post_id": 5214,
+    "revision": 4,
+    "root_ids": [
+      "3271f43"
+    ],
+    "current_state": "written",
+    "reviewable": false,
+    "target_reason": "root_missing"
+  },
+  "write_count": 0,
+  "screenshots": [
+    {
+      "file": "public-baseline-viewport.jpg",
+      "bytes": 116396,
+      "png": "public-baseline-viewport.png",
+      "png_pixels": "1223x912",
+      "source": "public viewport screenshot",
+      "css_viewport": "1238x923"
+    },
+    {
+      "file": "public-baseline-fullpage.jpg",
+      "bytes": 211890,
+      "png": "public-baseline-fullpage.png",
+      "png_pixels": "1223x2120",
+      "css_viewport": "1238x923",
+      "source": "public full-page screenshot"
+    },
+    {
+      "file": "editor-baseline-viewport.jpg",
+      "bytes": 79286,
+      "png": "editor-baseline-viewport.png",
+      "png_pixels": "1238x923",
+      "css_viewport": "1238x923",
+      "source": "Elementor editor tab 4"
+    }
+  ]
+}

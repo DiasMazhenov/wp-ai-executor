@@ -29,8 +29,12 @@ function wpae_enqueue_elementor_llm_chat(): void {
     $settings = wpae_llm_get_settings();
     $vision_status = wpae_get_vision_status();
     $pending_operation = null;
+    $target_operations_by_root = [];
+    $pending_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : null;
+    if ( function_exists( 'wpae_design_operation_editor_targets' ) && is_array( $pending_data ) ) {
+		$target_operations_by_root = wpae_design_operation_editor_targets( $post_id, $pending_data );
+	}
     if ( function_exists( 'wpae_design_operation_editor_candidate' ) ) {
-        $pending_data = function_exists( 'wpae_get_elementor_data_for_post' ) ? wpae_get_elementor_data_for_post( $post_id ) : null;
         $candidate = wpae_design_operation_editor_candidate( $post_id, is_array( $pending_data ) ? $pending_data : null );
         if ( is_array( $candidate ) ) {
             $state = sanitize_key( (string) ( $candidate['current_state'] ?? '' ) );
@@ -75,6 +79,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
         'nonce' => wp_create_nonce( 'wp_rest' ),
         'postId' => $post_id,
         'pendingOperation' => $pending_operation,
+		'targetOperationsByRoot' => $target_operations_by_root,
         'postStatus' => (string) get_post_status( $post_id ),
         'ready' => wpae_capability_enabled( 'llm_chat' ) && ! empty( $settings['has_api_key'] ) && $settings['base_url'] !== '',
         'strings' => [
@@ -96,6 +101,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
             'regenerateEmpty' => 'Нет предыдущего запроса для перегенерации.',
             'regenerateBusy' => 'Дождитесь завершения текущего запроса.',
             'reviewPending' => 'Проверить сохранённый результат',
+            'targetReplacementUnavailable' => 'Безопасное обновление остановлено: для выбранного блока нет единственной операции, совпадающей с текущими сохранёнными post/root/revision/fingerprint. Страница не изменена.',
             'selectionEmpty' => 'Выделите элемент в Elementor и повторите.',
             'selectionCopyError' => 'Не удалось скопировать JSON выделенного.',
             'copyError' => 'Не удалось скопировать текст.',

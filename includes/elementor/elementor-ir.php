@@ -193,7 +193,7 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 			$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
 			$copy = $make_copy( $node_id . '-' . $group_id . '-text-copy', $item, 'services_text_icon_copy' );
 			$copy['layout_constraints']['list_copy_width'] = 90;
-			$row = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-icon-row', 'services_text_icon_row', 'container', [], $tokens, [ wpae_elementor_ir_node( $node_id . '-' . $group_id . '-icon', 'services_list_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle', 'fixed_width' => 36 ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ), $copy ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+			$row = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-icon-row', 'services_text_icon_row', 'container', [], $tokens, [ wpae_elementor_ir_node( $node_id . '-' . $group_id . '-icon', 'services_list_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle', 'fixed_width' => 44 ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ), $copy ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			$rows[] = $row;
 			if ( $index < count( $items ) - 1 ) {
 				$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-divider', 'services_text_icon_divider', 'divider', [], [ 'color.border' ], [], [ 'reference' => 'services-text-icon-list-v1' ], [ 'strategy' => 'stack' ] );
@@ -838,13 +838,26 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_wrap'] = 'nowrap';
 			$settings['flex_wrap_tablet'] = 'nowrap';
 			$settings['flex_wrap_mobile'] = 'nowrap';
-			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
-			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
+			// Child dividers and row padding own editorial spacing; a second
+			// container gap would double the vertical rhythm around each rule.
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0', 'isLinked' => true ];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
 		}
 		if ( $role === 'services_editorial_row' ) {
 			$settings['_css_classes'] = 'wpae-services-editorial-row';
 			$settings['flex_direction'] = 'column';
 			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 12, 'column' => '12', 'row' => '12', 'isLinked' => true ];
+			$settings['background_background'] = 'classic';
+			if ( $surface_override !== '' ) {
+				$settings['background_color'] = $surface_override;
+				$settings['padding'] = [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => false ];
+				$settings['border_radius'] = wpae_elementor_ir_dimension_control( '12px', 'px', 12 );
+			} else {
+				// Default editorial rows stay on the page surface and use the
+				// adjacent native divider instead of an unpadded white bar.
+				$settings['background_color'] = 'transparent';
+				$settings['padding'] = [ 'unit' => 'px', 'top' => '16', 'right' => '0', 'bottom' => '16', 'left' => '0', 'isLinked' => false ];
+			}
 		}
 		if ( $role === 'services_text_icon_row' ) {
 			$settings['_css_classes'] = 'wpae-services-text-icon-row';
@@ -856,6 +869,33 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_align_items'] = 'flex-start';
 			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 16, 'column' => '16', 'row' => '16', 'isLinked' => true ];
 			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 12, 'column' => '12', 'row' => '12', 'isLinked' => true ];
+			$settings['background_background'] = 'classic';
+			if ( $surface_override !== '' ) {
+				$settings['background_color'] = $surface_override;
+				$settings['padding'] = [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => false ];
+				$settings['border_radius'] = wpae_elementor_ir_dimension_control( '12px', 'px', 12 );
+			} else {
+				// Text/icon defaults use transparent editorial rows with a divider.
+				$settings['background_color'] = 'transparent';
+				$settings['padding'] = [ 'unit' => 'px', 'top' => '16', 'right' => '0', 'bottom' => '16', 'left' => '0', 'isLinked' => false ];
+			}
+		}
+		if ( in_array( $role, [ 'services_split_copy', 'services_editorial_copy', 'services_text_icon_copy' ], true ) ) {
+			$settings['flex_direction'] = 'column';
+			$settings['flex_align_items'] = 'stretch';
+			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 8, 'column' => '8', 'row' => '8', 'isLinked' => true ];
+			$settings['flex_gap_tablet'] = $settings['flex_gap'];
+			$settings['flex_gap_mobile'] = $settings['flex_gap'];
+		}
+		if ( $role === 'services_split_lead' ) {
+			$settings['background_background'] = 'classic';
+			if ( $surface_override === '' ) {
+				$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			}
+			$settings['border_radius'] = wpae_elementor_ir_dimension_control( (string) ( $node['layout_constraints']['border_radius'] ?? '16px' ), 'px', 16 );
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '24', 'right' => '24', 'bottom' => '24', 'left' => '24', 'isLinked' => false ];
+			$settings['padding_tablet'] = $settings['padding'];
+			$settings['padding_mobile'] = [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => false ];
 		}
 		if ( $role === 'cta' ) {
 			$settings['_css_classes'] = 'wpae-cta-section';
@@ -1135,7 +1175,16 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( is_array( $type_token ) ) {
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
 		}
-		if ( $role === 'feature_title' ) {
+		if ( $role === 'services_recipe_title' ) {
+			// A Services item title must read as a heading even when the site's
+			// global typography gives h3 and body copy the same default size.
+			$settings['typography_typography'] = 'custom';
+			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.125, 'sizes' => [] ];
+			$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
+			$settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 1.0625, 'sizes' => [] ];
+			$settings['typography_font_weight'] = '600';
+			$settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.3, 'sizes' => [] ];
+		} elseif ( $role === 'feature_title' ) {
 			$settings['align'] = 'left';
 			$settings['typography_typography'] = 'custom';
 			$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1.125, 'sizes' => [] ];
@@ -1241,6 +1290,13 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			}
 			if ( is_array( $token_values['type.body'] ?? null ) ) {
 				$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $token_values['type.body'] ) );
+			} elseif ( $role === 'service_body' ) {
+				$settings['typography_typography'] = 'custom';
+				$settings['typography_font_size'] = [ 'unit' => 'rem', 'size' => 1, 'sizes' => [] ];
+				$settings['typography_font_size_tablet'] = $settings['typography_font_size'];
+				$settings['typography_font_size_mobile'] = $settings['typography_font_size'];
+				$settings['typography_font_weight'] = '400';
+				$settings['typography_line_height'] = [ 'unit' => 'em', 'size' => 1.6, 'sizes' => [] ];
 			}
 		}
 	} elseif ( $widget_type === 'button' ) {
@@ -1374,9 +1430,12 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		if ( $role === 'services_list_icon' ) {
 			$settings['align'] = 'left';
-			$settings['width'] = [ 'unit' => 'px', 'size' => 36, 'sizes' => [] ];
+			$settings['size'] = [ 'unit' => 'px', 'size' => 22, 'sizes' => [] ];
+			// Elementor's stacked icon uses half-em padding, so 22px produces a
+			// 44px circle without relying on a non-native padding control.
+			$settings['width'] = [ 'unit' => 'px', 'size' => 44, 'sizes' => [] ];
 			$settings['_element_width'] = 'initial';
-			$settings['_element_custom_width'] = [ 'unit' => 'px', 'size' => 36, 'sizes' => [] ];
+			$settings['_element_custom_width'] = [ 'unit' => 'px', 'size' => 44, 'sizes' => [] ];
 			$settings['_flex_size'] = 'custom';
 			$settings['_flex_grow'] = 0;
 			$settings['_flex_shrink'] = 0;

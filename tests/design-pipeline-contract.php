@@ -735,7 +735,7 @@ $check( $invalid_diagnostic_scope instanceof WP_Error && $invalid_diagnostic_sco
 $wpae_test_fingerprints[5214] = 'current-target-fingerprint';
 $changed_hashes = wpae_design_operation_target_status( [ 'post_id' => 5214, 'root_ids' => [ 'kept-root' ], 'saved_hash' => 'old-hash', 'target_fingerprint' => 'expected-target-fingerprint' ], 5214, $saved_tree );
 $check( $changed_hashes['reason'] === 'saved_hash_mismatch' && $changed_hashes['expected_fingerprint'] === 'expected-target-fingerprint' && $changed_hashes['current_fingerprint'] === 'current-target-fingerprint', 'stale target diagnostics preserve expected and current page fingerprints alongside saved hashes' );
-$editor_tree = [ [ 'id' => 'cd4da23', 'elType' => 'container' ] ];
+$editor_tree = [ [ 'id' => 'cd4da23', 'elType' => 'container', 'settings' => [ '_css_classes' => 'wpae-generated-root' ] ] ];
 $editor_hash = hash( 'sha256', wp_json_encode( $editor_tree ) );
 $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [
 	[ 'operation_id' => 'wpae-current-root', 'operation_identity' => 'current-root-identity', 'post_id' => 5214, 'revision' => 4, 'current_state' => 'written', 'root_ids' => [ 'cd4da23' ], 'saved_hash' => $editor_hash ],
@@ -749,8 +749,33 @@ $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [
 	end( $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] ),
 ];
 $stale_editor_candidate = wpae_design_operation_editor_candidate( 5214, $editor_tree );
-$check( $stale_editor_candidate['operation_id'] === 'wpae-current-root-stale' && empty( $stale_editor_candidate['reviewable'] ), 'when no operation is current, editor config prefers the stale operation whose owned root still exists for diagnostics' );
-$check( $stale_editor_candidate['target_status']['expected_fingerprint'] === 'expected-page-fingerprint' && $stale_editor_candidate['target_status']['current_fingerprint'] === 'current-target-fingerprint', 'stale present-root candidate exposes both fingerprints without becoming reviewable' );
+$check( $stale_editor_candidate === null, 'stale-only ledger entries never become the active editor pending operation' );
+$stale_status = wpae_design_operation_target_status( $wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ][0], 5214, $editor_tree );
+$check( $stale_status['reason'] === 'saved_hash_mismatch' && $stale_status['expected_fingerprint'] === 'expected-page-fingerprint' && $stale_status['current_fingerprint'] === 'current-target-fingerprint', 'stale present-root diagnostics still expose both fingerprints without exposing the operation as reviewable' );
+$mapped_target = [
+	'operation_id' => 'wpae-root-operation',
+	'operation_identity' => 'root-operation-identity',
+	'post_id' => 5214,
+	'revision' => 7,
+	'current_state' => 'written',
+	'root_ids' => [ 'cd4da23' ],
+	'saved_hash' => $editor_hash,
+	'target_fingerprint' => 'current-target-fingerprint',
+];
+$wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [ array_merge( $mapped_target, [ 'current_state' => 'revised' ] ) ];
+$check( wpae_design_operation_editor_candidate( 5214, $editor_tree ) === null, 'a current-looking revised history record cannot be surfaced as the active pending editor operation' );
+$wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [
+	$mapped_target,
+	[ 'operation_id' => 'wpae-stale-bootstrap', 'operation_identity' => 'stale-bootstrap-identity', 'post_id' => 5214, 'revision' => 4, 'current_state' => 'written', 'root_ids' => [ '3271f43' ], 'saved_hash' => 'stale-bootstrap-hash' ],
+	[ 'operation_id' => 'wpae-foreign-post-root', 'operation_identity' => 'foreign-post-identity', 'post_id' => 5215, 'revision' => 8, 'current_state' => 'written', 'root_ids' => [ 'cd4da23' ], 'saved_hash' => $editor_hash, 'target_fingerprint' => 'current-target-fingerprint' ],
+];
+$target_operations = wpae_design_operation_editor_targets( 5214, $editor_tree );
+$check( array_keys( $target_operations ) === [ 'cd4da23' ] && $target_operations['cd4da23']['operation_id'] === 'wpae-root-operation' && $target_operations['cd4da23']['revision'] === 7 && ! empty( $target_operations['cd4da23']['reviewable'] ), 'selected generated root resolves only its exact post-scoped owner after current saved hash and fingerprint checks' );
+$wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ][] = array_merge( $mapped_target, [ 'operation_id' => 'wpae-ambiguous-root-owner', 'operation_identity' => 'ambiguous-root-identity' ] );
+$check( wpae_design_operation_editor_targets( 5214, $editor_tree ) === [], 'multiple current ledger records claiming one root are rejected instead of choosing by recency' );
+$stale_mapped_target = array_merge( $mapped_target, [ 'operation_id' => 'wpae-stale-fingerprint-root', 'target_fingerprint' => 'older-target-fingerprint' ] );
+$wpae_test_options[ WPAE_DESIGN_OPERATION_OPTION ] = [ $stale_mapped_target ];
+$check( wpae_design_operation_editor_targets( 5214, $editor_tree ) === [], 'root ownership alone cannot resolve an operation with a stale page fingerprint' );
 $owned_tree = [ [ 'id' => 'owned-root', 'elType' => 'container', 'settings' => [ '_css_classes' => 'wpae-generated-root wpae-generated-hero' ], 'elements' => [] ], [ 'id' => 'neighbor-root', 'elType' => 'container', 'settings' => [], 'elements' => [] ] ];
 $owned_operation = [ 'operation_id' => 'op-owned', 'operation_identity' => 'owned-identity', 'post_id' => 5214, 'revision' => 4, 'current_state' => 'written', 'root_ids' => [ 'owned-root' ], 'saved_hash' => hash( 'sha256', wp_json_encode( $owned_tree ) ) ];
 $owned_guard = wpae_design_operation_replacement_target( $owned_operation, 5214, 'owned-identity', 4, [ 'owned-root' ], $owned_tree );
@@ -1205,6 +1230,38 @@ $text_rows_ir = array_values( array_filter( $walk_ir_nodes( (array) ( $text_reci
 $text_order = array_values( array_map( static fn( array $node ): string => (string) ( $node['layout_constraints']['item_id'] ?? '' ), array_filter( (array) ( $text_rows_ir['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_text_icon_row' ) ) );
 $check( $text_order === [ 'service_1', 'service_2', 'service_3' ] && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'icon' ) ) === 3 && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'divider' ) ) === 2 && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) ) === 0 && count( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) ) === 3, 'text/icon list is ordered native rows with separate icons and dividers, exact actions and no image widgets' );
 $check( $text_item_fidelity, 'compiled text/icon rows keep each service title, description and CTA URL inside its matching row' );
+$text_icons = array_values( array_filter( $text_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'icon' ) );
+$first_text_row = $text_rows[0] ?? [];
+$first_text_row_nodes = $walk_elements( [ $first_text_row ] );
+$first_text_title = array_values( array_filter( $first_text_row_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' ) )[0] ?? [];
+$first_text_body = array_values( array_filter( $first_text_row_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) )[0] ?? [];
+$check( count( $text_icons ) === 3 && (float) ( $text_icons[0]['settings']['size']['size'] ?? 0 ) === 22.0 && (float) ( $text_icons[0]['settings']['_element_custom_width']['size'] ?? 0 ) === 44.0 && ! isset( $text_icons[0]['settings']['icon_padding'] ) && (float) ( $first_text_row['settings']['flex_gap']['size'] ?? 0 ) === 16.0, 'text/icon marker uses native 22px glyph sizing with a 44px stacked circle and a separate 16px copy gap' );
+$check( ( $first_text_title['settings']['header_size'] ?? '' ) === 'h3' && ( $first_text_title['settings']['typography_font_size']['unit'] ?? '' ) === 'rem' && (float) ( $first_text_title['settings']['typography_font_size']['size'] ?? 0 ) === 1.125 && ( $first_text_title['settings']['typography_font_weight'] ?? '' ) === '600' && (float) ( $first_text_body['settings']['typography_font_size']['size'] ?? 0 ) === 1.0 && ( $first_text_body['settings']['typography_font_weight'] ?? '' ) === '400' && (float) ( $first_text_body['settings']['typography_line_height']['size'] ?? 0 ) === 1.6, 'Services item title and body compile with readable heading hierarchy and untruncated natural-height copy' );
+$check( ( $first_text_row['settings']['background_background'] ?? '' ) === 'classic' && ( $first_text_row['settings']['background_color'] ?? '' ) === 'transparent' && ( $first_text_row['settings']['padding']['top'] ?? '' ) === '16' && ( $first_text_row['settings']['padding']['bottom'] ?? '' ) === '16' && ( $first_text_row['settings']['padding']['left'] ?? '' ) === '0' && ! isset( $first_text_row['settings']['height'] ) && ! isset( $first_text_row['settings']['min_height'] ), 'default text/icon rows use transparent editorial surfaces with vertical rhythm and no unpadded white bars' );
+$check( in_array( 'type.display', (array) ( $text_recipe_result['plan']['sections'][0]['children'][1]['token_refs'] ?? [] ), true ) && in_array( 'type.body', (array) ( $text_recipe_result['plan']['sections'][0]['children'][1]['token_refs'] ?? [] ), true ), 'Services recipe plan retains the selected design system display and body typography token references' );
+$split_secondary_row = $split_editorial_rows[0] ?? [];
+$check( ( $split_lead['settings']['background_background'] ?? '' ) === 'classic' && ( $split_lead['settings']['background_color'] ?? '' ) === '#ffffff' && ( $split_lead['settings']['padding']['top'] ?? '' ) === '24' && (float) ( $split_lead['settings']['border_radius']['size'] ?? 0 ) === 16.0 && ( $split_secondary_row['settings']['background_color'] ?? '' ) === 'transparent' && ( $split_secondary_row['settings']['padding']['top'] ?? '' ) === '16' && ( $split_secondary_row['settings']['padding']['bottom'] ?? '' ) === '16', 'split recipe emphasizes the lead surface and keeps secondary editorial rows transparent, padded and aligned' );
+$override_services_ir = $split_recipe_result['ir'];
+$apply_services_surface_override = static function ( array &$nodes ) use ( &$apply_services_surface_override ): void {
+	foreach ( $nodes as &$node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+		if ( in_array( $node['role'] ?? '', [ 'services_split_lead', 'services_editorial_row' ], true ) ) {
+			$node['layout_constraints']['surface_override'] = '#123456';
+		}
+		if ( is_array( $node['children'] ?? null ) ) {
+			$apply_services_surface_override( $node['children'] );
+		}
+	}
+	unset( $node );
+};
+$apply_services_surface_override( $override_services_ir['nodes'] );
+$override_services_compiled = wpae_native_elementor_compile( $override_services_ir, $services_recipe_brief, $services_recipe_tokens, [ 'id_seed' => 'services-explicit-surface' ] );
+$override_services_nodes = $walk_elements( (array) ( $override_services_compiled['elementor_data'] ?? [] ) );
+$override_lead = array_values( array_filter( $override_services_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-split-lead' ) )[0] ?? [];
+$override_editorial_row = array_values( array_filter( $override_services_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-editorial-row' ) )[0] ?? [];
+$check( ! empty( $override_services_compiled['ok'] ) && ( $override_lead['settings']['background_color'] ?? '' ) === '#123456' && ( $override_lead['settings']['padding']['top'] ?? '' ) === '24' && ( $override_editorial_row['settings']['background_color'] ?? '' ) === '#123456' && ( $override_editorial_row['settings']['padding']['left'] ?? '' ) === '20' && (float) ( $override_editorial_row['settings']['border_radius']['size'] ?? 0 ) === 12.0, 'explicit Services surface overrides remain intact and compile as full padded surfaces' );
 $forbidden_media_services = $services_recipe_brief;
 foreach ( $forbidden_media_services['layout_constraints'] as &$constraint ) {
 	if ( ( $constraint['kind'] ?? '' ) === 'media_intent' ) {

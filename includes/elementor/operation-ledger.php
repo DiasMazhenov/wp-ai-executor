@@ -315,38 +315,109 @@ function wpae_design_operation_target_status( array $operation, int $post_id, ?a
 }
 
 /**
- * Prefer the newest unfinished operation whose saved target still matches.
- * A newer stale ledger entry must not hide an older, independently current root.
+ * Return the one unambiguous current operation for page-level review, if any.
+ * Stale records remain available through explicit read-only diagnostics, never
+ * as the editor's active pending-operation slot.
  */
 function wpae_design_operation_editor_candidate( int $post_id, ?array $elementor_data = null ): ?array {
 	if ( $elementor_data === null && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
 		$elementor_data = wpae_get_elementor_data_for_post( $post_id );
 	}
-	$current_root_ids = is_array( $elementor_data ) ? array_values( array_filter( array_map( static fn( $item ): string => is_array( $item ) ? sanitize_key( (string) ( $item['id'] ?? '' ) ) : '', $elementor_data ) ) ) : [];
-	$latest_candidate = null;
-	$latest_root_candidate = null;
+	if ( ! is_array( $elementor_data ) ) {
+		return null;
+	}
+	$reviewable = [];
 	foreach ( array_reverse( wpae_design_operation_store() ) as $candidate ) {
 		if ( ! is_array( $candidate ) || absint( $candidate['post_id'] ?? 0 ) !== $post_id ) {
 			continue;
 		}
 		$state = sanitize_key( (string) ( $candidate['current_state'] ?? '' ) );
-		if ( ! in_array( $state, [ 'planned', 'generated', 'normalized', 'validated', 'written', 'rendered', 'reviewed', 'revised', 'unknown' ], true ) ) {
+		if ( ! in_array( $state, [ 'written', 'rendered', 'reviewed' ], true ) ) {
 			continue;
 		}
-		$candidate['target_status'] = wpae_design_operation_target_status( $candidate, $post_id, is_array( $elementor_data ) ? $elementor_data : null );
+		$candidate['target_status'] = wpae_design_operation_target_status( $candidate, $post_id, $elementor_data );
 		$candidate['reviewable'] = ! empty( $candidate['target_status']['reviewable'] );
-		$owned_roots = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $candidate['root_ids'] ?? [] ), 0, 12 ) ) ) );
-		if ( ! empty( $owned_roots ) && empty( array_diff( $owned_roots, $current_root_ids ) ) && $latest_root_candidate === null ) {
-			$latest_root_candidate = $candidate;
-		}
-		if ( $latest_candidate === null ) {
-			$latest_candidate = $candidate;
-		}
 		if ( $candidate['reviewable'] ) {
-			return $candidate;
+			$reviewable[] = $candidate;
 		}
 	}
-	return $latest_root_candidate ?? $latest_candidate;
+	// A single global bootstrap slot cannot safely pick one of several current
+	// targets. Selected-root replacement resolves its owner separately below.
+	return count( $reviewable ) === 1 ? $reviewable[0] : null;
+}
+
+/**
+ * Resolve exact, currently reviewable single-root operations for generated
+ * roots. This is derived from the existing durable ledger; it never infers an
+ * owner from a DOM id, name, or generated class alone.
+ */
+function wpae_design_operation_editor_targets( int $post_id, ?array $elementor_data = null ): array {
+	if ( $post_id <= 0 ) {
+		return [];
+	}
+	if ( $elementor_data === null && function_exists( 'wpae_get_elementor_data_for_post' ) ) {
+		$elementor_data = wpae_get_elementor_data_for_post( $post_id );
+	}
+	if ( ! is_array( $elementor_data ) ) {
+		return [];
+	}
+	$generated_roots = [];
+	foreach ( $elementor_data as $root ) {
+		if ( ! is_array( $root ) ) {
+			continue;
+		}
+		$root_id = sanitize_key( (string) ( $root['id'] ?? '' ) );
+		$classes = preg_split( '/\\s+/', trim( (string) ( $root['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( $root_id !== '' && in_array( 'wpae-generated-root', $classes, true ) ) {
+			$generated_roots[ $root_id ] = true;
+		}
+	}
+	if ( empty( $generated_roots ) ) {
+		return [];
+	}
+	$candidates_by_root = [];
+	foreach ( array_reverse( wpae_design_operation_store() ) as $operation ) {
+		if ( ! is_array( $operation ) || absint( $operation['post_id'] ?? 0 ) !== $post_id ) {
+			continue;
+		}
+		$state = sanitize_key( (string) ( $operation['current_state'] ?? '' ) );
+		if ( ! in_array( $state, [ 'written', 'rendered', 'reviewed' ], true ) ) {
+			continue;
+		}
+		$root_ids = array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $operation['root_ids'] ?? [] ), 0, 12 ) ) ) );
+		if ( count( $root_ids ) !== 1 || ! isset( $generated_roots[ $root_ids[0] ] ) ) {
+			continue;
+		}
+		$identity = sanitize_text_field( (string) ( $operation['operation_identity'] ?? '' ) );
+		$revision = absint( $operation['revision'] ?? 0 );
+		if ( $identity === '' || $revision <= 0 ) {
+			continue;
+		}
+		$guard = wpae_design_operation_replacement_target( $operation, $post_id, $identity, $revision, $root_ids, $elementor_data );
+		if ( empty( $guard['ok'] ) ) {
+			continue;
+		}
+		$root_id = $root_ids[0];
+		$candidates_by_root[ $root_id ][] = [
+			'operation_id' => sanitize_key( (string) ( $operation['operation_id'] ?? '' ) ),
+			'operation_identity' => $identity,
+			'revision' => $revision,
+			'root_ids' => $root_ids,
+			'current_state' => $state,
+			'saved_hash' => sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) ),
+			'target_fingerprint' => sanitize_text_field( (string) ( $operation['target_fingerprint'] ?? '' ) ),
+			'target_status' => $guard['target_status'] ?? [],
+			'reviewable' => true,
+		];
+	}
+	$resolved = [];
+	foreach ( $candidates_by_root as $root_id => $candidates ) {
+		// Ambiguous current ownership is a hard stop; recency is not provenance.
+		if ( count( $candidates ) === 1 ) {
+			$resolved[ $root_id ] = $candidates[0];
+		}
+	}
+	return $resolved;
 }
 
 function wpae_design_operation_replacement_target( array $operation, int $post_id, string $identity, int $revision, array $root_ids, ?array $elementor_data = null ): array {
