@@ -657,3 +657,29 @@ Post `5214` final roots, in order: `[023bd70, e939025, 8b79d6c]`. Public page re
 Fresh public screenshots were captured as Browser Use JPEG bytes, converted to PNG, signature/dimensions checked, then the saved PNGs were opened and visually inspected. They are under `docs/audits/2026-10-04-services-v241/` and `.../services-v242/`. For v242, desktop PNGs: photo cards `1440×1000`, split editorial root `1440×784`, text/icon root `1440×684` (CSS viewport 1440×1000, 1440×1600 and 1440×2300 respectively). Root-only phone PNGs: photo cards `390×1371`, split editorial `390×918`, text/icon `390×719`; each was captured from public at CSS viewport `390×3300`, scrollY 0, to show the complete mobile-width root. Standard phone viewport captures are also included: public CSS viewport `390×844` (browser client width 375), raster `375×812` for split/text and a full-page `375×1416` photo frame. `services-all-roots-public-mobile-390.png` is `375×3076` and shows all roots together at the same CSS viewport. These standard viewport frames expose the fixed site chatbot overlay; it is not part of generated Elementor markup and was not changed. `mobile-ai-dana-overlap-evidence.json` records its measured intersection with service 3. The screenshot set is public-page evidence; editor was independently verified through its inline JS version, accessibility tree and post-reload roots, with no editor screenshot claim.
 
 Visual status: desktop/tablet composition and responsive geometry accepted. All three public mobile states are **PARTIAL / OBSTRUCTED** by the site-owned floating chatbot greeting; therefore none is reported as unqualified end-to-end visual PASS. The final measured post root set is exactly `[023bd70, e939025, 8b79d6c]`; no user roots were deleted.
+
+## Штатный Browser Plugin: способ подключения и исправление статуса — 2026-10-04
+
+Доступ был получен не через отдельный tool с именем Browser Use, а через документированный Browser Plugin bridge внутри `mcp__node_repl__js`. Каталог tools описывает этот Node REPL как средство управления in-app browser в связке с Browser Plugin; для подключения был использован штатный bundled client:
+
+```js
+const browserClient = await import(
+  "/Users/diasmazhenov/.codex/plugins/cache/openai-bundled/browser/26.930.31730/scripts/browser-client.mjs"
+);
+const runtime = await browserClient.setupBrowserRuntime({ environment: "codex-app" });
+const browsers = await runtime.browsers.list();
+```
+
+В результате `browsers.list()` возвращает browser с `name="Codex In-app Browser"`, `type="iab"`. Далее его нужно выбирать по текущему `id` из ответа и перечислять вкладки штатным API:
+
+```js
+const browser = await runtime.browsers.get(browserIdFromList);
+const tabs = await browser.tabs.list();
+const editorTab = await browser.tabs.get("2");
+const publicTab = await browser.tabs.get("3");
+const viewport = await runtime.capabilities.get("viewport");
+```
+
+Browser id динамический: при повторном setup он менялся (`4`, затем `6`); tab ids в проверке оставались `2` (Elementor `post=5214`) и `3` (публичная страница). Вкладки не создавались. После `tabs.get()` применялись документированные Tab accessibility/DOM read/evaluate, UI interaction и screenshot возможности; evaluate использовался для чтения состояния, генерация отправлялась через обычный plugin chat UI. Альтернативный транспорт, сырой RPC, REST или devtools не использовались.
+
+Уточнение к прежней реплике: на фактическом `tabs.list()` во время этой приёмки второй вкладкой была публичная страница, а не WP Pusher. Фраза «Elementor post=5214 и WP Pusher» была неточной для этого снимка списка. Более раннее заключение, что Browser Plugin/API недоступен, тоже было ошибочным: я проверял наличие самостоятельных browser tools и не выполнил setup через документированный `mcp__node_repl__js` bridge.
