@@ -1,0 +1,44 @@
+{
+  "runtime": 1181,
+  "design_plan": 319,
+  "node_pass": 12,
+  "node_fail": 0,
+  "patch_guard": "PASS",
+  "lint": "PASS",
+  "package": {
+    "probe": "A05_release_manifest",
+    "status": "passed",
+    "scenario_count": 4,
+    "manifest_file_count": 252,
+    "mismatches": [],
+    "serialization_probe": {
+      "full_result_json_encode": false,
+      "full_result_json_error": "Malformed UTF-8 characters, possibly incorrectly encoded",
+      "compact_summary_json_encode": true
+    },
+    "scenarios": {
+      "valid_zip": {
+        "ok": true,
+        "error": null,
+        "path": null,
+        "file_count": 252
+      },
+      "corrupted_hash": {
+        "ok": false,
+        "error": "Package file hash does not match manifest.",
+        "path": "assets/css/elementor-block-library.css"
+      },
+      "missing_required_file": {
+        "ok": false,
+        "error": "Package file hash does not match manifest.",
+        "path": "wp-ai-executor.php"
+      },
+      "unsafe_path": {
+        "ok": false,
+        "error": "Package manifest contains an unsafe path or hash.",
+        "path": null
+      }
+    }
+  },
+  "live": "pending same A operation; no extra generation"
+}

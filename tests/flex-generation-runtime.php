@@ -1647,7 +1647,7 @@ check( ( $library_failure_trace['status'] ?? '' ) === 'not_selected' && stripos(
 $GLOBALS['library'] = [];
 
 if ( ! class_exists( '\\Elementor\\Plugin' ) ) {
-	eval( 'namespace Elementor; class Plugin { public static $types = [ "heading", "text-editor", "button", "image", "icon-list", "divider" ]; public $widgets_manager; public static function instance() { return new self(); } public function __construct() { $this->widgets_manager = new Widgets_Manager(); } } class Widgets_Manager { public function get_widget_types() { return array_fill_keys( Plugin::$types, new \\stdClass() ); } }' );
+	eval( 'namespace Elementor; class Plugin { public static $types = [ "heading", "text-editor", "button", "image", "icon-list", "divider" ]; public $widgets_manager; public $elements_manager; public static function instance() { return new self(); } public function __construct() { $this->widgets_manager = new Widgets_Manager(); $this->elements_manager = new Elements_Manager(); } } class Elements_Manager { public function create_element_instance($data) { return new Native_Element($data); } } class Native_Element { public function __construct(private $data) {} public function get_settings() { return $GLOBALS["typed_native_defaults"][$this->data["id"]] ?? []; } } class Widgets_Manager { public function get_widget_types() { return array_fill_keys( Plugin::$types, new \\stdClass() ); } }' );
 }
 if ( function_exists( 'did_action' ) ) {
 	$GLOBALS['test_actions']['elementor/widgets/register'] = 1;

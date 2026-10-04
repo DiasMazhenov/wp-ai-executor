@@ -1899,10 +1899,12 @@
         if (descriptor.status === 'available') {
             var verify = document.createElement('button'); verify.type = 'button'; verify.className = 'wpae-llm-icon-button';
             verify.textContent = 'Проверить owned модель перед Save';
+            var resyncOffered = false;
             verify.addEventListener('click', function () {
                 verify.disabled = true;
                 verifyTypedEditorModel({ diagnostics: { operation_ledger: descriptor } }).then(function () {
                     addMessage('assistant', 'Owned модель соответствует принятому контракту: ' + descriptor.operation_id);
+                    if (!resyncOffered) { addTypedResyncControl({ diagnostics: { operation_ledger: descriptor } }, captureEditorRootSnapshot()); resyncOffered = true; }
                 }).catch(function (error) { addMessage('assistant', error.message); }).finally(function () { verify.disabled = false; });
             });
             row.appendChild(verify);

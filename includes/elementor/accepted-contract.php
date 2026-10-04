@@ -201,8 +201,8 @@ function wpae_accepted_elementor_save_guard( array $data, $document ): array {
     $loaded = $operation ? wpae_accepted_contract_get( $operation ) : [ 'ok' => false ];
     if ( empty( $loaded['ok'] ) ) { throw new RuntimeException( 'Typed save blocked: accepted contract unavailable.' ); }
     $contract = $loaded['contract'];
-    $normalized = wpae_elementor_normalize_data( $data['elements'] );
-    $owned = wpae_accepted_owned_roots( (array) ( $normalized['data'] ?? [] ), $contract['owned_root_ids'] );
+    // Native Save payload is already authored; generation defaults must not alter it.
+    $owned = wpae_accepted_owned_roots( $data['elements'], $contract['owned_root_ids'] );
     if ( ! wpae_accepted_owned_matches( $contract['after_owned'], $owned ) ) { throw new RuntimeException( 'Typed save blocked: editor owned tree differs from accepted server decisions. Local edits preserved; resync required.' ); }
     return $data;
 }
@@ -258,8 +258,7 @@ function wpae_accepted_lifecycle_request( array $context ) {
     if ( $action === 'resync' ) {
         $model = $context['editor_owned_model'] ?? null;
         if ( ! is_array( $model ) ) { return new WP_Error( 'wpae_typed_resync_model_missing', 'Нужно текущее owned model.', [ 'status' => 409 ] ); }
-        $normalized = wpae_elementor_normalize_data( $model );
-        $current_model = (array) ( $normalized['data'] ?? [] );
+        $current_model = $model;
         $matches_before = wpae_accepted_owned_matches( $contract['before_owned'], $current_model );
         $matches_after = wpae_accepted_owned_matches( $contract['after_owned'], $current_model );
         if ( ! $matches_before && ! $matches_after ) { return new WP_Error( 'wpae_typed_resync_local_conflict', 'Owned local changes не перезаписаны.', [ 'status' => 409 ] ); }
@@ -267,9 +266,8 @@ function wpae_accepted_lifecycle_request( array $context ) {
     }
     if ( $action === 'check_model' ) {
         $model = $context['editor_owned_model'] ?? null;
-        $normalized = is_array( $model ) ? wpae_elementor_normalize_data( $model ) : [];
         $mismatch = null;
-        $projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], (array) ( $normalized['data'] ?? [] ), null, $mismatch ) : null;
+        $projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], $model, null, $mismatch ) : null;
         $matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $contract['after_owned'] ), wpae_accepted_owned_fingerprint( $projected ) );
         return new WP_REST_Response( [ 'ok' => $matches, 'code' => $matches ? 'typed_model_matches' : 'typed_editor_model_mismatch', 'operation_id' => $operation['operation_id'], 'contract_hash' => $loaded['hash'], 'mismatch' => $mismatch, 'write_count' => 0 ], $matches ? 200 : 409 );
     }

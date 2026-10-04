@@ -855,3 +855,13 @@ One explicit scoped repair from provider report: child wpae-op-1318474b42f475fc 
 Server compile/readback succeeded; UI model comparison again refused typed_editor_model_mismatch despite full copied model matching all authored compiled controls. First refusal PNG1280x900 verified/opened; native Publish and Undo NOT RUN for repair. B–J remain dependent on A lifecycle. Source v249 adds bounded node/control/reason mismatch diagnostics without settings values, a read-only model-check action after reload, and fixes negative pending review phase/status. It does not claim the underlying second mismatch resolved before live diagnosis. Current roots[37b84f9,7c1e27f].
 
 v249 local checks: runtime1176, DesignPlan319, Node12/12, patch guard/lint/package252/252 +4 probes and diff check PASS. Foreign native model differs only captured_at between before/after repair; node trees unchanged.
+
+## v249 live diagnosis and v250 native validation correction
+
+v249 commit175b031ff41571539d4e0659119707bf201e7b61 push independently matched remote; WP Pusher notice/Plugins v249 confirmed. Auto-review refused navigation with enabled Publish; explicit user approved reload. Browser Use navigation remained ERR_ABORTED, so previously agreed duplicate/close used: editor6 v249/typed-lifecycle-v3, old5 closed, exactly two tabs. Server saved baseline remains repair hashd3b18fc/rootset[37b84f9,7c1e27f], Undo repair available.
+
+Read-only model check produced exact failure: nodec5d12fe/controlcontent_width/authored_control_changed. Root cause verified in source: JS native serialization omits registered default boxed; generation normalizer synthesizes full for nested containers before comparing, overwriting native meaning. v250 removes generation normalization from check_model/resync/Elementor Save validation. Comparison uses exact native node topology and authored settings, restoring omissions only against actual server element defaults; explicit changed full width still refuses. Technical dimension equivalence stays in decision signature. This does not modify compiler/accepted Plan/Brief or append a new generation. Read-only bootstrap model check offers guarded native resync, allowing normal Save cycle of existing owned server result while preserving other roots.
+
+Regression traverses real check_model/Save/resync boundaries with a server native-default manager double: omitted boxed accepted, Save payload unchanged, explicit full refused. No broad control ignore or generation fallback introduced. Live v250 installation/Publish/Undo/public acceptance remain pending until observed.
+
+v250 checks: runtime1181/DesignPlan319/Node12 of12/patch guard/lint/package252 hashes +4 probes/diff check PASS.
