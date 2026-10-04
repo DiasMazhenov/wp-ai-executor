@@ -237,9 +237,9 @@
     "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
     "includes/llm/brief-ir.php": "cb88e5aa006aa53cb157a272d888121e4fd7dd22519afff41a1530456b7bc2fb",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "6d9a465806e0dd0f86710b6af9d1c6448ba1d843331bfdb95a134110251c2731",
+    "includes/llm/design-plan.php": "c5b16cfff3f5d7828471dc44c47ab0b0f9cf0ad7889926b6883e848333d8d554",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "854b0532139d2085a30483f7f6ba43a9c2d65f3fb9a1b65003a8af630c601865",
+    "includes/llm/llm.php": "530cef0b31b108b6974484e98ba4eb10e99044080daf219010cf8a0fb7b8d849",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
     "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -252,6 +252,6 @@
     "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-    "wp-ai-executor.php": "5b827c92cbadc9a7d01927e9ff7eb23b72abc9cc6a1e78b95a78c654874e5e15"
+    "wp-ai-executor.php": "337df9a078adbb8ec7001f89d866a61ae82d34f10bf6499f0cae396b9bc9a5e1"
   }
 }

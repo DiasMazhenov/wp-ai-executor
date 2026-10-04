@@ -10955,6 +10955,17 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	$services_recipe_decision = [];
 	if ( $services_route_request && ! empty( $services_brief ) && function_exists( 'wpae_design_plan_services_recipe_decision' ) ) {
 		$services_recipe_decision = wpae_design_plan_services_recipe_decision( $services_brief, $services_planning_context );
+		if ( ! empty( $services_recipe_decision['media_references'] ) && is_array( $services_recipe_decision['media_references'] ) ) {
+			$services_brief['media_references'] = array_values( $services_recipe_decision['media_references'] );
+			if ( function_exists( 'wpae_brief_ir_service_groups' ) ) {
+				$services_brief['groups'] = wpae_brief_ir_service_groups( (array) ( $services_brief['content'] ?? [] ), $services_brief['media_references'] );
+			}
+			unset( $services_planning_context['media_references'] );
+			$services_recipe_decision = wpae_design_plan_services_recipe_decision( $services_brief, $services_planning_context );
+		}
+		if ( ! empty( $services_recipe_decision['lead_service_ref'] ) ) {
+			$services_planning_context['services_lead_service_ref'] = (string) $services_recipe_decision['lead_service_ref'];
+		}
 		if ( ! empty( $services_recipe_decision['recipe_id'] ) ) {
 			$services_planning_context['services_recipe_id'] = (string) $services_recipe_decision['recipe_id'];
 			$services_planning_context['services_recipe_selection_source'] = (string) ( $services_recipe_decision['source'] ?? 'documented_default' );

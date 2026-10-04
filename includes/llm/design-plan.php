@@ -223,6 +223,72 @@ function wpae_design_plan_default_service_media(): array {
 	];
 }
 
+function wpae_design_plan_services_lead_ref( array $brief, array $context = [] ): string {
+	$context_ref = is_scalar( $context['services_lead_service_ref'] ?? null ) ? trim( (string) $context['services_lead_service_ref'] ) : '';
+	if ( preg_match( '/^service_\d+$/', $context_ref ) ) {
+		return sanitize_key( $context_ref );
+	}
+	$source = (string) ( $brief['source_text'] ?? '' );
+	if ( preg_match( '/(?<![a-z0-9_])services_lead_service_ref\s*[:=]\s*(service_\d+)(?![a-z0-9_])/iu', $source, $matches ) ) {
+		return sanitize_key( (string) ( $matches[1] ?? '' ) );
+	}
+	return '';
+}
+
+function wpae_design_plan_services_recipe_catalog_media( array $brief, string $recipe_id, string $lead_ref, array $existing_media ): array {
+	if ( ! empty( $existing_media ) ) {
+		return [];
+	}
+	$source = (string) ( $brief['source_text'] ?? '' );
+	if ( ! preg_match( '/services\s+(?:media\s+)?catalog/iu', $source ) ) {
+		return [];
+	}
+	$media_intent = sanitize_key( (string) wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) );
+	if ( in_array( $media_intent, [ 'forbidden', 'conflict' ], true ) ) {
+		return [];
+	}
+	$brief_groups = array_values( array_filter( (array) ( $brief['groups'] ?? [] ), 'is_array' ) );
+	$group_ids = [];
+	foreach ( $brief_groups as $group ) {
+		$group_id = sanitize_key( (string) ( $group['group_id'] ?? '' ) );
+		if ( $group_id !== '' ) {
+			$group_ids[] = $group_id;
+		}
+	}
+	if ( empty( $group_ids ) && function_exists( 'wpae_brief_ir_service_groups' ) ) {
+		foreach ( wpae_brief_ir_service_groups( (array) ( $brief['content'] ?? [] ) ) as $group ) {
+			$group_id = sanitize_key( (string) ( $group['group_id'] ?? '' ) );
+			if ( $group_id !== '' ) {
+				$group_ids[] = $group_id;
+			}
+		}
+	}
+	if ( $recipe_id === 'services.photo_cards' ) {
+		$selected_groups = $group_ids;
+	} elseif ( $recipe_id === 'services.split_editorial' && $lead_ref !== '' && in_array( $lead_ref, $group_ids, true ) ) {
+		$selected_groups = [ $lead_ref ];
+	} else {
+		return [];
+	}
+	$references = [];
+	foreach ( wpae_design_plan_default_service_media() as $asset ) {
+		if ( ! in_array( (string) $asset['group_id'], $selected_groups, true ) ) {
+			continue;
+		}
+		$asset['role'] = 'card_image';
+		$asset['attachment_id'] = null;
+		$asset['focal_point'] = null;
+		$asset['crop'] = '4:3';
+		$asset['object_fit'] = 'cover';
+		$asset['license'] = 'Unsplash License';
+		$asset['attribution'] = '';
+		$asset['allowed_reuse'] = true;
+		$asset['provenance'] = [ 'source' => 'plugin_default', 'catalog' => 'wpae-service-media-v1' ];
+		$references[] = $asset;
+	}
+	return $references;
+}
+
 function wpae_design_plan_default_hero_media( array $brief ): array {
 	if ( wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) !== 'unspecified' || ! empty( $brief['media_references'] ) ) {
 		return [];
@@ -409,7 +475,7 @@ function wpae_design_plan_services_recipe_decision( array $brief, array $context
 		}
 	}
 	$media_intent = sanitize_key( (string) wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) );
-	$lead_ref = sanitize_key( (string) ( $context['services_lead_service_ref'] ?? '' ) );
+	$lead_ref = wpae_design_plan_services_lead_ref( $brief, $context );
 	$recipe_id = $explicit_recipe_id;
 	if ( $library_policy === 'required' ) {
 		$map = wpae_design_plan_services_photo_template_slot_map();
@@ -433,6 +499,17 @@ function wpae_design_plan_services_recipe_decision( array $brief, array $context
 		}
 		$recipe_id = $media_intent === 'required' || $all_services_have_media ? 'services.photo_cards' : 'services.text_icon_list';
 	}
+	$catalog_media = wpae_design_plan_services_recipe_catalog_media( $brief, $recipe_id, $lead_ref, $media );
+	foreach ( $catalog_media as $asset ) {
+		$asset_id = sanitize_key( (string) ( $asset['asset_id'] ?? '' ) );
+		$group_id = sanitize_key( (string) ( $asset['group_id'] ?? '' ) );
+		if ( $asset_id === '' || $group_id === '' ) {
+			continue;
+		}
+		$media[] = $asset;
+		$valid_media[ $asset_id ] = $asset;
+		$resolved_group_media[ $group_id ] = $asset;
+	}
 	$group_ids = [];
 	foreach ( $groups as $index => $group ) {
 		$group_ids[] = sanitize_key( (string) ( $group['group_id'] ?? 'service_' . ( $index + 1 ) ) );
@@ -449,12 +526,14 @@ function wpae_design_plan_services_recipe_decision( array $brief, array $context
 		? ( $media_intent === 'required' ? 'unresolved' : ( empty( $media ) ? 'none' : 'unconsumed' ) )
 		: ( ! $lead_valid || $invalid_media || ! empty( $missing ) ? 'unresolved' : ( empty( $required_media_groups ) && empty( $media ) ? 'none' : 'resolved_per_service' ) );
 	if ( $library_policy === 'required' ) {
-		return [ 'ok' => $lead_valid, 'recipe_id' => $recipe_id, 'source' => $source, 'library_required' => true, 'library_template_id' => (string) $map['template_id'], 'library_applied' => false, 'library_mapping' => $map, 'fallback_policy' => $fallback_policy, 'media_status' => $media_status, 'media_missing_service_ids' => $missing, 'reason' => $lead_valid ? '' : 'services_split_editorial_lead_service_ref_required' ];
+		return [ 'ok' => $lead_valid, 'recipe_id' => $recipe_id, 'source' => $source, 'lead_service_ref' => $lead_ref, 'media_references' => $media, 'library_required' => true, 'library_template_id' => (string) $map['template_id'], 'library_applied' => false, 'library_mapping' => $map, 'fallback_policy' => $fallback_policy, 'media_status' => $media_status, 'media_missing_service_ids' => $missing, 'reason' => $lead_valid ? '' : 'services_split_editorial_lead_service_ref_required' ];
 	}
 	return [
 		'ok' => in_array( $recipe_id, wpae_design_plan_services_recipe_ids(), true ) && $lead_valid,
 		'recipe_id' => $recipe_id,
 		'source' => $source,
+		'lead_service_ref' => $lead_ref,
+		'media_references' => $media,
 		'library_required' => false,
 		'library_template_id' => '',
 		'library_applied' => false,
@@ -470,6 +549,7 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 	$media_intent = (string) wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' );
 	$brief_media = array_values( (array) ( $brief['media_references'] ?? [] ) );
 	$context_media = array_values( (array) ( $context['media_references'] ?? [] ) );
+	$requested_lead_group_id = wpae_design_plan_services_lead_ref( $brief, $context );
 	$media = [];
 	$media_by_id = [];
 	$errors = [];
@@ -516,6 +596,23 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 	if ( count( $groups ) < 2 || count( $groups ) > 6 ) {
 		$errors[] = 'services_items_out_of_range';
 	}
+	foreach ( wpae_design_plan_services_recipe_catalog_media( $brief, $recipe_id, $requested_lead_group_id, array_merge( $brief_media, $context_media ) ) as $asset ) {
+		$asset_id = sanitize_key( (string) ( $asset['asset_id'] ?? '' ) );
+		$group_id = sanitize_key( (string) ( $asset['group_id'] ?? '' ) );
+		if ( $asset_id === '' || $group_id === '' || isset( $media_by_id[ $asset_id ] ) ) {
+			continue;
+		}
+		$asset['group_id'] = $group_id;
+		$media_by_id[ $asset_id ] = $asset;
+		$media[] = $asset;
+		foreach ( $groups as &$group ) {
+			if ( $group['group_id'] === $group_id && $group['media_ref'] === '' ) {
+				$group['media_ref'] = $asset_id;
+				break;
+			}
+		}
+		unset( $group );
+	}
 	$group_ids = [];
 	foreach ( $groups as $group ) {
 		$id = (string) ( $group['group_id'] ?? '' );
@@ -561,7 +658,6 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 		}
 		unset( $group );
 	}
-	$requested_lead_group_id = sanitize_key( (string) ( $context['services_lead_service_ref'] ?? '' ) );
 	if ( $recipe_id === 'services.split_editorial' && count( $unassigned_media ) === 1 && $requested_lead_group_id !== '' ) {
 		foreach ( $groups as &$lead_group ) {
 			if ( $lead_group['group_id'] === $requested_lead_group_id && $lead_group['media_ref'] === '' ) {
