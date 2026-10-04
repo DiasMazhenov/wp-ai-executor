@@ -71,3 +71,41 @@ Guarded Undo repair action after reload stopped locally despite visible Publish 
 v251 source6e77a43fb33ba0c20f59a516aeb9bb2f82c9046a independently matched origin/main. WP Pusher tab3 focus/runtime errors prevent separate Plugins recheck; editor6 reload confirmed PHP configv251/frontendtyped-lifecycle-v5. Repair revision5/immutable contract/saved baseline unchanged. Undo repair still refused locally with Publish disabled; no Undo server request/write. Thus render-cache-specific cause is NOT confirmed by v251 retry; earlier cache diagnosis is a hypothesis, not a resolved live defect.
 
 v252 replaces reload dirty heuristic with exact read-only server document comparison through existing lifecycle path, before owned Undo. Server validates all native roots against current saved document and registered defaults, storing no foreign tree/LLM context. Active visible Publish refuses locally. During-check native changes refuse before Undo; during-Undo changes prevent reload and retain local editor. Existing scoped inverse still rechecks operation identity/revision/owned fingerprint/current document under lock. No stale bootstrap snapshot, fake eligibility or guard bypass. Tests: whole-document match and changed foreign root refusal for Hero/Benefits/Pricing/FAQ; positive descriptor flow requires check_document_model then Undo; active Publish and in-flight native edit refuse. Runtime1189/DesignPlan319/Node14of14/patch guard/lint/package252+4 probes/diff PASS.
+
+## A lifecycle accepted on v252
+
+WP Pusher notice, Plugins v252 and editor6/frontendtyped-lifecycle-v6 confirmed. Source39811f1e98df6448520dc0169b254f80361bfa1e remote independently confirmed. Fresh document check and owned inverse passed: child Undo repair → already_undone revision6, exact initial saved hash28020b7ca428f0b6862fb0e2628232dbdb590d0a87baef482b26a4e851809780, parent available revision5. Full restored native JSON exactly equals original A (captured_at excluded). Parent Undo creation → already_undone revision6, roots[37b84f9], exact baseline hash4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d. Historical root untouched; no retroactive snapshot. A lifecycle PASS; first Vision45 negative retained, visual limitations separate, B–J now allowed by safe cleanup.
+
+### A first result — public after transaction Save/reload, before repair
+
+post5214/root7c1e27f/opwpae-bcc79c703996210b/revision4; hero.text_only/editorial_light; no media. CSS/PNGdesktop1280x900 and public mobile390x844.
+
+![A first public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-first-public-desktop.png)
+
+[Desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-first-public-desktop.png)
+
+![A first public mobile](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-first-public-mobile.png)
+
+[Mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-first-public-mobile.png)
+
+### A one scoped repair — public after native Publish/reload
+
+post5214/root7c1e27f/opwpae-op-1318474b42f475fc/revision5; hero.text_only/editorial_light, original Brief/record/profile, only accepted spacing delta. CSS/PNGdesktop1280x900 and public mobile390x844. Verified/opened; lower block is owned A, upper37 is retained neighbor.
+
+![A repaired public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-repaired-public-desktop.png)
+
+[Desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-repaired-public-desktop.png)
+
+![A repaired public mobile](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-repaired-public-mobile.png)
+
+[Mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/A-repaired-public-mobile.png)
+
+Media B–E: canonical context explicitly directs Unsplash rather than WP Media Library; media list was read only, no asset imported. Reuse previously approved architecture/interior photo from Services catalog, original Unsplash pagewDgzO5XLZT8/Pietro Bolzonetti, free under Unsplash License verified official page. Existing exact source URLphoto-1766230976347-c5badd3f76c9 loaded at1200x675 and visually inspected browser screenshot; alt«Современный архитектурный интерьер.». Illustrative stock, not a claim of studio project.
+
+## A lifecycle accepted and B first refusal / v253 — 2026-10-05
+
+v252 installed PHP/editor config confirmed. Native Publish/reload on repaired A succeeded earlier; scoped Undo repair now passed (child wpae-op-1318474b42f475fc revision6 already_undone), restoring exact initial A model/hash28020b7ca428f0b6862fb0e2628232dbdb590d0a87baef482b26a4e851809780. Scoped Undo creation then passed (wpae-bcc79c703996210b revision6 already_undone), restoring baseline hash4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d/rootset[37b84f9]. Neighbor preserved. A lifecycle PASS; negative first Vision and sparse first design remain separate limitations, no blanket first visual PASS. Evidence: docs/audits/2026-10-04-typed-lifecycle-v247/A-Undo-{repair,creation}-binding.json and baseline-after-A-public.json.
+
+B first ordinary chat attempt on v252: hero.split_60_40.right/editorial_light, exact request B-C-D-exact-request.txt, approved Unsplash architecture photo1766230976347-c5badd3f76c9, alt«Современный архитектурный интерьер.», Unsplash License/Pietro Bolzonetti. identityf02e2c49-bc57-4c50-bc23-d08ff4adbc91; Plan refused unbound_explicit_content:text, provider0/write0/no new root. Source cause: quoted-content intake recognized English License but omitted Russian Лицензия already recognized by media-reference extraction; the same quoted license entered block copy. First refusal retained B-v252-first-{diagnostics.json,chat.txt}.
+
+v253 fixes common intake aliases for Russian license/alt metadata; parser versionv12. Regression covers exact metadata retention/native compilation, real ordinary chat one write/provider0 and unknown quoted copy refusal/write0 (no broad quote discard). Checks runtime1191, DesignPlan321, Node14/14, patch guard/lint/package252 hashes+4 probes PASS. v253 installation/retry and B–J visual acceptance remain pending until live evidence. No structured model extraction activated.

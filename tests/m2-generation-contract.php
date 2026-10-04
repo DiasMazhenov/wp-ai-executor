@@ -238,3 +238,9 @@ check( str_contains( $marker_compile['elementor_data'][0]['settings']['_css_clas
 $marker_mutation = $marker_compile['elementor_data']; $marker_mutation[0]['settings']['_css_classes'] .= ' author-layout-change';
 check( wpae_llm_decision_signature( $marker_mutation ) !== wpae_llm_decision_signature( $marker_compile['elementor_data'] ), 'Editor class decisions stay guarded, signature exclusions not broadened' );
 unset( $GLOBALS['test_required_ds_classes'], $GLOBALS['test_page_baseline'] );
+
+$m2_ru_photo = "Создай Hero с фото\n" . $m1_copy . "\nHero фото: https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&w=1200\nAlt: «Современный архитектурный интерьер.»\nЛицензия: «Unsplash License»\nАвтор фото: «Pietro Bolzonetti»";
+$m2_ru_result = $run_services_route( $m2_ru_photo, [], $incompatible_pricing_fixture, 'm2-russian-license', false, 'active', 'active', [ 'composition_record' => 'hero.split_60_40.right', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+check( ! empty( $m2_ru_result['response']['ok'] ) && $m2_ru_result['writes'] === 1 && $m2_ru_result['calls'] === 0, 'M2 ordinary chat Russian quoted license compiles through one transaction without provider or manual Brief' );
+$m2_unknown_quote = $run_services_route( $m2_ru_photo . "\nНеизвестное поле: «Не теряй этот текст»", [], $incompatible_pricing_fixture, 'm2-unknown-metadata', false, 'active', 'active', [ 'composition_record' => 'hero.split_60_40.right', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+check( empty( $m2_unknown_quote['response']['ok'] ) && $m2_unknown_quote['writes'] === 0 && $m2_unknown_quote['calls'] === 0, 'M2 unrecognized quoted copy still refuses before write rather than being discarded as media metadata' );

@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v11';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v12';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -626,7 +626,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$before = substr( $source_text, 0, $start );
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
-		if ( preg_match( '/(?:alt(?:\s+text)?|license|licence|photo\s+by|автор\s+фото)\s*[:\-]\s*$/iu', $prefix ) ) { continue; }
+		if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?|license|licence|лицензи\w*|photo\s+by|автор\s+фото)\s*[:\-]\s*$/iu', $prefix ) ) { continue; }
 		$role = wpae_brief_ir_label_role( $prefix );
 		if ( $match_index === 0 && $role === 'text' && trim( $before ) === '' && in_array( $archetype, [ 'hero', 'about' ], true ) ) { $role = 'title'; }
 		// A leading "CTA:" names the section; it is not itself a button label.
