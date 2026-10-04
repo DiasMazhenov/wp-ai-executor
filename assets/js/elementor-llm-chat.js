@@ -78,6 +78,7 @@
     // The last brief also survives page reloads: after a final provider failure
     // the chat history is gone, and that is exactly when regeneration is needed.
     var lastBriefKey = 'wpae_llm_last_brief:' + String(config.postId || '0');
+    var deliverySnapshotKey = 'wpae_llm_delivery_snapshot:' + String(config.postId || '0');
     var operationIdentityKey = 'wpae_llm_operation_identity:' + String(config.postId || '0');
     var operationRootsKey = 'wpae_llm_operation_roots:' + String(config.postId || '0');
     var operationRootsTtl = 600000;
@@ -133,7 +134,7 @@
             addMessage('assistant', strings.regenerateEmpty || 'Нет предыдущего запроса для перегенерации.');
             return;
         }
-        request(last, false, { retryCurrentOperation: true });
+        request(last, false, { retryCurrentOperation: true, deliverySnapshot: readDeliverySnapshot(last) });
     });
     reviewPending.addEventListener('click', function () {
         if (send.disabled) { addMessage('assistant', strings.regenerateBusy || 'Дождитесь завершения текущего запроса.'); return; }
@@ -236,11 +237,67 @@
     send.className = 'wpae-llm-icon-button wpae-llm-send';
     send.type = 'submit';
     addIcon(send, 'eicon-arrow-right', strings.send);
+    var compositionControls = document.createElement('div');
+    compositionControls.className = 'wpae-llm-composition-controls';
+    var compositionSelect = document.createElement('select');
+    compositionSelect.id = 'wpae-llm-composition';
+    var profileSelect = document.createElement('select');
+    profileSelect.id = 'wpae-llm-profile';
+    var editorCatalog = config.compositionCatalog || { records: [], profiles: [] };
+    function selectionOption(parent, value, text) {
+        var option = document.createElement('option'); option.value = value; option.textContent = text; parent.appendChild(option);
+    }
+    selectionOption(compositionSelect, '', 'Автоматически');
+    var compositionGroups = {};
+    (editorCatalog.records || []).forEach(function (record) {
+        if (!compositionGroups[record.family]) {
+            var group = document.createElement('optgroup'); group.label = record.family_label;
+            compositionGroups[record.family] = group; compositionSelect.appendChild(group);
+        }
+        selectionOption(compositionGroups[record.family], record.id, record.label);
+    });
+    function selectedCompositionRecord() {
+        return (editorCatalog.records || []).find(function (record) { return record.id === compositionSelect.value; });
+    }
+    function refreshCompositionProfiles() {
+        var previous = profileSelect.value;
+        profileSelect.textContent = '';
+        selectionOption(profileSelect, '', 'По умолчанию');
+        var record = selectedCompositionRecord();
+        (editorCatalog.profiles || []).forEach(function (profile) {
+            if (record && record.profiles.indexOf(profile.id) !== -1) selectionOption(profileSelect, profile.id, profile.label);
+        });
+        if (record && record.profiles.indexOf(previous) !== -1) profileSelect.value = previous;
+        profileSelect.disabled = !record || !record.profiles.length || config.pipelineMode !== 'active';
+    }
+    compositionSelect.disabled = config.pipelineMode !== 'active';
+    compositionSelect.addEventListener('change', refreshCompositionProfiles);
+    refreshCompositionProfiles();
+    [[compositionSelect, 'Композиция'], [profileSelect, 'Оформление']].forEach(function (item) {
+        var label = document.createElement('label'); label.setAttribute('for', item[0].id); label.textContent = item[1];
+        var field = document.createElement('div'); field.appendChild(label); field.appendChild(item[0]); compositionControls.appendChild(field);
+    });
+
+    function compositionSelectionSnapshot(options, selected) {
+        if (config.pipelineMode !== 'active' || selected.length || options.targetedDesignRepair || options.replaceExistingRoot || options.visionRepair || options.visionRegenerate) return {};
+        var record = selectedCompositionRecord();
+        if (!record) return {};
+        var snapshot = { composition_record: record.id, composition_version: record.version };
+        if (profileSelect.value && record.profiles.indexOf(profileSelect.value) !== -1) snapshot.visual_profile = profileSelect.value;
+        return snapshot;
+    }
+    function readDeliverySnapshot(message) {
+        try {
+            var saved = JSON.parse(window.sessionStorage.getItem(deliverySnapshotKey) || 'null');
+            return saved && saved.message === message && saved.context.operation_identity === readOperationIdentity() ? saved : null;
+        } catch (error) { return null; }
+    }
     form.appendChild(input);
     form.appendChild(send);
     panel.appendChild(head);
     panel.appendChild(pipeline);
     panel.appendChild(messages);
+    panel.appendChild(compositionControls);
     panel.appendChild(form);
     root.appendChild(panel);
     root.appendChild(pill);
@@ -403,7 +460,9 @@
         var message = String(error.message || '').toLowerCase();
         return Number(error.providerStatus || 0) === 429 && (message.indexOf('rate limit') !== -1 || message.indexOf('rate-limited') !== -1 || message.indexOf('ограничен по лимиту') !== -1);
     }
+    var deliveryRetryPending = false;
     function scheduleRateLimitedRetry(message, options, retryAfter) {
+        deliveryRetryPending = true;
         // A shared free pool asked for a delayed retry. Nothing was written and
         // the editor state is healthy, so wait once and retry in place instead
         // of reloading the whole Elementor editor.
@@ -411,12 +470,14 @@
         addMessage('assistant', 'Пул модели временно ограничен по лимиту (rate limit). Повторяю запрос один раз через ' + Math.round(delay / 1000) + ' секунд без перезагрузки.');
         status.textContent = 'Ожидание сброса лимита…';
         window.setTimeout(function () {
+            deliveryRetryPending = false;
             status.textContent = strings.sending;
-            request(message, true, options || {});
+            request(message, true, Object.assign({}, options, { retryCurrentOperation: true }));
         }, delay);
     }
     function scheduleProviderRetry(message, options) {
         if (readProviderRetry()) return false;
+        deliveryRetryPending = true;
         try {
             var retryOptions = options && typeof options === 'object' ? {
                 repairDepth: Number(options.repairDepth) || 0,
@@ -425,11 +486,16 @@
                 visionRegenerate: Boolean(options.visionRegenerate),
                 visionFindings: String(options.visionFindings || '').slice(0, 3600),
                 skipVision: Boolean(options.skipVision),
-                retryCurrentOperation: Boolean(options.retryCurrentOperation),
+                retryCurrentOperation: true,
+                deliverySnapshot: options.deliverySnapshot,
+                targetedDesignRepair: Boolean(options.targetedDesignRepair),
+                replaceExistingRoot: Boolean(options.replaceExistingRoot),
+                replacesOperation: options.replacesOperation,
                 selectedElements: Array.isArray(options.selectedElements) ? options.selectedElements.slice(0, 8) : undefined
             } : {};
             window.sessionStorage.setItem(providerRetryKey, JSON.stringify({ message: String(message).slice(0, 4000), options: retryOptions, createdAt: Date.now() }));
         } catch (error) {
+            deliveryRetryPending = false;
             return false;
         }
         addMessage('assistant', 'LLM-провайдер недоступен. Повторяю запрос один раз через 10 секунд без перезагрузки.');
@@ -438,8 +504,9 @@
         // retry in place instead of reloading the whole Elementor editor.
         window.setTimeout(function () {
             clearProviderRetry();
+            deliveryRetryPending = false;
             status.textContent = strings.sending;
-            request(message, true, options || {});
+            request(message, true, Object.assign({}, options, { retryCurrentOperation: true }));
         }, 10000);
         return true;
     }
@@ -1864,7 +1931,12 @@
     }
     var requestInFlight = false;
     function request(message, retried, options) {
-        options = options || {};
+        options = Object.assign({}, options || {});
+        if (requestInFlight) return Promise.resolve(false);
+        if (options.retryCurrentOperation && (!options.deliverySnapshot || options.deliverySnapshot.context.operation_identity !== readOperationIdentity())) {
+            addMessage('assistant', 'Исходный snapshot запроса не найден; повтор остановлен, чтобы не изменить операцию.');
+            return Promise.resolve(false);
+        }
         var requestSelection = options.selectedElements || selectedElements();
         if (!options.retryCurrentOperation && !options.visionRepair && !options.targetedDesignRepair) {
             var explicitReplacement = targetedDesignReplacement(message, requestSelection);
@@ -1940,11 +2012,19 @@
         if (options.replaceExistingRoot && options.replacesOperation) {
             requestContext.replaces_operation = options.replacesOperation;
         }
+        Object.assign(requestContext, compositionSelectionSnapshot(options, requestSelection));
+        if (options.deliverySnapshot) {
+            message = options.deliverySnapshot.message;
+            history = options.deliverySnapshot.history;
+            requestContext = JSON.parse(JSON.stringify(options.deliverySnapshot.context));
+        }
         if (options.retryCurrentOperation) requestContext.retry_current_operation = true;
         if (options.targetedDesignRepair) requestContext.targeted_design_repair = true;
         if (options.visionRepair) requestContext.vision_repair = true;
         if (options.visionRegenerate) requestContext.vision_regenerate = true;
         if (options.visionFindings) requestContext.vision_findings = String(options.visionFindings).slice(0, 3600);
+        options.deliverySnapshot = { message: message, history: history, context: JSON.parse(JSON.stringify(requestContext)) };
+        try { window.sessionStorage.setItem(deliverySnapshotKey, JSON.stringify(options.deliverySnapshot)); } catch (error) {}
         var editorSyncDataForReview = null;
         var requestController = typeof window.AbortController === 'function' ? new window.AbortController() : null;
         var requestTimer = requestController ? window.setTimeout(function () {
@@ -2202,7 +2282,7 @@
             status.textContent = strings.error;
         }).finally(function () {
             requestInFlight = false;
-            send.disabled = Boolean(readProviderRetry() || readVisionRepair());
+            send.disabled = Boolean(deliveryRetryPending || readProviderRetry() || readVisionRepair());
         });
     }
 
@@ -2220,6 +2300,7 @@
     });
     form.addEventListener('submit', function (event) {
         event.preventDefault();
+        if (requestInFlight || deliveryRetryPending || send.disabled) return;
         var message = input.value.trim();
         if (!message) {
             status.textContent = strings.empty;

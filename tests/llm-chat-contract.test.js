@@ -403,7 +403,7 @@ assert.match(js, /if \(repairDepth === 0\) \{\s*\n\s*if \(!options\.retryCurrent
 assert.match(js, /liveGeneratedRootIds = liveGeneratedRootIds\.concat/);
 assert.match(js, /operationRootsKey/);
 assert.match(js, /function rememberOperationRoots/);
-assert.match(js, /retryCurrentOperation: Boolean\(options\.retryCurrentOperation\)/);
+assert.match(js, /retryCurrentOperation: true,[\s\S]*deliverySnapshot: options\.deliverySnapshot/); // Delivery retries keep the original operation and snapshot.
 assert.match(js, /function removeLiveGeneratedRoots\(preserveOwnership\)/);
 assert.match(js, /if \(!preserveOwnership\) liveGeneratedRootIds = \[\];\s*return Promise\.resolve\(true\);/);
 assert.match(js, /document\/elements\/delete/);

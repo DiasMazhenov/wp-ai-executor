@@ -134,3 +134,9 @@
     .wpae-llm-form { flex-direction: row; }
     .wpae-llm-pipeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+#wpae-llm-chat-root .wpae-llm-composition-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 12px; }
+#wpae-llm-chat-root .wpae-llm-composition-controls > div { min-width: 0; }
+#wpae-llm-chat-root .wpae-llm-composition-controls label { display: block; font-size: 12px; margin-bottom: 4px; }
+#wpae-llm-chat-root .wpae-llm-composition-controls select { width: 100%; min-width: 0; font: inherit; font-size: 12px; padding: 6px; border-radius: 6px; }
+@media (max-width: 480px) { #wpae-llm-chat-root .wpae-llm-composition-controls { grid-template-columns: 1fr; } }

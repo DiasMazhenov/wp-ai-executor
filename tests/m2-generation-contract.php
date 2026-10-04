@@ -204,3 +204,24 @@ $library_brief = $base['brief']; $library_brief['policy']['library']['source'] =
 $library_preview = $m2_preview( $library_brief, $base['context'], 'library-only' );
 check( empty( $library_preview['ok'] ) && $library_preview['write_count'] === 0 && in_array( 'composition_library_slot_map_unavailable', $library_preview['errors'], true ), 'M2 composer honors library-only canonical Brief and refuses unverified typed slot map' );
 if ( getenv( 'WPAE_M2_CHAT_DEMO' ) === '1' ) { foreach ( $m2_demo as $row ) { echo wp_json_encode( $row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n"; } }
+
+// Editor integration: the static report must consume accepted responsive tokens.
+foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
+ $case = $m2_results['hero.' . $profile];
+ $plan = wpae_design_plan_from_brief( $case['brief'], array_merge( [ 'canonical_create' => true ], $case['context'] ) );
+ $report = wpae_layout_report_for_plan( $plan, [ 'tokens' => [ 'space.component' => '99rem' ] ] );
+ check( $report['visual_render_verified'] === false && $report['evidence'] === 'static_plan', 'Editor profile report stays static, accepted Plan values take precedence over unrelated options' );
+ $native = $case['preview']['elementor_data'][0];
+ foreach ( $report['breakpoints'] as $bp ) {
+  $device = $bp['device_assumption']; $suffix = $device === 'desktop' ? '' : '_' . $device;
+  $control = $native['settings']['flex_gap' . $suffix];
+  $gap_px = wpae_layout_report_length_px( $control['size'] . $control['unit'], $bp['viewport_width'], -1 );
+  check( abs( $bp['gaps']['size'] - $gap_px ) < 0.01, 'Editor static gap matches native ' . $profile . ' ' . $bp['breakpoint'] );
+  $copy = $native['elements'][0]['settings'];
+  $boxed = $copy['boxed_width' . $suffix];
+  $expected = $device === 'mobile' ? $bp['basis']['copy_group'] : min( $bp['basis']['copy_group'], wpae_layout_report_length_px( $boxed['size'] . $boxed['unit'], $bp['viewport_width'], -1 ) );
+  check( abs( $bp['boxed_copy_content_width_px']['copy_group'] - $expected ) < 0.01, 'Editor static boxed copy clamp matches native ' . $profile . ' ' . $bp['breakpoint'] );
+ }
+}
+$editor_catalog = wpae_composition_editor_catalog();
+check( count( $editor_catalog['records'] ) === 17 && ! in_array( 'benefits.linear', array_column( $editor_catalog['records'], 'id' ), true ), 'Editor projection has only distinct implemented records, no alias' );

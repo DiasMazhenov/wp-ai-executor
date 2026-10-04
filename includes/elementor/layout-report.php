@@ -40,7 +40,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 	$violations = [];
 	$basis_overrides = is_array( $options['basis_overrides'] ?? null ) ? $options['basis_overrides'] : [];
 	$gap_override = isset( $options['gap'] ) && is_numeric( $options['gap'] ) ? max( 0, (float) $options['gap'] ) : null;
-	$tokens = is_array( $options['tokens'] ?? null ) ? $options['tokens'] : [];
+	$tokens = is_array( $plan['resolved_visual']['values'] ?? null ) ? $plan['resolved_visual']['values'] : ( is_array( $options['tokens'] ?? null ) ? $options['tokens'] : [] );
 	$gap_token = function_exists( 'wpae_design_token_value' ) ? wpae_design_token_value( 'space.component', $tokens ) : '1.5rem';
 	$archetype = sanitize_key( (string) ( $plan['archetype'] ?? 'unknown' ) );
 	$section = is_array( $plan['sections'][0] ?? null ) ? $plan['sections'][0] : [];
@@ -157,7 +157,10 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		$is_split_composition = in_array( $breakpoint_composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
 		$is_stack = ! $is_split_composition || ( $is_mobile && ( $breakpoint_composition === 'copy_first_stack' || ( $plan['responsive']['mobile'] ?? '' ) === 'copy_first_stack' ) );
 		$basis_percentages = $is_split_composition ? wpae_layout_report_composition_basis( $breakpoint_composition ) : [];
-		$gap = $gap_override ?? wpae_layout_report_length_px( $gap_token, $viewport, 24 );
+		$device = $is_mobile ? 'mobile' : ( in_array( $breakpoint['id'], [ 'tablet', 'laptop' ], true ) ? 'tablet' : 'desktop' );
+        $gap_ref = 'space.component' . ( $device === 'desktop' ? '' : '_' . $device );
+        $gap = $gap_override ?? wpae_layout_report_length_px( $tokens[ $gap_ref ] ?? $gap_token, $viewport, 24 );
+        $copy_widths = [];
 		$available_width = max( 0, $container_width - ( $is_stack ? 0 : $gap * max( 0, count( $children ) - 1 ) ) );
 		$basis = [];
 		$basis_percentages_for_report = [];
@@ -180,6 +183,9 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			$basis_percent = $is_stack && ! array_key_exists( $node_id, $basis_overrides ) ? 100.0 : $percentage;
 			$child_basis = $available_width * ( $basis_percent / 100 );
 			$basis[ $node_id ] = round( $child_basis, 2 );
+            if ( ( $child['role'] ?? '' ) === 'copy_group' && ! empty( $plan['resolved_visual']['profile'] ) && isset( $tokens['layout.copy_width'] ) ) {
+                $copy_widths[ $node_id ] = round( $is_mobile ? $child_basis : min( $child_basis, wpae_layout_report_length_px( $tokens['layout.copy_width'], $viewport, $child_basis ) ), 2 );
+            }
 			$basis_percentages_for_report[ $node_id ] = $basis_percent;
 			$min_width[ $node_id ] = (float) ( $child['layout_constraints']['min_width'] ?? 0 );
 			$max_width[ $node_id ] = (float) ( $child['layout_constraints']['max_width'] ?? 100 );
@@ -226,6 +232,9 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			'layout_axis' => $is_stack ? 'column' : 'row',
 			'gaps' => $is_stack ? [ 'axis' => 'column', 'size' => $gap ] : [ 'axis' => 'row', 'size' => $gap, 'count' => max( 0, count( $children ) - 1 ) ],
 			'basis' => $basis,
+            'boxed_copy_content_width_px' => $copy_widths,
+            'gap_token' => $gap_ref,
+            'device_assumption' => $device,
 			'basis_percent' => $basis_percentages_for_report,
 			'min_width' => $min_width,
 			'max_width' => $max_width,

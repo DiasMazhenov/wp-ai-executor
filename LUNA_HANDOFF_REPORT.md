@@ -1713,3 +1713,8 @@ REST composer сохраняет восемь старых recipes и все 20 
 Install/deploy/editor/live/visual **NOT RUN**; браузер/WordPress/post=5214 не менялись, screenshots не создавались. Assets example.com — mock evidence; actual kit/media/render остаются непроверенными. Structured extraction не активирована. Source commit/push публикуются отдельной Git записью после scoped review; 776 foreign untracked files сохранены.
 
 M2.1 publication: implementation commit `13315c0d5b0fce322eacda3110371fd74483b0e9` опубликован в `origin/main`; отдельный `git ls-remote origin refs/heads/main` подтвердил тот же SHA 2026-10-04 18:47:05 Asia/Almaty. Scoped staged review и diff check выполнены; 14 файлов включают runtime, regressions, package hashes, canonical docs и audit artifacts. Install/deploy/live остаются NOT RUN. Эта запись добавлена после подтверждения публикации.
+
+
+## M2.1 editor integration — v02.11.245, 2026-10-04
+
+Prepared source: safe server projection of 17 distinct composition records into WPAELLMChat; grouped composition/profile UI, immutable delivery snapshot/replay and busy guards, no selection on selected-element/targeted/replacement/Vision/off/shadow paths. Services automatic and API-key-only recipes authorization retained. Static LayoutReport uses accepted responsive gaps and boxed copy clamp; visual_render_verified=false. Runtime1072, DesignPlan319, Node8/8 and patch guard PASS. Separate install/readback/live matrix A–J is pending; current v244 editor/public render empty and initial document [], saved state still needs confirmation. [Report](docs/audits/2026-10-04-generator-editor-v245/REPORT.md). 776 foreign untracked files preserved.

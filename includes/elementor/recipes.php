@@ -443,3 +443,20 @@ function wpae_composition_visual_profiles(): array {
 			'space.section' => '4rem', 'space.section_tablet' => '3rem', 'space.section_mobile' => '2rem', 'space.component' => '1.75rem', 'space.component_tablet' => '1.25rem', 'space.component_mobile' => '1rem', 'radius.card' => '1.25rem', 'layout.copy_width' => '32rem', 'space.card' => '1.75rem' ],
 	];
 }
+
+/** Safe editor projection: no trees, tokens, credentials or legacy aliases. */
+function wpae_composition_editor_catalog(): array {
+ $families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы' ];
+ $labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон' ];
+ $records = [];
+ foreach ( wpae_composition_records() as $record ) {
+  if ( empty( $record['distinct'] ) || $record['implementation_status'] !== 'implemented_source' || ! in_array( 'page', $record['scope'], true ) ) { continue; }
+  $label = $labels[ $record['id'] ] ?? '';
+  if ( $label === '' ) {
+   $ratio = str_replace( [ 'split_', '_' ], [ '', '/' ], $record['composition'] );
+   $label = 'Фото ' . ( $record['policy']['media_side'] === 'left' ? 'слева' : 'справа' ) . ' · текст/фото ' . $ratio;
+  }
+  $records[] = [ 'id' => $record['id'], 'version' => $record['version'], 'family' => $record['family'], 'family_label' => $families[ $record['family'] ], 'label' => $label, 'profiles' => $record['visual_profiles'] ];
+ }
+ return [ 'records' => $records, 'profiles' => [ [ 'id' => 'editorial_light', 'label' => 'Светлое редакционное' ], [ 'id' => 'soft_cards_light', 'label' => 'Светлое с мягкими карточками' ] ] ];
+}

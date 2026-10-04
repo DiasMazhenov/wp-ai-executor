@@ -1,0 +1,117 @@
+{
+  "post_id": 5214,
+  "baseline_commit": "ab4ec235cb84fef7a9e61db2efb42ce448ba0333",
+  "source_version": "v02.11.245",
+  "scenarios": [
+    {
+      "scenario": "A",
+      "record": "hero.text_only",
+      "profile": "editorial_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "B",
+      "record": "hero.split_60_40.right",
+      "profile": "editorial_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "C",
+      "record": "hero.split_60_40.left",
+      "profile": "editorial_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "D",
+      "record": "hero.split_60_40.right",
+      "profile": "soft_cards_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "E",
+      "record": "about.split_50_50.right",
+      "profile": "editorial_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "F",
+      "record": "benefits.grid",
+      "profile": "editorial_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "G",
+      "record": "benefits.editorial_list",
+      "profile": "editorial_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "H",
+      "record": "benefits.grid",
+      "profile": "soft_cards_light",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "I",
+      "record": "pricing.tiers",
+      "profile": "",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    },
+    {
+      "scenario": "J",
+      "record": "faq.native",
+      "profile": "",
+      "status": "NOT_RUN",
+      "request": null,
+      "root": null,
+      "operation": null,
+      "first_result": null,
+      "screenshots": []
+    }
+  ]
+}

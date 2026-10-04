@@ -4,10 +4,10 @@
   "entrypoint": "wp-ai-executor.php",
   "files": {
     "assets/css/elementor-block-library.css": "b394d125696fb7d9c08086d268eb69f049c865ad8b74383ef4cbb63482dab650",
-    "assets/css/elementor-llm-chat.css": "c0bd0d56d3c80f54a94c17f52bba3400e25ff3eb297cd2251b7b43b1c2b56e55",
+    "assets/css/elementor-llm-chat.css": "2f7dbbdba9d8a593426d49ac6291c3a96d0f51ff3090efad5799b1e709458c33",
     "assets/js/elementor-block-library-ui.js": "609bf4f58257801a0bfbb101c9d82b2ab252978bec77ef7904b2c26e0905f710",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "ecffc007fe7adc78b33a538ee3cd49765f5d18013cb7f180156ce6ac7c447949",
+    "assets/js/elementor-llm-chat.js": "9ef3be523979fb217aaf17c88a55c06e33404673aa81c5fb71b8c76ef7e71ce3",
     "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
     "assets/previews/vocario-404.jpg": "46c02d4078d7fd9595d83585d2fd89e82273096be63f111d7567a4a1c05a1a0f",
     "assets/previews/vocario-about-us.jpg": "0ec916cb2daf9c7f934da367a4aa9082777509c8bbc3ef9eef6ab5513406ca0a",
@@ -54,7 +54,7 @@
     "includes/elementor/design-contract.php": "0e32e505ca5a0ce32edc9ecd9d53e4cf86fa3fd040c9a9be544f5d423057986a",
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
-    "includes/elementor/editor-chat.php": "18ab7b9551970356dea15511ac59cb8e185e2a5c3408891cbc02072d23f50bbb",
+    "includes/elementor/editor-chat.php": "75121961ae6eac48e5591d481df24c5cfe485950d7324ecdec64a675ea0a0fec",
     "includes/elementor/elementor-ir.php": "feead55b3f6b2b1f051040641c0e057bd8fcab2b9b99d11fca987732c8123189",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
@@ -215,12 +215,12 @@
     "includes/elementor/imported-templates/theme-builder-footer-elementor-pro-cfbed702.json": "cfbed7020e2c74b80c15b217c50accf90f40d74823649475810974c3304873e1",
     "includes/elementor/imported-templates/theme-builder-header-elementor-pro-43da6d96.json": "43da6d9619da2be8bad1fb500ba98a6772305666cb386de6ce2b80946c46f745",
     "includes/elementor/imported-templates/venue.json": "3f91487de940fb3789237c85099da0918cf37ccdb488e79022d293d07cfa3c36",
-    "includes/elementor/layout-report.php": "04807cd751ab3775c7daa47fcc9fecd14b32b449c00e720b219c092838614824",
+    "includes/elementor/layout-report.php": "6bab09b0cc0a3baa3df6e4b8d454d8fb40c89be2169b20170135d52410738636",
     "includes/elementor/native-compiler.php": "819facedb8944c91c6be8020d11b4614a687fd943a790b6dcb6d092f263b5492",
     "includes/elementor/normalize.php": "85b4992d3cabbf92b85f9236c5a422cc69a9d514cd156a89ab6355cebc2fa01a",
     "includes/elementor/operation-ledger.php": "df96a3caf5245bc2c8fed5d9d632c6449448e2c22001bb88b139cb4239b31707",
     "includes/elementor/page-update.php": "113c7d3b1e651d2217aaf8522cb63e24cff9174f9b255355d6ef9b528055943b",
-    "includes/elementor/recipes.php": "f2ed04324d1acb720d3b1541ad5688beba745bf1366993ba3df89e4e78f2cd68",
+    "includes/elementor/recipes.php": "e1d543ea328cb0961b5af88905c87948e3f01dc2ed2abc42cb8932432e457c19",
     "includes/elementor/reference-set.php": "0d35c839dff514a7bc777b0ebc886c3461532571fa10f04792bd719dc3bc2656",
     "includes/elementor/templates.php": "81d54937d106e0cb542e00b1e1a91e708076d5ac64792c0012e15970035ed3a2",
     "includes/elementor/token-map.php": "75b5ee2f6d18b79d66df911db4b32e9aaf2009a30ad77b6e7db17b63c4323e37",
@@ -252,6 +252,6 @@
     "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-    "wp-ai-executor.php": "28d3fe2af07c13c6a305284a9df9a3b350e60647b6ed36c57f7e24313646960e"
+    "wp-ai-executor.php": "e8512797ef1d633c39284f3edb3e864c1c9440d5ab65b2514d0270c0110c3d3e"
   }
 }
