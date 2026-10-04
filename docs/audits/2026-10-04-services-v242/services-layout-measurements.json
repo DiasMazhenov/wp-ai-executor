@@ -1,0 +1,2508 @@
+[
+  {
+    "case": {
+      "width": 1440,
+      "height": 1000,
+      "label": "desktop-wide"
+    },
+    "breakpoints": {
+      "mobile": false,
+      "tablet": false
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 2120,
+      "scrollWidth": 1425
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 376,
+              "x": 113.5,
+              "y": 189.4
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 376,
+              "x": 515.5,
+              "y": 189.4
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 376,
+              "x": 917.5,
+              "y": 189.4
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 621.4,
+          "width": 1425,
+          "x": 0,
+          "y": 32
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "row",
+            "rect": {
+              "height": 441,
+              "width": 1200,
+              "x": 112.5,
+              "y": 188.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 441,
+              "width": 378,
+              "x": 112.5,
+              "y": 188.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 441,
+              "width": 378,
+              "x": 514.5,
+              "y": 188.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 441,
+              "width": 378,
+              "x": 916.5,
+              "y": 188.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 528,
+              "x": 768.5,
+              "y": 809.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 783.4,
+          "width": 1425,
+          "x": 0,
+          "y": 653.4
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "row",
+            "rect": {
+              "height": 260,
+              "width": 1200,
+              "x": 112.5,
+              "y": 809.8
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 260,
+              "width": 528,
+              "x": 768.5,
+              "y": 809.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 319,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1093.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1093.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1277.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 683.4,
+          "width": 1425,
+          "x": 0,
+          "y": 1436.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 503,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1593.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1593.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1777.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 1200,
+              "x": 112.5,
+              "y": 1961.2
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 1000,
+      "clientWidth": 1425,
+      "innerHeight": 1000,
+      "innerWidth": 1440
+    }
+  },
+  {
+    "case": {
+      "width": 1100,
+      "height": 900,
+      "label": "desktop-narrow"
+    },
+    "breakpoints": {
+      "mobile": false,
+      "tablet": false
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 2120,
+      "scrollWidth": 1085
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 319.6,
+              "x": 33,
+              "y": 189.4
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 319.6,
+              "x": 378.6,
+              "y": 189.4
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 319.6,
+              "x": 724.2,
+              "y": 189.4
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 621.4,
+          "width": 1085,
+          "x": 0,
+          "y": 32
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "row",
+            "rect": {
+              "height": 441,
+              "width": 1021,
+              "x": 32,
+              "y": 188.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 441,
+              "width": 321.6,
+              "x": 32,
+              "y": 188.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 441,
+              "width": 321.6,
+              "x": 377.6,
+              "y": 188.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 441,
+              "width": 321.6,
+              "x": 723.2,
+              "y": 188.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 260,
+              "width": 449.2,
+              "x": 594.9,
+              "y": 809.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 783.4,
+          "width": 1085,
+          "x": 0,
+          "y": 653.4
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "row",
+            "rect": {
+              "height": 260,
+              "width": 1021,
+              "x": 32,
+              "y": 809.8
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 260,
+              "width": 449.2,
+              "x": 594.9,
+              "y": 809.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 319,
+              "width": 1021,
+              "x": 32,
+              "y": 1093.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 1021,
+              "x": 32,
+              "y": 1093.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 1021,
+              "x": 32,
+              "y": 1277.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 683.4,
+          "width": 1085,
+          "x": 0,
+          "y": 1436.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 503,
+              "width": 1021,
+              "x": 32,
+              "y": 1593.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 1021,
+              "x": 32,
+              "y": 1593.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 1021,
+              "x": 32,
+              "y": 1777.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 1021,
+              "x": 32,
+              "y": 1961.2
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 900,
+      "clientWidth": 1085,
+      "innerHeight": 900,
+      "innerWidth": 1100
+    }
+  },
+  {
+    "case": {
+      "width": 1024,
+      "height": 900,
+      "label": "tablet-breakpoint-top"
+    },
+    "breakpoints": {
+      "mobile": false,
+      "tablet": true
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 2594,
+      "scrollWidth": 1009
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 451.6,
+              "x": 33,
+              "y": 176.8
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 451.6,
+              "x": 506.6,
+              "y": 176.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 451.6,
+              "x": 33,
+              "y": 593.8
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 981.8,
+          "width": 1009,
+          "x": 0,
+          "y": 32
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "row",
+            "rect": {
+              "height": 814,
+              "width": 945,
+              "x": 32,
+              "y": 175.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 397,
+              "width": 453.6,
+              "x": 32,
+              "y": 175.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 397,
+              "width": 453.6,
+              "x": 505.6,
+              "y": 175.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 397,
+              "width": 453.6,
+              "x": 32,
+              "y": 592.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 945,
+              "x": 32,
+              "y": 1316.6
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 909.8,
+          "width": 1009,
+          "x": 0,
+          "y": 1013.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "column",
+            "rect": {
+              "height": 399,
+              "width": 945,
+              "x": 32,
+              "y": 1157.6
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 240,
+              "width": 945,
+              "x": 32,
+              "y": 1316.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 319,
+              "width": 945,
+              "x": 32,
+              "y": 1580.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 945,
+              "x": 32,
+              "y": 1580.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 945,
+              "x": 32,
+              "y": 1764.6
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 670.8,
+          "width": 1009,
+          "x": 0,
+          "y": 1923.6
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 503,
+              "width": 945,
+              "x": 32,
+              "y": 2067.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 945,
+              "x": 32,
+              "y": 2067.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 945,
+              "x": 32,
+              "y": 2251.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 945,
+              "x": 32,
+              "y": 2435.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 900,
+      "clientWidth": 1009,
+      "innerHeight": 900,
+      "innerWidth": 1024
+    }
+  },
+  {
+    "case": {
+      "width": 782,
+      "height": 900,
+      "label": "tablet-narrow"
+    },
+    "breakpoints": {
+      "mobile": false,
+      "tablet": true
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 2656,
+      "scrollWidth": 767
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 335.4,
+              "x": 33,
+              "y": 190.8
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 335.4,
+              "x": 390.4,
+              "y": 190.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 335.4,
+              "x": 33,
+              "y": 631.8
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 1029.8,
+          "width": 767,
+          "x": 0,
+          "y": 46
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "row",
+            "rect": {
+              "height": 862,
+              "width": 703,
+              "x": 32,
+              "y": 189.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 421,
+              "width": 337.4,
+              "x": 32,
+              "y": 189.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 421,
+              "width": 337.4,
+              "x": 389.4,
+              "y": 189.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 421,
+              "width": 337.4,
+              "x": 32,
+              "y": 630.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 703,
+              "x": 32,
+              "y": 1378.6
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 909.8,
+          "width": 767,
+          "x": 0,
+          "y": 1075.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "column",
+            "rect": {
+              "height": 399,
+              "width": 703,
+              "x": 32,
+              "y": 1219.6
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 240,
+              "width": 703,
+              "x": 32,
+              "y": 1378.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 319,
+              "width": 703,
+              "x": 32,
+              "y": 1642.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 703,
+              "x": 32,
+              "y": 1642.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 703,
+              "x": 32,
+              "y": 1826.6
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 670.8,
+          "width": 767,
+          "x": 0,
+          "y": 1985.6
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 503,
+              "width": 703,
+              "x": 32,
+              "y": 2129.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 703,
+              "x": 32,
+              "y": 2129.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 703,
+              "x": 32,
+              "y": 2313.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 703,
+              "x": 32,
+              "y": 2497.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 900,
+      "clientWidth": 767,
+      "innerHeight": 900,
+      "innerWidth": 782
+    }
+  },
+  {
+    "case": {
+      "width": 768,
+      "height": 900,
+      "label": "tablet-breakpoint-bottom"
+    },
+    "breakpoints": {
+      "mobile": false,
+      "tablet": true
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 2656,
+      "scrollWidth": 753
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 328.7,
+              "x": 33,
+              "y": 190.8
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 328.7,
+              "x": 383.7,
+              "y": 190.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 328.7,
+              "x": 33,
+              "y": 631.8
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 1029.8,
+          "width": 753,
+          "x": 0,
+          "y": 46
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "row",
+            "rect": {
+              "height": 862,
+              "width": 689,
+              "x": 32,
+              "y": 189.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 421,
+              "width": 330.7,
+              "x": 32,
+              "y": 189.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 421,
+              "width": 330.7,
+              "x": 382.7,
+              "y": 189.8
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 421,
+              "width": 330.7,
+              "x": 32,
+              "y": 630.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 240,
+              "width": 689,
+              "x": 32,
+              "y": 1378.6
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 909.8,
+          "width": 753,
+          "x": 0,
+          "y": 1075.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "column",
+            "rect": {
+              "height": 399,
+              "width": 689,
+              "x": 32,
+              "y": 1219.6
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 240,
+              "width": 689,
+              "x": 32,
+              "y": 1378.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 319,
+              "width": 689,
+              "x": 32,
+              "y": 1642.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 689,
+              "x": 32,
+              "y": 1642.6
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 689,
+              "x": 32,
+              "y": 1826.6
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 670.8,
+          "width": 753,
+          "x": 0,
+          "y": 1985.6
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 503,
+              "width": 689,
+              "x": 32,
+              "y": 2129.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 689,
+              "x": 32,
+              "y": 2129.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 689,
+              "x": 32,
+              "y": 2313.4
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 689,
+              "x": 32,
+              "y": 2497.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 900,
+      "clientWidth": 753,
+      "innerHeight": 900,
+      "innerWidth": 768
+    }
+  },
+  {
+    "case": {
+      "width": 767,
+      "height": 900,
+      "label": "mobile-breakpoint-top"
+    },
+    "breakpoints": {
+      "mobile": true,
+      "tablet": false
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 2860,
+      "scrollWidth": 752
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 718,
+              "x": 17,
+              "y": 182.4
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 718,
+              "x": 17,
+              "y": 567.4
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 718,
+              "x": 17,
+              "y": 952.4
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 1298.4,
+          "width": 752,
+          "x": 0,
+          "y": 46
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "column",
+            "rect": {
+              "height": 1139,
+              "width": 720,
+              "x": 16,
+              "y": 181.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 369,
+              "width": 720,
+              "x": 16,
+              "y": 181.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 369,
+              "width": 720,
+              "x": 16,
+              "y": 566.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 369,
+              "width": 720,
+              "x": 16,
+              "y": 951.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 720,
+              "x": 16,
+              "y": 1634.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 869.4,
+          "width": 752,
+          "x": 0,
+          "y": 1344.4
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "column",
+            "rect": {
+              "height": 375,
+              "width": 720,
+              "x": 16,
+              "y": 1479.8
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 220,
+              "width": 720,
+              "x": 16,
+              "y": 1634.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 311,
+              "width": 720,
+              "x": 16,
+              "y": 1878.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 720,
+              "x": 16,
+              "y": 1878.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 135,
+              "width": 720,
+              "x": 16,
+              "y": 2054.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 646.4,
+          "width": 752,
+          "x": 0,
+          "y": 2213.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 487,
+              "width": 720,
+              "x": 16,
+              "y": 2349.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 720,
+              "x": 16,
+              "y": 2349.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 720,
+              "x": 16,
+              "y": 2525.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 135,
+              "width": 720,
+              "x": 16,
+              "y": 2701.2
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 900,
+      "clientWidth": 752,
+      "innerHeight": 900,
+      "innerWidth": 767
+    }
+  },
+  {
+    "case": {
+      "width": 390,
+      "height": 844,
+      "label": "mobile-390"
+    },
+    "breakpoints": {
+      "mobile": true,
+      "tablet": false
+    },
+    "document": {
+      "horizontalOverflow": false,
+      "scrollHeight": 3076,
+      "scrollWidth": 375
+    },
+    "roots": [
+      {
+        "id": "023bd70",
+        "images": [
+          {
+            "alt": "Архитектор изучает чертежи у современного здания.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 341,
+              "x": 17,
+              "y": 182.4
+            },
+            "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 341,
+              "x": 17,
+              "y": 591.4
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          },
+          {
+            "alt": "Специалисты обсуждают проектные чертежи.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 341,
+              "x": 17,
+              "y": 1000.4
+            },
+            "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 1370.4,
+          "width": 375,
+          "x": 0,
+          "y": 46
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-photo-grid",
+            "direction": "column",
+            "rect": {
+              "height": 1211,
+              "width": 343,
+              "x": 16,
+              "y": 181.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 393,
+              "width": 343,
+              "x": 16,
+              "y": 181.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 393,
+              "width": 343,
+              "x": 16,
+              "y": 590.4
+            }
+          },
+          {
+            "class": "wpae-services-photo-card",
+            "direction": "column",
+            "rect": {
+              "height": 393,
+              "width": 343,
+              "x": 16,
+              "y": 999.4
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "image"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          }
+        ]
+      },
+      {
+        "id": "e939025",
+        "images": [
+          {
+            "alt": "Современный архитектурный интерьер.",
+            "complete": true,
+            "naturalHeight": 900,
+            "naturalWidth": 1200,
+            "objectFit": "cover",
+            "rect": {
+              "height": 220,
+              "width": 343,
+              "x": 16,
+              "y": 1730.8
+            },
+            "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200"
+          }
+        ],
+        "links": [
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 941.4,
+          "width": 375,
+          "x": 0,
+          "y": 1416.4
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-split-lead",
+            "direction": "column",
+            "rect": {
+              "height": 399,
+              "width": 343,
+              "x": 16,
+              "y": 1551.8
+            }
+          },
+          {
+            "class": "wpae-services-split-image-panel",
+            "direction": "column",
+            "rect": {
+              "height": 220,
+              "width": 343,
+              "x": 16,
+              "y": 1730.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-rows",
+            "direction": "column",
+            "rect": {
+              "height": 359,
+              "width": 343,
+              "x": 16,
+              "y": 1974.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 159,
+              "width": 343,
+              "x": 16,
+              "y": 1974.8
+            }
+          },
+          {
+            "class": "wpae-services-editorial-row",
+            "direction": "column",
+            "rect": {
+              "height": 159,
+              "width": 343,
+              "x": 16,
+              "y": 2174.8
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 1,
+            "type": "image"
+          },
+          {
+            "count": 1,
+            "type": "divider--view-line"
+          }
+        ]
+      },
+      {
+        "id": "8b79d6c",
+        "images": [],
+        "links": [
+          {
+            "href": "#strategy",
+            "text": "Обсудить"
+          },
+          {
+            "href": "#projects",
+            "text": "Смотреть проекты"
+          },
+          {
+            "href": "#contact",
+            "text": "Обсудить проект"
+          }
+        ],
+        "overflow": false,
+        "rect": {
+          "height": 718.4,
+          "width": 375,
+          "x": 0,
+          "y": 2357.8
+        },
+        "semantic": [
+          {
+            "class": "wpae-services-text-icon-list",
+            "direction": "column",
+            "rect": {
+              "height": 559,
+              "width": 343,
+              "x": 16,
+              "y": 2493.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 159,
+              "width": 343,
+              "x": 16,
+              "y": 2493.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 159,
+              "width": 343,
+              "x": 16,
+              "y": 2693.2
+            }
+          },
+          {
+            "class": "wpae-services-text-icon-row",
+            "direction": "row",
+            "rect": {
+              "height": 159,
+              "width": 343,
+              "x": 16,
+              "y": 2893.2
+            }
+          }
+        ],
+        "text": "УСЛУГИ\nНаши услуги\nСтратегия проекта\nФормулируем задачу и согласуем план работ.\nОбсудить\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст.\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту.\nОбсудить проект",
+        "widgetCounts": [
+          {
+            "count": 5,
+            "type": "heading"
+          },
+          {
+            "count": 3,
+            "type": "icon"
+          },
+          {
+            "count": 3,
+            "type": "text-editor"
+          },
+          {
+            "count": 3,
+            "type": "button"
+          },
+          {
+            "count": 2,
+            "type": "divider--view-line"
+          }
+        ]
+      }
+    ],
+    "viewport": {
+      "clientHeight": 844,
+      "clientWidth": 375,
+      "innerHeight": 844,
+      "innerWidth": 390
+    }
+  }
+]

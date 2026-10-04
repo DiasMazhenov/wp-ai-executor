@@ -1,0 +1,36 @@
+{
+  "source": "Browser Use DOM measurement on public post=5214 after reload",
+  "captured_at": "2026-10-04",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "innerHeight": 844,
+    "innerWidth": 390
+  },
+  "scrollY": 2232,
+  "chatIntroBubble": {
+    "cls": "wpdsac-chat__intro-bubble",
+    "position": "absolute",
+    "rect": {
+      "height": 48.3984375,
+      "width": 320,
+      "x": 31,
+      "y": 699.6015625
+    },
+    "tag": "BUTTON",
+    "text": "Ассаламу алейкум!"
+  },
+  "service3Description": {
+    "height": 48,
+    "width": 295,
+    "x": 64,
+    "y": 709.1953125
+  },
+  "intersectsDescription": true,
+  "visualCaptures": [
+    "text-icon-list-public-mobile-viewport-390.png",
+    "services-all-roots-public-mobile-390.png",
+    "split-editorial-public-mobile-viewport-390.png"
+  ],
+  "note": "The live floating chatbot intro bubble was visible in the screenshot and overlaps the service 3 description. The captured overlay is site-owned; no widget or setting was changed."
+}

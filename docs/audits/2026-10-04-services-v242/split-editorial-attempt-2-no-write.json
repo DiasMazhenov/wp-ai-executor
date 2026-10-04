@@ -1,0 +1,23 @@
+{
+  "prompt": "Блок услуг.\nЗаголовок: «Наши услуги».\nНадзаголовок: «УСЛУГИ».\nУслуга 1 — название: «Стратегия проекта»\nУслуга 1 — описание: «Формулируем задачу и согласуем план работ.»\nУслуга 2 — название: «Архитектура и дизайн»\nУслуга 2 — описание: «Разрабатываем решение под заданный контекст.»\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем соответствие согласованному проекту.»\nУслуга 1 — кнопка: «Обсудить», ссылка #strategy\nУслуга 2 — кнопка: «Смотреть проекты», ссылка #projects\nУслуга 3 — кнопка: «Обсудить проект», ссылка #contact\nИспользуй recipe services.split_editorial.\nservices_lead_service_ref: service_2.\nLead — только услуга 2 «Архитектура и дизайн»; у неё единственное фото из уже доступного Services media catalog: https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200, точный alt «Современный архитектурный интерьер.». Не используй фото для других услуг, не добавляй placeholder и не выдумывай media.\nНа desktop lead split: текст и фото рядом, примерно 40/60; затем две editorial rows в исходном порядке (услуга 1, затем услуга 3). На tablet и mobile lead становится copy-first с фото после текста, строки идут одним столбцом; не обрезай текст.\nСохрани точный текст, порядок и CTA href. Добавь ровно один новый Services root штатным production pipeline: один Brief → один recipe decision → compiler → transaction. Не меняй существующий root 023bd70, пользовательские roots, тему, меню, настройки или другое содержимое. Не используй импорт JSON и ручные controls.",
+  "diagnostics": {
+    "operation_identity": "59d32e55-3f23-475b-adb8-658814a3ce73",
+    "post_id": 5214,
+    "brief_hash": "3f8c30fb18d0ea1706cca5e077264a7c47c1838aa43124969307eb262063e9d6",
+    "recipe_id": "services.split_editorial",
+    "recipe_source": "explicit_request",
+    "media_status": "unresolved",
+    "plan_errors": [
+      "media_unsplash_license_unconfirmed_prompt_media_0",
+      "services_recipe_split_editorial_media_forbidden_or_conflicted",
+      "services_recipe_media_unsplash_license_unconfirmed_prompt_media_0"
+    ],
+    "brief_errors": [
+      "services_conflicting_media_intent",
+      "services_ambiguity_conflicting_media_intent"
+    ],
+    "refusal_reason": "services_required_media_unresolved",
+    "provider_calls": 0,
+    "write_count": 0
+  }
+}
