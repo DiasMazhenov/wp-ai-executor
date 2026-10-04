@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-04",
+  "source_commit": "ae4f175",
+  "source_version": "v02.11.244",
+  "push": "origin/main accepted ae4f175",
+  "installation": {
+    "method": "WP Pusher, Update plugin action for WP AI Executor only",
+    "plugins_row_version": "v02.11.244",
+    "site_health_php": "8.3.22",
+    "editor_inline_version": "v02.11.244",
+    "editor_tab_id": "4",
+    "public_tab_id": "3",
+    "editor_reload_unsaved_check": {
+      "publish_disabled": true,
+      "update_css_class": "elementor-disabled",
+      "unsaved_marker_found": false
+    }
+  },
+  "before_install_baseline": {
+    "public_css_viewport": "1238x923",
+    "root_ids": ["023bd70", "e939025", "8b79d6c"],
+    "source": "public DOM before v244 installation"
+  },
+  "after_install_readback": {
+    "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "public_css_viewport": "1238x923",
+    "public_client_viewport": "1238x923",
+    "public_elementor_element_count": 0,
+    "public_rendered_root_ids": [],
+    "public_scroll_width": 1238,
+    "public_body_content": "WordPress admin bar and site chat greeting only; page content area is blank",
+    "editor_preview": "empty Drag widget canvas; no current generated roots visible",
+    "editor_localized_pending_operation": null,
+    "editor_target_operations_by_root": [],
+    "write_count": 0
+  },
+  "operation_readback": {
+    "route": "GET /wp-json/ai-executor/v1/design-operations/target",
+    "browser_plugin_result": "ERR_BLOCKED_BY_CLIENT before the request reached WordPress",
+    "historical_operations": [
+      "wpae-27aafa3c2441a362",
+      "wpae-c6b6305322c4b71e",
+      "wpae-62307e09f09d9216"
+    ],
+    "ledger_presence_revision_fingerprint_and_later_patches": "not verified; no claim of absence or fingerprint conflict"
+  },
+  "screenshots": [
+    {
+      "file": "public-after-reload-v244.png",
+      "source": "public tab 3",
+      "css_viewport": "1238x923",
+      "png_pixels": "1238x923",
+      "png_bytes": 76238,
+      "captured_jpeg_bytes": 22342,
+      "visual_result": "blank content area; site chat greeting visible"
+    },
+    {
+      "file": "editor-after-reload-v244.png",
+      "source": "Elementor editor tab 4, post=5214",
+      "css_viewport": "1238x923",
+      "png_pixels": "1238x923",
+      "png_bytes": 211110,
+      "captured_jpeg_bytes": 63624,
+      "visual_result": "empty canvas with Elementor navigation tutorial; WPAE chat version v02.11.244"
+    }
+  ],
+  "mobile_status": "PUBLIC MOBILE BLOCKED: Browser Plugin capabilities list has pageAssets and webmcp only; viewport capability is unavailable",
+  "generation_and_repair": "not run; no operation was mapped to a current root and the current public/editor render contains no root to select",
+  "page_mutations": 0
+}

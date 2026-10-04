@@ -1638,3 +1638,35 @@ Local source v02.11.244 now resolves root-specific targets from the existing led
 The shared native compiler now emits a 22px Elementor stacked icon (44px circle, 44px fixed width), gives transparent editorial rows 16px vertical padding, reduces recipe copy rhythm to 8px, gives the split lead a white 24px padded/16px rounded surface, and keeps its secondary rows transparent and vertically padded. Service titles have a specific 18px/600 hierarchy (17px mobile). Body typography keeps the selected design-system `type.body` token, with a 16px/400/1.6 fallback. Valid explicit service surfaces continue to override recipe defaults. The v243 outlined pill remains the default and is still asserted for all three recipes. Existing exact text/CTA, lead-service order, media ownership and no-photo topology contracts remain intact.
 
 v02.11.244 source checks: Design Pipeline Contract `319`; Flex Generation Runtime `671`; Elementor patch guard PASS; Node contracts `6/6`; imported-template catalog `158 manifests / 156 trees / 156 previews`; changed PHP lint PASS; package probe `250 files / 0 SHA mismatches / 4 scenarios PASS`; `git diff --check` PASS. These validate source/package output only. At this report cut, v244 commit/push, WP Pusher install, PHP version reread, inline v244 confirmation, selected-root map, guarded page replacement, save/reload readback and post-fix desktop/mobile screenshots remain separate and **NOT YET VERIFIED**. The original three roots have not been changed and this stage has submitted no generation/write (`write_count=0`).
+
+## Stage 5 live installation and blocked replacement — 2026-10-04
+
+### Source and installation
+
+- Runtime release: commit `ae4f175` (`fix: resolve Services targets and recipe layout v02.11.244`), pushed to `origin/main` (`3a69479..ae4f175`).
+- WP Pusher `Update plugin` was used on the WP AI Executor row only. The click's navigation response timed out at `Page.getFrameTree`; a subsequent WordPress Plugins read confirmed active `v02.11.244`. Site Health > Server confirmed PHP `8.3.22`.
+- Before editor reload, the existing Elementor tab had Publish disabled, Update with `elementor-disabled`, and no unsaved marker. Reloaded that same tab `4`; the visible LLM chat version is `v02.11.244`. The existing public tab `3` was reused for WP Pusher and restored to the public page; no extra tabs were created. No other plugin or WordPress setting was changed.
+
+### Target/readback status
+
+The v244 localized editor configuration has `pendingOperation=null` and an empty `targetOperationsByRoot`. The stale v243 bootstrap `wpae-patch-6938b90091861944`, revision `4`, root `[3271f43]`, `root_missing` is no longer offered as a pending candidate. The authenticated read-only first-party target diagnostic route was refused by the documented Browser Plugin with `net::ERR_BLOCKED_BY_CLIENT` before WordPress received it. No alternate transport was used. Therefore the three historical operations' ledger presence, current revision, saved hash/fingerprint and later patches remain **UNVERIFIED**; an empty valid-target map is not proof of ledger absence or fingerprint conflict.
+
+### Current page readback and screenshots
+
+The public baseline immediately before installation showed roots `[023bd70, e939025, 8b79d6c]`. After the plugin update and reload at the same public URL, the page had zero `.elementor-element` nodes and no visible generated root. The same Elementor tab after reload showed an empty “Перетащите виджет” canvas. No Elementor save, chat generation, repair or write was submitted (`write_count=0`). I cannot attribute the empty render to the plugin update; saved `_elementor_data` could not be verified through the blocked diagnostic route, so the current rendered root set is `[]` and saved-data root set is **UNVERIFIED**.
+
+Fresh Browser Plugin JPEG captures were saved, converted to PNG, signature/dimensions checked, and visually inspected:
+
+- Public tab `3`: [public-after-reload-v244.png](docs/audits/2026-10-04-services-v243-target-compiler/public-after-reload-v244.png), CSS viewport/raster `1238×923`, 76,238 PNG bytes. Blank page area, with the site chatbot greeting still visible.
+- Elementor `post=5214`, tab `4`: [editor-after-reload-v244.png](docs/audits/2026-10-04-services-v243-target-compiler/editor-after-reload-v244.png), CSS viewport/raster `1238×923`, 211,110 PNG bytes. Empty editor canvas and Elementor navigator tutorial; editor chat reports v244.
+- Mobile capture is **PUBLIC MOBILE BLOCKED**: `capabilities.list()` exposes `pageAssets` and `webmcp`; documented viewport capability is unavailable. These screenshots show failed current state and do not count as recipe acceptance.
+
+### Composition status
+
+| Recipe | Existing target | First v243 visual result | v244 source correction | Live status |
+|---|---|---|---|---|
+| `services.photo_cards` | `023bd70` | In the saved baseline: missing pill; three service-matched images, exact CTAs; main card content present. | Root-scoped operation resolver plus shared pill/default compiler assertions. | **BLOCKED**: no v244 target map entry; current public/editor render has no root; no request/write. |
+| `services.split_editorial` | `e939025` | Lead image/text split; secondary rows were white with no padding, and item titles rendered `16px/400`; no pill. | Padded rounded lead panel, transparent padded secondary rows, 8px copy rhythm and title hierarchy. | **BLOCKED**: no v244 target map entry; current public/editor render has no root; no request/write. |
+| `services.text_icon_list` | `8b79d6c` | 28px glyph produced a 56px circle in a 36px wrapper and overlapped copy by 4px; white rows had no padding; no pill. | Native 22px icon/44px circle, transparent padded rows, title/body hierarchy and preserved pill. | **BLOCKED**: no v244 target map entry; current public/editor render has no root; no request/write. |
+
+The previously preserved v243 baseline captures show the source defects, not v244 results. The v244 post-install PNGs show an empty page/editor. No v244 recipe generation, operation/root IDs, provider calls, save/reload readback, exact-content check, media readback, public desktop/mobile acceptance, responsive geometry, or native topology acceptance occurred. Remaining exact operation classification cannot be supplied until the permitted Browser Plugin can read the first-party route or a supported admin UI exposes the same read-only diagnostic.
