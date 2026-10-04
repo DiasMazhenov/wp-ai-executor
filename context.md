@@ -677,9 +677,11 @@ const browser = await runtime.browsers.get(browserIdFromList);
 const tabs = await browser.tabs.list();
 const editorTab = await browser.tabs.get("2");
 const publicTab = await browser.tabs.get("3");
-const viewport = await runtime.capabilities.get("viewport");
+const viewport = await browser.capabilities.get("viewport");
 ```
 
-Browser id динамический: при повторном setup он менялся (`4`, затем `6`); tab ids в проверке оставались `2` (Elementor `post=5214`) и `3` (публичная страница). Вкладки не создавались. После `tabs.get()` применялись документированные Tab accessibility/DOM read/evaluate, UI interaction и screenshot возможности; evaluate использовался для чтения состояния, генерация отправлялась через обычный plugin chat UI. Альтернативный транспорт, сырой RPC, REST или devtools не использовались.
+Browser id динамический: при повторном setup он менялся (`4`, `6`, затем `8`); tab ids в проверке оставались `2` (Elementor `post=5214`) и `3` (публичная страница). Вкладки не создавались. После `tabs.get()` применялись документированные Tab accessibility/DOM read/evaluate, UI interaction и screenshot возможности; evaluate использовался для чтения состояния, генерация отправлялась через обычный plugin chat UI. Альтернативный транспорт, сырой RPC, REST или devtools не использовались.
 
 Уточнение к прежней реплике: на фактическом `tabs.list()` во время этой приёмки второй вкладкой была публичная страница, а не WP Pusher. Фраза «Elementor post=5214 и WP Pusher» была неточной для этого снимка списка. Более раннее заключение, что Browser Plugin/API недоступен, тоже было ошибочным: я проверял наличие самостоятельных browser tools и не выполнил setup через документированный `mcp__node_repl__js` bridge.
+
+Мобильное продолжение проверено через ту же public tab: browser viewport временно выставлен документированной capability в `390×844`, измерен DOM и затем `reset()` вернул viewport к `1238×923` (client width `1223`). При `scrollY=1197` приветствие `.wpdsac-chat__intro-bubble` занимает `x=31,y=699.60,w=320,h=48.40` и пересекается с `wpae-services-split-lead`; кнопка переключения AI-Dana занимает `x=291,y=760,w=60,h=60`. Единственные видимые chat controls — greeting и toggle; отдельной видимой dismiss-кнопки нет (close controls модального окна формы имеют нулевой размер). Никакую кнопку не нажимал. Измерение только DOM, новый screenshot не снимался; детали добавлены в `mobile-ai-dana-overlap-evidence.json`. Без изменения настроек/плагина этот overlay остаётся конкретным ограничением mobile visual acceptance.

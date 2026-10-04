@@ -32,5 +32,44 @@
     "services-all-roots-public-mobile-390.png",
     "split-editorial-public-mobile-viewport-390.png"
   ],
-  "note": "The live floating chatbot intro bubble was visible in the screenshot and overlaps the service 3 description. The captured overlay is site-owned; no widget or setting was changed."
+  "note": "The live floating chatbot intro bubble was visible in the screenshot and overlaps the service 3 description. The captured overlay is site-owned; no widget or setting was changed.",
+  "followup_read_only_check": {
+    "source": "Browser Plugin read-only public DOM check; no screenshot captured in this follow-up",
+    "viewport": {
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "clientWidth": 375,
+      "clientHeight": 844
+    },
+    "scrollY": 1197,
+    "introBubbleRect": {
+      "x": 31,
+      "y": 699.6015625,
+      "width": 320,
+      "height": 48.3984375
+    },
+    "toggleRect": {
+      "x": 291,
+      "y": 760,
+      "width": 60,
+      "height": 60
+    },
+    "visibleChatControls": [
+      "wpdsac-chat__intro-bubble",
+      "wpdsac-chat__toggle"
+    ],
+    "dismissControlVisible": false,
+    "dismissControlsHiddenAtZeroSize": [
+      "wpdsac-chat__modal-scrim",
+      "wpdsac-chat__modal-close"
+    ],
+    "intersectedGeneratedRoot": "wpae-services-split-lead",
+    "viewportReset": {
+      "innerWidth": 1238,
+      "innerHeight": 923,
+      "clientWidth": 1223,
+      "clientHeight": 923
+    },
+    "note": "The standard mobile viewport override was reset after measurement. The visible intro bubble has no dedicated visible dismiss control; its visible controls are the greeting button and AI-Dana toggle. No button was clicked and no plugin, page, or settings were changed."
+  }
 }
