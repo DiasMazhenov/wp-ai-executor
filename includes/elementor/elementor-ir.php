@@ -730,6 +730,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$mobile_padding = wpae_elementor_ir_dimension_control( $mobile_spacing, 'rem', 2, false );
 			$desktop_padding['left'] = $desktop_padding['right'] = '2';
 			$mobile_padding['left'] = $mobile_padding['right'] = '1';
+			// The side values now differ from the uniform slider, so keep the
+			// native dimensions control unambiguous and let its sides drive CSS.
+			unset( $desktop_padding['size'], $mobile_padding['size'] );
 			$settings['padding'] = $desktop_padding;
 			$settings['padding_tablet'] = $desktop_padding;
 			$settings['padding_mobile'] = $mobile_padding;

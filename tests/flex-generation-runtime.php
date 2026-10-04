@@ -2583,9 +2583,18 @@ $route_find_class = static function ( array $nodes, string $class ) use ( &$rout
 	}
 	return $found;
 };
+$services_root_padding_errors = static function ( array $root ): array {
+	$errors = [];
+	foreach ( [ 'padding', 'padding_tablet', 'padding_mobile' ] as $key ) {
+		$error = wpae_elementor_native_control_error( $key, $root['settings'][ $key ] ?? null );
+		if ( $error !== '' ) { $errors[ $key ] = $error; }
+	}
+	return $errors;
+};
 $services_photo_message = $services_live_three_cta_message . "\nИспользуй services.photo_cards. Используй три изображения только из встроенного разрешённого Services media catalog.";
 $services_photo_route = $run_services_route( $services_photo_message, [], $services_library_fixture, 'services-photo-chat-identity' );
 $services_photo_trace = (array) ( $services_photo_route['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+$services_photo_native_errors = $services_root_padding_errors( (array) $services_photo_route['written'] );
 $services_photo_cards = $route_find_class( [ $services_photo_route['written'] ], 'wpae-services-photo-card' );
 $services_photo_images = [];
 $collect_services_photo_images = static function ( array $nodes ) use ( &$collect_services_photo_images, &$services_photo_images ): void {
@@ -2597,6 +2606,7 @@ $collect_services_photo_images = static function ( array $nodes ) use ( &$collec
 };
 $collect_services_photo_images( [ $services_photo_route['written'] ] );
 check( ! empty( $services_photo_route['response']['ok'] ) && $services_photo_route['provider_call_count'] === 0 && $services_photo_route['writes'] === 1 && ( $services_photo_route['response']['diagnostics']['action_path'] ?? '' ) === 'pipeline' && ( $services_photo_trace['recipe_id'] ?? '' ) === 'services.photo_cards' && ( $services_photo_trace['recipe_source'] ?? '' ) === 'explicit_request', 'Explicit photo_cards travels through the actual active chat entrypoint and one transaction: ' . wp_json_encode( [ 'ok' => $services_photo_route['response']['ok'] ?? false, 'provider_call_count' => $services_photo_route['provider_call_count'], 'writes' => $services_photo_route['writes'], 'action_path' => $services_photo_route['response']['diagnostics']['action_path'] ?? '', 'trace' => $services_photo_trace, 'error' => $services_photo_route['error'] ] , JSON_UNESCAPED_UNICODE ) );
+check( $services_photo_native_errors === [], 'Compiled photo_cards native Elementor dimensions pass the production data validator: ' . wp_json_encode( $services_photo_native_errors, JSON_UNESCAPED_UNICODE ) );
 $services_photo_catalog = wpae_design_plan_default_service_media();
 $services_photo_paths = array_map( static fn( array $image ): string => (string) parse_url( (string) ( $image['url'] ?? '' ), PHP_URL_PATH ), $services_photo_images );
 $services_photo_catalog_paths = array_map( static fn( array $asset ): string => (string) parse_url( (string) ( $asset['source_url'] ?? '' ), PHP_URL_PATH ), $services_photo_catalog );
@@ -2608,7 +2618,9 @@ $services_split_message = $services_live_three_cta_message . "\nИспользу
 $services_split_asset = [ 'asset_id' => 'services_split_lead', 'source_url' => 'https://assets.example.test/services/lead.jpg', 'alt' => 'Чертёж проекта для ведущей услуги.' ];
 $services_split_route = $run_services_route( $services_split_message, [], $services_library_fixture, 'services-split-chat-identity' );
 $services_split_trace = (array) ( $services_split_route['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+$services_split_native_errors = $services_root_padding_errors( (array) $services_split_route['written'] );
 check( ! empty( $services_split_route['response']['ok'] ) && $services_split_route['provider_call_count'] === 0 && $services_split_route['writes'] === 1 && ( $services_split_trace['recipe_id'] ?? '' ) === 'services.split_editorial' && ( $services_split_trace['recipe_source'] ?? '' ) === 'explicit_request', 'Explicit split_editorial reaches the production chat/compiler path: ' . wp_json_encode( [ 'ok' => $services_split_route['response']['ok'] ?? false, 'error' => $services_split_route['error'], 'trace' => $services_split_trace, 'calls' => $services_split_route['provider_call_count'], 'writes' => $services_split_route['writes'] ] , JSON_UNESCAPED_UNICODE ) );
+check( $services_split_native_errors === [], 'Compiled split_editorial native Elementor dimensions pass the production data validator: ' . wp_json_encode( $services_split_native_errors, JSON_UNESCAPED_UNICODE ) );
 $services_split_json = wp_json_encode( $services_split_route['written'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 $services_split_urls = [];
 preg_match_all( '/https?:[^"\\\\]+/', (string) $services_split_json, $services_split_url_matches );
@@ -2626,7 +2638,9 @@ check( ( $services_recipe_conflict['error']['code'] ?? '' ) === 'wpae_services_b
 $services_text_icon_message = $services_live_three_cta_message . "\nСписок услуг с иконками. Не добавляй фото.";
 $services_text_icon_route = $run_services_route( $services_text_icon_message, [], $services_library_fixture, 'services-text-icon-chat-identity' );
 $services_text_icon_trace = (array) ( $services_text_icon_route['response']['diagnostics']['design_pipeline']['services'] ?? [] );
+$services_text_icon_native_errors = $services_root_padding_errors( (array) $services_text_icon_route['written'] );
 check( ! empty( $services_text_icon_route['response']['ok'] ) && $services_text_icon_route['provider_call_count'] === 0 && $services_text_icon_route['writes'] === 1 && ( $services_text_icon_trace['recipe_id'] ?? '' ) === 'services.text_icon_list' && ( $services_text_icon_trace['recipe_source'] ?? '' ) === 'explicit_request', 'Explicit text/icon request is selected once from canonical Brief constraints' );
+check( $services_text_icon_native_errors === [], 'Compiled text_icon_list native Elementor dimensions pass the production data validator: ' . wp_json_encode( $services_text_icon_native_errors, JSON_UNESCAPED_UNICODE ) );
 check( count( $route_find_class( [ $services_text_icon_route['written'] ], 'wpae-services-text-icon-row' ) ) === 3 && ! $route_find_class( [ $services_text_icon_route['written'] ], 'wpae-services-photo-grid' ) && ! $route_find_class( [ $services_text_icon_route['written'] ], 'wpae-services-split-lead' ) && ! str_contains( (string) wp_json_encode( $services_text_icon_route['written'] ), '"widgetType":"image"' ) && ( $services_text_icon_trace['media_status'] ?? '' ) === 'none', 'Explicit text/icon path survives write normalization with three rows and no catalog media or image widgets' );
 $services_photo_required_message = $services_live_three_cta_message . "\nИспользуй services.photo_cards. Выбери проверенные изображения для каждой услуги из разрешённого Services catalog. Fallback запрещён.";
 $services_photo_required = $run_services_route( $services_photo_required_message, [], $services_library_fixture, 'services-media-unresolved-identity' );
