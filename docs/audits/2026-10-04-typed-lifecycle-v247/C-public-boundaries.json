@@ -1,0 +1,1492 @@
+[
+  {
+    "post": 5214,
+    "source": "public",
+    "root": "11e61ec",
+    "viewport": {
+      "width": 1025,
+      "height": 900,
+      "dpr": 1
+    },
+    "overflow": false,
+    "scrollWidth": 1025,
+    "rootMetric": {
+      "id": "11e61ec",
+      "tag": "DIV",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 404.296875,
+        "width": 1025,
+        "height": 372.296875
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "color": "rgb(51, 51, 51)",
+      "backgrounds": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "padding": "0px 32px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "objectFit": "fill",
+      "objectPosition": "50% 50%",
+      "image": null
+    },
+    "elements": [
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 404.296875,
+          "width": 961,
+          "height": 372.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "80px 0px",
+        "gap": "20px",
+        "display": "flex",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "cadbf63",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 484.296875,
+          "width": 376.3984375,
+          "height": 212.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "20px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "IMG",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 484.296875,
+          "width": 376.3984375,
+          "height": 211.71875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": {
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "currentSrc": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalWidth": 1200,
+          "naturalHeight": 675
+        }
+      },
+      {
+        "id": "51d16b3",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 428.3984375,
+          "y": 484.296875,
+          "width": 564.6015625,
+          "height": 212.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "20px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "fffeefa",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 428.3984375,
+          "y": 484.296875,
+          "width": 564.6015625,
+          "height": 212.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 428.3984375,
+          "y": 484.296875,
+          "width": 564.6015625,
+          "height": 212.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "20px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H6",
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 428.3984375,
+          "y": 484.296875,
+          "width": 70.34375,
+          "height": 28.046875
+        },
+        "font": "17px",
+        "line": "28.05px",
+        "weight": "400",
+        "color": "rgb(17, 24, 39)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H1",
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 428.3984375,
+          "y": 532.34375,
+          "width": 512.2109375,
+          "height": 57.203125
+        },
+        "font": "52px",
+        "line": "57.2px",
+        "weight": "700",
+        "color": "rgb(23, 32, 42)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "A",
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 428.3984375,
+          "y": 657.59375,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "color": "rgb(255, 255, 255)",
+        "backgrounds": [
+          "rgb(68, 96, 236)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "12px 24px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      }
+    ],
+    "rootSet": [
+      "37b84f9",
+      "11e61ec"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "root": "11e61ec",
+    "viewport": {
+      "width": 1024,
+      "height": 900,
+      "dpr": 1
+    },
+    "overflow": false,
+    "scrollWidth": 1024,
+    "rootMetric": {
+      "id": "11e61ec",
+      "tag": "DIV",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 327.796875,
+        "width": 1024,
+        "height": 377.5
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "color": "rgb(51, 51, 51)",
+      "backgrounds": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "padding": "0px 32px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "objectFit": "fill",
+      "objectPosition": "50% 50%",
+      "image": null
+    },
+    "elements": [
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 327.796875,
+          "width": 960,
+          "height": 377.5
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "56px 0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "cadbf63",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 383.796875,
+          "width": 472,
+          "height": 265.5
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "IMG",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 383.796875,
+          "width": 472,
+          "height": 265.5
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": {
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "currentSrc": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalWidth": 1200,
+          "naturalHeight": 675
+        }
+      },
+      {
+        "id": "51d16b3",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 520,
+          "y": 383.796875,
+          "width": 472,
+          "height": 265.5
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "fffeefa",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 520,
+          "y": 383.796875,
+          "width": 472,
+          "height": 183.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 520,
+          "y": 383.796875,
+          "width": 472,
+          "height": 183.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H6",
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 520,
+          "y": 383.796875,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "color": "rgb(17, 24, 39)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H1",
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 520,
+          "y": 426.1953125,
+          "width": 394.0078125,
+          "height": 44
+        },
+        "font": "40px",
+        "line": "44px",
+        "weight": "700",
+        "color": "rgb(23, 32, 42)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "A",
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 520,
+          "y": 528.59375,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "color": "rgb(255, 255, 255)",
+        "backgrounds": [
+          "rgb(68, 96, 236)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "12px 24px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      }
+    ],
+    "rootSet": [
+      "37b84f9",
+      "11e61ec"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "root": "11e61ec",
+    "viewport": {
+      "width": 768,
+      "height": 900,
+      "dpr": 1
+    },
+    "overflow": false,
+    "scrollWidth": 768,
+    "rootMetric": {
+      "id": "11e61ec",
+      "tag": "DIV",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 341.796875,
+        "width": 768,
+        "height": 366.1953125
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "color": "rgb(51, 51, 51)",
+      "backgrounds": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "padding": "0px 32px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "objectFit": "fill",
+      "objectPosition": "50% 50%",
+      "image": null
+    },
+    "elements": [
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 341.796875,
+          "width": 704,
+          "height": 366.1953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "56px 0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "cadbf63",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 397.796875,
+          "width": 344,
+          "height": 254.1953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "IMG",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 397.796875,
+          "width": 344,
+          "height": 193.5
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": {
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "currentSrc": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalWidth": 1200,
+          "naturalHeight": 675
+        }
+      },
+      {
+        "id": "51d16b3",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 392,
+          "y": 397.796875,
+          "width": 344,
+          "height": 254.1953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "fffeefa",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 392,
+          "y": 397.796875,
+          "width": 344,
+          "height": 254.1953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 392,
+          "y": 397.796875,
+          "width": 344,
+          "height": 254.1953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H6",
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 392,
+          "y": 397.796875,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "color": "rgb(17, 24, 39)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H1",
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 392,
+          "y": 440.1953125,
+          "width": 344,
+          "height": 88
+        },
+        "font": "40px",
+        "line": "44px",
+        "weight": "700",
+        "color": "rgb(23, 32, 42)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "A",
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 392,
+          "y": 612.9921875,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "color": "rgb(255, 255, 255)",
+        "backgrounds": [
+          "rgb(68, 96, 236)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "12px 24px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      }
+    ],
+    "rootSet": [
+      "37b84f9",
+      "11e61ec"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "root": "11e61ec",
+    "viewport": {
+      "width": 767,
+      "height": 900,
+      "dpr": 1
+    },
+    "overflow": false,
+    "scrollWidth": 752,
+    "rootMetric": {
+      "id": "11e61ec",
+      "tag": "DIV",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 295,
+        "width": 752,
+        "height": 668
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "color": "rgb(51, 51, 51)",
+      "backgrounds": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "padding": "0px 16px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "objectFit": "fill",
+      "objectPosition": "50% 50%",
+      "image": null
+    },
+    "elements": [
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 295,
+          "width": 720,
+          "height": 668
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "40px 0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column-reverse",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "cadbf63",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 518,
+          "width": 720,
+          "height": 405
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "IMG",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 518,
+          "width": 720,
+          "height": 405
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": {
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "currentSrc": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalWidth": 1200,
+          "naturalHeight": 675
+        }
+      },
+      {
+        "id": "51d16b3",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 720,
+          "height": 169
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "fffeefa",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 720,
+          "height": 169
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 720,
+          "height": 169
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H6",
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "color": "rgb(17, 24, 39)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H1",
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 375.3984375,
+          "width": 315.203125,
+          "height": 35.203125
+        },
+        "font": "32px",
+        "line": "35.2px",
+        "weight": "700",
+        "color": "rgb(23, 32, 42)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "A",
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 16,
+          "y": 465,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "color": "rgb(255, 255, 255)",
+        "backgrounds": [
+          "rgb(68, 96, 236)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "12px 24px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      }
+    ],
+    "rootSet": [
+      "37b84f9",
+      "11e61ec"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "root": "11e61ec",
+    "viewport": {
+      "width": 320,
+      "height": 900,
+      "dpr": 1
+    },
+    "overflow": false,
+    "scrollWidth": 320,
+    "rootMetric": {
+      "id": "11e61ec",
+      "tag": "DIV",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 356.6015625,
+        "width": 320,
+        "height": 486.6015625
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "color": "rgb(51, 51, 51)",
+      "backgrounds": [
+        "rgb(255, 255, 255)",
+        "rgb(255, 255, 255)"
+      ],
+      "padding": "0px 16px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "objectFit": "fill",
+      "objectPosition": "50% 50%",
+      "image": null
+    },
+    "elements": [
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 356.6015625,
+          "width": 288,
+          "height": 486.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "40px 0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column-reverse",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "cadbf63",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 641.203125,
+          "width": 288,
+          "height": 162
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "IMG",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 641.203125,
+          "width": 288,
+          "height": 162
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": {
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "currentSrc": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalWidth": 1200,
+          "naturalHeight": 675
+        }
+      },
+      {
+        "id": "51d16b3",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 288,
+          "height": 230.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": "fffeefa",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 288,
+          "height": 230.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 288,
+          "height": 230.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H6",
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "color": "rgb(17, 24, 39)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "H1",
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 437,
+          "width": 288,
+          "height": 70.40625
+        },
+        "font": "32px",
+        "line": "35.2px",
+        "weight": "700",
+        "color": "rgb(23, 32, 42)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      {
+        "id": null,
+        "tag": "A",
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 16,
+          "y": 588.203125,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "color": "rgb(255, 255, 255)",
+        "backgrounds": [
+          "rgb(68, 96, 236)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "12px 24px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      }
+    ],
+    "rootSet": [
+      "37b84f9",
+      "11e61ec"
+    ]
+  }
+]

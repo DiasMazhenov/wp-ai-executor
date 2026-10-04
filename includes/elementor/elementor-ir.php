@@ -237,7 +237,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$widgets['brand'] = wpae_elementor_ir_node( $child_id . '-brand', 'brand', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
 						$title_role = $role === 'cta_copy_group' ? 'cta_section_title' : ( str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' ) ? 'services_section_title' : 'title' );
-						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', $title_role, 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', $title_role, 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100, 'heading_level' => ( $section['role'] ?? '' ) === 'hero' ? 'h1' : 'h2' ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'eyebrow' ) {
 						if ( ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) {
 							$is_services_recipe = str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' );
@@ -1186,6 +1186,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['align'] = $heading_alignment;
 		}
 		$settings['header_size'] = [ 'process_number' => 'h6', 'process_badge_label' => 'h6', 'services_badge_label' => 'h6', 'brand' => 'h6', 'eyebrow' => 'h6', 'pricing_label' => 'h4', 'pricing_price' => 'h2', 'cta_section_title' => 'h2', 'service_title' => 'h3', 'team_name' => 'h3', 'testimonial_author' => 'h3' ][ $role ] ?? ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
+		$semantic_heading = (string) ( $node['layout_constraints']['heading_level'] ?? '' );
+		if ( in_array( $semantic_heading, [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], true ) ) {
+			$settings['header_size'] = $semantic_heading;
+		}
 		$settings['title_color'] = in_array( $role, [ 'process_number', 'process_badge_label' ], true ) ? (string) ( $token_values['color.surface'] ?? '#ffffff' ) : (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
 		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'feature_title', 'pricing_label', 'process_number', 'process_badge_label', 'cta_section_title', 'service_title', 'team_name', 'testimonial_author' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
 		if ( is_array( $type_token ) ) {

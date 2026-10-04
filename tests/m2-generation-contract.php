@@ -259,3 +259,9 @@ foreach ( [ 'hero', 'about' ] as $family ) {
   }
  }
 }
+
+foreach ( [ 'hero' => 'h1', 'about' => 'h2' ] as $family => $level ) {
+ $case = $run_services_route( str_replace( 'Hero', ucfirst( $family ), $m2_ru_photo ), [], $incompatible_pricing_fixture, 'm2-semantic-heading-' . $family, false, 'active', 'active', [ 'composition_record' => $family . '.split_50_50.right', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+ $heading = $case['written']['elements'][0]['elements'][0]['elements'][1] ?? [];
+ check( ! empty( $case['response']['ok'] ) && $heading['widgetType'] === 'heading' && $heading['settings']['header_size'] === $level && $heading['settings']['title'] === 'Работа со смыслом', 'Accepted family carries semantic heading into native compiler ' . $family );
+}
