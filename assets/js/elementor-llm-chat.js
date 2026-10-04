@@ -1386,6 +1386,7 @@
         });
     }
     function getEditorModelChildren(model) {
+        if (model && model.model) model = model.model;
         var children = model && typeof model.get === 'function' ? model.get('elements') : null;
         if (children && Array.isArray(children.models)) return children.models;
         return Array.isArray(children) ? children : [];
@@ -1841,11 +1842,19 @@
             accepted_identity: String(operation.operation_identity || ''),
             accepted_revision: Number(operation.revision || 0) };
     }
+    function serializeTypedModel(model) {
+        if (model && model.model) model = model.model;
+        var raw = model && typeof model.toJSON === 'function' ? model.toJSON() : (model && model.attributes || model || {});
+        var settings = model && typeof model.get === 'function' ? model.get('settings') : null;
+        return { id: raw.id, elType: raw.elType, widgetType: raw.widgetType || '', isInner: Boolean(raw.isInner),
+            settings: settings && typeof settings.toJSON === 'function' ? settings.toJSON({ remove: ['default'] }) : cloneEditorValue(raw.settings || {}),
+            elements: getEditorModelChildren(model).map(serializeTypedModel) };
+    }
     function verifyTypedEditorModel(body) {
         var operation = body && body.diagnostics && body.diagnostics.operation_ledger;
         if (!operation || !operation.accepted_contract_id) return Promise.resolve(true);
         if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.reject(new Error('Typed editor model unavailable; Save remains guarded.'));
-        var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(function (model) { return cloneEditorValue(serializeSelectedModel(model)); });
+        var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(function (model) { return serializeTypedModel(model); });
         var context = typedOperationContext(operation, 'check_model'); context.editor_owned_model = roots;
         return typedLifecyclePost(context);
     }
@@ -1857,7 +1866,7 @@
         button.addEventListener('click', function () {
             if (requestInFlight) return;
             button.disabled = true;
-            var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(serializeSelectedModel);
+            var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(serializeTypedModel);
             var context = typedOperationContext(operation, 'resync'); context.editor_owned_model = roots;
             typedLifecyclePost(context).then(function (result) {
                 return syncEditorElements(result.editor_sync, 1, originalSnapshot);

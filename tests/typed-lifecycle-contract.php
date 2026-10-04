@@ -93,3 +93,12 @@ $GLOBALS['options'] = $typed_saved_globals['options']; $GLOBALS['page_data'] = $
 
 $oversized=$before['brief'];$oversized['source_text']=str_repeat('x',262144);
 check(!wpae_accepted_contract_prepare($oversized,$before['plan'],$before['after_owned'])['ok'],'Oversize refused prewrite including sealed payload reserve');
+
+$expected=[['id'=>'test','elType'=>'container','settings'=>['content_width'=>'boxed','padding'=>['top'=>'5','unit'=>'rem']],'elements'=>[]]];
+$materialized=$expected;$materialized[0]['settings']['unused_color']='#ff0000';unset($materialized[0]['settings']['content_width']);
+$defaults=static fn($n)=>['content_width'=>'boxed','unused_color'=>'#ff0000'];
+$projected=wpae_accepted_project_owned_model($expected,$materialized,$defaults);
+check($projected!==null && wpae_accepted_owned_fingerprint($expected)===wpae_accepted_owned_fingerprint($projected),'Known server defaults preserve authored decisions across serialized editor/save model');
+$materialized[0]['settings']['unused_color']='#00ff00';check(wpae_accepted_project_owned_model($expected,$materialized,$defaults)===null,'Nondefault extra control refuses; author keys not broadly filtered');
+$materialized=$expected;$materialized[0]['settings']['padding']['top']='99';$projected=wpae_accepted_project_owned_model($expected,$materialized,$defaults);
+check(wpae_accepted_owned_fingerprint($expected)!==wpae_accepted_owned_fingerprint($projected),'Changed authored spacing still fails after default canonicalization');

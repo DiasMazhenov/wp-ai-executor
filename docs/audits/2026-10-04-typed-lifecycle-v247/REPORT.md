@@ -23,3 +23,15 @@ Runtime 1172 checks, DesignPlan319, production patch guard, changed PHP lint and
 NOT RUN on new runtime yet. Historical root37b84f9 retained; no backfilled contract/snapshot. B–J depend on A lifecycle acceptance.
 
 Local source verification: runtime1172, DesignPlan319, Node10/10 serial, patch guard, PHP/JS lint, package252/252 plus four probe scenarios, diff check PASS. Affected Graphify layer refreshed once on isolated seven-file copy (336 nodes/1079 edges); foreign graph untouched. Source commit/install/live tracked separately.
+
+## Live v247 first result and v248 serialization correction
+
+v247 source commit50ca593ee88216734f322cfe85a502238235e326 independently matched origin/main. WP Pusher update initially timed out Runtime.evaluate/Emulation.setFocusEmulationEnabled; re-get of existing tab3 restored control, notice confirmed success. Plugins/editor confirmed v247/typed-lifecycle-v1; existing tabs3/4, no new tabs. Baseline root37b84f9/hash4f391944 unchanged; Publish disabled before reload. Browser access recovered through the same Browser Plugin browser16/tabs.get, without alternate transport.
+
+A v247 first operation wpae-bcc79c703996210b revision4, root7c1e27f, explicit hero.text_only/v1/editorial_light, Brief hash1bc00c81f7fb753224a0ae227333c3557662bd251bc9a393563f32fa6ae87fb9, provider0/write1. Accepted contract contract-a32c657c1fa0c18c99389506. UI blocked dependent Vision at typed_editor_model_mismatch. PNG1238x923 captured before Save/repair, verified and opened; not after-reload visual acceptance. Original evidence in A-v247-first-ui-evidence.json, selected native model and authored-decision-diff.json ([]). No second append.
+
+Cause: root collector did not unwrap actual Elementor Container.model; live full serialization also materialized registered defaults. v248 unwraps Container.model and uses settings.toJSON({remove:['default']}); server projection tolerates only values verified against actual native element get_settings defaults (never browser-provided defaults). All authored controls, extra nondefault controls, ordered topology and IDs remain checked; immutable v247 contract/hash unchanged. This correction supports existing accepted root, no retroactive contract. Negative review still not PASS. Official source: [BaseSettingsModel serialization](https://github.com/elementor/elementor/blob/main/assets/dev/js/editor/elements/models/base-settings.js), [native document element commands](https://github.com/elementor/elementor/blob/main/docs/assets/dev/js/editor/document/elements/readme.md).
+
+v248 regressions: registered-default materialization/removal, changed authored spacing and extra nondefault control refusal, actual Container unwrap/settings options. Runtime1175; Node final result below; new installation and same-root lifecycle retry pending.
+
+v248 checks complete: runtime1175, DesignPlan319, Node11/11, patch guard, lint, package252/252 and four probe scenarios, diff check PASS. Date crossed to 2026-10-05 Asia/Almaty during acceptance; source and evidence timestamps retained.
