@@ -30,7 +30,7 @@ function wpae_get_elementor_data_for_post( int $post_id ) {
     }
 
     $decoded = json_decode( $raw_data, true );
-    if ( ! is_array( $decoded ) ) {
+    if ( ! is_array( $decoded ) || substr( ltrim( $raw_data ), 0, 1 ) !== '[' || array_values( $decoded ) !== $decoded ) {
         return new WP_Error( 'wpae_invalid_saved_elementor_data', 'Saved _elementor_data is not valid JSON array data.', [ 'json_error' => json_last_error_msg() ] );
     }
 

@@ -304,3 +304,48 @@ Source v244 проверен этим аудитом, installed runtime **не �
 Перед M1 уточнить технически (не через выдуманные assumptions): enabled runtime controls/breakpoints, actual kit values, external REST consumers, допустимый ledger payload/retention, source-authorized asset catalogs. Пользовательский выбор действительно требуется только для новых preference overrides (например, default visual direction) и разрешения новых special scopes/dependencies при их будущей реализации. Для предложенного source architecture plan обязательного дополнительного подтверждения пользователя нет. Existing Services preference сохраняется локальной policy, не навязывается всем семействам.
 
 Критерий завершения архитектурного этапа: current source map и разные evidence layers, honest coverage/variants, единственные owners, reuse existing compiler/transaction, cross-family M1 и 24 сценария с отказами/behavior/scope/first-result rubric представлены. Implementation/live остаются будущими отдельными статусами. Runtime/version/manifest не изменены; PHP/Node tests и WordPress operations не запускались.
+
+
+## 13. M1 implementation — 2026-10-04
+
+Разделы 1–12 сохраняют baseline audit `1f7baa508ff123eb0da1edf4e90a64e9c90b2378`; source findings там исторические. В M1 часть ownership conflicts устранена actual chat code. Source plugin остаётся v02.11.244, Brief parser v11. [Полный source-only отчёт](../audits/2026-10-04-generator-m1/REPORT.md) и [семь compact demo records](../audits/2026-10-04-generator-m1/demo.jsonl) фиксируют новые факты.
+
+### Общая production-compatible граница
+
+Active ordinary create Hero/About/Benefits/Pricing/FAQ: canonical intake Brief → derived fidelity/content expectations → single composition DesignPlan → existing ElementorIR/native compiler → existing execute/transaction/readback + ledger. Services сохранён совместимым recipe path. Единственный schema `wpae_design_plan_schema()` задаёт migrated_create и family_compositions; About включён через весь рабочий path, а не только enum.
+
+Brief v11 хранит exact byte source spans, copy_status, group owners/role refs, Pricing feature refs, CTA links, media role/owner и visual constraints. Locally supplied Brief проверяется с исходным запросом; structured extraction остаётся opt-in. Любая unbound explicit copy, unknown ref/composition, cross-group field, forbidden/unresolved media или invalid capability заканчивает selected typed path отказом.
+
+Hero split и stack, Benefits grid и editorial list различаются деревом type/widget/children после удаления IDs/settings. About семантически about при общей Hero split geometry. Pricing refs принадлежат tier; FAQ использует native Accordion без text downgrade. Plan фиксирует identity/source/slot bindings/responsive; downstream не выбирает иную композицию.
+
+Visual decisions для новых пяти families разрешаются в Plan existing token helpers: defaults/project/confirmed page/confirmed reference/explicit Brief; контраст до compile. Compiler получает flat resolved tokens и создаёт native controls. Existing context не считается подтверждённым только из-за наличия массива. Real kit/viewport не измерялись в source этапе.
+
+Candidate retrieval может сохраниться как diagnostic metadata, но availability не включает library-agent для migrated create. Explicit library-only без verified map — refusal; Services verified map compatible. EDDE/provider tree/legacy fallback/postcompile Process/Bento/CTA/library semantic rebuild не владельцы нового create. Normalizer проверяется frozen semantic signature, security/native-control/capability guards остаются включёнными.
+
+Execute frozen create передаёт expected-before и не превращает saved read error в []; helper отвергает JSON object/malformed/missing, genuine [] допустим. Compiled/readback signature и ledger hash/owned roots сверяются. Post-write mismatch — failed diagnostic с учтённой записью и сохранённым hash, без повторной генерации/новой rollback boundary. Existing transaction/rollback остаются единственными владельцами записи.
+
+### Изменённые definitions
+
+- `includes/llm/brief-ir.php:78` — `wpae_brief_ir_archetype()`.
+- `includes/llm/brief-ir.php:376` — `wpae_brief_ir_parse()`.
+- `includes/llm/brief-ir.php:1373` — `wpae_brief_ir_validate()`.
+- `includes/llm/design-plan.php:18` — `wpae_design_plan_schema()`.
+- `includes/llm/design-plan.php:859` — `wpae_design_plan_from_brief()`.
+- `includes/llm/design-plan.php:1385` — `wpae_design_plan_validate()`.
+- `includes/llm/design-plan.php:1732` — `wpae_design_plan_resolve_visual()`.
+- `includes/llm/llm.php:10855` — `wpae_llm_chat_request()`.
+- `includes/llm/llm.php:10503` — `wpae_llm_execute_action()`.
+- `includes/llm/llm.php:12887` — `wpae_llm_content_plan_from_brief()`.
+- `includes/llm/llm.php:12896` — `wpae_llm_decision_signature()`.
+- `includes/elementor/elementor-ir.php:208` — `wpae_elementor_ir_from_design_plan()`.
+- `includes/elementor/elementor-ir.php:706` — `wpae_elementor_ir_compile_node()`.
+- `includes/elementor/elementor-ir.php:1585` — `wpae_elementor_ir_compile()`.
+- `includes/elementor/data.php:26` — `wpae_get_elementor_data_for_post()`.
+- `includes/elementor/reference-set.php:9` — `wpae_reference_set_roles()`.
+- `includes/design/token-resolution.php:31` — `wpae_design_token_value()`.
+
+### Evidence и оставшиеся этапы
+
+M1 fixtures: Hero stack/split, About split, Benefits grid/list, Pricing, FAQ — local PASS actual chat, 0 providers/1 mock write/1 final-write attempt, exact neighbor preservation и signature readback. Runtime 773; contracts 319; Node 6/6; patch guard, catalog, lint и package 250/0/4 PASS. Refusal matrix и topology hashes — в отчёте. Injected stale/protected boundary tests доказывают caller termination, не live concurrency.
+
+Off/shadow/unmigrated/targeted/Vision compatibility сохранена, shadow не гарантирует no-write. Services historical recipe redecision при enrichment не объявлен устранённым. Generated copy, real-model calibration, произвольный language understanding, behavioral Carousel/forms/special scopes и kit/breakpoint/live visual validation остаются последующими границами. Install/editor/live/visual acceptance NOT RUN; post=5214 не тронут, empty-render cause неизвестна. Этот M1 завершён как общий локальный implementation, не как визуальная приёмка.

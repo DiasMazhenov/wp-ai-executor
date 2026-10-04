@@ -102,6 +102,7 @@ function wpae_block_library_retrieve_for_prompt( ...$args ) {
 }
 function wpae_count_elementor_validation_errors_by_type( array $errors ) { return []; }
 function wpae_elementor_update( $request ) {
+    if ( ! $request->get_param( 'dry_run' ) ) { $GLOBALS['m1_write_attempts'] = (int) ( $GLOBALS['m1_write_attempts'] ?? 0 ) + 1; }
     $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ) ] );
     if ( ! $contract['ok'] ) {
         throw new RuntimeException( 'Real write contract failed: ' . wp_json_encode( $contract['errors'] ) );
@@ -183,7 +184,7 @@ function wp_delete_post( $id, $force_delete = false ) {
     return $GLOBALS['delete_autosave_result'] ?? (object) [ 'ID' => (int) $id ];
 }
 function get_post_meta( $id, $key = '', $single = false ) {
-    $meta = [ '_elementor_data' => [ wp_json_encode( $GLOBALS['page_data'] ) ], '_elementor_css' => [ $GLOBALS['css_cache'] ?? '' ] ];
+    $meta = [ '_elementor_data' => [ $GLOBALS['m1_raw_saved'] ?? wp_json_encode( $GLOBALS['page_data'] ) ], '_elementor_css' => [ $GLOBALS['css_cache'] ?? '' ] ];
     return $key === '' ? $meta : ( $single ? ( $meta[ $key ][0] ?? '' ) : ( $meta[ $key ] ?? [] ) );
 }
 
@@ -2283,25 +2284,9 @@ $find_library_agent_button_url = static function ( array $nodes ) use ( &$find_l
 	return '';
 };
 $library_agent_button_url = $find_library_agent_button_url( [ $library_agent_written_root ] );
-check( ! empty( $library_agent_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 1 && count( $GLOBALS['writes'] ) === 1, 'active supported pipeline delegates one library decision, then uses one existing write boundary' );
-check( ( $library_agent_data['diagnostics']['action_path'] ?? '' ) === 'library_agent' && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['provider_calls'] ?? null ) === 1 && ( $library_agent_data['diagnostics']['design_pipeline']['route_decision']['precedence'] ?? '' ) === 'active_pipeline_library_decision', 'active pipeline diagnostics expose the bounded library-agent route without invoking EDDE in parallel' );
-check( ( $GLOBALS['library_retrieval_calls'][0][2] ?? false ) === true && count( (array) ( $library_agent_trace['candidates'] ?? [] ) ) === 1 && strpos( $library_agent_system_prompt, '"library_choice":"точный choice_key или null"' ) !== false && strpos( $library_agent_system_prompt, 'candidate_1' ) !== false && strpos( $library_agent_system_prompt, 'candidate_2' ) === false && strpos( $library_agent_system_prompt, 'Импортированный hero' ) !== false && strpos( $library_agent_system_prompt, 'Семантический план контента' ) === false && strpos( $library_agent_system_prompt, 'Elementor native Flexbox container/widget objects' ) === false, 'the post-plan library route retrieves all ranked candidates, preflights before provider dispatch, and offers only the later compatible template with its metadata' );
-check( ( $library_agent_data['diagnostics']['initial_validation']['validation_scope'] ?? '' ) === 'allowlisted_library_choice' && ! empty( $library_agent_data['diagnostics']['initial_validation']['provider_tree_ignored'] ), 'A library-only model choice bypasses duplicate provider-tree validation and defers checks to the selected server template' );
-check( ( $library_agent_trace['selection_source'] ?? '' ) === 'model_choice' && ( $library_agent_trace['model_choice'] ?? '' ) === 'candidate_1' && ( $library_agent_trace['selected']['title'] ?? '' ) === 'Импортированный hero' && ( $library_agent_trace['status'] ?? '' ) === 'applied' && strpos( $library_agent_root_json, 'wpae-library-agent-fixture-candidate-two' ) !== false && strpos( $library_agent_root_json, 'wpae-library-agent-candidate-one' ) === false, 'the model selects the compatible fourth ranked template and the exact preflighted tree reaches the write boundary' );
-check( strpos( $library_agent_written_copy, 'Пространство для идей' ) !== false && strpos( $library_agent_written_copy, 'Опишите задачу и получите понятный первый шаг' ) !== false && strpos( $library_agent_written_copy, 'Начать проект' ) !== false && $library_agent_button_url === '#contact', 'active library-agent adaptation preserves exact brief copy and CTA URL' );
-$GLOBALS['page_data'] = $legacy_page;
-$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
-$library_agent_decline = $library_agent_action;
-$library_agent_decline['library_choice'] = null;
-$library_agent_decline['elements'] = [ container_node( 'unselected-native-fallback', [ 'container_type' => 'flex' ], [ widget( 'unselected-copy', 'text-editor', [ 'editor' => 'Не выбранная библиотека' ] ) ] ) ];
-$GLOBALS['responses'] = [ provider_reply( wp_json_encode( $library_agent_decline, JSON_UNESCAPED_UNICODE ) ) ];
-$library_agent_decline_request = new WP_REST_Request();
-$library_agent_decline_request->set_param( 'message', $library_agent_message );
-$library_agent_decline_request->set_param( 'context', [ 'post_id' => 42 ] );
-$library_agent_decline_response = wpae_llm_chat_request( $library_agent_decline_request );
-$library_agent_decline_error = $library_agent_decline_response instanceof WP_Error ? $library_agent_decline_response : null;
-check( $library_agent_decline_error instanceof WP_Error && $library_agent_decline_error->get_error_code() === 'wpae_llm_library_selection_required', 'Active library route rejects a native composition when the model declines offered compatible templates' );
-check( ( $library_agent_decline_error->get_error_data()['details']['write_count'] ?? null ) === 0 && $GLOBALS['writes'] === [] && array_column( $GLOBALS['page_data'], 'id' ) === array_column( $legacy_page, 'id' ), 'Declining offered templates cannot append an unselected design or modify neighboring roots' );
+check( ! empty( $library_agent_data['ok'] ) && count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, 'M1 candidate availability cannot switch Hero from typed compilation to a provider tree' );
+check( ( $library_agent_data['diagnostics']['action_path'] ?? '' ) === 'pipeline', 'M1 active Hero remains pipeline with four ranked library candidates' );
+check( strpos( $library_agent_root_json, 'wpae-library-agent-fixture' ) === false && strpos( $library_agent_written_copy, 'Пространство для идей' ) !== false && $library_agent_button_url === '#contact', 'M1 compiler preserves canonical explicit content without importing candidate topology' );
 $GLOBALS['library'] = [];
 
 // The user-corrected Services section is offered as a bounded library choice;
@@ -2495,7 +2480,7 @@ check( count( $services_first_card_images ) === 1 && ( $services_first_card_imag
 
 $run_services_route = static function ( string $message, array $responses, array $library, string $operation_identity, bool $fail_write = false, string $pipeline_mode = 'active', string $engine_mode = 'active', array $context_overrides = [], ?array $boundary_refusal = null ) use ( $legacy_page ): array {
 	$previous_globals = [];
-	foreach ( [ 'library', 'options', 'page_data', 'http_calls', 'writes', 'responses', 'fail_write_boundary', 'services_boundary_refusal', 'library_retrieval_calls' ] as $global_key ) {
+	foreach ( [ 'library', 'options', 'page_data', 'http_calls', 'writes', 'responses', 'fail_write_boundary', 'services_boundary_refusal', 'library_retrieval_calls', 'm1_write_attempts' ] as $global_key ) {
 		$previous_globals[ $global_key ] = $GLOBALS[ $global_key ] ?? null;
 	}
 	$GLOBALS['library'] = $library;
@@ -2503,6 +2488,7 @@ $run_services_route = static function ( string $message, array $responses, array
 	$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
 	$GLOBALS['page_data'] = $legacy_page;
 	$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
+	$GLOBALS['m1_write_attempts'] = 0;
 	$GLOBALS['responses'] = $responses;
 	$GLOBALS['fail_write_boundary'] = $fail_write;
 	$GLOBALS['services_boundary_refusal'] = $boundary_refusal;
@@ -2515,6 +2501,7 @@ $run_services_route = static function ( string $message, array $responses, array
 		'error' => $response instanceof WP_Error ? [ 'code' => $response->get_error_code(), 'message' => $response->get_error_message(), 'data' => $response->get_error_data() ] : [],
 		'calls' => count( $GLOBALS['http_calls'] ),
 		'writes' => count( $GLOBALS['writes'] ),
+		'write_attempts' => (int) ( $GLOBALS['m1_write_attempts'] ?? 0 ),
 		'provider_call_count' => count( $GLOBALS['http_calls'] ),
 		'library_retrieval_count' => count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ),
 		'roots' => array_column( (array) $GLOBALS['page_data'], 'id' ),
@@ -2677,8 +2664,9 @@ $pricing_provider_action['library_choice'] = 'candidate_1';
 $pricing_provider_action['elements'][0]['settings']['_css_classes'] = 'wpae-provider-pricing-root';
 unset( $pricing_provider_action['fallback_archetype'], $pricing_provider_action['fallback_variant'] );
 $pricing_after_incompatible_choice = $run_services_route( $pricing_library_message, [ provider_reply( wp_json_encode( $pricing_provider_action, JSON_UNESCAPED_UNICODE ) ) ], $incompatible_pricing_fixture, 'pricing-incompatible-library-choice' );
-check( ( $pricing_after_incompatible_choice['error']['code'] ?? '' ) === 'wpae_llm_no_compatible_library_candidate' && $pricing_after_incompatible_choice['calls'] === 0 && $pricing_after_incompatible_choice['writes'] === 0 && ( $pricing_after_incompatible_choice['error']['data']['details']['write_count'] ?? null ) === 0, 'An incompatible library shortlist is rejected before provider dispatch instead of allowing an unrelated composition: ' . wp_json_encode( $pricing_after_incompatible_choice, JSON_UNESCAPED_UNICODE ) );
-check( $pricing_after_incompatible_choice['roots'] === array_column( $legacy_page, 'id' ) && ( $pricing_after_incompatible_choice['error']['data']['details']['write_count'] ?? null ) === 0, 'Incompatible library output leaves all neighboring roots untouched and never crosses the write boundary' );
+check( ! empty( $pricing_after_incompatible_choice['response']['ok'] ) && $pricing_after_incompatible_choice['calls'] === 0 && $pricing_after_incompatible_choice['writes'] === 1, 'M1 Pricing ignores incompatible candidates and executes its canonical typed Plan once' );
+check( array_slice( $pricing_after_incompatible_choice['page_data'], 0, count( $legacy_page ) ) === $legacy_page, 'M1 Pricing preserves exact neighboring content through the existing boundary' );
+
 $leaked_cta_provider_action = [ 'action' => 'insert_elements', 'post_id' => 42, 'position' => 'end', 'elements' => $leaked_cta_provider ];
 $leaked_cta_route = $run_services_route( $standalone_cta_message, [ provider_reply( wp_json_encode( $leaked_cta_provider_action, JSON_UNESCAPED_UNICODE ) ) ], [], 'cta-label-leak-identity', false, 'off', 'off' );
 $leaked_cta_written_copy = wpae_llm_collect_action_content( [ (array) $leaked_cta_route['written'] ] );
@@ -3004,5 +2992,7 @@ if ( getenv( 'WPAE_SERVICES_CHAT_DEMO' ) === '1' ) {
 	];
 	echo 'services chat demo: ' . wp_json_encode( $services_chat_demo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n";
 }
+
+require __DIR__ . '/m1-generation-contract.php';
 
 echo 'flex generation runtime: ' . $GLOBALS['checks'] . " checks OK\n";

@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 require_once dirname( __DIR__ ) . '/design/token-resolution.php';
+require_once dirname( __DIR__ ) . '/llm/design-plan.php';
 
 const WPAE_ELEMENTOR_IR_SCHEMA = 'wpae-elementor-ir-v2';
 
@@ -362,6 +363,9 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$price_group = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-price-group', 'pricing_price_group', 'container', [], [ 'space.component' ], $price_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					$details_widgets[] = $price_group;
 					$add_tier_widget( $details_widgets, 'description_ref', 'pricing_description', 'text-editor', [ 'color.muted', 'type.body' ] );
+					foreach ( (array) ( $tier['feature_refs'] ?? [] ) as $feature_index => $feature_ref ) {
+						$details_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-feature-' . $feature_index, 'pricing_feature', 'text-editor', [ $feature_ref ], [ 'color.text', 'type.body' ], [], [], [ 'strategy' => 'stack' ] );
+					}
 					$card_widgets = [
 						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-details', 'pricing_details', 'container', [], [ 'space.component' ], $details_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
 					];
@@ -377,7 +381,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 			} elseif ( $role === 'faq_surface' ) {
 				$accordion = wpae_elementor_ir_node( $child_id . '-accordion', 'faq_accordion', 'accordion', $content_refs, array_merge( $token_refs, [ 'color.focus' ] ), [], [ 'items' => array_values( (array) ( $child['items'] ?? [] ) ) ], [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'faq_surface', 'container', [], $token_refs, [ $accordion ], (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'question', 'answer' ] ] );
-			} elseif ( $role === 'feature_cards' ) {
+			} elseif ( in_array( $role, [ 'feature_cards', 'feature_list' ], true ) ) {
 				$cards = [];
 				foreach ( array_values( (array) ( $child['items'] ?? [] ) ) as $card_index => $item ) {
 					if ( ! is_array( $item ) ) {
@@ -385,13 +389,17 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					}
 					$card_number = $card_index + 1;
 					$card_children = [
-						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-icon', 'feature_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle' ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ),
+						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-icon', $role === 'feature_list' ? 'feature_list_icon' : 'feature_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle' ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ),
 						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-title', 'feature_title', 'heading', [ sanitize_key( (string) ( $item['title_ref'] ?? '' ) ) ], [ 'color.text', 'type.body' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
 						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-body', 'feature_body', 'text-editor', [ sanitize_key( (string) ( $item['body_ref'] ?? '' ) ) ], [ 'color.muted', 'type.body' ], [], [], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
 					];
-					$cards[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number, 'feature_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+					if ( $role === 'feature_list' ) {
+						$copy = wpae_elementor_ir_node( $child_id . '-copy-' . $card_number, 'copy_group', 'container', [], [ 'space.component' ], array_slice( $card_children, 1 ), [], [ 'strategy' => 'stack' ] );
+						$card_children = [ $card_children[0], $copy ];
+					}
+					$cards[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number, $role === 'feature_list' ? 'feature_row' : 'feature_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 				}
-				$section_children[] = wpae_elementor_ir_node( $child_id, 'feature_cards', 'container', [], $token_refs, $cards, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $cards, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			} elseif ( in_array( $role, [ 'service_cards', 'team_cards', 'testimonial_cards' ], true ) ) {
 				$cards = wpae_elementor_ir_card_nodes( $role, $child_id, (array) ( $child['items'] ?? [] ), [ 'color.text', 'color.muted', 'type.body' ] );
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $cards, (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
@@ -443,7 +451,7 @@ function wpae_elementor_ir_validate( array $ir, array $brief = [] ): array {
 		$errors[] = 'schema';
 	}
 	$walk( (array) ( $ir['nodes'] ?? [] ) );
-	if ( ( $ir['archetype'] ?? '' ) === 'hero' ) {
+	if ( in_array( $ir['archetype'] ?? '', [ 'hero', 'about' ], true ) ) {
 		$media_nodes = [];
 		$find_media = static function ( array $nodes ) use ( &$find_media, &$media_nodes ): void {
 			foreach ( $nodes as $node ) {
@@ -720,13 +728,16 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	}
 	if ( $widget_type === 'container' ) {
 		$settings['container_type'] = 'flex';
+		$settings['content_width'] = in_array( $role, wpae_design_plan_schema()['archetypes'], true ) ? 'boxed' : 'full';
+		$settings['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
+		$settings['background_color'] = $settings['background_color'] ?? 'transparent';
 		$settings['flex_direction'] = in_array( (string) ( $node['layout_constraints']['composition'] ?? '' ), [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ? 'row' : 'column';
 		$settings['flex_direction_mobile'] = 'column';
 		$component_gap = $token_values['space.component'] ?? ( $tokens['native_tokens']['spacing']['gap'] ?? '1.5rem' );
 		$gap_control = wpae_elementor_ir_dimension_control( $component_gap, 'rem', 1.5 );
 		$settings['flex_gap'] = [ 'unit' => $gap_control['unit'], 'size' => $gap_control['size'], 'column' => (string) $gap_control['size'], 'row' => (string) $gap_control['size'], 'isLinked' => true ];
 		$settings['flex_gap_mobile'] = $settings['flex_gap'];
-		if ( in_array( $role, [ 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta' ], true ) ) {
+		if ( in_array( $role, [ 'about', 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta' ], true ) ) {
 			$section_spacing = $token_values['space.section'] ?? $token_values['space.component'] ?? ( $tokens['native_tokens']['spacing']['section_desktop'] ?? '4.5rem' );
 			$mobile_spacing = isset( $token_values['space.section'] ) ? ( $tokens['native_tokens']['spacing']['section_mobile'] ?? '2rem' ) : $section_spacing;
 			$desktop_padding = wpae_elementor_ir_dimension_control( $section_spacing, 'rem', 4.5, false );
@@ -753,7 +764,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
 		}
 		if ( in_array( $role, [ 'copy_group', 'service_cards', 'team_cards', 'testimonial_cards', 'cta_copy_group', 'cta_actions', 'services_photo_grid', 'services_editorial_rows', 'services_text_icon_list' ], true ) ) {
-			unset( $settings['background_color'], $settings['background_background'] );
+			$settings['background_color'] = 'transparent';
+			$settings['background_background'] = 'classic';
 		}
 		if ( $role === 'faq_surface' ) {
 			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
@@ -768,7 +780,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			}
 		}
 		if ( $role === 'feature_cards' ) {
-			unset( $settings['background_color'], $settings['background_background'] );
+			$settings['background_color'] = 'transparent';
+			$settings['background_background'] = 'classic';
 		}
 		if ( $role === 'pricing_cards' ) {
 			// Pricing cards are a row on wide viewports and a stack on mobile.
@@ -859,8 +872,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 				$settings['padding'] = [ 'unit' => 'px', 'top' => '16', 'right' => '0', 'bottom' => '16', 'left' => '0', 'isLinked' => false ];
 			}
 		}
-		if ( $role === 'services_text_icon_row' ) {
-			$settings['_css_classes'] = 'wpae-services-text-icon-row';
+		if ( in_array( $role, [ 'services_text_icon_row', 'feature_row' ], true ) ) {
+			$settings['_css_classes'] = $role === 'feature_row' ? 'wpae-benefits-list-row' : 'wpae-services-text-icon-row';
 			$settings['flex_direction'] = 'row';
 			$settings['flex_direction_tablet'] = 'row';
 			$settings['flex_direction_mobile'] = 'row';
@@ -921,7 +934,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.875, 'column' => '0.875', 'row' => '0.875', 'isLinked' => true ];
 			$settings['flex_gap_mobile'] = [ 'unit' => 'rem', 'size' => 0.75, 'column' => '0.75', 'row' => '0.75', 'isLinked' => true ];
 		}
-		if ( $role === 'hero' && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media_group' ) ) {
+		if ( in_array( $role, [ 'hero', 'about' ], true ) && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media_group' ) ) {
 			$settings['flex_direction_mobile'] = 'column-reverse';
 		}
 		if ( $role === 'cta' && $cta_has_media && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' ) {
@@ -1428,7 +1441,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'feature_icon' ) {
 			$settings['align'] = 'left';
 		}
-		if ( $role === 'services_list_icon' ) {
+		if ( in_array( $role, [ 'services_list_icon', 'feature_list_icon' ], true ) ) {
 			$settings['align'] = 'left';
 			$settings['size'] = [ 'unit' => 'px', 'size' => 22, 'sizes' => [] ];
 			// Elementor's stacked icon uses half-em padding, so 22px produces a
@@ -1486,7 +1499,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		} elseif ( $role === 'feature_cards' && count( $compiled_children ) >= 4 ) {
 			$composition_basis = array_fill( 0, count( $compiled_children ), 48 );
 		}
-		if ( in_array( $role, [ 'hero', 'cta' ], true ) && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && count( $composition_basis ) === 2 ) {
+		if ( in_array( $role, [ 'about', 'hero', 'cta' ], true ) && ( $node['layout_constraints']['media_side'] ?? 'right' ) === 'left' && count( $composition_basis ) === 2 ) {
 			$composition_basis = array_reverse( $composition_basis );
 		}
 		$composition_matches_children = ! empty( $composition_basis ) && count( $composition_basis ) === count( $compiled_children );
@@ -1509,7 +1522,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			if ( $role === 'services_photo_grid' && $child_index < count( $compiled_children ) ) {
 				$tablet_basis = 48;
 			}
-			if ( $role === 'services_text_icon_row' && $child_role === 'services_text_icon_copy' ) {
+			if ( ( $role === 'services_text_icon_row' && $child_role === 'services_text_icon_copy' ) || ( $role === 'feature_row' && $child_role === 'copy_group' ) ) {
 				$basis = 90;
 				$tablet_basis = 90;
 			}
@@ -1570,6 +1583,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 }
 
 function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [], array $options = [] ): array {
+	if ( ! empty( $options['resolved_visual']['values'] ) ) { $tokens = $options['resolved_visual']['values']; }
 	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
 		if ( is_array( $item ) && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
 			return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => [ 'explicit_cta_url_invalid:' . sanitize_key( (string) ( $item['id'] ?? 'cta' ) ) ] ];
@@ -1588,7 +1602,7 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 	}
 	$report = [ 'schema' => 'wpae-elementor-compile-report-v1', 'downgrades' => [], 'errors' => [], 'warnings' => (array) ( $ir['warnings'] ?? [] ), 'tokens' => [ 'resolved' => [], 'missing' => [], 'fallbacks' => [], 'collisions' => [] ], 'node_count' => 0 ];
 	$report['contrast'] = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $tokens ) : [ 'ok' => true, 'errors' => [] ];
-	if ( empty( $report['contrast']['ok'] ) && in_array( 'color.muted_on_color.page_bg', (array) ( $report['contrast']['errors'] ?? [] ), true ) ) {
+	if ( empty( $options['resolved_visual'] ) && empty( $report['contrast']['ok'] ) && in_array( 'color.muted_on_color.page_bg', (array) ( $report['contrast']['errors'] ?? [] ), true ) ) {
 		// Preserve the site's palette globally, but keep generated small text
 		// readable when an inherited muted token is below the normal-text gate.
 		if ( ! isset( $tokens['palette'] ) || ! is_array( $tokens['palette'] ) ) {

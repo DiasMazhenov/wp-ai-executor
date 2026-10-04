@@ -79,6 +79,7 @@ function wpae_design_token_value( string $token, array $tokens = [], ?array &$re
 			}
 		}
 	}
+	if ( array_key_exists( $token, $tokens ) ) { $value = $tokens[ $token ]; $source = 'resolved_plan'; }
 	if ( $value === null && isset( $defaults[ $token ] ) ) {
 		$value = $defaults[ $token ];
 		if ( is_array( $report ) ) {

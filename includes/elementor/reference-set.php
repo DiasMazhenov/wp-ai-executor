@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
 const WPAE_REFERENCE_SET_SCHEMA = 'wpae-reference-set-v1';
 
 function wpae_reference_set_roles(): array {
-	return [ 'hero', 'background', 'portrait', 'icon', 'logo', 'card_image', 'decorative' ];
+	return [ 'about', 'hero', 'background', 'portrait', 'icon', 'logo', 'card_image', 'decorative' ];
 }
 
 function wpae_reference_set_normalize( array $input ): array {
