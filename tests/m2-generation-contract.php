@@ -265,3 +265,9 @@ foreach ( [ 'hero' => 'h1', 'about' => 'h2' ] as $family => $level ) {
  $heading = $case['written']['elements'][0]['elements'][0]['elements'][1] ?? [];
  check( ! empty( $case['response']['ok'] ) && $heading['widgetType'] === 'heading' && $heading['settings']['header_size'] === $level && $heading['settings']['title'] === 'Работа со смыслом', 'Accepted family carries semantic heading into native compiler ' . $family );
 }
+
+foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
+ $case = $run_services_route( $m2_benefits, [], $incompatible_pricing_fixture, 'm2-list-reading-scope-' . $profile, false, 'active', 'active', [ 'composition_record' => 'benefits.editorial_list', 'composition_version' => 1, 'visual_profile' => $profile ] );
+ $rows = $case['written']['elements'][0]['elements'] ?? [];
+ check( ! empty( $case['response']['ok'] ) && count( $rows ) === 2 && $rows[0]['elements'][1]['settings']['content_width'] === 'full' && ! isset( $rows[0]['elements'][1]['settings']['boxed_width'] ) && ( $rows[0]['elements'][1]['elements'][0]['widgetType'] ?? '' ) === 'heading', 'Section reading width must not center item copy away from native list icon ' . $profile );
+}

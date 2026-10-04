@@ -287,6 +287,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						unset( $ordered_widget );
 					}
 					$copy_constraints = array_merge( [ 'min_width' => 0, 'max_width' => 100 ], (array) ( $child['layout_constraints'] ?? [] ) );
+				$copy_constraints['reading_measure'] = true;
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $ordered_widgets, $copy_constraints, [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				if ( empty( $widgets ) ) {
 					$warnings[] = $child_id . ':no_content_widgets';
@@ -1477,7 +1478,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 					$settings[ 'padding' . $suffix ] = $padding;
 				}
 			}
-			if ( $role === 'copy_group' ) { $settings['content_width'] = 'boxed'; $settings['boxed_width'] = wpae_elementor_ir_dimension_control( $tokens['layout.copy_width'], 'rem', 38 ); $settings['boxed_width_tablet'] = $settings['boxed_width']; $settings['boxed_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ]; }
+			if ( $role === 'copy_group' && ! empty( $node['layout_constraints']['reading_measure'] ) ) { $settings['content_width'] = 'boxed'; $settings['boxed_width'] = wpae_elementor_ir_dimension_control( $tokens['layout.copy_width'], 'rem', 38 ); $settings['boxed_width_tablet'] = $settings['boxed_width']; $settings['boxed_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ]; }
 			if ( in_array( $role, [ 'feature_card', 'feature_row' ], true ) ) {
 				$settings['border_radius'] = wpae_elementor_ir_dimension_control( $tokens['radius.card'], 'rem', 1 );
 				$settings['border_border'] = 'solid'; $settings['border_width'] = wpae_elementor_ir_dimension_control( '1px', 'px', 1 ); $settings['border_color'] = $tokens['color.border'];
@@ -1607,7 +1608,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	// Elementor emits native percentage --width only for full-width containers.
 	// Keep the composition column full and put the profile reading measure in
 	// a separate boxed native child; boxed copy columns otherwise render 100%.
-	if ( $widget_type === 'container' && $role === 'copy_group' && ! empty( $tokens['_wpae_visual_profile'] ) ) {
+	if ( $widget_type === 'container' && $role === 'copy_group' && ! empty( $tokens['_wpae_visual_profile'] ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) {
 		$measure_settings = $settings;
 		foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) {
 			unset( $settings[ 'boxed_width' . $suffix ] );
