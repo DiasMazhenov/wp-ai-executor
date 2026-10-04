@@ -1230,7 +1230,8 @@
         if (!model) return '';
         var value = null;
         try {
-            value = typeof model.toJSON === 'function' ? model.toJSON() : (model.attributes || model);
+            // Render caches/editor metadata change during paint without authored edits.
+            value = serializeTypedModel(model);
             return JSON.stringify(value);
         } catch (error) {
             return getEditorModelId(model);

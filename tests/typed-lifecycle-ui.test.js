@@ -46,3 +46,13 @@ test('reload descriptor exposes a read-only exact-operation model check',async()
  assert.equal(posts[0].context.lifecycle_action,'check_model');assert.equal(posts[0].context.accepted_operation_id,'child');assert.equal(posts[0].context.accepted_revision,4);
  assert.ok(errors[0].includes('соответствует'));assert.ok(!env.reload);
 });
+
+
+test('native root fingerprint ignores render cache but retains authored changes',()=>{
+ const {env}=harness();
+ const fingerprint=src.slice(src.indexOf('    function getEditorModelFingerprint('),src.indexOf('    function captureEditorRootSnapshot('));vm.runInContext(fingerprint,env);
+ let title='Exact',cache='first paint';
+ const model={id:'owned',toJSON:()=>({id:'owned',elType:'widget',widgetType:'heading',settings:{title},htmlCache:cache}),get:key=>key==='settings'?{toJSON:()=>({title})}:null};
+ const original=env.getEditorModelFingerprint(model);cache='later paint';assert.equal(env.getEditorModelFingerprint(model),original);
+ title='User edit';assert.notEqual(env.getEditorModelFingerprint(model),original);
+});
