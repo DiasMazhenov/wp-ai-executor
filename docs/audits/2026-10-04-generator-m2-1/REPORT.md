@@ -138,4 +138,4 @@ WPAE_M2_CHAT_DEMO=1 php tests/flex-generation-runtime.php
 
 Imported adaptation/slot-map validator, arbitrary generated copy/model calibration, real kit/fonts/breakpoints/render/overflow, actual asset authorization/load/crop и browser visual acceptance не выполнены и не заявлены готовыми. Source flags off/shadow/unmigrated и историческая Services redecision при media enrichment остаются compatibility paths. API selection реализован; frontend chooser не входит в этот срез. Install/deploy/live/visual — **NOT RUN**.
 
-До commit: source/mock implementation и документация готовы; scoped commit/push/independent remote HEAD confirmation ещё не выполнены. Публикация фиксируется отдельной фактической записью после Git действий.
+Implementation commit `13315c0d5b0fce322eacda3110371fd74483b0e9` опубликован в `origin/main`. Независимый `git ls-remote origin refs/heads/main` подтвердил этот SHA 2026-10-04 18:47:05 Asia/Almaty. Перед commit просмотрен scoped staged diff всех 14 файлов; `git diff --cached --check` PASS. Эта публикационная запись добавлена после подтверждения remote. Install/deploy/live/visual остаются NOT RUN; 776 посторонних untracked-файлов сохранены.
