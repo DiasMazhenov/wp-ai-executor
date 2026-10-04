@@ -10562,6 +10562,9 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
     }
     $steps[] = [ 'id' => 'native_widgets', 'status' => 'ok', 'message' => 'В команде найден хотя бы один native Elementor widget.', 'details' => [ 'widget_count' => $widget_count ] ];
 	$frozen_signature = ! empty( $operation_context['frozen_decisions'] ) ? wpae_llm_decision_signature( $elements ) : '';
+	if ( $frozen_signature !== '' && isset( $operation_context['accepted_signature'] ) && ! hash_equals( (string) $operation_context['accepted_signature'], $frozen_signature ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'frozen_accepted_policy_mismatch', 'steps' => $steps ];
+	}
     $native_normalized = function_exists( 'wpae_elementor_normalize_data' );
     if ( $native_normalized ) {
         $elements = wpae_elementor_normalize_data( $elements )['data'];
@@ -11012,7 +11015,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		'selected' => null,
 	];
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype || $library_only_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
-	$library_retrieval_enabled = $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
+	$canonical_retrieval_skip = $migrated_active_create && ( $canonical_brief['policy']['library']['source'] ?? '' ) !== 'required';
+	if ( $canonical_retrieval_skip ) { $library_retrieval['reason'] = 'ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed'; }
+	$library_retrieval_enabled = ! $canonical_retrieval_skip && $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
 	$library_preflight_enabled = $design_pipeline_mode === 'active'
 		&& ( $deterministic_archetype || $library_only_archetype )
 		&& $selected_post_id > 0
@@ -11045,10 +11050,10 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$brief_ir = ! empty( $services_brief )
 			? $services_brief
 			: wpae_brief_ir_parse( $message, [ 'audience' => is_array( $editor_context_input ) ? (string) ( $editor_context_input['audience'] ?? '' ) : '' ] );
-		$design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, $services_route_request ? $services_planning_context : array_merge( [ 'post_id' => $selected_post_id, 'canonical_create' => $migrated_active_create ], array_intersect_key( (array) $editor_context_input, array_flip( [ 'page_tokens', 'page_tokens_confirmed', 'reference_tokens', 'reference_tokens_confirmed' ] ) ) ) );
+		$design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, $services_route_request ? $services_planning_context : array_merge( [ 'post_id' => $selected_post_id, 'canonical_create' => $migrated_active_create ], array_intersect_key( (array) $editor_context_input, array_flip( [ 'page_tokens', 'page_tokens_confirmed', 'reference_tokens', 'reference_tokens_confirmed', 'composition_record', 'composition_version', 'visual_profile' ] ) ) ) );
         $brief_validation = function_exists( 'wpae_brief_ir_validate' ) ? wpae_brief_ir_validate( $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
 		$plan_validation = function_exists( 'wpae_design_plan_validate' ) ? wpae_design_plan_validate( $design_plan_v1, $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
-        $layout_tokens = function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [];
+        $layout_tokens = $design_plan_v1['resolved_visual']['values'] ?? ( function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [] );
         $layout_report = function_exists( 'wpae_layout_report_for_plan' ) ? wpae_layout_report_for_plan( $design_plan_v1, [ 'tokens' => $layout_tokens ] ) : [];
         $layout_validation = function_exists( 'wpae_layout_report_validate' ) ? wpae_layout_report_validate( $layout_report ) : [ 'ok' => true, 'errors' => [] ];
 		$design_pipeline_trace = [
@@ -11066,6 +11071,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'warnings' => array_values( (array) ( $brief_ir['warnings'] ?? [] ) ),
 				'validation' => $brief_validation,
 			],
+			'library_retrieval' => [ 'status' => $library_retrieval['status'] ?? 'completed', 'reason' => $library_retrieval['reason'] ?? 'retrieval_completed', 'called' => $library_retrieval_enabled ],
 			'content_plan' => $migrated_active_create ? [
 				'brief_hash' => (string) ( $content_plan['brief_hash'] ?? '' ),
 				'validation' => $content_plan['validation'] ?? [],
@@ -11077,6 +11083,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'brief_hash' => (string) ( $design_plan_v1['provenance']['brief_hash'] ?? '' ),
                 'archetype' => $design_plan_v1['archetype'] ?? 'unknown',
                 'composition_decision' => $design_plan_v1['composition_decision'] ?? $design_plan_v1['recipe_selection'] ?? [],
+                'resolved_visual' => $design_plan_v1['resolved_visual'] ?? [],
                 'section_count' => count( (array) ( $design_plan_v1['sections'] ?? [] ) ),
                 'validation' => $plan_validation,
             ],
@@ -11315,7 +11322,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'route' => 'local_deterministic',
 				'provider_calls' => 0,
 			];
-			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'frozen_decisions' => $migrated_active_create, 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '', 'operation_identity' => $operation_identity, 'replace_root_ids' => $replacement_requested ? $replacement_guard['root_ids'] : [], 'replacement_guard' => $replacement_requested ? [ 'operation_id' => $replacement_parent['operation_id'], 'operation_identity' => $replacement_parent['operation_identity'], 'revision' => $replacement_parent['revision'], 'root_ids' => $replacement_guard['root_ids'] ] : [] ] );
+			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'frozen_decisions' => $migrated_active_create, 'accepted_signature' => wpae_llm_decision_signature( $ir_compiled['elementor_data'] ), 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '', 'operation_identity' => $operation_identity, 'replace_root_ids' => $replacement_requested ? $replacement_guard['root_ids'] : [], 'replacement_guard' => $replacement_requested ? [ 'operation_id' => $replacement_parent['operation_id'], 'operation_identity' => $replacement_parent['operation_identity'], 'revision' => $replacement_parent['revision'], 'root_ids' => $replacement_guard['root_ids'] ] : [] ] );
 			$design_pipeline_trace['status'] = ! empty( $active_execution['ok'] ) ? 'written' : 'failed';
 			$committed_write_count = ! empty( $active_execution['ok'] ) ? 1 : 0;
 			if ( $migrated_active_create ) {
@@ -12897,6 +12904,9 @@ function wpae_llm_decision_signature( array $elements ): string {
 	$project = static function ( array $nodes ) use ( &$project ): array {
 		return array_map( static function ( array $node ) use ( &$project ): array {
 			$settings = (array) ( $node['settings'] ?? [] );
+			if ( ( $node['widgetType'] ?? '' ) === 'accordion' ) {
+				foreach ( (array) ( $settings['tabs'] ?? [] ) as $index => $tab ) { unset( $settings['tabs'][ $index ]['_id'] ); }
+			}
 			$classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? $settings['css_classes'] ?? '' ) ) ) ?: [];
 			$classes = array_values( array_filter( $classes, static fn( string $class ): bool => $class !== '' && $class !== 'wpae-block' && $class !== 'wpae-generated-root' && ! str_starts_with( $class, 'wpae-system-' ) && ! in_array( $class, array_map( static fn( string $family ): string => 'wpae-generated-' . $family, wpae_design_plan_schema()['archetypes'] ), true ) ) );
 			sort( $classes );

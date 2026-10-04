@@ -700,6 +700,9 @@ function wpae_elementor_ir_type_settings( array $type ): array {
 		'typography_line_height' => $dimension( $type['line_height'] ?? '1.5', 'em' ),
 	];
 	$settings['typography_line_height']['unit'] = 'em';
+	foreach ( [ 'tablet', 'mobile' ] as $device ) {
+		if ( isset( $type[ 'line_height_' . $device ] ) ) { $settings[ 'typography_line_height_' . $device ] = $dimension( $type[ 'line_height_' . $device ], 'em' ); }
+	}
 	return $settings;
 }
 
@@ -1454,6 +1457,33 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['_flex_shrink'] = 0;
 		}
 	}
+	// Extra resolved profile tokens are compiled as native controls, never chosen here.
+	if ( ! empty( $tokens['_wpae_visual_profile'] ) ) {
+		if ( $widget_type === 'container' ) {
+			foreach ( [ '' => 'space.component', '_tablet' => 'space.component_tablet', '_mobile' => 'space.component_mobile' ] as $suffix => $key ) {
+				if ( isset( $tokens[ $key ] ) && ! in_array( $role, [ 'feature_list', 'feature_row', 'feature_list_copy' ], true ) ) {
+					$gap = wpae_elementor_ir_dimension_control( $tokens[ $key ], 'rem', 1 );
+					$settings[ 'flex_gap' . $suffix ] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+				}
+			}
+			if ( in_array( $role, [ 'hero', 'about', 'benefits' ], true ) ) {
+				foreach ( [ '_tablet' => 'space.section_tablet', '_mobile' => 'space.section_mobile' ] as $suffix => $key ) {
+					$padding = wpae_elementor_ir_dimension_control( $tokens[ $key ], 'rem', 2, false );
+					$padding['left'] = $padding['right'] = $suffix === '_mobile' ? '1' : '2'; unset( $padding['size'] );
+					$settings[ 'padding' . $suffix ] = $padding;
+				}
+			}
+			if ( $role === 'copy_group' ) { $settings['content_width'] = 'boxed'; $settings['boxed_width'] = wpae_elementor_ir_dimension_control( $tokens['layout.copy_width'], 'rem', 38 ); $settings['boxed_width_tablet'] = $settings['boxed_width']; $settings['boxed_width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ]; }
+			if ( in_array( $role, [ 'feature_card', 'feature_row' ], true ) ) {
+				$settings['border_radius'] = wpae_elementor_ir_dimension_control( $tokens['radius.card'], 'rem', 1 );
+				$settings['border_border'] = 'solid'; $settings['border_width'] = wpae_elementor_ir_dimension_control( '1px', 'px', 1 ); $settings['border_color'] = $tokens['color.border'];
+				$settings['background_color'] = $tokens['color.surface']; $settings['padding'] = wpae_elementor_ir_dimension_control( $tokens['space.card'], 'rem', 1, false );
+				$settings['padding_tablet'] = wpae_elementor_ir_dimension_control( $tokens['space.component_tablet'], 'rem', 1, false );
+				$settings['padding_mobile'] = wpae_elementor_ir_dimension_control( $tokens['space.component_mobile'], 'rem', 1, false );
+			}
+		}
+		if ( $widget_type === 'heading' && $role === 'feature_title' ) { $settings = array_merge( $settings, wpae_elementor_ir_type_settings( $tokens['type.feature'] ) ); }
+	}
 	$compiled_children = [];
 	foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
 		if ( is_array( $child ) ) {
@@ -1584,6 +1614,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 
 function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [], array $options = [] ): array {
 	if ( ! empty( $options['resolved_visual']['values'] ) ) { $tokens = $options['resolved_visual']['values']; }
+	unset( $tokens['_wpae_visual_profile'] );
+	if ( ! empty( $options['resolved_visual']['profile'] ) ) { $tokens['_wpae_visual_profile'] = $options['resolved_visual']['profile']; }
 	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
 		if ( is_array( $item ) && ! empty( $item['url_requested'] ) && trim( (string) ( $item['url'] ?? '' ) ) === '' ) {
 			return [ 'ok' => false, 'schema' => WPAE_ELEMENTOR_IR_SCHEMA, 'errors' => [ 'explicit_cta_url_invalid:' . sanitize_key( (string) ( $item['id'] ?? 'cta' ) ) ] ];

@@ -289,6 +289,8 @@ function wpae_elementor_recipe_summary( array $recipe ): array {
         'variants' => $recipe['variants'],
         'default_variant' => $recipe['default_variant'],
         'slots' => $recipe['slots'],
+        'variant_records' => wpae_elementor_recipe_variants( $recipe ),
+        'alternatives' => [],
     ];
 }
 
@@ -327,6 +329,7 @@ function wpae_elementor_recipes(): WP_REST_Response {
             'widget.html-enhancement',
         ],
         'recipes' => $recipes,
+        'typed_records' => array_values( wpae_composition_records() ),
     ], 200 );
 }
 
@@ -340,7 +343,103 @@ function wpae_elementor_recipe( WP_REST_Request $request ): WP_REST_Response {
 
     return new WP_REST_Response( [
         'ok' => true,
-        'recipe' => $recipes[ $id ],
+        'recipe' => array_merge( $recipes[ $id ], [ 'variant_records' => wpae_elementor_recipe_variants( $recipes[ $id ] ), 'alternatives' => [] ] ),
         'next_steps' => [ 'POST /elementor/compose', 'POST /elementor/normalize', 'POST /elementor/validate' ],
     ], 200 );
+}
+
+
+/** Versioned typed records describe existing Plan decisions; no executable templates. */
+function wpae_composition_records(): array {
+	$records = [];
+	foreach ( [ 'hero', 'about' ] as $family ) {
+		foreach ( [ 'split_60_40', 'split_50_50', 'split_40_60' ] as $composition ) {
+			foreach ( [ 'right', 'left' ] as $side ) {
+				$id = $family . '.' . $composition . '.' . $side;
+				$records[ $id ] = [ 'id' => $id, 'version' => 1, 'family' => $family, 'scope' => [ 'page' ], 'composition' => $composition,
+					'slots' => [ 'copy' => 'exact_role_refs', 'cta' => 'all_explicit_links', 'media' => 'one_authorized_family_asset' ],
+					'media' => [ 'min' => 1, 'max' => 1 ], 'groups' => [ 'min' => 1, 'max' => 1 ],
+					'policy' => [ 'composition' => $composition, 'desktop' => $composition, 'tablet' => 'split_50_50', 'media_side' => $side, 'mobile' => 'copy_first_stack' ],
+					'variant_kind' => 'layout_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button', 'image' ] ];
+			}
+		}
+	}
+	foreach ( [ [ 'hero.text_only', 'hero', 'stacked_left', 0, 'structural_alternative' ], [ 'benefits.grid', 'benefits', 'three_cards', 0, 'structural_alternative' ], [ 'benefits.editorial_list', 'benefits', 'editorial_list', 0, 'structural_alternative' ], [ 'benefits.linear', 'benefits', 'linear', 0, 'legacy_alias' ], [ 'pricing.tiers', 'pricing', 'three_cards', 0, 'default' ], [ 'faq.native', 'faq', 'linear', 0, 'default' ] ] as [ $id, $family, $composition, $media, $kind ] ) {
+		$records[ $id ] = [ 'id' => $id, 'version' => 1, 'family' => $family, 'scope' => [ 'page' ], 'composition' => $composition,
+			'slots' => [ 'copy' => 'all_exact_refs', 'groups' => 'ordered_owned_role_refs', 'cta' => 'all_explicit_links' ],
+			'media' => [ 'min' => $media, 'max' => $media ], 'groups' => [ 'min' => in_array( $family, [ 'benefits', 'pricing' ], true ) ? 2 : 1, 'max' => $family === 'hero' ? 1 : ( $family === 'benefits' ? 6 : null ) ],
+			'policy' => [ 'composition' => $composition, 'desktop' => $composition, 'tablet' => 'stack', 'mobile' => 'stack' ], 'variant_kind' => $kind, 'distinct' => $kind !== 'legacy_alias',
+			'capabilities' => $family === 'faq' ? [ 'container', 'accordion' ] : array_merge( [ 'container', 'heading', 'text-editor' ], $family === 'benefits' ? [ 'icon' ] : [ 'button' ] ) ];
+	}
+	foreach ( $records as &$record ) {
+		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
+		if ( $record['id'] === 'benefits.linear' ) { $record['alias_of'] = 'benefits.grid'; }
+		$record['implementation_status'] = 'implemented_source';
+		$record['provenance'] = [ 'source' => 'typed_plan', 'catalog' => 'wpae-compositions-v1' ];
+		$record['hash'] = hash( 'sha256', wp_json_encode( $record ) );
+	}
+	unset( $record );
+	return $records;
+}
+
+function wpae_composition_family_compositions(): array {
+	$families = [];
+	foreach ( wpae_composition_records() as $record ) { $families[ $record['family'] ][] = $record['composition']; }
+	foreach ( $families as &$compositions ) { $compositions = array_values( array_unique( $compositions ) ); }
+	return $families;
+}
+
+/** Resolve once. A conflicting explicit selection is a refusal, never a downgrade. */
+function wpae_composition_resolve( array $brief, array $context, string $composition, string $side ): array {
+	$records = wpae_composition_records();
+	$family = (string) ( $brief['intent']['archetype'] ?? '' );
+	$id = $context['composition_record'] ?? '';
+	$explicit = $id !== '';
+	$errors = [];
+	if ( ! is_string( $id ) ) { return [ 'errors' => [ 'composition_record_invalid' ] ]; }
+	if ( ! $explicit ) {
+		foreach ( $records as $candidate ) {
+			if ( $candidate['family'] === $family && $candidate['composition'] === $composition && ( $candidate['policy']['media_side'] ?? $side ) === $side ) { $id = $candidate['id']; break; }
+		}
+	}
+	$record = $records[ $id ] ?? [];
+	if ( ( $brief['policy']['library']['source'] ?? '' ) === 'required' ) { $errors[] = 'composition_library_slot_map_unavailable'; }
+	if ( ! $record ) { return [ 'errors' => [ 'composition_record_unknown' ] ]; }
+	if ( isset( $context['composition_version'] ) && $context['composition_version'] !== $record['version'] ) { $errors[] = 'composition_version_unknown'; }
+	if ( $record['family'] !== $family ) { $errors[] = 'composition_cross_family'; }
+	if ( ! in_array( $brief['intent']['scope'] ?? 'page', $record['scope'], true ) ) { $errors[] = 'composition_scope_unsupported'; }
+	foreach ( [ 'composition', 'media_side' ] as $kind ) {
+		$value = wpae_design_plan_constraint_value( $brief, $kind );
+		if ( $value !== null && $value !== ( $record['policy'][ $kind ] ?? null ) ) { $errors[] = 'composition_brief_conflict:' . $kind; }
+	}
+	$count = count( (array) ( $brief['media_references'] ?? [] ) );
+	if ( $count < $record['media']['min'] || $count > $record['media']['max'] ) { $errors[] = 'composition_media_cardinality'; }
+	$groups = count( (array) ( $brief['groups'] ?? [] ) );
+	if ( $groups < $record['groups']['min'] || ( $record['groups']['max'] !== null && $groups > $record['groups']['max'] ) ) { $errors[] = 'composition_group_cardinality'; }
+	$profile = $context['visual_profile'] ?? '';
+	if ( ! is_string( $profile ) || ( $profile !== '' && ! in_array( $profile, $record['visual_profiles'], true ) ) ) { $errors[] = 'composition_visual_profile_unsupported'; }
+	return [ 'record' => $record, 'source' => $explicit ? 'explicit_record' : ( wpae_design_plan_constraint_value( $brief, 'composition' ) !== null || wpae_design_plan_constraint_value( $brief, 'media_side' ) !== null ? 'explicit_brief' : 'documented_default' ), 'visual_profile' => is_string( $profile ) ? $profile : '', 'errors' => $errors ];
+}
+
+/** Old REST recipes have one actual tree each; every other label is an alias. */
+function wpae_elementor_recipe_variants( array $recipe ): array {
+	$variants = [];
+	foreach ( $recipe['variants'] as $label ) {
+		$alias = $label !== $recipe['default_variant'];
+		$variants[ $label ] = [ 'requested_variant' => $label, 'effective_variant' => $recipe['default_variant'], 'variant_kind' => $alias ? 'legacy_alias' : 'default', 'distinct' => ! $alias, 'implementation_status' => $alias ? 'compatibility_alias' : 'implemented_legacy' ];
+	}
+	return $variants;
+}
+
+
+function wpae_composition_visual_profiles(): array {
+	$type = static fn( string $desktop, string $tablet, string $mobile, string $weight, string $line ): array => [ 'font_family' => 'inherit', 'desktop' => $desktop, 'tablet' => $tablet, 'mobile' => $mobile, 'weight' => $weight, 'line_height' => $line, 'line_height_tablet' => $line, 'line_height_mobile' => $line ];
+	return [
+		'editorial_light' => [ 'color.page_bg' => '#ffffff', 'color.surface' => '#ffffff', 'color.text' => '#17202a', 'color.muted' => '#475569', 'color.border' => '#cbd5e1',
+			'type.display' => $type( '3.25rem', '2.5rem', '2rem', '700', '1.1' ), 'type.body' => $type( '1.0625rem', '1rem', '1rem', '400', '1.65' ), 'type.feature' => $type( '1.25rem', '1.1875rem', '1.125rem', '600', '1.25' ),
+			'space.section' => '5rem', 'space.section_tablet' => '3.5rem', 'space.section_mobile' => '2.5rem', 'space.component' => '1.25rem', 'space.component_tablet' => '1rem', 'space.component_mobile' => '0.875rem', 'radius.card' => '0.25rem', 'layout.copy_width' => '38rem', 'space.card' => '1.25rem' ],
+		'soft_cards_light' => [ 'color.page_bg' => '#f1f5f9', 'color.surface' => '#ffffff', 'color.text' => '#0f172a', 'color.muted' => '#475569', 'color.border' => '#b8c4d2',
+			'type.display' => $type( '2.75rem', '2.25rem', '1.875rem', '600', '1.2' ), 'type.body' => $type( '1rem', '1rem', '0.9375rem', '400', '1.6' ), 'type.feature' => $type( '1.1875rem', '1.125rem', '1.0625rem', '600', '1.35' ),
+			'space.section' => '4rem', 'space.section_tablet' => '3rem', 'space.section_mobile' => '2rem', 'space.component' => '1.75rem', 'space.component_tablet' => '1.25rem', 'space.component_mobile' => '1rem', 'radius.card' => '1.25rem', 'layout.copy_width' => '32rem', 'space.card' => '1.75rem' ],
+	];
 }

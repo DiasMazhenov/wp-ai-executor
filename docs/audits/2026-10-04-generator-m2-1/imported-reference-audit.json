@@ -1,0 +1,473 @@
+[
+  {
+    "file": "02-services.json",
+    "category": "benefits",
+    "sha256": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
+    "empty_columns": 0,
+    "widgets": [
+      "heading",
+      "icon-box",
+      "image",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "04-job-listing.json",
+    "category": "benefits",
+    "sha256": "4c1ec279cb6eeebc24fbf6eed28d6307d211f76b8883b22eb352ba15d9c13448",
+    "empty_columns": 0,
+    "widgets": [
+      "button",
+      "heading",
+      "icon-box",
+      "icon-list",
+      "image",
+      "image-carousel",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 5,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "app-showcase-services.json",
+    "category": "benefits",
+    "sha256": "ca3dd9e7a29917750b8093633736fa9437b48fb70b76608e2a04508a0f1de4d8",
+    "empty_columns": 0,
+    "widgets": [
+      "form",
+      "heading",
+      "icon-box",
+      "image",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "appraxx-feature-section-1.json",
+    "category": "benefits",
+    "sha256": "8426d881d11875e337b9536a8b48df38846601895f311e6169e825fe15c5bad9",
+    "empty_columns": 0,
+    "widgets": [
+      "icon-box"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 3,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "appraxx-feature-section-2.json",
+    "category": "benefits",
+    "sha256": "49c6eab80276a113621c2aee24df5f2c7a49916cec7c62cf900527aa45819454",
+    "empty_columns": 0,
+    "widgets": [
+      "icon-box"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 5,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "appraxx-feature-section-with-title.json",
+    "category": "benefits",
+    "sha256": "2642dbef0a9e211402d7f60cdf2f6a3bdbfdb1236d15a9ae772471d172cb3c76",
+    "empty_columns": 0,
+    "widgets": [
+      "divider",
+      "heading",
+      "icon-box",
+      "stax-el-heading"
+    ],
+    "buttons": 0,
+    "stax_widgets": [
+      "stax-el-heading"
+    ],
+    "ekiticons": 5,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "appraxx-hero-section-1.json",
+    "category": "hero",
+    "sha256": "0c19530562d4bec571949190e278e4c98e50ee6166a9bd76a530bb687bb21c95",
+    "empty_columns": 0,
+    "widgets": [
+      "image",
+      "stax-el-button",
+      "stax-el-heading"
+    ],
+    "buttons": 0,
+    "stax_widgets": [
+      "stax-el-button",
+      "stax-el-heading"
+    ],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "appraxx-hero-section-2.json",
+    "category": "hero",
+    "sha256": "aba18d617e136dc3876b5f9e4e2ba5ebbf25012df2f5886e7b7523fe6f92daae",
+    "empty_columns": 0,
+    "widgets": [
+      "elementskit-contact-form7",
+      "heading",
+      "stax-el-button",
+      "stax-el-heading"
+    ],
+    "buttons": 0,
+    "stax_widgets": [
+      "stax-el-button",
+      "stax-el-heading"
+    ],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "appraxx-hero-section-3.json",
+    "category": "hero",
+    "sha256": "e22818f0fa6fa86f308962642992e5eb0df8be8d72548739830b2a018f23dc25",
+    "empty_columns": 0,
+    "widgets": [
+      "image",
+      "stax-el-button",
+      "stax-el-heading"
+    ],
+    "buttons": 0,
+    "stax_widgets": [
+      "stax-el-button",
+      "stax-el-heading"
+    ],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "block-course-boxes.json",
+    "category": "benefits",
+    "sha256": "a40df0dcc7c5642db7d06759b97c910f55b7e94ad30d6a819167068d2ceb944f",
+    "empty_columns": 0,
+    "widgets": [
+      "button",
+      "divider",
+      "heading",
+      "icon",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 4,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "block-course-index.json",
+    "category": "benefits",
+    "sha256": "9659b7374df4154aef8c478fdcda968b6a8d8e6d04fba5fbcbf409a0d87480c7",
+    "empty_columns": 0,
+    "widgets": [
+      "accordion",
+      "button",
+      "divider",
+      "heading",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 1,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "block-feature-boxes.json",
+    "category": "benefits",
+    "sha256": "0d8cbc50d1d1e20a8f0d877f08e1f772745308dc79a995c24163ce391ea78547",
+    "empty_columns": 1,
+    "widgets": [
+      "button",
+      "heading",
+      "icon",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 1,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "block-feature-grid.json",
+    "category": "benefits",
+    "sha256": "670d031aba9a67cd896a144fe2b4b798ececfc8fc85f9602a88b9bdc4f3f9cfc",
+    "empty_columns": 0,
+    "widgets": [
+      "button",
+      "divider",
+      "heading",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 1,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "block-features.json",
+    "category": "benefits",
+    "sha256": "0a4bbf3cc5c0cef2ff0d56a440605d046c762a8077ff38dcdb87a3d49f836205",
+    "empty_columns": 0,
+    "widgets": [
+      "divider",
+      "heading",
+      "icon-box"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "block-hero.json",
+    "category": "hero",
+    "sha256": "061dcab149beed07e387de88e77975909ea5adc1ed6c9725bd531b8038987315",
+    "empty_columns": 2,
+    "widgets": [],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "career.json",
+    "category": "benefits",
+    "sha256": "d606f2564895348969c26a3181be60cce950f2b932a7beb061fa67cf93ed9fc0",
+    "empty_columns": 4,
+    "widgets": [
+      "animated-headline",
+      "button",
+      "divider",
+      "heading",
+      "icon",
+      "icon-list",
+      "image",
+      "media-carousel",
+      "progress",
+      "social-icons",
+      "text-editor"
+    ],
+    "buttons": 6,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "features.json",
+    "category": "benefits",
+    "sha256": "3b159639165ba8252c56da6f570c9a1c440332a940bd62dc9c5187dfbb9b73c8",
+    "empty_columns": 3,
+    "widgets": [
+      "heading",
+      "image",
+      "image-box",
+      "text-editor",
+      "toggle"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "our-facilities.json",
+    "category": "benefits",
+    "sha256": "9d576bc3acf86e611876c227e48ee683bfb066b6eb70cfe5c62b03ac7922f906",
+    "empty_columns": 1,
+    "widgets": [
+      "divider",
+      "form",
+      "heading",
+      "image-box"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "our-services.json",
+    "category": "benefits",
+    "sha256": "0deb0c8453516942f700e256f08e8028a7385a0e175552351957b8f7df56f66f",
+    "empty_columns": 1,
+    "widgets": [
+      "button",
+      "divider",
+      "heading",
+      "icon",
+      "icon-list",
+      "image",
+      "spacer",
+      "testimonial-carousel",
+      "text-editor"
+    ],
+    "buttons": 10,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "page-course-details.json",
+    "category": "benefits",
+    "sha256": "0674ba06c5ecc5f454eed3d8c3a36ddedc0a4382597c1cab5693aa50315b1b08",
+    "empty_columns": 0,
+    "widgets": [
+      "accordion",
+      "button",
+      "divider",
+      "heading",
+      "spacer",
+      "text-editor",
+      "video"
+    ],
+    "buttons": 2,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "page-courses.json",
+    "category": "benefits",
+    "sha256": "1456d020931e421e83c6bd23167ab5d78a125d0e4a5cd3d37a8bd5974154c7ab",
+    "empty_columns": 1,
+    "widgets": [
+      "button",
+      "divider",
+      "heading",
+      "icon",
+      "image",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 12,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "service-detail.json",
+    "category": "benefits",
+    "sha256": "64620653e6951f9c03f96a7a9d0fb8965973a52d854b176fed91216841e7d8fe",
+    "empty_columns": 1,
+    "widgets": [
+      "animated-headline",
+      "form",
+      "heading",
+      "image",
+      "text-editor",
+      "toggle"
+    ],
+    "buttons": 0,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "service.json",
+    "category": "benefits",
+    "sha256": "890fba64806eebd442ea4e599601be1d32c6239094a3ed4991e2531d52c6618c",
+    "empty_columns": 0,
+    "widgets": [
+      "button",
+      "heading",
+      "icon-list",
+      "image",
+      "image-box",
+      "text-editor"
+    ],
+    "buttons": 5,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  },
+  {
+    "file": "services.json",
+    "category": "benefits",
+    "sha256": "1e66a058733c8df3f9b594b53e81c9f5293f777e075a5b9f83fa7b48eb93e7c4",
+    "empty_columns": 2,
+    "widgets": [
+      "button",
+      "heading",
+      "icon-list",
+      "jkit_button",
+      "jkit_heading",
+      "jkit_icon_box",
+      "jkit_pie_chart",
+      "jkit_testimonials",
+      "spacer",
+      "text-editor"
+    ],
+    "buttons": 2,
+    "stax_widgets": [],
+    "ekiticons": 0,
+    "typed_slot_map": "NOT_IMPLEMENTED",
+    "dependency_status": "requires_runtime_verification",
+    "template_fidelity": "NOT_ACCEPTED"
+  }
+]

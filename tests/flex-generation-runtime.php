@@ -100,7 +100,9 @@ function wpae_block_library_retrieve_for_prompt( ...$args ) {
 	}
 	return $library;
 }
-function wpae_count_elementor_validation_errors_by_type( array $errors ) { return []; }
+function add_filter( ...$args ) { return true; }
+require_once __DIR__ . '/../includes/support/logging.php';
+require_once __DIR__ . '/../includes/skills/skills.php';
 function wpae_elementor_update( $request ) {
     if ( ! $request->get_param( 'dry_run' ) ) { $GLOBALS['m1_write_attempts'] = (int) ( $GLOBALS['m1_write_attempts'] ?? 0 ) + 1; }
     $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ) ] );
@@ -2427,7 +2429,7 @@ $services_content_plan_hash = (string) ( $services_response_data['diagnostics'][
 $services_plan_brief_hash = (string) ( $services_response_data['diagnostics']['design_pipeline']['plan']['brief_hash'] ?? '' );
 $services_readback_matches = wp_json_encode( $services_readback ) === wp_json_encode( $GLOBALS['page_data'] );
 check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'pipeline' && ( $services_response_data['diagnostics']['provider_calls'] ?? -1 ) === 0 && count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, 'Active ordinary Services chat with a retrieved library candidate takes the typed pipeline and one mocked write: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'services' => $services_trace, 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '' ] ) );
-check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) > $services_retrieval_before && ( $services_trace['effective_route'] ?? '' ) === 'services_typed_recipe_pipeline' && ( $services_trace['recipe_id'] ?? '' ) === 'services.text_icon_list' && ( $services_trace['recipe_source'] ?? '' ) === 'documented_default' && empty( $services_trace['library_required'] ) && empty( $services_trace['library_applied'] ), 'Candidate presence does not route ordinary Services into library-agent or claim library application' );
+check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) === $services_retrieval_before && ( $services_trace['effective_route'] ?? '' ) === 'services_typed_recipe_pipeline' && ( $services_trace['recipe_id'] ?? '' ) === 'services.text_icon_list' && ( $services_trace['recipe_source'] ?? '' ) === 'documented_default' && empty( $services_trace['library_required'] ) && empty( $services_trace['library_applied'] ), 'M2 ordinary canonical Services skips unused retrieval and preserves the typed recipe contract' );
 check( $services_brief_hash !== '' && $services_brief_hash === $services_content_plan_hash && $services_brief_hash === $services_plan_brief_hash && ( $services_operation_ledger['brief_hash'] ?? '' ) === $services_brief_hash, 'One canonical Brief hash is shared by content plan, DesignPlan and durable operation ledger' );
 check( count( $services_written ) === 1 && count( (array) $services_readback ) === count( (array) $GLOBALS['page_data'] ) && $services_readback_matches && ( $services_operation_ledger['current_state'] ?? '' ) === 'written' && ( $services_operation_ledger['root_ids'] ?? [] ) === [ (string) ( $services_written[0]['id'] ?? '' ) ] && ( $services_operation_ledger['saved_hash'] ?? '' ) === hash( 'sha256', (string) wp_json_encode( $services_readback ) ), 'One successful transaction has a matching saved readback and operation/root/hash record' );
 check( count( $services_typed_list ) === 1 && count( $services_typed_rows ) === 3 && ! $find_service_class_nodes( $services_written, 'wpae-services-photo-grid' ) && ! $find_service_class_nodes( $services_written, 'wpae-services-split-lead' ) && ! $find_service_class_nodes( $services_written, 'wpae-bento-grid' ) && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3 && ! in_array( 'image', $services_written_widgets, true ), 'Existing execute normalizers preserve the selected text/icon recipe topology through mocked write/readback' );
@@ -2490,6 +2492,7 @@ $run_services_route = static function ( string $message, array $responses, array
 	$GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 	$GLOBALS['m1_write_attempts'] = 0;
 	$GLOBALS['responses'] = $responses;
+	$GLOBALS['library_retrieval_calls'] = [];
 	$GLOBALS['fail_write_boundary'] = $fail_write;
 	$GLOBALS['services_boundary_refusal'] = $boundary_refusal;
 	$request = new WP_REST_Request();
@@ -2994,5 +2997,6 @@ if ( getenv( 'WPAE_SERVICES_CHAT_DEMO' ) === '1' ) {
 }
 
 require __DIR__ . '/m1-generation-contract.php';
+require __DIR__ . '/m2-generation-contract.php';
 
 echo 'flex generation runtime: ' . $GLOBALS['checks'] . " checks OK\n";
