@@ -1,0 +1,306 @@
+# Миграция генератора дизайна целиком
+
+Дата source-аудита: 2026-10-04, Asia/Almaty. Baseline: `main`, HEAD `d9f6639516ae76af632bab8fb1dc8e3c1fea8b2d`; runtime commit `ae4f175b33458271822d0fc6cbcab29bd29ba396`; source `v02.11.244` (header и `WPAE_VERSION` в `wp-ai-executor.php`). До аудита tracked tree чистый; 776 untracked-файлов по `git ls-files --others --exclude-standard`, включая содержимое каталогов, сохранены. Этот документ — проверенная карта source и предлагаемый план, не новая реализация и не live acceptance.
+
+## 1. Главный вывод и границы доказательств
+
+Переиспользовать BriefIR → DesignPlan → ElementorIR v2 → существующий native compiler → preview/transaction/readback. Устранить повторные решения до и после compiler; распространить typed composition/slot contracts на разные семейства, сохранив специализированные сущности и реальные interactive widgets. Новая DSL, второй compiler и постоянный параллельный генератор не нужны.
+
+Services — частичная реализация этого направления: canonical groups, точные links/media refs и три recipe topology уже существуют. Это не универсальный intake, visual-direction selector или доказательство текущего render. [Services migration](services-generation-migration.md) сохраняет этапы и исторические evidence.
+
+Подтверждено чтением определений и production callers в текущем HEAD:
+
+1. **Повторная интерпретация.** `chat_request` сначала определяет action/family; для non-Services `content_plan` независимо разбирает message и Brief, а orchestration строит Brief/DesignPlan снова. Raw-message fallback, library adapter и CTA/media helpers могут снова извлекать содержание. Services передаёт canonical Brief большей части downstream, но до него остаётся classifier, а recipe decision повторяется при enrichment media (не при каждом запросе).
+2. **Routing зависит от каталога.** `library_agent_eligible` исключает Services, но для остальных active families наличие candidates переключает `wpae_design_generation_route(..., true)` на `library_agent`. `library_only_archetype` значит отсутствие typed family в schema, а пользовательский library-only — другая policy. Каталог способен менять исполнителя дизайна без нового пользовательского решения.
+3. **Фиктивные advertised variants.** `/elementor/compose` валидирует variant, но всегда берёт одно `recipe.elementor_data`; variant участвует в instance identity/rekey и response metadata. Ни topology, ни responsive, ни визуальное направление не выбираются по variant.
+4. **Несколько visual/control owners.** Provider raw settings, template settings, EDDE Hero, fallback variant, токены, compiler и normalizers меняют пересекающиеся поля. Даже active compiled tree проходит generic normalization и финальный Process contract в execute. Компилятор сам заменяет низкоконтрастный muted token. Утверждение «validation только проверяет» пока неверно.
+5. **Охват слоёв расходится.** Classifier catalog — 12 families плюс отдельное распознавание Services (13 в совокупности); typed DesignPlan — 9; compiler registry — container плюс 8 widgets. Forms, navigation, dynamic content и arbitrary carousel не становятся поддержанными из-за импортированного шаблона. Lifecycle хранит hashes/state, но не полный canonical Brief/Plan для воспроизводимого repair.
+
+Source read-only аудит не запускал PHP/Node suites, provider calls, browser, WP writes, release или screenshots. Исторические v242 live observations и v244 install/readback отделены ниже. Исчезновение render post=5214 имеет **неустановленную причину** и не блокирует этот source-аудит. Graphify index найден (mtime 2026-09-01); bounded query использован только для навигации, его старые line numbers перепроверены по source. Graph не обновлялся и не включается в коммит.
+
+## 2. Production source map: путь → вход → владелец → выход → write boundary
+
+REST callbacks проверены в `includes/rest/routes.php`: `/llm/chat` → `wpae_llm_chat` → `wpae_llm_chat_request`; `/llm/undo` → `wpae_llm_undo`; `/design-operations/target` → target diagnostics; `/elementor/compose` → composer; `/elementor/update`, `/elementor/patch`, `/elementor/page` → page-update endpoints. Chat JS `assets/js/elementor-llm-chat.js` отправляет request context, sync/readback и review/repair; composer — отдельный API, не тождественен chat pipeline.
+
+| Путь | Вход | Текущий владелец решения | Выход | Write boundary |
+|---|---|---|---|---|
+| Chat create/edit/repair intake | message, selected elements, post, flags, identity | `chat_request`, `is_action_request`, `is_targeted_edit_request`, replacement shape/guard | scope flags, family, target/revision | Пока no-write; conflicting append/edit и чужой replacement отклоняются |
+| Family | message/intent head/labeled pairs | `detect_block_archetype`, `brief_ir_archetype`, content extractors | archetype; unknown/ambiguous | Классификация сама не даёт permission |
+| Content/semantic plan | message; для Services переданный Brief | `content_plan`, extract requested/labeled content; `services_content_plan_from_brief` | pairs/counts/fidelity expectations | No-write; non-Services повторно парсит |
+| Canonical Brief | source text + допустимый context | `brief_ir_parse` + validators; structured Services adapter opt-in | exact_text/spans, content refs/groups, links, constraints, media intent | No-write; structured adapter не вызывается автоматически production |
+| Typed plan | Brief + post/recipe context | `design_plan_from_brief`, Services recipe decision/plan | sections/roles/items, composition/responsive/tokens/slot bindings | Active invalid plan отказывает до legacy write; shadow только диагностирует новый план |
+| Retrieval/preflight | message/family + catalog | `block_library_retrieve_for_prompt`, `preflight_library_candidates` | максимум 3 adapted compatible candidates | Adapter/shape/fidelity/semantic checks до provider; preflight tree переиспользуется |
+| Library agent | candidate keys + original prompt | provider выбора, `resolve_library_choice`, template adapter | адаптированное native tree, source diagnostics | `execute_action` → existing update transaction; abstain/no compatible — no-write |
+| Active typed | validated Brief/Plan/LayoutReport | `elementor_ir_from_design_plan` → `native_elementor_compile` | native tree, compile report, deterministic operation IDs | execute preview → update → finalize/readback; replacement через owner guard |
+| EDDE Hero | bounded model plan + legacy tree | `decision-engine.php` | ширины/direction/surface/type/CTA controls Hero | Далее legacy/shared execute; это не универсальный DesignPlan compiler |
+| Legacy provider | prompt/runtime/editor context | `WPAE_LLM_Design::prompt`, transport/provider, action decode/repair | raw Elementor action/settings | shape/fidelity gates → execute; targeted edits идут patch branch |
+| Legacy fallback | original message после invalid provider/repair или quality failure | `build_fallback_action` + extraction/variant helpers | новый deterministic native tree | fallback policy checks; затем shared execute. Routing metadata `fallback_allowed=false` не устраняет эту ветку |
+| Normalization/visual grammar | tree, message, archetype, preserve flags | normalize.php, library geometry/type, CTA/media, bento/process helpers, token map | изменённые controls/content/layout | Chat/preflight/execute callers; не только проверка |
+| Validation | Brief/Plan/IR/native data, runtime widgets, scope | validators, capabilities, preflight/design contract | refusal/report | No provider/write при hard failure; static LayoutReport не render |
+| Preview/write | expected current tree, proposed delta, ownership context | `execute_action` / `execute_patch_action`, `page-update.php` | dry run, snapshot, append/replace/patch | Единственная сохраняемая transaction boundary |
+| Save/readback | expected-before snapshot + expected-after + autosave/cache state | transactions `save`, `verify`, `finalize` | durable saved match/rollback/status | `_elementor_data` save/readback, optimistic conflict protection, cache refresh |
+| Target/lifecycle | operation identity/post/root/revision/hash/fingerprint | operation ledger, editor root map, JS `targetedDesignReplacement` | unique eligible owner, refusal/reconcile | Нельзя вывести owner только из CSS class/root ID |
+| Render/repair/Undo | scoped current revision, browser evidence/findings | editor sync + Vision/review handlers, patch/replacement guard, Undo | report, bounded repair либо guarded restore | Каждая новая запись через тот же update/patch/readback; repair не append |
+| Composer/blueprint/library instantiate | explicit recipe/slots или imported record | compose.php, blueprint.php, block-library instantiate | native JSON или отдельная instantiation action | compose не сохраняет страницу; direct mutation endpoints не равны typed chat |
+
+Определения с проверенными line anchors приведены в §11. Основные callers: `llm.php` строки 10893–11029 (classify/content/Brief/Plan), 11092–11124 (library switch/preflight), 11219–11220 (shadow compile), 11247–11296 (active compile/execute), 10385 (preflight adaptation), 11907/11942/11992/12116 (legacy fallback), 12055–12214 (visual normalization), 10503–10707 (execute/preview/write). Это карта путей, а не обещание, что все ветки работают на установленном сайте.
+
+## 3. Coverage/capability matrix
+
+«Планируется/компилируется» означает существующую source-ветку. «Запись условная» требует runtime availability, scope, fidelity, validation и transaction; это не runtime-подтверждение. Live-column — только исторические записи canonical reports, без нового прогона и без переноса PASS на v244.
+
+| Класс | Распознаётся | Brief / typed DesignPlan | IR/compiler | Разрешено к записи | Elementor/live evidence |
+|---|---|---|---|---|---|
+| Hero/intro | Hero | exact copy/CTA/media; split/stack | copy/media/actions | Условно active; candidates могут перевести в library agent | Исторические editor/public кадры; v244 не принят |
+| About/editorial | About | family есть в Brief detection; нет About в typed schema | generic split primitive существует для Hero/CTA, About recipe отсутствует | Library/legacy условно; typed About нет | v232 About generation/patch наблюдались; нет общей новой приёмки |
+| Services | Services | canonical groups + три recipe | photo grid, selected lead split, icon rows | Active typed; mapped library-only только photo map | v242 три topology и content; mobile obstructed; v244 repair BLOCKED |
+| Features/Benefits | Benefits aliases | paired feature title/body | feature cards icon/copy | Active/library условно | Исторические no-write preflight/plan отказы; нового PASS нет |
+| Team | Team | person fields name/position/bio/media | native person cards | Условно | Исторические generation/отказы разных releases; v244 не принят |
+| Testimonials | Testimonials | quote/author/meta/rating refs | native testimonial cards, не специальный testimonial widget | Условно | Исторические отказы/кадры; текущая полноценная приёмка отсутствует |
+| Logos/partners | Часто Carousel | Нет отдельного typed logo contract | image доступен; carousel compiler нет | Imported/legacy при runtime compatibility | Reference Partners patch/readback v235; это не general carousel acceptance |
+| Stats | Нет самостоятельного typed family | Нет typed metric entity plan | heading/text возможны; generic output не Stats support | Только совместимые legacy/imported деревья | Нет выделенной общей приёмки |
+| Process/timeline | Process | step refs, connector/layout constraints | native heading/text/divider/container | Условно; final execute может перестроить timeline | Историческая v213 left/right/horizontal/alternating проверка; v244 не принят |
+| Pricing/comparison | Pricing | price/period/description/CTA в pricing_items | pricing cards из native heading/text/button | Условно; полноценной comparison-table contract нет | Исторический v230 save/reload; exact price formatting caveat |
+| FAQ/accordion | FAQ | question/answer pairing | classic native accordion | Условно; runtime widget probe | Историческая v213 dual-root/tab binding; текущая новая приёмка отсутствует |
+| Tabs | Не отдельный typed family | Нет typed tab behavior contract | standalone tabs отсутствует в registry/compiler | Не подтверждено; не выдавать accordion за tabs | Нет выделенной приёмки |
+| Gallery/Portfolio | Portfolio; gallery через aliases/legacy зависит от prompt | Нет typed project/gallery plan | image есть; portfolio collection plan нет | Library/legacy условно | Исторические failures; general collection acceptance нет |
+| Carousel | Carousel | Нет typed slide/card contract | Нет image-carousel/nested-carousel compiler support | Legacy/imported runtime check не достаточен для нового adapter | Исторический no-write carousel; произвольные slides не приняты |
+| CTA/contact copy | CTA | 1–2 buttons, copy/media, exact links | native copy/actions optional split | Условно | Исторические CTA evidence; current v244 не принят |
+| Forms | Contact aliases могут попасть в CTA | Нет submit/actions/validation contract | form/MetForm widgets отсутствуют в typed registry | Декоративный contact block возможен; working form не обещана | Submit/delivery acceptance отсутствует |
+| Posts/products/dynamic | Не отдельный typed family; retrieval aliases blog/project | Нет query/entity/dynamic binding schema | Woo widgets/dynamic tags не покрыты typed compiler | Imported widgets требуют dependencies; dynamic scope неподтверждён | Нет query/render acceptance |
+| Navigation/header/mega menu/footer | Mega menu/header; footer retrieval CTA alias | Нет typed navigation/tree/document binding | nav-menu/theme-site-logo не в registry | Page append не устанавливает theme-builder locations/menu assignment | Исторический mega fallback FAIL; навигация не принята |
+| Popup/special documents | Нет typed document kind contract | Нет conditions/triggers/document settings | Присутствие popup JSON не compiler support | Page endpoint создаёт `post_type=page`; update валидирует existing post без полноценного special-scope contract | Нет popup/theme-builder acceptance |
+
+`capability-registry.php` поддерживает `container`, `heading`, `text-editor`, `button`, `image`, `icon`, `icon-list`, `divider`, `accordion`. Availability для widgets требует зарегистрированный Elementor runtime; unknown/registration-not-ready — отказ, а не предположение «Free установлен». Единственный разрешённый semantic downgrade registry — heading → text-editor. Button/image не теряют behavior/media через generic fallback.
+
+Проверенные imported примеры: `block-partners.json` содержит 6 image, `block-brand-logos.json` — heading + 5 image: это статические logo collections. `copyelement/image-carousel-a4516bb.json` — отдельный image-carousel source, не произвольная карусель карточек. `menu.json` содержит theme-site-logo/nav-menu/social-icons и dynamic settings; Theme Builder header имеет nav-menu. `block-contact-form.json`/`metform-contact.json` используют `mf-*` (MetForm); `optin-popup.json` — `form` (Elementor Pro); `single-product.json` — WooCommerce product widgets/dynamic tags. Требуются конкретная установленная dependency, compiler adapter, assets и правильный document scope. Дополнительные плагины/Pro автоматически не устанавливаются. Нормализатор знает специальную конверсию `jkit_heading` → native heading; это не поддержка всего JKit.
+
+## 4. Реальная вариативность
+
+Два разных recipe механизма: `recipes.php` + compose API возвращает заранее готовые native trees; typed Services recipes в `design-plan.php` строят semantic slots и IR. Нельзя приписать исправления typed Services старому compose API.
+
+Для всех 8 composer recipes variant выбирает **одно и то же дерево и controls**, независимо от значения. При одинаковых slots и удалённых generated IDs деревья совпадают; если задан одинаковый instance_id, совпадают и IDs. Проверено чтением полного compose implementation; runtime tests здесь не запускались.
+
+| Advertised recipe/variants | Что реально меняется | Topology / responsive / visual direction | Причина |
+|---|---|---|---|
+| hero.editorial: minimal, split-proof, metric-led | identity/IDs/metadata | Все три одинаковые | compose:74 берёт одно elementor_data |
+| feature.grid: three-cards, dense, proof-led | То же | Одна сетка трёх карточек | Нет variant-specific branches |
+| process.steps: linear, split, timeline | То же | Один native layout | Название timeline не создаёт connector topology |
+| pricing.comparison: two-packages, three-packages | То же | **Всегда две** package cards и два slots | В definitions только package_1/package_2; третьего дерева/слота нет |
+| faq.accordion: simple, compact | То же | Одинаковые две tabs и spacing | Compact не меняет density |
+| cta.band: dark, light, accent | То же | Один цвет/дерево/settings | Variant не применяет palette |
+| proof.timeline: three-points, case-led | То же | Один tree | Variant только accepted label |
+| contact.block: direct, split | То же | Один tree | Split не меняет grouping/direction |
+
+Другие источники вариативности действительно меняют некоторые controls, но не равны новой композиции:
+
+- Fallback variant делит variant index на группы по 10 (`intdiv(...,10)`), меняет root padding/gap, card palette/radius, grid widths/justify и иногда direction/width. Это layout-control diversity одного дерева; разные цвета внутри группы не новая topology. Later bento/process normalizers могут перезаписать ширины/структуру. Нужен canonical signature после последней compilation boundary, не count variant IDs.
+- Typed Hero split_60_40 / 50_50 / 40_60 меняют ratio, stacked_left меняет direction; copy/media node roles часто те же. Mobile copy-first общий. Это настоящая геометрическая вариативность, но не четыре разные структуры дерева и не четыре visual directions. EDDE отдельно принимает alignment/surface/type и потом меняет legacy native settings.
+- Typed Benefits/Team/Testimonials имеют специализированные item roles, но одна основная карточная структура на family. Pricing — специализированные поля в карточках; наличие schema composition enum само не доказывает несколько работающих compositions для каждого family.
+- Services photo/split/text — три различимых topology (image/card grid; image lead + remaining rows; icon/copy rows). Media ownership, lead order и responsive policies различаются. Source доказан, v242 live исторически подтверждал topology, v244 render acceptance остаётся BLOCKED.
+
+Целевая variant signature хранит semantic node hierarchy, slot ownership/order, behavior, direction/wrap/basis и responsive policy. IDs, texts, случайные palette values и operation metadata исключаются из topology signature. Visual-direction signature хранится отдельно. Просьба «предложи варианты» возвращает 2–3 планы/preview decisions без записи всех вариантов; пользователь выбирает перед единственным append.
+
+## 5. Минимальные целевые контракты A–F
+
+```mermaid
+flowchart LR
+    A[Request + authorized scope + assets] --> B[Intake / content resolution]
+    B --> C[Frozen BriefIR]
+    C --> D[DesignPlan: composition + visual direction + behavior]
+    E[Verified library compositions / references] --> D
+    D --> F[ElementorIR v2]
+    F --> G[Existing native compiler + capabilities]
+    G --> H[Validate + preview]
+    H --> I[Existing transaction + readback + ledger]
+    I --> J[Real Elementor render evidence]
+    J --> K[Bounded owned repair / Undo]
+    K --> D
+```
+
+Repair использует сохранённые Brief/Plan и guarded delta; повторное выполнение intake по первоначальному message не требуется.
+
+Расширяем существующие структуры с versioned migration/default adapters. Имена ниже — предлагаемые поля, не уже реализованный API.
+
+| Граница | Контракт / минимальное расширение | Что не решает downstream |
+|---|---|---|
+| A: BriefIR content/intent | intent action/family/confidence/ambiguity; scope intent; entities + stable groups/content refs; exact/generated copy; links; media intent + approved assets; source spans; library/fallback policy | Не переклассифицирует исходный текст, не парсит CTA заново, не придумывает clients/prices |
+| B: DesignPlan composition | recipe_id/version/source, ordered semantic slot_bindings, lead ref, allowed structure, responsive decision, alternatives before selection | Template availability не меняет route; compiler не выбирает recipe |
+| C: DesignPlan visual direction | resolved token refs/provenance, hierarchy/density/surfaces/accent/media treatment, accepted overrides and permitted defaults | Normalizers не перекрашивают/не заменяют принятые typography/layout decisions |
+| D: Native behavior | typed accordion pairs/state; carousel item kind/slides/navigation; tabs; form fields/actions; navigation tree/menu ref + capability result | Не заменяет interaction плоским copy и не выводит working form из button |
+| E: ElementorIR/compiler | existing semantic nodes + structure roles → single native-control resolution, runtime capabilities/control schema, units/global refs/device mapping, deterministic IDs | Модель не emits widgetType/settings/IDs; output не переинтерпретируется visual grammar |
+| F: Existing lifecycle | immutable bounded canonical Brief/Plan decision payload + hashes, recipe/compiler versions, ownership/revision/state; preview/write/readback/render evidence; bounded repair/Undo | Editor global pending candidate не определяет owner выбранного root |
+
+Общие структуры: **stack**, **split**, **wrapping grid**, **repeat/list** с copy/media/actions. Реализовать как расширение текущих section/children/layout/responsive fields и helpers в existing DesignPlan/IR; не универсальную runtime DSL. `repeat` хранит entity_kind и refs, не превращает всё в title/body. Pricing сохраняет price_text/currency/period/features/CTA; person — name/position/bio/portrait; testimonial — quote/author/meta/rating provenance; navigation item — label/href/children/menu identity; FAQ — question/answer pair. Общая геометрия не меняет entity semantics.
+
+Canonical Brief freeze происходит **после** intake + permitted content generation + asset resolution; все derivations используют один hash. Services сейчас может enrich media и повторить recipe selector: в общем пути media resolution вынести перед freeze, recipe decision выполнять один раз. Compile/refusal никогда не меняет family или запускает другой generator.
+
+Exact mode требует сохранить предоставленные строки/порядок/links с source spans. Generated mode разрешает написать title/body при отсутствии готового copy, сохраняет `provider_generated`, instruction provenance/model и запрет выдумывать бизнес-факты. Hybrid разрешает generate только явно отсутствующие разрешённые slots. Неоднозначные факты/ссылки/обязательные assets уточняются; отсутствие готового заголовка у творческого запроса само по себе не причина отказа.
+
+## 6. Единственные владельцы решений
+
+| Решение | Current owners | Target owner | Ветки, перестающие решать |
+|---|---|---|---|
+| Intent/family | chat classifier, Brief classifier, extractors/fallback | Intake → frozen Brief.intent | downstream raw-message classify и branch-by-regex |
+| Content grouping | labeled pairs, content_plan, Brief roles, template repeat adapter | Brief typed entities/groups | adapter pairing/count inference, fallback reparsing |
+| Copy fidelity | substring needles, Brief refs, content repair injection | Brief exact/generated + validator compare | clear/apply fallback copy, placeholder injection |
+| Links | Brief URL, requested CTA regex, template/fallback links | Brief per-action link ref | normalize_requested_cta выбирающий URL; template URL retention |
+| Assets | Brief media, planner defaults, reference catalog, library images, normalizer | Pre-freeze asset resolver + ReferenceSet provenance | planner stock substitution, compiler reassignment/group inference |
+| Composition | Plan, EDDE, candidates, provider tree, fallback variants/bento | DesignPlan recipe/slot decision | library auto-route, raw provider tree, postcompile layout selection |
+| Visual direction | project defaults/token map/template/EDDE/normalizers/compiler | DesignPlan resolved direction → token-resolution | generic color/type/spacing rewrites после compile |
+| Behavior | provider/template widget choice, capabilities/IR | Typed behavior contract + runtime capability adapter | silent accordion/carousel/form degradation |
+| Scope | prompt regex, selected IDs, page endpoint, replacement flags | Brief scope intent + lifecycle authorized scope guard | model grants page/theme scope, wrong selected-root association |
+| Fallback policy | routing metadata, prompt regex, invalid-output branches | Brief policy interpreted once by orchestration | sequential provider→repair→fallback→new tree attempts |
+| Native controls | provider/imported settings, normalizers, IR/compiler | Existing compile_node + control schema/capabilities | raw model settings, postcompile visual normalization |
+| Operation/target | global pending UI, ledger, selected IDs | Ledger unique post/root/revision owner + immutable decision state | stale global selection/ID-class ownership guesses |
+
+Services `groups`, exact spans, CTA refs, slot map validation и distinct topology helpers переиспользуются. Его 2–6 cardinality, icon defaults, pill style и service lead правила не распространяются автоматически на price/person/FAQ. Raw compatibility wrappers сохраняются для unmigrated callers временно и явно; в migrated route они не вызываются.
+
+## 7. Модель, библиотека, references и отказ
+
+Модель работает на двух ограниченных задачах внутри одного orchestration: intake/content (когда локальный parser неоднозначен либо нужен generated copy) и composition/direction selection из проверенного списка. Можно объединить в один typed response для полного запроса, но final Brief/Plan validation независимы. Она не владеет raw Elementor tree, IDs, widget settings или permission. Current structured Services adapter существует opt-in и ещё не включается этим аудитом; реальную activation принимать после cross-family regressions и deterministic render acceptance, а не ради обхода live blocker.
+
+Library — optional источник проверенных composition records со slot maps, template/version/hash, dependencies, behavior kind, responsive contract, asset policy. Preflight сначала проверяет структуру/runtime/assets/content binding, потом максимум три кандидата доступны selector. Current production adapted-tree cache сохранить на переходе, но финально materialize slots через existing compiler; source JSON/reference не считается автоматически executable. Явный library-only без map — refusal. Обычный native запрос не переводится на provider-library path при появлении кандидата.
+
+ReferenceSet уже хранит asset/group/source/alt/focal/crop/object_fit/license/provenance; design image reference задаёт направление, а не разрешённый asset URL или исполняемые controls. Отдельно различать style reference и approved content asset.
+
+Один общий deadline/call budget в orchestration с фактическим telemetry. Timeout/invalid output/abstain: сохраняется diagnosis; допустим **один** deterministic decision default только когда frozen Brief полон, capability подтверждена и policy разрешает; он выбирается как explicit fallback decision до compilation. Exact creative ambiguity, required missing asset, library-only/no map, unsupported behavior/scope — no-write clarification/refusal. Не запускать цепочку независимых generators для получения любого дерева. Ограниченный retry исправляет schema того же решения и расходует тот же budget; не меняет family/recipe. Конкретные SLA численно закрепить после измерений, текущие routing budget поля не считать фактическим enforced latency (legacy observations достигали 90 секунд).
+
+## 8. Design system и compatibility boundary
+
+Current tokens: `includes/design/system.php` читает option `wp_ai_executor_design_tokens` и заполняет bundled defaults; `token-resolution.php` переводит palette/native_tokens в semantic refs. `wpae_design_token_precedence(explicit,reference,page,project,defaults)` задаёт правильный merge порядок, **но production callers в includes отсутствуют**. В active chat compiler передаются project tokens; page/site kit resolution не подключено этой функцией. Template globals/explicit controls имеют отдельные normalization/materialization пути. Нельзя заявлять уже единый приоритет.
+
+Target: valid explicit request → approved reference direction → page overrides → actual site Elementor kit/global refs → plugin defaults. Resolve один раз до native controls с provenance каждого выбранного значения и конфликтами. Запрос локального блока не меняет site kit. Если explicit contrast/capability constraint невозможен, отказ/уточнение либо заранее объявленный permitted correction; текущую compiler muted-color замену перенести в этот decision boundary, логировать и включать в final plan/hash.
+
+Сохранить group-control enable (`typography_typography=custom`), slider `{unit,size}`, four-side dimensions, native flex gap shape, widget-specific width keys и responsive suffixes. Registry widgets availability и control kind validators — разные проверки; наличие widget не подтверждает units/control schema его версии. Для library import legacy schema coercion выполняется **до** semantic acceptance; после compiler разрешена только проверяемая идемпотентная structural serialization (никаких новых layout/copy/style решений). Differential before/after compile checks требуют нулевой потери slot refs, order, links, media, typography hierarchy.
+
+Typography: различать display/section/item/body/caption/button roles; page content width брать из runtime context, не из произвольного default. Разрешение global fonts/colors оставляет ссылку на подтверждённый kit ID или materializes validated snapshot; missing globals не объявлять сохранёнными. `normalize.php` меняет provider dimensions/flex/typography aliases, `token-map.php` переписывает native tokens, llm.php geometry/type/CTA/media helpers способны менять принятый дизайн; для migrated output эти visual calls отключаются.
+
+Breakpoints сейчас LayoutReport использует 1440/1024/768/390 как static assumptions. Target compiler получает фактические enabled Elementor device names/breakpoints из versioned runtime context; live меряет viewport/clientWidth, ±1 px вокруг site boundary, narrow desktop и mobile. Static width report остаётся preflight estimate с `visual_render_verified=false`. Media: approved association/alt/load/natural size/focal/object-fit + rendered crop; no URL fabrication/blank placeholders. И отдельный HTML preview не доказывает Elementor compatibility.
+
+## 9. Общая regression/visual matrix: 24 сценария
+
+Это открытая calibration + deferred matrix, **не закрытый holdout**: все prompts уже опубликованы и могут повлиять на настройку. Для независимой поздней оценки нужен новый пользовательский набор, не прочитанный разработчиком. D означает отложенный сценарий после базового milestone; его refusal можно проверить раньше, реализацию не обещаем.
+
+Во всех положительных случаях desktop/mobile acceptance включает exact native readback после save/reload, editor и public source, desktop 1440, narrow desktop 1100, mobile 390/320, фактические site boundaries ±1, отсутствие overflow/clipping/neighbor changes. Public mobile не заменяется editor mobile. Ниже D/M уточняет индивидуальное поведение. Для отрицательных сценариев acceptance — no provider/write где gate предшествует модели, `write_count=0`, неизменный root set/hash; блок-скриншот не нужен, failure evidence нужен.
+
+| № / класс | Естественный запрос | Assets/capabilities | Семантика и допустимая композиция | Content/link constraints | D/M acceptance и критерий отказа |
+|---|---|---|---|---|---|
+| 01 Hero exact | «Первый экран: “Проектируем сайты”; описание “От идеи до запуска”; “Обсудить” → #contact. Фото справа.» | Approved hero asset с alt; image/button | Split copy/media, copy-first mobile | Три точные строки/link; asset роли hero | Иерархия/loaded crop; отказ если фото не resolved |
+| 02 Hero generated | «Напиши первый экран для небольшой дизайн-студии. Спокойный тон, без обещаний сроков и клиентов. Без фото.» | Heading/text/button если destination задан | Stack; generated copy помечен | Не выдумывать факты/CTA URL | Читаемость короткого copy; отказ при fabricated claims/media |
+| 03 About long | «О нас: сохрани приложенный длинный текст полностью, фото слева; “Подробнее” → /about/.» | Asset + точный fixture 600 слов | Editorial split, mobile copy-first | Без сокращения, correct href | Нет fixed text height/clipping; отказ если slot потерян |
+| 04 Benefits repeat | «Три преимущества: “Ясность” — “Понятная структура”; “Гибкость” — “Редактируемые блоки”; “Поддержка” — “Связь после запуска”. Без фото.» | Icon optional | Wrapping grid или ordered icon list | Exactly 3 groups, no invented CTA | Grid/list geometry + full order; отказ если groups смешаны |
+| 05 Team | «Команда: Алия — дизайнер, Руслан — разработчик. Используй их приложенные портреты; имена и роли точно.» | Two permitted portraits с person association | Person cards | Exact name/role; no invented bios | Portrait crop не режет лицо; wrong portrait → refusal |
+| 06 Testimonials exact | «Два синтетических отзыва из fixture; автор и компания строго по данным, без рейтинга.» | quote/author/meta refs | Quote cards/list | Quote punctuation/authorship exact; no stars | Quote emphasis/readability; refusal invented rating |
+| 07 Stats D | «Покажи только предоставленные “12 проектов” и “4 года”, без новых цифр.» | metric entity contract | Two metric groups, stack/wrap | Exact value/unit; label ownership | Value/label hierarchy; missing verified facts → no invented stats |
+| 08 Process | «Этапы: “Бриф” → “Согласуем задачу”; “Дизайн” → “Утверждаем макет”; “Запуск” → “Публикуем сайт”.» | Native dividers/containers | Linear/alternating timeline | Order/count exact; no CTA insertion | Connectors/order mobile; refuse detached label/body |
+| 09 Pricing exact | «Тарифы: “Старт” — “50 000 ₸/мес”; “Рост” — “80 000 ₸/мес”. CTA “Выбрать” с /start/ и /growth/.» | price/period entities + button | Two specialized cards | Exact price formatting; different hrefs | Price hierarchy/CTA pairing at D/M; refusal period/link loss |
+| 10 Pricing long | «Три пакета с длинным списком включений из fixture. Второй выдели, цены не меняй.» | Feature list per tier | Wrapping three cards, featured second | Tier identity + inclusions/price exact | Unequal copy height without clipping; refusal field regrouping |
+| 11 FAQ native | «FAQ: “Можно редактировать?” — “Да, в Elementor”; “Есть поддержка?” — “По договорённости”.» | Runtime accordion available | One native accordion + heading | Exact Q/A pairs | Pointer/keyboard toggle, expanded state, accessible order; unavailable → no flat substitute |
+| 12 Tabs D | «Три вкладки с указанными заголовками и текстами, первая открыта.» | Confirmed tabs adapter | Native tabs behavior | Pair ownership/state | Click/keyboard/state after reload; no compiler adapter → refusal |
+| 13 Portfolio D | «Покажи три проекта из fixture: фото, название и отдельная ссылка на каждый.» | Three approved project assets | Media grid/editorial collection | Project/image/href associations | Crop + labels + exact per-project links; unresolved assets → refusal |
+| 14 Logo carousel D | «Карусель пяти предоставленных логотипов, без autoplay.» | image-carousel runtime + new behavior adapter; contain crop | Logo-only native carousel | Exact logos/alt; no card copy | Arrows/swipe/responsive slides/no autoplay; missing adapter → refusal |
+| 15 Card carousel D | «Карусель карточек: изображение, описание и CTA каждого проекта.» | Distinct nested/card carousel capability | Typed card slides | Three fields + href per slide | Native slide interactions; image-carousel alone → refusal |
+| 16 CTA | «Блок “Готовы обсудить?”; “Написать” → mailto:test@example.invalid и “Позвонить” → tel:+70000000000. Без фото.» | Two native buttons | Stack/compact action row | Exact labels/safe schemes | Wrap on 320, readable labels; missing href → refusal |
+| 17 Contact form D | «Форма: имя, email, сообщение; отправка на утверждённый адрес.» | Confirmed form/actions adapter + authorized delivery config | Native actual form | Required/email fields; no destination invention | Validation/error/success/submission evidence; absent dependency/actions → refusal |
+| 18 Posts/products D | «Последние три записи категории с данным ID, карточки динамические.» | Query/entity adapter + actual category permission | Native dynamic collection | No hardcoded fake posts | Query/render changes after fixture update; unsupported dynamic contract → refusal |
+| 19 Navigation scope D | «Header: О нас → /about/, Услуги → /services/, Контакты → /contact/. Не менять page roots.» | Nav widget/menu + authorized header document/location | Native navigation tree | Exact URLs/order; separate scope | Keyboard/mobile menu/location; page append is refusal |
+| 20 Popup Pro absent D | «Popup подписки с native form и показом по кнопке.» | Pro popup/form scope deliberately unavailable | No substitute page section | No guessed trigger/config | Explicit unsupported dependency, zero writes |
+| 21 Services unresolved | «Фото-карточки трёх услуг из Services fixture; фотографии обязательны», без assets | Required unresolved media | photo_cards requested | No stock/placeholder substitution | No-write media refusal; original roots preserved |
+| 22 Ambiguous intent | «Сделай три варианта наших пакетов и процесса», без entities | Intake clarification | Нельзя молча считать pricing | Не придумывать prices/steps | Clarification без tree/write; ambiguity recorded |
+| 23 Alternatives | «Для Hero предложи два разных расположения с тем же текстом и фото. Пока не вставляй.» | Same Brief/assets, two valid recipes | Split vs stack, topology/control signature distinct | Same copy/href/media ownership | Compare preview decisions; zero page writes; cosmetic-only variants fail |
+| 24 Repeat + repair | «Повтори тот же request identity; затем исправь только отступ выбранного блока.» | Saved operation/root/revision + neighbor fixtures | Reconcile; bounded plan delta | Content/links/media immutable | No duplicate root; hash guard, same-target repair + Undo; stale/foreign root → refusal |
+
+### Метрики и rubric
+
+End-to-end success denominator — все исходные поддерживаемые запросы, а не только успешно распарсенные. Отдельно report safe refusal accuracy для unsupported/ambiguous. Каждая запись имеет request, source versions, Brief/Plan hashes, route/decision source, assets, provider attempts/count, latency, operation/root/revision, write/readback, first result и final result. Unavailable latency/tokens = unknown, не 0.
+
+Content/link fidelity: 100% exact slots и CTA destinations/ownership, generated provenance/claims проверяются отдельно. Native/render correctness: реальные widgets/controls/behavior, asset load/crop, D/M DOM и save/reload. First-result quality оценивается до repair; repairs-to-acceptance — число записанных изменений того же root, исходное evidence сохраняется. Distinguishability: topology/behavior/responsive signatures + визуальная проверка, отдельно visual direction. Save/readback success и neighbor preservation обязательны. Assertion totals/manifest counts — technical coverage, не design score.
+
+Rubric 0–2 по каждой оси: 0 — дефект, 1 — работает с заметной проблемой, 2 — соответствует запросу и читается уверенно. Оси: hierarchy (section/item/CTA различимы), spacing (единый ритм/нет overlap), typography (размер/line-height/длина строки), media (association/load/crop), contrast (фактические colors/фон и читаемость), responsive (перенос/порядок/нет overflow), brief fit (выбранная композиция/тон/ограничения). Для принятия нет 0, hierarchy/responsive/brief fit = 2; единицы перечислены и согласованы как limitations. Fidelity/safety/behavior gates нельзя усреднить хорошими баллами. Vision лишь advisory findings с scoped evidence; произвольный Vision score не заменяет DOM/manual review.
+
+## 10. Внедрение: общие milestones и lifecycle track
+
+Runtime изменения — будущие этапы. Feature gating использует существующий off/shadow/active механизм с явным migration coverage; shadow не live acceptance и не постоянный второй генератор. После принятия семейства старый route для него выключается. Unmigrated callers сохраняют старый контракт временно; fixed removal criteria ниже.
+
+| Фаза | Reuse / конкретные изменения | Ветки, отключаемые для migrated callers | Compatibility / regression | Live acceptance / rollback |
+|---|---|---|---|---|
+| L: обязательный lifecycle track параллельно source migration | `data.php`, `operation-ledger.php`, editor-chat.php, JS sync, transactions: различать missing saved data/empty saved array/render unavailable/editor unavailable; post-scoped diagnostics; сохранять canonical bounded payload/version в ledger | Empty-render treated as empty saved document; global pending target; append on repair failure | target diagnostics/identity/revision/fingerprint, autosave, optimistic conflict, lost response/reconcile, foreign roots, Undo | Existing page read-only saved/editor/public reconciliation до write; no overwrite как восстановление. Rollback runtime release + scoped snapshots через guards, без полного document reset |
+| M1: первый cross-family implementation | `brief-ir.php`, `design-plan.php`, `routing.php`, `llm.php`: one frozen Brief; composition/visual decision; generalized slot binding; `elementor-ir.php` helpers stack/split/repeat/grid. **Hero/About split + Benefits repeat/grid/list + Pricing typed tiers + native FAQ**. Services reuse без нового Services-only gate. Token resolution до compiler | Non-Services content_plan reparsing, library-candidate auto-switch, raw provider/EDDE/fallback/visual normalizers для этих routed families; compiler contrast mutation переносится до freeze | Existing API wrappers retain unmigrated paths; explicit version/default adapter для старых Brief/Plan. Tests design-pipeline-contract/flex-generation-runtime/llm-chat-contract + control/patch guard; cases 01–04,09–11,16,22–24 | Installed source+editor versions, exact native readback, first result D/M, FAQ actual toggles; no user roots lost. Per-milestone flag rollback before write; after write existing guarded Undo/snapshot |
+| M2: библиотека и honest alternatives | `block-library.php`, `recipes.php`, `compose.php`, DesignPlan slot mapping; versioned verified composition records; remove unsupported variant labels или реализовать distinct trees/policy. Preserve REST composer response compatibility с capability metadata | Variant-only rekey masquerading as composition, heuristic repeat mapping для migrated catalog, raw settings direct adoption | Strip-ID topology signatures for every advertised variant; same Brief content/link/media fidelity; compose remains no-write; explicit instance_id compatibility | Chosen alternatives compare in actual Elementor; only selected plan writes. Rollback catalog version/selection gate; existing saved trees preserved |
+| M3: другие static entities | Brief/DesignPlan/IR roles for Team/Testimonial/Stats/Process/Portfolio/CTA; shared geometry with typed fields; reuse ReferenceSet and transaction | Family-specific raw copy regrouping/fallback builders and postcompile timeline/bento rebuild для migrated families | Cases 05–08,13,16; exact author/person/project/metric ownership and media rules; old direct helper wrappers isolated | D/M first result + real crop + all fields/links; rollback per family source version before writes, guarded Undo after |
+| M4: behavior adapters, capability gated | `capability-registry.php`, IR/compiler + behavior fields: accordion already native; logo carousel adapter only if runtime+control contract confirmed; card-carousel/tabs/form/query separately | Interaction downgrades to text/image grids, Pro/third-party assumption from template | Cases 12,14–15,17–18,20; widget missing/not-ready/version mismatch, keyboard/swipe/forms/query fixtures | Browser interactions/save/reload/native readback + public mobile; unavailable adapter refusal is valid boundary, not feature PASS. Rollback adapter gate + owned snapshot |
+| M5: document scopes and final retirement | scope contract in Brief/lifecycle; explicit header/footer/theme-builder/popup adapters, assignment/conditions only when supported/authorized; retire old production generators after caller audit | Page-as-header/popup substitution; remaining provider raw-tree route and duplicate ownership decision | Cases 19–20,24; ordinary page APIs keep compatibility; scope capability denies by default | Correct document/locations/triggers + unchanged page roots, per-scope rollback covering settings actually owned by operation |
+
+Конкретные точки изменения по фазам: L — `wpae_design_operation_create/update/editor_targets/replacement_target`, `wpae_get_elementor_data_for_post`, JS `targetedDesignReplacement`/sync; M1 — `wpae_llm_chat_request`, `wpae_brief_ir_parse/validate`, `wpae_llm_content_plan`, `wpae_design_generation_route`, `wpae_design_plan_from_brief/validate`, `wpae_elementor_ir_from_design_plan/compile_node/compile`, `wpae_design_token_precedence`; M2 — `wpae_elementor_recipe_definitions/compose`, `wpae_block_library_retrieve_for_prompt/compatibility_report`, `wpae_llm_preflight_library_candidates/apply_library_template`; M3 — existing Brief group builders, `wpae_design_plan_grouped_items/pairs`, `wpae_elementor_ir_card_nodes` и Process roles; M4 — `wpae_widget_capability_registry/resolve`, behavior branches в тех же Plan/IR/compile validators; M5 — `wpae_elementor_page/update`, protected scope preflight и ledger selected_scope. Имена с перечисленными suffixes обозначают существующие отдельные функции с общим prefix, а новые entity/behavior поля проектируются внутри них. Transaction/save/readback API сохраняется во всех фазах.
+
+M1 не обязан завершить весь deferred behavior/scope список: недоступные capabilities должны честно отказать. Carousel включён как отдельная adapter проверка, не prerequisite для split/Pricing/FAQ. Lifecycle failures не подменяют дизайн rubric: восстановленный target ещё не доказывает хороший блок, хороший блок ещё не доказывает safe lifecycle.
+
+Отключение old branches проверяется call trace: после canonical Brief нет raw classify/parse; после accepted Plan нет recipe/visual replacement; после compilation нет semantic mutations; ровно одна owned transaction на submit. На последней фазе wrappers остаются только как documented external compatibility APIs, не постоянный альтернативный chat generator. Удалять старые branches только после inventory всех callers и passing cross-family matrix; rollback не должен автоматически повторять prompt старым generator и создавать второй root.
+
+## 11. Проверенная file/function map
+
+Каждый anchor ниже извлечён из определения в baseline HEAD. Caller map §2 даёт конкретные active paths. Future function names в плане — явно новые расширения, здесь только существующие symbols.
+
+| Function | Source definition |
+|---|---|
+| `wpae_llm_chat_request` | [includes/llm/llm.php:10853](../../includes/llm/llm.php#L10853) |
+| `wpae_llm_is_action_request` | [includes/llm/llm.php:367](../../includes/llm/llm.php#L367) |
+| `wpae_llm_detect_block_archetype` | [includes/llm/llm.php:1200](../../includes/llm/llm.php#L1200) |
+| `wpae_llm_content_plan` | [includes/llm/llm.php:1501](../../includes/llm/llm.php#L1501) |
+| `wpae_brief_ir_parse` | [includes/llm/brief-ir.php:371](../../includes/llm/brief-ir.php#L371) |
+| `wpae_brief_ir_archetype` | [includes/llm/brief-ir.php:78](../../includes/llm/brief-ir.php#L78) |
+| `wpae_brief_ir_validate` | [includes/llm/brief-ir.php:1296](../../includes/llm/brief-ir.php#L1296) |
+| `wpae_brief_ir_services_structured_extract` | [includes/llm/brief-ir-structured.php:377](../../includes/llm/brief-ir-structured.php#L377) |
+| `wpae_design_plan_from_brief` | [includes/llm/design-plan.php:856](../../includes/llm/design-plan.php#L856) |
+| `wpae_design_plan_validate` | [includes/llm/design-plan.php:1379](../../includes/llm/design-plan.php#L1379) |
+| `wpae_design_plan_services_recipe_decision` | [includes/llm/design-plan.php:406](../../includes/llm/design-plan.php#L406) |
+| `wpae_design_plan_services_photo_template_slot_map` | [includes/llm/design-plan.php:324](../../includes/llm/design-plan.php#L324) |
+| `wpae_design_generation_route` | [includes/llm/routing.php:9](../../includes/llm/routing.php#L9) |
+| `wpae_llm_route_policy` | [includes/llm/routing.php:24](../../includes/llm/routing.php#L24) |
+| `wpae_llm_design_engine_compile_hero` | [includes/llm/decision-engine.php:244](../../includes/llm/decision-engine.php#L244) |
+| `wpae_block_library_retrieve_for_prompt` | [includes/elementor/block-library.php:867](../../includes/elementor/block-library.php#L867) |
+| `wpae_block_library_compatibility_report` | [includes/elementor/block-library.php:230](../../includes/elementor/block-library.php#L230) |
+| `wpae_llm_preflight_library_candidates` | [includes/llm/llm.php:10366](../../includes/llm/llm.php#L10366) |
+| `wpae_llm_apply_library_template` | [includes/llm/llm.php:5058](../../includes/llm/llm.php#L5058) |
+| `wpae_llm_build_fallback_action` | [includes/llm/llm.php:8963](../../includes/llm/llm.php#L8963) |
+| `wpae_llm_apply_fallback_variant_recursive` | [includes/llm/llm.php:8048](../../includes/llm/llm.php#L8048) |
+| `wpae_llm_execute_action` | [includes/llm/llm.php:10503](../../includes/llm/llm.php#L10503) |
+| `wpae_llm_execute_patch_action` | [includes/llm/llm.php:911](../../includes/llm/llm.php#L911) |
+| `wpae_llm_undo` | [includes/llm/llm.php:12638](../../includes/llm/llm.php#L12638) |
+| `wpae_elementor_ir_from_design_plan` | [includes/elementor/elementor-ir.php:207](../../includes/elementor/elementor-ir.php#L207) |
+| `wpae_elementor_ir_compile` | [includes/elementor/elementor-ir.php:1572](../../includes/elementor/elementor-ir.php#L1572) |
+| `wpae_elementor_ir_compile_node` | [includes/elementor/elementor-ir.php:698](../../includes/elementor/elementor-ir.php#L698) |
+| `wpae_widget_capability` | [includes/elementor/capability-registry.php:54](../../includes/elementor/capability-registry.php#L54) |
+| `wpae_elementor_normalize_data` | [includes/elementor/normalize.php:756](../../includes/elementor/normalize.php#L756) |
+| `wpae_elementor_normalize_flex_settings` | [includes/elementor/normalize.php:444](../../includes/elementor/normalize.php#L444) |
+| `wpae_elementor_native_control_error` | [includes/elementor/validation-rules.php:37](../../includes/elementor/validation-rules.php#L37) |
+| `wpae_elementor_update` | [includes/elementor/page-update.php:17](../../includes/elementor/page-update.php#L17) |
+| `wpae_elementor_patch` | [includes/elementor/page-update.php:156](../../includes/elementor/page-update.php#L156) |
+| `wpae_elementor_page` | [includes/elementor/page-update.php:318](../../includes/elementor/page-update.php#L318) |
+| `wpae_save_elementor_page_data` | [includes/elementor/transactions.php:303](../../includes/elementor/transactions.php#L303) |
+| `wpae_verify_saved_elementor_transaction` | [includes/elementor/transactions.php:497](../../includes/elementor/transactions.php#L497) |
+| `wpae_finalize_elementor_transaction` | [includes/elementor/transactions.php:705](../../includes/elementor/transactions.php#L705) |
+| `wpae_design_operation_create` | [includes/elementor/operation-ledger.php:551](../../includes/elementor/operation-ledger.php#L551) |
+| `wpae_design_operation_editor_targets` | [includes/elementor/operation-ledger.php:354](../../includes/elementor/operation-ledger.php#L354) |
+| `wpae_design_operation_replacement_target` | [includes/elementor/operation-ledger.php:423](../../includes/elementor/operation-ledger.php#L423) |
+| `wpae_layout_report_for_plan` | [includes/elementor/layout-report.php:38](../../includes/elementor/layout-report.php#L38) |
+| `wpae_build_elementor_design_review` | [includes/elementor/design-review.php:5](../../includes/elementor/design-review.php#L5) |
+| `wpae_reference_set_normalize` | [includes/elementor/reference-set.php:13](../../includes/elementor/reference-set.php#L13) |
+| `wpae_design_token_precedence` | [includes/design/token-resolution.php:103](../../includes/design/token-resolution.php#L103) |
+| `wpae_get_project_design_tokens` | [includes/design/system.php:132](../../includes/design/system.php#L132) |
+| `wpae_apply_design_token_map` | [includes/elementor/token-map.php:273](../../includes/elementor/token-map.php#L273) |
+| `wpae_elementor_compose` | [includes/elementor/compose.php:41](../../includes/elementor/compose.php#L41) |
+| `wpae_elementor_recipe_definitions` | [includes/elementor/recipes.php:53](../../includes/elementor/recipes.php#L53) |
+
+Дополнительные boundaries: `includes/elementor/native-compiler.php::wpae_native_elementor_compile` делегирует в existing IR compiler; `includes/llm/design.php::WPAE_LLM_Design` предоставляет raw-tree prompt и responsive normalization; `includes/llm/transport.php` — общий provider transport; `assets/js/elementor-llm-chat.js::targetedDesignReplacement` (строка 804) использует root map; `includes/elementor/editor-chat.php` локализует ledger/editor config. `includes/rest/routes.php` содержит callbacks всех перечисленных endpoints. Новые submodules создавать только при реальном сокращении пересекающейся ответственности, не ради количества слоёв.
+
+## 12. Историческое live evidence, риски и открытые решения
+
+Source v244 проверен этим аудитом, installed runtime **не перечитывался**. Последние сохранённые observations: v242 три Services roots `[023bd70,e939025,8b79d6c]`, exact content/links/media, desktop/tablet measurements; public mobile был obstructed chatbot. v243/v244 поправили source badge/layout/target mapping; предыдущая v244 install-проверка подтверждала Plugins/PHP 8.3.22/editor badge, затем empty editor/public render, `pendingOperation=null`, empty root map, blocked read-only diagnostic route. Saved root set и причина empty render остаются unknown. Current browser state в этом documentation-only этапе не менялся и заново не проверялся. Evidence paths и failure PNG остаются в Services doc и LUNA report; никакого нового visual PASS здесь нет.
+
+Риски: generated copy quality/provenance; карточные entity cardinalities вне старых лимитов; kit/global token drift; enabled custom breakpoints; dependency control-version differences; imported dynamic/external URLs; retrieval/adaptation latency; bounded immutable ledger payload size/retention и redaction; compatibility direct REST callers; concurrency/autosave/editor sync; unsupported theme/popup scope. Source review не измеряет real-model accuracy или latency и не устанавливает причину post=5214.
+
+Перед M1 уточнить технически (не через выдуманные assumptions): enabled runtime controls/breakpoints, actual kit values, external REST consumers, допустимый ledger payload/retention, source-authorized asset catalogs. Пользовательский выбор действительно требуется только для новых preference overrides (например, default visual direction) и разрешения новых special scopes/dependencies при их будущей реализации. Для предложенного source architecture plan обязательного дополнительного подтверждения пользователя нет. Existing Services preference сохраняется локальной policy, не навязывается всем семействам.
+
+Критерий завершения архитектурного этапа: current source map и разные evidence layers, honest coverage/variants, единственные owners, reuse existing compiler/transaction, cross-family M1 и 24 сценария с отказами/behavior/scope/first-result rubric представлены. Implementation/live остаются будущими отдельными статусами. Runtime/version/manifest не изменены; PHP/Node tests и WordPress operations не запускались.

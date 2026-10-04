@@ -1,5 +1,7 @@
 # Services generation: архитектура и план миграции
 
+> Общая миграция генератора: [generator-wide-migration.md](generator-wide-migration.md), source-аудит HEAD `d9f6639` / `v02.11.244` от 2026-10-04. Services — частичная реализация, а не граница общего плана. Первые разделы ниже описывают исторический baseline v238; их line anchors относятся к тому срезу и не являются текущей source map. Актуальные определения/callers, владельцы и cross-family milestones проверены и перечислены в общем документе. Поздние Services implementation/live результаты сохранены ниже; причина empty render post=5214 остаётся неустановленной.
+
 **Аудит исходников:** 2026-10-03
 **Checkout:** `main`, HEAD `e758651`, source `v02.11.238`
 **Назначение:** первый проектный шаг миграции Services; только чтение исходников и документация.
@@ -492,3 +494,10 @@ The pre-install public DOM had the expected roots `[023bd70, e939025, 8b79d6c]`.
 Post-reload screenshots: public tab `3`, CSS viewport/raster `1238×923`, [PNG](../audits/2026-10-04-services-v243-target-compiler/public-after-reload-v244.png), 76,238 bytes; Elementor `post=5214` tab `4`, CSS viewport/raster `1238×923`, [PNG](../audits/2026-10-04-services-v243-target-compiler/editor-after-reload-v244.png), 211,110 bytes. JPEG bytes were saved before conversion; PNG signatures/dimensions were validated and files visually inspected. Public mobile is **BLOCKED** because the Browser Plugin's current capability list does not include viewport control (`get('viewport')` is unavailable). Both frames are failure/install evidence only; no post-fix recipe rendering or screenshot acceptance exists.
 
 All three live compositions are blocked before repair: photo `023bd70`, split `e939025`, text/icon `8b79d6c` have no entry in the v244 owner map, and no root is currently present in the rendered editor/public page. Exact ledger reason for the empty map remains undetermined. No recipe request, provider call, write, save, replacement or append was made; `write_count=0`. Source compiler corrections and local regressions are verified, but installed visual acceptance and preservation of the saved root set remain **UNVERIFIED**.
+
+
+## Общий generator-wide аудит — 2026-10-04
+
+Services canonical Brief/group/CTA/media refs, recipe slot mapping и existing native compiler переиспользуются в [общем плане](generator-wide-migration.md). Проверка текущего source v244 показывает, что Services исключён из candidate-driven library-agent switch, тогда как другие семейства продолжают повторно интерпретировать content/family и принимать visual decisions разными ветками. Services recipe selector также может повториться после media enrichment; общий план переносит asset resolution до canonical freeze. Structured extraction остаётся opt-in, production activation этим этапом не выполнялась.
+
+Первый implementation milestone охватывает Hero/About split, Benefits grid/list, специализированный Pricing и native FAQ. Carousel требует отдельного подтверждённого behavioral adapter; lifecycle/empty-document/target reconciliation ведутся параллельно. Нового Services-only цикла до общих source изменений план не требует. Ни runtime, package/version, ни WordPress/post=5214 в данном documentation-only аудите не менялись. Исторические visual evidence и v244 blocked acceptance не переобъявлены PASS.
