@@ -903,7 +903,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 	if ( ! preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 		$surface_override = '';
 	}
-	$eyebrow_presentation = (string) wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', '' );
+	$eyebrow_presentation = (string) wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', wpae_elementor_recipe_eyebrow_presentation() );
 	$media_side = (string) wpae_design_plan_constraint_value( $brief, 'media_side', 'right' );
 	if ( ! in_array( $media_side, [ 'left', 'right' ], true ) ) {
 		$media_side = 'right';
@@ -1246,6 +1246,15 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		];
 		$section['feature_errors'] = $features['errors'];
 	}
+	// Freeze the recipe presentation in the Plan; repair continues to use its accepted Plan.
+	$eyebrow_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow' ] );
+	foreach ( $section['children'] as &$intro_child ) {
+		if ( in_array( $intro_child['role'] ?? '', [ 'copy_group', 'cta_copy_group' ], true ) && $eyebrow_presentation === 'pill' && array_intersect( $eyebrow_refs, (array) ( $intro_child['content_refs'] ?? [] ) ) ) {
+			$intro_child['layout_constraints']['eyebrow_presentation'] = 'pill';
+			$intro_child['allowed_widgets'] = array_values( array_unique( array_merge( $intro_child['allowed_widgets'], [ 'container' ] ) ) );
+		}
+	}
+	unset( $intro_child );
 	$resolved_visual = ! empty( $context['canonical_create'] ) ? wpae_design_plan_resolve_visual( $brief, $context ) : [];
 	return [
 		'composition_decision' => array_merge( [ 'identity' => $archetype . '.' . $composition, 'source' => $explicit_composition !== null ? 'explicit_brief' : 'documented_default', 'slot_bindings' => $section['children'] ], empty( $record_selection ) ? [] : [
@@ -1270,7 +1279,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			'source' => 'brief-ir',
 		],
 		'warnings' => array_values( array_unique( array_merge( empty( $brief['ambiguities'] ) ? [] : [ 'brief_has_ambiguities' ], in_array( $archetype, [ 'hero', 'about' ], true ) && $media_intent === 'unspecified' && ! $hero_has_media ? [ 'media_unspecified_no_asset_text_only' ] : [] ) ) ),
-		'explicit_badge' => in_array( $archetype, [ 'hero', 'about' ], true ) && $eyebrow_presentation === 'pill',
+		'explicit_badge' => in_array( $archetype, [ 'hero', 'about' ], true ) && $eyebrow_presentation === 'pill' && ( ! empty( $eyebrow_refs ) || wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', '' ) === 'pill' ),
 		'media_intent' => $media_intent,
 		'media_asset_count' => count( $media_references ),
 	];

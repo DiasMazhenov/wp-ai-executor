@@ -50,6 +50,11 @@ function wpae_el_widget( string $id, string $widget_type, array $settings = [] )
     ];
 }
 
+/** Shared typed recipe default; only supplied eyebrow content receives a badge. */
+function wpae_elementor_recipe_eyebrow_presentation(): string {
+    return 'pill';
+}
+
 function wpae_elementor_recipe_definitions(): array {
     return [
         'hero.editorial' => [
@@ -321,6 +326,7 @@ function wpae_elementor_recipes(): WP_REST_Response {
             'container.stack',
             'container.grid',
             'container.split',
+            'container.badge-pill',
             'widget.heading',
             'widget.copy',
             'widget.cta-row',
@@ -330,6 +336,7 @@ function wpae_elementor_recipes(): WP_REST_Response {
         ],
         'recipes' => $recipes,
         'typed_records' => array_values( wpae_composition_records() ),
+        'typed_recipe_defaults' => [ 'eyebrow_presentation' => wpae_elementor_recipe_eyebrow_presentation(), 'eyebrow_content' => 'supplied_only' ],
     ], 200 );
 }
 

@@ -1186,7 +1186,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( in_array( $heading_alignment, [ 'left', 'center', 'right' ], true ) ) {
 			$settings['align'] = $heading_alignment;
 		}
-		$settings['header_size'] = [ 'process_number' => 'h6', 'process_badge_label' => 'h6', 'services_badge_label' => 'h6', 'brand' => 'h6', 'eyebrow' => 'h6', 'pricing_label' => 'h4', 'pricing_price' => 'h2', 'cta_section_title' => 'h2', 'service_title' => 'h3', 'team_name' => 'h3', 'testimonial_author' => 'h3' ][ $role ] ?? ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
+		$settings['header_size'] = [ 'process_number' => 'h6', 'process_badge_label' => 'h6', 'services_badge_label' => 'h6', 'eyebrow_badge_label' => 'h6', 'brand' => 'h6', 'eyebrow' => 'h6', 'pricing_label' => 'h4', 'pricing_price' => 'h2', 'cta_section_title' => 'h2', 'service_title' => 'h3', 'team_name' => 'h3', 'testimonial_author' => 'h3' ][ $role ] ?? ( $role === 'title' ? ( str_contains( (string) ( $node['node_id'] ?? '' ), '-card-' ) ? 'h3' : 'h1' ) : 'h3' );
 		$semantic_heading = (string) ( $node['layout_constraints']['heading_level'] ?? '' );
 		if ( in_array( $semantic_heading, [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ], true ) ) {
 			$settings['header_size'] = $semantic_heading;

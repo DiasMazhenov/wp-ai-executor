@@ -285,3 +285,9 @@ J public mobile; post5214/root6a0d2cb/opwpae-17b5777408c3cb8c/rev5; CSS390x1200;
 [J mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-mobile.png)
 
 First I v256 failed desktop row layout evidence remains I-public-desktop.png / I-public-mobile.png; corrected I v257 shown above. First G v255 icon gap206px remains G-public-desktop.png; corrected G v256 shown above. J screenshots show second answer opened through the real native button, not a changed saved tree.
+
+## Pill-badge restoration — source v02.11.258, 2026-10-05
+
+User requested restoring pill-badges and adding them to recipes where absent. Cause: Services defaults eyebrow_presentation to pill, while general typed Plan default was empty, so Hero/About/Benefits supplied eyebrows compiled as plain headings. Shared recipe default now declares pill; catalog advertises container.badge-pill and typed_recipe_defaults. Plan freezes pill presentation and container capability on section copy groups containing an actual supplied eyebrow, including Hero/About/Benefits and FAQ/CTA intro. No eyebrow text is invented; sections without one remain without a badge. Explicit plain-text presentation remains authoritative. Pricing/Services existing badge paths retained. Badge label uses semantic native H6; existing native pill container/radius999/fit-content/accent style reused.
+
+Historical accepted Plans and saved post5214 roots were not rewritten; prior PNG evidence remains evidence for v257 and earlier. New source v258 PHP syntax and git diff checks passed; package252 hashes refreshed. No tests added or executed for this request. Installation/editor version and live pill rendering: NOT RUN for v258; no new visual PASS is claimed. Source publication is separate from installation. Existing historical root37b84f9 and foreign/untracked files preserved.
