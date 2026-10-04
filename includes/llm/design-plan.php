@@ -695,6 +695,13 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 	}
 	unset( $group );
 	$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body' ] );
+	$intro_eyebrow_ref = '';
+	foreach ( (array) ( $brief['content'] ?? [] ) as $intro_item ) {
+		if ( is_array( $intro_item ) && ( $intro_item['role'] ?? '' ) === 'eyebrow' ) {
+			$intro_eyebrow_ref = sanitize_key( (string) ( $intro_item['id'] ?? '' ) );
+			break;
+		}
+	}
 	$provided = array_values( array_map( static fn( array $asset ): string => (string) $asset['asset_id'], $media ) );
 	$consumed = [];
 	$lead_group_id = '';
@@ -784,7 +791,17 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 	}
 	$children = [];
 	if ( ! empty( $intro_refs ) ) {
-		$children[] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ], 'provenance' => [ 'source' => 'brief', 'roles' => [ 'eyebrow', 'title', 'body' ] ] ];
+		$intro_layout_constraints = [ 'min_width' => 0, 'max_width' => 100 ];
+		$intro_allowed_widgets = [ 'heading', 'text-editor' ];
+		if ( $intro_eyebrow_ref !== '' ) {
+			// Typed Services recipes use the user-corrected native section pill as
+			// their canonical eyebrow presentation when the prompt has no override.
+			$intro_layout_constraints['eyebrow_presentation'] = (string) wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', 'pill' );
+			if ( $intro_layout_constraints['eyebrow_presentation'] === 'pill' ) {
+				$intro_allowed_widgets[] = 'container';
+			}
+		}
+		$children[] = [ 'role' => 'copy_group', 'allowed_widgets' => $intro_allowed_widgets, 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => $intro_layout_constraints, 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ], 'provenance' => [ 'source' => 'brief', 'roles' => [ 'eyebrow', 'title', 'body' ] ] ];
 	}
 	$children[] = [
 		'role' => $recipe_role,

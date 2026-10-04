@@ -1075,6 +1075,39 @@ $text_recipe_result = $services_recipe_results['services.text_icon_list'];
 $legacy_services_plan = wpae_design_plan_from_brief( $services_recipe_brief );
 $legacy_services_roles = array_column( (array) ( $legacy_services_plan['sections'][0]['children'] ?? [] ), 'role' );
 $check( empty( $legacy_services_plan['recipe_id'] ) && in_array( 'service_cards', $legacy_services_roles, true ), 'existing Services planning calls keep the legacy default when no explicit recipe is selected' );
+$services_badge_contract_ok = true;
+$services_badge_ir_contract_ok = true;
+$services_badge_text = (string) ( array_values( array_filter( (array) ( $services_recipe_brief['content'] ?? [] ), static fn( array $item ): bool => ( $item['role'] ?? '' ) === 'eyebrow' ) )[0]['exact_text'] ?? '' );
+foreach ( $services_recipe_results as $recipe_result ) {
+	$intro_group = (array) ( $recipe_result['plan']['sections'][0]['children'][0] ?? [] );
+	$native_nodes = $walk_elements( (array) ( $recipe_result['compiled']['elementor_data'] ?? [] ) );
+	$native_badges = array_values( array_filter( $native_nodes, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' && ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) );
+	$native_labels = array_values( array_filter( $native_nodes, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'heading' && ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge-label' ) );
+	$badge = $native_badges[0] ?? [];
+	$label = $native_labels[0] ?? [];
+	$services_badge_contract_ok = $services_badge_contract_ok
+		&& ( $intro_group['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill'
+		&& in_array( 'container', (array) ( $intro_group['allowed_widgets'] ?? [] ), true )
+		&& count( $native_badges ) === 1
+		&& count( $native_labels ) === 1
+		&& ( $label['settings']['title'] ?? '' ) === $services_badge_text
+		&& ( $label['settings']['title_color'] ?? '' ) === '#111827'
+		&& ( $label['settings']['typography_font_size']['unit'] ?? '' ) === 'rem'
+		&& (float) ( $label['settings']['typography_font_size']['size'] ?? 0 ) === 0.75
+		&& ( $label['settings']['typography_text_transform'] ?? '' ) === 'uppercase'
+		&& ( $badge['settings']['background_color'] ?? '' ) === '#ffffff'
+		&& ( $badge['settings']['border_color'] ?? '' ) === '#6b7280'
+		&& ( $badge['settings']['border_width']['top'] ?? '' ) === '2'
+		&& (float) ( $badge['settings']['border_radius']['size'] ?? 0 ) >= 999
+		&& ( $badge['settings']['padding']['top'] ?? '' ) === '0.5'
+		&& ( $badge['settings']['padding']['right'] ?? '' ) === '1.75'
+		&& ( $badge['settings']['_element_width'] ?? '' ) === 'initial';
+	$ir_nodes = $walk_ir_nodes( (array) ( $recipe_result['ir']['nodes'] ?? [] ) );
+	$services_badge_ir_contract_ok = $services_badge_ir_contract_ok
+		&& count( array_filter( $ir_nodes, static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_badge' ) ) === 1
+		&& count( array_filter( $ir_nodes, static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_badge_label' ) ) === 1;
+}
+$check( $services_badge_contract_ok && $services_badge_ir_contract_ok, 'all typed Services recipes default their section eyebrow to the native white outlined pill from the user reference' );
 $services_brief_media_intent = (array) ( array_values( array_filter( (array) ( $services_recipe_brief['layout_constraints'] ?? [] ), static fn( array $constraint ): bool => ( $constraint['kind'] ?? '' ) === 'media_intent' ) )[0] ?? [] );
 $check( $services_recipe_brief['intent']['archetype'] === 'services' && ( $services_brief_media_intent['value'] ?? '' ) === 'unspecified' && array_reduce( $services_recipe_results, static fn( bool $ok, array $result ): bool => $ok && ! empty( $result['plan_validation']['ok'] ) && ! empty( $result['ir_validation']['ok'] ) && ! empty( $result['compiled']['ok'] ), true ), 'the same canonical Services Brief validates through all three explicitly selected recipes without changing production defaults' );
 $check( array_column( array_map( static fn( array $result ): array => [ 'recipe_id' => $result['plan']['recipe_id'], 'role' => $result['plan']['sections'][0]['children'][1]['role'] ?? '' ], array_values( $services_recipe_results ) ), 'recipe_id' ) === $services_recipe_ids && array_column( array_map( static fn( array $result ): array => [ 'recipe_id' => $result['plan']['recipe_id'], 'role' => $result['plan']['sections'][0]['children'][1]['role'] ?? '' ], array_values( $services_recipe_results ) ), 'role' ) === [ 'services_photo_grid', 'services_split_editorial', 'services_text_icon_list' ], 'opt-in recipe selection produces three different typed DesignPlan compositions' );
