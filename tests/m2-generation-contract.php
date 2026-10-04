@@ -217,7 +217,9 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
   $control = $native['settings']['flex_gap' . $suffix];
   $gap_px = wpae_layout_report_length_px( $control['size'] . $control['unit'], $bp['viewport_width'], -1 );
   check( abs( $bp['gaps']['size'] - $gap_px ) < 0.01, 'Editor static gap matches native ' . $profile . ' ' . $bp['breakpoint'] );
-  $copy = $native['elements'][0]['settings'];
+  $copy_column = $native['elements'][0];
+  $copy = $copy_column['elements'][0]['settings'];
+  check( $copy_column['settings']['content_width'] === 'full' && $copy['content_width'] === 'boxed' && ! isset( $copy_column['settings']['boxed_width'] ), 'Profile reading measure is nested inside native full-width composition column ' . $profile . ' ' . $device );
   $boxed = $copy['boxed_width' . $suffix];
   $expected = $device === 'mobile' ? $bp['basis']['copy_group'] : min( $bp['basis']['copy_group'], wpae_layout_report_length_px( $boxed['size'] . $boxed['unit'], $bp['viewport_width'], -1 ) );
   check( abs( $bp['boxed_copy_content_width_px']['copy_group'] - $expected ) < 0.01, 'Editor static boxed copy clamp matches native ' . $profile . ' ' . $bp['breakpoint'] );
@@ -244,3 +246,16 @@ $m2_ru_result = $run_services_route( $m2_ru_photo, [], $incompatible_pricing_fix
 check( ! empty( $m2_ru_result['response']['ok'] ) && $m2_ru_result['writes'] === 1 && $m2_ru_result['calls'] === 0, 'M2 ordinary chat Russian quoted license compiles through one transaction without provider or manual Brief' );
 $m2_unknown_quote = $run_services_route( $m2_ru_photo . "\nНеизвестное поле: «Не теряй этот текст»", [], $incompatible_pricing_fixture, 'm2-unknown-metadata', false, 'active', 'active', [ 'composition_record' => 'hero.split_60_40.right', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
 check( empty( $m2_unknown_quote['response']['ok'] ) && $m2_unknown_quote['writes'] === 0 && $m2_unknown_quote['calls'] === 0, 'M2 unrecognized quoted copy still refuses before write rather than being discarded as media metadata' );
+
+foreach ( [ 'hero', 'about' ] as $family ) {
+ foreach ( [ 'left', 'right' ] as $side ) {
+  foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
+   $prompt = str_replace( 'Hero', ucfirst( $family ), $m2_ru_photo );
+   $case = $run_services_route( $prompt, [], $incompatible_pricing_fixture, 'm2-measure-' . $family . $side . $profile, false, 'active', 'active', [ 'composition_record' => $family . '.split_60_40.' . $side, 'composition_version' => 1, 'visual_profile' => $profile ] );
+   $root = $case['written'] ?? [];
+   $copy = $root['elements'][$side === 'left' ? 1 : 0] ?? [];
+   $image = $root['elements'][$side === 'left' ? 0 : 1] ?? [];
+   check( ! empty( $case['response']['ok'] ) && $copy['settings']['content_width'] === 'full' && $copy['settings']['width']['size'] === 60.0 && $image['settings']['width']['size'] === 40.0 && $copy['elements'][0]['settings']['content_width'] === 'boxed' && $copy['elements'][0]['settings']['boxed_width_mobile']['size'] === 100, 'Native profile split percentage column and reading measure have separate owners ' . $family . $side . $profile );
+  }
+ }
+}

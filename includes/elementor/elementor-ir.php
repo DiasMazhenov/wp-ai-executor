@@ -1600,6 +1600,22 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		unset( $compiled_child );
 	}
+	// Elementor emits native percentage --width only for full-width containers.
+	// Keep the composition column full and put the profile reading measure in
+	// a separate boxed native child; boxed copy columns otherwise render 100%.
+	if ( $widget_type === 'container' && $role === 'copy_group' && ! empty( $tokens['_wpae_visual_profile'] ) ) {
+		$measure_settings = $settings;
+		foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) {
+			unset( $settings[ 'boxed_width' . $suffix ] );
+		}
+		$settings['content_width'] = 'full';
+		$compiled_children = [ [
+			'id' => wpae_elementor_ir_id( (string) ( $node['node_id'] ?? 'node' ) . '-reading-measure', $seed ),
+			'elType' => 'container',
+			'settings' => $measure_settings,
+			'elements' => $compiled_children,
+		] ];
+	}
 	$element = [
 		'id' => wpae_elementor_ir_id( (string) ( $node['node_id'] ?? 'node' ), $seed ),
 		'elType' => $widget_type === 'container' ? 'container' : 'widget',

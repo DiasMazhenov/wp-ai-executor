@@ -15,10 +15,10 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $check_model = wpae_accepted_lifecycle_request( $context );
     check( $check_model instanceof WP_REST_Response && $check_model->get_data()['ok'], 'Server/editor decision equality ' . $record );
     if ($record==='hero.text_only') {
-        $native=$owned; $child_id=$native[0]['elements'][0]['id'];
-        check($native[0]['elements'][0]['settings']['content_width']==='boxed','Hero copy container authors boxed native width');
+        $native=$owned; $child_id=$native[0]['elements'][0]['elements'][0]['id'];
+        check($native[0]['elements'][0]['elements'][0]['settings']['content_width']==='boxed','Hero copy container authors boxed native width');
         $GLOBALS['typed_native_defaults'][$child_id]=['content_width'=>'boxed'];
-        unset($native[0]['elements'][0]['settings']['content_width']);
+        unset($native[0]['elements'][0]['elements'][0]['settings']['content_width']);
         $context['editor_owned_model']=$native;
         check(wpae_accepted_lifecycle_request($context)->get_status()===200,'Sparse registered boxed default is not replaced by generation full width');
         $native_doc=new class {function get_main_id(){return 42;}};
@@ -26,7 +26,7 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
         $context['lifecycle_action']='resync';
         check(wpae_accepted_lifecycle_request($context)->get_data()['ok'],'Resync accepts exact native model with omitted registered default');
         $context['lifecycle_action']='check_model';
-        $native[0]['elements'][0]['settings']['content_width']='full';$context['editor_owned_model']=$native;
+        $native[0]['elements'][0]['elements'][0]['settings']['content_width']='full';$context['editor_owned_model']=$native;
         check(wpae_accepted_lifecycle_request($context)->get_status()===409,'Explicit changed full width still refuses after sparse-model fix');
         $GLOBALS['typed_native_defaults']=[];
     }
