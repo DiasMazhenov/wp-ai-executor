@@ -30,3 +30,9 @@ Local checks after this correction: PHP lint passed; Design Pipeline Contract `3
 ## Live status
 
 At diagnosis time, no site write, reload, root replacement, or new screenshot was performed. The v242 roots and their original screenshot evidence were left unchanged. Installation, editor reload, guarded replacement, save/reload readback, and post-fix visual acceptance require separate live evidence and are recorded in the continuation report/context after execution.
+
+## Installation and guard follow-up — 2026-10-04
+
+WP Pusher reported that WP AI Executor updated successfully. The active Plugins row showed `v02.11.243`; WordPress Site Health reported PHP `8.3.22`. The first reload of the existing editor still showed v242, so one fresh editor tab was opened for the same post. Its localized editor config and visible LLM chat badge both showed `v02.11.243`; only then was the stale editor tab closed. The existing public tab was restored. No other plugin or WordPress setting was changed.
+
+After installation, public readback still had post `5214` roots `[023bd70, e939025, 8b79d6c]`, three plain `УСЛУГИ` headings and no badge/pill nodes. CSS viewport was `1238×923`, client `1223×923`, DPR 2. The only current editor pending operation is `wpae-patch-6938b90091861944`, revision `4`, root `[3271f43]`; the durable guard says `reviewable=false`, `stale_target`, reason `root_missing`. The supported replacement path requires an exact current operation/root ownership match, so no request was submitted and no roots were replaced or appended (`write_count=0` for this continuation). v243 source, installation and editor config are verified; v243 generation, save/reload readback and post-fix visual acceptance remain **NOT RUN**.
