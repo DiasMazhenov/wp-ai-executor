@@ -1405,7 +1405,11 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 				continue;
 			}
 			$basis = (float) ( $composition_matches_children ? $composition_basis[ $child_index ] : $default_child_basis );
-			$tablet_is_stack = ( $settings['flex_direction_tablet'] ?? '' ) === 'column';
+			// When Elementor has no tablet override, its tablet axis inherits the
+			// desktop direction. Treat an inherited column as a full-width child;
+			// assuming row here incorrectly halves stacked Services wrappers.
+			$tablet_direction = (string) ( $settings['flex_direction_tablet'] ?? $settings['flex_direction'] ?? 'column' );
+			$tablet_is_stack = $tablet_direction === 'column';
 			$tablet_basis = $tablet_is_stack ? 100 : ( $role === 'services_photo_grid' ? 48 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
 			if ( $role === 'services_photo_grid' && $child_index < count( $compiled_children ) ) {
 				$tablet_basis = 48;

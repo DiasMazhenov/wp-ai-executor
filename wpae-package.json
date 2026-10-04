@@ -55,7 +55,7 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "149074b80d999e97f591428a4d2b3040e92d496a48e9985057fa67a919ec68e0",
-    "includes/elementor/elementor-ir.php": "3f8641cdce16ab5a83b243546c592914f135f1bcced1b1c65fe77855150ba563",
+    "includes/elementor/elementor-ir.php": "43c2f9c008818ead6aade073201da701ee0775f358c14851ce7536b5b7f43346",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
     "includes/elementor/imported-templates/03-pricing.json": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
@@ -252,6 +252,6 @@
     "includes/updates/package-updater.php": "5f869d20c432b07e9d41162be4aa09a2f142322d5a496a0086ad519c5f53a161",
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/vision.php": "86ccb8666f157f94b4a1c5c62ef5ffd40435466b34ba619061e8dc84ec6c03f3",
-    "wp-ai-executor.php": "dcd58b8557943f7a1dfcaf86df6335a935c6bc9be78bc347a819235a52fc2175"
+    "wp-ai-executor.php": "625ec5b70dc13ff3b9193b68331dc97fd17ace2bc61b9428dd170123e022f33a"
   }
 }
