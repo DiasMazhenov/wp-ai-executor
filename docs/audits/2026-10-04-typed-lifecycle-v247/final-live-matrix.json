@@ -1,0 +1,624 @@
+{
+  "schema": "wpae-live-lifecycle-matrix-v1",
+  "date": "2026-10-05 Asia/Almaty",
+  "source_commit": "4104935ec1a95e28a7f6ee7a9dffed0b66e80206",
+  "installed": "v02.11.257",
+  "frontend": "typed-lifecycle-v6",
+  "A": "first/repair/native Publish/reload/Undo evidence retained in REPORT; creation native Publish NOT RUN, repair native Publish PASS",
+  "first_failures": [
+    "B v252 quoted-license refusal write0",
+    "B v253 800/320 instead of60/40",
+    "E v254 About H1",
+    "G v255 icon/text206px",
+    "I v256 two50% cards wrap"
+  ],
+  "cases": [
+    {
+      "case": "B",
+      "post": 5214,
+      "runtime": "v02.11.254",
+      "record": "hero.split_60_40.right",
+      "profile": "editorial_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "562f19b",
+      "operation": "wpae-55fa0d1af966dd66",
+      "operation_identity": "d29500ef-f2db-436f-938f-3934ad8e7c69",
+      "revision_after_save_reload": 6,
+      "contract": "contract-50ac1d0108bc196e6ab5dd7c",
+      "saved_hash": "addf76dc137564162716c983472ec7146b333c410db17f00337473f60f89e213",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/B-v254-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 290290,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/B-v254-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            844
+          ],
+          "bytes": 170811,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/B-C-D-exact-request.txt",
+      "first_result": "v252 quoted license refusal write0; v253 rendered ratio FAIL; v254 corrected",
+      "assets": [
+        {
+          "source_url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "provenance": "https://unsplash.com/photos/modern-architectural-interior-with-curved-white-walls-wDgzO5XLZT8",
+          "author": "Pietro Bolzonetti",
+          "license": "Unsplash License",
+          "usage": "illustrative stock, not a claimed studio project",
+          "loaded_natural_dimensions": [
+            1200,
+            675
+          ],
+          "wp_attachment_id": null
+        }
+      ]
+    },
+    {
+      "case": "C",
+      "post": 5214,
+      "runtime": "v02.11.254",
+      "record": "hero.split_60_40.left",
+      "profile": "editorial_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "11e61ec",
+      "operation": "wpae-3b2ac8c692cad6bb",
+      "operation_identity": "021f7685-bcdd-4084-af2a-19b4d30d02d3",
+      "revision_after_save_reload": 5,
+      "contract": "contract-ebe95f2318b83f4e65a68faa",
+      "saved_hash": "b8738d9aebfaeae1c710a13c72b95e09605745d3965b7a832401d6307af56931",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/C-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 288867,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/C-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            844
+          ],
+          "bytes": 171672,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/B-C-D-exact-request.txt",
+      "first_result": "first v254; negative Vision68 retained",
+      "assets": [
+        {
+          "source_url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "provenance": "https://unsplash.com/photos/modern-architectural-interior-with-curved-white-walls-wDgzO5XLZT8",
+          "author": "Pietro Bolzonetti",
+          "license": "Unsplash License",
+          "usage": "illustrative stock, not a claimed studio project",
+          "loaded_natural_dimensions": [
+            1200,
+            675
+          ],
+          "wp_attachment_id": null
+        }
+      ]
+    },
+    {
+      "case": "D",
+      "post": 5214,
+      "runtime": "v02.11.254",
+      "record": "hero.split_60_40.right",
+      "profile": "soft_cards_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "184cc98",
+      "operation": "wpae-3553d9f57e726763",
+      "operation_identity": "27d881c9-3db5-4774-9590-6ee717a0931f",
+      "revision_after_save_reload": 6,
+      "contract": "contract-80dd2558c5f4959ee8101592",
+      "saved_hash": "99f8b4c01357d947f3107bda8bb8e46303cc24a1eeeea954e259ff989ecc5d36",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/D-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 282553,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/D-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            844
+          ],
+          "bytes": 173202,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/B-C-D-exact-request.txt",
+      "first_result": "first v254",
+      "assets": [
+        {
+          "source_url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "provenance": "https://unsplash.com/photos/modern-architectural-interior-with-curved-white-walls-wDgzO5XLZT8",
+          "author": "Pietro Bolzonetti",
+          "license": "Unsplash License",
+          "usage": "illustrative stock, not a claimed studio project",
+          "loaded_natural_dimensions": [
+            1200,
+            675
+          ],
+          "wp_attachment_id": null
+        }
+      ]
+    },
+    {
+      "case": "E",
+      "post": 5214,
+      "runtime": "v02.11.255",
+      "record": "about.split_50_50.right",
+      "profile": "editorial_light",
+      "brief_hash": "f7ead05920b683b0c44911f1cc22a507ef8b8e9088b617df1cde17ec39cf5ebe",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "153e6df",
+      "operation": "wpae-2104e873c6abbc88",
+      "operation_identity": "7d15d267-4255-4efb-8e29-787ce882c186",
+      "revision_after_save_reload": 6,
+      "contract": "contract-b551404f58814cce5f856d75",
+      "saved_hash": "25af451f1a26bcbf2004e26e41ef64036921332ea609a5369696582d202a013e",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-v255-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 349801,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-v255-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 844,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            375,
+            844
+          ],
+          "bytes": 180072,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-exact-request.txt",
+      "first_result": "first v254 semantic H1 FAIL; v255 corrected H2",
+      "assets": [
+        {
+          "source_url": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "alt": "Современный архитектурный интерьер.",
+          "provenance": "https://unsplash.com/photos/modern-architectural-interior-with-curved-white-walls-wDgzO5XLZT8",
+          "author": "Pietro Bolzonetti",
+          "license": "Unsplash License",
+          "usage": "illustrative stock, not a claimed studio project",
+          "loaded_natural_dimensions": [
+            1200,
+            675
+          ],
+          "wp_attachment_id": null
+        }
+      ]
+    },
+    {
+      "case": "F",
+      "post": 5214,
+      "runtime": "v02.11.255",
+      "record": "benefits.grid",
+      "profile": "editorial_light",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "9a851c8",
+      "operation": "wpae-23525bfdc94b519d",
+      "operation_identity": "bcb69453-5ddd-413d-9f05-cb0626a066fe",
+      "revision_after_save_reload": 5,
+      "contract": "contract-e86ddc42a8e4794230cfbe4c",
+      "saved_hash": "de33f0bdd645cd84bbd5f907645be45607d493832e0179b7c92371f15225bc41",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 206929,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-public-mobile-tall.png",
+          "viewport": {
+            "width": 390,
+            "height": 1000,
+            "note": "measured true public viewport; tall screenshot follows viewport change"
+          },
+          "png_dimensions": [
+            390,
+            1000
+          ],
+          "bytes": 137706,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-G-H-exact-request.txt",
+      "first_result": "first v255; negative Vision68 retained",
+      "assets": []
+    },
+    {
+      "case": "G",
+      "post": 5214,
+      "runtime": "v02.11.256",
+      "record": "benefits.editorial_list",
+      "profile": "editorial_light",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "c5962b5",
+      "operation": "wpae-55ff43593d0499be",
+      "operation_identity": "a578c3ad-964b-4277-97d1-f796bf805f57",
+      "revision_after_save_reload": 5,
+      "contract": "contract-7954269a4a287df82502a730",
+      "saved_hash": "478ab04f80ae564057306361d0ce6e211407c23374350fc3a1fe4a9d749a289c",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/G-v256-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1265,
+            939
+          ],
+          "bytes": 206134,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/G-v256-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 1000,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            1000
+          ],
+          "bytes": 130382,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-G-H-exact-request.txt",
+      "first_result": "first v255 actual icon-to-text206px FAIL; v256 corrected16px, Vision60 retained",
+      "assets": []
+    },
+    {
+      "case": "H",
+      "post": 5214,
+      "runtime": "v02.11.256",
+      "record": "benefits.grid",
+      "profile": "soft_cards_light",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "97c16e5",
+      "operation": "wpae-d09de5a84ae87b56",
+      "operation_identity": "ddba6dba-305d-4b19-bc40-ea8e690d6a8b",
+      "revision_after_save_reload": 6,
+      "contract": "contract-30f45765fde4aff2fa7b6f29",
+      "saved_hash": "79096a205d49822d34fee198fd60161b7208e39f5c6bf6cd394b1eba1c55fde8",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "REVIEW_REQUIRED",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/H-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 205545,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/H-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 1000,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            1000
+          ],
+          "bytes": 141986,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-G-H-exact-request.txt",
+      "first_result": "first v256",
+      "assets": []
+    },
+    {
+      "case": "I",
+      "post": 5214,
+      "runtime": "v02.11.257",
+      "record": "pricing.tiers",
+      "profile": "",
+      "brief_hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "d520087",
+      "operation": "wpae-89417843d0576daa",
+      "operation_identity": "403a4f68-02d8-409c-aa4f-8c0a2200ce57",
+      "revision_after_save_reload": 6,
+      "contract": "contract-3b072cd2946feda763d43604",
+      "saved_hash": "8a6b91f07606da2b1077c38836a07f7ae508393cfb48e17f3f535b893fb0c95c",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "CONTROLLED_BLOCK_PASS_WITH_SITE_OVERLAY_LIMITATION",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-v257-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 196588,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-v257-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 1300,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            1300
+          ],
+          "bytes": 142465,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-exact-request.txt",
+      "first_result": "first v256 desktop cards wrap FAIL; v257 corrected row",
+      "assets": []
+    },
+    {
+      "case": "J",
+      "post": 5214,
+      "runtime": "v02.11.257",
+      "record": "faq.native",
+      "profile": "",
+      "brief_hash": "6736225f9b09f80b93763a48b452499a9482b7a244f3f828bf97a750c4a0daac",
+      "provider_calls": 0,
+      "write_count": 1,
+      "root": "6a0d2cb",
+      "operation": "wpae-17b5777408c3cb8c",
+      "operation_identity": "f477c561-c0e9-4b48-880c-ff5b11ae54f4",
+      "revision_after_save_reload": 5,
+      "contract": "contract-9c58192e9b86c6b2b1ea6156",
+      "saved_hash": "cf0aa5ac74a3fc7e970b414a1b35ecb0218657e2dfd515503ef8cb466da28316",
+      "native_readback": "exact authored controls, extra registered defaults allowed",
+      "undo": "already_undone",
+      "baseline_restored": true,
+      "technical_status": "PASS",
+      "visual_status": "CONTROLLED_BLOCK_PASS_WITH_SITE_OVERLAY_LIMITATION",
+      "screenshots": [
+        {
+          "source": "public",
+          "device": "desktop",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-desktop.png",
+          "viewport": {
+            "width": 1280,
+            "height": 900,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            1280,
+            900
+          ],
+          "bytes": 209209,
+          "format_verified": true,
+          "visually_opened": true
+        },
+        {
+          "source": "public",
+          "device": "mobile",
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-mobile.png",
+          "viewport": {
+            "width": 390,
+            "height": 1200,
+            "dpr": 1
+          },
+          "png_dimensions": [
+            390,
+            1200
+          ],
+          "bytes": 153789,
+          "format_verified": true,
+          "visually_opened": true
+        }
+      ],
+      "exact_request_path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-exact-request.txt",
+      "first_result": "first v257; Vision68 claimed missing collapsed answer, native interaction confirms full exact answer",
+      "assets": []
+    }
+  ],
+  "final_root_set": [
+    "37b84f9"
+  ],
+  "final_saved_hash": "4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d",
+  "limitations": [
+    "Negative Vision retained and not marked completed/PASS",
+    "B-H sparse rhythm/centered section header visual review required",
+    "Existing site chatbot overlays some original mobile screenshots; taller true public mobile used F-J",
+    "B-E original DOM did not explicitly include minHeight; coverage gap retained, not inferred as measured",
+    "Editor screenshot crop limitation distinct from readable public PNG"
+  ]
+}

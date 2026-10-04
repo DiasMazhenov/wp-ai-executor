@@ -1,0 +1,415 @@
+- navigation "Главное меню":
+  - link "Перейти к основному содержимому":
+    - /url: "#wpbody-content"
+  - link "Перейти к верхней панели":
+    - /url: "#wp-toolbar"
+  - list:
+    - link "Консоль":
+      - /url: index.php
+      - generic: 
+      - generic: Консоль
+    - list:
+      - link "Главная":
+        - /url: index.php
+      - link "Обновления":
+        - /url: update-core.php
+      - link "Параметры обновлений":
+        - /url: index.php?page=mpsum-update-options
+    - link "Elementor":
+      - /url: admin.php?page=elementor-home
+      - generic: Elementor
+    - list:
+      - link "Главная":
+        - /url: admin.php?page=elementor-home
+      - link "Editor":
+        - /url: admin.php?page=elementor
+      - link "Theme Builder":
+        - /url: https://mazhenov.kz/wp-admin/admin.php?page=elementor-app&ver=4.1.1&return_to=/wp-admin/plugins.php?s=WP%20AI%20Executor&plugin_status=all#/site-editor
+      - link "Submissions":
+        - /url: admin.php?page=e-form-submissions
+    - link "Записи":
+      - /url: edit.php
+      - generic: 
+      - generic: Записи
+    - list:
+      - link "Все записи":
+        - /url: edit.php
+      - link "Добавить запись":
+        - /url: post-new.php
+      - link "Рубрики":
+        - /url: edit-tags.php?taxonomy=category
+      - link "Метки":
+        - /url: edit-tags.php?taxonomy=post_tag
+    - link "Медиафайлы":
+      - /url: upload.php
+      - generic: 
+      - generic: Медиафайлы
+    - list:
+      - link "Библиотека":
+        - /url: upload.php
+      - link "Добавить медиафайл":
+        - /url: media-new.php
+    - link "Страницы":
+      - /url: edit.php?post_type=page
+      - generic: 
+      - generic: Страницы
+    - list:
+      - link "Все страницы":
+        - /url: edit.php?post_type=page
+      - link "Добавить страницу":
+        - /url: post-new.php?post_type=page
+    - link "FeedbackWP":
+      - /url: admin.php?page=rate-my-post
+      - generic: 
+      - generic: FeedbackWP
+    - list:
+      - link "Настройки":
+        - /url: admin.php?page=rate-my-post
+      - link "Статистика":
+        - /url: admin.php?page=rate-my-post-stats
+      - link "Анализ":
+        - /url: admin.php?page=rate-my-post-analytics
+      - link "Обновить до Pro":
+        - /url: https://feedbackwp.com/pricing/?utm_source=wp_dashboard&utm_medium=menu-link&utm_campaign=menu-upsell
+    - link "Комментарии 15 комментариев ждут одобрения":
+      - /url: edit-comments.php
+      - generic: 
+      - text: Комментарии
+      - text: "15"
+      - generic: 15 комментариев ждут одобрения
+    - text: 
+    - link "VibeLMS":
+      - /url: admin.php?page=llms-dashboard
+      - generic: 
+      - generic: VibeLMS
+    - list:
+      - link "Панель управления":
+        - /url: admin.php?page=llms-dashboard
+      - link "Тесты":
+        - /url: admin.php?page=llms-quiz-builder
+      - link "Настройки":
+        - /url: admin.php?page=llms-settings
+      - link "Материалы":
+        - /url: edit.php?post_type=vibelms_material
+      - link "Статус":
+        - /url: admin.php?page=llms-status
+      - link "Журнал тестирования":
+        - /url: admin.php?page=vibelms-attempts
+      - link "Перенос данных":
+        - /url: admin.php?page=vibelms-transfer
+    - link "Курсы":
+      - /url: edit.php?post_type=course
+      - generic: 
+      - generic: Курсы
+    - list:
+      - link "Курсы":
+        - /url: edit.php?post_type=course
+      - link "Добавить новый курс":
+        - /url: post-new.php?post_type=course
+      - link "Рубрики":
+        - /url: edit-tags.php?taxonomy=course_cat&post_type=course
+      - link "Уровни сложности":
+        - /url: edit-tags.php?taxonomy=course_difficulty&post_type=course
+      - link "Метки":
+        - /url: edit-tags.php?taxonomy=course_tag&post_type=course
+      - link "Направления":
+        - /url: edit-tags.php?taxonomy=course_track&post_type=course
+      - link "Уроки":
+        - /url: edit.php?post_type=lesson
+      - link "Отзывы":
+        - /url: edit.php?post_type=llms_review
+    - link "Группы доступа":
+      - /url: edit.php?post_type=llms_membership
+      - generic: 
+      - generic: Группы доступа
+    - list:
+      - link "Группы доступа":
+        - /url: edit.php?post_type=llms_membership
+      - link "Добавить новую группу доступа":
+        - /url: post-new.php?post_type=llms_membership
+      - link "Рубрики":
+        - /url: edit-tags.php?taxonomy=membership_cat&post_type=llms_membership
+      - link "Метки":
+        - /url: edit-tags.php?taxonomy=membership_tag&post_type=llms_membership
+    - link "DS AI Chatbot v0.5.119":
+      - /url: admin.php?page=wpdsac-settings
+      - generic: DS AI Chatbot v0.5.119
+    - list:
+      - link "Настройки":
+        - /url: admin.php?page=wpdsac-settings
+      - link "База знаний":
+        - /url: admin.php?page=wpdsac-knowledge
+      - link "Лиды":
+        - /url: admin.php?page=wpdsac-leads
+    - text: 
+    - link "Hello Elementor":
+      - /url: admin.php?page=hello-elementor
+      - generic: 
+      - generic: Hello Elementor
+    - list:
+      - link "Главная":
+        - /url: admin.php?page=hello-elementor
+      - link "Настройки":
+        - /url: admin.php?page=hello-elementor-settings
+      - link "Конструктор тем":
+        - /url: admin.php?page=elementor-app&ver=4.1.1#site-editor
+      - link "AI Site Planner":
+        - /url: admin.php?page=hello-elementor-ai-site-planner
+    - link "Внешний вид":
+      - /url: themes.php
+      - generic: 
+      - generic: Внешний вид
+    - list:
+      - link "Темы":
+        - /url: themes.php
+      - link "Оформление":
+        - /url: site-editor.php
+      - link "Настроить":
+        - /url: customize.php?return=%2Fwp-admin%2Fplugins.php%3Fs%3DWP%2BAI%2BExecutor%26plugin_status%3Dall
+      - link "Виджеты":
+        - /url: widgets.php
+      - link "Меню":
+        - /url: nav-menus.php
+    - link "Плагины":
+      - /url: plugins.php
+      - generic: 
+      - generic: Плагины
+    - list:
+      - link "Установленные":
+        - /url: plugins.php
+      - link "Добавить плагин":
+        - /url: plugin-install.php
+    - link "Пользователи":
+      - /url: users.php
+      - generic: 
+      - generic: Пользователи
+    - list:
+      - link "Все пользователи":
+        - /url: users.php
+      - link "Добавить пользователя":
+        - /url: user-new.php
+      - link "Профиль":
+        - /url: profile.php
+    - link "Limit Login Attempts":
+      - /url: admin.php?page=limit-login-attempts&tab=dashboard
+      - generic: Limit Login Attempts
+    - list:
+      - link "Dashboard":
+        - /url: admin.php?page=limit-login-attempts&tab=dashboard
+      - link "Settings":
+        - /url: admin.php?page=limit-login-attempts&tab=settings
+      - link "2FA":
+        - /url: admin.php?page=limit-login-attempts&tab=mfa
+      - link "Logs":
+        - /url: admin.php?page=limit-login-attempts&tab=logs-local
+      - link "Debug":
+        - /url: admin.php?page=limit-login-attempts&tab=debug
+      - link "Help":
+        - /url: admin.php?page=limit-login-attempts&tab=help
+      - link "Free Upgrade":
+        - /url: admin.php?page=limit-login-attempts&tab=dashboard#modal_micro_cloud
+    - link "Инструменты":
+      - /url: tools.php
+      - generic: 
+      - generic: Инструменты
+    - list:
+      - link "Доступные инструменты":
+        - /url: tools.php
+      - link "Импорт":
+        - /url: import.php
+      - link "Экспорт":
+        - /url: export.php
+      - link "Здоровье сайта 1":
+        - /url: site-health.php
+        - text: Здоровье сайта
+        - generic: "1"
+      - link "Экспорт персональных данных":
+        - /url: export-personal-data.php
+      - link "Удаление персональных данных":
+        - /url: erase-personal-data.php
+      - link "Установка сети":
+        - /url: network.php
+      - link "Правила перезаписи (Rewrite Rules)":
+        - /url: tools.php?page=rewrite-rules-inspector
+    - link "Настройки":
+      - /url: options-general.php
+      - generic: 
+      - generic: Настройки
+    - list:
+      - link "Общие":
+        - /url: options-general.php
+      - link "Написание":
+        - /url: options-writing.php
+      - link "Чтение":
+        - /url: options-reading.php
+      - link "Обсуждение":
+        - /url: options-discussion.php
+      - link "Медиафайлы":
+        - /url: options-media.php
+      - link "Постоянные ссылки":
+        - /url: options-permalink.php
+      - link "Приватность":
+        - /url: options-privacy.php
+      - link "Скрыть страницу логина":
+        - /url: options-general.php?page=hlp_hide_login-wbcr_hide_login_page
+      - link "AI Executor":
+        - /url: options-general.php?page=wp-ai-executor
+      - link "WP Rocket":
+        - /url: options-general.php?page=wprocket
+      - link "Notification e-mails":
+        - /url: options-general.php?page=famne-admin
+    - link "Easy WP SMTP":
+      - /url: admin.php?page=easy-wp-smtp
+      - generic: Easy WP SMTP
+    - list:
+      - link "Настройки":
+        - /url: admin.php?page=easy-wp-smtp
+      - link "Отправить тестовое письмо":
+        - /url: admin.php?page=easy-wp-smtp-tools&tab=test
+      - link "Журнал почты":
+        - /url: admin.php?page=easy-wp-smtp-logs
+      - link "Отчеты об электронной почте":
+        - /url: admin.php?page=easy-wp-smtp-reports
+      - link "Инструменты":
+        - /url: admin.php?page=easy-wp-smtp-tools
+      - link "Обновить до Pro":
+        - /url: https://easywpsmtp.com/lite-upgrade/?utm_source=WordPress&utm_medium=admin-menu&utm_campaign=liteplugin&utm_locale=ru_ru&utm_content=Upgrade%20to%20Pro%20-%20plugins
+    - link "Anti-Malware":
+      - /url: admin.php?page=GOTMLS-settings
+      - generic: Anti-Malware
+    - list:
+      - link "Настройки сканирования":
+        - /url: admin.php?page=GOTMLS-settings
+      - link "Firewall Options":
+        - /url: admin.php?page=GOTMLS-Firewall-Options
+      - link "Просмотреть карантин":
+        - /url: admin.php?page=GOTMLS_View_Quarantine
+    - link "Безопасность 3":
+      - /url: admin.php?page=really-simple-security
+      - text: Безопасность
+      - generic: "3"
+    - link "WP Pusher":
+      - /url: admin.php?page=wppusher
+      - generic: 
+      - generic: WP Pusher
+    - list:
+      - link "WP Pusher":
+        - /url: admin.php?page=wppusher
+      - link "Install Plugin":
+        - /url: admin.php?page=wppusher-plugins-create
+      - link "Plugins":
+        - /url: admin.php?page=wppusher-plugins
+      - link "Install Theme":
+        - /url: admin.php?page=wppusher-themes-create
+      - link "Themes":
+        - /url: admin.php?page=wppusher-themes
+      - link "Get Help":
+        - /url: https://wppusher.com/support
+    - link "Maintenance":
+      - /url: admin.php?page=maintenance
+      - generic: Maintenance
+    - button "Свернуть главное меню" [expanded]:
+      - generic: Свернуть меню
+- navigation "Верхняя панель":
+  - menu:
+    - menuitem "О WordPress":
+      - generic: О WordPress
+    - menuitem "Mazhenov Design"
+    - menuitem "15 комментариев ждут одобрения":
+      - generic: "15"
+      - generic: 15 комментариев ждут одобрения
+    - menuitem "Добавить":
+      - generic: Добавить
+    - menuitem "AI Executor"
+    - menuitem "Обновления"
+    - menuitem "Maintenance is Off"
+    - menuitem "LLAR"
+    - menuitem "WP Rocket"
+  - menu:
+    - menuitem "Привет, diasmazhenov"
+- main:
+  - button "Настройки экрана"
+  - button "Помощь"
+  - heading "Плагины" [level=1]
+  - link "Добавить плагин":
+    - /url: https://mazhenov.kz/wp-admin/plugin-install.php
+  - text: "Результаты поиска для:"
+  - strong: WP AI Executor
+  - heading "Фильтровать список плагинов" [level=2]
+  - list:
+    - link "Все (24)":
+      - /url: plugins.php?plugin_status=all
+    - text: "|"
+    - link "Активные (18)":
+      - /url: plugins.php?plugin_status=active
+    - text: "|"
+    - link "Неактивные (6)":
+      - /url: plugins.php?plugin_status=inactive
+    - text: "|"
+    - link "Необходимые (1)":
+      - /url: plugins.php?plugin_status=mustuse
+    - text: "|"
+    - link "Вкрапления (1)":
+      - /url: plugins.php?plugin_status=dropins
+  - paragraph:
+    - generic: Поиск установленных плагинов
+    - searchbox "Поиск установленных плагинов": WP AI Executor
+  - generic: Выберите массовое действие
+  - combobox "Выберите массовое действие":
+    - option "Действия" [selected]
+    - option "Активировать"
+    - option "Деактивировать"
+    - option "Обновить"
+    - option "Удалить"
+  - button "Применить"
+  - generic: 1 элемент
+  - heading "Список плагинов" [level=2]
+  - table:
+    - rowgroup:
+      - row "Выделить все Плагин Описание":
+        - cell "Выделить все":
+          - checkbox "Выделить все"
+          - generic: Выделить все
+        - columnheader "Плагин"
+        - columnheader "Описание"
+    - rowgroup:
+      - 'row "Выбрать WP AI Executor WP AI Executor Деактивировать WP AI Executor | Manage Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent. Версия v02.11.257 | Автор: DIAS"':
+        - rowheader "Выбрать WP AI Executor":
+          - generic: Выбрать WP AI Executor
+          - checkbox "Выбрать WP AI Executor"
+        - cell "WP AI Executor Деактивировать WP AI Executor | Manage":
+          - strong: WP AI Executor
+          - link "Деактивировать WP AI Executor":
+            - /url: plugins.php?action=deactivate&plugin=wp-ai-executor%2Fwp-ai-executor.php&plugin_status=search&paged=1&s=WP+AI+Executor&_wpnonce=[REDACTED]
+            - text: Деактивировать
+          - text: "|"
+          - link "Manage":
+            - /url: https://mazhenov.kz/wp-admin/admin.php?page=wppusher-plugins
+            - text: Manage
+        - 'cell "Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent. Версия v02.11.257 | Автор: DIAS"':
+          - paragraph: Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
+          - generic: "Версия v02.11.257 | Автор: DIAS"
+    - rowgroup:
+      - row "Выделить все Плагин Описание":
+        - cell "Выделить все":
+          - checkbox "Выделить все"
+          - generic: Выделить все
+        - columnheader "Плагин"
+        - columnheader "Описание"
+  - generic: Выберите массовое действие
+  - combobox "Выберите массовое действие":
+    - option "Действия" [selected]
+    - option "Активировать"
+    - option "Деактивировать"
+    - option "Обновить"
+    - option "Удалить"
+  - button "Применить"
+  - generic: 1 элемент
+- contentinfo:
+  - paragraph:
+    - text: Спасибо вам за творчество с
+    - link "WordPress":
+      - /url: https://ru.wordpress.org/
+    - text: .
+  - paragraph: Версия 6.9
+- text: 

@@ -1,0 +1,3767 @@
+[
+  {
+    "requested": 1025,
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "d520087",
+      "viewport": {
+        "width": 1025,
+        "height": 1300,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 1025,
+      "rootMetric": {
+        "id": "d520087",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 404.296875,
+          "width": 1025,
+          "height": 441.0078125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 32px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 404.296875,
+            "width": 961,
+            "height": 441.0078125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "72px 0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 476.296875,
+            "width": 961,
+            "height": 297.0078125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 476.296875,
+            "width": 461.2734375,
+            "height": 297.0078125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 501.296875,
+            "width": 411.2734375,
+            "height": 184.0078125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 538.8984375,
+            "width": 411.2734375,
+            "height": 33.6015625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "50 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 538.8984375,
+            "width": 124.5625,
+            "height": 33.6015625
+          },
+          "font": "32px",
+          "line": "33.6px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Старт",
+          "href": "#start",
+          "bounds": {
+            "x": 57,
+            "y": 709.3046875,
+            "width": 154.3203125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 517.2734375,
+            "y": 476.296875,
+            "width": 461.2734375,
+            "height": 297.0078125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 542.2734375,
+            "y": 501.296875,
+            "width": 411.2734375,
+            "height": 184.0078125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 542.2734375,
+            "y": 538.8984375,
+            "width": 411.2734375,
+            "height": 33.6015625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "150 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 542.2734375,
+            "y": 538.8984375,
+            "width": 142.359375,
+            "height": 33.6015625
+          },
+          "font": "32px",
+          "line": "33.6px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Проект",
+          "href": "#project",
+          "bounds": {
+            "x": 542.2734375,
+            "y": 709.3046875,
+            "width": 165.0703125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "d520087"
+      ]
+    },
+    "extra": {
+      "root": "d520087",
+      "viewport": {
+        "width": 1025,
+        "height": 1300,
+        "clientWidth": 1025
+      },
+      "nodes": [
+        {
+          "id": "d520087",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-d520087 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 404.296875,
+            "width": 1025,
+            "height": 441.0078125
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 32px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 404.296875,
+            "width": 961,
+            "height": 441.0078125
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 1140px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "72px 0px",
+          "gap": "24px"
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-57fc05f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 476.296875,
+            "width": 961,
+            "height": 297.0078125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-e76a37b e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 476.296875,
+            "width": 461.2734375,
+            "height": 297.0078125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-3689585 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 57,
+            "y": 501.296875,
+            "width": 411.2734375,
+            "height": 184.0078125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "12px"
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-231dd7e e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 57,
+            "y": 538.8984375,
+            "width": 411.2734375,
+            "height": 33.6015625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/мес",
+          "bounds": {
+            "x": 185.5625,
+            "y": 542.8984375,
+            "width": 32,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Малый проект",
+          "bounds": {
+            "x": 57,
+            "y": 584.5,
+            "width": 411.2734375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Аудит",
+          "bounds": {
+            "x": 57,
+            "y": 622.1015625,
+            "width": 411.2734375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "План",
+          "bounds": {
+            "x": 57,
+            "y": 659.703125,
+            "width": 411.2734375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-7af4955 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 517.2734375,
+            "y": 476.296875,
+            "width": 461.2734375,
+            "height": 297.0078125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a5e93c7 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 542.2734375,
+            "y": 501.296875,
+            "width": 411.2734375,
+            "height": 184.0078125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "12px"
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a2bc212 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 542.2734375,
+            "y": 538.8984375,
+            "width": 411.2734375,
+            "height": 33.6015625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/год",
+          "bounds": {
+            "x": 688.6328125,
+            "y": 542.8984375,
+            "width": 29.484375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Полный проект",
+          "bounds": {
+            "x": 542.2734375,
+            "y": 584.5,
+            "width": 411.2734375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Дизайн",
+          "bounds": {
+            "x": 542.2734375,
+            "y": 622.1015625,
+            "width": 411.2734375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Разработка",
+          "bounds": {
+            "x": 542.2734375,
+            "y": 659.703125,
+            "width": 411.2734375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "requested": 1024,
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "d520087",
+      "viewport": {
+        "width": 1024,
+        "height": 1300,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 1024,
+      "rootMetric": {
+        "id": "d520087",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 327.796875,
+          "width": 1024,
+          "height": 437.6484375
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 32px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 327.796875,
+            "width": 960,
+            "height": 437.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "72px 0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 399.796875,
+            "width": 960,
+            "height": 293.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 399.796875,
+            "width": 460.796875,
+            "height": 293.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 424.796875,
+            "width": 410.796875,
+            "height": 180.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 462.3984375,
+            "width": 410.796875,
+            "height": 30.2421875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "50 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 462.3984375,
+            "width": 112.109375,
+            "height": 30.2421875
+          },
+          "font": "28.8px",
+          "line": "30.24px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Старт",
+          "href": "#start",
+          "bounds": {
+            "x": 57,
+            "y": 629.4453125,
+            "width": 154.3203125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 516.796875,
+            "y": 399.796875,
+            "width": 460.796875,
+            "height": 293.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 541.796875,
+            "y": 424.796875,
+            "width": 410.796875,
+            "height": 180.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 541.796875,
+            "y": 462.3984375,
+            "width": 410.796875,
+            "height": 30.2421875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "150 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 541.796875,
+            "y": 462.3984375,
+            "width": 128.125,
+            "height": 30.2421875
+          },
+          "font": "28.8px",
+          "line": "30.24px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Проект",
+          "href": "#project",
+          "bounds": {
+            "x": 541.796875,
+            "y": 629.4453125,
+            "width": 165.0703125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "d520087"
+      ]
+    },
+    "extra": {
+      "root": "d520087",
+      "viewport": {
+        "width": 1024,
+        "height": 1300,
+        "clientWidth": 1024
+      },
+      "nodes": [
+        {
+          "id": "d520087",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-d520087 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 327.796875,
+            "width": 1024,
+            "height": 437.6484375
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 32px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 327.796875,
+            "width": 960,
+            "height": 437.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 1024px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "72px 0px",
+          "gap": "24px"
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-57fc05f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 399.796875,
+            "width": 960,
+            "height": 293.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-e76a37b e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 399.796875,
+            "width": 460.796875,
+            "height": 293.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-3689585 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 57,
+            "y": 424.796875,
+            "width": 410.796875,
+            "height": 180.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "12px"
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-231dd7e e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 57,
+            "y": 462.3984375,
+            "width": 410.796875,
+            "height": 30.2421875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/мес",
+          "bounds": {
+            "x": 173.109375,
+            "y": 464.71875,
+            "width": 32,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Малый проект",
+          "bounds": {
+            "x": 57,
+            "y": 504.640625,
+            "width": 410.796875,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Аудит",
+          "bounds": {
+            "x": 57,
+            "y": 542.2421875,
+            "width": 410.796875,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "План",
+          "bounds": {
+            "x": 57,
+            "y": 579.84375,
+            "width": 410.796875,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-7af4955 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 516.796875,
+            "y": 399.796875,
+            "width": 460.796875,
+            "height": 293.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a5e93c7 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 541.796875,
+            "y": 424.796875,
+            "width": 410.796875,
+            "height": 180.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "12px"
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a2bc212 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 541.796875,
+            "y": 462.3984375,
+            "width": 410.796875,
+            "height": 30.2421875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/год",
+          "bounds": {
+            "x": 673.921875,
+            "y": 464.71875,
+            "width": 29.484375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Полный проект",
+          "bounds": {
+            "x": 541.796875,
+            "y": 504.640625,
+            "width": 410.796875,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Дизайн",
+          "bounds": {
+            "x": 541.796875,
+            "y": 542.2421875,
+            "width": 410.796875,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Разработка",
+          "bounds": {
+            "x": 541.796875,
+            "y": 579.84375,
+            "width": 410.796875,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "requested": 768,
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "d520087",
+      "viewport": {
+        "width": 768,
+        "height": 1300,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 768,
+      "rootMetric": {
+        "id": "d520087",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 341.796875,
+          "width": 768,
+          "height": 437.6484375
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 32px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 341.796875,
+            "width": 704,
+            "height": 437.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "72px 0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 413.796875,
+            "width": 704,
+            "height": 293.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 413.796875,
+            "width": 337.9140625,
+            "height": 293.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 438.796875,
+            "width": 287.9140625,
+            "height": 180.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 476.3984375,
+            "width": 287.9140625,
+            "height": 30.2421875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "50 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 57,
+            "y": 476.3984375,
+            "width": 112.109375,
+            "height": 30.2421875
+          },
+          "font": "28.8px",
+          "line": "30.24px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Старт",
+          "href": "#start",
+          "bounds": {
+            "x": 57,
+            "y": 643.4453125,
+            "width": 154.3203125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 393.9140625,
+            "y": 413.796875,
+            "width": 337.9140625,
+            "height": 293.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 418.9140625,
+            "y": 438.796875,
+            "width": 287.9140625,
+            "height": 180.6484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 418.9140625,
+            "y": 476.3984375,
+            "width": 287.9140625,
+            "height": 30.2421875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "150 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 418.9140625,
+            "y": 476.3984375,
+            "width": 128.125,
+            "height": 30.2421875
+          },
+          "font": "28.8px",
+          "line": "30.24px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Проект",
+          "href": "#project",
+          "bounds": {
+            "x": 418.9140625,
+            "y": 643.4453125,
+            "width": 165.0703125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "d520087"
+      ]
+    },
+    "extra": {
+      "root": "d520087",
+      "viewport": {
+        "width": 768,
+        "height": 1300,
+        "clientWidth": 768
+      },
+      "nodes": [
+        {
+          "id": "d520087",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-d520087 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 341.796875,
+            "width": 768,
+            "height": 437.6484375
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 32px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 341.796875,
+            "width": 704,
+            "height": 437.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 1024px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "72px 0px",
+          "gap": "24px"
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-57fc05f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 413.796875,
+            "width": 704,
+            "height": 293.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-e76a37b e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 413.796875,
+            "width": 337.9140625,
+            "height": 293.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-3689585 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 57,
+            "y": 438.796875,
+            "width": 287.9140625,
+            "height": 180.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "12px"
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-231dd7e e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 57,
+            "y": 476.3984375,
+            "width": 287.9140625,
+            "height": 30.2421875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/мес",
+          "bounds": {
+            "x": 173.109375,
+            "y": 478.71875,
+            "width": 32,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Малый проект",
+          "bounds": {
+            "x": 57,
+            "y": 518.640625,
+            "width": 287.9140625,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Аудит",
+          "bounds": {
+            "x": 57,
+            "y": 556.2421875,
+            "width": 287.9140625,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "План",
+          "bounds": {
+            "x": 57,
+            "y": 593.84375,
+            "width": 287.9140625,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-7af4955 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 393.9140625,
+            "y": 413.796875,
+            "width": 337.9140625,
+            "height": 293.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a5e93c7 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 418.9140625,
+            "y": 438.796875,
+            "width": 287.9140625,
+            "height": 180.6484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "12px"
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a2bc212 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 418.9140625,
+            "y": 476.3984375,
+            "width": 287.9140625,
+            "height": 30.2421875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/год",
+          "bounds": {
+            "x": 551.0390625,
+            "y": 478.71875,
+            "width": 29.484375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Полный проект",
+          "bounds": {
+            "x": 418.9140625,
+            "y": 518.640625,
+            "width": 287.9140625,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Дизайн",
+          "bounds": {
+            "x": 418.9140625,
+            "y": 556.2421875,
+            "width": 287.9140625,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Разработка",
+          "bounds": {
+            "x": 418.9140625,
+            "y": 593.84375,
+            "width": 287.9140625,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "requested": 767,
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "d520087",
+      "viewport": {
+        "width": 767,
+        "height": 1300,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 767,
+      "rootMetric": {
+        "id": "d520087",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 295,
+          "width": 767,
+          "height": 823.78125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 16px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 295,
+            "width": 735,
+            "height": 823.78125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "32px 0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 327,
+            "width": 735,
+            "height": 759.78125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 327,
+            "width": 735,
+            "height": 367.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 352,
+            "width": 685,
+            "height": 254.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 401.6015625,
+            "width": 685,
+            "height": 56.484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "50 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 333.671875,
+            "y": 401.6015625,
+            "width": 99.65625,
+            "height": 26.8828125
+          },
+          "font": "25.6px",
+          "line": "26.88px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Старт",
+          "href": "#start",
+          "bounds": {
+            "x": 41,
+            "y": 630.890625,
+            "width": 154.3203125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 718.890625,
+            "width": 735,
+            "height": 367.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 743.890625,
+            "width": 685,
+            "height": 254.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 793.4921875,
+            "width": 685,
+            "height": 56.484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "150 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 326.5546875,
+            "y": 793.4921875,
+            "width": 113.890625,
+            "height": 26.8828125
+          },
+          "font": "25.6px",
+          "line": "26.88px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Проект",
+          "href": "#project",
+          "bounds": {
+            "x": 41,
+            "y": 1022.78125,
+            "width": 165.0703125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "d520087"
+      ]
+    },
+    "extra": {
+      "root": "d520087",
+      "viewport": {
+        "width": 767,
+        "height": 1300,
+        "clientWidth": 767
+      },
+      "nodes": [
+        {
+          "id": "d520087",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-d520087 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 295,
+            "width": 767,
+            "height": 823.78125
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 16px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 295,
+            "width": 735,
+            "height": 823.78125
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 767px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "32px 0px",
+          "gap": "24px"
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-57fc05f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 327,
+            "width": 735,
+            "height": 759.78125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-e76a37b e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 327,
+            "width": 735,
+            "height": 367.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-3689585 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 352,
+            "width": 685,
+            "height": 254.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-231dd7e e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 401.6015625,
+            "width": 685,
+            "height": 56.484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/мес",
+          "bounds": {
+            "x": 367.5,
+            "y": 432.484375,
+            "width": 32,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Малый проект",
+          "bounds": {
+            "x": 41,
+            "y": 482.0859375,
+            "width": 685,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Аудит",
+          "bounds": {
+            "x": 41,
+            "y": 531.6875,
+            "width": 685,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "План",
+          "bounds": {
+            "x": 41,
+            "y": 581.2890625,
+            "width": 685,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-7af4955 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 718.890625,
+            "width": 735,
+            "height": 367.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a5e93c7 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 743.890625,
+            "width": 685,
+            "height": 254.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a2bc212 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 793.4921875,
+            "width": 685,
+            "height": 56.484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/год",
+          "bounds": {
+            "x": 368.7578125,
+            "y": 824.375,
+            "width": 29.484375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Полный проект",
+          "bounds": {
+            "x": 41,
+            "y": 873.9765625,
+            "width": 685,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Дизайн",
+          "bounds": {
+            "x": 41,
+            "y": 923.578125,
+            "width": 685,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Разработка",
+          "bounds": {
+            "x": 41,
+            "y": 973.1796875,
+            "width": 685,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "requested": 320,
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "d520087",
+      "viewport": {
+        "width": 320,
+        "height": 1300,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 320,
+      "rootMetric": {
+        "id": "d520087",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 356.6015625,
+          "width": 320,
+          "height": 823.78125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 16px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 356.6015625,
+            "width": 288,
+            "height": 823.78125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "32px 0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 388.6015625,
+            "width": 288,
+            "height": 759.78125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 388.6015625,
+            "width": 288,
+            "height": 367.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 413.6015625,
+            "width": 238,
+            "height": 254.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 463.203125,
+            "width": 238,
+            "height": 56.484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "50 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 110.171875,
+            "y": 463.203125,
+            "width": 99.65625,
+            "height": 26.8828125
+          },
+          "font": "25.6px",
+          "line": "26.88px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Старт",
+          "href": "#start",
+          "bounds": {
+            "x": 41,
+            "y": 692.4921875,
+            "width": 154.3203125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 780.4921875,
+            "width": 288,
+            "height": 367.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "24px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 805.4921875,
+            "width": 238,
+            "height": 254.890625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "24px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 41,
+            "y": 855.09375,
+            "width": 238,
+            "height": 56.484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "4px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "150 000 ₸",
+          "href": null,
+          "bounds": {
+            "x": 103.0546875,
+            "y": 855.09375,
+            "width": 113.890625,
+            "height": 26.8828125
+          },
+          "font": "25.6px",
+          "line": "26.88px",
+          "weight": "800",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "A",
+          "text": "Выбрать Проект",
+          "href": "#project",
+          "bounds": {
+            "x": 41,
+            "y": 1084.3828125,
+            "width": 165.0703125,
+            "height": 39
+          },
+          "font": "15px",
+          "line": "15px",
+          "weight": "500",
+          "color": "rgb(255, 255, 255)",
+          "backgrounds": [
+            "rgb(68, 96, 236)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "12px 24px",
+          "gap": "normal",
+          "display": "inline-block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "d520087"
+      ]
+    },
+    "extra": {
+      "root": "d520087",
+      "viewport": {
+        "width": 320,
+        "height": 1300,
+        "clientWidth": 320
+      },
+      "nodes": [
+        {
+          "id": "d520087",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-d520087 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 356.6015625,
+            "width": 320,
+            "height": 823.78125
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 16px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 356.6015625,
+            "width": 288,
+            "height": 823.78125
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 767px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "32px 0px",
+          "gap": "24px"
+        },
+        {
+          "id": "57fc05f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-57fc05f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 388.6015625,
+            "width": 288,
+            "height": 759.78125
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "e76a37b",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-e76a37b e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 388.6015625,
+            "width": 288,
+            "height": 367.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "3689585",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-3689585 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 413.6015625,
+            "width": 238,
+            "height": 254.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "231dd7e",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-231dd7e e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 463.203125,
+            "width": 238,
+            "height": 56.484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/мес",
+          "bounds": {
+            "x": 144,
+            "y": 494.0859375,
+            "width": 32,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Малый проект",
+          "bounds": {
+            "x": 41,
+            "y": 543.6875,
+            "width": 238,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Аудит",
+          "bounds": {
+            "x": 41,
+            "y": 593.2890625,
+            "width": 238,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "План",
+          "bounds": {
+            "x": 41,
+            "y": 642.890625,
+            "width": 238,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "7af4955",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-7af4955 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 780.4921875,
+            "width": 288,
+            "height": 367.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "24px",
+          "gap": "24px"
+        },
+        {
+          "id": "a5e93c7",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a5e93c7 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 805.4921875,
+            "width": 238,
+            "height": 254.890625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "24px"
+        },
+        {
+          "id": "a2bc212",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-a2bc212 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 41,
+            "y": 855.09375,
+            "width": 238,
+            "height": 56.484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "4px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "/год",
+          "bounds": {
+            "x": 145.2578125,
+            "y": 885.9765625,
+            "width": 29.484375,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Полный проект",
+          "bounds": {
+            "x": 41,
+            "y": 935.578125,
+            "width": 238,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(75, 85, 99)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Дизайн",
+          "bounds": {
+            "x": 41,
+            "y": 985.1796875,
+            "width": 238,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Разработка",
+          "bounds": {
+            "x": 41,
+            "y": 1034.78125,
+            "width": 238,
+            "height": 25.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "25.6px",
+          "color": "rgb(107, 114, 128)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  }
+]

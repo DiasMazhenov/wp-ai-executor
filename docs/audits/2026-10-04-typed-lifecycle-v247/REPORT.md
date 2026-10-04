@@ -1,3 +1,5 @@
+> Current status 2026-10-05: v257 installed; A lifecycle and B–J live runs recorded. Technical Save/readback/Undo passed; visual limitations/review remain. See final lifecycle matrix at the end; earlier NOT RUN entries are historical.
+
 # Typed lifecycle v247 audit
 
 Baseline f8d3425a86deed225f18ee5c0e4b78151ac0cebb. Historical A correction appended to original audit and canonical documents: repair contract loss confirmed; final styling loss NOT confirmed, operation binding of historical PNG unverified, stale-model Publish hypothesis unproven.
@@ -177,3 +179,109 @@ I first pricing.tiers/no profile on v256, exact I-exact-request.txt. Rootb157657
 v257 compiler applies gap-aware48% width to two native Pricing cards, retaining equal columns, and carries accepted gap-aware basis to tablet for Pricing two/three cards. Native full-width mobile stack preserved. No manual controls/JSON insertion/custom CSS added. Regression checks actual ordinary-chat native two-tier desktop/tablet48%, mobile100%. Runtime1214, DesignPlan321, Node14/14, patchguard/lint/package252+4 probes/diff checks. Install and corrected I/J live pending. Structured extraction remains inactive.
 
 Status clarification: earlier “PASS WITH LIMITATIONS” means technical fidelity/native lifecycle passed plus listed design limitations; it does not assert user-approved visual acceptance. Negative Vision remains negative; spacing/header alignment review remains outstanding.
+
+## Final lifecycle live matrix — 2026-10-05 (current status)
+
+Source/push: v257 runtime commit `4104935ec1a95e28a7f6ee7a9dffed0b66e80206`, independently matched origin/main. Install: WP Pusher success; Plugins PHP v02.11.257; reloaded editor config v02.11.257/frontend typed-lifecycle-v6. Runtime1214/DesignPlan321/Node14/14/patch guard/lint/package252 hashes+4probes/diff PASS. No further runtime changes after this release.
+
+A lifecycle (including one scoped repair and separate repair/creation Undo) and B–J generations have been exercised. Corrected I rootd520087/opwpae-89417843d0576daa/identity403a4f68-02d8-409c-aa4f-8c0a2200ce57, pricing.tiers/no profile, provider0/write1, same original Pricing Brief1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136. Native Publish/reload revision6/contract3b072cd2946feda763d43604/hash8a6b91f07606da2b1077c38836a07f7ae508393cfb48e17f3f535b893fb0c95c. Actual desktop cards547.195px each/samey/gap24px, corrected from first stacked FAIL; exact prices/periods/features and visible CTA#start/#project. Publicdesktop CSS/PNG1280x900; mobile390x1300, verified/opened. Actual1025/1024/768/767/320 no overflow; mobile full-width stack. Scoped Undo revision7 restores exactbaseline.
+
+J exact request J-exact-request.txt has short answer «Обсудим задачу.» and a long three-sentence answer; faq.native/no profile, native Accordion (not HTML imitation). Root6a0d2cb/opwpae-17b5777408c3cb8c/identityf477c561-c0e9-4b48-880c-ff5b11ae54f4/provider0/write1/Brief6736225f9b09f80b93763a48b452499a9482b7a244f3f828bf97a750c4a0daac. Native Publish/reload revision5/contract9c58192e9b86c6b2b1ea6156/hashcf0aa5ac74a3fc7e970b414a1b35ecb0218657e2dfd515503ef8cb466da28316. First Vision68 negative “missing second answer” retained; actual first state has second native Accordion collapsed. Ordinary public button opens complete exact long answer (aria-expandedtrue/displayblock), switches back to short answer (secondcollapsed); no content loss. Open answer height76desktop/236px at320, overflowvisible and no horizontal overflow atactual1025/1024/768/767/320. Publicdesktop CSS/PNG1280x900/mobile390x1200 verified/opened, full long answer readable. Scoped Undo revision6 restores exactbaseline.
+
+G-v256/H/I first/I-v257/J generated authored controls compared recursively with selected native JSON after Publish/reload: zero differences, additional native defaults permitted. F/G/H Brief hashes equal. First failures B/E/G/I remain retained separately; corrections are compiler/intake fixes with regressions and affected scenario repeat, not cosmetic patch loops. Technical fidelity/save/readback/scopedUndo pass; visual review remains required for sparse rhythm/centered header relationships B–H and negative advisories. I/J controlled block rendering verified by public pixels/DOM; whole-page site-chatbot overlay remains a separate limitation. A creation native Publish was not exercised (already disabled after reload); repaired A native Publish did pass. B–E original DOM lacks explicit minHeight field: limited measurement coverage, not claimed as measured.
+
+Final post5214 root set `[37b84f9]`, editor saved hash `4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d`, exact original baseline; independently confirmed public rootset/heading/overflow. Historical root37 retained, no backfilled snapshot/legacy Undo bypass. No structured model extraction or catalog/imported-map expansion. All test roots removed only by guarded owned Undo. Two existing tabs remain: WP Pusher3 and one Elementor6.
+
+Browser focus recovery (documented, confirmed v256/v257): `browser.tabs.list()` → `visibilityCapability.set(true)` → `browser.tabs.get('6')` → `playwright.domSnapshot()` using the existing Browser Plugin runtime/browser16. WP Pusher mutation completed despite subsequent Runtime.evaluate timeout; notice and Plugins version checked before proceeding, no repeat Update click. No alternative transport, direct endpoint writes, hidden app globals or screen-context tool.
+
+Full request/assets/first-failure/readback/PNG bindings: [final-live-matrix.json](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/final-live-matrix.json). Earlier pending entries are chronological source/install observations, superseded by this final status.
+
+## Current result bindings and public PNG gallery
+
+| Case | Record / profile | Root / operation | Reload revision | Technical | Visual |
+|---|---|---|---|---|---|
+| B | hero.split_60_40.right / editorial_light | 562f19b / wpae-55fa0d1af966dd66 | 6 | native/save/Undo PASS | REVIEW_REQUIRED |
+| C | hero.split_60_40.left / editorial_light | 11e61ec / wpae-3b2ac8c692cad6bb | 5 | native/save/Undo PASS | REVIEW_REQUIRED |
+| D | hero.split_60_40.right / soft_cards_light | 184cc98 / wpae-3553d9f57e726763 | 6 | native/save/Undo PASS | REVIEW_REQUIRED |
+| E | about.split_50_50.right / editorial_light | 153e6df / wpae-2104e873c6abbc88 | 6 | native/save/Undo PASS | REVIEW_REQUIRED |
+| F | benefits.grid / editorial_light | 9a851c8 / wpae-23525bfdc94b519d | 5 | native/save/Undo PASS | REVIEW_REQUIRED |
+| G | benefits.editorial_list / editorial_light | c5962b5 / wpae-55ff43593d0499be | 5 | native/save/Undo PASS | REVIEW_REQUIRED |
+| H | benefits.grid / soft_cards_light | 97c16e5 / wpae-d09de5a84ae87b56 | 6 | native/save/Undo PASS | REVIEW_REQUIRED |
+| I | pricing.tiers / default | d520087 / wpae-89417843d0576daa | 6 | native/save/Undo PASS | CONTROLLED_BLOCK_PASS_WITH_SITE_OVERLAY_LIMITATION |
+| J | faq.native / default | 6a0d2cb / wpae-17b5777408c3cb8c | 5 | native/save/Undo PASS | CONTROLLED_BLOCK_PASS_WITH_SITE_OVERLAY_LIMITATION |
+
+Exact viewport, PNG size, contract, saved hash, Brief hash and operation identity are in final-live-matrix.json. Each PNG below was captured after native Save/reload, format-checked and opened for visual inspection.
+
+E public desktop; post5214/root153e6df/opwpae-2104e873c6abbc88/rev6; CSS1280x900; PNG1280x900
+
+![E public desktop; post5214/root153e6df/opwpae-2104e873c6abbc88/rev6; CSS1280x900; PNG1280x900](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-v255-public-desktop.png)
+
+[E desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-v255-public-desktop.png)
+
+E public mobile; post5214/root153e6df/opwpae-2104e873c6abbc88/rev6; CSS390x844; PNG375x844
+
+![E public mobile; post5214/root153e6df/opwpae-2104e873c6abbc88/rev6; CSS390x844; PNG375x844](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-v255-public-mobile.png)
+
+[E mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/E-v255-public-mobile.png)
+
+F public desktop; post5214/root9a851c8/opwpae-23525bfdc94b519d/rev5; CSS1280x900; PNG1280x900
+
+![F public desktop; post5214/root9a851c8/opwpae-23525bfdc94b519d/rev5; CSS1280x900; PNG1280x900](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-public-desktop.png)
+
+[F desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-public-desktop.png)
+
+F public mobile; post5214/root9a851c8/opwpae-23525bfdc94b519d/rev5; CSS390x1000; PNG390x1000
+
+![F public mobile; post5214/root9a851c8/opwpae-23525bfdc94b519d/rev5; CSS390x1000; PNG390x1000](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-public-mobile-tall.png)
+
+[F mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/F-public-mobile-tall.png)
+
+G public desktop; post5214/rootc5962b5/opwpae-55ff43593d0499be/rev5; CSS1280x900; PNG1265x939
+
+![G public desktop; post5214/rootc5962b5/opwpae-55ff43593d0499be/rev5; CSS1280x900; PNG1265x939](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/G-v256-public-desktop.png)
+
+[G desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/G-v256-public-desktop.png)
+
+G public mobile; post5214/rootc5962b5/opwpae-55ff43593d0499be/rev5; CSS390x1000; PNG390x1000
+
+![G public mobile; post5214/rootc5962b5/opwpae-55ff43593d0499be/rev5; CSS390x1000; PNG390x1000](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/G-v256-public-mobile.png)
+
+[G mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/G-v256-public-mobile.png)
+
+H public desktop; post5214/root97c16e5/opwpae-d09de5a84ae87b56/rev6; CSS1280x900; PNG1280x900
+
+![H public desktop; post5214/root97c16e5/opwpae-d09de5a84ae87b56/rev6; CSS1280x900; PNG1280x900](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/H-public-desktop.png)
+
+[H desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/H-public-desktop.png)
+
+H public mobile; post5214/root97c16e5/opwpae-d09de5a84ae87b56/rev6; CSS390x1000; PNG390x1000
+
+![H public mobile; post5214/root97c16e5/opwpae-d09de5a84ae87b56/rev6; CSS390x1000; PNG390x1000](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/H-public-mobile.png)
+
+[H mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/H-public-mobile.png)
+
+I public desktop; post5214/rootd520087/opwpae-89417843d0576daa/rev6; CSS1280x900; PNG1280x900
+
+![I public desktop; post5214/rootd520087/opwpae-89417843d0576daa/rev6; CSS1280x900; PNG1280x900](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-v257-public-desktop.png)
+
+[I desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-v257-public-desktop.png)
+
+I public mobile; post5214/rootd520087/opwpae-89417843d0576daa/rev6; CSS390x1300; PNG390x1300
+
+![I public mobile; post5214/rootd520087/opwpae-89417843d0576daa/rev6; CSS390x1300; PNG390x1300](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-v257-public-mobile.png)
+
+[I mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/I-v257-public-mobile.png)
+
+J public desktop; post5214/root6a0d2cb/opwpae-17b5777408c3cb8c/rev5; CSS1280x900; PNG1280x900
+
+![J public desktop; post5214/root6a0d2cb/opwpae-17b5777408c3cb8c/rev5; CSS1280x900; PNG1280x900](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-desktop.png)
+
+[J desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-desktop.png)
+
+J public mobile; post5214/root6a0d2cb/opwpae-17b5777408c3cb8c/rev5; CSS390x1200; PNG390x1200
+
+![J public mobile; post5214/root6a0d2cb/opwpae-17b5777408c3cb8c/rev5; CSS390x1200; PNG390x1200](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-mobile.png)
+
+[J mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-typed-lifecycle-v247/J-public-mobile.png)
+
+First I v256 failed desktop row layout evidence remains I-public-desktop.png / I-public-mobile.png; corrected I v257 shown above. First G v255 icon gap206px remains G-public-desktop.png; corrected G v256 shown above. J screenshots show second answer opened through the real native button, not a changed saved tree.
