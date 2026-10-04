@@ -1,0 +1,932 @@
+[
+  {
+    "post": 5214,
+    "source": "public",
+    "rootId": "7c1e27f",
+    "viewport": {
+      "width": 1025,
+      "height": 844,
+      "dpr": 1
+    },
+    "scrollWidth": 1025,
+    "overflow": false,
+    "root": {
+      "tag": "DIV",
+      "id": "7c1e27f",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 404.296875,
+        "width": 1025,
+        "height": 372.296875
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "padding": "0px 32px",
+      "minHeight": "0px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "maxWidth": "100%"
+    },
+    "elements": [
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 404.296875,
+          "width": 961,
+          "height": 372.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "80px 0px",
+        "minHeight": "auto",
+        "gap": "20px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "min(100%, 1140px)"
+      },
+      {
+        "tag": "DIV",
+        "id": "1956dc7",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 484.296875,
+          "width": 961,
+          "height": 212.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 208.5,
+          "y": 484.296875,
+          "width": 608,
+          "height": 212.296875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "20px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "608px"
+      },
+      {
+        "tag": "H6",
+        "id": null,
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 208.5,
+          "y": 484.296875,
+          "width": 70.34375,
+          "height": 28.046875
+        },
+        "font": "17px",
+        "line": "28.05px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "H1",
+        "id": null,
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 208.5,
+          "y": 532.34375,
+          "width": 512.2109375,
+          "height": 57.203125
+        },
+        "font": "52px",
+        "line": "57.2px",
+        "weight": "700",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": "a24d270",
+        "text": "Согласуем задачу и доведём проект до результата.",
+        "href": null,
+        "bounds": {
+          "x": 208.5,
+          "y": 609.546875,
+          "width": 418.9765625,
+          "height": 28.046875
+        },
+        "font": "17px",
+        "line": "28.05px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "20px",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "A",
+        "id": null,
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 208.5,
+          "y": 657.59375,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "padding": "12px 24px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "maxWidth": "none"
+      }
+    ],
+    "pageRoots": [
+      "37b84f9",
+      "7c1e27f"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "rootId": "7c1e27f",
+    "viewport": {
+      "width": 1024,
+      "height": 844,
+      "dpr": 1
+    },
+    "scrollWidth": 1024,
+    "overflow": false,
+    "root": {
+      "tag": "DIV",
+      "id": "7c1e27f",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 327.796875,
+        "width": 1024,
+        "height": 295.796875
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "padding": "0px 32px",
+      "minHeight": "0px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "maxWidth": "100%"
+    },
+    "elements": [
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 327.796875,
+          "width": 960,
+          "height": 295.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "56px 0px",
+        "minHeight": "auto",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "min(100%, 1024px)"
+      },
+      {
+        "tag": "DIV",
+        "id": "1956dc7",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 383.796875,
+          "width": 960,
+          "height": 183.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 208,
+          "y": 383.796875,
+          "width": 608,
+          "height": 183.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "608px"
+      },
+      {
+        "tag": "H6",
+        "id": null,
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 208,
+          "y": 383.796875,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "H1",
+        "id": null,
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 208,
+          "y": 426.1953125,
+          "width": 394.0078125,
+          "height": 44
+        },
+        "font": "40px",
+        "line": "44px",
+        "weight": "700",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": "a24d270",
+        "text": "Согласуем задачу и доведём проект до результата.",
+        "href": null,
+        "bounds": {
+          "x": 208,
+          "y": 486.1953125,
+          "width": 394.328125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "16px",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "A",
+        "id": null,
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 208,
+          "y": 528.59375,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "padding": "12px 24px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "maxWidth": "none"
+      }
+    ],
+    "pageRoots": [
+      "37b84f9",
+      "7c1e27f"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "rootId": "7c1e27f",
+    "viewport": {
+      "width": 768,
+      "height": 844,
+      "dpr": 1
+    },
+    "scrollWidth": 768,
+    "overflow": false,
+    "root": {
+      "tag": "DIV",
+      "id": "7c1e27f",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 341.796875,
+        "width": 768,
+        "height": 295.796875
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "padding": "0px 32px",
+      "minHeight": "0px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "maxWidth": "100%"
+    },
+    "elements": [
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 341.796875,
+          "width": 704,
+          "height": 295.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "56px 0px",
+        "minHeight": "auto",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "min(100%, 1024px)"
+      },
+      {
+        "tag": "DIV",
+        "id": "1956dc7",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 32,
+          "y": 397.796875,
+          "width": 704,
+          "height": 183.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 80,
+          "y": 397.796875,
+          "width": 608,
+          "height": 183.796875
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "16px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "608px"
+      },
+      {
+        "tag": "H6",
+        "id": null,
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 80,
+          "y": 397.796875,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "H1",
+        "id": null,
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 80,
+          "y": 440.1953125,
+          "width": 394.0078125,
+          "height": 44
+        },
+        "font": "40px",
+        "line": "44px",
+        "weight": "700",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": "a24d270",
+        "text": "Согласуем задачу и доведём проект до результата.",
+        "href": null,
+        "bounds": {
+          "x": 80,
+          "y": 500.1953125,
+          "width": 394.328125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "16px",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "A",
+        "id": null,
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 80,
+          "y": 542.59375,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "padding": "12px 24px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "maxWidth": "none"
+      }
+    ],
+    "pageRoots": [
+      "37b84f9",
+      "7c1e27f"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "rootId": "7c1e27f",
+    "viewport": {
+      "width": 767,
+      "height": 844,
+      "dpr": 1
+    },
+    "scrollWidth": 767,
+    "overflow": false,
+    "root": {
+      "tag": "DIV",
+      "id": "7c1e27f",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 295,
+        "width": 767,
+        "height": 249
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "padding": "0px 16px",
+      "minHeight": "0px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "maxWidth": "100%"
+    },
+    "elements": [
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 295,
+          "width": 735,
+          "height": 249
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "40px 0px",
+        "minHeight": "auto",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "min(100%, 767px)"
+      },
+      {
+        "tag": "DIV",
+        "id": "1956dc7",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 735,
+          "height": 169
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 735,
+          "height": 169
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "H6",
+        "id": null,
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 335,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "H1",
+        "id": null,
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 375.3984375,
+          "width": 315.203125,
+          "height": 35.203125
+        },
+        "font": "32px",
+        "line": "35.2px",
+        "weight": "700",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": "a24d270",
+        "text": "Согласуем задачу и доведём проект до результата.",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 424.6015625,
+          "width": 394.328125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "14px",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "A",
+        "id": null,
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 16,
+          "y": 465,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "padding": "12px 24px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "maxWidth": "none"
+      }
+    ],
+    "pageRoots": [
+      "37b84f9",
+      "7c1e27f"
+    ]
+  },
+  {
+    "post": 5214,
+    "source": "public",
+    "rootId": "7c1e27f",
+    "viewport": {
+      "width": 320,
+      "height": 844,
+      "dpr": 1
+    },
+    "scrollWidth": 320,
+    "overflow": false,
+    "root": {
+      "tag": "DIV",
+      "id": "7c1e27f",
+      "text": null,
+      "href": null,
+      "bounds": {
+        "x": 0,
+        "y": 356.6015625,
+        "width": 320,
+        "height": 310.6015625
+      },
+      "font": "16px",
+      "line": "24px",
+      "weight": "400",
+      "padding": "0px 16px",
+      "minHeight": "0px",
+      "gap": "normal",
+      "display": "flex",
+      "flex": "column",
+      "maxWidth": "100%"
+    },
+    "elements": [
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 356.6015625,
+          "width": 288,
+          "height": 310.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "40px 0px",
+        "minHeight": "auto",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "min(100%, 767px)"
+      },
+      {
+        "tag": "DIV",
+        "id": "1956dc7",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 288,
+          "height": 230.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": null,
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 288,
+          "height": 230.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "14px",
+        "display": "flex",
+        "flex": "column",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "H6",
+        "id": null,
+        "text": "СТУДИЯ",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 396.6015625,
+          "width": 66.203125,
+          "height": 26.3984375
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "H1",
+        "id": null,
+        "text": "Работа со смыслом",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 437,
+          "width": 288,
+          "height": 70.40625
+        },
+        "font": "32px",
+        "line": "35.2px",
+        "weight": "700",
+        "padding": "0px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "none"
+      },
+      {
+        "tag": "DIV",
+        "id": "a24d270",
+        "text": "Согласуем задачу и доведём проект до результата.",
+        "href": null,
+        "bounds": {
+          "x": 16,
+          "y": 521.40625,
+          "width": 288,
+          "height": 52.796875
+        },
+        "font": "16px",
+        "line": "26.4px",
+        "weight": "400",
+        "padding": "0px",
+        "minHeight": "auto",
+        "gap": "14px",
+        "display": "block",
+        "flex": "row",
+        "maxWidth": "100%"
+      },
+      {
+        "tag": "A",
+        "id": null,
+        "text": "Начать",
+        "href": "#start",
+        "bounds": {
+          "x": 16,
+          "y": 588.203125,
+          "width": 98.6640625,
+          "height": 39
+        },
+        "font": "15px",
+        "line": "15px",
+        "weight": "500",
+        "padding": "12px 24px",
+        "minHeight": "0px",
+        "gap": "normal",
+        "display": "inline-block",
+        "flex": "row",
+        "maxWidth": "none"
+      }
+    ],
+    "pageRoots": [
+      "37b84f9",
+      "7c1e27f"
+    ]
+  }
+]

@@ -1784,3 +1784,15 @@ Cause: root collector did not unwrap actual Elementor Container.model; live full
 v248 regressions: registered-default materialization/removal, changed authored spacing and extra nondefault control refusal, actual Container unwrap/settings options. Runtime1175; Node final result below; new installation and same-root lifecycle retry pending.
 
 v248 checks complete: runtime1175, DesignPlan319, Node11/11, patch guard, lint, package252/252 and four probe scenarios, diff check PASS. Date crossed to 2026-10-05 Asia/Almaty during acceptance; source and evidence timestamps retained.
+
+## Live A after v248 installation — 2026-10-05
+
+v248 source f59293c0b3ae21d72ffd0c9ed8fb7028621b8843 push independently matched origin/main. Plugins v248 confirmed; editor tab5 v248/typed-lifecycle-v2 loaded after safe duplicate and closure of stale tab4, retaining exactly two tabs. Old and reloaded A authored decision diffs are empty; accepted contract unchanged. Native Publish has NOT been accepted: creation was persisted by plugin transaction and reloaded, Publish then disabled.
+
+First A public evidence captured in Browser Use tab5 after save/reload: desktop CSS/PNG1280x900 and true public mobile CSS/PNG390x844. Native public tab3 ignores viewport override, so its fixed1238x923 capture is not called mobile. Actual heading52px desktop/32px mobile, body17/16px, CTA #start; no horizontal overflow at1280/390/320 or1025/1024/768/767 boundaries. First desktop/mobile PNG verified and visually opened. Historical37b84f9 preserved above A7c1e27f. Sparse presentation and negative Vision score45 are retained as first-result evidence, not PASS.
+
+One explicit scoped repair from provider report: child wpae-op-1318474b42f475fc / identity4edb0ee5-e242-49da-9e49-4980022adf7c / revision4 / root7c1e27f / parent wpae-bcc79c703996210b. Brief remains1bc00c81f7fb753224a0ae227333c3557662bd251bc9a393563f32fa6ae87fb9; accepted contract contract-75cef79220b7398bc71cbd57; saved hash d3b18fc981f9ff7fb98145c578e4e17b6865d9072383e008f7dbcbe2abfc80ba. Dropdown deliberately changed to hero.split_40_60.right/soft_cards_light; accepted hero.text_only/editorial_light preserved. Section D/T/M5/3.5/2.5rem→4/2.8/2rem; component1.25/1/0.875rem→1/0.8/0.7rem, provider0/write1. Same root replaced, no append.
+
+Server compile/readback succeeded; UI model comparison again refused typed_editor_model_mismatch despite full copied model matching all authored compiled controls. First refusal PNG1280x900 verified/opened; native Publish and Undo NOT RUN for repair. B–J remain dependent on A lifecycle. Source v249 adds bounded node/control/reason mismatch diagnostics without settings values, a read-only model-check action after reload, and fixes negative pending review phase/status. It does not claim the underlying second mismatch resolved before live diagnosis. Current roots[37b84f9,7c1e27f].
+
+v249 local checks: runtime1176, DesignPlan319, Node12/12, patch guard/lint/package252/252 +4 probes and diff check PASS. Foreign native model differs only captured_at between before/after repair; node trees unchanged.

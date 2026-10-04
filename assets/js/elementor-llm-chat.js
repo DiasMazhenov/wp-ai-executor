@@ -152,9 +152,10 @@
         var pending = config.pendingOperation;
         reviewPendingOperation(pending, String(pending.brief_text || '')).then(function (review) {
             setPipelinePhase('render', 'done');
-            setPipelinePhase('review', review && review.report ? 'done' : 'skipped');
+            var rejected = review && review.gate && review.gate.quality_failed;
+            setPipelinePhase('review', rejected ? 'error' : review && review.report ? 'done' : 'skipped');
             if (review && review.report) addMessage('assistant', describeVisionReview(review));
-            status.textContent = strings.done;
+            status.textContent = rejected ? strings.error : strings.done;
         }).catch(function (error) {
             addMessage('assistant', 'Операция сохранена, но reconcile оставлен pending: ' + error.message);
             status.textContent = strings.error;
@@ -1832,7 +1833,7 @@
             headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
             body: JSON.stringify({ message: 'Проверка typed lifecycle', context: context })
         }).then(function (response) { return response.json().then(function (body) {
-            if (!response.ok || !body.ok) throw new Error(body.message || body.error || body.code || 'Typed lifecycle refusal');
+            if (!response.ok || !body.ok) throw new Error((body.message || body.error || body.code || 'Typed lifecycle refusal') + (body.mismatch ? ' ' + JSON.stringify(body.mismatch) : ''));
             return body;
         }); });
     }
@@ -1894,7 +1895,19 @@
             }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal'); window.location.reload(); });
             }).catch(function (error) { button.disabled = false; addMessage('assistant', error.message); });
         });
-        row.appendChild(button); messages.appendChild(row);
+        row.appendChild(button);
+        if (descriptor.status === 'available') {
+            var verify = document.createElement('button'); verify.type = 'button'; verify.className = 'wpae-llm-icon-button';
+            verify.textContent = 'Проверить owned модель перед Save';
+            verify.addEventListener('click', function () {
+                verify.disabled = true;
+                verifyTypedEditorModel({ diagnostics: { operation_ledger: descriptor } }).then(function () {
+                    addMessage('assistant', 'Owned модель соответствует принятому контракту: ' + descriptor.operation_id);
+                }).catch(function (error) { addMessage('assistant', error.message); }).finally(function () { verify.disabled = false; });
+            });
+            row.appendChild(verify);
+        }
+        messages.appendChild(row);
     }
     var typedSavedEditorSnapshot = null;
     function editorHasNoUnsavedRootChanges() {
@@ -2356,9 +2369,10 @@
                 setPipelinePhase('render', 'active');
                 reviewPendingOperation(error.pendingOperation, options.originalBrief || message).then(function (review) {
                     setPipelinePhase('render', 'done');
-                    setPipelinePhase('review', review && review.report ? 'done' : 'skipped');
+                    var rejected = review && review.gate && review.gate.quality_failed;
+                    setPipelinePhase('review', rejected ? 'error' : review && review.report ? 'done' : 'skipped');
                     if (review && review.report) addMessage('assistant', describeVisionReview(review));
-                    status.textContent = strings.done;
+                    status.textContent = rejected ? strings.error : strings.done;
                 }).catch(function (reviewError) {
                     addMessage('assistant', 'Операция сохранена, но reconcile оставлен pending: ' + reviewError.message);
                     status.textContent = strings.error;

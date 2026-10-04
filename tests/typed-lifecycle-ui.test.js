@@ -37,3 +37,12 @@ test('actual Container unwrap and settings serialization remove only registered 
  assert.equal(env.getEditorModelChildren(container)[0],model);
  assert.deepEqual(JSON.parse(JSON.stringify(env.serializeTypedModel(model))).settings,{padding:5});
 });
+
+test('reload descriptor exposes a read-only exact-operation model check',async()=>{
+ const {env,posts,errors}=harness();
+ env.addTypedUndoControl({status:'available',accepted_contract_id:'contract',operation_id:'child',operation_identity:'identity',revision:4,root_ids:['owned']});
+ const button=env.messages.children[0].children[1];assert.equal(button.textContent,'Проверить owned модель перед Save');
+ button.listeners.click();await new Promise(r=>setImmediate(r));
+ assert.equal(posts[0].context.lifecycle_action,'check_model');assert.equal(posts[0].context.accepted_operation_id,'child');assert.equal(posts[0].context.accepted_revision,4);
+ assert.ok(errors[0].includes('соответствует'));assert.ok(!env.reload);
+});

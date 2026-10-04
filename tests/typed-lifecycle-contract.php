@@ -101,4 +101,6 @@ $projected=wpae_accepted_project_owned_model($expected,$materialized,$defaults);
 check($projected!==null && wpae_accepted_owned_fingerprint($expected)===wpae_accepted_owned_fingerprint($projected),'Known server defaults preserve authored decisions across serialized editor/save model');
 $materialized[0]['settings']['unused_color']='#00ff00';check(wpae_accepted_project_owned_model($expected,$materialized,$defaults)===null,'Nondefault extra control refuses; author keys not broadly filtered');
 $materialized=$expected;$materialized[0]['settings']['padding']['top']='99';$projected=wpae_accepted_project_owned_model($expected,$materialized,$defaults);
-check(wpae_accepted_owned_fingerprint($expected)!==wpae_accepted_owned_fingerprint($projected),'Changed authored spacing still fails after default canonicalization');
+check($projected===null,'Changed authored spacing still fails after default canonicalization');
+$mismatch=null;wpae_accepted_project_owned_model($expected,$materialized,$defaults,$mismatch);
+check($mismatch===['node_id'=>'test','control'=>'padding','reason'=>'authored_control_changed'],'Bounded mismatch identifies control without disclosing values');

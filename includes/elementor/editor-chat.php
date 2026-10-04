@@ -69,7 +69,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
         'undoEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/undo' ),
 		'reconcileEndpoint' => get_rest_url( null, 'ai-executor/v1/design-operations/reconcile' ),
         'pluginVersion' => defined( 'WPAE_VERSION' ) ? WPAE_VERSION : '',
-        'frontendBuild' => 'typed-lifecycle-v2',
+        'frontendBuild' => 'typed-lifecycle-v3',
         'typedUndoDescriptors' => is_array( $pending_data ) ? wpae_accepted_contract_descriptors( $post_id, $pending_data ) : [],
         'pipelineMode' => wpae_design_pipeline_mode(),
         'compositionCatalog' => wpae_composition_editor_catalog(),

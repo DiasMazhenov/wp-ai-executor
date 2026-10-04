@@ -29,25 +29,25 @@ function wpae_accepted_native_defaults( array $node ): array {
 function wpae_accepted_control_equal( string $key, $a, $b ): bool {
     return hash_equals( wpae_llm_decision_signature( [ [ 'settings' => [ $key => $a ] ] ] ), wpae_llm_decision_signature( [ [ 'settings' => [ $key => $b ] ] ] ) );
 }
-function wpae_accepted_project_owned_model( array $expected, array $current, ?callable $defaults_provider = null ): ?array {
-    if ( count( $expected ) !== count( $current ) ) { return null; }
+function wpae_accepted_project_owned_model( array $expected, array $current, ?callable $defaults_provider = null, ?array &$mismatch = null ): ?array {
+    if ( count( $expected ) !== count( $current ) ) { $mismatch = [ 'reason' => 'node_count' ]; return null; }
     $projected = [];
     foreach ( $expected as $index => $node ) {
         $actual = $current[$index] ?? [];
-        foreach ( [ 'id', 'elType', 'widgetType' ] as $key ) { if ( ( $node[$key] ?? '' ) !== ( $actual[$key] ?? '' ) ) { return null; } }
+        foreach ( [ 'id', 'elType', 'widgetType' ] as $key ) { if ( ( $node[$key] ?? '' ) !== ( $actual[$key] ?? '' ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'node_identity' ]; return null; } }
         $defaults = $defaults_provider ? $defaults_provider( $node ) : wpae_accepted_native_defaults( $node );
         $authored = (array) ( $node['settings'] ?? [] ); $settings = (array) ( $actual['settings'] ?? [] );
         foreach ( $settings as $key => $value ) {
             if ( array_key_exists( $key, $authored ) ) { continue; }
-            if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key] ) ) { return null; }
+            if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key] ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'extra_nondefault_control' ]; return null; }
             unset( $settings[$key] );
         }
         foreach ( $authored as $key => $value ) {
-            if ( array_key_exists( $key, $settings ) ) { continue; }
-            if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key] ) ) { return null; }
+            if ( array_key_exists( $key, $settings ) ) { if ( ! wpae_accepted_control_equal( $key, $value, $settings[$key] ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_changed' ]; return null; } continue; }
+            if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key] ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_missing' ]; return null; }
             $settings[$key] = $value;
         }
-        $children = wpae_accepted_project_owned_model( (array) ( $node['elements'] ?? [] ), (array) ( $actual['elements'] ?? [] ), $defaults_provider );
+        $children = wpae_accepted_project_owned_model( (array) ( $node['elements'] ?? [] ), (array) ( $actual['elements'] ?? [] ), $defaults_provider, $mismatch );
         if ( $children === null ) { return null; }
         $actual['settings'] = $settings; $actual['elements'] = $children; $projected[] = $actual;
     }
@@ -268,8 +268,10 @@ function wpae_accepted_lifecycle_request( array $context ) {
     if ( $action === 'check_model' ) {
         $model = $context['editor_owned_model'] ?? null;
         $normalized = is_array( $model ) ? wpae_elementor_normalize_data( $model ) : [];
-        $matches = is_array( $model ) && wpae_accepted_owned_matches( $contract['after_owned'], (array) ( $normalized['data'] ?? [] ) );
-        return new WP_REST_Response( [ 'ok' => $matches, 'code' => $matches ? 'typed_model_matches' : 'typed_editor_model_mismatch', 'operation_id' => $operation['operation_id'], 'contract_hash' => $loaded['hash'], 'write_count' => 0 ], $matches ? 200 : 409 );
+        $mismatch = null;
+        $projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], (array) ( $normalized['data'] ?? [] ), null, $mismatch ) : null;
+        $matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $contract['after_owned'] ), wpae_accepted_owned_fingerprint( $projected ) );
+        return new WP_REST_Response( [ 'ok' => $matches, 'code' => $matches ? 'typed_model_matches' : 'typed_editor_model_mismatch', 'operation_id' => $operation['operation_id'], 'contract_hash' => $loaded['hash'], 'mismatch' => $mismatch, 'write_count' => 0 ], $matches ? 200 : 409 );
     }
     if ( $action !== 'repair' ) { return new WP_Error( 'wpae_typed_action_unsupported', 'Неизвестное lifecycle действие.', [ 'status' => 422, 'write_count' => 0 ] ); }
     $report = function_exists( 'wpae_get_vision_report' ) ? wpae_get_vision_report( sanitize_text_field( (string) ( $context['accepted_vision_report_id'] ?? '' ) ) ) : null;
