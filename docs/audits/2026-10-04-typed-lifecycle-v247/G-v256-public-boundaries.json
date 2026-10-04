@@ -1,0 +1,3547 @@
+[
+  {
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "c5962b5",
+      "viewport": {
+        "width": 1025,
+        "height": 900,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 1010,
+      "rootMetric": {
+        "id": "c5962b5",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 404.296875,
+          "width": 1010,
+          "height": 535.34375
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 32px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 404.296875,
+            "width": 946,
+            "height": 535.34375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "80px 0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 484.296875,
+            "width": 946,
+            "height": 105.25
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 484.296875,
+            "width": 946,
+            "height": 105.25
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 201,
+            "y": 484.296875,
+            "width": 608,
+            "height": 105.25
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H6",
+          "text": "ПРЕИМУЩЕСТВА",
+          "href": null,
+          "bounds": {
+            "x": 201,
+            "y": 484.296875,
+            "width": 145.8125,
+            "height": 28.046875
+          },
+          "font": "17px",
+          "line": "28.05px",
+          "weight": "400",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "Работаем понятно",
+          "href": null,
+          "bounds": {
+            "x": 201,
+            "y": 532.34375,
+            "width": 479.7109375,
+            "height": 57.203125
+          },
+          "font": "52px",
+          "line": "57.2px",
+          "weight": "700",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 609.546875,
+            "width": 946,
+            "height": 250.09375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 609.546875,
+            "width": 946,
+            "height": 115.046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "20px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 113,
+            "y": 630.546875,
+            "width": 813.59375,
+            "height": 73.046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Понятный план",
+          "href": null,
+          "bounds": {
+            "x": 113,
+            "y": 630.546875,
+            "width": 155.78125,
+            "height": 25
+          },
+          "font": "20px",
+          "line": "25px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 744.59375,
+            "width": 946,
+            "height": 115.046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "20px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 113,
+            "y": 765.59375,
+            "width": 813.59375,
+            "height": 73.046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Общая команда",
+          "href": null,
+          "bounds": {
+            "x": 113,
+            "y": 765.59375,
+            "width": 159.4765625,
+            "height": 25
+          },
+          "font": "20px",
+          "line": "25px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "c5962b5"
+      ]
+    },
+    "extra": {
+      "root": "c5962b5",
+      "viewport": {
+        "width": 1025,
+        "height": 900,
+        "clientWidth": 1010
+      },
+      "nodes": [
+        {
+          "id": "c5962b5",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-c5962b5 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 404.296875,
+            "width": 1010,
+            "height": 535.34375
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 32px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 404.296875,
+            "width": 946,
+            "height": 535.34375
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 1140px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "80px 0px",
+          "gap": "20px"
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-71bda0f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 484.296875,
+            "width": 946,
+            "height": 105.25
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-8a278a1 e-flex e-con-boxed e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 484.296875,
+            "width": 946,
+            "height": 105.25
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 201,
+            "y": 484.296875,
+            "width": 608,
+            "height": 105.25
+          },
+          "minHeight": "auto",
+          "maxWidth": "608px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-0c14932 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 609.546875,
+            "width": 946,
+            "height": 250.09375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76e5540 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 609.546875,
+            "width": 946,
+            "height": 115.046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "20px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 53,
+            "y": 630.546875,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-f5b5da9 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 113,
+            "y": 630.546875,
+            "width": 813.59375,
+            "height": 73.046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Сроки согласованы.",
+          "bounds": {
+            "x": 113,
+            "y": 675.546875,
+            "width": 162.34375,
+            "height": 28.046875
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "17px",
+          "line": "28.05px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76f4c1f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 744.59375,
+            "width": 946,
+            "height": 115.046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "20px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 53,
+            "y": 765.59375,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-c53cc93 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 113,
+            "y": 765.59375,
+            "width": 813.59375,
+            "height": 73.046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Работаем вместе.",
+          "bounds": {
+            "x": 113,
+            "y": 810.59375,
+            "width": 144.4296875,
+            "height": 28.046875
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "17px",
+          "line": "28.05px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "c5962b5",
+      "viewport": {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 1024,
+      "rootMetric": {
+        "id": "c5962b5",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 327.796875,
+          "width": 1024,
+          "height": 434.6953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 32px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 327.796875,
+            "width": 960,
+            "height": 434.6953125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "56px 0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 383.796875,
+            "width": 960,
+            "height": 86.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 383.796875,
+            "width": 960,
+            "height": 86.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 208,
+            "y": 383.796875,
+            "width": 608,
+            "height": 86.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H6",
+          "text": "ПРЕИМУЩЕСТВА",
+          "href": null,
+          "bounds": {
+            "x": 208,
+            "y": 383.796875,
+            "width": 137.234375,
+            "height": 26.3984375
+          },
+          "font": "16px",
+          "line": "26.4px",
+          "weight": "400",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "Работаем понятно",
+          "href": null,
+          "bounds": {
+            "x": 208,
+            "y": 426.1953125,
+            "width": 369.0078125,
+            "height": 44
+          },
+          "font": "40px",
+          "line": "44px",
+          "weight": "700",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 486.1953125,
+            "width": 960,
+            "height": 220.296875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 486.1953125,
+            "width": 960,
+            "height": 100.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "16px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 503.1953125,
+            "width": 833.3984375,
+            "height": 66.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Понятный план",
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 503.1953125,
+            "width": 147.9921875,
+            "height": 23.75
+          },
+          "font": "19px",
+          "line": "23.75px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 606.34375,
+            "width": 960,
+            "height": 100.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "16px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 623.34375,
+            "width": 833.3984375,
+            "height": 66.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Общая команда",
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 623.34375,
+            "width": 151.5,
+            "height": 23.75
+          },
+          "font": "19px",
+          "line": "23.75px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "c5962b5"
+      ]
+    },
+    "extra": {
+      "root": "c5962b5",
+      "viewport": {
+        "width": 1024,
+        "height": 900,
+        "clientWidth": 1024
+      },
+      "nodes": [
+        {
+          "id": "c5962b5",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-c5962b5 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 327.796875,
+            "width": 1024,
+            "height": 434.6953125
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 32px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 327.796875,
+            "width": 960,
+            "height": 434.6953125
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 1024px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "56px 0px",
+          "gap": "16px"
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-71bda0f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 383.796875,
+            "width": 960,
+            "height": 86.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-8a278a1 e-flex e-con-boxed e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 383.796875,
+            "width": 960,
+            "height": 86.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 208,
+            "y": 383.796875,
+            "width": 608,
+            "height": 86.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "608px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-0c14932 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 486.1953125,
+            "width": 960,
+            "height": 220.296875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76e5540 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 486.1953125,
+            "width": 960,
+            "height": 100.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "16px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 49,
+            "y": 503.1953125,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-f5b5da9 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 109,
+            "y": 503.1953125,
+            "width": 833.3984375,
+            "height": 66.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Сроки согласованы.",
+          "bounds": {
+            "x": 109,
+            "y": 542.9453125,
+            "width": 152.7890625,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76f4c1f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 606.34375,
+            "width": 960,
+            "height": 100.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "16px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 49,
+            "y": 623.34375,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-c53cc93 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 109,
+            "y": 623.34375,
+            "width": 833.3984375,
+            "height": 66.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Работаем вместе.",
+          "bounds": {
+            "x": 109,
+            "y": 663.09375,
+            "width": 135.9296875,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "c5962b5",
+      "viewport": {
+        "width": 768,
+        "height": 900,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 768,
+      "rootMetric": {
+        "id": "c5962b5",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 341.796875,
+          "width": 768,
+          "height": 434.6953125
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 32px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 341.796875,
+            "width": 704,
+            "height": 434.6953125
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "56px 0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 397.796875,
+            "width": 704,
+            "height": 86.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 397.796875,
+            "width": 704,
+            "height": 86.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 80,
+            "y": 397.796875,
+            "width": 608,
+            "height": 86.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H6",
+          "text": "ПРЕИМУЩЕСТВА",
+          "href": null,
+          "bounds": {
+            "x": 80,
+            "y": 397.796875,
+            "width": 137.234375,
+            "height": 26.3984375
+          },
+          "font": "16px",
+          "line": "26.4px",
+          "weight": "400",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "Работаем понятно",
+          "href": null,
+          "bounds": {
+            "x": 80,
+            "y": 440.1953125,
+            "width": 369.0078125,
+            "height": 44
+          },
+          "font": "40px",
+          "line": "44px",
+          "weight": "700",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 500.1953125,
+            "width": 704,
+            "height": 220.296875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 500.1953125,
+            "width": 704,
+            "height": 100.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "16px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 517.1953125,
+            "width": 603,
+            "height": 66.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Понятный план",
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 517.1953125,
+            "width": 147.9921875,
+            "height": 23.75
+          },
+          "font": "19px",
+          "line": "23.75px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 32,
+            "y": 620.34375,
+            "width": 704,
+            "height": 100.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "16px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 637.34375,
+            "width": 603,
+            "height": 66.1484375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "16px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Общая команда",
+          "href": null,
+          "bounds": {
+            "x": 109,
+            "y": 637.34375,
+            "width": 151.5,
+            "height": 23.75
+          },
+          "font": "19px",
+          "line": "23.75px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "c5962b5"
+      ]
+    },
+    "extra": {
+      "root": "c5962b5",
+      "viewport": {
+        "width": 768,
+        "height": 900,
+        "clientWidth": 768
+      },
+      "nodes": [
+        {
+          "id": "c5962b5",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-c5962b5 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 341.796875,
+            "width": 768,
+            "height": 434.6953125
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 32px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 341.796875,
+            "width": 704,
+            "height": 434.6953125
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 1024px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "56px 0px",
+          "gap": "16px"
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-71bda0f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 397.796875,
+            "width": 704,
+            "height": 86.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-8a278a1 e-flex e-con-boxed e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 397.796875,
+            "width": 704,
+            "height": 86.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 80,
+            "y": 397.796875,
+            "width": 608,
+            "height": 86.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "608px",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-0c14932 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 500.1953125,
+            "width": 704,
+            "height": 220.296875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76e5540 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 500.1953125,
+            "width": 704,
+            "height": 100.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "16px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 49,
+            "y": 517.1953125,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-f5b5da9 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 109,
+            "y": 517.1953125,
+            "width": 603,
+            "height": 66.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Сроки согласованы.",
+          "bounds": {
+            "x": 109,
+            "y": 556.9453125,
+            "width": 152.7890625,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76f4c1f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 32,
+            "y": 620.34375,
+            "width": 704,
+            "height": 100.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "16px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 49,
+            "y": 637.34375,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-c53cc93 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 109,
+            "y": 637.34375,
+            "width": 603,
+            "height": 66.1484375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "16px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Работаем вместе.",
+          "bounds": {
+            "x": 109,
+            "y": 677.09375,
+            "width": 135.9296875,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "c5962b5",
+      "viewport": {
+        "width": 767,
+        "height": 900,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 767,
+      "rootMetric": {
+        "id": "c5962b5",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 295,
+          "width": 767,
+          "height": 375.3984375
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 16px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 295,
+            "width": 735,
+            "height": 375.3984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "40px 0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 735,
+            "height": 75.6015625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 735,
+            "height": 75.6015625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 735,
+            "height": 75.6015625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H6",
+          "text": "ПРЕИМУЩЕСТВА",
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 137.234375,
+            "height": 26.3984375
+          },
+          "font": "16px",
+          "line": "26.4px",
+          "weight": "400",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "Работаем понятно",
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 375.3984375,
+            "width": 295.203125,
+            "height": 35.203125
+          },
+          "font": "32px",
+          "line": "35.2px",
+          "weight": "700",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 424.6015625,
+            "width": 735,
+            "height": 205.796875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 424.6015625,
+            "width": 735,
+            "height": 92.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "14px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 439.6015625,
+            "width": 649,
+            "height": 62.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Понятный план",
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 439.6015625,
+            "width": 140.203125,
+            "height": 22.5
+          },
+          "font": "18px",
+          "line": "22.5px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 537.5,
+            "width": 735,
+            "height": 92.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "14px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 552.5,
+            "width": 649,
+            "height": 62.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Общая команда",
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 552.5,
+            "width": 143.53125,
+            "height": 22.5
+          },
+          "font": "18px",
+          "line": "22.5px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "c5962b5"
+      ]
+    },
+    "extra": {
+      "root": "c5962b5",
+      "viewport": {
+        "width": 767,
+        "height": 900,
+        "clientWidth": 767
+      },
+      "nodes": [
+        {
+          "id": "c5962b5",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-c5962b5 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 295,
+            "width": 767,
+            "height": 375.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 16px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 295,
+            "width": 735,
+            "height": 375.3984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 767px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "40px 0px",
+          "gap": "14px"
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-71bda0f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 735,
+            "height": 75.6015625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-8a278a1 e-flex e-con-boxed e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 735,
+            "height": 75.6015625
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 335,
+            "width": 735,
+            "height": 75.6015625
+          },
+          "minHeight": "auto",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-0c14932 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 424.6015625,
+            "width": 735,
+            "height": 205.796875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76e5540 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 424.6015625,
+            "width": 735,
+            "height": 92.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "14px",
+          "gap": "12px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 31,
+            "y": 439.6015625,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-f5b5da9 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 87,
+            "y": 439.6015625,
+            "width": 649,
+            "height": 62.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Сроки согласованы.",
+          "bounds": {
+            "x": 87,
+            "y": 476.1015625,
+            "width": 152.7890625,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76f4c1f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 537.5,
+            "width": 735,
+            "height": 92.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "14px",
+          "gap": "12px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 31,
+            "y": 552.5,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-c53cc93 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 87,
+            "y": 552.5,
+            "width": 649,
+            "height": 62.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Работаем вместе.",
+          "bounds": {
+            "x": 87,
+            "y": 589,
+            "width": 135.9296875,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  },
+  {
+    "main": {
+      "post": 5214,
+      "source": "public",
+      "root": "c5962b5",
+      "viewport": {
+        "width": 320,
+        "height": 900,
+        "dpr": 1
+      },
+      "overflow": false,
+      "scrollWidth": 320,
+      "rootMetric": {
+        "id": "c5962b5",
+        "tag": "DIV",
+        "text": null,
+        "href": null,
+        "bounds": {
+          "x": 0,
+          "y": 356.6015625,
+          "width": 320,
+          "height": 410.6015625
+        },
+        "font": "16px",
+        "line": "24px",
+        "weight": "400",
+        "color": "rgb(51, 51, 51)",
+        "backgrounds": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "padding": "0px 16px",
+        "gap": "normal",
+        "display": "flex",
+        "flex": "column",
+        "objectFit": "fill",
+        "objectPosition": "50% 50%",
+        "image": null
+      },
+      "elements": [
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 356.6015625,
+            "width": 288,
+            "height": 410.6015625
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "40px 0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 288,
+            "height": 110.8046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 288,
+            "height": 110.8046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 288,
+            "height": 110.8046875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H6",
+          "text": "ПРЕИМУЩЕСТВА",
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 137.234375,
+            "height": 26.3984375
+          },
+          "font": "16px",
+          "line": "26.4px",
+          "weight": "400",
+          "color": "rgb(17, 24, 39)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H2",
+          "text": "Работаем понятно",
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 437,
+            "width": 288,
+            "height": 70.40625
+          },
+          "font": "32px",
+          "line": "35.2px",
+          "weight": "700",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 521.40625,
+            "width": 288,
+            "height": 205.796875
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "20px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 521.40625,
+            "width": 288,
+            "height": 92.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "14px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 536.40625,
+            "width": 202,
+            "height": 62.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Понятный план",
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 536.40625,
+            "width": 140.203125,
+            "height": 22.5
+          },
+          "font": "18px",
+          "line": "22.5px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 16,
+            "y": 634.3046875,
+            "width": 288,
+            "height": 92.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "14px",
+          "gap": "12px",
+          "display": "flex",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "text": null,
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 649.3046875,
+            "width": 202,
+            "height": 62.8984375
+          },
+          "font": "16px",
+          "line": "24px",
+          "weight": "400",
+          "color": "rgb(51, 51, 51)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "14px",
+          "display": "flex",
+          "flex": "column",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        },
+        {
+          "id": null,
+          "tag": "H3",
+          "text": "Общая команда",
+          "href": null,
+          "bounds": {
+            "x": 87,
+            "y": 649.3046875,
+            "width": 143.53125,
+            "height": 22.5
+          },
+          "font": "18px",
+          "line": "22.5px",
+          "weight": "600",
+          "color": "rgb(23, 32, 42)",
+          "backgrounds": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)",
+            "rgb(255, 255, 255)"
+          ],
+          "padding": "0px",
+          "gap": "normal",
+          "display": "block",
+          "flex": "row",
+          "objectFit": "fill",
+          "objectPosition": "50% 50%",
+          "image": null
+        }
+      ],
+      "rootSet": [
+        "37b84f9",
+        "c5962b5"
+      ]
+    },
+    "extra": {
+      "root": "c5962b5",
+      "viewport": {
+        "width": 320,
+        "height": 900,
+        "clientWidth": 320
+      },
+      "nodes": [
+        {
+          "id": "c5962b5",
+          "tag": "DIV",
+          "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-c5962b5 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+          "text": null,
+          "bounds": {
+            "x": 0,
+            "y": 356.6015625,
+            "width": 320,
+            "height": 410.6015625
+          },
+          "minHeight": "0px",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px 16px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 356.6015625,
+            "width": 288,
+            "height": 410.6015625
+          },
+          "minHeight": "auto",
+          "maxWidth": "min(100%, 767px)",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "40px 0px",
+          "gap": "14px"
+        },
+        {
+          "id": "71bda0f",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-71bda0f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 288,
+            "height": 110.8046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "id": "8a278a1",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-8a278a1 e-flex e-con-boxed e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 288,
+            "height": 110.8046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "tag": "DIV",
+          "classes": "e-con-inner",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 396.6015625,
+            "width": 288,
+            "height": 110.8046875
+          },
+          "minHeight": "auto",
+          "maxWidth": "100%",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "id": "0c14932",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-0c14932 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 521.40625,
+            "width": 288,
+            "height": 205.796875
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "20px"
+        },
+        {
+          "id": "76e5540",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76e5540 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 521.40625,
+            "width": 288,
+            "height": 92.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "14px",
+          "gap": "12px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 31,
+            "y": 536.40625,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "f5b5da9",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-f5b5da9 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 87,
+            "y": 536.40625,
+            "width": 202,
+            "height": 62.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Сроки согласованы.",
+          "bounds": {
+            "x": 87,
+            "y": 572.90625,
+            "width": 152.7890625,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        },
+        {
+          "id": "76f4c1f",
+          "tag": "DIV",
+          "classes": "wpae-benefits-list-row elementor-element elementor-element-76f4c1f e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 16,
+            "y": 634.3046875,
+            "width": 288,
+            "height": 92.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "14px",
+          "gap": "12px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-icon",
+          "text": null,
+          "bounds": {
+            "x": 31,
+            "y": 649.3046875,
+            "width": 44,
+            "height": 44
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "22px",
+          "line": "22px",
+          "color": "rgb(255, 255, 255)",
+          "padding": "11px",
+          "gap": "normal"
+        },
+        {
+          "id": "c53cc93",
+          "tag": "DIV",
+          "classes": "elementor-element elementor-element-c53cc93 e-con-full e-flex e-con e-child",
+          "text": null,
+          "bounds": {
+            "x": 87,
+            "y": 649.3046875,
+            "width": 202,
+            "height": 62.8984375
+          },
+          "minHeight": "auto",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "24px",
+          "color": "rgb(51, 51, 51)",
+          "padding": "0px",
+          "gap": "14px"
+        },
+        {
+          "tag": "DIV",
+          "classes": "elementor-widget-container",
+          "text": "Работаем вместе.",
+          "bounds": {
+            "x": 87,
+            "y": 685.8046875,
+            "width": 135.9296875,
+            "height": 26.3984375
+          },
+          "minHeight": "0px",
+          "maxWidth": "none",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "font": "16px",
+          "line": "26.4px",
+          "color": "rgb(71, 85, 105)",
+          "padding": "0px",
+          "gap": "normal"
+        }
+      ]
+    }
+  }
+]

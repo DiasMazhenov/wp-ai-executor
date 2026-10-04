@@ -271,3 +271,10 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
  $rows = $case['written']['elements'][0]['elements'] ?? [];
  check( ! empty( $case['response']['ok'] ) && count( $rows ) === 2 && $rows[0]['elements'][1]['settings']['content_width'] === 'full' && ! isset( $rows[0]['elements'][1]['settings']['boxed_width'] ) && ( $rows[0]['elements'][1]['elements'][0]['widgetType'] ?? '' ) === 'heading', 'Section reading width must not center item copy away from native list icon ' . $profile );
 }
+
+// Two live Pricing tiers must leave room for the native row gap on desktop and tablet.
+$m2_two_tiers = $m2_results['pricing.tiers']['result']['written']['elements'][0]['elements'];
+foreach ( [ '', '_tablet' ] as $suffix ) {
+ check( count( $m2_two_tiers ) === 2 && $m2_two_tiers[0]['settings']['width' . $suffix]['size'] === 48.0 && $m2_two_tiers[1]['settings']['width' . $suffix]['size'] === 48.0, 'Two native Pricing columns reserve space for the gap ' . $suffix );
+}
+check( $m2_two_tiers[0]['settings']['width_mobile']['size'] === 100 && $m2_two_tiers[1]['settings']['width_mobile']['size'] === 100, 'Two Pricing tiers retain full-width mobile stack' );

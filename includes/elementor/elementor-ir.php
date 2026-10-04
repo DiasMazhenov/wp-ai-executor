@@ -1506,7 +1506,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$card_basis = count( $compiled_children ) === 4 ? 22 : min( 32, 92 / count( $compiled_children ) );
 			$composition_basis = array_fill( 0, count( $compiled_children ), round( $card_basis, 3 ) );
 		}
-		if ( $role === 'pricing_cards' && count( $compiled_children ) === 3 ) {
+		if ( $role === 'pricing_cards' && count( $compiled_children ) === 2 ) {
+			// Reserve room for the native gap; two 50% columns wrap instead of sharing a row.
+			$composition_basis = [ 48, 48 ];
+		} elseif ( $role === 'pricing_cards' && count( $compiled_children ) === 3 ) {
 			// Three percentage columns plus two native gaps otherwise wrap at common desktop widths.
 			$composition_basis = [ 31.5, 31.5, 31.5 ];
 		}
@@ -1554,6 +1557,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$tablet_direction = (string) ( $settings['flex_direction_tablet'] ?? $settings['flex_direction'] ?? 'column' );
 			$tablet_is_stack = $tablet_direction === 'column';
 			$tablet_basis = $tablet_is_stack ? 100 : ( $role === 'services_photo_grid' ? 48 : ( count( $compiled_children ) > 0 ? 100 / count( $compiled_children ) : 100 ) );
+			if ( $role === 'pricing_cards' && ! $tablet_is_stack && $composition_matches_children ) {
+				$tablet_basis = $basis;
+			}
 			if ( $role === 'services_photo_grid' && $child_index < count( $compiled_children ) ) {
 				$tablet_basis = 48;
 			}
