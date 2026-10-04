@@ -1,0 +1,346 @@
+{
+  "baseline": {
+    "error": null,
+    "hash": "4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d",
+    "rootIds": [
+      "37b84f9"
+    ],
+    "status": "valid_array"
+  },
+  "elements": [
+    {
+      "elType": "container",
+      "elements": [
+        {
+          "elType": "container",
+          "elements": [
+            {
+              "elType": "widget",
+              "elements": [],
+              "htmlCache": "\t\t<div class=\"elementor-widget-container\">\n\t\t\t\t\t<h6 class=\"elementor-heading-title elementor-size-default elementor-inline-editing\" data-elementor-setting-key=\"title\">СТУДИЯ</h6>\t\t\t\t</div>\n\t\t",
+              "id": "f886b2e",
+              "settings": {
+                "background_background": "classic",
+                "header_size": "h6",
+                "title": "СТУДИЯ",
+                "title_color": "#111827",
+                "typography_font_family": "inherit",
+                "typography_font_size": {
+                  "size": 1.0625,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_size_mobile": {
+                  "size": 1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_size_tablet": {
+                  "size": 1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_weight": "400",
+                "typography_line_height": {
+                  "size": 1.65,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_line_height_mobile": {
+                  "size": 1.65,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_line_height_tablet": {
+                  "size": 1.65,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_typography": "custom"
+              },
+              "widgetType": "heading"
+            },
+            {
+              "elType": "widget",
+              "elements": [],
+              "htmlCache": "\t\t<div class=\"elementor-widget-container\">\n\t\t\t\t\t<h1 class=\"elementor-heading-title elementor-size-default elementor-inline-editing\" data-elementor-setting-key=\"title\">Работа со смыслом</h1>\t\t\t\t</div>\n\t\t",
+              "id": "6efd596",
+              "settings": {
+                "background_background": "classic",
+                "header_size": "h1",
+                "title": "Работа со смыслом",
+                "title_color": "#17202a",
+                "typography_font_family": "inherit",
+                "typography_font_size": {
+                  "size": 3.25,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_size_mobile": {
+                  "size": 2,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_size_tablet": {
+                  "size": 2.5,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_weight": "700",
+                "typography_line_height": {
+                  "size": 1.1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_line_height_mobile": {
+                  "size": 1.1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_line_height_tablet": {
+                  "size": 1.1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_typography": "custom"
+              },
+              "widgetType": "heading"
+            },
+            {
+              "elType": "widget",
+              "elements": [],
+              "htmlCache": "\t\t<div class=\"elementor-widget-container\">\n\t\t\t\t\t\t\t\t\t\t<div class=\"elementor-text-editor elementor-clearfix elementor-inline-editing\" data-elementor-setting-key=\"editor\" data-elementor-inline-editing-toolbar=\"advanced\">\n\t\t\t\tСогласуем задачу и доведём проект до результата.\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t",
+              "id": "7758011",
+              "settings": {
+                "background_background": "classic",
+                "editor": "Согласуем задачу и доведём проект до результата.",
+                "text_color": "#475569",
+                "typography_font_family": "inherit",
+                "typography_font_size": {
+                  "size": 1.0625,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_size_mobile": {
+                  "size": 1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_size_tablet": {
+                  "size": 1,
+                  "sizes": "[MaxDepth]",
+                  "unit": "rem"
+                },
+                "typography_font_weight": "400",
+                "typography_line_height": {
+                  "size": 1.65,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_line_height_mobile": {
+                  "size": 1.65,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_line_height_tablet": {
+                  "size": 1.65,
+                  "sizes": "[MaxDepth]",
+                  "unit": "em"
+                },
+                "typography_typography": "custom"
+              },
+              "widgetType": "text-editor"
+            },
+            {
+              "elType": "widget",
+              "elements": [],
+              "htmlCache": "\t\t<div class=\"elementor-widget-container\">\n\t\t\t\t\t\t\t\t\t<div class=\"elementor-button-wrapper\">\n\t\t\t\t\t<a class=\"elementor-button elementor-button-link elementor-size-sm\" href=\"#start\">\n\t\t\t\t\t\t<span class=\"elementor-button-content-wrapper\">\n\t\t\t\t\t\t\t\t\t<span class=\"elementor-button-text\">Начать</span>\n\t\t\t\t\t</span>\n\t\t\t\t\t</a>\n\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t",
+              "id": "12c3168",
+              "settings": {
+                "background_color": "#4460EC",
+                "button_text_color": "#ffffff",
+                "link": {
+                  "is_external": "",
+                  "nofollow": "",
+                  "url": "#start"
+                },
+                "text": "Начать"
+              },
+              "widgetType": "button"
+            }
+          ],
+          "id": "d92705c",
+          "isInner": true,
+          "settings": {
+            "_element_custom_width": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            },
+            "_element_custom_width_mobile": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            },
+            "_element_custom_width_tablet": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            },
+            "_element_width": "initial",
+            "_element_width_mobile": "initial",
+            "_element_width_tablet": "initial",
+            "_flex_grow": 0,
+            "_flex_grow_mobile": 0,
+            "_flex_grow_tablet": 0,
+            "_flex_shrink_mobile": 1,
+            "_flex_shrink_tablet": 1,
+            "_flex_size": "custom",
+            "_flex_size_mobile": "custom",
+            "_flex_size_tablet": "custom",
+            "background_background": "classic",
+            "background_color": "transparent",
+            "boxed_width": {
+              "bottom": "38",
+              "isLinked": true,
+              "left": "38",
+              "right": "38",
+              "size": 38,
+              "sizes": [],
+              "top": "38",
+              "unit": "rem"
+            },
+            "boxed_width_mobile": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            },
+            "boxed_width_tablet": {
+              "bottom": "38",
+              "isLinked": true,
+              "left": "38",
+              "right": "38",
+              "size": 38,
+              "sizes": [],
+              "top": "38",
+              "unit": "rem"
+            },
+            "flex_align_items": "flex-start",
+            "flex_direction": "column",
+            "flex_direction_mobile": "column",
+            "flex_gap": {
+              "column": "1.25",
+              "isLinked": true,
+              "row": "1.25",
+              "size": 1.25,
+              "unit": "rem"
+            },
+            "flex_gap_mobile": {
+              "column": "0.875",
+              "isLinked": true,
+              "row": "0.875",
+              "size": 0.875,
+              "unit": "rem"
+            },
+            "flex_gap_tablet": {
+              "column": "1",
+              "isLinked": true,
+              "row": "1",
+              "size": 1,
+              "unit": "rem"
+            },
+            "flex_grow": 0,
+            "flex_grow_mobile": 0,
+            "flex_grow_tablet": 0,
+            "flex_shrink": 1,
+            "flex_shrink_mobile": 1,
+            "flex_shrink_tablet": 1,
+            "padding": {
+              "bottom": "0",
+              "isLinked": true,
+              "left": "0",
+              "right": "0",
+              "top": "0",
+              "unit": "rem"
+            },
+            "text_align": "left",
+            "width": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            },
+            "width_mobile": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            },
+            "width_tablet": {
+              "size": 100,
+              "sizes": [],
+              "unit": "%"
+            }
+          }
+        }
+      ],
+      "id": "37b84f9",
+      "isInner": false,
+      "settings": {
+        "_css_classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-hero",
+        "_wpae_design_system_id": "ds-18cdb263",
+        "background_background": "classic",
+        "background_color": "#ffffff",
+        "flex_direction": "column",
+        "flex_direction_mobile": "column",
+        "flex_gap": {
+          "column": "1.25",
+          "isLinked": true,
+          "row": "1.25",
+          "size": 1.25,
+          "unit": "rem"
+        },
+        "flex_gap_mobile": {
+          "column": "0.875",
+          "isLinked": true,
+          "row": "0.875",
+          "size": 0.875,
+          "unit": "rem"
+        },
+        "flex_gap_tablet": {
+          "column": "1",
+          "isLinked": true,
+          "row": "1",
+          "size": 1,
+          "unit": "rem"
+        },
+        "padding": {
+          "bottom": "5",
+          "isLinked": false,
+          "left": "2",
+          "right": "2",
+          "sizes": [],
+          "top": "5",
+          "unit": "rem"
+        },
+        "padding_mobile": {
+          "bottom": "2.5",
+          "isLinked": false,
+          "left": "1",
+          "right": "1",
+          "sizes": [],
+          "top": "2.5",
+          "unit": "rem"
+        },
+        "padding_tablet": {
+          "bottom": "3.5",
+          "isLinked": false,
+          "left": "2",
+          "right": "2",
+          "sizes": [],
+          "top": "3.5",
+          "unit": "rem"
+        }
+      }
+    }
+  ],
+  "version": "v02.11.246"
+}

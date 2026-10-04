@@ -1,0 +1,69 @@
+{
+  "nodes": [
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(51, 51, 51)",
+      "font": "16px",
+      "id": "f886b2e",
+      "lineHeight": "24px",
+      "rect": {
+        "height": 26.3984375,
+        "width": 66.203125,
+        "x": 16,
+        "y": 86
+      },
+      "text": "СТУДИЯ"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(51, 51, 51)",
+      "font": "16px",
+      "id": "6efd596",
+      "lineHeight": "24px",
+      "rect": {
+        "height": 35.203125,
+        "width": 315.203125,
+        "x": 16,
+        "y": 126.3984375
+      },
+      "text": "Работа со смыслом"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(71, 85, 105)",
+      "font": "16px",
+      "id": "7758011",
+      "lineHeight": "26.4px",
+      "rect": {
+        "height": 52.796875,
+        "width": 358,
+        "x": 16,
+        "y": 175.6015625
+      },
+      "text": "Согласуем задачу и доведём проект до результата."
+    },
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(51, 51, 51)",
+      "font": "16px",
+      "href": "#start",
+      "id": "12c3168",
+      "lineHeight": "24px",
+      "rect": {
+        "height": 39,
+        "width": 98.6640625,
+        "x": 16,
+        "y": 242.3984375
+      },
+      "text": "Начать"
+    }
+  ],
+  "roots": [
+    "37b84f9"
+  ],
+  "scrollWidth": 390,
+  "viewport": [
+    390,
+    844
+  ]
+}

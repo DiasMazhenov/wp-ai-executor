@@ -1,0 +1,72 @@
+{
+  "nodes": [
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(17, 24, 39)",
+      "font": "17px",
+      "href": null,
+      "lineHeight": "28.05px",
+      "rect": {
+        "height": 28.046875,
+        "width": 70.34375,
+        "x": 336,
+        "y": 112
+      },
+      "text": "СТУДИЯ"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(23, 32, 42)",
+      "font": "52px",
+      "href": null,
+      "lineHeight": "57.2px",
+      "rect": {
+        "height": 57.203125,
+        "width": 512.2109375,
+        "x": 336,
+        "y": 160.046875
+      },
+      "text": "Работа со смыслом"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(71, 85, 105)",
+      "font": "17px",
+      "href": null,
+      "lineHeight": "28.05px",
+      "rect": {
+        "height": 28.046875,
+        "width": 418.9765625,
+        "x": 336,
+        "y": 237.25
+      },
+      "text": "Согласуем задачу и доведём проект до результата."
+    },
+    {
+      "background": "rgb(68, 96, 236)",
+      "color": "rgb(255, 255, 255)",
+      "font": "15px",
+      "href": "#start",
+      "lineHeight": "15px",
+      "rect": {
+        "height": 39,
+        "width": 98.6640625,
+        "x": 336,
+        "y": 285.296875
+      },
+      "text": "Начать"
+    }
+  ],
+  "roots": [
+    {
+      "class": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-hero elementor-element elementor-element-37b84f9 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "37b84f9",
+      "text": "СТУДИЯ\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\tРабота со смыслом\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tСогласуем задачу и доведём проект до результата.\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tНачать"
+    }
+  ],
+  "scrollWidth": 1280,
+  "viewport": [
+    1280,
+    900
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "height": 844,
+  "nodes": [
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(17, 24, 39)",
+      "font": "16px",
+      "lineHeight": "26.4px",
+      "rect": {
+        "height": 26.3984375,
+        "width": 66.203125,
+        "x": 16,
+        "y": 86
+      },
+      "text": "СТУДИЯ"
+    },
+    {
+      "background": "rgba(0, 0, 0, 0)",
+      "color": "rgb(23, 32, 42)",
+      "font": "32px",
+      "lineHeight": "35.2px",
+      "rect": {
+        "height": 70.40625,
+        "width": 288,
+        "x": 16,
+        "y": 126.3984375
+      },
+      "text": "Работа со смыслом"
+    },
+    {
+      "background": "rgb(68, 96, 236)",
+      "color": "rgb(255, 255, 255)",
+      "font": "15px",
+      "lineHeight": "15px",
+      "rect": {
+        "height": 39,
+        "width": 98.6640625,
+        "x": 16,
+        "y": 277.6015625
+      },
+      "text": "\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tНачать\n\t\t\t\t\t\n\t\t\t\t\t"
+    }
+  ],
+  "scrollWidth": 320,
+  "width": 320
+}

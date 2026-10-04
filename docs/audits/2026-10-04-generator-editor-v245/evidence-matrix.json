@@ -1,117 +1,226 @@
 {
   "post_id": 5214,
   "baseline_commit": "ab4ec235cb84fef7a9e61db2efb42ce448ba0333",
-  "source_version": "v02.11.245",
+  "source_version": "v02.11.246",
   "scenarios": [
     {
       "scenario": "A",
       "record": "hero.text_only",
       "profile": "editorial_light",
-      "status": "NOT_RUN",
-      "request": null,
-      "root": null,
-      "operation": null,
-      "first_result": null,
-      "screenshots": []
+      "status": "FAIL",
+      "request": "Создай Hero text-only без фото\nНадзаголовок: «СТУДИЯ»\nЗаголовок: «Работа со смыслом»\nОписание: «Согласуем задачу и доведём проект до результата.»\nКнопка: «Начать», ссылка #start",
+      "root": "37b84f9",
+      "operation": "wpae-486ca1951e866c95",
+      "first_result": {
+        "v245": "frozen_decisions_changed_by_normalization; provider_calls=0; write_count=0",
+        "v246": "write_count=1/provider_calls=0; explicit hero.text_only v1/editorial_light; advisory Vision 60 confidence95 triggered automatic replacement before manual first-result capture; first visual acceptance unverified"
+      },
+      "screenshots": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-generator-editor-v245/A-v246-public-desktop-after-reload.png",
+          "source": "public",
+          "viewport": [
+            1280,
+            900
+          ],
+          "png_size": [
+            1280,
+            900
+          ],
+          "bytes": 136182,
+          "sha256": "d4b42d7044a70fd483b558b7eb7c629828ee7ac8fa363c74014355ef457ce31b",
+          "visually_opened": true,
+          "operation": "wpae-6a8fc1faa4a4e95b",
+          "root": "37b84f9",
+          "record": "hero.text_only first request; repair explicit_brief",
+          "profile": "requested editorial_light; repair no resolved profile"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-generator-editor-v245/A-v246-public-mobile.png",
+          "source": "public",
+          "viewport": [
+            390,
+            844
+          ],
+          "png_size": [
+            390,
+            844
+          ],
+          "bytes": 76880,
+          "sha256": "e4e8115d996ef20383817dd3eb252c8c8ecc90677dba9f27ecf02f88d0d4690e",
+          "visually_opened": true,
+          "operation": "wpae-6a8fc1faa4a4e95b",
+          "root": "37b84f9",
+          "record": "hero.text_only first request; repair explicit_brief",
+          "profile": "requested editorial_light; repair no resolved profile"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-generator-editor-v245/A-v246-editor-after-reload.png",
+          "source": "editor",
+          "viewport": [
+            1238,
+            923
+          ],
+          "png_size": [
+            1238,
+            923
+          ],
+          "bytes": 294660,
+          "sha256": "723b6fcef00e84e3ef67e2c6a3c8ca96d6eaee53015af28776b763cbe6e49eb8",
+          "visually_opened": true,
+          "operation": "wpae-6a8fc1faa4a4e95b",
+          "root": "37b84f9",
+          "record": "hero.text_only first request; repair explicit_brief",
+          "profile": "requested editorial_light; repair no resolved profile"
+        }
+      ],
+      "repairs": [
+        {
+          "operation": "wpae-6a8fc1faa4a4e95b",
+          "type": "automatic Vision guarded replacement",
+          "root": "37b84f9",
+          "provider_calls": 0,
+          "write_count": 1,
+          "resolved_visual": [],
+          "composition_source": "explicit_brief",
+          "profile_preserved": false
+        }
+      ],
+      "readback": {
+        "status": "PASS exact text/href/root after save/reload",
+        "hash": "4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d",
+        "native": "A-v246-native-readback.json"
+      },
+      "visual_acceptance": "FAIL selected profile lost during automatic replacement; first-result manual review unavailable"
     },
     {
       "scenario": "B",
       "record": "hero.split_60_40.right",
       "profile": "editorial_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "C",
       "record": "hero.split_60_40.left",
       "profile": "editorial_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "D",
       "record": "hero.split_60_40.right",
       "profile": "soft_cards_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "E",
       "record": "about.split_50_50.right",
       "profile": "editorial_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "F",
       "record": "benefits.grid",
       "profile": "editorial_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "G",
       "record": "benefits.editorial_list",
       "profile": "editorial_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "H",
       "record": "benefits.grid",
       "profile": "soft_cards_light",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "I",
       "record": "pricing.tiers",
       "profile": "",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     },
     {
       "scenario": "J",
       "record": "faq.native",
       "profile": "",
-      "status": "NOT_RUN",
+      "status": "BLOCKED",
       "request": null,
       "root": null,
       "operation": null,
       "first_result": null,
-      "screenshots": []
+      "screenshots": [],
+      "blocked_reason": "Safe cleanup unavailable after A save/reload; dependent writes stopped"
     }
-  ]
+  ],
+  "runtime_commit": "7a8b62449bba636613d6acb30f45da26273755e9",
+  "install": {
+    "plugins": "v02.11.246",
+    "editor": "v02.11.246",
+    "frontend_build": "composition-ui-v1",
+    "php": "8.3.22",
+    "pipeline_mode": "active"
+  },
+  "final_root_set": [
+    "37b84f9"
+  ],
+  "cleanup": {
+    "status": "BLOCKED",
+    "reason": "After save/reload normal chat has no Undo control. No endpoint or manual deletion used.",
+    "undo_attempted": false
+  },
+  "baseline": {
+    "status": "valid_array",
+    "root_ids": [],
+    "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
 }
