@@ -419,7 +419,7 @@ This addendum supersedes the stage-5 NOT RUN status above for the browser/live w
 
 ### Runtime and persisted page state
 
-Source release `v02.11.242` is commit `aa6653ae4e6acea9e6d6ebc4669d80e07fb961e6`. It preserves desktop photo-card `flex_direction` when tablet direction is omitted; this fixed the first v241 live result, where tablet cards became half-width. WP Pusher installed only WP AI Executor; Plugins and the reloaded editor's inline config/chat badge reported `v02.11.242`. WordPress Site Health reported PHP `8.3.22` / `cgi-fcgi`. The runtime source push had previously reported success, but a fresh `git ls-remote` during this documentation pass could not resolve `github.com`; current remote HEAD is not re-confirmed.
+Source release `v02.11.242` is commit `aa6653ae4e6acea9e6d6ebc4669d80e07fb961e6`. It preserves desktop photo-card `flex_direction` when tablet direction is omitted; this fixed the first v241 live result, where tablet cards became half-width. WP Pusher installed only WP AI Executor; Plugins and the reloaded editor's inline config/chat badge reported `v02.11.242`. WordPress Site Health reported PHP `8.3.22` / `cgi-fcgi`. `git push origin main` confirmed `aa6653a..2c383d8 main -> main`, including this source release; a separate `git ls-remote` could not resolve `github.com`.
 
 The initial post state was the task's blank baseline, `roots=[]` at history revision `5714`. Only three successful pipeline transactions were generated. After public reload and editor reload, the final post=5214 roots were exactly `[023bd70, e939025, 8b79d6c]` in recipe order. The edit did not remove or replace any user-owned root.
 
