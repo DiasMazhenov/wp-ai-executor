@@ -3,7 +3,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_VISION_SETTINGS_OPTION = 'wp_ai_executor_vision_settings';
-const WPAE_VISION_REPORTS_OPTION = 'wp_ai_executor_vision_reports';
+require_once __DIR__ . '/report-store.php';
 const WPAE_VISION_MAX_IMAGE_BYTES = 4194304;
 const WPAE_VISION_MAX_RESPONSE_BYTES = 524288;
 const WPAE_VISION_MAX_REPORTS = 30;
@@ -424,18 +424,6 @@ function wpae_save_vision_report( array $report ): array {
     array_unshift( $reports, $report );
     update_option( WPAE_VISION_REPORTS_OPTION, array_slice( $reports, 0, WPAE_VISION_MAX_REPORTS ), false );
     return $report;
-}
-
-function wpae_get_vision_report( string $report_id ): ?array {
-    if ( $report_id === '' ) {
-        return null;
-    }
-    foreach ( (array) get_option( WPAE_VISION_REPORTS_OPTION, [] ) as $report ) {
-        if ( is_array( $report ) && hash_equals( (string) ( $report['report_id'] ?? '' ), $report_id ) ) {
-            return $report;
-        }
-    }
-    return null;
 }
 
 function wpae_get_vision_reports( int $limit = 5 ): array {

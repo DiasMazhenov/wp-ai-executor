@@ -104,6 +104,7 @@ function add_filter( ...$args ) { return true; }
 require_once __DIR__ . '/../includes/support/logging.php';
 require_once __DIR__ . '/../includes/skills/skills.php';
 function wpae_elementor_update( $request ) {
+    $GLOBALS['typed_last_update_params'] = $request->get_json_params();
     if ( ! $request->get_param( 'dry_run' ) ) { $GLOBALS['m1_write_attempts'] = (int) ( $GLOBALS['m1_write_attempts'] ?? 0 ) + 1; }
     $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ) ] );
     if ( ! $contract['ok'] ) {
@@ -2509,6 +2510,7 @@ $run_services_route = static function ( string $message, array $responses, array
 		'library_retrieval_count' => count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ),
 		'roots' => array_column( (array) $GLOBALS['page_data'], 'id' ),
 		'page_data' => (array) $GLOBALS['page_data'],
+        'lifecycle_options' => $GLOBALS['options'],
 		'written' => (array) ( $GLOBALS['page_data'][ count( $legacy_page ) ] ?? [] ),
 	];
 	foreach ( $previous_globals as $global_key => $value ) {
@@ -2998,5 +3000,6 @@ if ( getenv( 'WPAE_SERVICES_CHAT_DEMO' ) === '1' ) {
 
 require __DIR__ . '/m1-generation-contract.php';
 require __DIR__ . '/m2-generation-contract.php';
+require __DIR__ . '/typed-lifecycle-contract.php';
 
 echo 'flex generation runtime: ' . $GLOBALS['checks'] . " checks OK\n";

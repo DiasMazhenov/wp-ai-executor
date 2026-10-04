@@ -1749,33 +1749,14 @@
                     body.diagnostics.operation_ledger = reconciled.operation;
                     addMessage('assistant', 'Актуальный preview и Vision привязаны к существующей операции. Состояние журнала: ' + String(reconciled.operation.current_state || 'written') + '.');
                 }
-                if (review && review.gate && review.gate.quality_failed && !review.gate.advisory) {
-                    if (!brief) {
-                        addMessage('assistant', 'Vision нашёл дефект, но исходный запрос этой операции недоступен; root оставлен без изменений, targeted repair не запускался.');
-                        review.repair_blocked = 'original_brief_unavailable';
-                        return review;
-                    }
-                    var parent = durableOperation || operation;
-                    var replacementOptions = {
-                        visionRepair: true,
-                        visionRegenerate: true,
-                        repairDepth: 1,
-                        originalBrief: brief,
-                        visionFindings: buildVisionRepairMessage(review, brief, false),
-                        ownedRootIds: roots.slice(),
-                        replaceExistingRoot: true,
-                        replacesOperation: {
-                            operation_id: String(parent.operation_id || operationId),
-                            operation_identity: String(parent.operation_identity || operation.operation_identity || '').slice(0, 120),
-                            revision: Number(parent.revision || operation.revision || 0),
-                            root_ids: Array.isArray(parent.root_ids) ? parent.root_ids.slice(0, 12) : roots.slice()
-                        }
-                    };
-                    addMessage('assistant', 'Vision подтвердил дефект. Сохраняю точечную замену существующего root; сервер повторно проверит operation identity, revision и fingerprint перед записью.');
-                    if (!scheduleVisionRepairAfterReload(brief, replacementOptions)) throw new Error('Не удалось сохранить targeted repair перед перезагрузкой Elementor.');
-                    review.repair_scheduled = true;
+                if (durableOperation.accepted_contract_id) {
+                    addTypedRepairControl(durableOperation, review);
+                    return review;
                 }
+                // Historical operations have no authoritative Plan; review is advisory only.
+                addMessage('assistant', 'Исторический accepted contract недоступен; repair не запускался.');
                 return review;
+
             });
         });
     }
@@ -1843,6 +1824,92 @@
                 return requestVisionReview(snapshotId, error.message, brief, editorSync, operationContext);
             });
         });
+    }
+    function typedLifecyclePost(context) {
+        return fetch(config.endpoint, {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+            body: JSON.stringify({ message: 'Проверка typed lifecycle', context: context })
+        }).then(function (response) { return response.json().then(function (body) {
+            if (!response.ok || !body.ok) throw new Error(body.message || body.error || body.code || 'Typed lifecycle refusal');
+            return body;
+        }); });
+    }
+    function typedOperationContext(operation, action) {
+        return { post_id: Number(config.postId), lifecycle_action: action,
+            accepted_operation_id: String(operation.operation_id || ''),
+            accepted_identity: String(operation.operation_identity || ''),
+            accepted_revision: Number(operation.revision || 0) };
+    }
+    function verifyTypedEditorModel(body) {
+        var operation = body && body.diagnostics && body.diagnostics.operation_ledger;
+        if (!operation || !operation.accepted_contract_id) return Promise.resolve(true);
+        if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function') return Promise.reject(new Error('Typed editor model unavailable; Save remains guarded.'));
+        var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(function (model) { return cloneEditorValue(serializeSelectedModel(model)); });
+        var context = typedOperationContext(operation, 'check_model'); context.editor_owned_model = roots;
+        return typedLifecyclePost(context);
+    }
+    function addTypedResyncControl(body, originalSnapshot) {
+        var operation = body && body.diagnostics && body.diagnostics.operation_ledger;
+        if (!operation || !operation.accepted_contract_id) return;
+        var button = document.createElement('button'); button.type = 'button'; button.className = 'wpae-llm-icon-button';
+        button.textContent = 'Безопасно синхронизировать owned модель';
+        button.addEventListener('click', function () {
+            if (requestInFlight) return;
+            button.disabled = true;
+            var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(serializeSelectedModel);
+            var context = typedOperationContext(operation, 'resync'); context.editor_owned_model = roots;
+            typedLifecyclePost(context).then(function (result) {
+                return syncEditorElements(result.editor_sync, 1, originalSnapshot);
+            }).then(function () { return verifyTypedEditorModel(body); }).then(function () {
+                addMessage('assistant', 'Owned editor model совпадает с сервером. Выполните Save/reload/readback.');
+                button.remove();
+            }).catch(function (error) { button.disabled = false; addMessage('assistant', 'Resync остановлен: ' + error.message); });
+        });
+        messages.appendChild(button);
+    }
+    function addTypedUndoControl(descriptor) {
+        var row = document.createElement('div'); row.className = 'wpae-llm-action-row';
+        var button = document.createElement('button'); button.type = 'button';
+        button.className = 'wpae-llm-icon-button';
+        button.textContent = descriptor.action === 'undo_repair' ? 'Отменить последнее исправление' : 'Отменить создание блока';
+        button.disabled = descriptor.status !== 'available';
+        button.title = String(descriptor.status || '') + ': ' + String(descriptor.reason || descriptor.operation_id || '');
+        button.addEventListener('click', function () {
+            if (requestInFlight) return;
+            // A full reload is safe only when all editor roots equal the last known saved model.
+            if (!editorHasNoUnsavedRootChanges()) { addMessage('assistant', 'Undo остановлен: несохранённые изменения редактора сохранены локально.'); return; }
+            button.disabled = true;
+            fetch(config.undoEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+                body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, revision: descriptor.revision })
+            }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal'); window.location.reload(); });
+            }).catch(function (error) { button.disabled = false; addMessage('assistant', error.message); });
+        });
+        row.appendChild(button); messages.appendChild(row);
+    }
+    var typedSavedEditorSnapshot = null;
+    function editorHasNoUnsavedRootChanges() {
+        if (!typedSavedEditorSnapshot) return false;
+        var publish = Array.from(document.querySelectorAll('button')).find(function (button) {
+            var rect = button.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0 && /^(Опубликовать|Обновить|Publish|Update)$/.test(String(button.textContent || '').trim());
+        });
+        if (!publish || !publish.disabled) return false;
+        return JSON.stringify(captureEditorRootSnapshot()) === JSON.stringify(typedSavedEditorSnapshot);
+    }
+    function rememberTypedEditorBaseline() { typedSavedEditorSnapshot = captureEditorRootSnapshot(); }
+    function addTypedRepairControl(operation, review) {
+        var report = review && review.report;
+        if (!report || !report.report_id) return;
+        var button = document.createElement('button'); button.type = 'button'; button.className = 'wpae-llm-icon-button';
+        button.textContent = 'Применить scoped repair отступов';
+        button.addEventListener('click', function () {
+            if (requestInFlight) return;
+            var context = typedOperationContext(operation, 'repair');
+            context.accepted_vision_report_id = report.report_id; context.layout_correction = 'compact_spacing';
+            request('Применить scoped repair отступов', false, { visionRepair: true, skipVision: true, lifecycleContext: context });
+        });
+        messages.appendChild(button);
     }
     function addActionControls(write, operationContext) {
         if (!write || !write.rollback_snapshot_id || !config.undoEndpoint) return;
@@ -2013,6 +2080,7 @@
             requestContext.replaces_operation = options.replacesOperation;
         }
         Object.assign(requestContext, compositionSelectionSnapshot(options, requestSelection));
+        if (options.lifecycleContext) Object.assign(requestContext, options.lifecycleContext);
         if (options.deliverySnapshot) {
             message = options.deliverySnapshot.message;
             history = options.deliverySnapshot.history;
@@ -2178,7 +2246,7 @@
                         addMessage('assistant', 'Данные сохранены, но preview Elementor не обновился: ' + error.message);
                         return false;
                     });
-                }).then(function () {
+                }).then(function () { return verifyTypedEditorModel(body).catch(function (error) { addTypedResyncControl(body, requestContext.editor_root_snapshot); throw error; }); }).then(function () {
                     if (!options.skipVision && config.vision && config.vision.ready && body.write.rollback_snapshot_id) {
                         return runVisionReview(body.write.rollback_snapshot_id, expectedWidgetCount, editorSyncedState, originalBrief, editorSyncData, requestContext.editor_root_snapshot, buildVisionOperationContext(body, requestContext, editorSyncData)).catch(function (error) {
                             return { vision_unavailable: true, error: error && error.message ? error.message : 'Проверка Vision недоступна.' };
@@ -2192,9 +2260,20 @@
 				return reconcileDesignOperation(body, requestContext, editorSyncDataForReview, review).catch(function (error) {
 					addMessage('assistant', 'Ledger reconcile требует read-back: ' + error.message);
 					return null;
-				}).then(function () { return review; });
+				}).then(function (reconciled) { if (reconciled && reconciled.operation) body.diagnostics.operation_ledger = reconciled.operation; return review; });
             }).then(function (review) {
                 var reviewTargetedPatch = isTargetedEditorSync(editorSyncDataForReview);
+                var typedOperation = body.diagnostics && body.diagnostics.operation_ledger;
+                if (typedOperation && typedOperation.accepted_contract_id) {
+                    if (review && review.report) addMessage('assistant', describeVisionReview(review));
+                    addTypedUndoControl(Object.assign({ status: 'available', action: typedOperation.parent_operation_id ? 'undo_repair' : 'undo_creation' }, typedOperation));
+                    addTypedRepairControl(typedOperation, review);
+                    var failed = Boolean(review && review.gate && review.gate.quality_failed);
+                    setPipelinePhase('review', failed ? 'error' : (review && review.report ? 'done' : 'skipped'));
+                    status.textContent = failed ? 'Review отрицательный; новая запись не запущена.' : 'Server/editor совпали; Save и readback требуют отдельной проверки.';
+                    return;
+                }
+
                 if (review && review.vision_unavailable) {
                     addMessage('assistant', (reviewTargetedPatch ? 'AI Vision временно недоступен; точечная правка сохранена и требует ручной проверки: ' : 'AI Vision временно недоступен; новая генерация сохранена и требует ручной проверки: ') + review.error);
                 }
@@ -2319,6 +2398,11 @@
         addMessage('user', message);
         input.value = '';
         request(message);
+    });
+    waitForEditorRuntime().then(function (ready) {
+        if (!ready) return;
+        rememberTypedEditorBaseline();
+        (config.typedUndoDescriptors || []).forEach(addTypedUndoControl);
     });
     retryProviderRequestAfterReload();
     retryVisionRepairAfterReload();

@@ -47,6 +47,7 @@ function wpae_enqueue_elementor_llm_chat(): void {
                 'root_ids' => array_values( array_filter( array_map( 'sanitize_key', array_slice( (array) ( $candidate['root_ids'] ?? [] ), 0, 12 ) ) ) ),
                 'rollback_snapshot_id' => sanitize_text_field( (string) ( $candidate['rollback_snapshot_id'] ?? '' ) ),
                 'current_state' => $state,
+                'accepted_contract_id' => sanitize_key( (string) ( $candidate['accepted_contract_id'] ?? '' ) ),
             ];
             $pending_operation['target_status'] = is_array( $candidate['target_status'] ?? null ) ? $candidate['target_status'] : [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'target_status_unavailable' ];
             $pending_operation['reviewable'] = ! empty( $candidate['reviewable'] );
@@ -68,7 +69,8 @@ function wpae_enqueue_elementor_llm_chat(): void {
         'undoEndpoint' => get_rest_url( null, 'ai-executor/v1/llm/undo' ),
 		'reconcileEndpoint' => get_rest_url( null, 'ai-executor/v1/design-operations/reconcile' ),
         'pluginVersion' => defined( 'WPAE_VERSION' ) ? WPAE_VERSION : '',
-        'frontendBuild' => 'composition-ui-v1',
+        'frontendBuild' => 'typed-lifecycle-v1',
+        'typedUndoDescriptors' => is_array( $pending_data ) ? wpae_accepted_contract_descriptors( $post_id, $pending_data ) : [],
         'pipelineMode' => wpae_design_pipeline_mode(),
         'compositionCatalog' => wpae_composition_editor_catalog(),
         'savedBaseline' => [

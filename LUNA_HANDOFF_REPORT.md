@@ -1754,3 +1754,21 @@ Final-result rubric: hierarchy2, spacing1 (sparse), typography2, media N/A (text
 Source/UI and installation confirmed; A generation/write/save/native/public readback verified; first visual/profile acceptance FAIL; B,C,D,E,F,G,H,I,J BLOCKED by safe cleanup unavailable. UI lifecycle/automatic Vision profile retention remain unresolved. Structured model extraction remains disabled.
 
 Final v246 validation: runtime1075/DesignPlan319/patch guard/package250 and four probe scenarios PASS; full Node suite8/8 PASS with --test-concurrency=1. Concurrent full Node run hit the existing subprocess timeout; no assertion/timeout weakened. PHP lint and git diff --check PASS.
+
+## Correction of historical A evidence — lifecycle audit
+
+The v246 replacement trace loses authoritative record/profile and reparses a different Brief: confirmed contract failure. Final A-v246-native-readback.json contains original child IDs and editorial controls. Loss of styling in final saved tree is NOT confirmed. Same root37b84f9 does not prove PNG binding to wpae-6a8fc1faa4a4e95b; final PNG operation binding is UNVERIFIED. Restoration of stale editor model by Publish is a hypothesis, not an established cause. Earlier profile-loss/brief-fit0 and replacement-bound screenshot captions are superseded by this correction, retained as historical observations. First-result visual acceptance remains unverified.
+
+## Typed lifecycle v247 — source implementation, 2026-10-04
+
+Accepted contract is server-owned, immutable and linked by ID/hash to ledger: canonical Brief/Plan, composition record/version/hash, profile/resolved visual provenance, compiler schema/signature, owned before/after trees, initial saved revision and repair lineage. Retention: 7200 seconds, 20 global contracts, 256 KiB each; prepare reserves sealed payload overhead before write. Only owned trees stored; no raw HTTP context/history/credentials. Missing historical contract refuses, no reconstruction.
+
+Explicit scoped repair loads exact operation/post/identity/revision plus provider report with matching saved hash/fingerprint/root binding. First supported delta compact_spacing reduces accepted section/component D/T/M spacing by 20 percent with floor; unsupported findings refuse without write. Brief/copy/links/media/groups/record/profile preserved, frozen IR/compiler and existing execute/transaction/readback reused. Two attempts per parent and maximum two repair generations; no append fallback. Legacy migrated replacement flags refuse. Typed review is separate from application and negative gate never completes operation.
+
+Server/model check precedes dependent review. Documented Elementor 4.1.1 elementor/document/save/data filter compares owned decisions before element/settings writes; after_save verifies persisted owned tree and refreshes ledger binding. Pending mismatch/expiry blocks only that document Save, without changing local edits or globally disabling Save. Guarded resync accepts only known before/after owned model. Actual visible Publish disabled state plus full root baseline protect UI reload during Undo.
+
+Undo bootstrap descriptors derive availability from server contract independently of pending review. Creation removes only owned root; repair restores exact before-owned tree. Fresh whole-document expected-before, existing preview/transaction/readback and operation lock preserve other roots and post fields. Historical snapshots retain strict full-post guard and restore now receives expected fingerprint again. Legacy TTL/limit unchanged.
+
+Official hooks verified against [Elementor 4.1.1 Document::save](https://raw.githubusercontent.com/elementor/elementor/4.1.1/core/base/document.php). Browser access remains built-in Browser Plugin via node_repl browser-client runtime and existing browser16/tab3/tab4; no alternate transport. Source v247 install/editor/live statuses remain pending until separately observed. Structured extraction remains disabled.
+
+Local source verification: runtime1172, DesignPlan319, Node10/10 serial, patch guard, PHP/JS lint, package252/252 plus four probe scenarios, diff check PASS. Affected Graphify layer refreshed once on isolated seven-file copy (336 nodes/1079 edges); foreign graph untouched. Source commit/install/live tracked separately.

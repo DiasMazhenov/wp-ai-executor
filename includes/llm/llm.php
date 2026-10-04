@@ -16,6 +16,7 @@ require_once dirname( __DIR__ ) . '/elementor/layout-report.php';
 require_once dirname( __DIR__ ) . '/elementor/elementor-ir.php';
 require_once dirname( __DIR__ ) . '/elementor/native-compiler.php';
 require_once dirname( __DIR__ ) . '/elementor/operation-ledger.php';
+require_once dirname( __DIR__ ) . '/elementor/accepted-contract.php';
 
 function wpae_llm_is_instruction_only_brief( string $message ): bool {
 	$message = trim( $message );
@@ -10651,6 +10652,12 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         }
     }
     $replace_root_ids = array_values( array_unique( $replace_root_ids ) );
+    if ( ! empty( $operation_context['typed_parent_operation_id'] ) ) {
+        $typed_parent = wpae_design_operation_find_by_id( $operation_context['typed_parent_operation_id'] );
+        if ( ! $typed_parent || (int) $typed_parent['post_id'] !== $post_id || wpae_accepted_contract_eligibility( $typed_parent, $existing )['status'] !== 'available' || $replace_root_ids !== (array) $typed_parent['root_ids'] ) {
+            return [ 'ok' => false, 'error' => 'typed_replacement_target_changed', 'write_count' => 0, 'steps' => $steps ];
+        }
+    }
 	if ( ! empty( $operation_context['replacement_guard'] ) ) {
 		$guard = is_array( $operation_context['replacement_guard'] ) ? $operation_context['replacement_guard'] : [];
 		$parent = function_exists( 'wpae_design_operation_find_by_id' ) ? wpae_design_operation_find_by_id( sanitize_key( (string) ( $guard['operation_id'] ?? '' ) ) ) : null;
@@ -10675,6 +10682,7 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
             break;
         }
     }
+    if ( ! empty( $operation_context['typed_parent_operation_id'] ) && $replace_index === null ) { return [ 'ok' => false, 'error' => 'typed_replacement_root_missing', 'write_count' => 0, 'steps' => $steps ]; }
     if ( $replace_index !== null && isset( $elements[0] ) ) {
         $next = $existing;
         $elements[0]['id'] = $replace_element_id;
@@ -10868,6 +10876,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
     $body_params = is_array( $body_params ) ? $body_params : [];
     $message_input = array_key_exists( 'message', $body_params ) ? $body_params['message'] : $request->get_param( 'message' );
     $editor_context_input = array_key_exists( 'context', $body_params ) ? $body_params['context'] : $request->get_param( 'context' );
+    if ( is_array( $editor_context_input ) && ! empty( $editor_context_input['lifecycle_action'] ) ) { return wpae_accepted_lifecycle_request( $editor_context_input ); }
     $context_original_message = is_array( $editor_context_input ) ? sanitize_textarea_field( (string) ( $editor_context_input['original_message'] ?? '' ) ) : '';
     $message = sanitize_textarea_field( (string) $message_input );
     if ( $message === '' && $context_original_message !== '' ) {
@@ -10905,6 +10914,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	}
 	$action_archetype = $canonical_brief ? sanitize_key( (string) ( $canonical_brief['intent']['archetype'] ?? 'unknown' ) ) : ( $action_request ? wpae_llm_detect_block_archetype( $message ) : '' );
 	if ( isset( $editor_context_input['canonical_brief'] ) && ! in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true ) ) { return new WP_Error( 'wpae_canonical_brief_family_unsupported', 'Переданное семейство Brief не поддерживается canonical create.', [ 'status' => 422, 'write_count' => 0 ] ); }
+    if ( $design_pipeline_mode === 'active' && ( $vision_repair || $vision_regenerate || $targeted_design_repair ) && in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true ) && ( ! empty( $editor_context_input['replaces_operation'] ) || $selected_element_count > 0 ) ) {
+        return new WP_Error( 'wpae_typed_repair_contract_required', 'Migrated repair требует точный server accepted contract и отдельное lifecycle действие; legacy regeneration запрещена.', [ 'status' => 409, 'write_count' => 0 ] );
+    }
 	$migrated_active_create = ! empty( $canonical_brief ) && in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true );
 	$services_route_request = $action_request && $action_archetype === 'services';
 	if ( $migrated_active_create && $action_archetype !== 'services' ) { $canonical_brief['canonical_create'] = true; }
@@ -11322,6 +11334,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'route' => 'local_deterministic',
 				'provider_calls' => 0,
 			];
+            $accepted_prepared = null;
+            if ( $migrated_active_create ) {
+                $accepted_prepared = wpae_accepted_contract_prepare( $brief_ir, $design_plan_v1, $ir_compiled['elementor_data'] );
+                if ( empty( $accepted_prepared['ok'] ) ) { return new WP_Error( 'wpae_contract_refused', $accepted_prepared['reason'], [ 'status' => 422, 'write_count' => 0 ] ); }
+            }
 			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'frozen_decisions' => $migrated_active_create, 'accepted_signature' => wpae_llm_decision_signature( $ir_compiled['elementor_data'] ), 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '', 'operation_identity' => $operation_identity, 'replace_root_ids' => $replacement_requested ? $replacement_guard['root_ids'] : [], 'replacement_guard' => $replacement_requested ? [ 'operation_id' => $replacement_parent['operation_id'], 'operation_identity' => $replacement_parent['operation_identity'], 'revision' => $replacement_parent['revision'], 'root_ids' => $replacement_guard['root_ids'] ] : [] ] );
 			$design_pipeline_trace['status'] = ! empty( $active_execution['ok'] ) ? 'written' : 'failed';
 			$committed_write_count = ! empty( $active_execution['ok'] ) ? 1 : 0;
@@ -11351,6 +11368,13 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 					'target_fingerprint' => function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $selected_post_id ) : '',
 				] ) ?: $operation_ledger;
 			}
+            if ( $accepted_prepared && ! empty( $active_execution['ok'] ) ) {
+                $sealed = wpae_accepted_contract_seal( $accepted_prepared['prepared'], $operation_ledger, $written_roots );
+                if ( empty( $sealed['ok'] ) ) { return new WP_Error( 'wpae_contract_seal_failed', $sealed['reason'], [ 'status' => 409, 'write_count' => 1, 'operation' => $operation_ledger ] ); }
+                $operation_ledger = $sealed['operation'];
+                wpae_accepted_save_guard_set( $operation_ledger );
+                $active_execution['accepted_contract'] = [ 'id' => $operation_ledger['accepted_contract_id'], 'hash' => $operation_ledger['accepted_contract_hash'], 'compiled_signature' => $accepted_prepared['prepared']['compiled_signature'] ];
+            }
 			if ( $replacement_requested && ! empty( $active_execution['ok'] ) && function_exists( 'wpae_design_operation_update' ) ) {
 				wpae_design_operation_update( (string) $replacement_parent['operation_id'], [ 'current_state' => 'revised' ] );
 			}
@@ -12676,6 +12700,7 @@ function wpae_llm_chat_permission( WP_REST_Request $request ) {
 }
 
 function wpae_llm_undo( WP_REST_Request $request ): WP_REST_Response {
+    if ( $request->get_param( 'typed_undo' ) ) { return wpae_accepted_contract_undo( $request ); }
     $post_id = absint( $request->get_param( 'post_id' ) );
     $snapshot_id = sanitize_text_field( (string) $request->get_param( 'rollback_snapshot_id' ) );
     if ( $post_id <= 0 || $snapshot_id === '' || ! current_user_can( 'edit_post', $post_id ) ) {
@@ -12732,7 +12757,7 @@ function wpae_llm_undo( WP_REST_Request $request ): WP_REST_Response {
     if ( $after_hash === '' || ! hash_equals( $after_hash, wpae_rollback_post_fingerprint( $post_id ) ) ) {
         return new WP_REST_Response( [ 'ok' => false, 'error' => 'После этой операции страница была изменена или снимок создан старой версией плагина. Отмена остановлена, чтобы сохранить свежие правки.', 'code' => 'wpae_undo_conflict' ], 409 );
     }
-    $rollback = wpae_restore_rollback_snapshot_by_id( $snapshot_id, true );
+    $rollback = wpae_restore_rollback_snapshot_by_id( $snapshot_id, true, $after_hash );
     if ( ! empty( $rollback['ok'] ) && $operation_id !== '' && function_exists( 'wpae_design_operation_mark_rollback' ) ) {
         $marked = wpae_design_operation_mark_rollback( $operation_id, $operation_identity, $operation_revision, $snapshot_id, $operation_event, sanitize_text_field( (string) $request->get_param( 'evidence_hash' ) ) );
         if ( ! is_array( $marked ) ) {

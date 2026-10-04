@@ -265,6 +265,10 @@ function wpae_design_operation_target_status( array $operation, int $post_id, ?a
 	if ( ! is_array( $elementor_data ) ) {
 		return [ 'reviewable' => false, 'status' => 'unknown_target', 'reason' => 'readback_unavailable' ];
 	}
+    if ( ! empty( $operation['accepted_contract_id'] ) && function_exists( 'wpae_accepted_contract_eligibility' ) ) {
+        $eligibility = wpae_accepted_contract_eligibility( $operation, $elementor_data );
+        return [ 'reviewable' => $eligibility['status'] === 'available', 'status' => $eligibility['status'] === 'available' ? 'current' : 'stale_target', 'reason' => $eligibility['status'] === 'available' ? 'accepted_owned_decisions_match' : ( $eligibility['reason'] ?? $eligibility['status'] ), 'root_ids' => $root_ids, 'current_saved_hash' => hash( 'sha256', wp_json_encode( $elementor_data ) ) ];
+    }
 	$expected_saved_hash = sanitize_text_field( (string) ( $operation['saved_hash'] ?? '' ) );
 	$current_saved_hash  = hash( 'sha256', (string) wp_json_encode( $elementor_data ) );
 	$expected_fingerprint = sanitize_text_field( (string) ( $operation['target_fingerprint'] ?? '' ) );

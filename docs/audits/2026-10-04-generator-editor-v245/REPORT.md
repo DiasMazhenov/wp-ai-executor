@@ -91,3 +91,7 @@ post5214/root37b84f9/operation wpae-6a8fc1faa4a4e95b; source editor; CSS viewpor
 [Скачать screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-generator-editor-v245/A-v246-editor-after-reload.png)
 
 Final v246 validation: runtime1075/DesignPlan319/patch guard/package250 and four probe scenarios PASS; full Node suite8/8 PASS with --test-concurrency=1. Concurrent full Node run hit the existing subprocess timeout; no assertion/timeout weakened. PHP lint and git diff --check PASS.
+
+## Correction of historical A evidence — lifecycle audit
+
+The v246 replacement trace loses authoritative record/profile and reparses a different Brief: confirmed contract failure. Final A-v246-native-readback.json contains original child IDs and editorial controls. Loss of styling in final saved tree is NOT confirmed. Same root37b84f9 does not prove PNG binding to wpae-6a8fc1faa4a4e95b; final PNG operation binding is UNVERIFIED. Restoration of stale editor model by Publish is a hypothesis, not an established cause. Earlier profile-loss/brief-fit0 and replacement-bound screenshot captions are superseded by this correction, retained as historical observations. First-result visual acceptance remains unverified.

@@ -33,7 +33,8 @@
           "operation": "wpae-6a8fc1faa4a4e95b",
           "root": "37b84f9",
           "record": "hero.text_only first request; repair explicit_brief",
-          "profile": "requested editorial_light; repair no resolved profile"
+          "profile": "saved editorial controls present; replacement trace has no resolved profile",
+          "operation_binding": "UNVERIFIED same root insufficient"
         },
         {
           "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-generator-editor-v245/A-v246-public-mobile.png",
@@ -52,7 +53,8 @@
           "operation": "wpae-6a8fc1faa4a4e95b",
           "root": "37b84f9",
           "record": "hero.text_only first request; repair explicit_brief",
-          "profile": "requested editorial_light; repair no resolved profile"
+          "profile": "saved editorial controls present; replacement trace has no resolved profile",
+          "operation_binding": "UNVERIFIED same root insufficient"
         },
         {
           "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-04-generator-editor-v245/A-v246-editor-after-reload.png",
@@ -71,7 +73,8 @@
           "operation": "wpae-6a8fc1faa4a4e95b",
           "root": "37b84f9",
           "record": "hero.text_only first request; repair explicit_brief",
-          "profile": "requested editorial_light; repair no resolved profile"
+          "profile": "saved editorial controls present; replacement trace has no resolved profile",
+          "operation_binding": "UNVERIFIED same root insufficient"
         }
       ],
       "repairs": [
@@ -91,7 +94,13 @@
         "hash": "4f391944c856d1a024be825d77bb4275ad863eab616d534c12e0531e8fb46d4d",
         "native": "A-v246-native-readback.json"
       },
-      "visual_acceptance": "FAIL selected profile lost during automatic replacement; first-result manual review unavailable"
+      "visual_acceptance": "UNVERIFIED; repair authoritative contract FAIL, final styling loss not established",
+      "evidence_correction": {
+        "repair_contract_lost": true,
+        "final_saved_styling_lost": "NOT_CONFIRMED",
+        "publish_restored_old_model": "HYPOTHESIS",
+        "final_png_operation_binding": "UNVERIFIED"
+      }
     },
     {
       "scenario": "B",
