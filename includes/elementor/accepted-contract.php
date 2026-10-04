@@ -255,6 +255,14 @@ function wpae_accepted_lifecycle_request( array $context ) {
     $contract = $loaded['contract'];
     $owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
     $action = $context['lifecycle_action'] ?? '';
+    if ( $action === 'check_document_model' ) {
+        // Read-only fresh native comparison protects foreign/local edits before Undo reload.
+        $model = $context['editor_document_model'] ?? null;
+        $mismatch = null;
+        $projected = is_array( $model ) ? wpae_accepted_project_owned_model( $data, $model, null, $mismatch ) : null;
+        $matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $data ), wpae_accepted_owned_fingerprint( $projected ) );
+        return new WP_REST_Response( [ 'mismatch' => $mismatch, 'ok' => $matches, 'code' => $matches ? 'typed_document_model_matches' : 'typed_document_model_mismatch', 'operation_id' => $operation['operation_id'], 'root_ids' => array_column( $data, 'id' ), 'write_count' => 0 ], $matches ? 200 : 409 );
+    }
     if ( $action === 'resync' ) {
         $model = $context['editor_owned_model'] ?? null;
         if ( ! is_array( $model ) ) { return new WP_Error( 'wpae_typed_resync_model_missing', 'Нужно текущее owned model.', [ 'status' => 409 ] ); }

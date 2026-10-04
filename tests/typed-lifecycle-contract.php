@@ -30,6 +30,11 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
         check(wpae_accepted_lifecycle_request($context)->get_status()===409,'Explicit changed full width still refuses after sparse-model fix');
         $GLOBALS['typed_native_defaults']=[];
     }
+    $document_context=$context; $document_context['lifecycle_action']='check_document_model';$document_context['editor_document_model']=$GLOBALS['page_data'];
+    $typed_document_write_count=(int)$GLOBALS['m1_write_attempts'];
+    check(wpae_accepted_lifecycle_request($document_context)->get_data()['ok'],'Fresh whole native document check before owned Undo ' . $record);
+    $document_context['editor_document_model'][0]['settings']['foreign_user_edit']='new';
+    check(wpae_accepted_lifecycle_request($document_context)->get_status()===409 && (int)$GLOBALS['m1_write_attempts']===$typed_document_write_count,'Unsaved foreign root refused before Undo without write ' . $record);
     $stale = $owned; $stale[0]['settings']['padding']['top'] = '99';
     $context['editor_owned_model'] = $stale;
     check( wpae_accepted_lifecycle_request( $context )->get_status() === 409, 'Editor/save mismatch caught ' . $record );

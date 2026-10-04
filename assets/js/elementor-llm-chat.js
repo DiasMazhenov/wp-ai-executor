@@ -1888,12 +1888,20 @@
         button.title = String(descriptor.status || '') + ': ' + String(descriptor.reason || descriptor.operation_id || '');
         button.addEventListener('click', function () {
             if (requestInFlight) return;
-            // A full reload is safe only when all editor roots equal the last known saved model.
-            if (!editorHasNoUnsavedRootChanges()) { addMessage('assistant', 'Undo остановлен: несохранённые изменения редактора сохранены локально.'); return; }
+            if (!editorPublishIsClean()) { addMessage('assistant', 'Undo остановлен: несохранённые изменения редактора сохранены локально.'); return; }
             button.disabled = true;
-            fetch(config.undoEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
+            var model = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+            var context = typedOperationContext(descriptor, 'check_document_model'); context.editor_document_model = model;
+            typedLifecyclePost(context).then(function () {
+                var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась во время проверки.');
+                return fetch(config.undoEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
                 body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, revision: descriptor.revision })
-            }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal'); window.location.reload(); });
+            }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal');
+                    var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                    if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo выполнен на сервере, но reload остановлен: локальные изменения сохранены в редакторе.');
+                    window.location.reload(); });
+                });
             }).catch(function (error) { button.disabled = false; addMessage('assistant', error.message); });
         });
         row.appendChild(button);
@@ -1912,17 +1920,13 @@
         }
         messages.appendChild(row);
     }
-    var typedSavedEditorSnapshot = null;
-    function editorHasNoUnsavedRootChanges() {
-        if (!typedSavedEditorSnapshot) return false;
+    function editorPublishIsClean() {
         var publish = Array.from(document.querySelectorAll('button')).find(function (button) {
             var rect = button.getBoundingClientRect();
             return rect.width > 0 && rect.height > 0 && /^(Опубликовать|Обновить|Publish|Update)$/.test(String(button.textContent || '').trim());
         });
-        if (!publish || !publish.disabled) return false;
-        return JSON.stringify(captureEditorRootSnapshot()) === JSON.stringify(typedSavedEditorSnapshot);
+        return Boolean(publish && publish.disabled);
     }
-    function rememberTypedEditorBaseline() { typedSavedEditorSnapshot = captureEditorRootSnapshot(); }
     function addTypedRepairControl(operation, review) {
         var report = review && review.report;
         if (!report || !report.report_id) return;
@@ -2427,7 +2431,6 @@
     });
     waitForEditorRuntime().then(function (ready) {
         if (!ready) return;
-        rememberTypedEditorBaseline();
         (config.typedUndoDescriptors || []).forEach(addTypedUndoControl);
     });
     retryProviderRequestAfterReload();

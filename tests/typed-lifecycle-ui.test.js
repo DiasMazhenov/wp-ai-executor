@@ -18,14 +18,25 @@ test('server/model comparison and explicit scoped repair use exact operation, no
  env.addTypedRepairControl(op,{report:{report_id:'report'}});env.messages.children.at(-1).listeners.click();
  const ctx=env.requestArgs[2].lifecycleContext;assert.equal(ctx.accepted_operation_id,'op');assert.equal(ctx.accepted_vision_report_id,'report');assert.equal(ctx.layout_correction,'compact_spacing');assert.ok(!('composition_record' in ctx));assert.ok(!('visual_profile' in ctx));
 });
-test('durable Undo checks clean saved UI and full root baseline before request/reload',async()=>{
- const {env,posts,setSnapshot}=harness();env.rememberTypedEditorBaseline();
- env.addTypedUndoControl({status:'available',action:'undo_repair',operation_id:'child',operation_identity:'identity',revision:9});const button=env.messages.children[0].children[0];
- assert.equal(button.textContent,'Отменить последнее исправление');
- setSnapshot({roots:['owned','foreign-unsaved']});button.listeners.click();assert.equal(posts.length,0);
- setSnapshot({roots:['owned']});env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];button.listeners.click();assert.equal(posts.length,0);
- env.document.querySelectorAll=()=>[{disabled:true,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];button.listeners.click();await new Promise(r=>setImmediate(r));assert.equal(posts[0].typed_undo,true);assert.equal(posts[0].revision,9);assert.equal(env.reload,true);
+test('durable Undo verifies fresh server document and visible Save before reload',async()=>{
+ const {env,posts,errors}=harness();
+ const op={status:'available',action:'undo_repair',operation_id:'child',operation_identity:'identity',revision:9};
+ env.addTypedUndoControl(op);const button=env.messages.children[0].children[0];assert.equal(button.textContent,'Отменить последнее исправление');
+ env.document.querySelectorAll=()=>[{disabled:false,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];button.listeners.click();assert.equal(posts.length,0);
+ env.document.querySelectorAll=()=>[{disabled:true,textContent:'Опубликовать',getBoundingClientRect:()=>({width:100,height:30})}];
+ const workingFetch=env.fetch;
+ env.fetch=async(url,o)=>{posts.push(JSON.parse(o.body));return {ok:false,json:async()=>({ok:false,code:'typed_document_model_mismatch'})};};
+ button.listeners.click();await new Promise(r=>setImmediate(r));assert.equal(posts[0].context.lifecycle_action,'check_document_model');assert.equal(posts.length,1);assert.ok(!env.reload);assert.ok(errors.at(-1).includes('mismatch'));
+ posts.length=0;env.fetch=workingFetch;button.listeners.click();await new Promise(r=>setImmediate(r));
+ assert.equal(posts[0].context.accepted_revision,9);assert.equal(posts[1].typed_undo,true);assert.equal(posts[1].revision,9);assert.equal(env.reload,true);
  const other=harness();other.env.addTypedUndoControl({status:'unavailable',reason:'historical_contract_unavailable'});assert.equal(other.env.messages.children[0].children[0].disabled,true);
+});
+
+test('Undo refuses native edit arriving during read-only server verification',async()=>{
+ const {env,posts}=harness();env.addTypedUndoControl({status:'available',operation_id:'child',operation_identity:'identity',revision:4});
+ let resolveCheck;env.fetch=(url,o)=>{posts.push(JSON.parse(o.body));return new Promise(r=>{resolveCheck=r;});};
+ env.messages.children[0].children[0].listeners.click();env.getEditorModelChildren=()=>[{id:'owned',elType:'container',settings:{title:'new local edit'}}];
+ resolveCheck({ok:true,json:async()=>({ok:true})});await new Promise(r=>setImmediate(r));assert.equal(posts.length,1);assert.ok(!env.reload);
 });
 
 test('actual Container unwrap and settings serialization remove only registered defaults',()=>{
