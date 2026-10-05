@@ -43,3 +43,16 @@ Read-only browser inspection now shows empty Navigator/preview and disabled Publ
 | J native FAQ | NOT_RUN |
 
 No new design screenshots or visual PASS are claimed. Historical first FAIL and old PNGs remain in the visual-policy audit. Release commit/push/install are separate from live behavior and remain pending at this source preparation snapshot. Final observed root set [] before installation. Task incomplete: fresh B/C cycles, widths320/390/767/768/1024/1025/1280, D–J and screenshot/visual review remain required.
+
+
+## v260 installation and first B refusal; v261 correction
+
+v260 runtime commit01ed420a388a4418db7f5941407fbb8988cf60ed pushed; independent origin/main matched. WP Pusher success notice; Plugins PHPv260 and reloaded editorv260 confirmed. Config documentState shows JSONvalid[], HTMLbytes0/hash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, intentional_empty_consistent true. No cleanup executed.
+
+First B exact UI request stopped locally before provider/write. UI guard wrongly expected valid/root_ids from captureEditorRootSnapshot, whose actual return is ids/fingerprints/parents. v261 correction validates API availability and actual ids. Regression now executes the real snapshot/children functions, rather than a mock returning nonexistent fields. Node15/15 (including DesignPlan365/runtime1317), package252 hashes/four probes, header lint and diff PASS. PHP runtime unchanged apart from release header. v261 publication/install and corrected B–J pending at this entry. Root set remains[].
+
+First refusal editor screenshot post5214/root none/operation none/revision none, CSS949×923, PNG949×923. File converted from JPEG, PNG signature verified and opened: empty canvas/Navigator and erroneous refusal visibly agree. It is failure evidence, not design acceptance.
+
+![B v260 first refusal](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v260-first-refusal.png)
+
+[Download screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v260-first-refusal.png)

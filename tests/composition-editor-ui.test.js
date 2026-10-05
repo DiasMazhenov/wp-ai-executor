@@ -15,7 +15,7 @@ class Element {
  set textContent(v){this.children=[];this.text=v;this.value='';}
 }
 function controls(mode='active') {
- const env = {config:{compositionCatalog:catalog,pipelineMode:mode},document:{createElement:()=>new Element()},panel:new Element(),form:new Element(),input:{},JSON,Array,String,readOperationIdentity:()=> 'identity',window:{sessionStorage:{getItem:()=>null}},deliverySnapshotKey:'key'};
+ const env = {config:{compositionCatalog:catalog,pipelineMode:mode},document:{createElement:()=>new Element()},panel:new Element(),form:new Element(),input:{},JSON,Array,String,readOperationIdentity:()=> 'identity',window:{elementor:{getPreviewContainer:()=>({})},sessionStorage:{getItem:()=>null}},deliverySnapshotKey:'key'};
  vm.createContext(env);
  vm.runInContext(js.slice(js.indexOf('    var compositionControls ='),js.indexOf('    form.appendChild(input);')),env);
  return env;
@@ -39,7 +39,11 @@ test('safe PHP projection, grouped distinct records, profiles and Automatic',()=
 });
 function requestHarness() {
  const e=controls(); const storage=new Map(); let identity=''; let sequence=0;const posts=[];
- Object.assign(e,{requestInFlight:false,editorSyncConflict:null,liveGeneratedRootIds:[],selectedElements:()=>[],targetedDesignReplacement:()=>null,readOperationIdentity:()=>identity,rememberOperationIdentity:x=>{identity=x;},newOperationIdentity:()=>`identity-${++sequence}`,clearOperationRoots(){},lastBriefKey:'brief',getPreviewWidgetCount:()=>0,messages:{querySelectorAll:()=>[]},status:{},send:{disabled:false},resetPipelinePhases(){},setPipelinePhase(){},addMessage(){},getPreviewBackgroundImageUrls:()=>[],captureEditorRootSnapshot:()=>({valid:true,root_ids:[]}),readProviderRetry:()=>null,readVisionRepair:()=>null,clearProviderRetry(){},isProviderRateLimited:()=>false,isProviderUnavailable:()=>false,deliveryRetryPending:false,strings:{},window:{sessionStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){}},fetch:(url,options)=>{posts.push(JSON.parse(options.body));return Promise.reject(new Error('transport response lost'));}});
+ Object.assign(e,{requestInFlight:false,editorSyncConflict:null,liveGeneratedRootIds:[],selectedElements:()=>[],targetedDesignReplacement:()=>null,readOperationIdentity:()=>identity,rememberOperationIdentity:x=>{identity=x;},newOperationIdentity:()=>`identity-${++sequence}`,clearOperationRoots(){},lastBriefKey:'brief',getPreviewWidgetCount:()=>0,messages:{querySelectorAll:()=>[]},status:{},send:{disabled:false},resetPipelinePhases(){},setPipelinePhase(){},addMessage(){},getPreviewBackgroundImageUrls:()=>[],captureEditorRootSnapshot:()=>({ids:[],fingerprints:{}}),readProviderRetry:()=>null,readVisionRepair:()=>null,clearProviderRetry(){},isProviderRateLimited:()=>false,isProviderUnavailable:()=>false,deliveryRetryPending:false,strings:{},window:{elementor:{getPreviewContainer:()=>({})},sessionStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){}},fetch:(url,options)=>{posts.push(JSON.parse(options.body));return Promise.reject(new Error('transport response lost'));}});
+ e.getEditorModelId=m=>m.id; e.getEditorModelFingerprint=m=>JSON.stringify(m);
+ vm.runInContext(js.slice(js.indexOf('    function getEditorModelChildren('),js.indexOf('    function collectEditorModelTree(')),e);
+ vm.runInContext(js.slice(js.indexOf('    function serializeTypedModel('),js.indexOf('    function verifyTypedEditorModel(')),e);
+ vm.runInContext(js.slice(js.indexOf('    function captureEditorRootSnapshot('),js.indexOf('    function editorModelMatchesSnapshot(')),e);
  e.config.endpoint='/llm/chat'; e.config.postId=5214;
  vm.runInContext(js.slice(js.indexOf('    var requestInFlight ='),js.indexOf("    open.addEventListener('click'")),e);
  return {e,posts};
@@ -71,11 +75,11 @@ test('real submit request payload and replay keep snapshot and operation identit
 test('fresh create refuses native HTML fallback over an empty saved baseline before any provider request',async()=>{
  const {e,posts}=requestHarness();
  e.config.savedBaseline={status:'valid_array',rootIds:[]};
- e.captureEditorRootSnapshot=()=>({valid:true,root_ids:['unowned-html-fallback']});
+ e.window.elementor.getPreviewContainer=()=>({get:()=>[{id:'unowned-html-fallback'}]});
  assert.equal(await e.request('new create',false,{}),false);
  assert.equal(posts.length,0);
  assert.deepEqual(plain(e.liveGeneratedRootIds),[]);
- e.captureEditorRootSnapshot=()=>({valid:true,root_ids:[]});
+ e.window.elementor.getPreviewContainer=()=>({get:()=>[]});
  await e.request('verified empty create',false,{});
  assert.equal(posts.length,1);
 });

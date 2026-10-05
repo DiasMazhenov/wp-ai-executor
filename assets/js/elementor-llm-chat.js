@@ -2040,7 +2040,7 @@
         var baseline = config.savedBaseline;
         if (!options.retryCurrentOperation && !options.visionRepair && !options.visionRegenerate && !options.targetedDesignRepair && !options.replaceExistingRoot && !requestSelection.length && !liveGeneratedRootIds.length && baseline && baseline.status === 'valid_array' && Array.isArray(baseline.rootIds) && baseline.rootIds.length === 0) {
             var nativeBaseline = captureEditorRootSnapshot();
-            if (!nativeBaseline.valid || nativeBaseline.root_ids.length !== 0) {
+            if (!window.elementor || typeof window.elementor.getPreviewContainer !== 'function' || !Array.isArray(nativeBaseline.ids) || nativeBaseline.ids.length !== 0) {
                 addMessage('assistant', 'Создание остановлено: сохранённый Elementor baseline пуст, но native редактор содержит другие roots. Сначала требуется проверка сохранения и восстановления baseline.');
                 status.textContent = strings.error;
                 return Promise.resolve(false);

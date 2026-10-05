@@ -592,3 +592,16 @@ Acceptance remains BLOCKED: original empty baseline not restored; guarded cleanu
 Existing transaction now projects explicit JSON through native Elementor DB without conversion-prone get_elements_data/get_plain_text calls. Ledger attests full inverses including unchanged foreign roots; whole fresh native document guards create/Publish across selection/retry. Partial failures use existing snapshot rollback and preserve detected newer JSON/HTML. Source v260 distinguishes this runtime from v259. Local DesignPlan365/runtime1317/Node15/15/catalog158/156/156/patch/lint/package252+four probes/diff PASS. Probe models native hydration and reproduces old HTML fallback; it is not live proof. Optimistic check/write race remains a documented concurrency boundary.
 
 Fresh browser now shows empty savedBaseline/hash4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945, empty Navigator/preview, disabled Publish and empty independent public DOM. Agent performed no cleanup; external cause unknown. Earlier observed [1a309f40] is historical. Current installed editor v259; v260 commit/push/install and fresh B–J remain pending at preparation. Full task remains incomplete. [Document consistency audit](../audits/2026-10-05-document-consistency-v260/REPORT.md).
+
+
+## v260 installation and first B refusal; v261 correction
+
+v260 runtime commit01ed420a388a4418db7f5941407fbb8988cf60ed pushed; independent origin/main matched. WP Pusher success notice; Plugins PHPv260 and reloaded editorv260 confirmed. Config documentState shows JSONvalid[], HTMLbytes0/hash e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, intentional_empty_consistent true. No cleanup executed.
+
+First B exact UI request stopped locally before provider/write. UI guard wrongly expected valid/root_ids from captureEditorRootSnapshot, whose actual return is ids/fingerprints/parents. v261 correction validates API availability and actual ids. Regression now executes the real snapshot/children functions, rather than a mock returning nonexistent fields. Node15/15 (including DesignPlan365/runtime1317), package252 hashes/four probes, header lint and diff PASS. PHP runtime unchanged apart from release header. v261 publication/install and corrected B–J pending at this entry. Root set remains[].
+
+First refusal editor screenshot post5214/root none/operation none/revision none, CSS949×923, PNG949×923. File converted from JPEG, PNG signature verified and opened: empty canvas/Navigator and erroneous refusal visibly agree. It is failure evidence, not design acceptance.
+
+![B v260 first refusal](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v260-first-refusal.png)
+
+[Download screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v260-first-refusal.png)

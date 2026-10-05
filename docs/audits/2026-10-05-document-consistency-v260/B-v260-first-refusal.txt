@@ -1,0 +1,179 @@
+ext:     
+    - button "Одиночная":
+      - generic: 
+      - generic: Одиночная
+    - text:         
+    - text: 
+    - button "VibeLMS":
+      - generic: 
+      - generic: VibeLMS
+    - button "Информация о курсе":
+      - generic: 
+      - generic: Информация о курсе
+    - button "Преподаватели курса":
+      - generic: 
+      - generic: Преподаватели курса
+    - button "Тарифы курса":
+      - generic: 
+      - generic: Тарифы курса
+    - button "Прогресс курса":
+      - generic: 
+      - generic: Прогресс курса
+    - button "Кнопка продолжения курса":
+      - generic: 
+      - generic: Кнопка продолжения курса
+    - button "Содержание курса":
+      - generic: 
+      - generic: Содержание курса
+    - button "Идентификация сотрудника":
+      - generic: 
+      - generic: Идентификация сотрудника
+    - button "Карточка курса":
+      - generic: 
+      - generic: Карточка курса
+    - button "Каталог курсов":
+      - generic: 
+      - generic: Каталог курсов
+    - button "Список уроков":
+      - generic: 
+      - generic: Список уроков
+    - button "Тест":
+      - generic: 
+      - generic: Тест
+    - button "Результаты тестов":
+      - generic: 
+      - generic: Результаты тестов
+    - button "Сертификаты пользователя":
+      - generic: 
+      - generic: Сертификаты пользователя
+    - button "Профиль сотрудника":
+      - generic: 
+      - generic: Профиль сотрудника
+    - button "Кабинет ученика":
+      - generic: 
+      - generic: Кабинет ученика
+    - button "Группы доступа":
+      - generic: 
+      - generic: Группы доступа
+    - button "Учебные материалы":
+      - generic: 
+      - generic: Учебные материалы
+    - button "Контент по языку":
+      - generic: 
+      - generic: Контент по языку
+    - button "Шапка VibeLMS":
+      - generic: 
+      - generic: Шапка VibeLMS
+    - button "Подвал VibeLMS":
+      - generic: 
+      - generic: Подвал VibeLMS
+    - button "WordPress":
+      - generic: 
+      - generic: WordPress
+    - text:                     
+  - text:          
+  - generic "Скрыть панель (⌘ + P)":
+    - generic: 
+    - generic: Скрыть панель (⌘ + P)
+- main "Смотреть":
+  - text: 
+  - iframe [id="elementor-preview-iframe"]:
+    - region "Добавьте новый элемент макета":
+      - text:  
+      - button "Добавить новый контейнер":
+        - generic: 
+      - button "Добавить шаблон":
+        - generic: 
+      - button "Стройте с помощью ИИ":
+        - generic: 
+      - generic: Перетащите виджет
+    - generic: desktop
+- complementary "Структура":
+  - button "Развернуть все элементы":
+    - generic: 
+  - button "":
+    - generic: 
+  - heading "Структура" [level=2]
+  - button "Закрытая структура":
+    - generic: 
+  - img "Elementor"
+  - generic: Простая навигация тут как тут!
+  - generic: После того, как вы наполните страницу, увидите все добавленные элементы в этом окне. Вы можете легко перемещать секции, колонки и виджеты.
+  - generic: 
+  - generic: Изменить размер структуры
+- region "LLM-помощник Elementor":
+  - strong: LLM-помощник Elementor
+  - generic: Ответы проходят через настроенный proxy
+  - generic: "Модель: openrouter/free · Версия: v02.11.260"
+  - generic: "Выделение: нет"
+  - button "Копировать JSON":
+    - generic: 
+  - button "Копировать JSON выделенного":
+    - generic: 
+  - button "Копировать JSON для вставки в Elementor":
+    - generic: 
+  - button "Перегенерировать последний запрос":
+    - generic: 
+  - button "Свернуть чат": ×
+  - list "Фазы генерации дизайна":
+    - listitem: Разбор запроса
+    - listitem: Планирование дизайна
+    - listitem: Подбор компонентов
+    - listitem: Проверка responsive
+    - listitem: Сборка Elementor
+    - listitem: Запись
+    - listitem: Рендер
+    - listitem: Visual review
+  - generic: Опишите задачу по текущей странице или выбранному элементу.
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - generic: "Создай Hero с фото Надзаголовок: «СТУДИЯ» Заголовок: «Работа со смыслом» Описание: «Согласуем задачу и доведём проект до результата.» Кнопка: «Начать», ссылка #start Hero фото: https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200 Alt: «Современный архитектурный интерьер.» Лицензия: «Unsplash License» Автор фото: «Pietro Bolzonetti»"
+  - button "Копировать промт":
+    - generic: 
+  - generic: "Создание остановлено: сохранённый Elementor baseline пуст, но native редактор содержит другие roots. Сначала требуется проверка сохранения и восстановления baseline."
+  - generic: Композиция
+  - combobox "Композиция":
+    - option "Автоматически"
+    - option "Фото справа · текст/фото 60/40" [selected]
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Только текст"
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Сетка карточек"
+    - option "Список с иконками"
+    - option "Карточки тарифов"
+    - option "Аккордеон"
+  - generic: Оформление
+  - combobox "Оформление":
+    - option "По умолчанию"
+    - option "Светлое редакционное" [selected]
+    - option "Светлое с мягкими карточками"
+  - textbox "Спросите, что угодно…"
+  - button "Отправить" [active]:
+    - generic: 
