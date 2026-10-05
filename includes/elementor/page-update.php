@@ -65,6 +65,12 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     }
 
     $empty_inverse = function_exists( 'wpae_accepted_empty_inverse' ) && wpae_accepted_empty_inverse( $request, $existing_data, $elementor_data );
+    $projection_operation = function_exists( 'wpae_design_operation_find_by_id' ) ? wpae_design_operation_find_by_id( (string) $request->get_param( 'operation_id' ) ) : null;
+    $document_inverse = function_exists( 'wpae_accepted_document_inverse' ) && wpae_accepted_document_inverse( $request, $existing_data, $elementor_data );
+    $sync_projection = $document_inverse || ( $projection_operation && (int) $projection_operation['post_id'] === $post_id && ! empty( $projection_operation['operation_identity'] ) && hash_equals( $projection_operation['operation_identity'], (string) $request->get_param( 'operation_identity' ) ) );
+    $html_hash = hash( 'sha256', (string) ( get_post( $post_id )->post_content ?? '' ) );
+    $expected_html_hash = $request->get_param( 'expected_before_html_hash' );
+    if ( is_string( $expected_html_hash ) && ! hash_equals( $expected_html_hash, $html_hash ) ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'wpae_projection_conflict', 'write_count' => 0 ], 409 ); }
     $design_system_context = [ 'allow_unchanged_legacy_top_level' => $existing_data, 'verified_empty_inverse' => $empty_inverse ];
     $design_system_contract = wpae_validate_design_system_contract( $elementor_data, $design_system_context );
     if ( ! $design_system_contract['ok'] ) {
@@ -112,6 +118,8 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         : null;
 	$rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ], [], [], wpae_elementor_rollback_metadata( $request ) );
     $transaction_context = [
+        'sync_document_projection' => $sync_projection,
+        'expected_before_html_hash' => $html_hash,
         'verified_empty_inverse' => $empty_inverse,
         'allow_unchanged_legacy_top_level' => $existing_data,
         'expected_before_elementor_data' => $existing_data,
@@ -120,9 +128,10 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
         $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
-        $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
-            : null;
+        $save_error_data = (array) $saved->get_error_data();
+        $rollback = isset( $save_error_data['write_count'] ) && $save_error_data['write_count'] === 0 ? [ 'ok' => true, 'skipped' => 'no_mutation' ] : ( ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint, [ 'post_content' => ! empty( $save_error_data['preserve_current_post_content'] ), '_elementor_data' => ! empty( $save_error_data['preserve_current_elementor_data'] ) ] )
+            : null );
         return new WP_REST_Response( [
             'ok' => false,
             'error' => $saved->get_error_message(),
@@ -278,9 +287,10 @@ function wpae_elementor_patch( WP_REST_Request $request ): WP_REST_Response {
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
         $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
-        $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
-            : null;
+        $save_error_data = (array) $saved->get_error_data();
+        $rollback = isset( $save_error_data['write_count'] ) && $save_error_data['write_count'] === 0 ? [ 'ok' => true, 'skipped' => 'no_mutation' ] : ( ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint, [ 'post_content' => ! empty( $save_error_data['preserve_current_post_content'] ), '_elementor_data' => ! empty( $save_error_data['preserve_current_elementor_data'] ) ] )
+            : null );
         return new WP_REST_Response( [
             'ok' => false,
             'error' => $saved->get_error_message(),
@@ -462,9 +472,10 @@ function wpae_elementor_page( WP_REST_Request $request ): WP_REST_Response {
     $saved = wpae_save_elementor_page_data( $post_id, $elementor_data, $template, $transaction_context );
     if ( is_wp_error( $saved ) ) {
         $rollback_fingerprint = function_exists( 'wpae_rollback_post_fingerprint' ) ? wpae_rollback_post_fingerprint( $post_id ) : null;
-        $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint )
-            : null;
+        $save_error_data = (array) $saved->get_error_data();
+        $rollback = isset( $save_error_data['write_count'] ) && $save_error_data['write_count'] === 0 ? [ 'ok' => true, 'skipped' => 'no_mutation' ] : ( ! empty( $rollback_snapshot['id'] )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint, [ 'post_content' => ! empty( $save_error_data['preserve_current_post_content'] ), '_elementor_data' => ! empty( $save_error_data['preserve_current_elementor_data'] ) ] )
+            : null );
 
         return new WP_REST_Response( [
             'ok' => false,

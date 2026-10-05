@@ -1,6 +1,16 @@
 <?php
 /** Existing real chat/compiler/ledger with external WP/transaction mocks only. */
 $typed_saved_globals = [ 'options' => $GLOBALS['options'], 'page_data' => $GLOBALS['page_data'] ];
+foreach ( [ 'ordinary'=>[], 'selected'=>['selected_elements'=>[['id'=>'selected']]], 'retry'=>['retry_current_operation'=>true] ] as $path=>$options ) {
+    $native_before=$GLOBALS['test_page_baseline']??$legacy_page;
+    $native_stale=$native_before;
+    $native_stale[]=container_node('imported-html-neighbor',[],[]);
+    $refusal=$run_services_route($m1_cases['hero_stack'][0],[],[],'document-guard-'.$path,false,'active','active',array_merge($options,['editor_document_model'=>$native_stale]));
+    check(($refusal['error']['code']??'')==='wpae_editor_document_conflict' && $refusal['calls']===0 && $refusal['write_attempts']===0 && $refusal['page_data']===$native_before,'Whole document guard refuses stale bootstrap before provider/write on '.$path);
+    $native_edit=$native_before; $native_edit[0]['settings']['unsaved_user_text']='preserve me';
+    $refusal=$run_services_route($m1_cases['hero_stack'][0],[],[],'document-edit-'.$path,false,'active','active',array_merge($options,['editor_document_model'=>$native_edit]));
+    check(($refusal['error']['code']??'')==='wpae_editor_document_conflict' && $refusal['write_attempts']===0 && $refusal['page_data']===$native_before,'Unsaved neighbor refuses create without mutation on '.$path);
+}
 foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid', 'pricing.tiers' => 'pricing', 'faq.native' => 'faq' ] as $record => $fixture ) {
     $profile = in_array( $record, [ 'hero.text_only', 'benefits.grid' ], true ) ? 'editorial_light' : '';
     $case = $run_services_route( $m1_cases[$fixture][0], [], [], 'typed-' . $fixture, false, 'active', 'active', [ 'composition_record' => $record, 'composition_version' => 1, 'visual_profile' => $profile ] );
@@ -22,7 +32,12 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
         $context['editor_owned_model']=$native;
         check(wpae_accepted_lifecycle_request($context)->get_status()===200,'Sparse registered full-width default is not replaced by generation full width');
         $native_doc=new class {function get_main_id(){return 42;}};
-        check(wpae_accepted_elementor_save_guard(['elements'=>$native],$native_doc)['elements']===$native,'Save validates original sparse native payload without synthesized design values');
+        $native_document = array_map(static fn($root)=>($root['id']??'')===($native[0]['id']??'')?$native[0]:$root, $GLOBALS['page_data']);
+        check(wpae_accepted_elementor_save_guard(['elements'=>$native_document],$native_doc)['elements']===$native_document,'Save validates whole sparse native document without synthesized design values');
+        $unexpected_document = array_merge($native_document, [container_node('unexpected-neighbor', [], [])]);
+        $unexpected_blocked = false;
+        try { wpae_accepted_elementor_save_guard(['elements'=>$unexpected_document],$native_doc); } catch(RuntimeException $e) { $unexpected_blocked=true; }
+        check($unexpected_blocked, 'Native Save refuses an unexpected neighbor despite exact owned subtree');
         $context['lifecycle_action']='resync';
         check(wpae_accepted_lifecycle_request($context)->get_data()['ok'],'Resync accepts exact native model with omitted registered default');
         $context['lifecycle_action']='check_model';
@@ -60,6 +75,10 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     foreach ( [ 'post_id'=>42, 'operation_id'=>$operation['operation_id'].'-undo', 'accepted_undo_identity'=>$operation['operation_identity'], 'accepted_undo_revision'=>$operation['revision'] ] as $k=>$v ) { $empty_request->set_param($k,$v); }
     check(wpae_accepted_empty_inverse($empty_request,$owned,[]), 'Empty inverse attests exact owned creation '.$record);
     check(!wpae_accepted_empty_inverse($empty_request,$GLOBALS['page_data'],[]), 'Empty inverse refuses loss of foreign roots '.$record);
+    $inverse_neighbors=array_values(array_filter($GLOBALS['page_data'],static fn($root)=>!in_array($root['id'],$loaded['contract']['owned_root_ids'],true)));
+    check(wpae_accepted_document_inverse($empty_request,$GLOBALS['page_data'],$inverse_neighbors), 'Nonempty inverse attests unchanged foreign neighbors '.$record);
+    $altered_neighbors=$inverse_neighbors; $altered_neighbors[0]['settings']['owner_new_field']='lost user change';
+    check(!wpae_accepted_document_inverse($empty_request,$GLOBALS['page_data'],$altered_neighbors), 'Inverse refuses rewritten foreign neighbor '.$record);
     $empty_request->set_param('accepted_undo_revision',0);
     check(!wpae_accepted_empty_inverse($empty_request,$owned,[]), 'Empty inverse refuses stale revision '.$record);
     check(!wpae_validate_design_system_contract([])['ok'] && wpae_validate_design_system_contract([],['verified_empty_inverse'=>true])['ok'], 'Empty restore differs from ordinary empty generation '.$record);

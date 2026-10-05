@@ -137,16 +137,26 @@ function wpae_accepted_contract_descriptors( int $post_id, array $data ): array 
     return $descriptors;
 }
 
-/** Empty documents are valid only as the verified inverse of a current owned creation. */
-function wpae_accepted_empty_inverse( WP_REST_Request $request, array $current, array $next ): bool {
-    if ( $next !== [] || $current === [] ) { return false; }
+/** Attest the complete inverse, including unchanged foreign roots, from the ledger. */
+function wpae_accepted_document_inverse( WP_REST_Request $request, array $current, array $next ): bool {
+    if ( $current === [] ) { return false; }
     $id = (string) $request->get_param( 'operation_id' );
     if ( ! str_ends_with( $id, '-undo' ) ) { return false; }
     $operation = wpae_design_operation_find_by_id( substr( $id, 0, -5 ) );
     if ( ! $operation || (int) $operation['post_id'] !== (int) $request->get_param( 'post_id' ) || (int) $operation['revision'] !== (int) $request->get_param( 'accepted_undo_revision' ) || $operation['operation_identity'] !== $request->get_param( 'accepted_undo_identity' ) ) { return false; }
     if ( wpae_accepted_contract_eligibility( $operation, $current )['status'] !== 'available' ) { return false; }
     $contract = wpae_accepted_contract_get( $operation )['contract'];
-    return empty( $contract['parent_operation_id'] ) && $contract['before_owned'] === [] && count( $current ) === count( $contract['owned_root_ids'] ) && wpae_elementor_data_matches( $current, wpae_accepted_owned_roots( $current, $contract['owned_root_ids'] ) );
+    $inverse = [];
+    foreach ( $current as $root ) {
+        if ( in_array( $root['id'] ?? '', $contract['owned_root_ids'], true ) ) { $inverse = array_merge( $inverse, $contract['before_owned'] ); }
+        else { $inverse[] = $root; }
+    }
+    return wpae_elementor_data_matches( $inverse, $next );
+}
+
+/** Empty documents are valid only as the verified inverse of a current owned creation. */
+function wpae_accepted_empty_inverse( WP_REST_Request $request, array $current, array $next ): bool {
+    return $next === [] && wpae_accepted_document_inverse( $request, $current, $next );
 }
 
 /** Owned inverse change uses fresh document and existing preview/transaction authority. */
@@ -216,6 +226,8 @@ function wpae_accepted_elementor_save_guard( array $data, $document ): array {
     if ( empty( $loaded['ok'] ) ) { throw new RuntimeException( 'Typed save blocked: accepted contract unavailable.' ); }
     $contract = $loaded['contract'];
     // Native Save payload is already authored; generation defaults must not alter it.
+    $document_model = wpae_get_elementor_data_for_post( $post_id );
+    if ( ! is_array( $document_model ) || ! wpae_accepted_owned_matches( $document_model, $data['elements'] ) ) { throw new RuntimeException( 'Typed save blocked: whole native document differs from fresh server data. Local edits preserved.' ); }
     $owned = wpae_accepted_owned_roots( $data['elements'], $contract['owned_root_ids'] );
     if ( ! wpae_accepted_owned_matches( $contract['after_owned'], $owned ) ) { throw new RuntimeException( 'Typed save blocked: editor owned tree differs from accepted server decisions. Local edits preserved; resync required.' ); }
     return $data;

@@ -300,6 +300,22 @@ function wpae_elementor_meta_value_matches( string $meta_key, $expected, $actual
     return (string) $expected === (string) $actual;
 }
 
+/** Explicit native JSON projection: never call get_elements_data()/HTML conversion here. */
+function wpae_elementor_document_projection( int $post_id, array $elements ) {
+    if ( $elements === [] ) { return ''; }
+    if ( ! class_exists( '\\Elementor\\Plugin' ) ) { return new WP_Error( 'wpae_projection_unavailable', 'Native Elementor projection is unavailable.' ); }
+    $plugin = \Elementor\Plugin::instance();
+    if ( ! isset( $plugin->db ) || ! method_exists( $plugin->db, 'get_plain_text_from_data' ) ) { return new WP_Error( 'wpae_projection_unavailable', 'Explicit native projection is unavailable.' ); }
+    $plugin->db->switch_to_post( $post_id );
+    $tags = $plugin->dynamic_tags ?? null;
+    $remove_mode = '\\Elementor\\Core\\DynamicTags\\Manager::MODE_REMOVE';
+    $mode = is_object( $tags ) && defined( $remove_mode ) ? $tags->get_parsing_mode() : null;
+    if ( $mode !== null ) { $tags->set_parsing_mode( constant( $remove_mode ) ); }
+    try { return $plugin->db->get_plain_text_from_data( $elements ); }
+    catch ( Throwable $error ) { return new WP_Error( 'wpae_projection_failed', 'Native explicit projection failed.', [ 'write_count' => 0 ] ); }
+    finally { if ( $mode !== null ) { $tags->set_parsing_mode( $mode ); } $plugin->db->restore_current_post(); }
+}
+
 function wpae_save_elementor_page_data( int $post_id, array $elementor_data, string $template = 'elementor_canvas', array $transaction_context = [] ) {
     if ( $post_id <= 0 || get_post( $post_id ) === null ) {
         return new WP_Error( 'wpae_invalid_post_id', 'A valid post_id is required.' );
@@ -315,8 +331,22 @@ function wpae_save_elementor_page_data( int $post_id, array $elementor_data, str
         $before_decoded = is_string( $before_raw ) && trim( $before_raw ) !== '' ? json_decode( $before_raw, true ) : [];
         $expected_before = is_array( $transaction_context['expected_before_elementor_data'] ) ? $transaction_context['expected_before_elementor_data'] : [];
         if ( ! is_array( $before_decoded ) || ! wpae_elementor_data_matches( $expected_before, $before_decoded ) ) {
-            return new WP_Error( 'wpae_elementor_write_conflict', 'Elementor data changed while the operation was preparing; the newer saved content was preserved.', [ 'expected_before' => $expected_before, 'actual_before' => is_array( $before_decoded ) ? $before_decoded : null ] );
+            return new WP_Error( 'wpae_elementor_write_conflict', 'Elementor data changed while the operation was preparing; the newer saved content was preserved.', [ 'write_count' => 0, 'expected_before' => $expected_before, 'actual_before' => is_array( $before_decoded ) ? $before_decoded : null ] );
         }
+    }
+
+    $projection = null;
+    if ( ! empty( $transaction_context['sync_document_projection'] ) ) {
+        $before = (array) ( $transaction_context['expected_before_elementor_data'] ?? [] );
+        $before_html = (string) ( get_post( $post_id )->post_content ?? '' );
+        if ( ! hash_equals( (string) $transaction_context['expected_before_html_hash'], hash( 'sha256', $before_html ) ) ) { return new WP_Error( 'wpae_projection_conflict', 'Post HTML changed before transaction; newer content preserved.', [ 'write_count' => 0 ] ); }
+        $before_projection = wpae_elementor_document_projection( $post_id, $before );
+        if ( is_wp_error( $before_projection ) ) { return new WP_Error( $before_projection->get_error_code(), $before_projection->get_error_message(), [ 'write_count' => 0 ] ); }
+        // Empty HTML is also valid before the first native Save. Any other HTML
+        // must be proven to be the projection of the exact current native tree.
+        if ( $before_html !== '' && $before_html !== $before_projection ) { return new WP_Error( 'wpae_projection_scope_conflict', 'Existing HTML is not the verified native projection; it was preserved.', [ 'write_count' => 0 ] ); }
+        $projection = wpae_elementor_document_projection( $post_id, $elementor_data );
+        if ( is_wp_error( $projection ) ) { return new WP_Error( $projection->get_error_code(), $projection->get_error_message(), [ 'write_count' => 0 ] ); }
     }
 
     $meta_values = [
@@ -341,7 +371,17 @@ function wpae_save_elementor_page_data( int $post_id, array $elementor_data, str
         }
     }
     if ( ! empty( $meta_errors ) ) {
-        return new WP_Error( 'wpae_elementor_metadata_write_failed', 'Elementor metadata write was not confirmed by read-back.', [ 'errors' => $meta_errors ] );
+        $current_data = json_decode( (string) get_post_meta( $post_id, '_elementor_data', true ), true );
+        $preserve_data = is_array( $current_data ) && ! wpae_elementor_data_matches( $current_data, $elementor_data ) && ! wpae_elementor_data_matches( $current_data, (array) ( $transaction_context['expected_before_elementor_data'] ?? [] ) );
+        return new WP_Error( 'wpae_elementor_metadata_write_failed', 'Elementor metadata write was not confirmed by read-back.', [ 'errors' => $meta_errors, 'preserve_current_elementor_data' => $preserve_data ] );
+    }
+    if ( $projection !== null ) {
+        // Check HTML again after metadata hooks; callers roll back both layers
+        // through the existing full post/meta snapshot on any partial failure.
+        if ( ! hash_equals( (string) $transaction_context['expected_before_html_hash'], hash( 'sha256', (string) ( get_post( $post_id )->post_content ?? '' ) ) ) ) { return new WP_Error( 'wpae_projection_conflict', 'Post HTML changed during metadata save.', [ 'preserve_current_post_content' => true ] ); }
+        $written = wp_update_post( wp_slash( [ 'ID' => $post_id, 'post_content' => $projection ] ), true );
+        $current_html = (string) ( get_post( $post_id )->post_content ?? '' );
+        if ( is_wp_error( $written ) || $current_html !== $projection ) { return new WP_Error( 'wpae_projection_write_failed', 'Native HTML projection write/readback failed.', [ 'preserve_current_post_content' => $current_html !== $before_html && $current_html !== $projection ] ); }
     }
     $cache = wpae_clear_elementor_cache( $post_id );
     if ( empty( $cache['ok'] ) ) {
@@ -526,6 +566,10 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
         'message' => ! empty( $design_contract['ok'] ) ? 'Saved data keeps the active design-system contract.' : 'Saved data violates the active design-system contract.',
         'details' => $design_contract,
     ];
+    if ( ! empty( $transaction_context['sync_document_projection'] ) ) {
+        $expected_projection = wpae_elementor_document_projection( $post_id, $expected_elementor_data );
+        $checks['document_projection'] = [ 'ok' => ! is_wp_error( $expected_projection ) && (string) ( get_post( $post_id )->post_content ?? '' ) === $expected_projection, 'message' => 'Saved HTML must match the explicit transaction JSON projection.' ];
+    }
 
     $cache = wpae_clear_elementor_cache( $post_id );
     $checks['cache_refresh'] = [
@@ -713,7 +757,7 @@ function wpae_finalize_elementor_transaction( string $operation, int $post_id, ?
     if ( ! $transaction['ok'] ) {
         $rollback_fingerprint = (string) ( $verification['checks']['post_state_fingerprint']['fingerprint'] ?? '' );
         $rollback = ! empty( $rollback_snapshot['id'] )
-            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint !== '' ? $rollback_fingerprint : null )
+            ? wpae_restore_rollback_snapshot_by_id( (string) $rollback_snapshot['id'], false, $rollback_fingerprint !== '' ? $rollback_fingerprint : null, ! empty( $transaction_context['sync_document_projection'] ) ? [ 'post_content' => in_array( 'document_projection', $verification['failed_checks'], true ), '_elementor_data' => in_array( 'saved_elementor_data', $verification['failed_checks'], true ) ] : [] )
             : [ 'ok' => false, 'error' => 'No rollback snapshot was available.' ];
         $transaction['auto_rollback'] = $rollback;
 

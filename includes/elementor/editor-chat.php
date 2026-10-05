@@ -70,6 +70,13 @@ function wpae_enqueue_elementor_llm_chat(): void {
 		'reconcileEndpoint' => get_rest_url( null, 'ai-executor/v1/design-operations/reconcile' ),
         'pluginVersion' => defined( 'WPAE_VERSION' ) ? WPAE_VERSION : '',
         'frontendBuild' => 'typed-lifecycle-v6',
+        'documentState' => [
+            'main_id' => $post_id,
+            'html_hash' => hash( 'sha256', (string) ( get_post( $post_id )->post_content ?? '' ) ),
+            'html_bytes' => strlen( (string) ( get_post( $post_id )->post_content ?? '' ) ),
+            'json_status' => is_array( $pending_data ) ? 'valid_array' : 'unavailable',
+            'intentional_empty_consistent' => is_array( $pending_data ) && $pending_data === [] && (string) ( get_post( $post_id )->post_content ?? '' ) === '',
+        ],
         'typedUndoDescriptors' => is_array( $pending_data ) ? wpae_accepted_contract_descriptors( $post_id, $pending_data ) : [],
         'pipelineMode' => wpae_design_pipeline_mode(),
         'compositionCatalog' => wpae_composition_editor_catalog(),

@@ -312,7 +312,7 @@ function wpae_restore_option_snapshot( string $option_name, array $snapshot ): a
     return [ 'option' => $option_name, 'action' => 'restored' ];
 }
 
-function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consume = true, ?string $expected_current_fingerprint = null ): array {
+function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consume = true, ?string $expected_current_fingerprint = null, array $preserve_current_fields = [] ): array {
     $snapshots = wpae_prune_rollback_snapshots( wpae_get_rollback_snapshots() );
 
     if ( $snapshot_id === '' || ! isset( $snapshots[ $snapshot_id ] ) ) {
@@ -346,6 +346,10 @@ function wpae_restore_rollback_snapshot_by_id( string $snapshot_id, bool $consum
     $restored_options = [];
 
     foreach ( (array) ( $snapshot['posts'] ?? [] ) as $post_id => $post_snapshot ) {
+        // Scoped projection rollback never erases a detected racing HTML/JSON edit.
+        // The stored snapshot remains immutable; only this restore candidate changes.
+        if ( ! empty( $preserve_current_fields['post_content'] ) ) { $post_snapshot['post']['post_content'] = (string) ( get_post( absint( $post_id ) )->post_content ?? '' ); }
+        if ( ! empty( $preserve_current_fields['_elementor_data'] ) ) { $post_snapshot['meta']['_elementor_data'] = [ get_post_meta( absint( $post_id ), '_elementor_data', true ) ]; }
         $restored_posts[] = wpae_restore_post_snapshot( absint( $post_id ), (array) $post_snapshot );
     }
 

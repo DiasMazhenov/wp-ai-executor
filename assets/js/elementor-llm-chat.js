@@ -2127,6 +2127,10 @@
             history = options.deliverySnapshot.history;
             requestContext = JSON.parse(JSON.stringify(options.deliverySnapshot.context));
         }
+        // Every path sends the fresh whole document, including selection/retry.
+        // Replay keeps Brief/operation identity; it must not replay a stale model.
+        requestContext.editor_document_model = window.elementor && window.elementor.getPreviewContainer
+            ? getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel) : null;
         if (options.retryCurrentOperation) requestContext.retry_current_operation = true;
         if (options.targetedDesignRepair) requestContext.targeted_design_repair = true;
         if (options.visionRepair) requestContext.vision_repair = true;

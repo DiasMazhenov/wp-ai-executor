@@ -1,0 +1,4 @@
+{"probe":"typed_empty_inverse_readback","verified":true,"ordinary_empty_refused":true,"mismatch_refused":true}
+{"probe":"explicit_projection_and_hydration","checks":14,"two_cycles":true,"old_bug_reproduced":true,"legacy_conversion_preserved":true}
+{"probe":"projection_failure_rollback","json_and_html_restored":true,"concurrent_rollback_refused":true}
+{"probe":"metadata_hook_concurrency","newer_html_preserved":true,"newer_json_preserved":true}
