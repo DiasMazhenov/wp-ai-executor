@@ -112,6 +112,7 @@ function wpae_elementor_update( WP_REST_Request $request ): WP_REST_Response {
         : null;
 	$rollback_snapshot = wpae_create_rollback_snapshot( 'elementor_update:' . $post_id, [ $post_id ], [], [], wpae_elementor_rollback_metadata( $request ) );
     $transaction_context = [
+        'verified_empty_inverse' => $empty_inverse,
         'allow_unchanged_legacy_top_level' => $existing_data,
         'expected_before_elementor_data' => $existing_data,
         'autosave_snapshot' => wpae_capture_elementor_autosave( $post_id, function_exists( 'get_current_user_id' ) ? absint( get_current_user_id() ) : 0 ),

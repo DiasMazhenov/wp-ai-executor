@@ -517,6 +517,7 @@ function wpae_verify_saved_elementor_transaction( int $post_id, array $expected_
     ];
 
     $design_context = [
+        'verified_empty_inverse' => $readback_matches && $expected_elementor_data === [] && ! empty( $transaction_context['verified_empty_inverse'] ),
         'allow_unchanged_legacy_top_level' => (array) ( $transaction_context['allow_unchanged_legacy_top_level'] ?? [] ),
     ];
     $design_contract = is_array( $decoded ) ? wpae_validate_design_system_contract( $decoded, $design_context ) : [ 'ok' => false ];
