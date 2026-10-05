@@ -51,8 +51,9 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 			continue;
 		}
 		$group_id = sanitize_key( (string) ( $item['group_id'] ?? $role . '_' . ( $index + 1 ) ) );
-		$card_children = [];
+		$body_children = [];
 		$content_children = [];
+		$action_children = [];
 		$card_style = [];
 		foreach ( [ 'border_radius', 'border_radius_mobile' ] as $style_key ) {
 			$style_value = $item['layout_constraints'][ $style_key ] ?? null;
@@ -67,7 +68,7 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 				$image_constraints['card_border_radius'] = $card_style['border_radius'] ?? '16px';
 				$image_constraints['card_border_radius_mobile'] = $card_style['border_radius_mobile'] ?? ( $card_style['border_radius'] ?? '16px' );
 			}
-			$card_children[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-photo', $image_role, 'image', [], [ 'radius.card' ], [], $image_constraints, [ 'strategy' => 'stack', 'media_refs' => [ sanitize_key( (string) $item['media_ref'] ) ], 'editable_fields' => [ 'media', 'alt' ] ] );
+			$body_children[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-photo', $image_role, 'image', [], [ 'radius.card' ], [], $image_constraints, [ 'strategy' => 'stack', 'media_refs' => [ sanitize_key( (string) $item['media_ref'] ) ], 'editable_fields' => [ 'media', 'alt' ] ] );
 		}
 		foreach ( $field_map as $field => [ $field_role, $widget_type ] ) {
 			$ref = sanitize_key( (string) ( $item[ $field ] ?? '' ) );
@@ -84,14 +85,16 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 				[ 'min_width' => 0, 'max_width' => 100 ],
 				[ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ]
 			);
-			if ( $role === 'service_cards' ) {
+			if ( in_array( $field_role, [ 'team_action', 'testimonial_action', 'service_cta' ], true ) ) {
+				$action_children[] = $field_node;
+			} elseif ( $role === 'service_cards' ) {
 				$content_children[] = $field_node;
 			} else {
-				$card_children[] = $field_node;
+				$body_children[] = $field_node;
 			}
 		}
 		if ( $role === 'service_cards' ) {
-			$card_children[] = wpae_elementor_ir_node(
+			$body_children[] = wpae_elementor_ir_node(
 				$node_id . '-' . $group_id . '-content',
 				'service_content',
 				'container',
@@ -101,6 +104,10 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 				[ 'min_width' => 0, 'max_width' => 100 ],
 				[ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ]
 			);
+		}
+		$card_children = [ wpae_elementor_ir_node( $node_id . '-' . $group_id . '-body', 'card_body', 'container', [], [ 'space.component' ], $body_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] ) ];
+		if ( $action_children ) {
+			$card_children[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-actions', 'card_actions', 'container', [], [ 'space.component' ], $action_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 		}
 		$card_constraints = array_merge( [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], $card_style );
 		$cards[] = wpae_elementor_ir_node(
@@ -119,7 +126,8 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 
 function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id, array $items, array $tokens, string $lead_group_id = '' ): array {
 	$make_copy = static function ( string $id, array $item, string $copy_role ) use ( $tokens ): array {
-		$children = [];
+		$body_children = [];
+		$action_children = [];
 		foreach ( [ 'title_ref' => [ 'services_recipe_title', 'heading' ], 'body_ref' => [ 'service_body', 'text-editor' ], 'cta_ref' => [ 'service_cta', 'button' ] ] as $field => [ $field_role, $widget ] ) {
 			$ref = sanitize_key( (string) ( $item[ $field ] ?? '' ) );
 			if ( $ref === '' ) {
@@ -127,11 +135,14 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 			}
 			$field_node = wpae_elementor_ir_node( $id . '-' . $field_role, $field_role, $widget, [ $ref ], $tokens, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			$field_node['provenance']['item_id'] = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
-			$children[] = $field_node;
+			if ( $field_role === 'service_cta' ) { $action_children[] = $field_node; } else { $body_children[] = $field_node; }
 		}
-		$copy = wpae_elementor_ir_node( $id, $copy_role, 'container', [], $tokens, $children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
-		$copy['provenance']['item_id'] = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
-		return $copy;
+		$body = wpae_elementor_ir_node( $id . '-body', 'card_body', 'container', [], $tokens, $body_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+		$body['provenance']['item_id'] = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
+		$body['provenance']['composition_role'] = sanitize_key( $copy_role );
+		$actions = $action_children ? wpae_elementor_ir_node( $id . '-actions', 'card_actions', 'container', [], $tokens, $action_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] ) : null;
+		if ( is_array( $actions ) ) { $actions['provenance']['item_id'] = sanitize_key( (string) ( $item['group_id'] ?? '' ) ); }
+		return [ 'body' => $body, 'actions' => $actions ];
 	};
 	$make_image = static function ( string $id, array $item, string $image_role ): array {
 		$media_ref = sanitize_key( (string) ( $item['media_ref'] ?? '' ) );
@@ -145,8 +156,12 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 			}
 			$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
 			$card_id = $node_id . '-' . $group_id . '-photo-card';
-			$panel = $make_copy( $card_id . '-panel', $item, 'services_photo_panel' );
-			$cards[] = wpae_elementor_ir_node( $card_id, 'services_photo_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], [ $make_image( $card_id . '-image', $item, 'services_photo_image' ), $panel ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id, 'border_radius' => '16px', 'border_radius_mobile' => '16px' ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
+			$copy = $make_copy( $card_id . '-panel', $item, 'services_photo_panel' );
+			$panel = $copy['body']; $panel['role'] = 'services_photo_panel';
+			$body = wpae_elementor_ir_node( $card_id . '-body', 'card_body', 'container', [], $tokens, [ $make_image( $card_id . '-image', $item, 'services_photo_image' ), $panel ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
+			$card_children = [ $body ];
+			if ( is_array( $copy['actions'] ) ) { $card_children[] = $copy['actions']; }
+			$cards[] = wpae_elementor_ir_node( $card_id, 'services_photo_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id, 'border_radius' => '16px', 'border_radius_mobile' => '16px' ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
 		}
 		return [ wpae_elementor_ir_node( $node_id, 'services_photo_grid', 'container', [], $tokens, $cards, [ 'min_width' => 0, 'max_width' => 100, 'grid_gap_desktop' => 24, 'grid_gap_tablet' => 20, 'grid_gap_mobile' => 16 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] ) ];
 	}
@@ -166,7 +181,10 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 		$nodes = [];
 		if ( is_array( $lead ) ) {
 			$lead_id = $node_id . '-' . sanitize_key( $lead_group_id ) . '-lead';
-			$copy = $make_copy( $lead_id . '-copy', $lead, 'services_split_copy' );
+			$copy_parts = $make_copy( $lead_id . '-copy', $lead, 'services_split_copy' );
+			$copy_children = [ $copy_parts['body'] ];
+			if ( is_array( $copy_parts['actions'] ) ) { $copy_children[] = $copy_parts['actions']; }
+			$copy = wpae_elementor_ir_node( $lead_id . '-copy', 'services_split_copy', 'container', [], $tokens, $copy_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			$copy['layout_constraints']['desktop_width'] = 52;
 			$image = $make_image( $lead_id . '-image', $lead, 'services_split_image' );
 			$image_panel = wpae_elementor_ir_node( $lead_id . '-image-panel', 'services_split_image_panel', 'container', [], [ 'color.surface', 'radius.card' ], [ $image ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'media', 'alt' ] ] );
@@ -176,7 +194,11 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 			$rows = [];
 			foreach ( $secondary as $index => $item ) {
 				$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
-				$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-editorial-row', 'services_editorial_row', 'container', [], $tokens, [ $make_copy( $node_id . '-' . $group_id . '-editorial-copy', $item, 'services_editorial_copy' ) ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+				$copy_parts = $make_copy( $node_id . '-' . $group_id . '-editorial-copy', $item, 'services_editorial_copy' );
+				$copy_children = [ $copy_parts['body'] ];
+				if ( is_array( $copy_parts['actions'] ) ) { $copy_children[] = $copy_parts['actions']; }
+				$editorial_copy = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-editorial-copy', 'services_editorial_copy', 'container', [], $tokens, $copy_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+				$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-editorial-row', 'services_editorial_row', 'container', [], $tokens, [ $editorial_copy ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				if ( $index < count( $secondary ) - 1 ) {
 					$rows[] = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-editorial-divider', 'services_editorial_divider', 'divider', [], [ 'color.border' ], [], [ 'reference' => 'services-editorial-row-v1' ], [ 'strategy' => 'stack' ] );
 				}
@@ -192,8 +214,10 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 				continue;
 			}
 			$group_id = sanitize_key( (string) ( $item['group_id'] ?? 'service_' . ( $index + 1 ) ) );
-			$copy = $make_copy( $node_id . '-' . $group_id . '-text-copy', $item, 'services_text_icon_copy' );
-			$copy['layout_constraints']['list_copy_width'] = 90;
+			$copy_parts = $make_copy( $node_id . '-' . $group_id . '-text-copy', $item, 'services_text_icon_copy' );
+			$copy_children = [ $copy_parts['body'] ];
+			if ( is_array( $copy_parts['actions'] ) ) { $copy_children[] = $copy_parts['actions']; }
+			$copy = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-copy', 'services_text_icon_copy', 'container', [], $tokens, $copy_children, [ 'min_width' => 0, 'max_width' => 100, 'list_copy_width' => 90 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			$row = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-text-icon-row', 'services_text_icon_row', 'container', [], $tokens, [ wpae_elementor_ir_node( $node_id . '-' . $group_id . '-icon', 'services_list_icon', 'icon', [], [ 'color.primary', 'color.surface' ], [], [ 'icon_name' => 'check-circle', 'fixed_width' => 44 ], [ 'strategy' => 'stack', 'editable_fields' => [] ] ), $copy ], [ 'min_width' => 0, 'max_width' => 100, 'item_id' => $group_id ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 			$rows[] = $row;
 			if ( $index < count( $items ) - 1 ) {
@@ -237,7 +261,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$widgets['brand'] = wpae_elementor_ir_node( $child_id . '-brand', 'brand', 'heading', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
 						$title_role = $role === 'cta_copy_group' ? 'cta_section_title' : ( str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' ) ? 'services_section_title' : 'title' );
-						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', $title_role, 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100, 'heading_level' => ( $section['role'] ?? '' ) === 'hero' ? 'h1' : 'h2' ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+						$widgets['title'] = wpae_elementor_ir_node( $child_id . '-title', $title_role, 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.section_title', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100, 'heading_level' => ( $section['role'] ?? '' ) === 'hero' ? 'h1' : 'h2' ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'eyebrow' ) {
 						if ( ( $child['layout_constraints']['eyebrow_presentation'] ?? '' ) === 'pill' ) {
 							$is_services_recipe = str_starts_with( (string) ( $plan['recipe_id'] ?? '' ), 'services.' );
@@ -342,7 +366,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					} elseif ( $item_role === 'body' ) {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
-						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display', 'type.section_title' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					}
 				}
 				if ( ! empty( $intro_widgets ) ) {
@@ -372,12 +396,11 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					foreach ( (array) ( $tier['feature_refs'] ?? [] ) as $feature_index => $feature_ref ) {
 						$details_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-feature-' . $feature_index, 'pricing_feature', 'text-editor', [ $feature_ref ], [ 'color.text', 'type.body' ], [], [], [ 'strategy' => 'stack' ] );
 					}
-					$card_widgets = [
-						wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-details', 'pricing_details', 'container', [], [ 'space.component' ], $details_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ),
-					];
+					$details = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-details', 'pricing_details', 'container', [], [ 'space.component' ], $details_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+					$card_widgets = [ wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-body', 'card_body', 'container', [], [ 'space.component' ], [ $details ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ) ];
 					$cta_widgets = [];
 					$add_tier_widget( $cta_widgets, 'cta_ref', 'cta_primary', 'button', [ 'color.primary', 'color.text', 'color.surface' ] );
-					$card_widgets = array_merge( $card_widgets, $cta_widgets );
+					if ( $cta_widgets ) { $card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-actions', 'card_actions', 'container', [], [ 'space.component' ], $cta_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] ); }
 					if ( count( $details_widgets ) + count( $cta_widgets ) < 3 ) {
 						$warnings[] = $child_id . ':pricing_tier_' . $card_number . '_incomplete';
 					}
@@ -408,13 +431,20 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $cards, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			} elseif ( in_array( $role, [ 'service_cards', 'team_cards', 'testimonial_cards' ], true ) ) {
 				$cards = wpae_elementor_ir_card_nodes( $role, $child_id, (array) ( $child['items'] ?? [] ), [ 'color.text', 'color.muted', 'type.body' ] );
-				if ( ( $child['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) {
-					foreach ( $cards as &$card ) {
+			if ( ( $child['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) {
+				foreach ( $cards as &$card ) {
+					$body = $card['children'][0] ?? [];
+					if ( ( $body['role'] ?? '' ) === 'card_body' ) {
 						$identity = []; $copy = [];
-						foreach ( $card['children'] as $field ) { if ( in_array( $field['role'], [ 'team_photo', 'team_name', 'team_position', 'testimonial_photo', 'testimonial_author', 'testimonial_meta' ], true ) ) { $identity[] = $field; } else { $copy[] = $field; } }
-						$card['children'] = [ wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity ), wpae_elementor_ir_node( $card['node_id'] . '-copy', 'entity_copy', 'container', [], [], $copy ) ];
-						$card['layout_constraints']['entity_layout'] = 'editorial_rows';
+						foreach ( (array) ( $body['children'] ?? [] ) as $field ) { if ( in_array( $field['role'] ?? '', [ 'team_photo', 'team_name', 'team_position', 'testimonial_photo', 'testimonial_author', 'testimonial_meta' ], true ) ) { $identity[] = $field; } else { $copy[] = $field; } }
+						$body['children'] = [];
+						if ( $identity ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity ); }
+						if ( $copy ) { $body['children'][] = wpae_elementor_ir_node( $card['node_id'] . '-copy', 'entity_copy', 'container', [], [], $copy ); }
+						$body['layout_constraints']['entity_layout'] = 'editorial_rows';
+						$card['children'][0] = $body;
 					}
+					$card['layout_constraints']['entity_layout'] = 'editorial_rows';
+				}
 					unset( $card );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $cards, (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
@@ -455,7 +485,8 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	$role = (string) ( $node['role'] ?? '' );
 	$intro = $intro || ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) || $role === 'pricing_intro';
 	$node['visual_policy'] = [ 'version' => $policy['version'], 'intro' => $intro, 'text_align' => $intro ? $policy['intro']['text_align'] : 'left', 'container_align' => $intro ? $policy['intro']['container_align'] : 'start', 'spacing' => $policy['spacing'], 'item_surface' => $policy['item_surface'], 'split' => $policy['split'], 'badge_label' => $badge_label, 'eyebrow_colors' => $policy['eyebrow_colors'] ];
-	if ( in_array( $role, [ 'team_card', 'testimonial_card' ], true ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
+	if ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
 	if ( $role === 'pricing_price_group' && isset( $policy['inline_value'] ) ) { $node['visual_policy']['inline_value'] = $policy['inline_value']; }
 	if ( $intro && $node['widget_type'] === 'container' && in_array( $role, [ 'copy_group', 'cta_copy_group', 'pricing_intro' ], true ) ) { $node['visual_policy']['reading_measure'] = $policy['intro']['reading_measure']; }
 	if ( in_array( $role, [ 'feature_cards', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
@@ -525,7 +556,7 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		$settings['border_radius'] = $radius;
 		$settings['background_color'] = $policy['item_surface']['background'];
 	}
-	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'testimonial_card', 'entity_identity', 'entity_copy', 'services_photo_content', 'services_text_icon_copy' ], true ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'testimonial_card', 'entity_identity', 'entity_copy', 'services_photo_content', 'services_text_icon_copy', 'card_body', 'services_photo_panel' ], true ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
 		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
 		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
 		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
@@ -585,6 +616,32 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 				$settings[ 'grid_align_items' . $suffix ] = 'stretch';
 			}
 		}
+	}
+	if ( isset( $policy['cards'] ) && in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card' ], true ) ) {
+		$card = (array) $policy['cards'];
+		$has_actions = (bool) array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'card_actions' );
+		$body_has_media = (bool) array_filter( (array) ( $node['children'][0]['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['widget_type'] ?? '' ) === 'image' );
+		$copy_gap = wpae_elementor_ir_dimension_control( $body_has_media ? $card['media_copy_gap'] : $card['body_copy_gap'], 'rem', 0.75 );
+		$actions_gap = wpae_elementor_ir_dimension_control( $card['body_actions_gap'], 'rem', 1.25 );
+		$settings['container_type'] = 'flex';
+		$settings['flex_direction'] = $settings['flex_direction_tablet'] = $settings['flex_direction_mobile'] = $card['direction'];
+		$settings['flex_wrap'] = $settings['flex_wrap_tablet'] = $settings['flex_wrap_mobile'] = 'nowrap';
+		$settings['flex_align_items'] = $settings['flex_align_items_tablet'] = $settings['flex_align_items_mobile'] = $card['row_alignment'];
+		$main_distribution = $has_actions ? ( [ 'space_between' => 'space-between', 'flex_start' => 'flex-start' ][ (string) ( $card['body_actions_distribution'] ?? '' ) ] ?? 'flex-start' ) : 'flex-start';
+		$settings['flex_justify_content'] = $settings['flex_justify_content_tablet'] = $main_distribution;
+		$settings['flex_justify_content_mobile'] = 'flex-start';
+		$gap = $has_actions ? $actions_gap : $copy_gap;
+		$settings['flex_gap'] = $settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+	}
+	if ( in_array( $role, [ 'card_body', 'services_photo_panel' ], true ) ) {
+		$card = (array) ( $policy['cards'] ?? [] );
+		$gap_value = ( $role === 'card_body' && array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['widget_type'] ?? '' ) === 'image' ) ) ? ( $card['media_copy_gap'] ?? $policy['spacing']['item_copy'] ) : ( $card['body_copy_gap'] ?? $policy['spacing']['item_copy'] );
+		$gap = wpae_elementor_ir_dimension_control( $gap_value, 'rem', 0.75 );
+		$settings['flex_gap'] = $settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+	}
+	if ( $role === 'card_actions' ) {
+		$gap = wpae_elementor_ir_dimension_control( $policy['cards']['body_actions_gap'] ?? $policy['spacing']['item_cta'], 'rem', 1.25 );
+		$settings['flex_gap'] = $settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
 	}
 	return $settings;
 }
@@ -696,8 +753,12 @@ function wpae_elementor_ir_validate( array $ir, array $brief = [] ): array {
 					$direct = array_values( (array) ( $card['children'] ?? [] ) );
 					$group_id = sanitize_key( (string) ( $card['layout_constraints']['item_id'] ?? '' ) );
 					$slot = array_values( array_filter( $recipe_items, static fn( array $item ): bool => ( $item['group_id'] ?? '' ) === $group_id ) )[0] ?? [];
-					if ( ( $direct[0]['role'] ?? '' ) !== 'services_photo_image' || ( $direct[1]['role'] ?? '' ) !== 'services_photo_panel' || (array) ( $direct[0]['media_refs'] ?? [] ) !== [ sanitize_key( (string) ( $slot['media_ref'] ?? '' ) ) ] ) {
-						$errors[] = 'services_photo_image_not_above_content';
+					$body_children = array_values( (array) ( $direct[0]['children'] ?? [] ) );
+					$expected_action_ref = sanitize_key( (string) ( $slot['cta_ref'] ?? '' ) );
+					$actions = $direct[1] ?? [];
+					$action_children = (array) ( $actions['children'] ?? [] );
+					if ( ( $direct[0]['role'] ?? '' ) !== 'card_body' || ( $body_children[0]['role'] ?? '' ) !== 'services_photo_image' || ( $body_children[1]['role'] ?? '' ) !== 'services_photo_panel' || (array) ( $body_children[0]['media_refs'] ?? [] ) !== [ sanitize_key( (string) ( $slot['media_ref'] ?? '' ) ) ] || ( $expected_action_ref === '' && count( $direct ) !== 1 ) || ( $expected_action_ref !== '' && ( count( $direct ) !== 2 || ( $actions['role'] ?? '' ) !== 'card_actions' || count( $action_children ) !== 1 || ( $action_children[0]['content_refs'] ?? [] ) !== [ $expected_action_ref ] ) ) ) {
+						$errors[] = 'services_photo_card_body_actions_invalid';
 					}
 				}
 			}
@@ -1809,7 +1870,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 					$compiled_child['settings'][ '_element_custom_width' . $suffix ] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 				}
 			}
-			if ( empty( $policy['intro'] ) && ( $ir_child['widget_type'] ?? '' ) === 'button' && $index > 0 ) {
+			if ( empty( $policy['intro'] ) && $role !== 'card_actions' && ( $ir_child['widget_type'] ?? '' ) === 'button' && $index > 0 ) {
 				$cta_gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_cta'], 'rem', 1.25 );
 				$copy_gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
 				$extra = $cta_gap['unit'] === $copy_gap['unit'] ? max( 0, $cta_gap['size'] - $copy_gap['size'] ) : $cta_gap['size'];

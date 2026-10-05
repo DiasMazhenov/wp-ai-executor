@@ -454,10 +454,10 @@ function wpae_composition_visual_profiles(): array {
 	$type = static fn( string $desktop, string $tablet, string $mobile, string $weight, string $line ): array => [ 'font_family' => 'inherit', 'desktop' => $desktop, 'tablet' => $tablet, 'mobile' => $mobile, 'weight' => $weight, 'line_height' => $line, 'line_height_tablet' => $line, 'line_height_mobile' => $line ];
 	return [
 		'editorial_light' => [ 'color.page_bg' => '#ffffff', 'color.surface' => '#ffffff', 'color.text' => '#17202a', 'color.muted' => '#475569', 'color.border' => '#cbd5e1',
-			'type.display' => $type( '3.25rem', '2.5rem', '2rem', '700', '1.1' ), 'type.body' => $type( '1.0625rem', '1rem', '1rem', '400', '1.65' ), 'type.feature' => $type( '1.25rem', '1.1875rem', '1.125rem', '600', '1.25' ),
+			'type.display' => $type( '3.25rem', '2.5rem', '2rem', '700', '1.1' ), 'type.section_title' => $type( '2.5rem', '2rem', '1.75rem', '700', '1.15' ), 'type.body' => $type( '1.0625rem', '1rem', '1rem', '400', '1.65' ), 'type.feature' => $type( '1.25rem', '1.1875rem', '1.125rem', '600', '1.25' ),
 			'space.section' => '5rem', 'space.section_tablet' => '3.5rem', 'space.section_mobile' => '2.5rem', 'space.component' => '1.25rem', 'space.component_tablet' => '1rem', 'space.component_mobile' => '0.875rem', 'radius.card' => '0.25rem', 'layout.copy_width' => '38rem', 'space.card' => '1.25rem' ],
 		'soft_cards_light' => [ 'color.page_bg' => '#f1f5f9', 'color.surface' => '#ffffff', 'color.text' => '#0f172a', 'color.muted' => '#475569', 'color.border' => '#b8c4d2',
-			'type.display' => $type( '2.75rem', '2.25rem', '1.875rem', '600', '1.2' ), 'type.body' => $type( '1rem', '1rem', '0.9375rem', '400', '1.6' ), 'type.feature' => $type( '1.1875rem', '1.125rem', '1.0625rem', '600', '1.35' ),
+			'type.display' => $type( '2.75rem', '2.25rem', '1.875rem', '600', '1.2' ), 'type.section_title' => $type( '2.125rem', '1.875rem', '1.625rem', '700', '1.2' ), 'type.body' => $type( '1rem', '1rem', '0.9375rem', '400', '1.6' ), 'type.feature' => $type( '1.1875rem', '1.125rem', '1.0625rem', '600', '1.35' ),
 			'space.section' => '4rem', 'space.section_tablet' => '3rem', 'space.section_mobile' => '2rem', 'space.component' => '1.75rem', 'space.component_tablet' => '1.25rem', 'space.component_mobile' => '1rem', 'radius.card' => '1.25rem', 'layout.copy_width' => '32rem', 'space.card' => '1.75rem' ],
 	];
 }

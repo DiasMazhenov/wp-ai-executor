@@ -282,7 +282,9 @@ check( $m2_two_tiers[0]['settings']['width_mobile']['size'] === 100 && $m2_two_t
 
 $visual_policy_nodes = static function(array $nodes) use (&$visual_policy_nodes):array { $all=[]; foreach($nodes as $n){ $all[]=$n; $all=array_merge($all,$visual_policy_nodes((array)($n['elements']??[]))); } return $all; };
 $pricing_ctas = array_values(array_filter($visual_policy_nodes([$m2_two_pricing]), static fn(array $n):bool=>($n['widgetType']??'')==='button'));
-check(count($pricing_ctas) === 2 && ($pricing_ctas[0]['settings']['_margin']['top'] ?? '') === '0.5' && ($m2_two_tiers[0]['settings']['flex_gap']['row'] ?? '') === '0.75', 'Pricing item CTA resolves distinct total rhythm rather than reusing copy gap');
+$pricing_body = (array) ( $m2_two_tiers[0]['elements'][0] ?? [] );
+$pricing_actions = (array) ( $m2_two_tiers[0]['elements'][1] ?? [] );
+check(count($pricing_ctas) === 2 && ($m2_two_tiers[0]['settings']['flex_justify_content'] ?? '') === 'space-between' && ($pricing_actions['settings']['flex_gap']['row'] ?? '') !== ($pricing_body['settings']['flex_gap']['row'] ?? '') && !isset($pricing_ctas[0]['settings']['_margin']['top']), 'Pricing CTA belongs to an optional action group; body rhythm and action rhythm have separate owners without button margin hacks');
 // Accepted role policy boundaries, using the actual ordinary chat/compiler/readback path.
 foreach ( [ 'pill-бейдж' => 'pill', 'надзаголовок обычным текстом' => 'plain', 'без бейджа, надзаголовок оставь' => 'plain', 'без бейджа, надзаголовок обычным текстом, без pill-бейджа' => 'plain' ] as $instruction => $presentation ) {
  $prompt = "Создай Hero без фото\nНадзаголовок: «ТОЧНЫЙ НАДЗАГОЛОВОК»\nЗаголовок: «Коротко»\nОписание: «Точный текст.»\n" . $instruction;

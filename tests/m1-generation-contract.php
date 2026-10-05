@@ -111,9 +111,18 @@ $bad_faq = "Создай FAQ\nВопрос 1: «Как начать?»\nОтве
 $cross_faq = $run_services_route( $bad_faq, [], [], 'm1-cross-faq' );
 check( ! empty( $cross_faq['error'] ) && $cross_faq['writes'] === 0 && $cross_faq['calls'] === 0, 'M1 explicit FAQ numbering cannot bind the answer of another question' );
 $m1_tier_nodes = [];
-$find_m1_tiers = static function ( array $nodes ) use ( &$find_m1_tiers, &$m1_tier_nodes ): void {
+$m1_subtree_has_button = static function ( array $node ) use ( &$m1_subtree_has_button ): bool {
+ if ( ( $node['widgetType'] ?? '' ) === 'button' ) { return true; }
+ foreach ( (array) ( $node['elements'] ?? [] ) as $child ) { if ( is_array( $child ) && $m1_subtree_has_button( $child ) ) { return true; } }
+ return false;
+};
+$find_m1_tiers = static function ( array $nodes ) use ( &$find_m1_tiers, &$m1_tier_nodes, &$m1_subtree_has_button ): void {
  foreach ( $nodes as $node ) {
-  if ( ( $node['elType'] ?? '' ) === 'container' && ( $node['elements'][1]['widgetType'] ?? '' ) === 'button' && in_array( $node['elements'][0]['elements'][0]['settings']['title'] ?? '', [ 'Старт', 'Проект' ], true ) ) { $m1_tier_nodes[] = $node; }
+  $children = (array) ( $node['elements'] ?? [] );
+  if ( ( $node['elType'] ?? '' ) === 'container' && ( $node['settings']['flex_direction'] ?? '' ) === 'column' && ( $node['settings']['border_border'] ?? '' ) === 'solid' && count( $children ) === 2 && ( $children[0]['elType'] ?? '' ) === 'container' && ( $children[1]['elType'] ?? '' ) === 'container' && $m1_subtree_has_button( $children[1] ) ) {
+   $encoded = wp_json_encode( $node, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+   if ( str_contains( $encoded, 'Старт' ) || str_contains( $encoded, 'Проект' ) ) { $m1_tier_nodes[] = $node; }
+  }
   $find_m1_tiers( (array) ( $node['elements'] ?? [] ) );
  }
 };

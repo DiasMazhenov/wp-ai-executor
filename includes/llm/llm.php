@@ -10571,7 +10571,9 @@ function wpae_llm_execute_action( array $action, int $post_id, string $archetype
         $elements = wpae_elementor_normalize_data( $elements )['data'];
     }
     $steps[] = [ 'id' => 'native_normalize', 'status' => $native_normalized ? 'ok' : 'skipped', 'message' => $native_normalized ? 'Структура виджетов нормализована под native Elementor и Flexbox.' : 'Нормализация Elementor недоступна и пропущена.', 'details' => [ 'element_count' => count( $elements ) ] ];
-	if ( $frozen_signature !== '' && $frozen_signature !== wpae_llm_decision_signature( $elements ) ) { return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'frozen_decisions_changed_by_normalization', 'steps' => $steps ]; }
+	if ( $frozen_signature !== '' && $frozen_signature !== wpae_llm_decision_signature( $elements ) ) {
+		return [ 'ok' => false, 'operation_id' => $operation_id, 'error' => 'frozen_decisions_changed_by_normalization', 'steps' => $steps ];
+	}
     $preserved_library_design = false;
     foreach ( $elements as $element ) {
         if ( ! is_array( $element ) || ( $element['elType'] ?? '' ) !== 'container' ) {

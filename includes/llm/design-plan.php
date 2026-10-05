@@ -812,7 +812,7 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 				$intro_allowed_widgets[] = 'container';
 			}
 		}
-		$children[] = [ 'role' => 'copy_group', 'allowed_widgets' => $intro_allowed_widgets, 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => $intro_layout_constraints, 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ], 'provenance' => [ 'source' => 'brief', 'roles' => [ 'eyebrow', 'title', 'body' ] ] ];
+		$children[] = [ 'role' => 'copy_group', 'allowed_widgets' => $intro_allowed_widgets, 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.section_title', 'type.body' ], 'layout_constraints' => $intro_layout_constraints, 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ], 'provenance' => [ 'source' => 'brief', 'roles' => [ 'eyebrow', 'title', 'body' ] ] ];
 	}
 	$children[] = [
 		'role' => $recipe_role,
@@ -854,7 +854,7 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 		'media_compatibility' => [ 'status' => empty( $errors ) ? 'compatible' : 'incompatible', 'provided_asset_refs' => $provided, 'consumed_asset_refs' => array_values( array_unique( $consumed ) ), 'unconsumed_asset_refs' => $unconsumed ],
 		'sections' => [ [ 'id' => 'services', 'role' => 'services', 'composition' => 'linear', 'surface_token' => 'color.page_bg', 'spacing_token' => 'space.component', 'children' => $children, 'provenance' => [ 'source' => 'brief' ] ] ],
 		'responsive' => [ 'desktop' => 'linear', 'tablet' => 'stack', 'mobile' => 'stack' ],
-		'tokens' => [ 'color.page_bg' => 'color.page_bg', 'color.surface' => 'color.surface', 'color.text' => 'color.text', 'color.muted' => 'color.muted', 'color.primary' => 'color.primary', 'color.border' => 'color.border', 'type.display' => 'type.display', 'type.body' => 'type.body', 'space.section' => 'space.section', 'space.component' => 'space.component', 'radius.card' => 'radius.card' ],
+		'tokens' => [ 'color.page_bg' => 'color.page_bg', 'color.surface' => 'color.surface', 'color.text' => 'color.text', 'color.muted' => 'color.muted', 'color.primary' => 'color.primary', 'color.border' => 'color.border', 'type.display' => 'type.display', 'type.section_title' => 'type.section_title', 'type.body' => 'type.body', 'space.section' => 'space.section', 'space.component' => 'space.component', 'radius.card' => 'radius.card' ],
 		'quality_gates' => [ 'brief_fidelity', 'capabilities', 'layout_report', 'readback', 'render_review' ],
 		'media_references' => $media,
 		'provenance' => [ 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'planner' => 'wpae-design-plan-v1', 'source' => 'brief-ir' ],
@@ -879,13 +879,34 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	};
 	$split = in_array( $composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
 	$family = (string) ( $brief['intent']['archetype'] ?? '' );
+	$explicit_intro_token = '';
+	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) {
+		if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'visual_token' && in_array( (string) ( $constraint['token'] ?? '' ), [ 'type.display', 'type.section_title' ], true ) ) { $explicit_intro_token = (string) $constraint['token']; }
+	}
+	$record_intro_token = trim( (string) ( $record_policy['intro_title_token'] ?? '' ) );
+	$profile_intro_token = trim( (string) ( $values['layout.intro_title_token'] ?? '' ) );
+	if ( $explicit_intro_token !== '' ) {
+		$intro_title_token = $explicit_intro_token;
+		$field_sources['intro_title_token'] = 'explicit_brief';
+	} elseif ( in_array( $record_intro_token, [ 'type.display', 'type.section_title' ], true ) ) {
+		$intro_title_token = $record_intro_token;
+		$field_sources['intro_title_token'] = 'composition_record';
+	} elseif ( in_array( $profile_intro_token, [ 'type.display', 'type.section_title' ], true ) ) {
+		$intro_title_token = $profile_intro_token;
+		$field_sources['intro_title_token'] = 'resolved_visual';
+	} else {
+		$intro_title_token = $family === 'hero' ? 'type.display' : 'type.section_title';
+		$field_sources['intro_title_token'] = 'documented_default';
+	}
 	$body = $values['type.body'];
 	$item = $values['type.feature'] ?? array_replace( $body, [ 'desktop' => '1.125rem', 'tablet' => '1.125rem', 'mobile' => '1.125rem', 'weight' => '600', 'line_height' => '1.3' ] );
 	$eyebrow = array_replace( $body, [ 'desktop' => '0.75rem', 'tablet' => '0.75rem', 'mobile' => '0.75rem', 'weight' => '600', 'line_height' => '1.2' ] );
 	$item_count = $item_count ?: count( (array) ( $brief['groups'] ?? [] ) );
 	$columns = min( 3, max( 1, $item_count ) );
 	if ( in_array( $item_count, [ 4, 6 ], true ) ) { $columns = 2; }
-	$collection_implementation_default = $services_recipe_id === 'services.photo_cards' && $item_count <= 3 ? 'native_flex_equal' : 'native_grid';
+	// New accepted repeat groups use equal fraction tracks so native Grid owns
+	// (container width - all gaps) / columns without percentage compensation.
+	$collection_implementation_default = 'native_grid';
 	$collection_implementation = (string) $pick( 'collection_implementation', $collection_implementation_default );
 	if ( ! in_array( $collection_implementation, [ 'native_grid', 'native_flex_equal' ], true ) ) {
 		$collection_implementation = $collection_implementation_default;
@@ -893,15 +914,16 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	$policy = [
 		'version' => 1,
 		'precedence' => [ 'explicit_brief', 'composition_record', 'visual_profile', 'documented_default' ],
-		'intro' => [ 'placement' => $pick( 'intro_placement', $split ? 'split_copy' : 'above_collection' ), 'text_align' => $pick( 'intro_text_align', 'left' ), 'container_align' => $pick( 'intro_container_align', 'start' ), 'reading_measure' => $pick( 'reading_measure', $values['layout.copy_width'] ?? '38rem' ), 'heading_level' => $family === 'hero' ? 'h1' : 'h2', 'eyebrow_presentation' => $pick( 'eyebrow_presentation', wpae_elementor_recipe_eyebrow_presentation() ) ],
-		'typography' => [ 'intro_title' => $values['type.display'], 'item_title' => $item, 'body' => $body, 'eyebrow' => $eyebrow, 'price' => array_replace( $body, [ 'desktop' => '2rem', 'tablet' => '1.8rem', 'mobile' => '1.6rem', 'weight' => '800', 'line_height' => '1.2' ] ) ],
+		'intro' => [ 'placement' => $pick( 'intro_placement', $split ? 'split_copy' : 'above_collection' ), 'text_align' => $pick( 'intro_text_align', 'left' ), 'container_align' => $pick( 'intro_container_align', 'start' ), 'reading_measure' => $pick( 'reading_measure', $values['layout.copy_width'] ?? '38rem' ), 'heading_level' => $family === 'hero' ? 'h1' : 'h2', 'title_token' => $intro_title_token, 'eyebrow_presentation' => $pick( 'eyebrow_presentation', wpae_elementor_recipe_eyebrow_presentation() ) ],
+		'typography' => [ 'intro_title' => $values[$intro_title_token], 'item_title' => $item, 'body' => $body, 'eyebrow' => $eyebrow, 'price' => array_replace( $body, [ 'desktop' => '2rem', 'tablet' => '1.8rem', 'mobile' => '1.6rem', 'weight' => '800', 'line_height' => '1.2' ] ) ],
 		'spacing' => [ 'eyebrow_title' => $pick( 'eyebrow_title_gap', '0.75rem' ), 'title_description' => $pick( 'title_description_gap', '1rem' ), 'description_cta' => $pick( 'description_cta_gap', '1.5rem' ), 'intro_collection' => $pick( 'intro_collection_gap', '2rem' ), 'item_copy' => $pick( 'item_copy_gap', '0.75rem' ), 'item_cta' => $pick( 'item_cta_gap', '1.25rem' ), 'section' => [ 'desktop' => $values['space.section'], 'tablet' => $values['space.section_tablet'] ?? $values['space.section'], 'mobile' => $values['space.section_mobile'] ?? '2rem' ] ],
 		'eyebrow_colors' => [ 'plain' => $values['color.primary'], 'pill' => $family === 'services' ? $values['color.text'] : $values['color.surface'], 'pill_background' => $family === 'services' ? $values['color.surface'] : $values['color.primary'], 'pill_border' => $family === 'services' ? $values['color.muted'] : $values['color.primary'] ],
 		'item_surface' => [ 'padding' => $values['space.card'] ?? '1.5rem', 'radius' => $values['radius.card'], 'background' => $values['color.surface'] ],
 		// Inline values (price + period) keep their shared start axis when space narrows.
 		'entity_layout' => [ 'variant' => $record_policy['entity_layout'] ?? 'grid', 'columns' => [ 'desktop' => ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ], 'gap' => $pick( 'item_copy_gap', '0.75rem' ) ],
 		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
-		'collection' => [ 'implementation' => $collection_implementation, 'columns' => [ 'desktop' => (int) $pick( 'columns', ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 1 : $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
+		'collection' => [ 'implementation' => $collection_implementation, 'item_count' => $item_count, 'columns' => [ 'desktop' => (int) $pick( 'columns', ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 1 : $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
+		'cards' => [ 'direction' => 'column', 'row_alignment' => 'stretch', 'body_actions_distribution' => 'space_between', 'body_copy_gap' => $pick( 'item_copy_gap', '0.75rem' ), 'media_copy_gap' => $pick( 'item_media_gap', $values['space.component'] ), 'body_actions_gap' => $pick( 'item_cta_gap', '1.25rem' ), 'mobile_height' => 'content', 'footer' => 'when_actions_exist' ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
 	];
 	$field_sources['inline_value'] = 'documented_default';
@@ -977,6 +999,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'color.primary' => 'color.primary',
 		'color.border' => 'color.border',
 		'type.display' => 'type.display',
+		'type.section_title' => 'type.section_title',
 		'type.body' => 'type.body',
 		'space.section' => 'space.section',
 		'space.component' => 'space.component',
@@ -1011,7 +1034,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'role' => 'copy_group',
 				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
 				'content_refs' => array_values( array_unique( array_merge( wpae_design_plan_content_refs( $brief, [ 'brand', 'eyebrow', 'title', 'body' ] ), $cta_refs ) ) ),
-				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.body', 'space.component' ],
+				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.section_title', 'type.body', 'space.component' ],
 				'layout_constraints' => array_merge( [ 'min_width' => 0, 'max_width' => 100 ], $eyebrow_presentation === 'pill' ? [ 'eyebrow_presentation' => 'pill' ] : [] ),
 				'responsive_policy' => 'copy_first_stack',
 				'media_refs' => [],
@@ -1094,7 +1117,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'role' => 'copy_group',
 				'allowed_widgets' => [ 'heading' ],
 				'content_refs' => $intro_refs,
-				'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ],
+				'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.section_title', 'type.body' ],
 				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
 				'responsive_policy' => 'stack',
 				'editable_fields' => [ 'text' ],
@@ -1162,7 +1185,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title' ] );
 		$section['children'] = [];
 		if ( ! empty( $intro_refs ) ) {
-			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
+			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.section_title', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
 		}
 		$section['children'][] = [
 				'role' => 'service_cards',
@@ -1185,7 +1208,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body', 'cta', 'cta_2', 'cta_3', 'cta_4' ] );
 		$section['children'] = [];
 		if ( ! empty( $intro_refs ) ) {
-			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor', 'button' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
+			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor', 'button' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.section_title', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
 		}
 		$section['children'][] = [
 				'role' => 'team_cards',
@@ -1208,7 +1231,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body', 'cta', 'cta_2', 'cta_3', 'cta_4' ] );
 		$section['children'] = [];
 		if ( ! empty( $intro_refs ) ) {
-			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor', 'button' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
+			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor', 'button' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.section_title', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
 		}
 		$section['children'][] = [
 				'role' => 'testimonial_cards',
@@ -1233,7 +1256,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'role' => 'cta_copy_group',
 				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
 				'content_refs' => $cta_content,
-				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'color.surface', 'type.display', 'type.body', 'space.component' ],
+				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'color.surface', 'type.display', 'type.section_title', 'type.body', 'space.component' ],
 				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'text_align' => $alignment ],
 				'responsive_policy' => 'stack',
 				'editable_fields' => [ 'text', 'url' ],
@@ -1274,7 +1297,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'role' => 'copy_group',
 				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
 				'content_refs' => $intro_refs,
-				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.body', 'space.component' ],
+				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'type.display', 'type.section_title', 'type.body', 'space.component' ],
 				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
 				'responsive_policy' => 'stack',
 				'editable_fields' => [ 'text' ],
@@ -1724,11 +1747,20 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 	if ( isset( $plan['visual_policy'] ) ) {
 		$visual_policy = $plan['visual_policy'];
 		if ( ( $visual_policy['version'] ?? null ) !== 1 || ! in_array( $visual_policy['intro']['text_align'] ?? '', [ 'left', 'center', 'right' ], true ) || ! in_array( $visual_policy['intro']['container_align'] ?? '', [ 'start', 'center', 'end' ], true ) || ! in_array( $visual_policy['intro']['eyebrow_presentation'] ?? '', [ 'plain', 'pill' ], true ) ) { $errors[] = 'visual_policy_invalid'; }
+		if ( isset( $visual_policy['intro']['title_token'] ) && ! in_array( $visual_policy['intro']['title_token'], [ 'type.display', 'type.section_title' ], true ) ) { $errors[] = 'visual_policy_intro_title_token_invalid'; }
 		if ( ! preg_match( '/^(?:[1-9]\d*(?:\.\d+)?|0\.[1-9]\d*)(?:px|rem|em)$/', (string) ( $visual_policy['intro']['reading_measure'] ?? '' ) ) ) { $errors[] = 'visual_policy_reading_measure_invalid'; }
 		$placement = in_array( $plan['sections'][0]['composition'] ?? '', [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ? 'split_copy' : 'above_collection';
 		if ( ( $visual_policy['intro']['placement'] ?? '' ) !== $placement ) { $errors[] = 'visual_policy_placement_composition_conflict'; }
 		if ( ( $plan['responsive']['tablet'] ?? 'stack' ) === 'stack' && ( $visual_policy['collection']['columns']['tablet'] ?? 0 ) !== 1 ) { $errors[] = 'visual_policy_responsive_conflict'; }
 		foreach ( (array) ( $visual_policy['collection']['columns'] ?? [] ) as $columns ) { if ( ! is_int( $columns ) || $columns < 1 || $columns > 6 ) { $errors[] = 'visual_policy_columns_invalid'; } }
+		if ( isset( $visual_policy['collection']['item_count'] ) && ( ! is_int( $visual_policy['collection']['item_count'] ) || $visual_policy['collection']['item_count'] < 0 || $visual_policy['collection']['item_count'] > 8 ) ) { $errors[] = 'visual_policy_item_count_invalid'; }
+		$actual_collection_count = max( array_merge( [ 0 ], array_map( static fn( $child ): int => is_array( $child ) ? count( (array) ( $child['items'] ?? [] ) ) : 0, (array) ( $plan['sections'][0]['children'] ?? [] ) ) ) );
+		if ( $actual_collection_count > 0 && isset( $visual_policy['collection']['item_count'] ) && $visual_policy['collection']['item_count'] !== $actual_collection_count ) { $errors[] = 'visual_policy_item_count_mismatch'; }
+		if ( isset( $visual_policy['cards'] ) ) {
+			$cards = $visual_policy['cards'];
+			if ( ! is_array( $cards ) || ( $cards['direction'] ?? '' ) !== 'column' || ( $cards['row_alignment'] ?? '' ) !== 'stretch' || ( $cards['body_actions_distribution'] ?? '' ) !== 'space_between' || ( $cards['mobile_height'] ?? '' ) !== 'content' || ( $cards['footer'] ?? '' ) !== 'when_actions_exist' ) { $errors[] = 'visual_policy_cards_invalid'; }
+			foreach ( [ 'body_copy_gap', 'media_copy_gap', 'body_actions_gap' ] as $gap_key ) { if ( ! preg_match( '/^(?:0|[1-9]\d*(?:\.\d+)?|0\.\d+)(?:px|rem|em)$/', (string) ( $cards[$gap_key] ?? '' ) ) ) { $errors[] = 'visual_policy_cards_spacing_invalid'; } }
+		}
 		if ( isset( $visual_policy['inline_value'] ) ) {
 			$inline = $visual_policy['inline_value'];
 			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! in_array( $inline['direction'][$device] ?? '', [ 'row', 'column' ], true ) ) { $errors[] = 'visual_policy_inline_direction_invalid'; } }

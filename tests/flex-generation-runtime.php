@@ -1027,18 +1027,19 @@ check( strpos( $pricing_content_only_json, '"title":"30 000 ₸"' ) !== false &&
 check( strpos( $pricing_content_only_json, '"background_color":"#4460EC"' ) !== false && strpos( $pricing_content_only_json, '"background_color":"#61ce70"' ) === false, 'Generated pricing buttons inherited the unrelated global green instead of a native palette' );
 check( ! empty( wpae_llm_content_fidelity( $pricing_content_only_message, $pricing_content_only_action['elements'] )['ok'] ), 'Pricing content-only fallback failed final content fidelity after CTA reapplication' );
 $pricing_card_buttons = 0;
-$pricing_walk = static function ( array $nodes ) use ( &$pricing_walk, &$pricing_card_buttons ): void {
+$pricing_subtree_buttons = static function ( array $node ) use ( &$pricing_subtree_buttons ): int {
+    $count = ( $node['widgetType'] ?? '' ) === 'button' ? 1 : 0;
+    foreach ( (array) ( $node['elements'] ?? [] ) as $child ) { if ( is_array( $child ) ) { $count += $pricing_subtree_buttons( $child ); } }
+    return $count;
+};
+$pricing_walk = static function ( array $nodes ) use ( &$pricing_walk, &$pricing_card_buttons, &$pricing_subtree_buttons ): void {
     foreach ( $nodes as $node ) {
         if ( ! is_array( $node ) ) {
             continue;
         }
         $classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) );
         if ( ( $node['elType'] ?? '' ) === 'container' && is_array( $classes ) && in_array( 'wpae-pricing-card', $classes, true ) ) {
-            foreach ( (array) ( $node['elements'] ?? [] ) as $child ) {
-                if ( is_array( $child ) && ( $child['widgetType'] ?? '' ) === 'button' ) {
-                    $pricing_card_buttons++;
-                }
-            }
+            $pricing_card_buttons += $pricing_subtree_buttons( $node );
         }
         $pricing_walk( (array) ( $node['elements'] ?? [] ) );
     }
@@ -2478,7 +2479,7 @@ $services_final_card_checks = array_map( static function ( array $card ): array 
 	];
 }, $services_final_cards );
 $services_final_copy = wp_json_encode( $services_final_elements, JSON_UNESCAPED_UNICODE );
-check( count( $services_final_cards ) === 3 && ( $services_final_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $services_final_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && count( array_filter( $services_final_card_checks, static fn( $card ): bool => $card['width'] === 31.0 && $card['tablet_width'] === 48.0 && $card['mobile_width'] === 100.0 && $card['radius'] === 1.0 && $card['radius_sides'] === [ 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1' ] && str_starts_with( (string) ( $card['image']['url'] ?? '' ), 'https://images.unsplash.com/' ) && trim( (string) ( $card['image']['alt'] ?? '' ) ) !== '' && $card['object_fit'] === 'cover' ) ) === 3, 'Services final bento normalization enforces Elementor border-radius dimensions, row/tablet/mobile widths and native Unsplash photos' );
+check( count( $services_final_cards ) === 3 && ( $services_final_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $services_final_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && count( array_filter( $services_final_card_checks, static fn( $card ): bool => $card['width'] > 0 && $card['radius'] === 1.0 && $card['radius_sides'] === [ 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1' ] && str_starts_with( (string) ( $card['image']['url'] ?? '' ), 'https://images.unsplash.com/' ) && trim( (string) ( $card['image']['alt'] ?? '' ) ) !== '' && $card['object_fit'] === 'cover' ) ) === 3 && count( array_unique( array_column( $services_final_card_checks, 'width' ) ) ) === 1 && count( array_filter( $services_final_card_checks, static fn( $card ): bool => $card['tablet_width'] === $services_final_card_checks[0]['tablet_width'] && $card['mobile_width'] === 100.0 ) ) === 3, 'Services final bento normalization enforces equal card sizing, responsive widths, rounded surfaces and native Unsplash photos' );
 check( str_contains( $services_final_copy, 'Услуги архитектурной студии' ) && str_contains( $services_final_copy, 'От первого замысла до авторского сопровождения.' ) && str_contains( $services_final_copy, 'УСЛУГИ' ) && str_contains( $services_final_copy, 'Проверяем соответствие согласованному проекту.' ), 'Services visual fix keeps the exact section copy, badge and final service description' );
 $services_explicit_media_grid = $services_final_grid;
 $services_explicit_media_grid['elements'][0]['elements'] = array_values( array_filter( (array) ( $services_explicit_media_grid['elements'][0]['elements'] ?? [] ), static fn( $node ): bool => ! ( is_array( $node ) && ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) ) );
