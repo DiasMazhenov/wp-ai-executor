@@ -23,5 +23,8 @@
     "D": "published, native compared, public screenshot, undone exact baseline",
     "E": "v267 published/readback; white-on-white pill defect; local dirty state prevented guarded Undo",
     "F": "not run"
-  }
+  },
+  "commit": "95a3af8a880068026be45fc0a4a44d25f48b4ec9",
+  "push": "origin/main matched by ls-remote",
+  "source_install": "v268 committed/pushed, install/editor reload pending"
 }

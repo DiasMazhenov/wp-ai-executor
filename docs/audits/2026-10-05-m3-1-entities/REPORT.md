@@ -8,7 +8,7 @@ Added `team.grid`, `team.editorial_rows`, `testimonials.grid`, `testimonials.edi
 
 The v266 first Services attempt exposed a strict-freeze defect: accepted `visual_policy` was present but the Services Brief lacked `canonical_create`; normalizer then added the required root `wpae-ds` marker after freeze. First attempt was refused with provider_calls=0/write_count=0. Compiler was fixed to resolve the mandatory design-system marker on roots with an accepted visual policy before freeze. The production regression now uses both actual mandatory classes. v267 Services then passed the owned-model guard, Publish, editor reload, complete native JSON export and field comparison.
 
-The first v267 public render exposed a second real defect that the advisory Vision score 90 missed: the Services pill container was white and its label text was also white. DOM measured both computed colors; the PNG showed an empty pill. A v268 source correction now freezes `pill` text, background and border colors in the existing DesignPlan `eyebrow_colors` and compiles them into the existing Services badge container/label. Historical plans lacking these extra color keys keep their old compiler behavior. Local contracts pass; v268 has **not** been installed or visually retested yet.
+The first v267 public render exposed a second real defect that the advisory Vision score 90 missed: the Services pill container was white and its label text was also white. DOM measured both computed colors; the PNG showed an empty pill. A v268 source correction now freezes `pill` text, background and border colors in the existing DesignPlan `eyebrow_colors` and compiles them into the existing Services badge container/label. Historical plans lacking these extra color keys keep their old compiler behavior. Local contracts pass; v268 is committed as `95a3af8a880068026be45fc0a4a44d25f48b4ec9`, pushed and independently matched on origin/main; it has **not** been installed or visually retested yet.
 
 ## Source, install, test and visual statuses
 
@@ -38,8 +38,8 @@ On the source containing the v268 color-policy edit:
 - `node --test tests/*.test.js` — 15/15 PASS (run before the color-only delta)
 - `php tests/elementor-patch-guard.php` — PASS (run before the color-only delta)
 - `php tests/imported-template-catalog.php` — 158 manifest / 156 retrievable / 156 preview PASS (run before the color-only delta)
-- `php docs/audits/2026-09-12/package-probe.php` — 252 hashes, four package cases PASS on v267; package hashes regenerated after the color-only delta, probe rerun remains required
-- `git diff --check` — PASS before the color-only delta; rerun after staging
+- `php docs/audits/2026-09-12/package-probe.php` — 252 hashes, four package cases PASS after v268 manifest refresh
+- `git diff --check` — PASS on the staged source/docs/evidence diff
 
 Full package diagnostic JSON still has the historical malformed UTF-8 serialization issue; its compact summary is valid. Local checks and mock writes do not prove browser appearance.
 
