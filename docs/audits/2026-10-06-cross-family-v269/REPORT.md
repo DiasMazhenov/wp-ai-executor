@@ -24,7 +24,7 @@ The user-supplied Elementor export was treated as read-only. Its root ID is `b48
 
 ## Live matrix
 
-All captures listed here were fresh public-page captures after Publish and were visually inspected in the Browser Use result. CSS viewport is the actual browser `window.innerWidth × innerHeight`; PNG dimensions are unavailable because the capture bytes could not be saved through the documented Browser Use/CUA interface.
+The five rows below preserve the original v269 run evidence. Their public JPEG captures were inspected in Browser Use but were not saved as files. A later screenshot recovery attempt re-ran Services and is documented separately below; it has a new operation and root and does not replace the historical run IDs.
 
 | Family | Root / operation / identity / revision | Recipe and exact source | First render, readback, and measured public layout | Acceptance |
 |---|---|---|---|---|
@@ -40,10 +40,36 @@ These five v269 results are the first public renders for this continuation. No p
 
 Across the measured viewports, document widths matched the site's content width and no horizontal overflow was measured. Split image loading, copy order, heading semantics, card counts, copy, and CTA destinations matched the selected request. The Pricing record/count mismatch remains a plan-level discrepancy even though the compiler rendered the actual two requested tiers correctly. Therefore technical lifecycle PASS is distinct from design-quality PASS: the latter is PARTIAL for this matrix, not a blanket PASS.
 
-## Screenshot artifact status
+## Screenshot recovery and guarded Undo refusal — 2026-10-06
 
-**SCREENSHOT BLOCKED — local PNG artifacts were not produced for these five cases.** Browser Use/CUA supplied the fresh captures as JPEG image bytes in its result, and the images were visually inspected there. The documented CUA surface exposes screenshot capture and image emission but no supported local-file writer or shared binary handoff into the repository. Therefore the captures could not be persisted to an approved absolute path, converted to PNG, reopened from disk, dimension-verified, or linked. No PNG path/dimensions are claimed. The screenshots were taken from the public page after Publish, not from Elementor's mobile preview. The public-page mobile viewport was CSS `390×844` for About, Benefits, and Pricing; no equivalent public-mobile capture was made for Services/Hero.
+The earlier categorical claim that Browser Use had no supported local-file writer was incorrect. The supported workflow is available in the bundled Browser Use runtime: import `browser-client.mjs`, call `setupBrowserRuntime()`, select the existing browser with `type === "iab"`, list/get the already-open tabs, capture with `tab.screenshot()`, and persist the returned `Uint8Array` with Node `fs.writeFile()`. The actual public capture returned JPEG bytes; `sips` converted them to PNG, `file`/`sips` verified format and dimensions, and the saved PNG was opened and visually inspected. No alternate transport or raw CDP was used.
+
+The exact Services fixture was re-run through the existing plugin chat on `post=5214`, then Published. It produced one Brief, one explicit `services.photo_cards` decision, `provider_calls=0`, `write_count=1`, Plan hash `4e3ce08c40f1034bfa608a2f21815fe75d86208490184ce9771f3936a9b42fa8`, operation `wpae-e387c462a25a14dc`, identity `5746a737-6c38-44e5-bbea-e323dfb8979a`, ledger revision 4, and root `efdd267`. The Brief hash and exact prompt match the earlier Services fixture. The saved pipeline trace is [services-generation-trace.json](screenshots/services-generation-trace.json).
+
+After Publish and a public-page reload, the live DOM contained baseline root `b48abe1` and test root `efdd267`; all three supplied service descriptions and CTA labels/hrefs matched. The three catalog images loaded at `1200×900` with the expected catalog alts. Document width was `1217px`; actual public CSS viewport was `1232×923`. The existing AI-Dana widget overlapped part of the third CTA in the scrolled viewport capture; in the full-page capture its bubble fell over lower-right card whitespace. Visual acceptance therefore remains PARTIAL. The fresh public full-page PNG is `1217×1988`; the scrolled viewport PNG is `1217×912`. The editor refusal PNG is `1232×923`.
+
+The first result was captured before Undo. The operation-specific Undo button was marked available for `wpae-e387c462a25a14dc`, but the normal UI returned `Точная операция/revision не подтверждены.` A subsequent public reload still showed root `efdd267`; no manual removal was attempted. The editor refusal screenshot and public PNGs are preserved below. Since guarded Undo/readback did not restore the exact baseline, the four dependent screenshot re-runs were stopped. Their earlier test runs and historical Undo results above remain separate evidence; fresh PNG artifacts were not obtained for those earlier operation IDs. No public-mobile screenshot was captured: the current public tab's actual CSS viewport stayed `1232×923`, and this Browser Use tab surface exposed no documented viewport setter. Editor mobile preview is not represented as public mobile.
+
+### Fresh screenshot evidence
+
+**Public Services first result** — post `5214`, root `efdd267`, operation `wpae-e387c462a25a14dc`, ledger revision 4, `services.photo_cards`; source: public page after Publish and reload. Actual CSS viewport `1232×923`; full-page PNG `1217×1988`.
+
+![Published Services first result on the public page](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-cross-family-v269/screenshots/services-after-publish-public-full.png)
+
+[Download Services public PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-cross-family-v269/screenshots/services-after-publish-public-full.png)
+
+The scrolled viewport frame shows the fixed AI-Dana bubble crossing the third CTA; PNG dimensions `1217×912`, same CSS viewport `1232×923`.
+
+![Services scrolled viewport with site widget overlap](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-cross-family-v269/screenshots/services-after-publish-public-desktop.png)
+
+[Download Services viewport PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-cross-family-v269/screenshots/services-after-publish-public-desktop.png)
+
+**Guarded Undo refusal** — post `5214`, same root/operation, source: Elementor editor; actual CSS viewport and PNG dimensions `1232×923`.
+
+![Elementor editor guarded Undo refusal](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-cross-family-v269/screenshots/services-undo-refusal-editor.png)
+
+[Download Undo refusal editor PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-cross-family-v269/screenshots/services-undo-refusal-editor.png)
 
 ## Remaining matrix limits
 
-This completes the user's minimum of five different families. It does not complete every originally listed B–J variant: Hero left/soft-cards, Benefits list/alternate profile, and native FAQ were not part of this five-case continuation. Services reference JSON was not inserted. Structured model extraction remains inactive. The final post root set is `[b48abe1]`.
+The original five-family run completed its minimum. The screenshot recovery is incomplete: only the new Services operation has saved/reopened PNGs; fresh screenshots for the other four earlier operations were not captured, and dependent re-runs stopped at the Undo guard. The original B–J variants Hero left/soft-cards, Benefits list/alternate profile, and native FAQ remain outside that five-family run. Services reference JSON was not inserted. Structured model extraction remains inactive. The root set after the original five operations' guarded Undos was `[b48abe1]`; the current public DOM after the new Services Undo refusal shows `[b48abe1, efdd267]`.

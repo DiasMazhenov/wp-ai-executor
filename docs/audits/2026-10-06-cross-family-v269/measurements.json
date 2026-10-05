@@ -5,6 +5,7 @@
     "post_id": 5214,
     "baseline_roots_before": ["b48abe1"],
     "final_roots_after_guarded_undo": ["b48abe1"],
+    "current_public_roots_after_screenshot_recovery_undo_refusal": ["b48abe1", "efdd267"],
     "user_supplied_elementor_json": {
       "root_id": "b48abe1",
       "role": "read_only_baseline_reference",
@@ -145,11 +146,39 @@
     }
   ],
   "screenshot_artifacts": {
-    "status": "SCREENSHOT BLOCKED",
-    "reason": "Documented Browser Use/CUA returns captured JPEG bytes to its result but exposes no supported local-file writer or documented shared binary handoff to the repository.",
-    "png_files": [],
-    "png_dimensions": null,
-    "inline_images_and_download_links": "NOT AVAILABLE because no saved PNG artifact exists"
+    "status": "PARTIAL",
+    "correction": "Earlier claim that Browser Use could not persist bytes was incorrect. Bundled Browser Use Node REPL captured Uint8Array JPEG bytes; Node fs.writeFile persisted them, sips converted them, and the PNGs were format/dimension checked and opened.",
+    "original_five_operation_pngs": "NOT SAVED",
+    "fresh_recovery_pngs": [
+      {"path": "screenshots/services-after-publish-public-full.png", "source": "public", "css_viewport": [1232, 923], "png_dimensions": [1217, 1988], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267"},
+      {"path": "screenshots/services-after-publish-public-desktop.png", "source": "public", "css_viewport": [1232, 923], "png_dimensions": [1217, 912], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267", "framing": "viewport capture; lower card portions clipped"},
+      {"path": "screenshots/services-undo-refusal-editor.png", "source": "editor", "css_viewport": [1232, 923], "png_dimensions": [1232, 923], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267"}
+    ],
+    "public_mobile": "NOT CAPTURED; existing public tab actual CSS viewport was 1232x923 and no documented viewport setter was exposed",
+    "other_four_families": "Fresh screenshot re-runs stopped after Services Undo refusal; no new images were captured",
+    "inline_images_and_download_links": "Available for Services recovery screenshots in REPORT.md"
+  },
+  "screenshot_recovery": {
+    "family": "Services",
+    "fixture": "../2026-10-05-m3-1-entities/E-services-exact-request.txt",
+    "post_id": 5214,
+    "source_version": "v02.11.269",
+    "editor_inline_version": "v02.11.269",
+    "recipe": "services.photo_cards",
+    "recipe_source": "explicit_request",
+    "brief_sha256": "7dce09d62950eca4b49455b824c3eac0f0ab06b9f46dd8c8d268f56a8a801e92",
+    "plan_sha256": "4e3ce08c40f1034bfa608a2f21815fe75d86208490184ce9771f3936a9b42fa8",
+    "provider_calls": 0,
+    "write_count": 1,
+    "operation_id": "wpae-e387c462a25a14dc",
+    "identity": "5746a737-6c38-44e5-bbea-e323dfb8979a",
+    "ledger_revision": 4,
+    "root_id": "efdd267",
+    "publish_and_public_reload": "PASS",
+    "readback": {"exact_copy": true, "ctas": ["#strategy", "#projects", "#support"], "images_loaded": 3, "catalog_alts_exact": true, "document_width_css_px": 1217, "horizontal_overflow": false},
+    "visual_review": "PARTIAL: full desktop Services block readable; scrolled viewport AI-Dana bubble overlaps part of third CTA; public mobile not captured",
+    "guarded_undo": {"status": "REFUSED", "ui_message": "Точная операция/revision не подтверждены.", "operation_button_state_before_click": "available", "public_readback_after_reload_root_ids": ["b48abe1", "efdd267"], "manual_removal": false, "dependent_generations_stopped": true},
+    "pipeline_trace": "screenshots/services-generation-trace.json"
   },
   "remaining_matrix": ["Hero left/soft-cards", "Benefits list/alternate profile", "native FAQ"],
   "structured_model_extraction": "inactive"
