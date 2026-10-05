@@ -192,5 +192,25 @@
     }
   ],
   "responsive_acceptance": "BLOCKED: browser actual innerWidth 1232 despite explicit viewport overrides",
-  "portrait_acceptance": "BLOCKED: no authorized employee portraits; synthetic/stock portraits not used"
+  "portrait_acceptance": "BLOCKED: no authorized employee portraits; synthetic/stock portraits not used",
+  "latest_state_reconciliation_v270": {
+    "date": "2026-10-06",
+    "source_version": "v02.11.270",
+    "source_head": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "installed_plugin_version": "v02.11.270",
+    "reloaded_editor_inline_version": "v02.11.270",
+    "fresh_editor_roots": [],
+    "fresh_public_roots": [],
+    "saved_json_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "historical_b48abe1_present": false,
+    "former_services_operation": {
+      "operation_id": "wpae-008116dc9ff6c108",
+      "identity": "fa049ed9-afad-4e15-b885-556b4bd36d34",
+      "root_id": "b48abe1",
+      "status": "unavailable",
+      "reason": "contract_missing"
+    },
+    "fresh_v270_generations": 0,
+    "interpretation": "The old E-root statement remains historical; no JSON import or root restoration was performed in the v270 continuation."
+  }
 }

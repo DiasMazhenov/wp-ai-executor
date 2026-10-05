@@ -1,0 +1,62 @@
+{
+  "date_local": "2026-10-06",
+  "target": {
+    "post_id": 5214,
+    "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "fresh_editor_root_ids": [],
+    "fresh_public_root_ids": [],
+    "saved_elementor_json_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "saved_html_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pending_operation": null,
+    "writes_this_continuation": 0,
+    "required_historical_baseline": "b48abe1",
+    "required_historical_baseline_present": false,
+    "previously_open_public_tab_stale_roots": ["b48abe1", "efdd267"]
+  },
+  "release": {
+    "source_version": "v02.11.270",
+    "source_head": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "remote_origin_main": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "installed_php_plugin_version": "v02.11.270",
+    "reloaded_editor_inline_version": "v02.11.270",
+    "wp_pusher_updated_plugin": "WP AI Executor only"
+  },
+  "operations": [
+    {
+      "operation_id": "wpae-e387c462a25a14dc",
+      "identity": "5746a737-6c38-44e5-bbea-e323dfb8979a",
+      "root_id": "efdd267",
+      "ledger_revision_at_generation": 4,
+      "fresh_bootstrap_revision": 6,
+      "fresh_status": "unavailable",
+      "fresh_reason": "contract_expired"
+    },
+    {
+      "operation_id": "wpae-008116dc9ff6c108",
+      "identity": "fa049ed9-afad-4e15-b885-556b4bd36d34",
+      "root_id": "b48abe1",
+      "fresh_bootstrap_revision": 6,
+      "fresh_status": "unavailable",
+      "fresh_reason": "contract_missing"
+    }
+  ],
+  "read_only_verify_last_observed": {
+    "source_version": "v02.11.269",
+    "ui_message": "Owned fingerprint или lineage изменились.",
+    "interpretation": "This does not isolate a stale-revision-only cause."
+  },
+  "screenshots": [
+    {"file": "screenshots/baseline-empty-editor-v270.png", "format": "PNG", "dimensions": [1642, 1231], "css_viewport": [1643, 1231], "source": "editor after reload", "root_ids": [], "sha256_jpeg_source": "336c973fbe75d54866988633b0910c5ea043c4784b4ade5b87160ff08089570a", "opened_and_inspected": true, "acceptance_role": "current-state diagnostic"},
+    {"file": "screenshots/baseline-empty-public-full.png", "format": "PNG", "dimensions": [2189, 1640], "css_viewport": [1643, 1231], "source": "public after fresh navigation", "root_ids": [], "sha256_jpeg_source": "b5eac6fe89d21bdfdc1b3b892e2168e7bb32d9e7cb7532f5fc3b51c9a0b32a7e", "opened_and_inspected": true, "acceptance_role": "current-state diagnostic"},
+    {"file": "screenshots/services-v269-current-public-full.png", "format": "PNG", "dimensions": [2163, 2615], "css_viewport": [1643, 1231], "source": "stale previously open public tab before fresh navigation", "root_ids_visible_in_stale_dom": ["b48abe1", "efdd267"], "sha256_jpeg_source": "d7cb80c967eae49db9c11b4355b565086f837c4f86b8cfd395e560826d668527", "opened_and_inspected": true, "acceptance_role": "stale diagnostic only"},
+    {"file": "screenshots/services-v269-current-public-viewport.png", "format": "PNG", "dimensions": [1489, 1216], "css_viewport": [1643, 1231], "source": "stale previously open public tab viewport", "root_ids_visible_in_stale_dom": ["b48abe1", "efdd267"], "sha256_jpeg_source": "5c54121edca1064549aa4c74990e215dbf2b10ab1d8a7639e40bce9b4b21fbdd", "opened_and_inspected": true, "acceptance_role": "stale diagnostic only"},
+    {"file": "screenshots/services-v269-descriptor-refusal-editor.png", "format": "PNG", "dimensions": [1642, 1231], "css_viewport": null, "source": "v269 editor refusal capture", "sha256_jpeg_source": "b10f7427d8cf01af6b68cb5a2b9a6637e202db600c548d8d2f0c01fcca3cb9ab", "opened_and_inspected": true, "acceptance_role": "historical lifecycle diagnostic; CSS viewport not measured at capture time"}
+  ],
+  "acceptance": {
+    "v270_live_generations": 0,
+    "v270_repeats": 0,
+    "baseline_restored": false,
+    "screenshot_workflow_tested": true,
+    "public_mobile_generated_block_evidence": false
+  }
+}

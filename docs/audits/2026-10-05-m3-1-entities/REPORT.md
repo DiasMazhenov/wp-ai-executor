@@ -109,6 +109,12 @@ The independently observed initial target was `post=5214`, no Elementor roots, J
 
 Remaining: resolve editor unsaved-state guard; finish E undo, install v268, rerun E and compare first/fixed result, verify exact baseline; run F Pricing with exact fixture, independent native readback, public DOM/desktop screenshot and guarded Undo; update final roots; retain mobile as BLOCKED unless actual CSS viewport can be changed via the documented browser control. Until then overall visual acceptance is incomplete and no full M3.1 PASS is claimed.
 
+### Later state reconciliation — v270 check, 2026-10-06
+
+This continuation supersedes the E-root checkpoint above for *current saved page state only*: after v270 was installed and the existing editor/public page freshly loaded, both sources reported an empty root set `[]` (JSON hash `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`). The former E operation for `b48abe1` now reports `contract_missing`; the M3.1 report's older “E root remains” statement is historical. No JSON was imported or restored. This does not retroactively prove when or how the page became empty.
+
+M3.1 scenarios and v270 generation are separate: the current continuation did not run Team, Testimonials, or Pricing again and does not upgrade historical evidence to v270. Team grid and Testimonials editorial rows remain historical v266 results. Pricing's earlier exact two-tier fixture remains historical v264/v265 evidence; M3.1 Pricing scenario F (three tiers) remains unrun. Public mobile status in historical runs remains as recorded in each evidence package; no new mobile result is inferred. Current operation ownership and baseline reconciliation are recorded in [the v270 lifecycle/layout audit](../2026-10-06-lifecycle-layout-v270/REPORT.md).
+
 ## 2026-10-06 — v269 five-family live continuation
 
 This continuation supersedes the older “E remains / F NOT RUN” checkpoint above for the live work below. Runtime source stayed at HEAD 5f63cc112fffe98724ab464b8d32c0fe9f367539, plugin v02.11.269. WP Pusher/Plugins v269 had been confirmed; this continuation reloaded the existing editor and observed inline v02.11.269. The user-supplied Elementor export was read-only and matched the preserved Services baseline root b48abe1; it was not imported. Before testing, editor/public contained only [b48abe1].

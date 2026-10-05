@@ -77,3 +77,33 @@ The original five-family run completed its minimum. The screenshot recovery is i
 ## Screenshot workflow documentation update
 
 The exact supported capture-and-save method is now documented canonically in [`context.md`](../../../context.md) and summarized in [`LUNA_HANDOFF_REPORT.md`](../../../LUNA_HANDOFF_REPORT.md): use the bundled Browser Use runtime and an existing `iab` tab, save `tab.screenshot()` bytes using Node `fs/promises.writeFile()`, convert JPEG when needed, verify and open the PNG, and report CSS viewport separately from raster dimensions. Treat generic, unverified `SCREENSHOT BLOCKED` status text as a claim to verify rather than a confirmed capability limit. Actual Browser Use security/tool refusals and observed screenshot or filesystem failures remain blockers and must be recorded exactly; this rule does not authorize alternate-transport workarounds. No missing screenshots were fabricated or retroactively inferred.
+
+## Superseding state check — v270, 2026-10-06
+
+The historical operation screenshots above remain accurate for `efdd267`; this section updates the *current* page state and corrects the interpretation of the older `SCREENSHOT BLOCKED` labels. Screenshot bytes can be persisted through the bundled Browser Use client and Node `fs/promises.writeFile()`. The original five v269 operation IDs still do not have saved PNGs, so their per-operation evidence remains missing; the earlier statement treated that omission as a tool limitation and was incorrect.
+
+Runtime `v02.11.270` is installed and the existing reloaded editor inline config reports v270. Current saved editor JSON and a fresh public navigation both show `rootIds=[]`, JSON SHA-256 `4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`, and empty public HTML hash `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. Before fresh navigation, the existing public tab still displayed stale `[b48abe1, efdd267]`; that stale tab view is retained below as diagnostic evidence, not current server state. The expected `b48abe1` baseline is absent. This continuation issued no post write, generation, or manual root operation.
+
+The fresh v270 bootstrap reports operation `wpae-e387c462a25a14dc`, identity `5746a737-6c38-44e5-bbea-e323dfb8979a`, root `efdd267`, revision 6, `unavailable/contract_expired`; the historical b48 operation is `contract_missing`. The previous read-only verification returned `Owned fingerprint или lineage изменились.` The revision-only Undo hypothesis is not confirmed. Guarded Undo was not attempted against the expired descriptor, and dependent generations remain unrun.
+
+Fresh diagnostic PNGs (all bytes saved, signature/dimensions checked, opened and visually inspected):
+
+**Previously open stale public tab** — source public before fresh navigation, post 5214, old roots `[b48abe1, efdd267]`, actual CSS viewport `1643×1231`, full-page PNG `2163×2615`. This shows the old Services composition, uneven CTA baselines and excess whitespace under short cards. It is not v270 generation evidence and is not a fresh saved-state render.
+
+![Stale public Services page retained for visual diagnosis](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/services-v269-current-public-full.png)
+
+[Download stale public diagnostic PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/services-v269-current-public-full.png)
+
+**Fresh public baseline** — source public after navigation/reload, root set `[]`, CSS viewport `1643×1231`, full-page PNG `2189×1640`.
+
+![Fresh public page with no generated roots](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/baseline-empty-public-full.png)
+
+[Download fresh public baseline PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/baseline-empty-public-full.png)
+
+**Fresh editor baseline** — source Elementor editor after reload, post 5214, root set `[]`, CSS viewport `1643×1231`, PNG `1642×1231`; inline source version v270 and Publish disabled.
+
+![Fresh v270 editor baseline](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/baseline-empty-editor-v270.png)
+
+[Download fresh editor baseline PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/baseline-empty-editor-v270.png)
+
+See [the v270 lifecycle/layout audit](../2026-10-06-lifecycle-layout-v270/REPORT.md) for code/test/release evidence and current scenario statuses. No Services/Hero/About/Benefits/Pricing/Team/Testimonials/FAQ/CTA block was generated under v270 in that continuation.

@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-06",
+  "target_post_id": 5214,
+  "current_v270_root_set": [],
+  "historical_baseline_root": "b48abe1",
+  "primary_generations_v270": 0,
+  "repeats_v270": 0,
+  "scenarios": [
+    {
+      "id": "A",
+      "family": "Services",
+      "fixture": "../2026-10-05-m3-1-entities/E-services-exact-request.txt",
+      "requested_record_or_route": "services.photo_cards",
+      "required_profile": "same accepted record/profile as prior Services request; v270 live selection not made",
+      "criteria": ["three exact services", "distinct allowed image/alt ownership", "three exact CTA hrefs", "aligned desktop action baseline", "natural mobile height"],
+      "v270_status": "BLOCKED_BASELINE_MISMATCH",
+      "v270_root_id": null,
+      "v270_operation_id": null,
+      "prior_evidence": {
+        "version": "v02.11.269",
+        "root_id": "efdd267",
+        "operation_id": "wpae-e387c462a25a14dc",
+        "identity": "5746a737-6c38-44e5-bbea-e323dfb8979a",
+        "revision_initial": 4,
+        "fresh_descriptor_revision": 6,
+        "fresh_descriptor_status": "unavailable",
+        "fresh_descriptor_reason": "contract_expired",
+        "visual_finding": "full copy, images and pill were present; card CTA baselines differed and site overlay intersected CTA 3"
+      }
+    },
+    {
+      "id": "B",
+      "family": "Pricing",
+      "fixture": "../2026-10-05-visual-policy/I-exact-request.txt",
+      "requested_record_or_route": "pricing.tiers (legacy composition id pricing.three_cards)",
+      "required_profile": "historical default profile; v270 selection not made",
+      "criteria": ["exactly two tiers", "full prices/features/CTA", "two native columns with Plan-matched responsive policy"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.269", "root_id": "8859f30", "operation_id": "wpae-e67a76fd2b2199d1", "historical_undo": "PASS", "native_item_count": 2}
+    },
+    {
+      "id": "C",
+      "family": "Pricing",
+      "fixture": "../2026-10-05-m3-1-entities/F-pricing-exact-request.txt",
+      "requested_record_or_route": "pricing.tiers",
+      "required_profile": "existing default profile; v270 selection not made",
+      "criteria": ["exactly three tiers", "exact pill/title/intro", "prices/features/CTA and columns preserve exact Brief"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": null
+    },
+    {
+      "id": "D",
+      "family": "Hero",
+      "fixture": "../2026-10-05-visual-policy/B-C-D-exact-request.txt",
+      "requested_record_or_route": "Hero split, image right, editorial_light",
+      "required_profile": "editorial_light",
+      "criteria": ["H1 hierarchy", "exact copy/CTA", "approved asset and alt", "desktop split geometry", "logical mobile order"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.269", "root_id": "4c5d508", "operation_id": "wpae-41612dd2fb2d5967", "historical_undo": "PASS", "historical_screenshot": "not saved for this operation"}
+    },
+    {
+      "id": "E",
+      "family": "About",
+      "fixture": "../2026-10-05-visual-policy/E-exact-request.txt",
+      "requested_record_or_route": "About split with image left",
+      "required_profile": "existing fixture/profile; v270 selection not made",
+      "criteria": ["H2", "full body", "image-left composition", "natural height and mobile order"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.269", "root_id": "b4825de", "operation_id": "wpae-3a0b99add34d4807", "historical_record": "about.split_60_40.right", "historical_undo": "PASS"}
+    },
+    {
+      "id": "F",
+      "family": "Benefits",
+      "fixture": "../2026-10-05-visual-policy/F-G-H-exact-request.txt",
+      "requested_record_or_route": "benefits.editorial_list",
+      "required_profile": "existing allowed profile; v270 selection not made",
+      "criteria": ["exact title/body pairs", "allowed icons", "no photos", "editorial rhythm and wrapping"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.269", "root_id": "206f35b", "operation_id": "wpae-0d749e5381b1b802", "historical_record": "benefits.grid", "same_composition": false}
+    },
+    {
+      "id": "G",
+      "family": "Team",
+      "fixture": "../2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "requested_record_or_route": "team.grid",
+      "required_profile": "fixture profile; v270 selection not made",
+      "criteria": ["four exact people/field ownership", "no invented portraits", "long bio natural height", "no empty actions footer"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.266", "root_id": "3178f61", "operation_id": "wpae-df7ea9c2e4a4d350", "historical_visual_status": "REVIEW_REQUIRED"}
+    },
+    {
+      "id": "H",
+      "family": "Testimonials",
+      "fixture": "../2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "requested_record_or_route": "testimonials.editorial_rows",
+      "required_profile": "fixture profile; v270 selection not made",
+      "criteria": ["exact quote/author/meta ownership", "no added rating/avatar/logo", "reading measure", "no empty actions footer"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.266", "root_id": "bcc1d46", "operation_id": "wpae-06bb72bdb0e0881b", "historical_visual_status": "PASS_DESKTOP_ONLY"}
+    },
+    {
+      "id": "I",
+      "family": "FAQ",
+      "fixture": "../2026-10-05-visual-policy/J-exact-request.txt",
+      "requested_record_or_route": "faq.native",
+      "required_profile": "existing default profile; v270 selection not made",
+      "criteria": ["native Accordion", "exact question/answer pairs", "open every item", "save/reload and no clipping"],
+      "v270_status": "NOT_RUN",
+      "prior_evidence": {"version": "v02.11.264", "root_id": "59a770e", "operation_id": "wpae-0198aa58bfe9eaaf", "historical_settled_answer_evidence": true, "historical_undo": "PASS"}
+    },
+    {
+      "id": "J",
+      "family": "CTA",
+      "fixture": "J-cta-exact-request.txt",
+      "requested_record_or_route": "legacy cta.band; no canonical typed CTA record",
+      "required_profile": "existing defaults; no v270 route chosen",
+      "criteria": ["exact heading/description", "primary #contact and secondary #projects", "no image", "CTA not misrouted as Hero", "operation-scoped Undo safety"],
+      "v270_status": "NOT_RUN",
+      "reason": "No canonical record and safe scoped lifecycle was not proven; stopped before prompt/write."
+    }
+  ],
+  "status_legend": {
+    "NOT_RUN": "No v270 generation or acceptance was performed.",
+    "BLOCKED_BASELINE_MISMATCH": "Current page baseline did not match the required preserved-root state; no write was authorized by the live state."
+  }
+}

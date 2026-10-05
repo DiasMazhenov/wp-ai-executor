@@ -5,7 +5,13 @@
     "post_id": 5214,
     "baseline_roots_before": ["b48abe1"],
     "final_roots_after_guarded_undo": ["b48abe1"],
-    "current_public_roots_after_screenshot_recovery_undo_refusal": ["b48abe1", "efdd267"],
+    "current_public_roots_after_screenshot_recovery_undo_refusal_recorded_at_v269": ["b48abe1", "efdd267"],
+    "current_fresh_editor_roots_v270": [],
+    "current_fresh_public_roots_v270": [],
+    "current_saved_json_sha256_v270": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "current_saved_html_sha256_v270": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "expected_baseline_b48abe1_present_v270": false,
+    "prior_open_public_tab_was_stale": true,
     "user_supplied_elementor_json": {
       "root_id": "b48abe1",
       "role": "read_only_baseline_reference",
@@ -19,7 +25,13 @@
     "reloaded_editor_inline_version": "v02.11.269",
     "runtime_changed_during_acceptance": false,
     "local_checks_rerun": false,
-    "package_hashes_changed": false
+    "package_hashes_changed": false,
+    "latest_source_version": "v02.11.270",
+    "latest_source_head": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "latest_remote_origin_main": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "latest_installed_plugin_version": "v02.11.270",
+    "latest_reloaded_editor_inline_version": "v02.11.270",
+    "v270_live_generations_in_this_continuation": 0
   },
   "common_pipeline": {
     "path": "plugin_chat -> BriefIR -> accepted recipe/record -> compiler -> validation -> transaction -> editor/public readback",
@@ -55,7 +67,7 @@
       "technical_status": "PASS",
       "visual_status": "PARTIAL",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "SCREENSHOT BLOCKED"}
+      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
     },
     {
       "family": "Hero",
@@ -81,7 +93,7 @@
       "technical_status": "PASS",
       "visual_status": "PASS at measured desktop; mobile NOT RUN",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "SCREENSHOT BLOCKED"}
+      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
     },
     {
       "family": "About",
@@ -100,7 +112,7 @@
       "technical_status": "PASS",
       "visual_status": "PARTIAL due to site overlay; measured geometry PASS",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "SCREENSHOT BLOCKED"}
+      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
     },
     {
       "family": "Benefits",
@@ -120,7 +132,7 @@
       "technical_status": "PASS",
       "visual_status": "PARTIAL due to site overlay; measured grid geometry PASS",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "SCREENSHOT BLOCKED"}
+      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
     },
     {
       "family": "Pricing",
@@ -142,13 +154,16 @@
       "technical_status": "PASS",
       "visual_status": "PARTIAL due to mobile site overlay; desktop composition PASS; record/count discrepancy remains",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "SCREENSHOT BLOCKED"}
+      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
     }
   ],
   "screenshot_artifacts": {
     "status": "PARTIAL",
     "correction": "Earlier claim that Browser Use could not persist bytes was incorrect. Bundled Browser Use Node REPL captured Uint8Array JPEG bytes; Node fs.writeFile persisted them, sips converted them, and the PNGs were format/dimension checked and opened.",
-    "original_five_operation_pngs": "NOT SAVED",
+    "original_five_operation_pngs": "NOT_SAVED_FOR_HISTORICAL_OPERATION_IDS",
+    "status_interpretation": "Historical per-operation PNG files are absent. This is an evidence omission, not a Browser Use saving capability limit; the documented Browser Use + Node fs path was verified in the later v270 continuation.",
+    "generic_blocked_status_correction": "Do not describe the saving path as unavailable. Verify the documented Browser Use route. A concrete tool/security/filesystem error remains a blocker.",
+    "v270_current_diagnostics": "../2026-10-06-lifecycle-layout-v270/current-state.json",
     "fresh_recovery_pngs": [
       {"path": "screenshots/services-after-publish-public-full.png", "source": "public", "css_viewport": [1232, 923], "png_dimensions": [1217, 1988], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267"},
       {"path": "screenshots/services-after-publish-public-desktop.png", "source": "public", "css_viewport": [1232, 923], "png_dimensions": [1217, 912], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267", "framing": "viewport capture; lower card portions clipped"},
@@ -177,8 +192,14 @@
     "publish_and_public_reload": "PASS",
     "readback": {"exact_copy": true, "ctas": ["#strategy", "#projects", "#support"], "images_loaded": 3, "catalog_alts_exact": true, "document_width_css_px": 1217, "horizontal_overflow": false},
     "visual_review": "PARTIAL: full desktop Services block readable; scrolled viewport AI-Dana bubble overlaps part of third CTA; public mobile not captured",
-    "guarded_undo": {"status": "REFUSED", "ui_message": "Точная операция/revision не подтверждены.", "operation_button_state_before_click": "available", "public_readback_after_reload_root_ids": ["b48abe1", "efdd267"], "manual_removal": false, "dependent_generations_stopped": true},
-    "pipeline_trace": "screenshots/services-generation-trace.json"
+    "guarded_undo": {"status": "REFUSED", "ui_message": "Точная операция/revision не подтверждены.", "operation_button_state_before_click": "available", "public_readback_after_reload_root_ids_v269_at_that_time": ["b48abe1", "efdd267"], "manual_removal": false, "dependent_generations_stopped": true},
+    "pipeline_trace": "screenshots/services-generation-trace.json",
+    "fresh_v270_descriptor": {"revision": 6, "status": "unavailable", "reason": "contract_expired"},
+    "fresh_v270_undo": "NOT_ATTEMPTED: accepted contract expired; no unsafe retry or manual delete",
+    "current_fresh_editor_and_public_roots_v270": [],
+    "current_baseline_note": "Historical b48abe1 is absent from fresh editor/public readback. No import/recreation/write occurred in v270 continuation.",
+    "v270_live_generation": "NOT RUN",
+    "visual_hypothesis": "v269 stale-tab Services render showed different CTA y positions and excess short-card whitespace; v270 layout change has not been live tested."
   },
   "remaining_matrix": ["Hero left/soft-cards", "Benefits list/alternate profile", "native FAQ"],
   "structured_model_extraction": "inactive"
