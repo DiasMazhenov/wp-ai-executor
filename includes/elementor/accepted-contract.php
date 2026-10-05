@@ -36,6 +36,10 @@ function wpae_accepted_expand_responsive_defaults( array $defaults, array $contr
             $device_key = $key . '_' . $device;
             if ( ! array_key_exists( $device_key, $defaults ) && array_key_exists( $device . '_default', $control ) ) {
                 $defaults[$device_key] = $control[$device . '_default'];
+                // Native slider device defaults omit the unused multi-value slot.
+                if ( ( $control['type'] ?? '' ) === 'slider' && is_array( $defaults[$device_key] ) && ! array_key_exists( 'sizes', $defaults[$device_key] ) && ( $control['default']['sizes'] ?? null ) === [] ) {
+                    $defaults[$device_key]['sizes'] = [];
+                }
             }
         }
     }

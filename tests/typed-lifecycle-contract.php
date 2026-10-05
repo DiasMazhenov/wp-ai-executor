@@ -170,3 +170,5 @@ $grid_actual=$grid_expected; $grid_actual[0]['settings']=[];
 check(wpae_accepted_project_owned_model($grid_expected,$grid_actual,static fn($n)=>$responsive_defaults)!==null,'Native omitted Grid device defaults preserve authored contract');
 $grid_actual[0]['settings']['grid_auto_flow_tablet']='column';
 check(wpae_accepted_project_owned_model($grid_expected,$grid_actual,static fn($n)=>$responsive_defaults)===null,'Changed Grid flow still refuses');
+$slider_defaults=wpae_accepted_expand_responsive_defaults([],['grid_columns_grid'=>['type'=>'slider','is_responsive'=>true,'default'=>['unit'=>'fr','size'=>3,'sizes'=>[]],'mobile_default'=>['unit'=>'fr','size'=>1]]]);
+check($slider_defaults['grid_columns_grid_mobile']===['unit'=>'fr','size'=>1,'sizes'=>[]],'Native declared slider device default retains empty sizes slot without inheriting desktop size');
