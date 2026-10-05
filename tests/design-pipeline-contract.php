@@ -1464,6 +1464,29 @@ foreach ( [ 'pricing', 'team', 'services' ] as $family ) {
   if($family!=='services'){
    $grids=array_values(array_filter($walk_elements($compiled['elementor_data']),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
    $check(count($grids)===1 && count($grids[0]['elements'])===$count,'Native Grid cardinality '.$family.' '.$count);
+   if($family==='pricing'){
+    $price_group=$grids[0]['elements'][0]['elements'][0]['elements'][1]??[];
+    $inline=$plan['visual_policy']['inline_value'];
+    foreach(['desktop'=>'','tablet'=>'_tablet','mobile'=>'_mobile'] as $device=>$suffix){
+     $s=$price_group['settings']??[];
+     $check(($s['flex_direction'.$suffix]??'')===$inline['direction'][$device] && ($s['flex_justify_content'.$suffix]??'')===$inline['main_align'] && ($s['flex_align_items'.$suffix]??'')===$inline['cross_align'] && ($s['flex_wrap'.$suffix]??'')===$inline['wrap'],'Price/period native responsive controls follow accepted inline Plan '.$count.' '.$device);
+    }
+    if($count===2){
+     $changed=$plan;$changed['visual_policy']['inline_value']['direction']['mobile']='column';$changed['visual_policy']['inline_value']['cross_align']='flex-start';
+     $changed_ir=wpae_elementor_ir_from_design_plan($changed,$brief);
+     $changed_native=wpae_elementor_ir_compile($changed_ir,$brief,[],['resolved_visual'=>$changed['resolved_visual']]);
+     $changed_grids=array_values(array_filter($walk_elements($changed_native['elementor_data']),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
+     $changed_group=$changed_grids[0]['elements'][0]['elements'][0]['elements'][1]['settings'];
+     $check($changed_group['flex_direction_mobile']==='column' && $changed_group['flex_align_items_mobile']==='flex-start','Compiler translates accepted alternate inline policy without reselecting it');
+     $old=$plan;unset($old['visual_policy']['inline_value']);
+     $old_ir=wpae_elementor_ir_from_design_plan($old,$brief);$old_native=wpae_elementor_ir_compile($old_ir,$brief,[],['resolved_visual'=>$old['resolved_visual']]);
+     $old_grids=array_values(array_filter($walk_elements($old_native['elementor_data']),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
+     $old_group=$old_grids[0]['elements'][0]['elements'][0]['elements'][1]['settings'];
+     $check(wpae_design_plan_validate($old,$brief)['ok'] && $old_group['flex_direction_mobile']==='column','Historical frozen Plan without inline policy retains its existing compiler behavior');
+     $bad=$plan;$bad['visual_policy']['inline_value']['direction']['mobile']='unexpected';
+     $check(in_array('visual_policy_inline_direction_invalid',wpae_design_plan_validate($bad,$brief)['errors'],true),'Invalid inline responsive decision refuses before write');
+    }
+   }
    $report=wpae_layout_report_for_plan($plan);
    $check(count($report['collections'])===1 && !$report['visual_render_verified'],'Nested group static report '.$family.' '.$count);
   }

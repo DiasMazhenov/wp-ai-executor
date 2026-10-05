@@ -887,9 +887,12 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		'spacing' => [ 'eyebrow_title' => $pick( 'eyebrow_title_gap', '0.75rem' ), 'title_description' => $pick( 'title_description_gap', '1rem' ), 'description_cta' => $pick( 'description_cta_gap', '1.5rem' ), 'intro_collection' => $pick( 'intro_collection_gap', '2rem' ), 'item_copy' => $pick( 'item_copy_gap', '0.75rem' ), 'item_cta' => $pick( 'item_cta_gap', '1.25rem' ), 'section' => [ 'desktop' => $values['space.section'], 'tablet' => $values['space.section_tablet'] ?? $values['space.section'], 'mobile' => $values['space.section_mobile'] ?? '2rem' ] ],
 		'eyebrow_colors' => [ 'plain' => $values['color.primary'], 'pill' => $values['color.surface'] ],
 		'item_surface' => [ 'padding' => $values['space.card'] ?? '1.5rem', 'radius' => $values['radius.card'], 'background' => $values['color.surface'] ],
+		// Inline values (price + period) keep their shared start axis when space narrows.
+		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
 		'collection' => [ 'implementation' => 'native_grid', 'columns' => [ 'desktop' => (int) $pick( 'columns', $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
 	];
+	$field_sources['inline_value'] = 'documented_default';
 	$policy['provenance'] = [ 'record_id' => $record['id'] ?? '', 'profile' => $visual['profile'] ?? '', 'field_sources' => $field_sources, 'token_sources' => $visual['sources'] ?? [] ];
 	return $policy;
 }
@@ -1686,6 +1689,11 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		if ( ( $visual_policy['intro']['placement'] ?? '' ) !== $placement ) { $errors[] = 'visual_policy_placement_composition_conflict'; }
 		if ( ( $plan['responsive']['tablet'] ?? 'stack' ) === 'stack' && ( $visual_policy['collection']['columns']['tablet'] ?? 0 ) !== 1 ) { $errors[] = 'visual_policy_responsive_conflict'; }
 		foreach ( (array) ( $visual_policy['collection']['columns'] ?? [] ) as $columns ) { if ( ! is_int( $columns ) || $columns < 1 || $columns > 6 ) { $errors[] = 'visual_policy_columns_invalid'; } }
+		if ( isset( $visual_policy['inline_value'] ) ) {
+			$inline = $visual_policy['inline_value'];
+			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! in_array( $inline['direction'][$device] ?? '', [ 'row', 'column' ], true ) ) { $errors[] = 'visual_policy_inline_direction_invalid'; } }
+			if ( ! in_array( $inline['wrap'] ?? '', [ 'wrap', 'nowrap' ], true ) || ! in_array( $inline['main_align'] ?? '', [ 'flex-start', 'center', 'flex-end' ], true ) || ! in_array( $inline['cross_align'] ?? '', [ 'flex-start', 'center', 'flex-end', 'baseline' ], true ) || ! preg_match( '/^(?:0|[1-9]\d*(?:\.\d+)?|0\.\d+)(?:px|rem|em)$/', (string) ( $inline['gap'] ?? '' ) ) ) { $errors[] = 'visual_policy_inline_invalid'; }
+		}
 		foreach ( (array) ( $brief['ambiguities'] ?? [] ) as $ambiguity ) { if ( ( $ambiguity['kind'] ?? '' ) === 'conflicting_eyebrow_presentation' ) { $errors[] = 'conflicting_eyebrow_presentation'; } }
 	}
 	$grouped_requirements = [

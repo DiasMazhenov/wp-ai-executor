@@ -1991,3 +1991,8 @@ Technical lifecycle PASS; visual request match PASS at measured widths; overall 
 Explicit user-authorized dirty-tab recovery: documented CUA existing-tab control; open replacement of current editor URL, confirm version/root, close stale old editor; retain exactly one editor. Actual tab7 replaces6, editorv264. Never infer missing browser tools from Codex Page state; use catalog + CUA documentation. Native Publish completion precedes refreshed public screenshots.
 
 Current evidence and all inline PNGs: [Live acceptance](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/LIVE_ACCEPTANCE.md). Machine matrix records root/operation/identity/revisions/Brief/Plan hashes/PNG source and real CSS viewport. Earlier observations remain historical; final current baseline is empty.
+
+
+### Pricing inline ownership correction prepared (v265)
+
+Actual v264 public390 price-group centers its narrow amount box after a mobile column switch, although heading text-align is left. General inline-value policy is now optional accepted Plan data translated by IR/compiler; desktop/tablet/mobile row+wrap+start axis, center cross-axis, gap0.25rem. Historical Plans missing this field retain old behavior. Local DesignPlan380/runtime1329/Node15/15/patch/catalog/lint/package252+four probes/diff PASS. Sourcev265 prepared; commit/push/install/live retest pending independently. Original I evidence retained; overall quality remains REVIEW_REQUIRED until fresh public review. [Correction evidence](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/PRICING_INLINE_V265.md).

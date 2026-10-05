@@ -444,6 +444,7 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	$role = (string) ( $node['role'] ?? '' );
 	$intro = $intro || ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) || $role === 'pricing_intro';
 	$node['visual_policy'] = [ 'version' => $policy['version'], 'intro' => $intro, 'text_align' => $intro ? $policy['intro']['text_align'] : 'left', 'container_align' => $intro ? $policy['intro']['container_align'] : 'start', 'spacing' => $policy['spacing'], 'item_surface' => $policy['item_surface'], 'split' => $policy['split'], 'badge_label' => $badge_label, 'eyebrow_colors' => $policy['eyebrow_colors'] ];
+	if ( $role === 'pricing_price_group' && isset( $policy['inline_value'] ) ) { $node['visual_policy']['inline_value'] = $policy['inline_value']; }
 	if ( $intro && $node['widget_type'] === 'container' && in_array( $role, [ 'copy_group', 'cta_copy_group', 'pricing_intro' ], true ) ) { $node['visual_policy']['reading_measure'] = $policy['intro']['reading_measure']; }
 	if ( in_array( $role, [ 'feature_cards', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
 	if ( $node['widget_type'] === 'heading' ) {
@@ -470,6 +471,17 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		foreach ( [ 'background_background', 'background_color', 'border_border', 'border_color', 'border_width', 'border_radius', '_padding' ] as $box_key ) { unset( $settings[ $box_key ] ); }
 	}
 	if ( $node['widget_type'] !== 'container' ) { return $settings; }
+	if ( isset( $policy['inline_value'] ) ) {
+		$inline = $policy['inline_value'];
+		$gap = wpae_elementor_ir_dimension_control( $inline['gap'], 'rem', 0.25 );
+		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+			$settings['flex_direction' . $suffix] = $inline['direction'][$device];
+			$settings['flex_wrap' . $suffix] = $inline['wrap'];
+			$settings['flex_justify_content' . $suffix] = $inline['main_align'];
+			$settings['flex_align_items' . $suffix] = $inline['cross_align'];
+			$settings['flex_gap' . $suffix] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+		}
+	}
 	$settings['content_width'] = in_array( $role, wpae_design_plan_schema()['archetypes'], true ) ? $settings['content_width'] : 'full';
 	if ( in_array( $role, wpae_design_plan_schema()['archetypes'], true ) ) {
 		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
@@ -1251,7 +1263,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_align_items'] = 'stretch';
 			$settings['flex_gap'] = [ 'unit' => 'rem', 'size' => 0.75, 'column' => '0.75', 'row' => '0.75', 'isLinked' => true ];
 		}
-		if ( $role === 'pricing_price_group' ) {
+		if ( $role === 'pricing_price_group' && empty( $node['visual_policy']['inline_value'] ) ) {
 			$settings['flex_direction'] = 'row';
 			$settings['flex_wrap'] = 'wrap';
 			$settings['flex_align_items'] = 'center';
