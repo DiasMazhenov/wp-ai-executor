@@ -136,9 +136,20 @@ function wpae_accepted_contract_eligibility( array $operation, array $data ): ar
     $loaded = wpae_accepted_contract_get( $operation );
     if ( empty( $loaded['ok'] ) ) { return [ 'status' => 'unavailable', 'reason' => $loaded['reason'] ]; }
     $contract = $loaded['contract'];
+    $operation_roots = array_values( array_map( 'strval', (array) ( $operation['root_ids'] ?? [] ) ) );
+    $contract_roots = array_values( array_map( 'strval', (array) ( $contract['owned_root_ids'] ?? [] ) ) );
+    if ( $operation_roots !== $contract_roots ) { return [ 'status' => 'unavailable', 'reason' => 'operation_root_scope_mismatch' ]; }
     if ( count( (array) $contract['owned_root_ids'] ) !== 1 ) { return [ 'status' => 'ambiguous', 'reason' => 'single_owned_root_required' ]; }
     $owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
-    if ( count( $owned ) !== 1 || ! wpae_accepted_owned_matches( $contract['after_owned'], $owned ) ) { return [ 'status' => 'changed_target' ]; }
+    if ( count( $owned ) !== 1 ) { return [ 'status' => 'changed_target', 'reason' => 'owned_root_missing_or_duplicated' ]; }
+    $mismatch = [];
+    $projected = wpae_accepted_project_owned_model( (array) $contract['after_owned'], $owned, null, $mismatch );
+    if ( $projected === null ) {
+        return [ 'status' => 'changed_target', 'reason' => 'owned_fingerprint_changed', 'mismatch' => array_intersect_key( $mismatch, array_flip( [ 'node_id', 'control', 'reason' ] ) ) ];
+    }
+    if ( ! hash_equals( wpae_accepted_owned_fingerprint( (array) $contract['after_owned'] ), wpae_accepted_owned_fingerprint( $projected ) ) ) {
+        return [ 'status' => 'changed_target', 'reason' => 'owned_fingerprint_changed', 'mismatch' => [ 'reason' => 'projected_fingerprint_mismatch' ] ];
+    }
     foreach ( wpae_design_operation_store() as $candidate ) {
         if ( ( $candidate['parent_operation_id'] ?? '' ) === $operation['operation_id'] && empty( $candidate['typed_undone'] ) && in_array( $candidate['current_state'] ?? '', [ 'written', 'rendered', 'reviewed', 'completed' ], true ) ) { return [ 'status' => 'ambiguous', 'reason' => 'active_child_operation' ]; }
     }
@@ -187,7 +198,7 @@ function wpae_accepted_contract_undo( WP_REST_Request $request ): WP_REST_Respon
     if ( ! $token ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_busy' ], 409 ); }
     try {
         $operation = wpae_design_operation_find_by_id( $id );
-        if ( ! $operation || (int) $operation['post_id'] !== $post_id || (int) $request->get_param( 'revision' ) !== (int) $operation['revision'] || (string) $request->get_param( 'operation_identity' ) !== (string) $operation['operation_identity'] ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_scope_or_revision' ], 409 ); }
+        if ( ! $operation || (int) $operation['post_id'] !== $post_id || (int) $request->get_param( 'revision' ) !== (int) $operation['revision'] || (string) $request->get_param( 'operation_identity' ) !== (string) $operation['operation_identity'] || (string) $request->get_param( 'accepted_contract_id' ) !== (string) ( $operation['accepted_contract_id'] ?? '' ) || array_values( array_map( 'strval', (array) $request->get_param( 'accepted_root_ids' ) ) ) !== array_values( array_map( 'strval', (array) ( $operation['root_ids'] ?? [] ) ) ) ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_scope_or_revision' ], 409 ); }
         $data = wpae_get_elementor_data_for_post( $post_id );
         if ( ! is_array( $data ) ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_readback_unavailable' ], 409 ); }
         $eligibility = wpae_accepted_contract_eligibility( $operation, $data );
@@ -302,21 +313,38 @@ function wpae_accepted_layout_delta( array $plan, array $report, string $correct
     return [ 'ok' => true, 'plan' => $plan, 'delta' => $changes ];
 }
 
+function wpae_accepted_lifecycle_scope_matches( array $operation, array $context ): bool {
+    $operation_roots = array_values( array_map( 'strval', (array) ( $operation['root_ids'] ?? [] ) ) );
+    $requested_roots = array_values( array_map( 'strval', (array) ( $context['accepted_root_ids'] ?? [] ) ) );
+    return (string) ( $context['accepted_contract_id'] ?? '' ) !== ''
+        && hash_equals( (string) ( $operation['accepted_contract_id'] ?? '' ), (string) $context['accepted_contract_id'] )
+        && $operation_roots !== []
+        && $requested_roots === $operation_roots;
+}
+
 function wpae_accepted_lifecycle_request( array $context ) {
     $post_id = absint( $context['post_id'] ?? 0 );
     $operation = wpae_design_operation_find_by_id( sanitize_key( (string) ( $context['accepted_operation_id'] ?? '' ) ) );
     if ( ( $context['lifecycle_action'] ?? '' ) === 'describe_operation' ) {
         // Read-only recovery of a stale UI acknowledgement; mutations still require revision.
-        if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция не подтверждена.', [ 'status' => 409, 'write_count' => 0 ] ); }
+        if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] || ! wpae_accepted_lifecycle_scope_matches( $operation, $context ) ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция и её root/contract scope не подтверждены.', [ 'status' => 409, 'write_count' => 0 ] ); }
         $data = wpae_get_elementor_data_for_post( $post_id );
-        if ( ! is_array( $data ) || wpae_accepted_contract_eligibility( $operation, $data )['status'] !== 'available' ) { return new WP_Error( 'wpae_typed_target_changed', 'Owned fingerprint или lineage изменились.', [ 'status' => 409, 'write_count' => 0 ] ); }
-        return new WP_REST_Response( [ 'ok' => true, 'write_count' => 0, 'operation' => array_intersect_key( $operation, array_flip( [ 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id' ] ) ) ], 200 );
+        if ( ! is_array( $data ) ) { return new WP_Error( 'wpae_typed_readback_unavailable', 'Текущая native-модель недоступна.', [ 'status' => 409, 'write_count' => 0 ] ); }
+        $eligibility = wpae_accepted_contract_eligibility( $operation, $data );
+        // Describe is strictly read-only: return the current server descriptor even
+        // when the target is ineligible, so the UI can report the actual revision
+        // and reason. The client must not treat an ineligible descriptor as approval.
+        $descriptor = array_intersect_key( $operation, array_flip( [ 'post_id', 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id' ] ) );
+        $descriptor['eligibility'] = $eligibility;
+        return new WP_REST_Response( [ 'ok' => true, 'write_count' => 0, 'operation' => $descriptor ], 200 );
     }
-    if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (int) ( $context['accepted_revision'] ?? 0 ) !== (int) $operation['revision'] || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция/revision не подтверждены.', [ 'status' => 409, 'write_count' => 0 ] ); }
+    if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (int) ( $context['accepted_revision'] ?? 0 ) !== (int) $operation['revision'] || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] || ! wpae_accepted_lifecycle_scope_matches( $operation, $context ) ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция/revision и её root/contract scope не подтверждены.', [ 'status' => 409, 'write_count' => 0 ] ); }
     $loaded = wpae_accepted_contract_get( $operation );
     if ( empty( $loaded['ok'] ) ) { return new WP_Error( 'wpae_typed_contract_unavailable', $loaded['reason'], [ 'status' => 409, 'write_count' => 0 ] ); }
     $data = wpae_get_elementor_data_for_post( $post_id );
-    if ( ! is_array( $data ) || wpae_accepted_contract_eligibility( $operation, $data )['status'] !== 'available' ) { return new WP_Error( 'wpae_typed_target_changed', 'Owned fingerprint или lineage изменились.', [ 'status' => 409, 'write_count' => 0 ] ); }
+    if ( ! is_array( $data ) ) { return new WP_Error( 'wpae_typed_readback_unavailable', 'Текущая native-модель недоступна.', [ 'status' => 409, 'write_count' => 0 ] ); }
+    $eligibility = wpae_accepted_contract_eligibility( $operation, $data );
+    if ( $eligibility['status'] !== 'available' ) { return new WP_Error( 'wpae_typed_target_changed', 'Owned-модель операции недоступна для lifecycle-действия.', [ 'status' => 409, 'write_count' => 0, 'eligibility' => $eligibility ] ); }
     $contract = $loaded['contract'];
     $owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
     $action = $context['lifecycle_action'] ?? '';

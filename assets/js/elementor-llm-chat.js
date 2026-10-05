@@ -1834,7 +1834,9 @@
             headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
             body: JSON.stringify({ message: 'Проверка typed lifecycle', context: context })
         }).then(function (response) { return response.json().then(function (body) {
-            if (!response.ok || !body.ok) throw new Error((body.message || body.error || body.code || 'Typed lifecycle refusal') + (body.mismatch ? ' ' + JSON.stringify(body.mismatch) : ''));
+            var eligibility = body.data && body.data.eligibility ? body.data.eligibility : null;
+            var detail = eligibility ? eligibility.status + (eligibility.reason ? ':' + eligibility.reason : '') + (eligibility.mismatch ? ' ' + JSON.stringify(eligibility.mismatch) : '') : '';
+            if (!response.ok || !body.ok) throw new Error((body.message || body.error || body.code || 'Typed lifecycle refusal') + (detail ? ' [' + detail + ']' : '') + (body.mismatch ? ' ' + JSON.stringify(body.mismatch) : ''));
             return body;
         }); });
     }
@@ -1842,7 +1844,28 @@
         return { post_id: Number(config.postId), lifecycle_action: action,
             accepted_operation_id: String(operation.operation_id || ''),
             accepted_identity: String(operation.operation_identity || ''),
+            accepted_contract_id: String(operation.accepted_contract_id || ''),
+            accepted_root_ids: Array.isArray(operation.root_ids) ? operation.root_ids.map(String) : [],
             accepted_revision: Number(operation.revision || 0) };
+    }
+    function sameTypedOperationScope(current, expected) {
+        return Boolean(current && Number(current.post_id) === Number(config.postId)
+            && String(current.operation_id || '') === String(expected.operation_id || '')
+            && String(current.operation_identity || '') === String(expected.operation_identity || '')
+            && String(current.accepted_contract_id || '') === String(expected.accepted_contract_id || '')
+            && JSON.stringify((current.root_ids || []).map(String)) === JSON.stringify((expected.root_ids || []).map(String))
+            && Number(current.revision) > 0);
+    }
+    function refreshTypedOperationDescriptor(operation) {
+        return typedLifecyclePost(typedOperationContext(operation, 'describe_operation')).then(function (result) {
+            if (!sameTypedOperationScope(result.operation, operation)) throw new Error('Точная operation/post/identity/contract/root scope не совпала; локальная модель сохранена.');
+            var eligibility = result.operation.eligibility || {};
+            if (eligibility.status !== 'available') {
+                throw new Error('Серверный descriptor revision ' + Number(result.operation.revision || 0) + ': owned-модель не разрешает lifecycle (' + String(eligibility.status || 'unknown') + (eligibility.reason ? '/' + String(eligibility.reason) : '') + '). Запись не выполнялась.');
+            }
+            operation.revision = Number(result.operation.revision);
+            return operation;
+        });
     }
     function serializeTypedModel(model) {
         if (model && model.model) model = model.model;
@@ -1868,9 +1891,14 @@
         button.addEventListener('click', function () {
             if (requestInFlight) return;
             button.disabled = true;
-            var roots = getEditorModelChildren(window.elementor.getPreviewContainer()).filter(function (model) { return operation.root_ids.indexOf(getEditorModelId(model)) >= 0; }).map(serializeTypedModel);
-            var context = typedOperationContext(operation, 'resync'); context.editor_owned_model = roots;
-            typedLifecyclePost(context).then(function (result) {
+            var documentBefore = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+            refreshTypedOperationDescriptor(operation).then(function () {
+                var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                if (!editorPublishIsClean() || JSON.stringify(documentBefore) !== JSON.stringify(current)) throw new Error('Resync остановлен: editor model изменилась после проверки scope.');
+                var roots = current.filter(function (model) { return operation.root_ids.indexOf(String(model.id || '')) >= 0; });
+                var context = typedOperationContext(operation, 'resync'); context.editor_owned_model = roots;
+                return typedLifecyclePost(context);
+            }).then(function (result) {
                 return syncEditorElements(result.editor_sync, 1, originalSnapshot);
             }).then(function () { return verifyTypedEditorModel(body); }).then(function () {
                 addMessage('assistant', 'Owned editor model совпадает с сервером. Выполните Save/reload/readback.');
@@ -1891,12 +1919,16 @@
             if (!editorPublishIsClean()) { addMessage('assistant', 'Undo остановлен: несохранённые изменения редактора сохранены локально.'); return; }
             button.disabled = true;
             var model = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
-            var context = typedOperationContext(descriptor, 'check_document_model'); context.editor_document_model = model;
-            typedLifecyclePost(context).then(function () {
+            refreshTypedOperationDescriptor(descriptor).then(function () {
                 var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
                 if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась во время проверки.');
+                var context = typedOperationContext(descriptor, 'check_document_model'); context.editor_document_model = model;
+                return typedLifecyclePost(context);
+            }).then(function () {
+                var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась после проверки native readback.');
                 return fetch(config.undoEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
-                body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, revision: descriptor.revision })
+                body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, accepted_contract_id: descriptor.accepted_contract_id, accepted_root_ids: descriptor.root_ids, revision: descriptor.revision })
             }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal');
                     var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
                     if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo выполнен на сервере, но reload остановлен: локальные изменения сохранены в редакторе.');
@@ -1911,12 +1943,7 @@
             var resyncOffered = false;
             verify.addEventListener('click', function () {
                 verify.disabled = true;
-                typedLifecyclePost(typedOperationContext(descriptor, 'describe_operation')).then(function (result) {
-                    var current = result.operation;
-                    if (!current || current.operation_id !== descriptor.operation_id || current.operation_identity !== descriptor.operation_identity || current.accepted_contract_id !== descriptor.accepted_contract_id || JSON.stringify(current.root_ids) !== JSON.stringify(descriptor.root_ids)) throw new Error('Operation scope changed; local editor preserved.');
-                    descriptor.revision = current.revision;
-                    return verifyTypedEditorModel({ diagnostics: { operation_ledger: descriptor } });
-                }).then(function () {
+                refreshTypedOperationDescriptor(descriptor).then(function () { return verifyTypedEditorModel({ diagnostics: { operation_ledger: descriptor } }); }).then(function () {
                     addMessage('assistant', 'Owned модель соответствует принятому контракту: ' + descriptor.operation_id);
                     if (!resyncOffered) { addTypedResyncControl({ diagnostics: { operation_ledger: descriptor } }, captureEditorRootSnapshot()); resyncOffered = true; }
                 }).catch(function (error) { addMessage('assistant', error.message); }).finally(function () { verify.disabled = false; });
@@ -1939,9 +1966,13 @@
         button.textContent = 'Применить scoped repair отступов';
         button.addEventListener('click', function () {
             if (requestInFlight) return;
-            var context = typedOperationContext(operation, 'repair');
-            context.accepted_vision_report_id = report.report_id; context.layout_correction = 'compact_spacing';
-            request('Применить scoped repair отступов', false, { visionRepair: true, skipVision: true, lifecycleContext: context });
+            button.disabled = true;
+            refreshTypedOperationDescriptor(operation).then(function () {
+                if (!editorPublishIsClean()) throw new Error('Repair остановлен: editor содержит несохранённые изменения.');
+                var context = typedOperationContext(operation, 'repair');
+                context.accepted_vision_report_id = report.report_id; context.layout_correction = 'compact_spacing';
+                request('Применить scoped repair отступов', false, { visionRepair: true, skipVision: true, lifecycleContext: context });
+            }).catch(function (error) { button.disabled = false; addMessage('assistant', 'Repair остановлен: ' + error.message); });
         });
         messages.appendChild(button);
     }

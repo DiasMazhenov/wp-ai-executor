@@ -21,12 +21,47 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     check( ! empty( $loaded['ok'] ) && $loaded['contract']['composition']['record_id'] === $record && $loaded['contract']['profile'] === $profile, 'Typed server contract reload record/profile ' . $record );
     check( count( $loaded['contract']['after_owned'] ) === 1 && $loaded['contract']['before_owned'] === [] && wpae_brief_ir_validate( $loaded['contract']['brief'] )['ok'], 'Bounded contract only owned subtree and canonical provenance ' . $record );
     $owned = $loaded['contract']['after_owned'];
-    $context = [ 'post_id' => 42, 'accepted_operation_id' => $operation['operation_id'], 'accepted_identity' => $operation['operation_identity'], 'accepted_revision' => $operation['revision'], 'lifecycle_action' => 'check_model', 'editor_owned_model' => $owned ];
+    $context = [ 'post_id' => 42, 'accepted_operation_id' => $operation['operation_id'], 'accepted_identity' => $operation['operation_identity'], 'accepted_contract_id' => $operation['accepted_contract_id'], 'accepted_root_ids' => $operation['root_ids'], 'accepted_revision' => $operation['revision'], 'lifecycle_action' => 'check_model', 'editor_owned_model' => $owned ];
     $describe=$context; $describe['lifecycle_action']='describe_operation'; $describe['accepted_revision']=0;
     $writes_before=$GLOBALS['m1_write_attempts'];
-    check(wpae_accepted_lifecycle_request($describe)->get_data()['operation']['revision']===$operation['revision'] && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only descriptor recovers current revision without document write '.$record);
+    $initial_descriptor = wpae_accepted_lifecycle_request( $describe )->get_data();
+    check( $initial_descriptor['operation']['revision'] === $operation['revision'] && $initial_descriptor['operation']['eligibility']['status'] === 'available' && $initial_descriptor['write_count'] === 0 && $GLOBALS['m1_write_attempts'] === $writes_before, 'Read-only descriptor binds current scope/revision and eligibility without document write ' . $record );
+    $stale_ui_revision=(int)$operation['revision'];
+    wpae_accepted_save_guard_set($operation);
+    $saved_document=new class { function get_main_id(){return 42;} };
+    wpae_accepted_elementor_after_save($saved_document);
+    $operation=wpae_design_operation_find_by_id($operation['operation_id']);
+    check((int)$operation['revision']===$stale_ui_revision+1,'Native Elementor after-save advances the durable operation revision '.$record);
+    $describe['accepted_revision']=$stale_ui_revision;
+    $fresh_descriptor=wpae_accepted_lifecycle_request($describe);
+    check($fresh_descriptor instanceof WP_REST_Response && $fresh_descriptor->get_data()['operation']['revision']===$operation['revision'] && $fresh_descriptor->get_data()['operation']['eligibility']['status']==='available' && $fresh_descriptor->get_data()['write_count']===0 && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only refresh returns the post-save revision for the same operation without a write '.$record);
+    // A ledger change after the read-only descriptor must invalidate both the
+    // document check and a later Undo. The refresh is not a mutation lease.
+    $refreshed_revision = (int) $operation['revision'];
+    $race_document_context = $context;
+    $race_document_context['accepted_revision'] = $refreshed_revision;
+    $race_document_context['lifecycle_action'] = 'check_document_model';
+    $race_document_context['editor_document_model'] = $GLOBALS['page_data'];
+    $stale_race_undo = new WP_REST_Request();
+    foreach ( [ 'typed_undo'=>true, 'post_id'=>42, 'operation_id'=>$operation['operation_id'], 'operation_identity'=>$operation['operation_identity'], 'accepted_contract_id'=>$operation['accepted_contract_id'], 'accepted_root_ids'=>$operation['root_ids'], 'revision'=>$refreshed_revision ] as $k=>$v ) { $stale_race_undo->set_param($k,$v); }
+    wpae_design_operation_update( $operation['operation_id'], [ 'saved_hash' => 'changed-after-descriptor-refresh' ] );
+    $raced_operation = wpae_design_operation_find_by_id( $operation['operation_id'] );
+    $raced_check = wpae_accepted_lifecycle_request( $race_document_context );
+    $race_undo_writes = $GLOBALS['m1_write_attempts'];
+    $raced_undo = wpae_llm_undo( $stale_race_undo );
+    check( (int) $raced_operation['revision'] === $refreshed_revision + 1 && is_wp_error( $raced_check ) && $raced_check->get_error_code() === 'wpae_typed_scope_conflict' && ( $raced_undo->get_data()['code'] ?? '' ) === 'typed_undo_scope_or_revision' && (int) $GLOBALS['m1_write_attempts'] === $race_undo_writes, 'Revision changed after descriptor refresh safely refuses document check and Undo ' . $record );
+    $operation = $raced_operation;
+    wpae_accepted_save_guard_set($operation);
+    $context['accepted_revision']=$operation['revision'];
+    $describe['accepted_revision']=$stale_ui_revision;
+    $stale_undo=new WP_REST_Request(); foreach ( [ 'typed_undo'=>true, 'post_id'=>42, 'operation_id'=>$operation['operation_id'], 'operation_identity'=>$operation['operation_identity'], 'accepted_contract_id'=>$operation['accepted_contract_id'], 'accepted_root_ids'=>$operation['root_ids'], 'revision'=>$stale_ui_revision ] as $k=>$v ) { $stale_undo->set_param($k,$v); }
+    check(wpae_llm_undo($stale_undo)->get_data()['code']==='typed_undo_scope_or_revision' && $GLOBALS['m1_write_attempts']===$writes_before,'Old UI revision is still rejected after read-only refresh '.$record);
+    $wrong_roots=$describe; $wrong_roots['accepted_root_ids']=['another-root'];
+    check(is_wp_error(wpae_accepted_lifecycle_request($wrong_roots)) && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only descriptor rejects a substituted owned root without write '.$record);
     $describe['accepted_identity']='different operation';
     check(is_wp_error(wpae_accepted_lifecycle_request($describe)),'Descriptor refuses foreign identity '.$record);
+    $wrong_contract=$context; $wrong_contract['accepted_contract_id']='other-contract';
+    check(is_wp_error(wpae_accepted_lifecycle_request($wrong_contract)),'Lifecycle refuses a substituted accepted contract '.$record);
     $check_model = wpae_accepted_lifecycle_request( $context );
     check( $check_model instanceof WP_REST_Response && $check_model->get_data()['ok'], 'Server/editor decision equality ' . $record );
     if ($record==='hero.text_only') {
@@ -53,6 +88,18 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $document_context=$context; $document_context['lifecycle_action']='check_document_model';$document_context['editor_document_model']=$GLOBALS['page_data'];
     $typed_document_write_count=(int)$GLOBALS['m1_write_attempts'];
     check(wpae_accepted_lifecycle_request($document_context)->get_data()['ok'],'Fresh whole native document check before owned Undo ' . $record);
+    $server_model_before_race = $GLOBALS['page_data'];
+    $changed_server_model = array_map( static function ( $root ) use ( $operation ): array {
+        if ( in_array( (string) ( $root['id'] ?? '' ), $operation['root_ids'], true ) ) { $root['settings']['after_refresh_edit'] = 'changed'; }
+        return $root;
+    }, $server_model_before_race );
+    $GLOBALS['page_data'] = $changed_server_model;
+    $describe = $context;
+    $describe['lifecycle_action'] = 'describe_operation';
+    $ineligible_descriptor = wpae_accepted_lifecycle_request( $describe )->get_data();
+    $changed_document_check = wpae_accepted_lifecycle_request( $document_context );
+    check( $ineligible_descriptor['operation']['revision'] === $operation['revision'] && $ineligible_descriptor['operation']['eligibility']['status'] === 'changed_target' && ( $ineligible_descriptor['operation']['eligibility']['mismatch']['reason'] ?? '' ) === 'extra_nondefault_control' && $ineligible_descriptor['write_count'] === 0 && is_wp_error( $changed_document_check ) && (int) $GLOBALS['m1_write_attempts'] === $typed_document_write_count, 'Read-only descriptor reports changed owned model/control and post-refresh check refuses without write ' . $record );
+    $GLOBALS['page_data'] = $server_model_before_race;
     $document_context['editor_document_model'][0]['settings']['foreign_user_edit']='new';
     check(wpae_accepted_lifecycle_request($document_context)->get_status()===409 && (int)$GLOBALS['m1_write_attempts']===$typed_document_write_count,'Unsaved foreign root refused before Undo without write ' . $record);
     $stale = $owned; $stale[0]['settings']['padding']['top'] = '99';
@@ -68,9 +115,10 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $GLOBALS['page_data'][0] = $foreign_root;
     check( wpae_accepted_contract_eligibility( $operation, $GLOBALS['page_data'] )['status'] === 'available', 'Owned Undo remains eligible after foreign root change ' . $record );
     $undo = new WP_REST_Request();
-    foreach ( [ 'typed_undo' => true, 'post_id' => 42, 'operation_id' => $operation['operation_id'], 'operation_identity' => $operation['operation_identity'], 'revision' => $operation['revision'] ] as $k=>$v ) { $undo->set_param($k,$v); }
+    foreach ( [ 'typed_undo' => true, 'post_id' => 42, 'operation_id' => $operation['operation_id'], 'operation_identity' => $operation['operation_identity'], 'accepted_contract_id' => $operation['accepted_contract_id'], 'accepted_root_ids' => $operation['root_ids'], 'revision' => $operation['revision'] ] as $k=>$v ) { $undo->set_param($k,$v); }
     $changed = $GLOBALS['page_data']; $changed[count($changed)-1]['settings']['background_color'] = '#ff0000';
-    check(wpae_accepted_contract_eligibility($operation,$changed)['status']==='changed_target','Changed owned target refuses inverse ' . $record);
+    $changed_eligibility=wpae_accepted_contract_eligibility($operation,$changed);
+    check($changed_eligibility['status']==='changed_target' && $changed_eligibility['reason']==='owned_fingerprint_changed' && !empty($changed_eligibility['mismatch']['node_id']) && !empty($changed_eligibility['mismatch']['control']),'Changed owned target refuses inverse and identifies only the changed native control ' . $record);
     $held=wpae_design_operation_acquire_lock();
     check(wpae_llm_undo($undo)->get_data()['code']==='typed_undo_busy','Concurrent Undo refused before write ' . $record);
     wpae_design_operation_release_lock($held);
@@ -113,7 +161,7 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $before = wpae_accepted_contract_get($parent)['contract'];
     $report = [ 'report_id' => 'typed-report-' . $fixture, 'source' => 'provider', 'post_id' => 42, 'created_at' => gmdate('c'), 'findings' => [ [ 'severity'=>'minor', 'category'=>'spacing', 'message'=>'Excess spacing is too large', 'fix'=>'Reduce excessive spacing' ] ], 'render_context' => [ 'operation_id'=>$parent['operation_id'], 'operation_identity'=>$parent['operation_identity'], 'operation_revision'=>$parent['revision'], 'operation_root_ids'=>$parent['root_ids'], 'operation_saved_hash'=>$parent['saved_hash'], 'operation_target_fingerprint'=>$parent['target_fingerprint'] ] ];
     $GLOBALS['options'][WPAE_VISION_REPORTS_OPTION]=[$report];
-    $context = [ 'post_id'=>42, 'accepted_operation_id'=>$parent['operation_id'], 'accepted_identity'=>$parent['operation_identity'], 'accepted_revision'=>$parent['revision'], 'lifecycle_action'=>'repair', 'accepted_vision_report_id'=>$report['report_id'], 'layout_correction'=>'compact_spacing', 'operation_identity'=>'manual-repair-' . $fixture, 'composition_record'=>'hero.split_40_60.left', 'visual_profile'=>'soft_cards_light' ];
+    $context = [ 'post_id'=>42, 'accepted_operation_id'=>$parent['operation_id'], 'accepted_identity'=>$parent['operation_identity'], 'accepted_contract_id'=>$parent['accepted_contract_id'], 'accepted_root_ids'=>$parent['root_ids'], 'accepted_revision'=>$parent['revision'], 'lifecycle_action'=>'repair', 'accepted_vision_report_id'=>$report['report_id'], 'layout_correction'=>'compact_spacing', 'operation_identity'=>'manual-repair-' . $fixture, 'composition_record'=>'hero.split_40_60.left', 'visual_profile'=>'soft_cards_light' ];
     $result = wpae_accepted_lifecycle_request($context);
     check($result instanceof WP_REST_Response && $result->get_data()['ok'], 'Actual typed scoped repair ' . $record . ' ' . (is_wp_error($result)?$result->get_error_message():wp_json_encode($result->get_data())));
     $child = $result->get_data()['diagnostics']['operation_ledger'];
@@ -121,7 +169,7 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     check($after['brief'] === $before['brief'] && $after['composition'] === $before['composition'] && $after['profile'] === $before['profile'], 'Repair ignores dropdown; exact record/profile/Brief copy, links, media/order preserved ' . $record);
     check($after['parent_operation_id']===$parent['operation_id'] && $after['compiled_signature']!==$before['compiled_signature'], 'Real finding causes compiled spacing delta and explicit lineage ' . $record);
     check(wpae_accepted_contract_eligibility(wpae_design_operation_find_by_id($parent['operation_id']),$GLOBALS['page_data'])['status']!=='available','Parent cannot be undone under active child ' . $record);
-    $old_model = [ 'post_id'=>42, 'accepted_operation_id'=>$child['operation_id'], 'accepted_identity'=>$child['operation_identity'], 'accepted_revision'=>$child['revision'], 'lifecycle_action'=>'check_model', 'editor_owned_model'=>$before['after_owned'] ];
+    $old_model = [ 'post_id'=>42, 'accepted_operation_id'=>$child['operation_id'], 'accepted_identity'=>$child['operation_identity'], 'accepted_contract_id'=>$child['accepted_contract_id'], 'accepted_root_ids'=>$child['root_ids'], 'accepted_revision'=>$child['revision'], 'lifecycle_action'=>'check_model', 'editor_owned_model'=>$before['after_owned'] ];
     check(wpae_accepted_lifecycle_request($old_model)->get_status()===409,'Server accepted replacement, editor old tree: mismatch before Save ' . $record);
     $doc = new class { function get_main_id(){return 42;} }; $blocked=false;
     try { wpae_accepted_elementor_save_guard(['elements'=>$case['page_data']],$doc); } catch(RuntimeException $e){$blocked=true;}
@@ -131,7 +179,7 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $resync['editor_owned_model'][0]['settings']['padding']['top']='999';
     check(is_wp_error(wpae_accepted_lifecycle_request($resync)),'Resync refuses divergent unsaved owned model ' . $record);
     $neighbors=array_values(array_filter($GLOBALS['page_data'],static fn($r)=>!in_array($r['id'],$child['root_ids'],true)));
-    $undo=new WP_REST_Request(); foreach(['post_id'=>42,'operation_id'=>$child['operation_id'],'operation_identity'=>$child['operation_identity'],'revision'=>$child['revision'],'typed_undo'=>true] as $k=>$v){$undo->set_param($k,$v);}
+    $undo=new WP_REST_Request(); foreach(['post_id'=>42,'operation_id'=>$child['operation_id'],'operation_identity'=>$child['operation_identity'],'accepted_contract_id'=>$child['accepted_contract_id'],'accepted_root_ids'=>$child['root_ids'],'revision'=>$child['revision'],'typed_undo'=>true] as $k=>$v){$undo->set_param($k,$v);}
     $undone=wpae_llm_undo($undo);
     check($undone->get_data()['ok'] && $undone->get_data()['undo_action']==='undo_repair','Undo repair returns previous block, not empty page ' . $record);
     check(wpae_accepted_owned_roots($GLOBALS['page_data'],$parent['root_ids'])===$before['after_owned'],'Undo repair exact before-owned state ' . $record);
@@ -142,7 +190,10 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $typed_write_attempt_count=(int)$GLOBALS['m1_write_attempts']; $refused=wpae_accepted_lifecycle_request($context);
     check(is_wp_error($refused) && (int)$GLOBALS['m1_write_attempts']===$typed_write_attempt_count,'Foreign report rejected without fallback/append ' . $record);
     $context['accepted_operation_id']='unknown-operation';check(is_wp_error(wpae_accepted_lifecycle_request($context)),'Unknown contract/operation refusal ' . $record);
+    $context['accepted_operation_id']=$parent['operation_id'];
     $store=wpae_accepted_contract_store();$store[$parent['accepted_contract_id']]['expires_at']=time()-1;update_option(WPAE_ACCEPTED_CONTRACT_OPTION,$store,false);
+    $expired_describe=$context;$expired_describe['lifecycle_action']='describe_operation';$expired_result=wpae_accepted_lifecycle_request($expired_describe);
+    check($expired_result instanceof WP_REST_Response && ($expired_result->get_data()['operation']['eligibility']['reason']??'')==='contract_expired' && $expired_result->get_data()['write_count']===0,'Read-only descriptor reports an expired contract without treating it as eligible '.$record);
     check(wpae_accepted_contract_eligibility($parent,$GLOBALS['page_data'])['reason']==='contract_expired','Expired contract cannot Undo or repair ' . $record);
 }
 check(wpae_accepted_contract_get(['operation_id'=>'historical'])['reason']==='historical_contract_unavailable','Historical operation never reconstructs lost Plan');
