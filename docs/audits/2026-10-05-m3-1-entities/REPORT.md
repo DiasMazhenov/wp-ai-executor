@@ -19,3 +19,7 @@ Saved exact fixtures precede live generation: A/B same Team Brief (four syntheti
 ## Live acceptance
 
 A–F NOT RUN on new runtime. No screenshots claimed. Before each write, fresh target baseline must be independently measured. Final document root set at preparation is[]; no test operation created by this stage.
+
+## M3.1 live Services refusal / v267 correction
+
+A–D v266 generated/published/reloaded/full native compared with zero authored differences; guarded Undo restored empty post5214 after each. E first v266 Services photo_cards refused before write: frozen_decisions_changed_by_normalization, provider_calls0/write_count0, operation wpae-3377a398502e7e67. Its evidence is retained in the M3.1 audit. Cause: mandatory wpae-ds marker was added by normalization after freeze because Services Brief lacks canonical_create although its accepted node has visual_policy. Compiler now resolves mandatory markers for accepted policy nodes before signature, preserving the strict guard. Regression uses actual required classes and empty target. v267 local checks: runtime1350, DesignPlan826, Node15/15, patch guard, catalog158/156/156, changed PHP lint, package252 hashes/four probes, diff check PASS. v267 installation/retry pending at this checkpoint. Public viewport override is ineffective: real innerWidth remains1232; responsive/public mobile acceptance BLOCKED.

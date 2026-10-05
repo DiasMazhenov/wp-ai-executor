@@ -1856,7 +1856,7 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 	foreach ( (array) ( $ir['nodes'] ?? [] ) as $node ) {
 		if ( is_array( $node ) ) {
 			$compiled_root = wpae_elementor_ir_compile_node( $node, $content_map, $media_map, $tokens, $seed, $report );
-            if ( ! empty( $brief['canonical_create'] ) && ( $compiled_root['elType'] ?? '' ) === 'container' && function_exists( 'wpae_get_design_system_required_classes' ) ) {
+            if ( ( ! empty( $brief['canonical_create'] ) || ! empty( $node['visual_policy'] ) ) && ( $compiled_root['elType'] ?? '' ) === 'container' && function_exists( 'wpae_get_design_system_required_classes' ) ) {
                 // Resolve mandatory technical markers before the accepted signature.
                 // Normalization remains unable to change author classes or controls.
                 $markers = array_merge( wpae_get_design_system_required_classes(), [ 'wpae-block' ] );
