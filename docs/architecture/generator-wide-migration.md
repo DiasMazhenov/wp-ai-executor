@@ -626,3 +626,8 @@ First editor PNG949×923, root5a1b94d/opwpae-1a17d1d28a4633e6/initial revision4,
 Existing lifecycle adds describe_operation: capability/post/identity and current ownership/lineage/fingerprint required; returns bounded current descriptor without document write. Only read-only lookup omits revision check. All check_model/Save/repair/Undo guards still require exact revision. UI checks same operation/identity/contract/root set before updating its acknowledgement and checking actual model. No automatic repair or ownership reassignment.
 
 Local DesignPlan365/runtime1325/Node15of15/patch/catalog158/156/156/lint/package252+four probes/diff PASS. Tests cover read-only current revision, foreign identity refusal and UI check using fresh revision. v262 commit/push planned separately; installation and live model retry pending current dirty-tab reload authorization. B generation PASS; authored content match PASS; Native Save/readback BLOCKED; responsive geometry partial; visual composition REVIEW_REQUIRED; Undo NOT_RUN. C–J NOT_RUN. Full task remains incomplete.
+
+
+### Publication checkpoint
+
+Runtime v262 commit267bdd72999c8cc4f19e6e1cc9748b7a240cfa09 pushed; independent origin/main matched. Installed PHP/editor remain independently confirmed v261. v262 installation/editor reload are pending the explicit dirty-tab reload question. No dependent write, Native Publish, repair or Undo attempted after scope guard refusal. Tracked working tree clean at publication; foreign/untracked files and raw intermediate JPEGs remain preserved. Current test root5a1b94d remains; baseline[] has not yet been restored after B. Acceptance incomplete.

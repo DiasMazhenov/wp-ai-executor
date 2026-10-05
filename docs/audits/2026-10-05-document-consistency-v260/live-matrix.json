@@ -1,5 +1,5 @@
 {
-  "source": "v02.11.262 prepared",
+  "source": "v02.11.262 published",
   "installed": "v02.11.261",
   "post": 5214,
   "roots": [
@@ -16,5 +16,7 @@
     "undo": "NOT_RUN"
   },
   "C_to_J": "NOT_RUN",
-  "blocker": "Scope/revision model refusal; pending explicit reload authorization. No dependent writes."
+  "blocker": "Scope/revision model refusal; pending explicit reload authorization. No dependent writes.",
+  "runtime_commit": "267bdd72999c8cc4f19e6e1cc9748b7a240cfa09",
+  "push": "remote HEAD matched"
 }
