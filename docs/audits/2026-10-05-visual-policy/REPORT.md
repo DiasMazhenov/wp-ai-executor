@@ -67,3 +67,22 @@ Correction adds server-derived verified_empty_inverse context only after exact p
 ## Empty inverse readback propagation correction
 
 Source correction b8a57e4c2380980ef3f4f1eb7ade3a367c096b49 pushed/remote confirmed. WP Pusher update attempted; editor remains v259. Retry demonstrates new preflight policy loaded, but actual finalize/readback validator lacked verified inverse context: transaction refused after write and rolled back. Reload confirmed exact B root/hash/revision5, so baseline restoration remains pending; dependent C–J writes stopped. Original second refusal retained. Server-attested context now propagates into transaction verification only when expected empty data exactly equals readback; ordinary empty write and mismatched readback remain refused. Real transaction probe verifies these three cases along with prior autosave/concurrent rollback checks. No owner guard disabled and no manual root removal.
+
+## B baseline restored after installed correction
+
+Source b826ff1ce1c904c789ee1a13c174867ea45ecdd1 pushed/remote matched. WP Pusher first returned download failure, retained as evidence; one ordinary retry returned “Plugin was successfully updated.” Plugins PHPv259/reloaded editorv259 confirmed independently. Same B guarded Undo succeeded, revision6/already_undone. Saved hash exactly4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945/rootset[], independently publicroots[]. C–J dependent writes resumed only after this proof. First B native/authored controls remain unchanged; no cosmetic repair/re-generation.
+
+Probe hygiene: the old untracked transactions-probe source remains local/untracked; scoped new readback regression is empty-inverse-transaction-probe.php in this audit directory. It exercises real transaction verification with external WP stubs, without bundling the foreign original probe.
+
+
+## 2026-10-05 — C first-render failures and baseline discrepancy
+
+Correction to earlier B restoration wording: B Undo restored server/public empty roots, but native editor hydration reconstructed previous published HTML as an unowned text-editor container. Native baseline was not verified adequately before C. C native Publish persisted that neighbor; this is a lifecycle defect, not an intentional second test root.
+
+C: hero.split_60_40.left/editorial_light; root `9e0af51`, operation `wpae-b07ea89c8ceb8880`, identity `4d34863b-d2d4-499c-a387-6bed0b4d95e2`, revision5. Exact B–D fixture retained, provider0/write1. First result, owned model check, selected native JSON, public DOM and opened PNG retained. Server root set after save/reload `[1a309f40,9e0af51]`; neighbor `1a309f40` contains previous B HTML in a text-editor and has no typed ownership marker. No root was manually removed.
+
+C first render is FAIL: at CSS768/1024/1025 the 608px reading wrapper exceeds its copy column (344/472/564.6px); document widths1000/1128/1036px. Desktop/public CSS1280×1000, full-page PNG1265×1243; mobile/public CSS390×1400, PNG390×1400. Images loaded and copy/CTA retained, but overflow and neighbor duplication prevent acceptance. Advisory Vision negative findings remain in first UI evidence. Guarded C Undo refused before write: design-system contract rejected the remaining palette-free legacy neighbor. Fresh refusal screenshot editor CSS1232×923/PNG1232×923, opened and visually checked. D–J stopped; final baseline is NOT restored.
+
+Source correction (v259 retained, not yet installed): native custom width `min(100%, accepted measure)` translates the Plan ceiling inside the selected column; exact unchanged legacy fingerprints retain their existing palette without permitting modified/new unmarked roots; fresh create refuses native HTML fallback over an empty saved baseline before provider/write. Historical contracts are unchanged. Native custom unit support was verified against official Elementor container/base-units source. Cleanup of the unowned neighbor awaits explicit user authorization; no protection disabled. C Undo retry and corrected visual acceptance remain pending.
+
+Local correction checks: runtime1302; DesignPlan365; Node15/15; patch guard/catalog158/156/156; PHP lint four changed PHP files; package252 hashes/zero mismatch/four real probe scenarios; scoped empty-inverse transaction probe; diff check PASS. Full package diagnostic JSON limitation unchanged. Commit/push/install/retry are separate pending statuses.

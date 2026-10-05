@@ -2034,6 +2034,18 @@
             return Promise.resolve(false);
         }
         var requestSelection = options.selectedElements || selectedElements();
+        // An empty saved Elementor document can be hydrated from WordPress HTML
+        // after reload. Such roots are not owned by the previous typed operation.
+        // Refuse a fresh create rather than persisting that fallback as a neighbor.
+        var baseline = config.savedBaseline;
+        if (!options.retryCurrentOperation && !options.visionRepair && !options.visionRegenerate && !options.targetedDesignRepair && !options.replaceExistingRoot && !requestSelection.length && !liveGeneratedRootIds.length && baseline && baseline.status === 'valid_array' && Array.isArray(baseline.rootIds) && baseline.rootIds.length === 0) {
+            var nativeBaseline = captureEditorRootSnapshot();
+            if (!nativeBaseline.valid || nativeBaseline.root_ids.length !== 0) {
+                addMessage('assistant', 'Создание остановлено: сохранённый Elementor baseline пуст, но native редактор содержит другие roots. Сначала требуется проверка сохранения и восстановления baseline.');
+                status.textContent = strings.error;
+                return Promise.resolve(false);
+            }
+        }
         if (!options.retryCurrentOperation && !options.visionRepair && !options.targetedDesignRepair) {
             var explicitReplacement = targetedDesignReplacement(message, requestSelection);
             if (explicitReplacement && explicitReplacement.blocked) {

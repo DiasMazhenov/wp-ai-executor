@@ -1762,6 +1762,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		unset( $compiled_child );
 		if ( ! empty( $policy['reading_measure'] ) ) {
 			$measure = wpae_elementor_ir_dimension_control( $policy['reading_measure'], 'rem', 38 );
+			// Reading measure is a ceiling inside the selected column, never a minimum width.
+			// Elementor's native custom slider unit emits the expression without a unit suffix.
+			$measure = [ 'unit' => 'custom', 'size' => 'min(100%, ' . $measure['size'] . $measure['unit'] . ')', 'sizes' => [] ];
 			$measure_settings = [ 'background_background' => 'classic', 'background_color' => 'transparent', 'container_type' => 'flex', 'content_width' => 'full', 'flex_direction' => 'column', 'flex_gap' => [ 'unit' => 'px', 'column' => '0', 'row' => '0', 'isLinked' => true ], 'padding' => [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'align_self' => [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $policy['container_align'] ], 'flex_align_items' => [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $policy['text_align'] ], 'width' => $measure, 'width_tablet' => $measure, 'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ] ];
 			$compiled_children = [ [ 'id' => wpae_elementor_ir_id( (string) $node['node_id'] . '-reading-measure', $seed ), 'elType' => 'container', 'settings' => $measure_settings, 'elements' => $compiled_children ] ];
 		}

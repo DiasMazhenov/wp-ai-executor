@@ -67,3 +67,15 @@ test('real submit request payload and replay keep snapshot and operation identit
  assert.ok(!('composition_record' in posts.at(-1).context));assert.ok(!('visual_profile' in posts.at(-1).context));
  }
 });
+
+test('fresh create refuses native HTML fallback over an empty saved baseline before any provider request',async()=>{
+ const {e,posts}=requestHarness();
+ e.config.savedBaseline={status:'valid_array',rootIds:[]};
+ e.captureEditorRootSnapshot=()=>({valid:true,root_ids:['unowned-html-fallback']});
+ assert.equal(await e.request('new create',false,{}),false);
+ assert.equal(posts.length,0);
+ assert.deepEqual(plain(e.liveGeneratedRootIds),[]);
+ e.captureEditorRootSnapshot=()=>({valid:true,root_ids:[]});
+ await e.request('verified empty create',false,{});
+ assert.equal(posts.length,1);
+});

@@ -222,7 +222,8 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
   $copy = $copy_column['elements'][0]['settings'];
   check( $copy_column['settings']['content_width'] === 'full' && $copy['content_width'] === 'full' && $copy['align_self'] === 'flex-start' && ! isset( $copy_column['settings']['boxed_width'] ), 'Profile reading measure is nested inside native full-width composition column ' . $profile . ' ' . $device );
   $boxed = $copy['width' . $suffix];
-  $expected = $device === 'mobile' ? $bp['basis']['copy_group'] : min( $bp['basis']['copy_group'], wpae_layout_report_length_px( $boxed['size'] . $boxed['unit'], $bp['viewport_width'], -1 ) );
+  if ( $device !== 'mobile' ) { check( $boxed['unit'] === 'custom' && $boxed['size'] === 'min(100%, ' . $plan['visual_policy']['intro']['reading_measure'] . ')', 'Native reading ceiling clamps to its parent column without changing the accepted measure ' . $profile . ' ' . $device ); }
+  $expected = $device === 'mobile' ? $bp['basis']['copy_group'] : min( $bp['basis']['copy_group'], wpae_layout_report_length_px( $plan['visual_policy']['intro']['reading_measure'], $bp['viewport_width'], -1 ) );
   check( abs( $bp['boxed_copy_content_width_px']['copy_group'] - $expected ) < 0.01, 'Editor static boxed copy clamp matches native ' . $profile . ' ' . $bp['breakpoint'] );
  }
 }
@@ -322,4 +323,4 @@ check(!empty($pricing_intro['response']['ok']) && count($pricing_titles)===1 && 
 $align_prompt="Создай Hero без фото\nЗаголовок: «Ось текста»\nIntro text align: left\nIntro container align: center\nReading measure: 30rem";
 $align_case=$run_services_route($align_prompt,[],[],'visual-explicit-reading-axis',false,'active','active',['composition_record'=>'hero.text_only','visual_profile'=>'soft_cards_light']);
 $align_measure=$align_case['written']['elements'][0]['elements'][0]['settings']??[];
-check(!empty($align_case['response']['ok']) && $align_measure['width']['size']==30 && $align_measure['align_self']==='center' && $align_measure['flex_align_items']==='flex-start','Explicit centered reading container with left text is an intentional accepted variant');
+check(!empty($align_case['response']['ok']) && $align_measure['width']['unit']==='custom' && $align_measure['width']['size']==='min(100%, 30rem)' && $align_measure['align_self']==='center' && $align_measure['flex_align_items']==='flex-start','Explicit centered reading container with left text is an intentional accepted variant');

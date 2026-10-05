@@ -138,7 +138,9 @@ function wpae_validate_design_system_contract( array $elementor_data, array $con
         }
     }
 
-    if ( (int) ( $stats['token_color_hits'] ?? 0 ) <= 0 && (int) ( $stats['native_color_hits'] ?? 0 ) <= 0 ) {
+    // Exact unchanged legacy roots retain their original palette ownership.
+    // New or modified roots still require explicit native styling.
+    if ( $legacy !== $top_level && (int) ( $stats['token_color_hits'] ?? 0 ) <= 0 && (int) ( $stats['native_color_hits'] ?? 0 ) <= 0 ) {
         $errors[] = 'Design system contract requires explicit native Elementor color/background settings; start with project palette tokens or use the requested custom palette.';
     }
 

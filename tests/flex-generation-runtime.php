@@ -526,6 +526,13 @@ $changed_legacy = $legacy_page;
 $changed_legacy[1]['settings']['padding'] = [ 'unit' => 'rem', 'top' => '3' ];
 check( ! wpae_validate_design_system_contract( array_merge( $changed_legacy, [ $legacy_saved ] ), [ 'allow_unchanged_legacy_top_level' => $legacy_page ] )['ok'], 'Changed unmarked legacy root bypassed contract' );
 
+$palette_free_neighbor = [ container_node( 'legacy-plain-neighbor', [], [ widget( 'legacy-plain-copy', 'text-editor', [ 'editor' => '<p>Exact unchanged neighbor.</p>' ] ) ] ) ];
+check( wpae_validate_design_system_contract( $palette_free_neighbor, [ 'allow_unchanged_legacy_top_level' => $palette_free_neighbor ] )['ok'], 'Owned inverse preserves an exact palette-free legacy neighbor without restyling it' );
+check( ! wpae_validate_design_system_contract( $palette_free_neighbor )['ok'], 'New palette-free unmarked root remains refused' );
+$altered_neighbor = $palette_free_neighbor;
+$altered_neighbor[0]['elements'][0]['settings']['editor'] = '<p>Changed neighbor.</p>';
+check( ! wpae_validate_design_system_contract( $altered_neighbor, [ 'allow_unchanged_legacy_top_level' => $palette_free_neighbor ] )['ok'], 'Changed palette-free legacy neighbor remains refused' );
+
 $GLOBALS['page_data'] = $legacy_page;
 $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [ provider_reply( 'not JSON' ), provider_reply( 'still not JSON' ), provider_reply( 'still not JSON' ) ];
