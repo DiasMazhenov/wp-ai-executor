@@ -559,17 +559,31 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		}
 	}
 	if ( isset( $policy['collection'] ) ) {
-		$settings['container_type'] = 'grid';
+		$collection = (array) $policy['collection'];
+		$implementation = (string) ( $collection['implementation'] ?? 'native_grid' );
 		$settings['_wpae_visual_policy_version'] = 1;
-		$settings['flex_direction'] = $settings['flex_direction_tablet'] = $settings['flex_direction_mobile'] = 'column';
-		$settings['flex_wrap'] = $settings['flex_wrap_tablet'] = $settings['flex_wrap_mobile'] = 'nowrap';
+		foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) {
+			unset( $settings[ 'grid_columns_grid' . $suffix ], $settings[ 'grid_rows_grid' . $suffix ], $settings[ 'grid_auto_flow' . $suffix ], $settings[ 'grid_align_items' . $suffix ], $settings[ 'grid_gaps' . $suffix ] );
+			unset( $settings[ 'flex_direction' . $suffix ], $settings[ 'flex_wrap' . $suffix ], $settings[ 'flex_align_items' . $suffix ], $settings[ 'flex_gap' . $suffix ] );
+		}
 		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
-			$settings[ 'grid_columns_grid' . $suffix ] = [ 'unit' => 'fr', 'size' => $policy['collection']['columns'][ $device ], 'sizes' => [] ];
-			$settings[ 'grid_rows_grid' . $suffix ] = [ 'unit' => 'custom', 'size' => 'auto', 'sizes' => [] ];
-			$gap = wpae_elementor_ir_dimension_control( $policy['collection']['gap'][ $device ], 'rem', 1.5 );
-			$settings[ 'grid_gaps' . $suffix ] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
-			$settings[ 'grid_auto_flow' . $suffix ] = 'row';
-			$settings[ 'grid_align_items' . $suffix ] = 'start';
+			$gap = wpae_elementor_ir_dimension_control( (string) ( $collection['gap'][ $device ] ?? '1.5rem' ), 'rem', 1.5 );
+			$gap_control = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+			if ( $implementation === 'native_flex_equal' ) {
+				$settings['container_type'] = 'flex';
+				$columns = max( 1, (int) ( $collection['columns'][ $device ] ?? 1 ) );
+				$settings[ 'flex_direction' . $suffix ] = $columns > 1 ? 'row' : 'column';
+				$settings[ 'flex_wrap' . $suffix ] = 'nowrap';
+				$settings[ 'flex_align_items' . $suffix ] = 'stretch';
+				$settings[ 'flex_gap' . $suffix ] = $gap_control;
+			} else {
+				$settings['container_type'] = 'grid';
+				$settings[ 'grid_columns_grid' . $suffix ] = [ 'unit' => 'fr', 'size' => max( 1, (int) ( $collection['columns'][ $device ] ?? 1 ) ), 'sizes' => [] ];
+				$settings[ 'grid_rows_grid' . $suffix ] = [ 'unit' => 'custom', 'size' => 'auto', 'sizes' => [] ];
+				$settings[ 'grid_gaps' . $suffix ] = $gap_control;
+				$settings[ 'grid_auto_flow' . $suffix ] = 'row';
+				$settings[ 'grid_align_items' . $suffix ] = 'stretch';
+			}
 		}
 	}
 	return $settings;
@@ -943,39 +957,46 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		if ( $role === 'feature_cards' ) {
 			$settings['_css_classes'] = 'wpae-feature-cards';
-			$settings['flex_direction'] = 'row';
-			$settings['flex_direction_tablet'] = 'column';
-			$settings['flex_direction_mobile'] = 'column';
-			$settings['flex_wrap'] = 'wrap';
-			$settings['flex_wrap_tablet'] = 'nowrap';
-			$settings['flex_wrap_mobile'] = 'nowrap';
+			if ( empty( $policy['collection'] ) ) {
+				$settings['flex_direction'] = 'row';
+				$settings['flex_direction_tablet'] = 'column';
+				$settings['flex_direction_mobile'] = 'column';
+				$settings['flex_wrap'] = 'wrap';
+				$settings['flex_wrap_tablet'] = 'nowrap';
+				$settings['flex_wrap_mobile'] = 'nowrap';
+			}
 		}
 		if ( in_array( $role, [ 'service_cards', 'team_cards', 'testimonial_cards' ], true ) ) {
 			$settings['_css_classes'] = 'wpae-' . $role;
-			$settings['flex_direction'] = 'row';
-			$settings['flex_direction_tablet'] = 'column';
-			$settings['flex_direction_mobile'] = 'column';
-			$settings['flex_wrap'] = 'wrap';
-			$settings['flex_wrap_tablet'] = 'nowrap';
-			$settings['flex_wrap_mobile'] = 'nowrap';
-			$settings['flex_align_items'] = 'stretch';
+			if ( empty( $policy['collection'] ) ) {
+				$settings['flex_direction'] = 'row';
+				$settings['flex_direction_tablet'] = 'column';
+				$settings['flex_direction_mobile'] = 'column';
+				$settings['flex_wrap'] = 'wrap';
+				$settings['flex_wrap_tablet'] = 'nowrap';
+				$settings['flex_wrap_mobile'] = 'nowrap';
+				$settings['flex_align_items'] = 'stretch';
+			}
 		}
-		if ( $role === 'service_cards' ) {
+		if ( $role === 'service_cards' && empty( $policy['collection'] ) ) {
 			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
 			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
 		}
 		if ( $role === 'services_photo_grid' ) {
 			$settings['_css_classes'] = 'wpae-services-photo-grid';
-			$settings['flex_direction'] = 'row';
-			$settings['flex_direction_tablet'] = 'row';
-			$settings['flex_direction_mobile'] = 'column';
-			$settings['flex_wrap'] = 'wrap';
-			$settings['flex_wrap_tablet'] = 'wrap';
-			$settings['flex_wrap_mobile'] = 'nowrap';
-			$settings['flex_align_items'] = 'stretch';
-			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
-			$settings['flex_gap_tablet'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
-			$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 16, 'column' => '16', 'row' => '16', 'isLinked' => true ];
+			if ( empty( $policy['collection'] ) ) {
+				// Preserve the pre-policy contract for historical typed operations.
+				$settings['flex_direction'] = 'row';
+				$settings['flex_direction_tablet'] = 'row';
+				$settings['flex_direction_mobile'] = 'column';
+				$settings['flex_wrap'] = 'wrap';
+				$settings['flex_wrap_tablet'] = 'wrap';
+				$settings['flex_wrap_mobile'] = 'nowrap';
+				$settings['flex_align_items'] = 'stretch';
+				$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 24, 'column' => '24', 'row' => '24', 'isLinked' => true ];
+				$settings['flex_gap_tablet'] = [ 'unit' => 'px', 'size' => 20, 'column' => '20', 'row' => '20', 'isLinked' => true ];
+				$settings['flex_gap_mobile'] = [ 'unit' => 'px', 'size' => 16, 'column' => '16', 'row' => '16', 'isLinked' => true ];
+			}
 		}
 		if ( $role === 'services_split_lead' ) {
 			$settings['_css_classes'] = 'wpae-services-split-lead';
@@ -1247,9 +1268,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		if ( $role === 'services_photo_panel' ) {
 			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
-			$settings['padding'] = [ 'unit' => 'px', 'top' => '24', 'right' => '24', 'bottom' => '24', 'left' => '24', 'isLinked' => false ];
+			$settings['padding'] = [ 'unit' => 'px', 'top' => '24', 'right' => '0', 'bottom' => '24', 'left' => '0', 'isLinked' => false ];
 			$settings['padding_tablet'] = $settings['padding'];
-			$settings['padding_mobile'] = [ 'unit' => 'px', 'top' => '20', 'right' => '20', 'bottom' => '20', 'left' => '20', 'isLinked' => false ];
+			$settings['padding_mobile'] = [ 'unit' => 'px', 'top' => '20', 'right' => '0', 'bottom' => '20', 'left' => '0', 'isLinked' => false ];
 			$settings['flex_direction'] = 'column';
 			$settings['flex_align_items'] = 'stretch';
 			$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 10, 'column' => '10', 'row' => '10', 'isLinked' => true ];

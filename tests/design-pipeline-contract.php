@@ -1059,7 +1059,7 @@ for ( $asset_index = 1; $asset_index <= 6; $asset_index++ ) {
 }
 $services_recipe_tokens = [ 'palette' => [ 'paper' => '#f6f0e6', 'surface' => '#ffffff', 'ink' => '#111827', 'muted' => '#4b5563', 'accent' => '#4460ec', 'border' => '#d1d5db' ] ];
 $services_recipe_compile = static function ( array $brief, string $recipe_id, array $assets, string $seed, string $lead_ref = '' ) use ( $services_recipe_tokens ): array {
-	$context = [ 'services_recipe_id' => $recipe_id, 'media_references' => $assets ];
+	$context = [ 'services_recipe_id' => $recipe_id, 'media_references' => $assets, 'canonical_create' => true ];
 	if ( $lead_ref !== '' ) {
 		$context['services_lead_service_ref'] = $lead_ref;
 	}
@@ -1121,12 +1121,12 @@ foreach ( $services_recipe_results as $recipe_result ) {
 		&& count( $native_badges ) === 1
 		&& count( $native_labels ) === 1
 		&& ( $label['settings']['title'] ?? '' ) === $services_badge_text
-		&& ( $label['settings']['title_color'] ?? '' ) === '#111827'
+		&& ( $label['settings']['title_color'] ?? '' ) === ( $recipe_result['plan']['visual_policy']['eyebrow_colors']['pill'] ?? '' )
 		&& ( $label['settings']['typography_font_size']['unit'] ?? '' ) === 'rem'
 		&& (float) ( $label['settings']['typography_font_size']['size'] ?? 0 ) === 0.75
 		&& ( $label['settings']['typography_text_transform'] ?? '' ) === 'uppercase'
-		&& ( $badge['settings']['background_color'] ?? '' ) === '#ffffff'
-		&& ( $badge['settings']['border_color'] ?? '' ) === '#6b7280'
+		&& ( $badge['settings']['background_color'] ?? '' ) === ( $recipe_result['plan']['visual_policy']['eyebrow_colors']['pill_background'] ?? '' )
+		&& ( $badge['settings']['border_color'] ?? '' ) === ( $recipe_result['plan']['visual_policy']['eyebrow_colors']['pill_border'] ?? '' )
 		&& ( $badge['settings']['border_width']['top'] ?? '' ) === '2'
 		&& (float) ( $badge['settings']['border_radius']['size'] ?? 0 ) >= 999
 		&& ( $badge['settings']['padding']['top'] ?? '' ) === '0.5'
@@ -1137,7 +1137,7 @@ foreach ( $services_recipe_results as $recipe_result ) {
 		&& count( array_filter( $ir_nodes, static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_badge' ) ) === 1
 		&& count( array_filter( $ir_nodes, static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'services_badge_label' ) ) === 1;
 }
-$check( $services_badge_contract_ok && $services_badge_ir_contract_ok, 'all typed Services recipes default their section eyebrow to the native white outlined pill from the user reference' );
+$check( $services_badge_contract_ok && $services_badge_ir_contract_ok, 'all typed Services recipes keep a single-owner high-contrast outlined eyebrow pill in native settings' );
 $services_brief_media_intent = (array) ( array_values( array_filter( (array) ( $services_recipe_brief['layout_constraints'] ?? [] ), static fn( array $constraint ): bool => ( $constraint['kind'] ?? '' ) === 'media_intent' ) )[0] ?? [] );
 $check( $services_recipe_brief['intent']['archetype'] === 'services' && ( $services_brief_media_intent['value'] ?? '' ) === 'unspecified' && array_reduce( $services_recipe_results, static fn( bool $ok, array $result ): bool => $ok && ! empty( $result['plan_validation']['ok'] ) && ! empty( $result['ir_validation']['ok'] ) && ! empty( $result['compiled']['ok'] ), true ), 'the same canonical Services Brief validates through all three explicitly selected recipes without changing production defaults' );
 $check( array_column( array_map( static fn( array $result ): array => [ 'recipe_id' => $result['plan']['recipe_id'], 'role' => $result['plan']['sections'][0]['children'][1]['role'] ?? '' ], array_values( $services_recipe_results ) ), 'recipe_id' ) === $services_recipe_ids && array_column( array_map( static fn( array $result ): array => [ 'recipe_id' => $result['plan']['recipe_id'], 'role' => $result['plan']['sections'][0]['children'][1]['role'] ?? '' ], array_values( $services_recipe_results ) ), 'role' ) === [ 'services_photo_grid', 'services_split_editorial', 'services_text_icon_list' ], 'opt-in recipe selection produces three different typed DesignPlan compositions' );
@@ -1175,9 +1175,10 @@ foreach ( $photo_cards as $index => $card ) {
 }
 $photo_id_values = array_column( $photo_nodes, 'id' );
 $check( $photo_item_fidelity && count( $photo_images ) === 3 && count( $photo_buttons ) === 3 && count( array_unique( $photo_id_values ) ) === count( $photo_id_values ), 'photo cards keep image first, exact matching title/body/CTA URLs, and unique native Elementor IDs per source service' );
-$check( ( $photo_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $photo_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $photo_grid['settings']['flex_gap']['unit'] ?? '' ) === 'px' && (float) ( $photo_grid['settings']['flex_gap']['size'] ?? 0 ) === 24.0 && (float) ( $photo_grid['settings']['flex_gap_mobile']['size'] ?? 0 ) === 16.0 && ( $photo_cards[0]['settings']['_element_custom_width']['unit'] ?? '' ) === '%' && (float) ( $photo_cards[0]['settings']['_element_custom_width']['size'] ?? 0 ) === 31.5, 'photo grid uses gap-safe native three-column desktop wrap and a one-column mobile stack' );
+$photo_panel_settings = (array) ( $photo_cards[0]['elements'][1]['settings'] ?? [] );
+$check( ( $photo_grid['settings']['container_type'] ?? '' ) === 'flex' && ( $photo_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $photo_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $photo_grid['settings']['flex_wrap'] ?? '' ) === 'nowrap' && ( $photo_grid['settings']['flex_gap']['unit'] ?? '' ) === 'rem' && (float) ( $photo_grid['settings']['flex_gap']['size'] ?? 0 ) > 0 && ( $photo_cards[0]['settings']['_element_custom_width']['unit'] ?? '' ) === '%' && (float) ( $photo_cards[0]['settings']['_element_custom_width']['size'] ?? 0 ) === 100.0 && ( $photo_panel_settings['padding']['right'] ?? '' ) === '0' && ( $photo_panel_settings['padding']['left'] ?? '' ) === '0' && ( $photo_panel_settings['padding_mobile']['top'] ?? '' ) === '20', 'photo recipe compiles the accepted equal-shrink desktop row, stacked tablet/mobile policy and reference copy padding' );
 $photo_panel = (array) ( $photo_cards[0]['elements'][1] ?? [] );
-$check( ( $photo_grid['settings']['_element_custom_width_tablet']['unit'] ?? '' ) === '%' && (float) ( $photo_grid['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0 && (float) ( $photo_cards[0]['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 48.0 && (float) ( $photo_panel['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0, 'photo grid inherits full tablet width, wraps two 48% cards, and keeps each stacked card content panel full width' );
+$check( ( $photo_grid['settings']['_element_custom_width_tablet']['unit'] ?? '' ) === '%' && (float) ( $photo_grid['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0 && (float) ( $photo_cards[0]['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0 && (float) ( $photo_panel['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0, 'photo recipe stacks the full-width collection, cards and copy panels on tablet' );
 $check( ( $photo_images[0]['settings']['object-fit'] ?? '' ) === 'cover' && ( $photo_images[0]['settings']['height']['unit'] ?? '' ) === 'px' && (float) ( $photo_images[0]['settings']['height']['size'] ?? 0 ) > 0 && ( $photo_images[0]['settings']['height_mobile']['unit'] ?? '' ) === 'px' && (float) ( $photo_images[0]['settings']['height_mobile']['size'] ?? 0 ) > 0 && ( $photo_cards[0]['settings']['border_radius_mobile']['unit'] ?? '' ) === 'px' && (float) ( $photo_cards[0]['settings']['border_radius_mobile']['top'] ?? 0 ) === 16.0 && ( $photo_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_2', 'services_recipe_photo_3' ], 'photo recipe consumes explicit assets with native pixel crop heights and responsive rounded-card controls' );
 $repeat_compile_checks = [];
 foreach ( $services_recipe_results as $recipe_index => $recipe_result ) {
@@ -1281,7 +1282,7 @@ $forbidden_text_nodes = $walk_elements( (array) ( $forbidden_text_recipe['compil
 $check( ! empty( $forbidden_text_recipe['plan_validation']['ok'] ) && ! empty( $forbidden_text_recipe['ir_validation']['ok'] ) && ! empty( $forbidden_text_recipe['compiled']['ok'] ) && empty( $forbidden_text_recipe['plan']['media_compatibility']['consumed_asset_refs'] ) && count( array_filter( $forbidden_text_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'image', 'video', 'image-carousel' ], true ) ) ) === 0, 'explicitly forbidden media remains absent from the valid text/icon recipe with no media placeholders' );
 $check( ( $text_recipe_result['plan']['media_compatibility']['unconsumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_2', 'services_recipe_photo_3' ] && empty( $text_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ), 'optional supplied assets are explicitly declared unconsumed by the text-only recipe' );
 $services_recipe_layout = wpae_layout_report_for_plan( $photo_recipe_result['plan'] );
-$check( ( $services_recipe_layout['evidence'] ?? '' ) === 'static_plan' && empty( $services_recipe_layout['visual_render_verified'] ) && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 3 && ( $services_recipe_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 2 && ( $services_recipe_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1, 'recipe LayoutReport records static three/two/one column assumptions without claiming a rendered visual result' );
+$check( ( $services_recipe_layout['evidence'] ?? '' ) === 'static_plan' && empty( $services_recipe_layout['visual_render_verified'] ) && ( $services_recipe_layout['recipe_layout']['collection_policy']['implementation'] ?? '' ) === 'native_flex_equal' && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 3 && ( $services_recipe_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 1 && ( $services_recipe_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1 && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'row_flex_equal_shrink', 'recipe LayoutReport follows frozen native flex row and tablet/mobile stack without claiming a rendered visual result' );
 $split_recipe_layout = wpae_layout_report_for_plan( $split_recipe_result['plan'] );
 $text_recipe_layout = wpae_layout_report_for_plan( $text_recipe_result['plan'] );
 $check( ( $split_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'lead_row_then_editorial_stack' && ( $split_recipe_layout['recipe_layout']['breakpoints'][3]['axis'] ?? '' ) === 'vertical_stack' && ( $split_recipe_layout['recipe_layout']['breakpoints'][0]['column_basis_percent'] ?? [] ) === [ 'copy' => 52, 'image' => 44 ] && ( $text_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'vertical_list_with_horizontal_item_rows' && ( $text_recipe_layout['recipe_layout']['breakpoints'][0]['column_basis_percent'] ?? [] ) === [ 'icon' => 10, 'copy' => 90 ], 'static LayoutReport distinguishes split stack and text-list row axes with declared basis assumptions' );
@@ -1300,6 +1301,7 @@ foreach ( [ 'services.photo_cards' => $photo_recipe_result['plan'], 'services.sp
 			$source_item = (array) ( $geometry_case_plan['sections'][0]['children'][ $geometry_node_index ]['items'][0] ?? [] );
 			$geometry_case_plan['sections'][0]['children'][ $geometry_node_index ]['items'] = array_fill( 0, $geometry_item_count, $source_item );
 		}
+		$geometry_case_plan['visual_policy'] = wpae_design_plan_visual_policy( $services_recipe_brief, [], (array) ( $geometry_case_plan['resolved_visual'] ?? [] ), 'linear', (array) ( $geometry_case_plan['responsive'] ?? [] ), $geometry_item_count, $geometry_recipe_id );
 		$geometry_case_report = wpae_layout_report_for_plan( $geometry_case_plan );
 		$geometry_samples = (array) ( $geometry_case_report['recipe_layout']['geometry_samples'] ?? [] );
 		$services_geometry_cases[] = [ 'recipe' => $geometry_recipe_id, 'items' => $geometry_item_count, 'report' => $geometry_case_report, 'sample_count' => count( $geometry_samples ) ];
@@ -1314,7 +1316,8 @@ foreach ( $services_geometry_cases as $geometry_case ) {
 $photo_1200_sample = array_values( array_filter( (array) ( $services_recipe_layout['recipe_layout']['geometry_samples'] ?? [] ), static fn( array $sample ): bool => ( $sample['container_width_px'] ?? 0 ) === 1200 ) )[0] ?? [];
 $split_1200_sample = array_values( array_filter( (array) ( $split_recipe_layout['recipe_layout']['geometry_samples'] ?? [] ), static fn( array $sample ): bool => ( $sample['container_width_px'] ?? 0 ) === 1200 ) )[0] ?? [];
 $split_768_sample = array_values( array_filter( (array) ( $split_recipe_layout['recipe_layout']['geometry_samples'] ?? [] ), static fn( array $sample ): bool => ( $sample['container_width_px'] ?? 0 ) === 768 ) )[0] ?? [];
-$check( $services_geometry_ok && (float) ( $photo_1200_sample['card_basis_percent'] ?? 0 ) === 31.5 && (float) ( $photo_1200_sample['gap_px'] ?? 0 ) === 24.0 && (float) ( $photo_1200_sample['outer_horizontal_padding_px'] ?? 0 ) === 32.0 && ( $photo_1200_sample['overflow'] ?? true ) === false && (float) ( $split_1200_sample['raw_copy_basis_width_px'] ?? 0 ) === 590.72 && (float) ( $split_1200_sample['raw_image_basis_width_px'] ?? 0 ) === 499.84 && (float) ( $split_1200_sample['gap_px'] ?? 0 ) === 32.0 && ( $split_1200_sample['overflow'] ?? true ) === false && ( $split_768_sample['axis'] ?? '' ) === 'column' && ( $split_768_sample['overflow'] ?? true ) === false, 'recipe geometry stays within width plus gaps and section padding for 2/3/4/6 items across 320–1200px containers; photo 31.5% × 3 and split 52/44% + 32px are gap-safe, with stacked tablet width measured on the cross axis' );
+$expected_photo_cell_width = ( (float) ( $photo_1200_sample['available_content_width_px'] ?? 0 ) - 2 * (float) ( $photo_1200_sample['gap_px'] ?? 0 ) ) / 3;
+$check( $services_geometry_ok && abs( (float) ( $photo_1200_sample['cell_width_px'] ?? 0 ) - $expected_photo_cell_width ) < 0.01 && ! array_key_exists( 'card_basis_percent', $photo_1200_sample ) && (float) ( $photo_1200_sample['gap_px'] ?? 0 ) > 0 && (float) ( $photo_1200_sample['outer_horizontal_padding_px'] ?? 0 ) === 32.0 && ( $photo_1200_sample['overflow'] ?? true ) === false && (float) ( $split_1200_sample['raw_copy_basis_width_px'] ?? 0 ) === 590.72 && (float) ( $split_1200_sample['raw_image_basis_width_px'] ?? 0 ) === 499.84 && (float) ( $split_1200_sample['gap_px'] ?? 0 ) === 32.0 && ( $split_1200_sample['overflow'] ?? true ) === false && ( $split_768_sample['axis'] ?? '' ) === 'column' && ( $split_768_sample['overflow'] ?? true ) === false, 'recipe geometry subtracts real collection gaps before dividing equal cells at 2/3/4/6 counts across 320–1200px containers; split proportions and stacked tablet remain separate' );
 
 $missing_photo_recipe = $services_recipe_compile( $services_recipe_brief, 'services.photo_cards', [], 'services-recipe-missing-photo' );
 $missing_split_plan = wpae_design_plan_from_brief( $services_recipe_brief, [ 'services_recipe_id' => 'services.split_editorial', 'services_lead_service_ref' => 'service_2' ] );
@@ -1363,7 +1366,7 @@ $check( empty( $forbidden_photo_validation['ok'] ) && in_array( 'photo_cards_med
 $check( empty( $forbidden_split_validation['ok'] ) && in_array( 'services_recipe_split_editorial_media_forbidden_or_conflicted', $forbidden_split_validation['errors'], true ), 'split recipe refuses when images are explicitly forbidden' );
 
 $count_recipe_results = [];
-foreach ( [ 1, 2, 6, 7 ] as $service_count ) {
+foreach ( [ 1, 2, 3, 4, 6, 7 ] as $service_count ) {
 	$count_prompt = "Блок услуг\n";
 	for ( $service_index = 1; $service_index <= $service_count; $service_index++ ) {
 		$count_prompt .= 'Услуга ' . $service_index . ' — название: «Услуга ' . $service_index . '»' . "\n";
@@ -1375,27 +1378,29 @@ foreach ( [ 1, 2, 6, 7 ] as $service_count ) {
 $count_recipe_checks = [];
 foreach ( $count_recipe_results as $count => $result ) {
 	$recipe_child = array_values( array_filter( (array) ( $result['plan']['sections'][0]['children'] ?? [] ), static fn( array $child ): bool => ( $child['role'] ?? '' ) === 'services_photo_grid' ) )[0] ?? [];
-	$count_ok = in_array( (int) $count, [ 2, 6 ], true )
+	$count_ok = in_array( (int) $count, [ 2, 3, 4, 6 ], true )
 		? ( ! empty( $result['plan_validation']['ok'] ) && ! empty( $result['compiled']['ok'] ) && count( (array) ( $recipe_child['items'] ?? [] ) ) === (int) $count )
 		: ( empty( $result['plan_validation']['ok'] ) && in_array( 'services_recipe_items_out_of_range_or_incomplete', $result['plan_validation']['errors'] ?? [], true ) );
-	if ( in_array( (int) $count, [ 2, 6 ], true ) ) {
+	if ( in_array( (int) $count, [ 2, 3, 4, 6 ], true ) ) {
 		$count_nodes = $walk_elements( (array) ( $result['compiled']['elementor_data'] ?? [] ) );
 		$count_grid = array_values( array_filter( $count_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-photo-grid' ) )[0] ?? [];
 		$count_cards = array_values( array_filter( (array) ( $count_grid['elements'] ?? [] ), static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' ) );
-		$desktop_basis = (int) $count === 3 ? 31.5 : 48.0;
-		$count_ok = $count_ok && ( $count_grid['settings']['flex_wrap'] ?? '' ) === 'wrap'
+		$expected_implementation = (int) $count <= 3 ? 'native_flex_equal' : 'native_grid';
+		$count_ok = $count_ok && ( $result['plan']['visual_policy']['collection']['implementation'] ?? '' ) === $expected_implementation
 			&& count( $count_cards ) === (int) $count
-			&& (float) ( $count_cards[0]['settings']['_element_custom_width']['size'] ?? 0 ) === $desktop_basis
+			&& ( $count_grid['settings']['container_type'] ?? '' ) === ( $expected_implementation === 'native_flex_equal' ? 'flex' : 'grid' )
+			&& (float) ( $count_cards[0]['settings']['_element_custom_width']['size'] ?? 0 ) === 100.0
 			&& (float) ( $count_cards[0]['settings']['_element_custom_width_mobile']['size'] ?? 0 ) === 100.0
-			&& ( $desktop_basis * 2 + ( 24 * 100 / 1200 ) ) <= 100;
-		if ( (int) $count === 6 ) {
-			$count_layout = wpae_layout_report_for_plan( $result['plan'] );
-			$count_ok = $count_ok && ( $count_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 2
-				&& ( $count_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 2
-				&& ( $count_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1
-				&& ( $count_layout['recipe_layout']['card_or_row_padding_px']['desktop'] ?? 0 ) === 24
-				&& ( $count_layout['recipe_layout']['card_or_row_padding_px']['mobile'] ?? 0 ) === 20;
-		}
+			&& ( $result['plan']['visual_policy']['collection']['columns']['desktop'] ?? 0 ) === ( (int) $count >= 4 ? 2 : (int) $count )
+			&& ( $result['plan']['visual_policy']['collection']['columns']['tablet'] ?? 0 ) === 1
+			&& ( $count_grid['settings']['flex_direction'] ?? '' ) === ( $expected_implementation === 'native_flex_equal' ? 'row' : '' )
+			&& ( $count_grid['settings']['flex_direction_tablet'] ?? '' ) === ( $expected_implementation === 'native_flex_equal' ? 'column' : '' );
+		$count_layout = wpae_layout_report_for_plan( $result['plan'] );
+		$count_ok = $count_ok && ( $count_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === ( (int) $count >= 4 ? 2 : (int) $count )
+			&& ( $count_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 1
+			&& ( $count_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1
+			&& ( $count_layout['recipe_layout']['card_content_padding_px']['desktop']['left'] ?? -1 ) === 0
+			&& ( $count_layout['recipe_layout']['card_content_padding_px']['mobile']['top'] ?? 0 ) === 20;
 	}
 	$count_recipe_checks[] = $count_ok;
 }
@@ -1458,12 +1463,17 @@ foreach ( [ 'pricing', 'team', 'services' ] as $family ) {
    $photo_plan=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'services_recipe_id'=>'services.photo_cards','media_references'=>$assets]);
    $photo_ir=wpae_elementor_ir_from_design_plan($photo_plan,$brief);
    $photo_native=wpae_elementor_ir_compile($photo_ir,$brief,[],['resolved_visual'=>$photo_plan['resolved_visual']]);
-   $grids=array_values(array_filter($walk_elements($photo_native['elementor_data']??[]),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
-   $check(wpae_design_plan_validate($photo_plan,$brief)['ok'] && !empty($photo_native['ok']) && count($grids)===1 && count($grids[0]['elements'])===$count,'Canonical Services photo count and mandatory owned assets '.$count);
+   $photo_collections=array_values(array_filter($walk_elements($photo_native['elementor_data']??[]),static fn(array $n):bool=>($n['settings']['_css_classes']??'')==='wpae-services-photo-grid'));
+   $photo_implementation=$count<=3?'native_flex_equal':'native_grid';
+   $check(wpae_design_plan_validate($photo_plan,$brief)['ok'] && !empty($photo_native['ok']) && count($photo_collections)===1 && count($photo_collections[0]['elements'])===$count && ($photo_collections[0]['settings']['container_type']??'')===($count<=3?'flex':'grid') && ($photo_plan['visual_policy']['collection']['implementation']??'')===$photo_implementation,'Canonical Services photo count uses the accepted equal-width native layout with owned assets '.$count);
   }
   if($family!=='services'){
    $grids=array_values(array_filter($walk_elements($compiled['elementor_data']),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
    $check(count($grids)===1 && count($grids[0]['elements'])===$count,'Native Grid cardinality '.$family.' '.$count);
+   $collection=$plan['visual_policy']['collection'];$grid_settings=$grids[0]['settings'];
+   $check(($collection['implementation']??'')==='native_grid' && ($grid_settings['grid_columns_grid']['size']??0)===($collection['columns']['desktop']??-1) && ($grid_settings['grid_columns_grid_tablet']['size']??0)===($collection['columns']['tablet']??-1) && ($grid_settings['grid_columns_grid_mobile']['size']??0)===($collection['columns']['mobile']??-1) && !isset($grid_settings['flex_direction']) && !isset($grid_settings['flex_direction_tablet']),'Repeated '.$family.' native tracks and responsive controls match the accepted Plan '.$count);
+   $normalized_grid=(array)(wpae_elementor_normalize_data([$grids[0]])['data'][0]??[]);$normalized_grid_settings=(array)($normalized_grid['settings']??[]);
+   $check(($normalized_grid_settings['container_type']??'')==='grid' && ($normalized_grid_settings['grid_columns_grid']['size']??0)===($collection['columns']['desktop']??-1) && !isset($normalized_grid_settings['flex_direction']) && !isset($normalized_grid_settings['flex_gap']),'Accepted native Grid normalization preserves its frozen geometry without injecting Flex defaults '.$family.' '.$count);
    if($family==='pricing'){
     $price_group=$grids[0]['elements'][0]['elements'][0]['elements'][1]??[];
     $inline=$plan['visual_policy']['inline_value'];

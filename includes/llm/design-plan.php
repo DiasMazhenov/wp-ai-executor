@@ -865,7 +865,7 @@ function wpae_design_plan_services_recipe_plan( array $brief, array $context, st
 }
 
 /** Resolve role geometry once, before the accepted Plan is hashed. Historical Plans lack this field. */
-function wpae_design_plan_visual_policy( array $brief, array $record, array $visual, string $composition, array $responsive, int $item_count = 0 ): array {
+function wpae_design_plan_visual_policy( array $brief, array $record, array $visual, string $composition, array $responsive, int $item_count = 0, string $services_recipe_id = '' ): array {
 	$values = array_replace( wpae_design_token_defaults(), (array) ( $visual['values'] ?? [] ) );
 	$record_policy = (array) ( $record['policy'] ?? [] );
 	$field_sources = [];
@@ -885,6 +885,11 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	$item_count = $item_count ?: count( (array) ( $brief['groups'] ?? [] ) );
 	$columns = min( 3, max( 1, $item_count ) );
 	if ( in_array( $item_count, [ 4, 6 ], true ) ) { $columns = 2; }
+	$collection_implementation_default = $services_recipe_id === 'services.photo_cards' && $item_count <= 3 ? 'native_flex_equal' : 'native_grid';
+	$collection_implementation = (string) $pick( 'collection_implementation', $collection_implementation_default );
+	if ( ! in_array( $collection_implementation, [ 'native_grid', 'native_flex_equal' ], true ) ) {
+		$collection_implementation = $collection_implementation_default;
+	}
 	$policy = [
 		'version' => 1,
 		'precedence' => [ 'explicit_brief', 'composition_record', 'visual_profile', 'documented_default' ],
@@ -896,7 +901,7 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		// Inline values (price + period) keep their shared start axis when space narrows.
 		'entity_layout' => [ 'variant' => $record_policy['entity_layout'] ?? 'grid', 'columns' => [ 'desktop' => ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ], 'gap' => $pick( 'item_copy_gap', '0.75rem' ) ],
 		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
-		'collection' => [ 'implementation' => 'native_grid', 'columns' => [ 'desktop' => (int) $pick( 'columns', ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 1 : $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
+		'collection' => [ 'implementation' => $collection_implementation, 'columns' => [ 'desktop' => (int) $pick( 'columns', ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 1 : $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
 	];
 	$field_sources['inline_value'] = 'documented_default';
@@ -912,7 +917,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		if ( $archetype !== 'services' ) {
 			$recipe_plan['archetype'] = $archetype;
 		}
-		if ( ! empty( $context['canonical_create'] ) ) { $recipe_plan['resolved_visual'] = wpae_design_plan_resolve_visual( $brief, $context ); $recipe_plan['visual_policy'] = wpae_design_plan_visual_policy( $brief, [], $recipe_plan['resolved_visual'], 'linear', $recipe_plan['responsive'] ); }
+		if ( ! empty( $context['canonical_create'] ) ) { $recipe_plan['resolved_visual'] = wpae_design_plan_resolve_visual( $brief, $context ); $recipe_plan['visual_policy'] = wpae_design_plan_visual_policy( $brief, [], $recipe_plan['resolved_visual'], 'linear', $recipe_plan['responsive'], 0, (string) ( $recipe_plan['recipe_id'] ?? '' ) ); }
 		return $recipe_plan;
 	}
 	if ( ! in_array( $archetype, wpae_design_plan_schema()['archetypes'], true ) ) {

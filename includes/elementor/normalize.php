@@ -710,20 +710,25 @@ function wpae_elementor_normalize_elements( array $elements, array &$report, str
                 }
             }
 
-            foreach ( [
+            $accepted_visual_grid = ( sanitize_key( (string) ( $element['settings']['container_type'] ?? '' ) ) === 'grid' && ( $element['settings']['_wpae_visual_policy_version'] ?? null ) === 1 );
+            $container_defaults = [
                 'container_type' => 'flex',
                 'content_width' => $path === 'root' ? 'boxed' : 'full',
                 'flex_direction' => 'column',
                 'background_background' => 'classic',
                 'background_color' => 'transparent',
-            ] as $setting_key => $setting_value ) {
+            ];
+            if ( $accepted_visual_grid ) {
+                unset( $container_defaults['flex_direction'] );
+            }
+            foreach ( $container_defaults as $setting_key => $setting_value ) {
                 if ( empty( $element['settings'][ $setting_key ] ) ) {
                     $element['settings'][ $setting_key ] = $setting_value;
                     wpae_elementor_normalize_add_change( $report, 'filled_container_setting', $element_path, 'Filled safe baseline container setting.', [ 'setting' => $setting_key, 'value' => $setting_value ] );
                 }
             }
 
-            if ( ! isset( $element['settings']['gap'] ) && ! isset( $element['settings']['flex_gap'] ) ) {
+            if ( ! $accepted_visual_grid && ! isset( $element['settings']['gap'] ) && ! isset( $element['settings']['flex_gap'] ) ) {
                 $element['settings']['flex_gap'] = [
                     'unit' => 'rem',
                     'size' => '1.5',
