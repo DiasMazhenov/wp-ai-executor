@@ -87,3 +87,8 @@ Runtime v262 commit267bdd72999c8cc4f19e6e1cc9748b7a240cfa09 pushed; independent 
 ## Current completed technical matrix
 
 See [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) for actual B–J results, installation, failures, guarded Undo, review limitations and inline public PNGs. Earlier pending checkpoints are historical. Overall quality remains REVIEW_REQUIRED for Pricing.
+
+
+## Final affected-scenario retest v265
+
+Pricing center drift was confirmed by DOM, fixed through accepted Plan inline-value policy, regression-tested and released. Fresh I v265 passed primary render/model guard/Publish/readback/public seven widths/PNG review/guarded Undo. Full native authored comparison zero differences. Prior quality REVIEW_REQUIRED is resolved for the measured fixture. Final page roots[]. [Correction and before/after evidence](PRICING_INLINE_V265.md); current machine matrix retains historical v264 row separately.

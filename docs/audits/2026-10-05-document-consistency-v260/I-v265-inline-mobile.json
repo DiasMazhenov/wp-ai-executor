@@ -1,0 +1,449 @@
+{
+  "nodes": [
+    {
+      "alignItems": "start",
+      "clientWidth": 358,
+      "direction": "row",
+      "gap": "16px",
+      "id": "a69bbfa",
+      "justifyContent": "start",
+      "rect": {
+        "bottom": 669.84375,
+        "height": 591.84375,
+        "left": 16,
+        "right": 374,
+        "top": 78,
+        "width": 358,
+        "x": 16,
+        "y": 78
+      },
+      "scrollWidth": 358,
+      "text": "Старт\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t50 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/мес\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tМалый проект\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tАудит\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tПлан\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tВыбрать Старт\n\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\tПроект\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t150 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/год\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tПолный проект\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tДизайн\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tРазработка\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tВыбрать Проект",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "stretch",
+      "clientWidth": 356,
+      "direction": "column",
+      "gap": "12px",
+      "id": "ae83d78",
+      "justifyContent": "flex-start",
+      "rect": {
+        "bottom": 365.921875,
+        "height": 287.921875,
+        "left": 16,
+        "right": 374,
+        "top": 78,
+        "width": 358,
+        "x": 16,
+        "y": 78
+      },
+      "scrollWidth": 356,
+      "text": "Старт\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t50 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/мес\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tМалый проект\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tАудит\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tПлан\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tВыбрать Старт",
+      "wrap": "wrap"
+    },
+    {
+      "alignItems": "stretch",
+      "clientWidth": 308,
+      "direction": "column",
+      "gap": "12px",
+      "id": "cf08377",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 281.921875,
+        "height": 178.921875,
+        "left": 41,
+        "right": 349,
+        "top": 103,
+        "width": 308,
+        "x": 41,
+        "y": 103
+      },
+      "scrollWidth": 308,
+      "text": "Старт\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t50 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/мес\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tМалый проект\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tАудит\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tПлан",
+      "wrap": "wrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "302c33e",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 126.3984375,
+        "height": 23.3984375,
+        "left": 41,
+        "right": 349,
+        "top": 103,
+        "width": 308,
+        "x": 41,
+        "y": 103
+      },
+      "scrollWidth": 308,
+      "text": "Старт",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "center",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "4px",
+      "id": "07d64b9",
+      "justifyContent": "flex-start",
+      "rect": {
+        "bottom": 169.1171875,
+        "height": 30.71875,
+        "left": 41,
+        "right": 349,
+        "top": 138.3984375,
+        "width": 308,
+        "x": 41,
+        "y": 138.3984375
+      },
+      "scrollWidth": 308,
+      "text": "50 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/мес",
+      "wrap": "wrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 100,
+      "direction": "row",
+      "gap": "4px",
+      "id": "44ada7b",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 169.1171875,
+        "height": 30.71875,
+        "left": 41,
+        "right": 140.65625,
+        "top": 138.3984375,
+        "width": 99.65625,
+        "x": 41,
+        "y": 138.3984375
+      },
+      "scrollWidth": 100,
+      "text": "50 000 ₸",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 32,
+      "direction": "row",
+      "gap": "4px",
+      "id": "38f02cf",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 166.5546875,
+        "height": 25.6015625,
+        "left": 144.65625,
+        "right": 176.65625,
+        "top": 140.953125,
+        "width": 32,
+        "x": 144.65625,
+        "y": 140.953125
+      },
+      "scrollWidth": 32,
+      "text": "/мес",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "465f292",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 206.71875,
+        "height": 25.6015625,
+        "left": 41,
+        "right": 349,
+        "top": 181.1171875,
+        "width": 308,
+        "x": 41,
+        "y": 181.1171875
+      },
+      "scrollWidth": 308,
+      "text": "Малый проект",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "2ed8c5d",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 244.3203125,
+        "height": 25.6015625,
+        "left": 41,
+        "right": 349,
+        "top": 218.71875,
+        "width": 308,
+        "x": 41,
+        "y": 218.71875
+      },
+      "scrollWidth": 308,
+      "text": "Аудит",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "5bef824",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 281.921875,
+        "height": 25.6015625,
+        "left": 41,
+        "right": 349,
+        "top": 256.3203125,
+        "width": 308,
+        "x": 41,
+        "y": 256.3203125
+      },
+      "scrollWidth": 308,
+      "text": "План",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 154,
+      "direction": "row",
+      "gap": "normal",
+      "id": null,
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 340.921875,
+        "height": 39,
+        "left": 41,
+        "right": 195.3203125,
+        "top": 301.921875,
+        "width": 154.3203125,
+        "x": 41,
+        "y": 301.921875
+      },
+      "scrollWidth": 154,
+      "text": "Выбрать Старт",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "stretch",
+      "clientWidth": 356,
+      "direction": "column",
+      "gap": "12px",
+      "id": "741c2f3",
+      "justifyContent": "flex-start",
+      "rect": {
+        "bottom": 669.84375,
+        "height": 287.921875,
+        "left": 16,
+        "right": 374,
+        "top": 381.921875,
+        "width": 358,
+        "x": 16,
+        "y": 381.921875
+      },
+      "scrollWidth": 356,
+      "text": "Проект\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t150 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/год\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tПолный проект\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tДизайн\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tРазработка\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tВыбрать Проект",
+      "wrap": "wrap"
+    },
+    {
+      "alignItems": "stretch",
+      "clientWidth": 308,
+      "direction": "column",
+      "gap": "12px",
+      "id": "8fca134",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 585.84375,
+        "height": 178.921875,
+        "left": 41,
+        "right": 349,
+        "top": 406.921875,
+        "width": 308,
+        "x": 41,
+        "y": 406.921875
+      },
+      "scrollWidth": 308,
+      "text": "Проект\t\t\t\t\n\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t150 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/год\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tПолный проект\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tДизайн\t\t\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\tРазработка",
+      "wrap": "wrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "f464fa0",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 430.3203125,
+        "height": 23.3984375,
+        "left": 41,
+        "right": 349,
+        "top": 406.921875,
+        "width": 308,
+        "x": 41,
+        "y": 406.921875
+      },
+      "scrollWidth": 308,
+      "text": "Проект",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "center",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "4px",
+      "id": "581d3b0",
+      "justifyContent": "flex-start",
+      "rect": {
+        "bottom": 473.0390625,
+        "height": 30.71875,
+        "left": 41,
+        "right": 349,
+        "top": 442.3203125,
+        "width": 308,
+        "x": 41,
+        "y": 442.3203125
+      },
+      "scrollWidth": 308,
+      "text": "150 000 ₸\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t/год",
+      "wrap": "wrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 114,
+      "direction": "row",
+      "gap": "4px",
+      "id": "b084857",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 473.0390625,
+        "height": 30.71875,
+        "left": 41,
+        "right": 154.890625,
+        "top": 442.3203125,
+        "width": 113.890625,
+        "x": 41,
+        "y": 442.3203125
+      },
+      "scrollWidth": 114,
+      "text": "150 000 ₸",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 29,
+      "direction": "row",
+      "gap": "4px",
+      "id": "d62d580",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 470.4765625,
+        "height": 25.6015625,
+        "left": 158.890625,
+        "right": 188.375,
+        "top": 444.875,
+        "width": 29.484375,
+        "x": 158.890625,
+        "y": 444.875
+      },
+      "scrollWidth": 29,
+      "text": "/год",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "b6e4d2f",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 510.640625,
+        "height": 25.6015625,
+        "left": 41,
+        "right": 349,
+        "top": 485.0390625,
+        "width": 308,
+        "x": 41,
+        "y": 485.0390625
+      },
+      "scrollWidth": 308,
+      "text": "Полный проект",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "531c580",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 548.2421875,
+        "height": 25.6015625,
+        "left": 41,
+        "right": 349,
+        "top": 522.640625,
+        "width": 308,
+        "x": 41,
+        "y": 522.640625
+      },
+      "scrollWidth": 308,
+      "text": "Дизайн",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 308,
+      "direction": "row",
+      "gap": "12px",
+      "id": "3bee097",
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 585.84375,
+        "height": 25.6015625,
+        "left": 41,
+        "right": 349,
+        "top": 560.2421875,
+        "width": 308,
+        "x": 41,
+        "y": 560.2421875
+      },
+      "scrollWidth": 308,
+      "text": "Разработка",
+      "wrap": "nowrap"
+    },
+    {
+      "alignItems": "normal",
+      "clientWidth": 165,
+      "direction": "row",
+      "gap": "normal",
+      "id": null,
+      "justifyContent": "normal",
+      "rect": {
+        "bottom": 644.84375,
+        "height": 39,
+        "left": 41,
+        "right": 206.0703125,
+        "top": 605.84375,
+        "width": 165.0703125,
+        "x": 41,
+        "y": 605.84375
+      },
+      "scrollWidth": 165,
+      "text": "Выбрать Проект",
+      "wrap": "nowrap"
+    }
+  ],
+  "viewport": {
+    "height": 1000,
+    "width": 390
+  }
+}

@@ -1,6 +1,6 @@
 # Live acceptance B–J, post 5214, v02.11.264
 
-This is the current checkpoint; earlier sections in REPORT.md describe historical failures. Nine variants across five families were actually generated through the existing plugin chat. No visual repair, manual insertion, new page or manual root deletion was used. Technical lifecycle passes; overall composition acceptance remains REVIEW_REQUIRED for Pricing.
+This section is the v264 checkpoint; the final v265 affected-scenario retest is appended below. Earlier sections in REPORT.md describe historical failures. Nine variants across five families were actually generated through the existing plugin chat. No visual repair, manual insertion, new page or manual root deletion was used. Technical lifecycle passed on v264; its Pricing REVIEW_REQUIRED finding was subsequently corrected and passed the fresh v265 retest below.
 
 ## Source, install and checks
 
@@ -147,3 +147,24 @@ Each final PNG was captured fresh through built-in browser after native Publish 
 ## Limits and publication
 
 Runtime commit/push/install/editor confirmation are complete. Nine scenario technical cycles and screenshots are complete. Overall visual quality acceptance is REVIEW_REQUIRED for Pricing. No independent full post-reload native JSON export for every row; pre-Save native guard, saved descriptor/hash, reloaded canvas and public DOM were checked. Empty baseline limits live adjacent-user-root preservation coverage. Optimistic check/write concurrency boundary remains; no serializable CAS claim. Structured model extraction remains disabled. Evidence/document commit and its remote verification are separate from runtime install; no further runtime release needed for this report.
+
+
+## Fresh live v265 — correction accepted
+
+Runtime cb8f1abf55771727b81a47664ecc0f04ff2b4bc7 pushed; independent remote HEAD matched. Only WP AI Executor updated through existing WP Pusher tab. Success notice, independent Plugins PHPv265 and loaded editorv265 confirmed. Native Publish was disabled before reload; baseline[]/HTMLbytes0.
+
+Same exact I fixture via normal chat: provider0/write1, root0ee2ff5, operationwpae-7f2e52f92424167e, identity25115537-4642-4b5e-99c4-c47558688569, initial revision4, readback revision6, Undo revision7. Record pricing.tiers/default preserved; no scoped repair. Accepted inline policy translates to native row/wrap/flex-start at desktop/tablet/mobile. Original v264 first evidence remains unchanged.
+
+Measured public390: title x41, price x41, description/CTA x41; group width308, directionrow, wrapwrap, justifyflex-start, crosscenter, gap4px. Previous price x145.171875 was centered inside mobile column. Both amount and period now fit on a shared left axis. Desktop equal tracks and tablet stack unchanged. Actual widths320/390/767/768/1024/1025/1280 have no document overflow; exact prices/features/CTA#start/#project present. Public desktop/mobile PNGs freshly captured after Publish/public reload, JPEG converted to PNG, signature/dimensions verified, opened and reviewed. Existing site chat retained without covering the cards.
+
+Native root selected through visible Navigator after editor reload; read-only clipboard export I-v265-native-after-reload.json. Recursive comparison of every authored field against first generated native root: zero differences (additional native defaults allowed). Model check PASS before Publish. Full saved native readback now independently verified for I. Guarded Undo automatically saved/reloaded; descriptor already_undone, baseline[] hash4f53cda..., HTMLbytes0. final-public-baseline-v265.json confirms publicroots[].
+
+Technical / visual request match / composition quality: PASS / PASS / PASS for this fixture and measured widths. Prior quality REVIEW_REQUIRED resolved by this fresh primary generation. Vision85/confidence95 reports generic CTA labels; this finding is contradicted by exact public labels «Выбрать Старт»/«Выбрать Проект», hrefs#start/#project, saved native comparison and the reviewed pixels. No automatic Vision replacement applied; first Vision observations are preserved in I-v265-first-review-dom.txt. General local checks380/1329/15of15/catalog/patch/lint/package252+four probes/diff PASS. Unaffected B–H/J retain their earlier accepted evidence; not relabeled as v265 generation. Remaining coverage limits: Pricing intro absent from fixture; count breadth and concurrency preservation local-only; not every earlier family has an independent full native JSON export after reload. These limits do not contradict the measured result.
+
+![Pricing v265 public CSS1280×1000 PNG1280×1000](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v265-public-1280.png)
+
+[Download Pricing PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v265-public-1280.png)
+
+![Pricing v265 public CSS390×1000 PNG390×1000](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v265-public-390.png)
+
+[Download Pricing PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v265-public-390.png)

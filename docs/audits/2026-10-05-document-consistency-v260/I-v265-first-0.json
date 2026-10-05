@@ -1,0 +1,1216 @@
+{
+  "action_path": "pipeline",
+  "provider_calls": 0,
+  "route": "local_deterministic",
+  "design_pipeline": {
+    "schema": "wpae-design-pipeline-trace-v1",
+    "mode": "active",
+    "status": "written",
+    "brief": {
+      "schema": "wpae-brief-v1",
+      "hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+      "locale": "ru",
+      "archetype": "pricing",
+      "intake_source": "deterministic_parser",
+      "content_count": 14,
+      "ambiguity_count": 8,
+      "warnings": [],
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "services": []
+      }
+    },
+    "library_retrieval": {
+      "status": "skipped",
+      "reason": "ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed",
+      "called": false
+    },
+    "content_plan": {
+      "brief_hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "services": []
+      },
+      "item_count": 0
+    },
+    "plan": {
+      "schema": "wpae-design-plan-v1",
+      "hash": "514a7d469d36fe5b2c7fbba0db70582dcadb0f634734b2a5d83ea3de01cbd8c4",
+      "brief_hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+      "archetype": "pricing",
+      "composition_decision": {
+        "identity": "pricing.three_cards",
+        "source": "explicit_record",
+        "slot_bindings": [
+          {
+            "role": "pricing_cards",
+            "allowed_widgets": [
+              "heading",
+              "text-editor",
+              "button"
+            ],
+            "content_refs": [],
+            "items": [
+              {
+                "label_ref": "pricing_1_label",
+                "price_ref": "pricing_1_price",
+                "period_ref": "pricing_1_period",
+                "description_ref": "pricing_1_description",
+                "cta_ref": "pricing_1_cta",
+                "group_id": "pricing_1",
+                "feature_refs": [
+                  "pricing_1_feature_1",
+                  "pricing_1_feature_2"
+                ],
+                "price_text": "50 000 ₸/мес",
+                "provenance": {
+                  "source": "prompt",
+                  "source_spans": {
+                    "label": [
+                      23,
+                      33
+                    ],
+                    "price": [
+                      42,
+                      59
+                    ],
+                    "description": [
+                      68,
+                      91
+                    ],
+                    "cta": [
+                      149,
+                      174
+                    ]
+                  },
+                  "parser": "wpae-brief-parser-v12"
+                }
+              },
+              {
+                "label_ref": "pricing_2_label",
+                "price_ref": "pricing_2_price",
+                "period_ref": "pricing_2_period",
+                "description_ref": "pricing_2_description",
+                "cta_ref": "pricing_2_cta",
+                "group_id": "pricing_2",
+                "feature_refs": [
+                  "pricing_2_feature_1",
+                  "pricing_2_feature_2"
+                ],
+                "price_text": "150 000 ₸/год",
+                "provenance": {
+                  "source": "prompt",
+                  "source_spans": {
+                    "label": [
+                      200,
+                      212
+                    ],
+                    "price": [
+                      221,
+                      239
+                    ],
+                    "description": [
+                      248,
+                      273
+                    ],
+                    "cta": [
+                      345,
+                      372
+                    ]
+                  },
+                  "parser": "wpae-brief-parser-v12"
+                }
+              }
+            ],
+            "token_refs": [
+              "color.surface",
+              "color.text",
+              "color.muted",
+              "color.primary",
+              "color.border",
+              "radius.card",
+              "space.component"
+            ],
+            "layout_constraints": {
+              "min_width": 0,
+              "max_width": 100
+            },
+            "responsive_policy": "stack",
+            "media_refs": [],
+            "editable_fields": [
+              "text",
+              "url"
+            ],
+            "provenance": {
+              "source": "brief",
+              "roles": [
+                "title",
+                "body",
+                "label",
+                "cta"
+              ]
+            }
+          }
+        ],
+        "record_id": "pricing.tiers",
+        "record_version": 1,
+        "record_hash": "4ac6ff61078721ec658f1fd38bb0ac1155ec9b519747c06095b874fbcd1967ce",
+        "variant_kind": "default",
+        "distinct": true,
+        "policy": {
+          "composition": "three_cards",
+          "desktop": "three_cards",
+          "tablet": "stack",
+          "mobile": "stack"
+        },
+        "visual_profile": "",
+        "errors": []
+      },
+      "resolved_visual": {
+        "errors": [],
+        "profile": "",
+        "values": {
+          "color.page_bg": "#f6f0e6",
+          "color.surface": "#ffffff",
+          "color.text": "#111827",
+          "color.muted": "#4b5563",
+          "color.primary": "#4460EC",
+          "color.border": "#d1d5db",
+          "color.focus": "#2563eb",
+          "type.display": {
+            "font_family": "inherit",
+            "desktop": "3.5rem",
+            "tablet": "2.75rem",
+            "mobile": "2.25rem",
+            "weight": "700",
+            "line_height": "1.05"
+          },
+          "type.body": {
+            "font_family": "inherit",
+            "desktop": "1rem",
+            "tablet": "1rem",
+            "mobile": "1rem",
+            "weight": "400",
+            "line_height": "1.6"
+          },
+          "space.section": "4.5rem",
+          "space.component": "1.5rem",
+          "radius.card": "0.5rem"
+        },
+        "sources": {
+          "color.page_bg": "safe_default",
+          "color.surface": "safe_default",
+          "color.text": "safe_default",
+          "color.muted": "plan_contrast_adjustment",
+          "color.primary": "safe_default",
+          "color.border": "safe_default",
+          "color.focus": "safe_default",
+          "type.display": "safe_default",
+          "type.body": "safe_default",
+          "space.section": "safe_default",
+          "space.component": "safe_default",
+          "radius.card": "safe_default"
+        },
+        "precedence": [
+          "safe_default",
+          "project",
+          "confirmed_page",
+          "confirmed_reference",
+          "selected_visual_profile",
+          "explicit_brief"
+        ],
+        "adjustments": [
+          "muted_contrast_default"
+        ],
+        "contrast": {
+          "ok": true,
+          "pairs": [
+            {
+              "foreground": "color.text",
+              "background": "color.page_bg",
+              "ratio": 15.64916362485115,
+              "minimum": 4.5,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": false
+            },
+            {
+              "foreground": "color.muted",
+              "background": "color.page_bg",
+              "ratio": 6.666771905041054,
+              "minimum": 4.5,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": false
+            },
+            {
+              "foreground": "color.surface",
+              "background": "color.primary",
+              "ratio": 5.084545220192164,
+              "minimum": 3,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": true
+            }
+          ],
+          "errors": []
+        }
+      },
+      "visual_policy": {
+        "version": 1,
+        "precedence": [
+          "explicit_brief",
+          "composition_record",
+          "visual_profile",
+          "documented_default"
+        ],
+        "intro": {
+          "placement": "above_collection",
+          "text_align": "left",
+          "container_align": "start",
+          "reading_measure": "38rem",
+          "heading_level": "h2",
+          "eyebrow_presentation": "pill"
+        },
+        "typography": {
+          "intro_title": {
+            "font_family": "inherit",
+            "desktop": "3.5rem",
+            "tablet": "2.75rem",
+            "mobile": "2.25rem",
+            "weight": "700",
+            "line_height": "1.05"
+          },
+          "item_title": {
+            "font_family": "inherit",
+            "desktop": "1.125rem",
+            "tablet": "1.125rem",
+            "mobile": "1.125rem",
+            "weight": "600",
+            "line_height": "1.3"
+          },
+          "body": {
+            "font_family": "inherit",
+            "desktop": "1rem",
+            "tablet": "1rem",
+            "mobile": "1rem",
+            "weight": "400",
+            "line_height": "1.6"
+          },
+          "eyebrow": {
+            "font_family": "inherit",
+            "desktop": "0.75rem",
+            "tablet": "0.75rem",
+            "mobile": "0.75rem",
+            "weight": "600",
+            "line_height": "1.2"
+          },
+          "price": {
+            "font_family": "inherit",
+            "desktop": "2rem",
+            "tablet": "1.8rem",
+            "mobile": "1.6rem",
+            "weight": "800",
+            "line_height": "1.2"
+          }
+        },
+        "spacing": {
+          "eyebrow_title": "0.75rem",
+          "title_description": "1rem",
+          "description_cta": "1.5rem",
+          "intro_collection": "2rem",
+          "item_copy": "0.75rem",
+          "item_cta": "1.25rem",
+          "section": {
+            "desktop": "4.5rem",
+            "tablet": "4.5rem",
+            "mobile": "2rem"
+          }
+        },
+        "eyebrow_colors": {
+          "plain": "#4460EC",
+          "pill": "#ffffff"
+        },
+        "item_surface": {
+          "padding": "1.5rem",
+          "radius": "0.5rem",
+          "background": "#ffffff"
+        },
+        "inline_value": {
+          "direction": {
+            "desktop": "row",
+            "tablet": "row",
+            "mobile": "row"
+          },
+          "wrap": "wrap",
+          "main_align": "flex-start",
+          "cross_align": "center",
+          "gap": "0.25rem"
+        },
+        "collection": {
+          "implementation": "native_grid",
+          "columns": {
+            "desktop": 2,
+            "tablet": 1,
+            "mobile": 1
+          },
+          "gap": {
+            "desktop": "1.5rem",
+            "tablet": "1.5rem",
+            "mobile": "1rem"
+          }
+        },
+        "split": {
+          "gap": {
+            "desktop": "1.5rem",
+            "tablet": "1.5rem",
+            "mobile": "1rem"
+          },
+          "ratio": [],
+          "media_side": "right",
+          "mobile_direction": "column",
+          "responsive": {
+            "tablet": "stack",
+            "mobile": "stack"
+          }
+        },
+        "provenance": {
+          "record_id": "pricing.tiers",
+          "profile": "",
+          "field_sources": {
+            "intro_placement": "documented_default",
+            "intro_text_align": "documented_default",
+            "intro_container_align": "documented_default",
+            "reading_measure": "documented_default",
+            "eyebrow_presentation": "documented_default",
+            "eyebrow_title_gap": "documented_default",
+            "title_description_gap": "documented_default",
+            "description_cta_gap": "documented_default",
+            "intro_collection_gap": "documented_default",
+            "item_copy_gap": "documented_default",
+            "item_cta_gap": "documented_default",
+            "columns": "documented_default",
+            "inline_value": "documented_default"
+          },
+          "token_sources": {
+            "color.page_bg": "safe_default",
+            "color.surface": "safe_default",
+            "color.text": "safe_default",
+            "color.muted": "plan_contrast_adjustment",
+            "color.primary": "safe_default",
+            "color.border": "safe_default",
+            "color.focus": "safe_default",
+            "type.display": "safe_default",
+            "type.body": "safe_default",
+            "space.section": "safe_default",
+            "space.component": "safe_default",
+            "radius.card": "safe_default"
+          }
+        }
+      },
+      "section_count": 1,
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "capabilities": {
+          "schema": "wpae-widget-capability-v1",
+          "ok": true,
+          "requested": [
+            "container",
+            "heading",
+            "text-editor",
+            "button"
+          ],
+          "available": [
+            "container",
+            "heading",
+            "text-editor",
+            "button"
+          ],
+          "resolved": [
+            {
+              "from": "container",
+              "to": "container",
+              "downgraded": false,
+              "runtime_result": "structural"
+            },
+            {
+              "from": "heading",
+              "to": "heading",
+              "downgraded": false,
+              "runtime_result": "present"
+            },
+            {
+              "from": "text-editor",
+              "to": "text-editor",
+              "downgraded": false,
+              "runtime_result": "present"
+            },
+            {
+              "from": "button",
+              "to": "button",
+              "downgraded": false,
+              "runtime_result": "present"
+            }
+          ],
+          "unavailable": [],
+          "unknown": [],
+          "downgrades": [],
+          "failures": []
+        },
+        "tokens": {
+          "ok": true,
+          "resolved": [
+            {
+              "token": "color.page_bg",
+              "value": "#f6f0e6",
+              "source": "safe_default"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "safe_default"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "safe_default"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "source": "safe_default"
+            },
+            {
+              "token": "color.primary",
+              "value": "#4460EC",
+              "source": "safe_default"
+            },
+            {
+              "token": "color.border",
+              "value": "#d1d5db",
+              "source": "safe_default"
+            },
+            {
+              "token": "type.display",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "3.5rem",
+                "tablet": "2.75rem",
+                "mobile": "2.25rem",
+                "weight": "700",
+                "line_height": "1.05"
+              },
+              "source": "safe_default"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "safe_default"
+            },
+            {
+              "token": "space.section",
+              "value": "4.5rem",
+              "source": "safe_default"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "safe_default"
+            },
+            {
+              "token": "radius.card",
+              "value": "0.5rem",
+              "source": "safe_default"
+            }
+          ],
+          "missing": [],
+          "fallbacks": [
+            {
+              "token": "color.page_bg",
+              "value": "#f6f0e6",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "color.primary",
+              "value": "#4460EC",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "color.border",
+              "value": "#d1d5db",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "type.display",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "3.5rem",
+                "tablet": "2.75rem",
+                "mobile": "2.25rem",
+                "weight": "700",
+                "line_height": "1.05"
+              },
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "space.section",
+              "value": "4.5rem",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "reason": "missing_project_token"
+            },
+            {
+              "token": "radius.card",
+              "value": "0.5rem",
+              "reason": "missing_project_token"
+            }
+          ],
+          "collisions": []
+        },
+        "contrast": {
+          "ok": true,
+          "pairs": [
+            {
+              "foreground": "color.text",
+              "background": "color.page_bg",
+              "ratio": 15.64916362485115,
+              "minimum": 4.5,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": false
+            },
+            {
+              "foreground": "color.muted",
+              "background": "color.page_bg",
+              "ratio": 6.666771905041054,
+              "minimum": 4.5,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": false
+            },
+            {
+              "foreground": "color.surface",
+              "background": "color.primary",
+              "ratio": 5.084545220192164,
+              "minimum": 3,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": true
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    "layout": {
+      "schema": "wpae-layout-report-v1",
+      "ok": true,
+      "violations": [],
+      "breakpoints": [
+        {
+          "breakpoint": "desktop",
+          "container_width": 1376,
+          "used_width": 1376,
+          "mobile_stack_result": "stack"
+        },
+        {
+          "breakpoint": "laptop",
+          "container_width": 960,
+          "used_width": 960,
+          "mobile_stack_result": "stack"
+        },
+        {
+          "breakpoint": "tablet",
+          "container_width": 704,
+          "used_width": 704,
+          "mobile_stack_result": "stack"
+        },
+        {
+          "breakpoint": "mobile",
+          "container_width": 358,
+          "used_width": 358,
+          "mobile_stack_result": "stack"
+        }
+      ]
+    },
+    "routing": {
+      "schema": "wpae-llm-route-v1",
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "route": "reliable_structured",
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": null,
+      "retry_count": null,
+      "fallback_used": false,
+      "estimated_cost": null,
+      "success": null,
+      "provider_calls": 0,
+      "source": "not_called",
+      "action_path": "",
+      "metrics_known": {
+        "input_tokens": false,
+        "output_tokens": false,
+        "latency_ms": false,
+        "retry_count": false,
+        "estimated_cost": false,
+        "success": false
+      }
+    },
+    "elementor_ir": {
+      "schema": "wpae-elementor-ir-v2",
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "widgets": [
+          "container",
+          "heading",
+          "text-editor",
+          "button"
+        ],
+        "capabilities": {
+          "schema": "wpae-widget-capability-v1",
+          "ok": true,
+          "requested": [
+            "container",
+            "heading",
+            "text-editor",
+            "button"
+          ],
+          "available": [
+            "container",
+            "heading",
+            "text-editor",
+            "button"
+          ],
+          "resolved": [
+            {
+              "from": "container",
+              "to": "container",
+              "downgraded": false,
+              "runtime_result": "structural"
+            },
+            {
+              "from": "heading",
+              "to": "heading",
+              "downgraded": false,
+              "runtime_result": "present"
+            },
+            {
+              "from": "text-editor",
+              "to": "text-editor",
+              "downgraded": false,
+              "runtime_result": "present"
+            },
+            {
+              "from": "button",
+              "to": "button",
+              "downgraded": false,
+              "runtime_result": "present"
+            }
+          ],
+          "unavailable": [],
+          "unknown": [],
+          "downgrades": [],
+          "failures": []
+        }
+      },
+      "compiled": true,
+      "report": {
+        "schema": "wpae-elementor-compile-report-v1",
+        "downgrades": [],
+        "errors": [],
+        "warnings": [],
+        "tokens": {
+          "resolved": [
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.section",
+              "value": "4.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.primary",
+              "value": "#4460EC",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.border",
+              "value": "#d1d5db",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "radius.card",
+              "value": "0.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.border",
+              "value": "#d1d5db",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "radius.card",
+              "value": "0.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.display",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "3.5rem",
+                "tablet": "2.75rem",
+                "mobile": "2.25rem",
+                "weight": "700",
+                "line_height": "1.05"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.primary",
+              "value": "#4460EC",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.border",
+              "value": "#d1d5db",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "radius.card",
+              "value": "0.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "space.component",
+              "value": "1.5rem",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.display",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "3.5rem",
+                "tablet": "2.75rem",
+                "mobile": "2.25rem",
+                "weight": "700",
+                "line_height": "1.05"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.muted",
+              "value": "#4b5563",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "type.body",
+              "value": {
+                "font_family": "inherit",
+                "desktop": "1rem",
+                "tablet": "1rem",
+                "mobile": "1rem",
+                "weight": "400",
+                "line_height": "1.6"
+              },
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.primary",
+              "value": "#4460EC",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.text",
+              "value": "#111827",
+              "source": "resolved_plan"
+            },
+            {
+              "token": "color.surface",
+              "value": "#ffffff",
+              "source": "resolved_plan"
+            }
+          ],
+          "missing": [],
+          "fallbacks": [],
+          "collisions": []
+        },
+        "node_count": 22,
+        "contrast": {
+          "ok": true,
+          "pairs": [
+            {
+              "foreground": "color.text",
+              "background": "color.page_bg",
+              "ratio": 15.64916362485115,
+              "minimum": 4.5,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": false
+            },
+            {
+              "foreground": "color.muted",
+              "background": "color.page_bg",
+              "ratio": 6.666771905041054,
+              "minimum": 4.5,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": false
+            },
+            {
+              "foreground": "color.surface",
+              "background": "color.primary",
+              "ratio": 5.084545220192164,
+              "minimum": 3,
+              "font_size_px": 16,
+              "font_weight": 400,
+              "large_text": false,
+              "ui_object": true
+            }
+          ],
+          "errors": []
+        }
+      }
+    },
+    "preflight": {
+      "selected_scope": "page",
+      "roots_to_add": 1,
+      "nodes_to_change": 22,
+      "widgets": [
+        "container",
+        "heading",
+        "text-editor",
+        "button"
+      ],
+      "warnings": [
+        "brief_has_ambiguities"
+      ],
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "estimated_cost": null,
+      "estimated_latency_ms": null,
+      "route": "local_deterministic",
+      "provider_calls": 0
+    },
+    "frozen_decisions": {
+      "plan_hash": "514a7d469d36fe5b2c7fbba0db70582dcadb0f634734b2a5d83ea3de01cbd8c4",
+      "compiled_signature": "0e04532dba6509b99abca5cadf9663b7515b84ff93ca7166d484bfdc1ac505f6",
+      "readback_signature": "0e04532dba6509b99abca5cadf9663b7515b84ff93ca7166d484bfdc1ac505f6",
+      "readback_matches": true
+    }
+  },
+  "operation_ledger": {
+    "schema": "wpae-design-operation-v1",
+    "operation_id": "wpae-7f2e52f92424167e",
+    "operation_identity": "25115537-4642-4b5e-99c4-c47558688569",
+    "idempotency_key": "34f59ec48ae93ff04b3007648d45504f0be27e79b0c3dc3831ac683ee4d61af6",
+    "post_id": 5214,
+    "selected_scope": "page",
+    "operation_type": "design",
+    "brief_hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+    "plan_hash": "514a7d469d36fe5b2c7fbba0db70582dcadb0f634734b2a5d83ea3de01cbd8c4",
+    "compiled_hash": "466545db9027cc3e3e193af32ae89329664df0fb032cb11c94ad4c927fd05b09",
+    "saved_hash": "ebc6d9e71e966288a4b913601efb67bc5485a4b8523af4a20e83fb92d7ec87bd",
+    "rendered_html_hash": "",
+    "vision_report_id": "",
+    "root_ids": [
+      "0ee2ff5"
+    ],
+    "target_fingerprint": "3af8cea74aa581dfc6b39116a12634a99ac5aa6f97f86c9758e94c0d40c08d1a",
+    "provider": "openrouter",
+    "model": "openrouter/free",
+    "latency_ms": 0,
+    "retry_count": 0,
+    "fallback_used": false,
+    "current_state": "written",
+    "revision": 4,
+    "created_at": "2026-10-05 12:13:40",
+    "updated_at": "2026-10-05 12:13:40",
+    "rollback_snapshot_id": "321b148102ba8f1923bf86d7",
+    "accepted_contract_id": "contract-80fbce60917a26aa19457998",
+    "accepted_contract_hash": "80fbce60917a26aa19457998a368f014ded524be88ae35d42066507a1bc3f97f",
+    "parent_operation_id": ""
+  },
+  "write_count": 1,
+  "render_review_pending": true
+}
