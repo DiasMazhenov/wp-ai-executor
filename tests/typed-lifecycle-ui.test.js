@@ -18,6 +18,15 @@ test('server/model comparison and explicit scoped repair use exact operation, no
  env.addTypedRepairControl(op,{report:{report_id:'report'}});env.messages.children.at(-1).listeners.click();await new Promise(r=>setImmediate(r));
  const ctx=env.requestArgs[2].lifecycleContext;assert.equal(ctx.accepted_operation_id,'op');assert.equal(ctx.accepted_vision_report_id,'report');assert.equal(ctx.layout_correction,'compact_spacing');assert.ok(!('composition_record' in ctx));assert.ok(!('visual_profile' in ctx));
 });
+test('scoped repair refuses a native document change during descriptor refresh',async()=>{
+ const {env,posts,errors}=harness();let resolveDescriptor;
+ env.fetch=(url,o)=>{posts.push(JSON.parse(o.body));return new Promise(resolve=>{resolveDescriptor=resolve;});};
+ const op={operation_id:'op',operation_identity:'identity',revision:4,root_ids:['owned'],accepted_contract_id:'contract'};
+ env.addTypedRepairControl(op,{report:{report_id:'report'}});env.messages.children.at(-1).listeners.click();
+ env.getEditorModelChildren=model=>model.id?[]:[{id:'owned',elType:'container',settings:{title:'local edit'}}];
+ resolveDescriptor({ok:true,json:async()=>({ok:true,operation:{post_id:5214,operation_id:'op',operation_identity:'identity',accepted_contract_id:'contract',root_ids:['owned'],revision:9,eligibility:{status:'available'}}})});
+ await new Promise(r=>setImmediate(r));assert.equal(posts.length,1);assert.equal(posts[0].context.lifecycle_action,'describe_operation');assert.ok(errors.at(-1).includes('model изменилась'));assert.ok(!env.requestArgs);
+});
 test('durable Undo verifies fresh server document and visible Save before reload',async()=>{
  const {env,posts,errors}=harness();
  const op={status:'available',action:'undo_repair',operation_id:'child',operation_identity:'identity',revision:4,accepted_contract_id:'contract',root_ids:['owned']};

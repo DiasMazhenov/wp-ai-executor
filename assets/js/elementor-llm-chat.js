@@ -1967,8 +1967,10 @@
         button.addEventListener('click', function () {
             if (requestInFlight) return;
             button.disabled = true;
+            var documentBefore = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
             refreshTypedOperationDescriptor(operation).then(function () {
-                if (!editorPublishIsClean()) throw new Error('Repair остановлен: editor содержит несохранённые изменения.');
+                var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
+                if (!editorPublishIsClean() || JSON.stringify(documentBefore) !== JSON.stringify(current)) throw new Error('Repair остановлен: editor model изменилась во время проверки scope.');
                 var context = typedOperationContext(operation, 'repair');
                 context.accepted_vision_report_id = report.report_id; context.layout_correction = 'compact_spacing';
                 request('Применить scoped repair отступов', false, { visionRepair: true, skipVision: true, lifecycleContext: context });
