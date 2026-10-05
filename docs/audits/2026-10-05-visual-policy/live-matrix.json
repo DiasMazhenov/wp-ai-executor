@@ -1,0 +1,56 @@
+{
+  "post_id": 5214,
+  "source_commit": "9d9b7bef3b4e7adb9c2b8f58567bf6b3527f5d05",
+  "source_version": "v02.11.259",
+  "installed_version": "v02.11.259",
+  "final_root_set": [
+    "1a309f40"
+  ],
+  "original_empty_baseline_restored": false,
+  "scenarios": {
+    "B": {
+      "root": "b861b04",
+      "operation": "wpae-61af2ec3fbd5889b",
+      "undo": "PASS",
+      "visual_acceptance": "REVIEW_REQUIRED",
+      "baseline_native_fallback": "FAIL"
+    },
+    "C": {
+      "root": "9e0af51",
+      "operation": "wpae-b07ea89c8ceb8880",
+      "first_visual": "FAIL",
+      "undo": "PASS",
+      "revision": 6,
+      "corrected_visual": "NOT_RUN"
+    },
+    "D": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    },
+    "E": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    },
+    "F": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    },
+    "G": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    },
+    "H": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    },
+    "I": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    },
+    "J": {
+      "generation": "NOT_RUN",
+      "reason": "baseline restoration blocked"
+    }
+  },
+  "blocker": "Pending explicit authorization for guarded cleanup of unowned HTML fallback root 1a309f40"
+}

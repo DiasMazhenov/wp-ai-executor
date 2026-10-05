@@ -1,0 +1,7 @@
+{
+  "exact_native_payload_equal": true,
+  "excluded_metadata": [
+    "captured_at"
+  ],
+  "root": "1a309f40"
+}

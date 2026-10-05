@@ -86,3 +86,28 @@ C first render is FAIL: at CSS768/1024/1025 the 608px reading wrapper exceeds it
 Source correction (v259 retained, not yet installed): native custom width `min(100%, accepted measure)` translates the Plan ceiling inside the selected column; exact unchanged legacy fingerprints retain their existing palette without permitting modified/new unmarked roots; fresh create refuses native HTML fallback over an empty saved baseline before provider/write. Historical contracts are unchanged. Native custom unit support was verified against official Elementor container/base-units source. Cleanup of the unowned neighbor awaits explicit user authorization; no protection disabled. C Undo retry and corrected visual acceptance remain pending.
 
 Local correction checks: runtime1302; DesignPlan365; Node15/15; patch guard/catalog158/156/156; PHP lint four changed PHP files; package252 hashes/zero mismatch/four real probe scenarios; scoped empty-inverse transaction probe; diff check PASS. Full package diagnostic JSON limitation unchanged. Commit/push/install/retry are separate pending statuses.
+
+
+## Verified correction install and C Undo — 2026-10-05
+
+Source commit `9d9b7bef3b4e7adb9c2b8f58567bf6b3527f5d05` pushed; independent origin/main HEAD matched. WP Pusher ordinary update returned success despite observation timeout; retained fresh success screenshot and text. Plugins PHPv259/reloaded editorv259 confirmed. Version alone does not attest same-version source; successful changed Undo behavior is additional runtime evidence.
+
+C guarded Undo after correction succeeded: revision6/already_undone. Server hash `40b464661882a52cf117091381627c096fa1d631e7d70c4ff44268ab3e47c1d6`, root set `[1a309f40]`; native Navigator/selected JSON and independent public DOM agree. Neighbor native payload is exactly unchanged excluding capture timestamp. Public CSS1232×923; successful-Undo editor screenshot CSS1232×923/PNG1232×923, converted, format-verified and opened.
+
+Acceptance remains BLOCKED: original empty baseline not restored; guarded cleanup of unowned neighbor requires the pending explicit user authorization. No further roots generated. B technical Undo completed but native fallback invalidated baseline restoration; C first visual FAIL, lifecycle Undo now PASS; corrected reading clamp has local regression evidence only, not a new live render. D–J NOT RUN. No repair/replacement obscures first-generation defects. Runtime1302/DesignPlan365/Node15/15/catalog/patch/lint/package/diff checks PASS. Remaining local foreign/untracked artifacts preserved; raw JPEG/intermediate evidence remains untracked. The old foreign transactions probe is present locally, untracked, while the scoped regression is tracked under this stage audit.
+
+![C first public desktop; CSS1280×1000, PNG1265×1243](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/C-public-desktop.png)
+
+[Скачать screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/C-public-desktop.png)
+
+![C first public mobile; CSS390×1400, PNG390×1400](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/C-public-mobile.png)
+
+[Скачать screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/C-public-mobile.png)
+
+![C Undo revision6, remaining root1a309f40; editor CSS1232×923, PNG1232×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/C-after-successful-undo.png)
+
+[Скачать screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/C-after-successful-undo.png)
+
+![WP Pusher successful correction update](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/install-reading-correction.png)
+
+[Скачать screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/install-reading-correction.png)
