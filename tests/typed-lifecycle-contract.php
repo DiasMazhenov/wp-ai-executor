@@ -16,18 +16,18 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     check( $check_model instanceof WP_REST_Response && $check_model->get_data()['ok'], 'Server/editor decision equality ' . $record );
     if ($record==='hero.text_only') {
         $native=$owned; $child_id=$native[0]['elements'][0]['elements'][0]['id'];
-        check($native[0]['elements'][0]['elements'][0]['settings']['content_width']==='boxed','Hero copy container authors boxed native width');
-        $GLOBALS['typed_native_defaults'][$child_id]=['content_width'=>'boxed'];
+        check($native[0]['elements'][0]['elements'][0]['settings']['content_width']==='full','Hero reading container authors full native width on the selected axis');
+        $GLOBALS['typed_native_defaults'][$child_id]=['content_width'=>'full'];
         unset($native[0]['elements'][0]['elements'][0]['settings']['content_width']);
         $context['editor_owned_model']=$native;
-        check(wpae_accepted_lifecycle_request($context)->get_status()===200,'Sparse registered boxed default is not replaced by generation full width');
+        check(wpae_accepted_lifecycle_request($context)->get_status()===200,'Sparse registered full-width default is not replaced by generation full width');
         $native_doc=new class {function get_main_id(){return 42;}};
         check(wpae_accepted_elementor_save_guard(['elements'=>$native],$native_doc)['elements']===$native,'Save validates original sparse native payload without synthesized design values');
         $context['lifecycle_action']='resync';
         check(wpae_accepted_lifecycle_request($context)->get_data()['ok'],'Resync accepts exact native model with omitted registered default');
         $context['lifecycle_action']='check_model';
-        $native[0]['elements'][0]['elements'][0]['settings']['content_width']='full';$context['editor_owned_model']=$native;
-        check(wpae_accepted_lifecycle_request($context)->get_status()===409,'Explicit changed full width still refuses after sparse-model fix');
+        $native[0]['elements'][0]['elements'][0]['settings']['content_width']='boxed';$context['editor_owned_model']=$native;
+        check(wpae_accepted_lifecycle_request($context)->get_status()===409,'Explicit changed boxed width still refuses after sparse-model fix');
         $GLOBALS['typed_native_defaults']=[];
     }
     $document_context=$context; $document_context['lifecycle_action']='check_document_model';$document_context['editor_document_model']=$GLOBALS['page_data'];

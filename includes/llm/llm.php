@@ -11062,7 +11062,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$brief_ir = ! empty( $services_brief )
 			? $services_brief
 			: wpae_brief_ir_parse( $message, [ 'audience' => is_array( $editor_context_input ) ? (string) ( $editor_context_input['audience'] ?? '' ) : '' ] );
-		$design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, $services_route_request ? $services_planning_context : array_merge( [ 'post_id' => $selected_post_id, 'canonical_create' => $migrated_active_create ], array_intersect_key( (array) $editor_context_input, array_flip( [ 'page_tokens', 'page_tokens_confirmed', 'reference_tokens', 'reference_tokens_confirmed', 'composition_record', 'composition_version', 'visual_profile' ] ) ) ) );
+		$design_plan_v1 = wpae_design_plan_from_brief( $brief_ir, $services_route_request ? array_merge( $services_planning_context, [ 'canonical_create' => true ] ) : array_merge( [ 'post_id' => $selected_post_id, 'canonical_create' => $migrated_active_create || $action_archetype === 'team' ], array_intersect_key( (array) $editor_context_input, array_flip( [ 'page_tokens', 'page_tokens_confirmed', 'reference_tokens', 'reference_tokens_confirmed', 'composition_record', 'composition_version', 'visual_profile' ] ) ) ) );
         $brief_validation = function_exists( 'wpae_brief_ir_validate' ) ? wpae_brief_ir_validate( $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
 		$plan_validation = function_exists( 'wpae_design_plan_validate' ) ? wpae_design_plan_validate( $design_plan_v1, $brief_ir ) : [ 'ok' => true, 'errors' => [] ];
         $layout_tokens = $design_plan_v1['resolved_visual']['values'] ?? ( function_exists( 'wpae_get_project_design_tokens' ) ? wpae_get_project_design_tokens() : [] );
@@ -11096,6 +11096,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
                 'archetype' => $design_plan_v1['archetype'] ?? 'unknown',
                 'composition_decision' => $design_plan_v1['composition_decision'] ?? $design_plan_v1['recipe_selection'] ?? [],
                 'resolved_visual' => $design_plan_v1['resolved_visual'] ?? [],
+                'visual_policy' => $design_plan_v1['visual_policy'] ?? null,
                 'section_count' => count( (array) ( $design_plan_v1['sections'] ?? [] ) ),
                 'validation' => $plan_validation,
             ],

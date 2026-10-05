@@ -213,7 +213,7 @@ class Widgets_Manager {
 \Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
 $check( $wpae_no_elementor_probe['state'] === 'unavailable' && $wpae_no_elementor_probe['reason'] === 'elementor_runtime_missing', 'absent Elementor runtime is reported as unavailable before test double registration' );
 
-$hero_prompt = "hero\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nImage: https://example.com/contract.png\nFAQ\nО нас\n7 шагов";
+$hero_prompt = "hero\nНадзаголовок обычным текстом.\neyebrow: «Запуск без лишних шагов»\ntitle: «Соберите сильную страницу\nза один день»\nbody: «Понятный процесс для команды.»\nCTA: «Начать проект» -> https://example.com/start\nCTA: «Узнать больше» -> #about\nImage: https://example.com/contract.png\nFAQ\nО нас\n7 шагов";
 $hero = wpae_brief_ir_parse( $hero_prompt );
 $check( $hero['schema'] === 'wpae-brief-v1', 'BriefIR schema' );
 $check( wpae_brief_ir_validate( $hero )['ok'], 'BriefIR validates' );
@@ -266,7 +266,7 @@ $check( wpae_design_plan_constraint_value( $contradictory, 'media_intent' ) === 
 $forbidden_with_asset = wpae_brief_ir_parse( 'Create a hero with no image, but keep this supplied image URL: https://example.com/hero.jpg' );
 $check( wpae_design_plan_constraint_value( $forbidden_with_asset, 'media_intent' ) === 'conflict', 'explicit prohibition and an image asset URL are treated as a visible conflict' );
 
-$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Текст слева занимает 40%, визуальная часть справа — 60%. Изображение: https://example.com/hero.png' );
+$semantic_hero = wpae_brief_ir_parse( 'Добавь новую hero-секцию для архитектурной студии «Тихая форма». Надзаголовок «АРХИТЕКТУРА». Заголовок «Пространство для идей». Описание «Опишите задачу и получите понятный первый шаг». Основная кнопка «Начать проект», ссылка #contact. Вторичная кнопка «Смотреть проекты», ссылка #projects. Надзаголовок обычным текстом. Текст слева занимает 40%, визуальная часть справа — 60%. Изображение: https://example.com/hero.png' );
 $semantic_plan = wpae_design_plan_from_brief( $semantic_hero );
 $check( ( $semantic_plan['sections'][0]['composition'] ?? '' ) === 'split_40_60' && ( $semantic_plan['media_intent'] ?? '' ) === 'required', 'explicit image URL is treated as a required media reference and preserves copy/media composition' );
 $semantic_layout = wpae_layout_report_for_plan( $semantic_plan );
@@ -348,7 +348,7 @@ $check( ! empty( $ambiguous['ambiguities'] ), 'ambiguous quote is visible' );
 $plan = wpae_design_plan_from_brief( $hero );
 $plan_validation = wpae_design_plan_validate( $plan );
 $check( $plan['schema'] === 'wpae-design-plan-v1' && $plan_validation['ok'], 'hero DesignPlan validates' );
-$check( $plan['sections'][0]['children'][0]['allowed_widgets'] === [ 'heading', 'text-editor', 'button' ], 'hero plan restricts widgets' );
+$check( $plan['sections'][0]['children'][0]['allowed_widgets'] === [ 'heading', 'text-editor', 'button' ], 'plain hero plan restricts widgets' );
 $layout = wpae_layout_report_for_plan( $plan );
 $check( $layout['schema'] === 'wpae-layout-report-v1' && count( $layout['breakpoints'] ) === 4 && $layout['ok'], 'hero LayoutReport covers four breakpoints' );
 $check( array_column( $layout['breakpoints'], 'layout_axis' ) === [ 'row', 'row', 'row', 'column' ] && (float) ( $layout['breakpoints'][3]['basis_percent']['copy_group'] ?? 0 ) === 100.0 && (float) ( $layout['breakpoints'][3]['basis_percent']['media'] ?? 0 ) === 100.0, 'split hero report agrees with compiled desktop/tablet row and mobile 100% stack assumptions' );
@@ -1434,6 +1434,40 @@ if ( getenv( 'WPAE_SERVICES_RECIPE_DEMO' ) === '1' ) {
 		$demo['results'][ $recipe_id ] = [ 'plan' => $result['plan'], 'plan_validation' => $result['plan_validation'], 'ir' => $result['ir'], 'ir_validation' => $result['ir_validation'], 'compiled_native_tree' => $result['compiled']['elementor_data'] ?? [], 'compile_ok' => ! empty( $result['compiled']['ok'] ) ];
 	}
 	fwrite( STDOUT, "services recipe demo (synthetic; no provider/WP calls):\n" . wp_json_encode( $demo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT ) . "\n" );
+}
+
+// Canonical repeat geometry across typed families; historical recipe checks above remain compatibility evidence.
+foreach ( [ 'pricing', 'team', 'services' ] as $family ) {
+ foreach ( [ 2, 3, 4, 6 ] as $count ) {
+  $prompt = ($family==='team' ? 'Блок команды' : ($family==='services' ? 'Секция услуг' : 'Создай ' . ucfirst($family))) . "\n";
+  for($i=1;$i<=$count;$i++) {
+   $prompt .= $family==='pricing' ? "«Тариф {$i}» — «100 ₸/мес» — «Точное описание {$i}»\nКнопка: «Выбрать {$i}», ссылка #tier-{$i}\n" : ($family==='team' ? "Участник {$i} — имя: «Имя {$i}»\nУчастник {$i} — должность: «Специалист {$i}»\n" : "Услуга {$i} — название: «Услуга {$i}»\nУслуга {$i} — описание: «Точное описание {$i}»\n");
+  }
+  $brief=wpae_brief_ir_parse($prompt);
+  $ctx=['canonical_create'=>true];
+  if($family==='services'){ $ctx['services_recipe_id']='services.text_icon_list'; }
+  $plan=wpae_design_plan_from_brief($brief,$ctx);
+  $valid=wpae_design_plan_validate($plan,$brief);
+  $ir=wpae_elementor_ir_from_design_plan($plan,$brief);
+  $compiled=wpae_elementor_ir_compile($ir,$brief,[],['resolved_visual'=>$plan['resolved_visual']??[]]);
+  $check($valid['ok'] && !empty($compiled['ok']), 'Canonical count preserves complete typed family '.$family.' '.$count.': '.wp_json_encode($valid['errors']));
+  $check(($plan['visual_policy']['collection']['columns']['tablet']??0)===1 && ($plan['visual_policy']['collection']['columns']['mobile']??0)===1,'Collection Plan responsive policy '.$family.' '.$count);
+  if($family==='services'){
+   $assets=[];
+   for($i=1;$i<=$count;$i++){ $assets[]=array_replace($services_recipe_assets[($i-1)%3],['asset_id'=>'canonical-service-asset-'.$i,'group_id'=>'service_'.$i]); }
+   $photo_plan=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'services_recipe_id'=>'services.photo_cards','media_references'=>$assets]);
+   $photo_ir=wpae_elementor_ir_from_design_plan($photo_plan,$brief);
+   $photo_native=wpae_elementor_ir_compile($photo_ir,$brief,[],['resolved_visual'=>$photo_plan['resolved_visual']]);
+   $grids=array_values(array_filter($walk_elements($photo_native['elementor_data']??[]),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
+   $check(wpae_design_plan_validate($photo_plan,$brief)['ok'] && !empty($photo_native['ok']) && count($grids)===1 && count($grids[0]['elements'])===$count,'Canonical Services photo count and mandatory owned assets '.$count);
+  }
+  if($family!=='services'){
+   $grids=array_values(array_filter($walk_elements($compiled['elementor_data']),static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'));
+   $check(count($grids)===1 && count($grids[0]['elements'])===$count,'Native Grid cardinality '.$family.' '.$count);
+   $report=wpae_layout_report_for_plan($plan);
+   $check(count($report['collections'])===1 && !$report['visual_render_verified'],'Nested group static report '.$family.' '.$count);
+  }
+ }
 }
 
 fwrite( STDOUT, "design pipeline contract: {$checks} checks OK\n" );

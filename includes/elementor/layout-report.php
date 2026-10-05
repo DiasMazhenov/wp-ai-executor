@@ -160,6 +160,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		$device = $is_mobile ? 'mobile' : ( in_array( $breakpoint['id'], [ 'tablet', 'laptop' ], true ) ? 'tablet' : 'desktop' );
         $gap_ref = 'space.component' . ( $device === 'desktop' ? '' : '_' . $device );
         $gap = $gap_override ?? wpae_layout_report_length_px( $tokens[ $gap_ref ] ?? $gap_token, $viewport, 24 );
+        if ( ! empty( $plan['visual_policy'] ) && ! in_array( $composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ) { $gap = wpae_layout_report_length_px( $plan['visual_policy']['spacing']['intro_collection'], $viewport, 32 ); }
         $copy_widths = [];
 		$available_width = max( 0, $container_width - ( $is_stack ? 0 : $gap * max( 0, count( $children ) - 1 ) ) );
 		$basis = [];
@@ -246,10 +247,29 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			'suggested_patches' => $suggested_patches,
 		];
 	}
+	$collections = [];
+	if ( ! empty( $plan['visual_policy'] ) ) {
+		foreach ( $children as $child ) {
+			if ( ! in_array( $child['role'] ?? '', [ 'feature_cards', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid' ], true ) ) { continue; }
+			$collection = $plan['visual_policy']['collection'];
+			$samples = [];
+			foreach ( $reports as $row ) {
+				$device = $row['device_assumption'];
+				$columns = $collection['columns'][ $device ];
+				$gap = wpae_layout_report_length_px( $collection['gap'][ $device ], $row['viewport_width'], 24 );
+				$width = $row['container_width'];
+				$cell = max( 0, ( $width - max( 0, $columns - 1 ) * $gap ) / $columns );
+				$samples[] = [ 'breakpoint' => $row['breakpoint'], 'container_width' => $width, 'columns' => $columns, 'gap_px' => $gap, 'cell_width_px' => $cell, 'used_width' => $cell * $columns + max( 0, $columns - 1 ) * $gap, 'formula' => '(container_width - (columns - 1) * gap) / columns', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
+			}
+			$collections[] = [ 'role' => $child['role'], 'item_count' => count( (array) ( $child['items'] ?? [] ) ), 'native_controls' => $collection, 'samples' => $samples ];
+		}
+		if ( $recipe_id !== '' ) { $recipe_layout = [ 'recipe_id' => $recipe_id, 'evidence' => 'static_plan', 'visual_render_verified' => false, 'collections' => $collections ]; }
+	}
 	return [
 		'schema' => WPAE_LAYOUT_REPORT_SCHEMA,
 		'archetype' => $archetype,
 		'recipe_layout' => $recipe_layout,
+		'collections' => $collections,
 		'evidence' => 'static_plan',
 		'visual_render_verified' => false,
 		'breakpoint_source' => 'static_assumptions; runtime Elementor breakpoints must be checked in browser',

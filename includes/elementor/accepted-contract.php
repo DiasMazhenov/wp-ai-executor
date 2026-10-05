@@ -229,6 +229,19 @@ function wpae_accepted_layout_delta( array $plan, array $report, string $correct
         if ( preg_match( '/spacing|layout|отступ|ритм/iu', (string) ( $finding['category'] ?? '' ) ) && preg_match( '/excess|too\s+(?:large|wide|much)|sparse|empty|reduce|слишком|уменьш|пуст/iu', (string) ( $finding['message'] ?? '' ) . ' ' . (string) ( $finding['fix'] ?? '' ) ) ) { $supported = true; }
     }
     if ( ! $supported ) { return [ 'ok' => false, 'reason' => 'finding_does_not_justify_delta' ]; }
+    // New accepted policies repair a specific relationship; historical contracts keep their old delta.
+    if ( ! empty( $plan['visual_policy'] ) ) {
+        $changes = [];
+        foreach ( $plan['visual_policy']['spacing']['section'] as $device => $old ) {
+            if ( ! preg_match( '/^([0-9.]+)(rem|px)$/', $old, $m ) ) { continue; }
+            $new = max( $m[2] === 'rem' ? 1 : 16, (float) $m[1] - ( $m[2] === 'rem' ? 0.5 : 8 ) ) . $m[2];
+            if ( $old === $new ) { continue; }
+            $plan['visual_policy']['spacing']['section'][$device] = $new;
+            $changes['visual_policy.spacing.section.' . $device] = [ 'before' => $old, 'after' => $new ];
+        }
+        if ( ! $changes ) { return [ 'ok' => false, 'reason' => 'no_supported_spacing_values' ]; }
+        return [ 'ok' => true, 'plan' => $plan, 'delta' => $changes ];
+    }
     $changes = [];
     foreach ( [ 'space.section', 'space.section_tablet', 'space.section_mobile', 'space.component', 'space.component_tablet', 'space.component_mobile' ] as $key ) {
         $value = $plan['resolved_visual']['values'][$key] ?? null;

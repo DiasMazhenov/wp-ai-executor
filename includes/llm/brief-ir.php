@@ -944,15 +944,28 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		'source_span' => $media_match_span,
 		'provenance' => [ 'source' => 'prompt', 'source_span' => $media_match_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
 	];
-	if ( preg_match( '/\b(?:pill(?:[-\s]?badge)?|бейдж|пилюл\w*)\b/iu', $source_text, $badge_match, PREG_OFFSET_CAPTURE ) ) {
-		$badge_span = [ (int) $badge_match[0][1], (int) $badge_match[0][1] + strlen( (string) $badge_match[0][0] ) ];
-		$constraints[] = [
-			'id' => 'eyebrow_presentation_pill',
-			'kind' => 'eyebrow_presentation',
-			'value' => 'pill',
-			'source_span' => $badge_span,
-			'provenance' => [ 'source' => 'prompt', 'source_span' => $badge_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
-		];
+	// Negative presentation instructions preserve the supplied eyebrow as plain text.
+	$badge_plain = preg_match_all( '/(?:без\s+(?:pill[-\s]?)?(?:бейдж\w*|badge)|надзаголовок\s+(?:обычным\s+текстом|без\s+бейдж\w*))/iu', $source_text, $plain_matches, PREG_OFFSET_CAPTURE );
+	$plain_match = $badge_plain ? [ $plain_matches[0][0] ] : [];
+	$positive_source = $source_text;
+	foreach ( array_reverse( $plain_matches[0] ?? [] ) as $negative_match ) {
+		$positive_source = substr_replace( $positive_source, str_repeat( ' ', strlen( $negative_match[0] ) ), $negative_match[1], strlen( $negative_match[0] ) );
+	}
+	$badge_pill = preg_match( '/\b(?:pill(?:[-\s]?badge)?|бейдж|пилюл\w*)\b/iu', $positive_source, $pill_match, PREG_OFFSET_CAPTURE );
+	foreach ( [ 'plain' => [ $badge_plain, $plain_match ?? [] ], 'pill' => [ $badge_pill, $pill_match ?? [] ] ] as $presentation => [ $matched, $match ] ) {
+		if ( ! $matched ) { continue; }
+		$badge_span = [ (int) $match[0][1], (int) $match[0][1] + strlen( (string) $match[0][0] ) ];
+		$constraints[] = [ 'id' => 'eyebrow_presentation_' . $presentation, 'kind' => 'eyebrow_presentation', 'value' => $presentation, 'source_span' => $badge_span, 'provenance' => [ 'source' => 'prompt', 'source_span' => $badge_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
+	}
+	if ( $badge_plain && $badge_pill ) { $ambiguities[] = [ 'kind' => 'conflicting_eyebrow_presentation', 'source_span' => $badge_span, 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ]; }
+	foreach ( [
+		'intro_text_align' => '/(?:intro\s+text\s+align|выравнивание\s+текста\s+intro)\s*:\s*(left|center|right)/iu',
+		'intro_container_align' => '/(?:intro\s+container\s+align|положение\s+intro)\s*:\s*(start|center|end)/iu',
+		'reading_measure' => '/(?:reading\s+measure|ширина\s+чтения)\s*:\s*(\d+(?:\.\d+)?(?:rem|px|em))/iu',
+	] as $kind => $pattern ) {
+		if ( ! preg_match( $pattern, $source_text, $match, PREG_OFFSET_CAPTURE ) ) { continue; }
+		$span = [ $match[1][1], $match[1][1] + strlen( $match[1][0] ) ];
+		$constraints[] = [ 'kind' => $kind, 'value' => strtolower( $match[1][0] ), 'source_span' => $span, 'provenance' => [ 'source' => 'prompt', 'source_span' => $span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
 	}
 	if ( $media_intent === 'conflict' ) {
 		$ambiguities[] = [ 'kind' => 'conflicting_media_intent', 'source_span' => $media_match_span, 'provenance' => [ 'source' => 'prompt', 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];

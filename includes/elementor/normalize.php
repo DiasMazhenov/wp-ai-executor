@@ -443,6 +443,8 @@ function wpae_elementor_normalize_dimensions( array &$settings, array &$report, 
 
 function wpae_elementor_normalize_flex_settings( array &$settings, array &$report, string $element_path ): void {
     $container_type = sanitize_key( (string) ( $settings['container_type'] ?? '' ) );
+    // Accepted native Grid owns its geometry; legacy untyped grids retain the migration below.
+    if ( $container_type === 'grid' && ( $settings['_wpae_visual_policy_version'] ?? null ) === 1 && isset( $settings['grid_columns_grid'], $settings['grid_gaps'] ) ) { return; }
     $was_grid = $container_type === 'grid';
     $grid_gaps = is_array( $settings['grid_gaps'] ?? null ) ? $settings['grid_gaps'] : [];
     $grid_gaps_mobile = is_array( $settings['grid_gaps_mobile'] ?? null ) ? $settings['grid_gaps_mobile'] : [];

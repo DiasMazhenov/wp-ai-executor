@@ -113,8 +113,9 @@ $m2_negatives = [
  'bad_contrast' => [ 'visual_profile' => 'soft_cards_light', 'page_tokens_confirmed' => true, 'page_tokens' => [ 'color.text' => '#ffffff' ] ],
 ];
 foreach ( $m2_negatives as $name => $override ) {
+ if ( isset( $override['page_tokens'] ) ) { $override['canonical_brief'] = $base['brief']; foreach ( $override['page_tokens'] as $token => $value ) { $override['canonical_brief']['layout_constraints'][] = [ 'kind' => 'visual_token', 'token' => $token, 'value' => $value ]; } }
  $ctx = array_merge( $base['context'], $override );
- $result = $run_services_route( $m2_prompt, [], [], 'm2-refuse-' . $name, false, 'active', 'active', array_merge( $ctx, [ 'canonical_brief' => $base['brief'] ] ) );
+ $result = $run_services_route( $m2_prompt, [], [], 'm2-refuse-' . $name, false, 'active', 'active', array_merge( $ctx, [ 'canonical_brief' => $ctx['canonical_brief'] ?? $base['brief'] ] ) );
  check( ! empty( $result['error'] ) && $result['writes'] === 0 && $result['write_attempts'] === 0 && $result['calls'] === 0 && $result['page_data'] === $legacy_page, 'M2 chat refuses ' . $name . ' before write/provider/fallback' );
  $preview = $m2_preview( $base['brief'], $ctx, 'negative' );
  check( empty( $preview['ok'] ) && $preview['write_count'] === 0, 'M2 composer refuses ' . $name . ' with zero writes' );
@@ -145,7 +146,7 @@ check( ! empty( $unreadable['error'] ) && $unreadable['write_attempts'] === 0 &&
 $visual_brief = $base['brief']; $visual_brief['layout_constraints'][] = [ 'kind' => 'visual_token', 'token' => 'color.primary', 'value' => '#123456' ];
 $profile_ctx = array_merge( $base['context'], [ 'canonical_create' => true, 'visual_profile' => 'editorial_light', 'page_tokens_confirmed' => true, 'page_tokens' => [ 'color.primary' => '#654321', 'radius.card' => '2rem' ], 'reference_tokens_confirmed' => true, 'reference_tokens' => [ 'radius.card' => '3rem' ] ] );
 $visual_plan = wpae_design_plan_from_brief( $visual_brief, $profile_ctx );
-check( $visual_plan['resolved_visual']['values']['color.primary'] === '#123456' && $visual_plan['resolved_visual']['sources']['color.primary'] === 'explicit_brief' && $visual_plan['resolved_visual']['values']['radius.card'] === '3rem' && $visual_plan['resolved_visual']['sources']['radius.card'] === 'confirmed_reference' && $visual_plan['resolved_visual']['sources']['space.section'] === 'visual_profile:editorial_light', 'M2 explicit > confirmed reference > confirmed page > selected profile provenance' );
+check( $visual_plan['resolved_visual']['values']['color.primary'] === '#123456' && $visual_plan['resolved_visual']['sources']['color.primary'] === 'explicit_brief' && $visual_plan['resolved_visual']['values']['radius.card'] === '0.25rem' && $visual_plan['resolved_visual']['sources']['radius.card'] === 'visual_profile:editorial_light' && $visual_plan['resolved_visual']['sources']['space.section'] === 'visual_profile:editorial_light', 'M2 explicit > selected profile > inherited confirmed context provenance' );
 $legacy_definitions = wpae_elementor_recipe_definitions();
 check( count( $legacy_definitions ) === 8, 'M2 all eight legacy recipes audited' );
 foreach ( $legacy_definitions as $id => $recipe ) {
@@ -216,11 +217,11 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
   $device = $bp['device_assumption']; $suffix = $device === 'desktop' ? '' : '_' . $device;
   $control = $native['settings']['flex_gap' . $suffix];
   $gap_px = wpae_layout_report_length_px( $control['size'] . $control['unit'], $bp['viewport_width'], -1 );
-  check( abs( $bp['gaps']['size'] - $gap_px ) < 0.01, 'Editor static gap matches native ' . $profile . ' ' . $bp['breakpoint'] );
+  check( abs( $bp['gaps']['size'] - $gap_px ) < 0.01, 'Editor static gap matches native ' . $profile . ' ' . $bp['breakpoint'] . ' static=' . $bp['gaps']['size'] . ' native=' . $gap_px . ' composition=' . $plan['sections'][0]['composition'] );
   $copy_column = $native['elements'][0];
   $copy = $copy_column['elements'][0]['settings'];
-  check( $copy_column['settings']['content_width'] === 'full' && $copy['content_width'] === 'boxed' && ! isset( $copy_column['settings']['boxed_width'] ), 'Profile reading measure is nested inside native full-width composition column ' . $profile . ' ' . $device );
-  $boxed = $copy['boxed_width' . $suffix];
+  check( $copy_column['settings']['content_width'] === 'full' && $copy['content_width'] === 'full' && $copy['align_self'] === 'flex-start' && ! isset( $copy_column['settings']['boxed_width'] ), 'Profile reading measure is nested inside native full-width composition column ' . $profile . ' ' . $device );
+  $boxed = $copy['width' . $suffix];
   $expected = $device === 'mobile' ? $bp['basis']['copy_group'] : min( $bp['basis']['copy_group'], wpae_layout_report_length_px( $boxed['size'] . $boxed['unit'], $bp['viewport_width'], -1 ) );
   check( abs( $bp['boxed_copy_content_width_px']['copy_group'] - $expected ) < 0.01, 'Editor static boxed copy clamp matches native ' . $profile . ' ' . $bp['breakpoint'] );
  }
@@ -255,7 +256,7 @@ foreach ( [ 'hero', 'about' ] as $family ) {
    $root = $case['written'] ?? [];
    $copy = $root['elements'][$side === 'left' ? 1 : 0] ?? [];
    $image = $root['elements'][$side === 'left' ? 0 : 1] ?? [];
-   check( ! empty( $case['response']['ok'] ) && $copy['settings']['content_width'] === 'full' && $copy['settings']['width']['size'] === 60.0 && $image['settings']['width']['size'] === 40.0 && $copy['elements'][0]['settings']['content_width'] === 'boxed' && $copy['elements'][0]['settings']['boxed_width_mobile']['size'] === 100, 'Native profile split percentage column and reading measure have separate owners ' . $family . $side . $profile );
+   check( ! empty( $case['response']['ok'] ) && $copy['settings']['content_width'] === 'full' && $copy['settings']['width']['size'] === 60.0 && $image['settings']['width']['size'] === 40.0 && $copy['elements'][0]['settings']['content_width'] === 'full' && $copy['elements'][0]['settings']['align_self'] === 'flex-start' && $copy['elements'][0]['settings']['width_mobile']['size'] === 100, 'Native profile split percentage column and reading measure have separate owners ' . $family . $side . $profile );
   }
  }
 }
@@ -272,9 +273,53 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
  check( ! empty( $case['response']['ok'] ) && count( $rows ) === 2 && $rows[0]['elements'][1]['settings']['content_width'] === 'full' && ! isset( $rows[0]['elements'][1]['settings']['boxed_width'] ) && ( $rows[0]['elements'][1]['elements'][0]['widgetType'] ?? '' ) === 'heading', 'Section reading width must not center item copy away from native list icon ' . $profile );
 }
 
-// Two live Pricing tiers must leave room for the native row gap on desktop and tablet.
-$m2_two_tiers = $m2_results['pricing.tiers']['result']['written']['elements'][0]['elements'];
-foreach ( [ '', '_tablet' ] as $suffix ) {
- check( count( $m2_two_tiers ) === 2 && $m2_two_tiers[0]['settings']['width' . $suffix]['size'] === 48.0 && $m2_two_tiers[1]['settings']['width' . $suffix]['size'] === 48.0, 'Two native Pricing columns reserve space for the gap ' . $suffix );
-}
+// Pricing collection responsive controls translate the accepted stack policy.
+$m2_two_pricing = $m2_results['pricing.tiers']['result']['written']['elements'][0];
+$m2_two_tiers = $m2_two_pricing['elements'];
+check( $m2_two_pricing['settings']['container_type'] === 'grid' && $m2_two_pricing['settings']['grid_columns_grid']['size'] === 2 && $m2_two_pricing['settings']['grid_columns_grid_tablet']['size'] === 1 && $m2_two_pricing['settings']['grid_columns_grid_mobile']['size'] === 1, 'Pricing native Grid owns equal gap-aware columns and follows Plan tablet/mobile stack' );
 check( $m2_two_tiers[0]['settings']['width_mobile']['size'] === 100 && $m2_two_tiers[1]['settings']['width_mobile']['size'] === 100, 'Two Pricing tiers retain full-width mobile stack' );
+
+$visual_policy_nodes = static function(array $nodes) use (&$visual_policy_nodes):array { $all=[]; foreach($nodes as $n){ $all[]=$n; $all=array_merge($all,$visual_policy_nodes((array)($n['elements']??[]))); } return $all; };
+$pricing_ctas = array_values(array_filter($visual_policy_nodes([$m2_two_pricing]), static fn(array $n):bool=>($n['widgetType']??'')==='button'));
+check(count($pricing_ctas) === 2 && ($pricing_ctas[0]['settings']['_margin']['top'] ?? '') === '0.5' && ($m2_two_tiers[0]['settings']['flex_gap']['row'] ?? '') === '0.75', 'Pricing item CTA resolves distinct total rhythm rather than reusing copy gap');
+// Accepted role policy boundaries, using the actual ordinary chat/compiler/readback path.
+foreach ( [ 'pill-бейдж' => 'pill', 'надзаголовок обычным текстом' => 'plain', 'без бейджа, надзаголовок оставь' => 'plain', 'без бейджа, надзаголовок обычным текстом, без pill-бейджа' => 'plain' ] as $instruction => $presentation ) {
+ $prompt = "Создай Hero без фото\nНадзаголовок: «ТОЧНЫЙ НАДЗАГОЛОВОК»\nЗаголовок: «Коротко»\nОписание: «Точный текст.»\n" . $instruction;
+ $case = $run_services_route( $prompt, [], [], 'visual-badge-' . $presentation . strlen($instruction), false, 'active', 'active', [ 'composition_record' => 'hero.text_only', 'visual_profile' => 'editorial_light' ] );
+ check( ! empty( $case['response']['ok'] ) && $case['writes'] === 1 && $case['calls'] === 0, 'Badge intake presentation ordinary path ' . $instruction );
+ $native = $case['written']; $nodes = $visual_policy_nodes( [ $native ] );
+ $labels = array_values( array_filter( $nodes, static fn( array $n ): bool => ( $n['settings']['title'] ?? '' ) === 'ТОЧНЫЙ НАДЗАГОЛОВОК' ) );
+ check( count($labels) === 1 && ! isset($labels[0]['settings']['_padding']) && ! isset($labels[0]['settings']['border_border']) && ! isset($labels[0]['settings']['background_color']), 'Eyebrow exact text and single box owner ' . $presentation );
+ $badges = array_values( array_filter( $nodes, static fn( array $n ): bool => ( $n['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) );
+ check( count($badges) === ($presentation === 'pill' ? 1 : 0), 'Plain instructions preserve text without badge container ' . $instruction );
+ $brief = wpae_brief_ir_parse($prompt);
+ $constraint = array_values(array_filter($brief['layout_constraints'], static fn(array $c):bool=>($c['kind']??'')==='eyebrow_presentation'))[0];
+ check( substr($prompt,$constraint['source_span'][0],$constraint['source_span'][1]-$constraint['source_span'][0]) !== '' && $constraint['provenance']['source_span'] === $constraint['source_span'], 'Badge source span and provenance retained ' . $instruction );
+}
+$conflict = $run_services_route("Создай Hero без фото\nНадзаголовок: «ТЕКСТ»\nЗаголовок: «Точно»\nНадзаголовок обычным текстом. Сделай pill-бейдж.", [], [], 'visual-badge-conflict', false, 'active', 'active', [ 'composition_record'=>'hero.text_only' ]);
+check(!empty($conflict['error']) && $conflict['writes']===0 && $conflict['calls']===0, 'Contradictory plain/pill instruction refuses before write');
+foreach ( [2,3,4,6] as $count ) {
+ $prompt = "Создай Benefits без фото\nНадзаголовок: «ПРЕИМУЩЕСТВА»\nЗаголовок: «Чёткий ритм»\n";
+ for($i=1;$i<=$count;$i++){ $prompt .= "Преимущество $i: «Заголовок {$i}»\nОписание преимущества $i: «" . ($i===1?'Кратко.':rtrim(str_repeat('Длинная точная строка. ',8))) . "»\n"; }
+ $case=$run_services_route($prompt,[],[],'visual-count-'.$count,false,'active','active',['composition_record'=>'benefits.grid','visual_profile'=>'editorial_light']);
+ check(!empty($case['response']['ok']) && $case['writes']===1 && $case['calls']===0,'Equal collection count admitted without provider '.$count);
+ $root=$case['written'];$grid=$root['elements'][1];
+ check($grid['settings']['container_type']==='grid' && count($grid['elements'])===$count && $grid['settings']['grid_columns_grid_tablet']['size']===1 && $grid['settings']['grid_columns_grid_mobile']['size']===1,'Native repeat topology/count and Plan responsive '.$count);
+ $brief=wpae_brief_ir_parse($prompt);$brief['canonical_create']=true;
+ $plan=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'composition_record'=>'benefits.grid','visual_profile'=>'editorial_light']);
+ check($plan['visual_policy']['intro']['text_align']==='left' && $plan['visual_policy']['intro']['container_align']==='start' && $root['elements'][0]['elements'][0]['settings']['align_self']==='flex-start','Intro axis resolved before freeze '.$count);
+ $report=wpae_layout_report_for_plan($plan);
+ foreach($report['collections'][0]['samples'] as $sample){ check(abs($sample['used_width']-$sample['container_width'])<0.01 && !$sample['visual_render_verified'],'Nested collection exact gap arithmetic remains static '.$count); }
+ $texts=array_column(array_column($visual_policy_nodes([$root]),'settings'),'editor');
+ check(in_array('Кратко.',$texts,true) && in_array(rtrim(str_repeat('Длинная точная строка. ',8)),$texts,true),'Short and long copy unchanged '.$count);
+ check(count(array_filter($visual_policy_nodes([$root]),static fn(array $n):bool=>($n['widgetType']??'')==='image'))===0,'Benefits photo prohibition '.$count);
+}
+
+$pricing_intro_prompt="Создай Pricing\nНадзаголовок: «ТАРИФЫ»\nЗаголовок: «Выберите формат»\nНадзаголовок обычным текстом.\n" . file_get_contents(__DIR__.'/../docs/audits/2026-10-04-typed-lifecycle-v247/I-exact-request.txt');
+$pricing_intro=$run_services_route($pricing_intro_prompt,[],[],'visual-pricing-intro',false,'active','active',['composition_record'=>'pricing.tiers']);
+$pricing_titles=array_values(array_filter($visual_policy_nodes([$pricing_intro['written']??[]]),static fn(array $n):bool=>($n['settings']['title']??'')==='Выберите формат'));
+check(!empty($pricing_intro['response']['ok']) && count($pricing_titles)===1 && $pricing_titles[0]['settings']['header_size']==='h2','Pricing intro semantic H2 independently of display typography');
+$align_prompt="Создай Hero без фото\nЗаголовок: «Ось текста»\nIntro text align: left\nIntro container align: center\nReading measure: 30rem";
+$align_case=$run_services_route($align_prompt,[],[],'visual-explicit-reading-axis',false,'active','active',['composition_record'=>'hero.text_only','visual_profile'=>'soft_cards_light']);
+$align_measure=$align_case['written']['elements'][0]['elements'][0]['settings']??[];
+check(!empty($align_case['response']['ok']) && $align_measure['width']['size']==30 && $align_measure['align_self']==='center' && $align_measure['flex_align_items']==='flex-start','Explicit centered reading container with left text is an intentional accepted variant');

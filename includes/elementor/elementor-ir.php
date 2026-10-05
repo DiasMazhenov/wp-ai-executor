@@ -335,7 +335,10 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$item_role = sanitize_key( (string) ( $item['role'] ?? '' ) );
 					if ( $item_role === 'eyebrow' ) {
 						$badge_label = wpae_elementor_ir_node( $child_id . '-intro-eyebrow-label', 'eyebrow', 'heading', [ $content_ref ], [ 'color.surface', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+						if ( ( $plan['visual_policy']['intro']['eyebrow_presentation'] ?? 'pill' ) === 'plain' ) { $intro_widgets[] = $badge_label; } else {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'pricing_badge', 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+						}
+
 					} elseif ( $item_role === 'title' ) {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					}
@@ -417,6 +420,10 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 		}
 		$nodes[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'section-' . $section_index ) ), sanitize_key( (string) ( $section['role'] ?? 'section' ) ), 'container', [], [ (string) ( $section['surface_token'] ?? 'color.page_bg' ), (string) ( $section['spacing_token'] ?? 'space.section' ) ], $section_children, $section_layout, [ 'strategy' => $plan['responsive']['mobile'] ?? 'stack' ] );
 	}
+	if ( isset( $plan['visual_policy']['version'] ) ) {
+		foreach ( $nodes as &$policy_node ) { wpae_elementor_ir_bind_visual_policy( $policy_node, $plan['visual_policy'] ); }
+		unset( $policy_node );
+	}
 	return [
 		'schema' => WPAE_ELEMENTOR_IR_SCHEMA,
 		'archetype' => sanitize_key( (string) ( $plan['archetype'] ?? 'unknown' ) ),
@@ -430,6 +437,100 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 		'provenance' => [ 'plan_hash' => function_exists( 'wpae_design_plan_hash' ) ? wpae_design_plan_hash( $plan ) : '', 'source' => 'design-plan' ],
 		'warnings' => array_values( array_unique( $warnings ) ),
 	];
+}
+
+/** Bind accepted role decisions to IR nodes without selecting another composition/profile. */
+function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool $intro = false, bool $badge_label = false ): void {
+	$role = (string) ( $node['role'] ?? '' );
+	$intro = $intro || ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) || $role === 'pricing_intro';
+	$node['visual_policy'] = [ 'version' => $policy['version'], 'intro' => $intro, 'text_align' => $intro ? $policy['intro']['text_align'] : 'left', 'container_align' => $intro ? $policy['intro']['container_align'] : 'start', 'spacing' => $policy['spacing'], 'item_surface' => $policy['item_surface'], 'split' => $policy['split'], 'badge_label' => $badge_label, 'eyebrow_colors' => $policy['eyebrow_colors'] ];
+	if ( $intro && $node['widget_type'] === 'container' && in_array( $role, [ 'copy_group', 'cta_copy_group', 'pricing_intro' ], true ) ) { $node['visual_policy']['reading_measure'] = $policy['intro']['reading_measure']; }
+	if ( in_array( $role, [ 'feature_cards', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
+	if ( $node['widget_type'] === 'heading' ) {
+		$key = $intro && in_array( $role, [ 'title', 'cta_section_title', 'services_section_title' ], true ) ? 'intro_title' : ( in_array( $role, [ 'eyebrow', 'eyebrow_badge_label', 'services_badge_label', 'process_badge_label', 'brand' ], true ) ? 'eyebrow' : ( $role === 'pricing_price' ? 'price' : 'item_title' ) );
+		$node['visual_policy']['typography'] = $policy['typography'][ $key ];
+		$node['visual_policy']['heading_level'] = $key === 'intro_title' ? $policy['intro']['heading_level'] : ( $key === 'eyebrow' ? 'h6' : 'h3' );
+	} elseif ( $node['widget_type'] === 'text-editor' ) { $node['visual_policy']['typography'] = $policy['typography']['body']; }
+	foreach ( $node['children'] as &$child ) { wpae_elementor_ir_bind_visual_policy( $child, $policy, $intro, in_array( $role, [ 'hero_badge', 'pricing_badge', 'services_badge', 'process_badge' ], true ) ); }
+	unset( $child );
+}
+
+/** Translation of frozen Plan values only. The compiler has no prompt or profile decision here. */
+function wpae_elementor_ir_visual_controls( array $node, array $settings ): array {
+	$policy = $node['visual_policy'];
+	$role = (string) $node['role'];
+	if ( isset( $policy['typography'] ) ) { $settings = array_merge( $settings, wpae_elementor_ir_type_settings( $policy['typography'] ) ); }
+	if ( isset( $policy['heading_level'] ) ) { $settings['header_size'] = $policy['heading_level']; }
+	if ( in_array( $node['widget_type'], [ 'heading', 'text-editor', 'button' ], true ) ) {
+		$settings['align'] = $policy['text_align'];
+		$settings['align_tablet'] = $settings['align_mobile'] = $policy['text_align'];
+	}
+	if ( in_array( $role, [ 'eyebrow', 'eyebrow_badge_label', 'services_badge_label' ], true ) ) {
+		$settings['title_color'] = $policy['eyebrow_colors'][ $policy['badge_label'] ? 'pill' : 'plain' ];
+		foreach ( [ 'background_background', 'background_color', 'border_border', 'border_color', 'border_width', 'border_radius', '_padding' ] as $box_key ) { unset( $settings[ $box_key ] ); }
+	}
+	if ( $node['widget_type'] !== 'container' ) { return $settings; }
+	$settings['content_width'] = in_array( $role, wpae_design_plan_schema()['archetypes'], true ) ? $settings['content_width'] : 'full';
+	if ( in_array( $role, wpae_design_plan_schema()['archetypes'], true ) ) {
+		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+			$pad = wpae_elementor_ir_dimension_control( $policy['spacing']['section'][ $device ], 'rem', 4.5, false );
+			unset( $pad['size'] );
+			// Horizontal padding is a separate native axis, never the vertical rhythm.
+			$pad['right'] = $pad['left'] = $pad['unit'] === 'rem' ? ( $device === 'mobile' ? '1' : '2' ) : ( $device === 'mobile' ? '16' : '32' );
+			$settings[ 'padding' . $suffix ] = $pad;
+		}
+		$tablet = $policy['split']['responsive']['tablet'] ?? 'stack';
+		$settings['flex_direction_tablet'] = str_starts_with( $tablet, 'split_' ) ? 'row' : 'column';
+		$settings['flex_direction_mobile'] = $policy['split']['mobile_direction'];
+		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+			$gap = wpae_elementor_ir_dimension_control( $policy['split']['gap'][ $device ], 'rem', 1.5 );
+			$settings[ 'flex_gap' . $suffix ] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
+		}
+	}
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card' ], true ) ) {
+		$pad = wpae_elementor_ir_dimension_control( $policy['item_surface']['padding'], 'rem', 1.5, false );
+		unset( $pad['size'] );
+		$settings['padding'] = $settings['padding_tablet'] = $settings['padding_mobile'] = $pad;
+		$radius = wpae_elementor_ir_dimension_control( $policy['item_surface']['radius'], 'rem', 0.5 );
+		unset( $radius['size'] );
+		$settings['border_radius'] = $radius;
+		$settings['background_color'] = $policy['item_surface']['background'];
+	}
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'services_photo_content', 'services_text_icon_copy' ], true ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
+		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
+		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
+		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
+	}
+	$intro_copy = ! empty( $policy['reading_measure'] );
+	if ( $intro_copy ) {
+		foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) { unset( $settings[ 'boxed_width' . $suffix ] ); }
+		$settings['align_self'] = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $policy['container_align'] ];
+		$settings['flex_align_items'] = [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $policy['text_align'] ];
+		$settings['flex_align_items_tablet'] = $settings['flex_align_items_mobile'] = $settings['flex_align_items'];
+		// The full-width column preserves the axis; its reading wrapper alone owns the measure.
+		$settings['flex_gap'] = [ 'unit' => 'px', 'column' => '0', 'row' => '0', 'isLinked' => true ];
+		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
+	}
+	if ( in_array( $role, wpae_design_plan_schema()['archetypes'], true ) && ! in_array( (string) ( $node['layout_constraints']['composition'] ?? '' ), [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ) {
+		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['intro_collection'], 'rem', 2 );
+		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
+	}
+	if ( isset( $policy['collection'] ) ) {
+		$settings['container_type'] = 'grid';
+		$settings['_wpae_visual_policy_version'] = 1;
+		$settings['flex_direction'] = $settings['flex_direction_tablet'] = $settings['flex_direction_mobile'] = 'column';
+		$settings['flex_wrap'] = $settings['flex_wrap_tablet'] = $settings['flex_wrap_mobile'] = 'nowrap';
+		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+			$settings[ 'grid_columns_grid' . $suffix ] = [ 'unit' => 'fr', 'size' => $policy['collection']['columns'][ $device ], 'sizes' => [] ];
+			$settings[ 'grid_rows_grid' . $suffix ] = [ 'unit' => 'custom', 'size' => 'auto', 'sizes' => [] ];
+			$gap = wpae_elementor_ir_dimension_control( $policy['collection']['gap'][ $device ], 'rem', 1.5 );
+			$settings[ 'grid_gaps' . $suffix ] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+			$settings[ 'grid_auto_flow' . $suffix ] = 'row';
+			$settings[ 'grid_align_items' . $suffix ] = 'start';
+		}
+	}
+	return $settings;
 }
 
 function wpae_elementor_ir_validate( array $ir, array $brief = [] ): array {
@@ -787,7 +888,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['background_color'] = 'transparent';
 			$settings['background_background'] = 'classic';
 		}
-		if ( $role === 'pricing_cards' ) {
+		if ( $role === 'pricing_cards' && empty( $node['visual_policy'] ) ) {
 			// Pricing cards are a row on wide viewports and a stack on mobile.
 			// The child width contract below then supplies equal desktop columns.
 			$settings['flex_direction'] = 'row';
@@ -1193,9 +1294,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 		$settings['title_color'] = in_array( $role, [ 'process_number', 'process_badge_label' ], true ) ? (string) ( $token_values['color.surface'] ?? '#ffffff' ) : (string) ( $token_values[ $role === 'brand' ? 'color.muted' : 'color.text' ] ?? '#111827' );
 		$type_token = is_array( $token_values['type.display'] ?? null ) && ! in_array( $role, [ 'eyebrow', 'brand', 'feature_title', 'pricing_label', 'process_number', 'process_badge_label', 'cta_section_title', 'service_title', 'team_name', 'testimonial_author' ], true ) ? $token_values['type.display'] : ( $token_values['type.body'] ?? [] );
-		if ( is_array( $type_token ) ) {
+		if ( empty( $node['visual_policy'] ) && is_array( $type_token ) ) {
 			$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $type_token ) );
 		}
+		if ( empty( $node['visual_policy'] ) ) {
 		if ( $role === 'services_recipe_title' ) {
 			// A Services item title must read as a heading even when the site's
 			// global typography gives h3 and body copy the same default size.
@@ -1241,6 +1343,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['typography_font_size_mobile'] = [ 'unit' => 'rem', 'size' => 1.6, 'sizes' => [] ];
 			$settings['typography_font_weight'] = '800';
 		}
+		}
 		if ( $role === 'process_number' ) {
 			$settings['_css_classes'] = 'wpae-process-marker-label';
 			$settings['typography_typography'] = 'custom';
@@ -1261,6 +1364,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['margin'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
 		} elseif ( $role === 'eyebrow_badge_label' || ( $role === 'eyebrow' && str_contains( (string) ( $node['node_id'] ?? '' ), 'pricing' ) ) ) {
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			if ( empty( $node['visual_policy'] ) ) {
 			$settings['background_background'] = 'classic';
 			$settings['background_color'] = $accent;
 			$settings['title_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
@@ -1269,6 +1373,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
 			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '999px', 'px', 999 );
 			$settings['_padding'] = [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => false, 'sizes' => [] ];
+			}
+			$settings['title_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 			$settings['align_self'] = 'flex-start';
 			$settings['align_self_tablet'] = 'flex-start';
 			$settings['align_self_mobile'] = 'flex-start';
@@ -1309,7 +1415,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			if ( in_array( $role, [ 'feature_body', 'pricing_description' ], true ) ) {
 				$settings['align'] = 'left';
 			}
-			if ( is_array( $token_values['type.body'] ?? null ) ) {
+			if ( ! empty( $node['visual_policy'] ) ) {
+				// Accepted role typography is translated once by visual_controls below.
+			} elseif ( is_array( $token_values['type.body'] ?? null ) ) {
 				$settings = array_merge( $settings, wpae_elementor_ir_type_settings( $token_values['type.body'] ) );
 			} elseif ( $role === 'service_body' ) {
 				$settings['typography_typography'] = 'custom';
@@ -1463,7 +1571,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 	}
 	// Extra resolved profile tokens are compiled as native controls, never chosen here.
-	if ( ! empty( $tokens['_wpae_visual_profile'] ) ) {
+	if ( empty( $node['visual_policy'] ) && ! empty( $tokens['_wpae_visual_profile'] ) ) {
 		if ( $widget_type === 'container' ) {
 			foreach ( [ '' => 'space.component', '_tablet' => 'space.component_tablet', '_mobile' => 'space.component_mobile' ] as $suffix => $key ) {
 				if ( isset( $tokens[ $key ] ) && ! in_array( $role, [ 'feature_list', 'feature_row', 'feature_list_copy' ], true ) ) {
@@ -1495,7 +1603,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$compiled_children[] = wpae_elementor_ir_compile_node( $child, $content_map, $media_map, $tokens, $seed, $report );
 		}
 	}
-	if ( $widget_type === 'container' ) {
+	if ( $widget_type === 'container' && empty( $node['visual_policy']['collection'] ) ) {
 		$composition_basis = [
 			'split_60_40' => [ 60, 40 ],
 			'split_50_50' => [ 50, 50 ],
@@ -1614,7 +1722,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 	// Elementor emits native percentage --width only for full-width containers.
 	// Keep the composition column full and put the profile reading measure in
 	// a separate boxed native child; boxed copy columns otherwise render 100%.
-	if ( $widget_type === 'container' && $role === 'copy_group' && ! empty( $tokens['_wpae_visual_profile'] ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) {
+	if ( empty( $node['visual_policy'] ) && $widget_type === 'container' && $role === 'copy_group' && ! empty( $tokens['_wpae_visual_profile'] ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) {
 		$measure_settings = $settings;
 		foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) {
 			unset( $settings[ 'boxed_width' . $suffix ] );
@@ -1626,6 +1734,37 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			'settings' => $measure_settings,
 			'elements' => $compiled_children,
 		] ];
+	}
+	if ( ! empty( $node['visual_policy'] ) ) {
+		$settings = wpae_elementor_ir_visual_controls( $node, $settings );
+		$policy = $node['visual_policy'];
+		foreach ( $compiled_children as $index => &$compiled_child ) {
+			$ir_child = $node['children'][ $index ] ?? [];
+			if ( isset( $policy['collection'] ) && ( $compiled_child['elType'] ?? '' ) === 'container' ) {
+				foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) {
+					$compiled_child['settings'][ 'width' . $suffix ] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+					$compiled_child['settings'][ '_element_custom_width' . $suffix ] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+				}
+			}
+			if ( empty( $policy['intro'] ) && ( $ir_child['widget_type'] ?? '' ) === 'button' && $index > 0 ) {
+				$cta_gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_cta'], 'rem', 1.25 );
+				$copy_gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
+				$extra = $cta_gap['unit'] === $copy_gap['unit'] ? max( 0, $cta_gap['size'] - $copy_gap['size'] ) : $cta_gap['size'];
+				$compiled_child['settings']['_margin'] = [ 'unit' => $cta_gap['unit'], 'top' => (string) $extra, 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ];
+			}
+			if ( ! empty( $policy['reading_measure'] ) && $index > 0 ) {
+				$child_role = (string) ( $ir_child['role'] ?? '' );
+				$key = in_array( $child_role, [ 'cta_primary', 'cta_secondary' ], true ) ? 'description_cta' : ( $child_role === 'body' ? 'title_description' : 'eyebrow_title' );
+				$gap = wpae_elementor_ir_dimension_control( $policy['spacing'][ $key ], 'rem', 1 );
+				$compiled_child['settings']['_margin'] = [ 'unit' => $gap['unit'], 'top' => (string) $gap['size'], 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => false ];
+			}
+		}
+		unset( $compiled_child );
+		if ( ! empty( $policy['reading_measure'] ) ) {
+			$measure = wpae_elementor_ir_dimension_control( $policy['reading_measure'], 'rem', 38 );
+			$measure_settings = [ 'background_background' => 'classic', 'background_color' => 'transparent', 'container_type' => 'flex', 'content_width' => 'full', 'flex_direction' => 'column', 'flex_gap' => [ 'unit' => 'px', 'column' => '0', 'row' => '0', 'isLinked' => true ], 'padding' => [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'align_self' => [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $policy['container_align'] ], 'flex_align_items' => [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $policy['text_align'] ], 'width' => $measure, 'width_tablet' => $measure, 'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ] ];
+			$compiled_children = [ [ 'id' => wpae_elementor_ir_id( (string) $node['node_id'] . '-reading-measure', $seed ), 'elType' => 'container', 'settings' => $measure_settings, 'elements' => $compiled_children ] ];
+		}
 	}
 	$element = [
 		'id' => wpae_elementor_ir_id( (string) ( $node['node_id'] ?? 'node' ), $seed ),
