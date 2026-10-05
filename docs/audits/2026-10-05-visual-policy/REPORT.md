@@ -39,3 +39,27 @@ Source: prepared, not yet committed/pushed. Install: NOT RUN for v259. Editor: v
 | J | faq.native | automatic | NOT RUN | NOT RUN | NOT RUN |
 
 Before/after limitations: historical centered reading-wrapper axis, list copy width leakage, Pricing percent+gap wrap and tablet-row contradiction, double badge decoration and false positive negative intent are addressed at source boundaries. Browser comparison remains pending. Historical negative Vision findings remain in the v247 audit; no replacement hides them.
+
+## Publication, installation and first B
+
+Runtime commit42b88d589da7bffd419b21fc5d2d7f3f5ef4c4e8 pushed to origin/main and independently matched by ls-remote. WP Pusher update of WP AI Executor only completed despite snapshot timeout; independent Plugins row PHPv259 and reloaded editor configv259/frontendtyped-lifecycle-v6 confirmed. Existing single tab was navigated between authorized WP Pusher/Plugins/editor/public; no tabs or pages created.
+
+B first generation: exact B–D fixture, hero.split_60_40.right/editorial_light, rootb861b04, operationwpae-61af2ec3fbd5889b, identityf04a32c3-8646-4805-9b12-f87716b4c1fa, revision5, contract965e273b8f88d2773546a941. Brief3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7. Provider0/write1; first Plan/native JSON retained. Owned model check PASS, native Publish/reload PASS, authored controls recursively match selected fresh native JSON with zero differences. Saved hash12f51aa0c08007b3a739a05dcb000ec0b2aa41c46c89ffae2d865e42d6099df1/rootset[b861b04].
+
+Publicdesktop actualCSS1280×900/PNG1280×900; publicmobile CSS390×1000/PNG390×1000. Screenshots captured after save/reload, JPEG bytes retained locally, converted to PNG, signature/dimensions checked and PNG files opened for visual inspection. Pill, heading, description, CTA#start and exact supplied licensed photo/alt preserved. Image complete1200×675; desktop448×252, mobile358×201.375, proportional without distortion. Intro starts on its column axis; no historical center shift. Advisory Vision68 claims words separated: fresh public pixels show normal whole heading; allegation not confirmed. First technical fidelity/save PASS; visual request fidelity PASS; composition quality acceptable for short editorial Hero, pending multi-family acceptance. Site chatbot is outside root and does not hide B content.
+
+Actual320/767/768/1024/1025 CSS widths independently measured; document/root widths equal viewport, no horizontal overflow. Computed owned root minHeight0/maxHeightnone; no min-height explanation inferred. Root boxed content owns vertical padding in e-con-inner, so root computed vertical padding0 alone does not describe section rhythm. No manual repair applied.
+
+![B public desktop](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/B-public-desktop.png)
+
+[Download desktop PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/B-public-desktop.png)
+
+![B public mobile](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/B-public-mobile.png)
+
+[Download mobile PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-visual-policy/B-public-mobile.png)
+
+## First Undo refusal and scoped source correction
+
+Guarded Undo B refused before write: “Elementor data failed design-system contract.” Existing generic validator requires a top-level container and explicit palette even when exact owned inverse legitimately returns empty saved baseline. Current server remained[b861b04]; no manual deletion or bypass. Dependent generations C–J stopped. Original refusal UI/screenshot retained.
+
+Correction adds server-derived verified_empty_inverse context only after exact post/operation identity/revision/eligibility checks, creation contract before_owned[], exact current root ownership and no foreign roots. Generic empty create/update remains refused. Existing expected-before, protected zones, preview, transaction/readback and inverse ownership guards remain. Preflight applies no landing-page content requirements to a proven empty inverse. Added real-validator/preflight and lifecycle regressions: foreign roots/stale revision refuse; actual guarded inverse restores[]. Latest checks runtime1293/DesignPlan365/Node14/14/patchguard/lint/package252 hashes+four probes/diff PASS. Correction remains in v259 to comply with one requested version increment; separate source commit/install evidence is required and version label alone cannot distinguish these source revisions. Correction deployment and real Undo retry pending.

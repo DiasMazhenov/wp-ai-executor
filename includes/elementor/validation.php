@@ -628,7 +628,8 @@ function wpae_build_elementor_preflight( array $elementor_data, WP_REST_Request 
         $template_value = 'elementor_canvas';
     }
     $template = sanitize_key( (string) $template_value );
-    $is_landing = wpae_is_landing_page_request( $request, $template );
+    $empty_inverse = $elementor_data === [] && ! empty( $context['verified_empty_inverse'] );
+    $is_landing = ! $empty_inverse && wpae_is_landing_page_request( $request, $template );
     $visual_audit = wpae_build_elementor_visual_audit( $elementor_data, array_merge( $context, [
         'source' => 'preflight',
         'landing_page_required' => $is_landing,
@@ -648,6 +649,7 @@ function wpae_build_elementor_preflight( array $elementor_data, WP_REST_Request 
 
     $design_system = wpae_validate_design_system_contract( $elementor_data, [
         'allow_unchanged_legacy_top_level' => (array) ( $context['allow_unchanged_legacy_top_level'] ?? [] ),
+        'verified_empty_inverse' => $empty_inverse,
     ] );
     wpae_preflight_add_check(
         $checks,

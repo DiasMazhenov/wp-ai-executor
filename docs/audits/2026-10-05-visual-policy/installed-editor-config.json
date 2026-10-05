@@ -1,0 +1,212 @@
+{
+  "build": "typed-lifecycle-v6",
+  "saved": {
+    "error": null,
+    "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "rootIds": [],
+    "status": "valid_array"
+  },
+  "undo": [
+    {
+      "accepted_contract_id": "contract-9c58192e9b86c6b2b1ea6156",
+      "operation_id": "wpae-17b5777408c3cb8c",
+      "operation_identity": "f477c561-c0e9-4b48-880c-ff5b11ae54f4",
+      "revision": 6,
+      "root_ids": [
+        "6a0d2cb"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-3b072cd2946feda763d43604",
+      "operation_id": "wpae-89417843d0576daa",
+      "operation_identity": "403a4f68-02d8-409c-aa4f-8c0a2200ce57",
+      "revision": 7,
+      "root_ids": [
+        "d520087"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-7fb9e857111c8e3773e1b152",
+      "operation_id": "wpae-93a35dc0a99aa616",
+      "operation_identity": "41e0b470-d7f9-4c21-9086-e13bf7f5d488",
+      "revision": 6,
+      "root_ids": [
+        "b157657"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-30f45765fde4aff2fa7b6f29",
+      "operation_id": "wpae-d09de5a84ae87b56",
+      "operation_identity": "ddba6dba-305d-4b19-bc40-ea8e690d6a8b",
+      "revision": 7,
+      "root_ids": [
+        "97c16e5"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-7954269a4a287df82502a730",
+      "operation_id": "wpae-55ff43593d0499be",
+      "operation_identity": "a578c3ad-964b-4277-97d1-f796bf805f57",
+      "revision": 6,
+      "root_ids": [
+        "c5962b5"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-4f77f3766835ba881daf6b75",
+      "operation_id": "wpae-99946205884a8fbb",
+      "operation_identity": "77971f6a-fdea-4caf-a0bc-b01821db8636",
+      "revision": 6,
+      "root_ids": [
+        "e2f5f76"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-e86ddc42a8e4794230cfbe4c",
+      "operation_id": "wpae-23525bfdc94b519d",
+      "operation_identity": "bcb69453-5ddd-413d-9f05-cb0626a066fe",
+      "revision": 6,
+      "root_ids": [
+        "9a851c8"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-b551404f58814cce5f856d75",
+      "operation_id": "wpae-2104e873c6abbc88",
+      "operation_identity": "7d15d267-4255-4efb-8e29-787ce882c186",
+      "revision": 7,
+      "root_ids": [
+        "153e6df"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-82a57876925bb27c1c531376",
+      "operation_id": "wpae-e8e8d50cfc791540",
+      "operation_identity": "327267ee-4441-469b-965f-cd830b78cc48",
+      "revision": 7,
+      "root_ids": [
+        "19c5869"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-80dd2558c5f4959ee8101592",
+      "operation_id": "wpae-3553d9f57e726763",
+      "operation_identity": "27d881c9-3db5-4774-9590-6ee717a0931f",
+      "revision": 7,
+      "root_ids": [
+        "184cc98"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-ebe95f2318b83f4e65a68faa",
+      "operation_id": "wpae-3b2ac8c692cad6bb",
+      "operation_identity": "021f7685-bcdd-4084-af2a-19b4d30d02d3",
+      "revision": 6,
+      "root_ids": [
+        "11e61ec"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-50ac1d0108bc196e6ab5dd7c",
+      "operation_id": "wpae-55fa0d1af966dd66",
+      "operation_identity": "d29500ef-f2db-436f-938f-3934ad8e7c69",
+      "revision": 7,
+      "root_ids": [
+        "562f19b"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-ed312789760041b9d7aa785f",
+      "operation_id": "wpae-ea4dae98c4476833",
+      "operation_identity": "5d1cb20e-132d-4586-adeb-939c0d6cad0b",
+      "revision": 7,
+      "root_ids": [
+        "f9b123e"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-75cef79220b7398bc71cbd57",
+      "operation_id": "wpae-op-1318474b42f475fc",
+      "operation_identity": "4edb0ee5-e242-49da-9e49-4980022adf7c",
+      "revision": 6,
+      "root_ids": [
+        "7c1e27f"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "accepted_contract_id": "contract-a32c657c1fa0c18c99389506",
+      "operation_id": "wpae-bcc79c703996210b",
+      "operation_identity": "18f5b5f7-6325-476d-87db-4eec97eb6900",
+      "revision": 6,
+      "root_ids": [
+        "7c1e27f"
+      ],
+      "status": "already_undone"
+    },
+    {
+      "operation_id": "wpae-6a8fc1faa4a4e95b",
+      "operation_identity": "c9d04e94-56d2-4190-89e1-032bbe6e823b",
+      "reason": "historical_contract_unavailable",
+      "revision": 5,
+      "root_ids": [
+        "37b84f9"
+      ],
+      "status": "unavailable"
+    },
+    {
+      "operation_id": "wpae-486ca1951e866c95",
+      "operation_identity": "cb1eabfc-a369-4ef6-a944-2b35a2d58976",
+      "reason": "historical_contract_unavailable",
+      "revision": 5,
+      "root_ids": [
+        "37b84f9"
+      ],
+      "status": "unavailable"
+    },
+    {
+      "operation_id": "wpae-62307e09f09d9216",
+      "operation_identity": "18061f15-c357-437d-bd2e-44db375e8412",
+      "reason": "historical_contract_unavailable",
+      "revision": 5,
+      "root_ids": [
+        "8b79d6c"
+      ],
+      "status": "unavailable"
+    },
+    {
+      "operation_id": "wpae-c6b6305322c4b71e",
+      "operation_identity": "7723781f-2f7f-494a-9f31-6270c35505c2",
+      "reason": "historical_contract_unavailable",
+      "revision": 5,
+      "root_ids": [
+        "e939025"
+      ],
+      "status": "unavailable"
+    },
+    {
+      "operation_id": "wpae-27aafa3c2441a362",
+      "operation_identity": "68326b63-c320-403d-9464-e7507157166c",
+      "reason": "historical_contract_unavailable",
+      "revision": 5,
+      "root_ids": [
+        "023bd70"
+      ],
+      "status": "unavailable"
+    }
+  ],
+  "version": "v02.11.259"
+}

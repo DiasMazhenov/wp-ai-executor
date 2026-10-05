@@ -137,6 +137,18 @@ function wpae_accepted_contract_descriptors( int $post_id, array $data ): array 
     return $descriptors;
 }
 
+/** Empty documents are valid only as the verified inverse of a current owned creation. */
+function wpae_accepted_empty_inverse( WP_REST_Request $request, array $current, array $next ): bool {
+    if ( $next !== [] || $current === [] ) { return false; }
+    $id = (string) $request->get_param( 'operation_id' );
+    if ( ! str_ends_with( $id, '-undo' ) ) { return false; }
+    $operation = wpae_design_operation_find_by_id( substr( $id, 0, -5 ) );
+    if ( ! $operation || (int) $operation['post_id'] !== (int) $request->get_param( 'post_id' ) || (int) $operation['revision'] !== (int) $request->get_param( 'accepted_undo_revision' ) || $operation['operation_identity'] !== $request->get_param( 'accepted_undo_identity' ) ) { return false; }
+    if ( wpae_accepted_contract_eligibility( $operation, $current )['status'] !== 'available' ) { return false; }
+    $contract = wpae_accepted_contract_get( $operation )['contract'];
+    return empty( $contract['parent_operation_id'] ) && $contract['before_owned'] === [] && count( $current ) === count( $contract['owned_root_ids'] ) && wpae_elementor_data_matches( $current, wpae_accepted_owned_roots( $current, $contract['owned_root_ids'] ) );
+}
+
 /** Owned inverse change uses fresh document and existing preview/transaction authority. */
 function wpae_accepted_contract_undo( WP_REST_Request $request ): WP_REST_Response {
     $id = sanitize_key( (string) $request->get_param( 'operation_id' ) );
@@ -159,6 +171,8 @@ function wpae_accepted_contract_undo( WP_REST_Request $request ): WP_REST_Respon
         }
         $update = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
         foreach ( [ 'post_id' => $post_id, 'elementor_data' => $next, 'expected_before_elementor_data' => $data, 'template' => get_post_meta( $post_id, '_wp_page_template', true ), 'operation_id' => $id . '-undo', 'operation_root_ids' => $contract['owned_root_ids'] ] as $key => $value ) { $update->set_param( $key, $value ); }
+        $update->set_param( 'accepted_undo_revision', $operation['revision'] );
+        $update->set_param( 'accepted_undo_identity', $operation['operation_identity'] );
         $update->set_param( 'dry_run', true );
         $preview = wpae_elementor_update( $update );
         if ( is_wp_error( $preview ) ) { return new WP_REST_Response( [ 'ok' => false, 'code' => $preview->get_error_code(), 'write_count' => 0 ], 409 ); }

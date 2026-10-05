@@ -1,0 +1,117 @@
+  - heading "Структура" [level=2]
+  - button "Закрытая структура":
+    - generic: 
+  - generic: 
+  - generic: Показать/скрыть внутренние элементы
+  - generic: 
+  - generic: Контейнер
+  - text: 
+  - text:                       
+  - generic: 
+  - generic: Изменить размер структуры
+- region "LLM-помощник Elementor":
+  - strong: LLM-помощник Elementor
+  - generic: Ответы проходят через настроенный proxy
+  - generic: "Модель: openrouter/free · Версия: v02.11.259"
+  - generic: "Выделение: нет"
+  - button "Копировать JSON":
+    - generic: 
+  - button "Копировать JSON выделенного":
+    - generic: 
+  - button "Копировать JSON для вставки в Elementor":
+    - generic: 
+  - button "Перегенерировать последний запрос":
+    - generic: 
+  - button "Свернуть чат": ×
+  - list "Фазы генерации дизайна":
+    - listitem: Разбор запроса
+    - listitem: Планирование дизайна
+    - listitem: Подбор компонентов
+    - listitem: Проверка responsive
+    - listitem: Сборка Elementor
+    - listitem: Запись
+    - listitem: Рендер
+    - listitem: Visual review
+  - generic: Опишите задачу по текущей странице или выбранному элементу.
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - generic: "Создай Hero с фото Надзаголовок: «СТУДИЯ» Заголовок: «Работа со смыслом» Описание: «Согласуем задачу и доведём проект до результата.» Кнопка: «Начать», ссылка #start Hero фото: https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200 Alt: «Современный архитектурный интерьер.» Лицензия: «Unsplash License» Автор фото: «Pietro Bolzonetti»"
+  - button "Копировать промт":
+    - generic: 
+  - generic: "Выполняется: Запрос принят. Проверяю текущий контекст Elementor."
+  - generic: "Выполняется: Отправляю задачу настроенному LLM-провайдеру."
+  - generic: "Выполняется: Ожидаю структурированный Elementor JSON и результат проверки."
+  - generic: "Шаг 1: Запрос разобран в BriefIR v1 без потери exact_text и URL."
+  - generic: "Шаг 2: Собран typed DesignPlan v1; модель не формировала Elementor tree."
+  - generic: "Шаг 3: WidgetCapabilityRegistry проверил native widgets и downgrade policy."
+  - generic: "Шаг 4: LayoutReport проверил desktop/tablet/mobile width invariants."
+  - generic: "Шаг 5: ElementorIR v2 скомпилирован локальным native compiler."
+  - generic: "Шаг 6: Перед записью показаны scope, nodes, widgets, warnings и route metadata."
+  - generic: "Шаг 7: Команда insert_elements и целевая страница подтверждены."
+  - generic: "Шаг 8: Количество новых элементов прошло проверку. (элементов: 1)"
+  - generic: "Шаг 9: В команде найден хотя бы один native Elementor widget. (native widgets: 5)"
+  - generic: "Шаг 10: Структура виджетов нормализована под native Elementor и Flexbox. (элементов: 1)"
+  - generic: "Шаг 11: Сохранены явные цвета и типографика авторской композиции. [пропущено] (элементов: 1)"
+  - generic: "Шаг 12: Текущая структура страницы прочитана. (элементов на странице: 0)"
+  - generic: "Шаг 13: Для новых элементов созданы уникальные Elementor ID. (элементов: 1)"
+  - generic: "Шаг 14: Предпросмотр команды и preflight прошли до записи. (HTTP: 200)"
+  - generic: "Шаг 15: Изменения сохранены через Elementor update. (HTTP: 200; operation ID: wpae-61af2ec3fbd5889b; diff: [object Object])"
+  - generic: "Шаг 16: Задача выполнена, Elementor подтвердил запись."
+  - generic "JSON диагностики LLM"
+  - text: 
+  - generic "JSON сгенерированного дизайна"
+  - text:  
+  - generic: Новые элементы добавлены в открытом Elementor без перезагрузки редактора.
+  - generic: "Выполняется: Обновляю preview и проверяю результат через AI Vision."
+  - generic: "AI Vision: score 68. confidence 95%. Требуется дополнительная визуальная проверка. The Hero section contains all required elements (subheading, heading, description, CTA button, and architectural photo), but the typography and layout spacing feel overly separated and disjointed, resulting in weak visual hierarchy and an unfinished composition. major: The text container has excessive horizontal spacing or fragmented flex alignment, causing words like 'Работа', 'со', and 'смыслом' to be unnaturally separated across the viewport width.; minor: Line-height and font sizes for the subtitle and headings lack cohesive visual grouping."
+  - button "Отменить создание блока"
+  - button "Проверить owned модель перед Save"
+  - button "Применить scoped repair отступов"
+  - generic: "Owned модель соответствует принятому контракту: wpae-61af2ec3fbd5889b"
+  - button "Безопасно синхронизировать owned модель"
+  - generic: Композиция
+  - combobox "Композиция":
+    - option "Автоматически"
+    - option "Фото справа · текст/фото 60/40" [selected]
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Только текст"
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Сетка карточек"
+    - option "Список с иконками"
+    - option "Карточки тарифов"
+    - option "Аккордеон"
+  - generic: Оформление
+  - combobox "Оформление":
+    - option "По умолчанию"
+    - option "Светлое редакционное" [selected]
+    - option "Светлое с мягкими карточками"
+  - textbox "Спросите, что угодно…"
+  - button "Отправить":
+    - generic: 

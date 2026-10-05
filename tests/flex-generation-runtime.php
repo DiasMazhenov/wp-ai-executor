@@ -106,7 +106,7 @@ require_once __DIR__ . '/../includes/skills/skills.php';
 function wpae_elementor_update( $request ) {
     $GLOBALS['typed_last_update_params'] = $request->get_json_params();
     if ( ! $request->get_param( 'dry_run' ) ) { $GLOBALS['m1_write_attempts'] = (int) ( $GLOBALS['m1_write_attempts'] ?? 0 ) + 1; }
-    $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ) ] );
+    $contract = wpae_validate_design_system_contract( $request->get_param( 'elementor_data' ), [ 'allow_unchanged_legacy_top_level' => (array) ( $GLOBALS['page_data'] ?? [] ), 'verified_empty_inverse' => function_exists('wpae_accepted_empty_inverse') && wpae_accepted_empty_inverse($request,(array)($GLOBALS['page_data']??[]),$request->get_param('elementor_data')) ] );
     if ( ! $contract['ok'] ) {
         throw new RuntimeException( 'Real write contract failed: ' . wp_json_encode( $contract['errors'] ) );
     }

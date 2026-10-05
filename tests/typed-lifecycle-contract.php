@@ -56,6 +56,20 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     wpae_design_operation_release_lock($held);
     $descriptors=wpae_accepted_contract_descriptors(42,$GLOBALS['page_data']);
     check($descriptors[0]['status']==='available' && $descriptors[0]['accepted_contract_id']===$operation['accepted_contract_id'],'Reload bootstrap derives owned eligibility from server ' . $record);
+    $empty_request = new WP_REST_Request();
+    foreach ( [ 'post_id'=>42, 'operation_id'=>$operation['operation_id'].'-undo', 'accepted_undo_identity'=>$operation['operation_identity'], 'accepted_undo_revision'=>$operation['revision'] ] as $k=>$v ) { $empty_request->set_param($k,$v); }
+    check(wpae_accepted_empty_inverse($empty_request,$owned,[]), 'Empty inverse attests exact owned creation '.$record);
+    check(!wpae_accepted_empty_inverse($empty_request,$GLOBALS['page_data'],[]), 'Empty inverse refuses loss of foreign roots '.$record);
+    $empty_request->set_param('accepted_undo_revision',0);
+    check(!wpae_accepted_empty_inverse($empty_request,$owned,[]), 'Empty inverse refuses stale revision '.$record);
+    check(!wpae_validate_design_system_contract([])['ok'] && wpae_validate_design_system_contract([],['verified_empty_inverse'=>true])['ok'], 'Empty restore differs from ordinary empty generation '.$record);
+    $empty_request->set_param('accepted_undo_revision',$operation['revision']);
+    check(wpae_build_elementor_preflight([],$empty_request,['template'=>'elementor_canvas','verified_empty_inverse'=>true])['ok'], 'Real preflight accepts verified empty restore '.$record);
+    $empty_options = $GLOBALS['options']; $full_document = $GLOBALS['page_data'];
+    $GLOBALS['page_data'] = $owned;
+    $empty_result = wpae_llm_undo($undo);
+    check($empty_result->get_data()['ok'] && $GLOBALS['page_data'] === [] && $empty_result->get_data()['root_ids'] === [], 'Guarded lifecycle actually restores empty baseline '.$record);
+    $GLOBALS['options'] = $empty_options; $GLOBALS['page_data'] = $full_document;
     $GLOBALS['typed_last_update_params']=null;
     $result = wpae_llm_undo( $undo );
     check( $result->get_data()['ok'] && $result->get_data()['undo_action'] === 'undo_creation' && ! in_array( $operation['root_ids'][0], array_column( $GLOBALS['page_data'], 'id' ), true ), 'Creation Undo uses owned inverse after reload ' . $record );

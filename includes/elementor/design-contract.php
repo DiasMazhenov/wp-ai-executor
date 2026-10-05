@@ -123,6 +123,9 @@ function wpae_validate_design_system_contract( array $elementor_data, array $con
     $marked = (int) ( $stats['design_system_marked_top_level_containers'] ?? 0 );
 
     $legacy = (int) ( $stats['unchanged_legacy_top_level_containers'] ?? 0 );
+    if ( $elementor_data === [] && ! empty( $context['verified_empty_inverse'] ) ) {
+        return [ 'ok' => true, 'errors' => [], 'warnings' => [], 'stats' => $stats, 'evidence' => 'verified_owned_creation_inverse' ];
+    }
     if ( $top_level <= 0 ) {
         $errors[] = 'Design system contract requires at least one top-level Flexbox Container.';
     } elseif ( $marked + $legacy < $top_level ) {
