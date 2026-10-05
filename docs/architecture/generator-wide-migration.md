@@ -605,3 +605,24 @@ First refusal editor screenshot post5214/root none/operation none/revision none,
 ![B v260 first refusal](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v260-first-refusal.png)
 
 [Download screenshot](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v260-first-refusal.png)
+
+
+## v261 installed; B first generation; scope guard stopped Save
+
+v261 runtime7b639e95bf7ea1986432712c988f71d979e10b4b pushed and remote matched. WP Pusher success, Plugins PHPv261/reloaded editorv261/documentState JSON[] HTMLbytes0 confirmed independently. B exact fixture created through normal UI, provider0/write1, root5a1b94d, operationwpae-1a17d1d28a4633e6, identity71eef9c1-42d4-4792-9826-34aaf478b112, initial response revision4. Brief3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7; Plan e268f1706d6c16e2c71c637b5f752338f0135a61b21c0b6a8ca1bf69fcf313e5; saved hash3d8bc591a9e559c9c8e0a1d035e8e848377eb62f06abb97afe41355c54246afa. Plan/native diagnostics retained; no repair applied.
+
+Read-only owned-model button refused exact scope/revision. Actual current server revision has not been observed yet; stale UI revision is a hypothesis, not a confirmed cause. Native Save/reload and dependent C–J writes stopped. B native selected JSON recursively matches every authored generated field (0 differences; additional native fields permitted). User reload authorization requested, pending. Current observed root set[5a1b94d].
+
+First preview DOM: actual iframe CSS1025×860 (outer browser949×923), document/root width1025; inner961; copy column564.6; reading wrapper564.6; media376.4. No overflow at this single measured editor width. Remaining widths/public/mobile NOT_RUN. Negative advisory Vision68 retained: reported wide spacing/awkward wrapping. This must be checked against unobscured public pixels; editor Navigator obscures part of first captured frame.
+
+First editor PNG949×923, root5a1b94d/opwpae-1a17d1d28a4633e6/initial revision4, before Native Save, converted/verified/opened. Badge and styled CTA visible; Navigator and browser crop obscure right title/media. Cannot judge full composition or claim screenshot acceptance after Save/reload. Required post-Save/public screenshots remain BLOCKED by model guard and pending reload approval.
+
+![B v261 first editor preview before Save](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v261-first-editor-before-save.png)
+
+[Download first preview](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v261-first-editor-before-save.png)
+
+## v262 read-only descriptor recovery prepared
+
+Existing lifecycle adds describe_operation: capability/post/identity and current ownership/lineage/fingerprint required; returns bounded current descriptor without document write. Only read-only lookup omits revision check. All check_model/Save/repair/Undo guards still require exact revision. UI checks same operation/identity/contract/root set before updating its acknowledgement and checking actual model. No automatic repair or ownership reassignment.
+
+Local DesignPlan365/runtime1325/Node15of15/patch/catalog158/156/156/lint/package252+four probes/diff PASS. Tests cover read-only current revision, foreign identity refusal and UI check using fresh revision. v262 commit/push planned separately; installation and live model retry pending current dirty-tab reload authorization. B generation PASS; authored content match PASS; Native Save/readback BLOCKED; responsive geometry partial; visual composition REVIEW_REQUIRED; Undo NOT_RUN. C–J NOT_RUN. Full task remains incomplete.

@@ -286,6 +286,13 @@ function wpae_accepted_layout_delta( array $plan, array $report, string $correct
 function wpae_accepted_lifecycle_request( array $context ) {
     $post_id = absint( $context['post_id'] ?? 0 );
     $operation = wpae_design_operation_find_by_id( sanitize_key( (string) ( $context['accepted_operation_id'] ?? '' ) ) );
+    if ( ( $context['lifecycle_action'] ?? '' ) === 'describe_operation' ) {
+        // Read-only recovery of a stale UI acknowledgement; mutations still require revision.
+        if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция не подтверждена.', [ 'status' => 409, 'write_count' => 0 ] ); }
+        $data = wpae_get_elementor_data_for_post( $post_id );
+        if ( ! is_array( $data ) || wpae_accepted_contract_eligibility( $operation, $data )['status'] !== 'available' ) { return new WP_Error( 'wpae_typed_target_changed', 'Owned fingerprint или lineage изменились.', [ 'status' => 409, 'write_count' => 0 ] ); }
+        return new WP_REST_Response( [ 'ok' => true, 'write_count' => 0, 'operation' => array_intersect_key( $operation, array_flip( [ 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id' ] ) ) ], 200 );
+    }
     if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (int) ( $context['accepted_revision'] ?? 0 ) !== (int) $operation['revision'] || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция/revision не подтверждены.', [ 'status' => 409, 'write_count' => 0 ] ); }
     $loaded = wpae_accepted_contract_get( $operation );
     if ( empty( $loaded['ok'] ) ) { return new WP_Error( 'wpae_typed_contract_unavailable', $loaded['reason'], [ 'status' => 409, 'write_count' => 0 ] ); }

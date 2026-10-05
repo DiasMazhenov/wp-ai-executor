@@ -1,0 +1,58 @@
+{
+  "docWidth": 1025,
+  "nodes": [
+    {
+      "class": "elementor-element elementor-element-edit-mode elementor-element-5a1b94d e-con e-parent e-flex e-con-boxed e-con--row elementor-element-editable ui-resizable",
+      "maxWidth": "100%",
+      "minWidth": "0px",
+      "scrollWidth": 1025,
+      "width": 1025,
+      "widthCSS": "1025px"
+    },
+    {
+      "class": "e-con-inner",
+      "maxWidth": "min(100%, 1140px)",
+      "minWidth": "auto",
+      "scrollWidth": 961,
+      "width": 961,
+      "widthCSS": "961px"
+    },
+    {
+      "class": "elementor-element elementor-element-edit-mode elementor-element-73b86d5 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "maxWidth": "none",
+      "minWidth": "0px",
+      "scrollWidth": 565,
+      "width": 564.6015625,
+      "widthCSS": "564.602px"
+    },
+    {
+      "class": "elementor-element elementor-element-edit-mode elementor-element-71e01a5 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "maxWidth": "none",
+      "minWidth": "0px",
+      "scrollWidth": 565,
+      "width": 564.6015625,
+      "widthCSS": "564.602px"
+    },
+    {
+      "class": "elementor-element elementor-element-edit-mode elementor-element-fb370f7 e-con e-parent e-flex e-con-full e-con--row ui-resizable",
+      "maxWidth": "100%",
+      "minWidth": "0px",
+      "scrollWidth": 80,
+      "width": 81.9765625,
+      "widthCSS": "81.9766px"
+    },
+    {
+      "class": "elementor-element elementor-element-edit-mode elementor-element-3fb462c e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "maxWidth": "none",
+      "minWidth": "0px",
+      "scrollWidth": 376,
+      "width": 376.3984375,
+      "widthCSS": "376.398px"
+    }
+  ],
+  "roots": [],
+  "viewport": [
+    1025,
+    860
+  ]
+}

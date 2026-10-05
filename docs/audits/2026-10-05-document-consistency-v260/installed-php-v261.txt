@@ -1,0 +1,3 @@
+Выбрать WP AI ExecutorWP AI ExecutorДеактивировать |   ManageПоказать больше деталей
+						Secure REST endpoint for AI automation (Claude, GPT, Gemini, Qwen, etc.). Execute PHP in WordPress context via any AI agent.
+						Версия v02.11.261 | Автор: DIAS

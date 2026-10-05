@@ -22,6 +22,11 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     check( count( $loaded['contract']['after_owned'] ) === 1 && $loaded['contract']['before_owned'] === [] && wpae_brief_ir_validate( $loaded['contract']['brief'] )['ok'], 'Bounded contract only owned subtree and canonical provenance ' . $record );
     $owned = $loaded['contract']['after_owned'];
     $context = [ 'post_id' => 42, 'accepted_operation_id' => $operation['operation_id'], 'accepted_identity' => $operation['operation_identity'], 'accepted_revision' => $operation['revision'], 'lifecycle_action' => 'check_model', 'editor_owned_model' => $owned ];
+    $describe=$context; $describe['lifecycle_action']='describe_operation'; $describe['accepted_revision']=0;
+    $writes_before=$GLOBALS['m1_write_attempts'];
+    check(wpae_accepted_lifecycle_request($describe)->get_data()['operation']['revision']===$operation['revision'] && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only descriptor recovers current revision without document write '.$record);
+    $describe['accepted_identity']='different operation';
+    check(is_wp_error(wpae_accepted_lifecycle_request($describe)),'Descriptor refuses foreign identity '.$record);
     $check_model = wpae_accepted_lifecycle_request( $context );
     check( $check_model instanceof WP_REST_Response && $check_model->get_data()['ok'], 'Server/editor decision equality ' . $record );
     if ($record==='hero.text_only') {

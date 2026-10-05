@@ -1911,7 +1911,12 @@
             var resyncOffered = false;
             verify.addEventListener('click', function () {
                 verify.disabled = true;
-                verifyTypedEditorModel({ diagnostics: { operation_ledger: descriptor } }).then(function () {
+                typedLifecyclePost(typedOperationContext(descriptor, 'describe_operation')).then(function (result) {
+                    var current = result.operation;
+                    if (!current || current.operation_id !== descriptor.operation_id || current.operation_identity !== descriptor.operation_identity || current.accepted_contract_id !== descriptor.accepted_contract_id || JSON.stringify(current.root_ids) !== JSON.stringify(descriptor.root_ids)) throw new Error('Operation scope changed; local editor preserved.');
+                    descriptor.revision = current.revision;
+                    return verifyTypedEditorModel({ diagnostics: { operation_ledger: descriptor } });
+                }).then(function () {
                     addMessage('assistant', 'Owned модель соответствует принятому контракту: ' + descriptor.operation_id);
                     if (!resyncOffered) { addTypedResyncControl({ diagnostics: { operation_ledger: descriptor } }, captureEditorRootSnapshot()); resyncOffered = true; }
                 }).catch(function (error) { addMessage('assistant', error.message); }).finally(function () { verify.disabled = false; });

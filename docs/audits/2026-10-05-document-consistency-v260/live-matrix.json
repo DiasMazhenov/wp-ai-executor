@@ -1,0 +1,20 @@
+{
+  "source": "v02.11.262 prepared",
+  "installed": "v02.11.261",
+  "post": 5214,
+  "roots": [
+    "5a1b94d"
+  ],
+  "B": {
+    "operation": "wpae-1a17d1d28a4633e6",
+    "initial_revision": 4,
+    "generation": "PASS",
+    "authored_field_comparison": "PASS",
+    "native_save_readback": "BLOCKED",
+    "geometry": "PARTIAL editor1025",
+    "visual_composition": "REVIEW_REQUIRED",
+    "undo": "NOT_RUN"
+  },
+  "C_to_J": "NOT_RUN",
+  "blocker": "Scope/revision model refusal; pending explicit reload authorization. No dependent writes."
+}

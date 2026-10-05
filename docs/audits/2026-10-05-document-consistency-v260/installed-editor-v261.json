@@ -1,0 +1,17 @@
+{
+  "baseline": {
+    "error": null,
+    "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "rootIds": [],
+    "status": "valid_array"
+  },
+  "build": "typed-lifecycle-v6",
+  "documentState": {
+    "html_bytes": 0,
+    "html_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "intentional_empty_consistent": true,
+    "json_status": "valid_array",
+    "main_id": 5214
+  },
+  "version": "v02.11.261"
+}
