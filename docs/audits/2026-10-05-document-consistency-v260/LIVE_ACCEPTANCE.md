@@ -168,3 +168,8 @@ Technical / visual request match / composition quality: PASS / PASS / PASS for t
 ![Pricing v265 public CSS390×1000 PNG390×1000](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v265-public-390.png)
 
 [Download Pricing PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v265-public-390.png)
+
+
+## Metadata clarification — M3.1 source audit
+
+B–J are nine record/profile combinations. Generation versions: B/C/D/F/G/H/J v264; E v262; I fresh v265. E used about.split_60_40.right selected through UI because the Brief did not specify a ratio; it does not reaccept about.split_50_50.right. Only fresh I has an independent full native selection export after editor reload with recursive authored-field comparison. The other final rows establish generated native controls, pre-save owned model guard, saved descriptors/root/revision, reloaded canvas and measured public DOM, without claiming an independent full postreload native export. Machine matrix now records these boundaries explicitly; old evidence files remain unchanged.

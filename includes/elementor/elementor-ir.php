@@ -42,8 +42,8 @@ function wpae_elementor_ir_card_nodes( string $role, string $node_id, array $ite
 	$cards = [];
 	$roles = [
 		'service_cards' => [ 'title_ref' => [ 'service_title', 'heading' ], 'body_ref' => [ 'service_body', 'text-editor' ], 'cta_ref' => [ 'service_cta', 'button' ] ],
-		'team_cards' => [ 'name_ref' => [ 'team_name', 'heading' ], 'position_ref' => [ 'team_position', 'text-editor' ], 'bio_ref' => [ 'team_bio', 'text-editor' ] ],
-		'testimonial_cards' => [ 'quote_ref' => [ 'testimonial_quote', 'text-editor' ], 'author_ref' => [ 'testimonial_author', 'heading' ], 'meta_ref' => [ 'testimonial_meta', 'text-editor' ], 'rating_ref' => [ 'testimonial_rating', 'text-editor' ] ],
+		'team_cards' => [ 'name_ref' => [ 'team_name', 'heading' ], 'position_ref' => [ 'team_position', 'text-editor' ], 'bio_ref' => [ 'team_bio', 'text-editor' ], 'action_ref' => [ 'team_action', 'button' ] ],
+		'testimonial_cards' => [ 'quote_ref' => [ 'testimonial_quote', 'text-editor' ], 'author_ref' => [ 'testimonial_author', 'heading' ], 'meta_ref' => [ 'testimonial_meta', 'text-editor' ], 'rating_ref' => [ 'testimonial_rating', 'text-editor' ], 'action_ref' => [ 'testimonial_action', 'button' ] ],
 	];
 	$field_map = $roles[ $role ] ?? [];
 	foreach ( array_values( $items ) as $index => $item ) {
@@ -339,6 +339,8 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-eyebrow', 'pricing_badge', 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 						}
 
+					} elseif ( $item_role === 'body' ) {
+						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-body', 'body', 'text-editor', [ $content_ref ], [ 'color.muted', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					} elseif ( $item_role === 'title' ) {
 						$intro_widgets[] = wpae_elementor_ir_node( $child_id . '-intro-title', 'title', 'heading', [ $content_ref ], [ 'color.text', 'type.display' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					}
@@ -406,11 +408,20 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $cards, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 			} elseif ( in_array( $role, [ 'service_cards', 'team_cards', 'testimonial_cards' ], true ) ) {
 				$cards = wpae_elementor_ir_card_nodes( $role, $child_id, (array) ( $child['items'] ?? [] ), [ 'color.text', 'color.muted', 'type.body' ] );
+				if ( ( $child['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) {
+					foreach ( $cards as &$card ) {
+						$identity = []; $copy = [];
+						foreach ( $card['children'] as $field ) { if ( in_array( $field['role'], [ 'team_photo', 'team_name', 'team_position', 'testimonial_photo', 'testimonial_author', 'testimonial_meta' ], true ) ) { $identity[] = $field; } else { $copy[] = $field; } }
+						$card['children'] = [ wpae_elementor_ir_node( $card['node_id'] . '-identity', 'entity_identity', 'container', [], [], $identity ), wpae_elementor_ir_node( $card['node_id'] . '-copy', 'entity_copy', 'container', [], [], $copy ) ];
+						$card['layout_constraints']['entity_layout'] = 'editorial_rows';
+					}
+					unset( $card );
+				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $cards, (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
 			}
 		}
 		$section_composition = (string) ( $section['composition'] ?? 'stacked_left' );
-		if ( sanitize_key( (string) ( $section['role'] ?? '' ) ) === 'pricing' ) {
+		if ( sanitize_key( (string) ( $section['role'] ?? '' ) ) === 'pricing' || ( isset( $plan['visual_policy'] ) && in_array( $section['role'] ?? '', [ 'team', 'testimonials' ], true ) ) ) {
 			$section_composition = 'stacked_left';
 		}
 		$section_layout = [ 'composition' => $section_composition, 'min_width' => 0, 'max_width' => 100, 'media_side' => sanitize_key( (string) ( $section['media_side'] ?? 'right' ) ) ];
@@ -444,6 +455,7 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	$role = (string) ( $node['role'] ?? '' );
 	$intro = $intro || ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) || $role === 'pricing_intro';
 	$node['visual_policy'] = [ 'version' => $policy['version'], 'intro' => $intro, 'text_align' => $intro ? $policy['intro']['text_align'] : 'left', 'container_align' => $intro ? $policy['intro']['container_align'] : 'start', 'spacing' => $policy['spacing'], 'item_surface' => $policy['item_surface'], 'split' => $policy['split'], 'badge_label' => $badge_label, 'eyebrow_colors' => $policy['eyebrow_colors'] ];
+	if ( in_array( $role, [ 'team_card', 'testimonial_card' ], true ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
 	if ( $role === 'pricing_price_group' && isset( $policy['inline_value'] ) ) { $node['visual_policy']['inline_value'] = $policy['inline_value']; }
 	if ( $intro && $node['widget_type'] === 'container' && in_array( $role, [ 'copy_group', 'cta_copy_group', 'pricing_intro' ], true ) ) { $node['visual_policy']['reading_measure'] = $policy['intro']['reading_measure']; }
 	if ( in_array( $role, [ 'feature_cards', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
@@ -508,7 +520,7 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		$settings['border_radius'] = $radius;
 		$settings['background_color'] = $policy['item_surface']['background'];
 	}
-	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'services_photo_content', 'services_text_icon_copy' ], true ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'testimonial_card', 'entity_identity', 'entity_copy', 'services_photo_content', 'services_text_icon_copy' ], true ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
 		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
 		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
 		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
@@ -527,6 +539,19 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['intro_collection'], 'rem', 2 );
 		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
 		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
+	}
+	if ( ( $policy['entity_layout']['variant'] ?? '' ) === 'editorial_rows' ) {
+		$settings['container_type'] = 'grid';
+		$settings['_wpae_visual_policy_version'] = 1;
+		foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+			$columns = $policy['entity_layout']['columns'][$device];
+			$settings['grid_columns_grid' . $suffix] = [ 'unit' => 'fr', 'size' => $columns, 'sizes' => [] ];
+			$settings['grid_rows_grid' . $suffix] = [ 'unit' => 'custom', 'size' => 'auto', 'sizes' => [] ];
+			$settings['grid_auto_flow' . $suffix] = 'row';
+			$settings['grid_align_items' . $suffix] = 'start';
+			$gap = wpae_elementor_ir_dimension_control( $policy['entity_layout']['gap'], 'rem', 1 );
+			$settings['grid_gaps' . $suffix] = [ 'unit' => $gap['unit'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
+		}
 	}
 	if ( isset( $policy['collection'] ) ) {
 		$settings['container_type'] = 'grid';

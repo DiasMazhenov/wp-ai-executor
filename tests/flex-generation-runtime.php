@@ -3007,6 +3007,7 @@ if ( getenv( 'WPAE_SERVICES_CHAT_DEMO' ) === '1' ) {
 
 require __DIR__ . '/m1-generation-contract.php';
 require __DIR__ . '/m2-generation-contract.php';
+require __DIR__ . '/m3-entities-contract.php';
 require __DIR__ . '/typed-lifecycle-contract.php';
 
 echo 'flex generation runtime: ' . $GLOBALS['checks'] . " checks OK\n";

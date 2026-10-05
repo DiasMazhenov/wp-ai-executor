@@ -228,7 +228,7 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
  }
 }
 $editor_catalog = wpae_composition_editor_catalog();
-check( count( $editor_catalog['records'] ) === 17 && ! in_array( 'benefits.linear', array_column( $editor_catalog['records'], 'id' ), true ), 'Editor projection has only distinct implemented records, no alias' );
+check( count( array_unique( array_column( $editor_catalog['records'], 'id' ) ) ) === count( $editor_catalog['records'] ) && ! in_array( 'benefits.linear', array_column( $editor_catalog['records'], 'id' ), true ), 'Editor projection has only distinct implemented records, no alias' );
 
 // Real design-system marker contract, absent from the historical harness stub.
 $GLOBALS['test_required_ds_classes'] = [ 'wpae-ds', 'wpae-system-test' ];

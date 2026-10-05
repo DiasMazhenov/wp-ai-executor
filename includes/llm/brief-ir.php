@@ -183,6 +183,8 @@ function wpae_brief_ir_repeated_slot( string $prefix ): array {
 		[ 'service', 'service_body', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:описан\w*|description|details?)\s*[:\-]?\s*$/iu' ],
 		[ 'service', 'service_body', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:назван\w*|title|name)\s*[:\-]?\s*(?:«[^»\r\n]{1,240}»|“[^”\r\n]{1,240}”|"[^"\r\n]{1,240}")\s*[.!]?\s*(?:описан\w*|description|details?)\s*[:\-]?\s*$/iu' ],
 		[ 'service', 'service_cta', '/(?:услуг\w*|services?)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:кнопк\w*|ссылк\w*|cta|link)\s*[:\-]?\s*$/iu' ],
+		[ 'team', 'team_action', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:кнопк\w*|ссылк\w*|action|link)\s*[:\-]?\s*$/iu' ],
+		[ 'testimonial', 'testimonial_action', '/(?:отзыв|testimonial|review)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:кнопк\w*|ссылк\w*|action|link)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_name', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:имя|name)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_position', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:(?:имя|name)\s*[:\-]?\s*(?:«[^»\r\n]{1,240}»|“[^”\r\n]{1,240}”|"[^"\r\n]{1,240}")\s*[,;—–-]\s*)?(?:должност\w*|роль|position|role)\s*[:\-]?\s*$/iu' ],
 		[ 'team', 'team_bio', '/(?:участник\w*|сотрудник\w*|team\s+member)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:описан\w*|биограф\w*|bio|description)\s*[:\-]?\s*$/iu' ],
@@ -298,6 +300,35 @@ function wpae_brief_ir_explicit_user_constraints( string $source_text ): array {
 		}
 	}
 	return $constraints;
+}
+
+/** Canonical repeated entity slots. Values stay in content; groups own references only. */
+function wpae_brief_ir_entity_fields( string $family ): array {
+	return [
+		'team' => [ 'team_name' => 'name_ref', 'team_position' => 'position_ref', 'team_bio' => 'bio_ref', 'team_action' => 'action_ref' ],
+		'testimonials' => [ 'testimonial_quote' => 'quote_ref', 'testimonial_author' => 'author_ref', 'testimonial_meta' => 'meta_ref', 'testimonial_rating' => 'rating_ref', 'testimonial_action' => 'action_ref' ],
+	][ $family ] ?? [];
+}
+
+function wpae_brief_ir_entity_groups( string $family, array $content, array $media ): array {
+	$fields = wpae_brief_ir_entity_fields( $family );
+	$prefix = $family === 'team' ? 'team_' : 'testimonial_';
+	$groups = [];
+	foreach ( $content as $slot ) {
+		$field = $fields[ $slot['role'] ?? '' ] ?? '';
+		$id = (string) ( $slot['group_id'] ?? '' );
+		if ( $field === '' || ! str_starts_with( $id, $prefix ) ) { continue; }
+		if ( ! isset( $groups[$id] ) ) { $groups[$id] = [ 'group_id' => $id, 'provenance' => [ 'source' => 'brief', 'item_id' => $id, 'source_spans' => [] ], 'errors' => [] ]; }
+		if ( isset( $groups[$id][$field] ) ) { $groups[$id]['errors'][] = 'duplicate_' . $field; }
+		else { $groups[$id][$field] = $slot['id']; $groups[$id]['provenance']['source_spans'][$field] = $slot['source_span']; }
+	}
+	foreach ( $media as $asset ) {
+		$id = (string) ( $asset['group_id'] ?? '' );
+		if ( ! isset( $groups[$id] ) ) { continue; }
+		if ( isset( $groups[$id]['media_ref'] ) ) { $groups[$id]['errors'][] = 'duplicate_media_ref'; }
+		else { $groups[$id]['media_ref'] = $asset['asset_id']; $groups[$id]['provenance']['source_spans']['media_ref'] = $asset['provenance']['source_span'] ?? []; }
+	}
+	return array_values( $groups );
 }
 
 /** Build stable service groups from the canonical Brief content references. */
@@ -698,7 +729,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$confidence = $role === 'text' ? 0.62 : 0.98;
 		$content_start = $start;
 		$content_length = strlen( $full );
-		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq' ], true ) ) {
+		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials' ], true ) ) {
 			foreach ( [ 1, 2, 3 ] as $capture_index ) {
 				if ( isset( $quote_matches[ $capture_index ][ $match_index ][1] ) && (int) $quote_matches[ $capture_index ][ $match_index ][1] >= 0 && (string) $quote_matches[ $capture_index ][ $match_index ][0] === $inner ) {
 					$content_start = (int) $quote_matches[ $capture_index ][ $match_index ][1];
@@ -1098,6 +1129,12 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				}
 				$alt = '';
 				$local_media_text = wpae_brief_ir_utf8_slice( $source_text, max( 0, (int) $url_match[1] - 180 ), 700 );
+				if ( $group_id !== '' ) {
+					// Metadata is owned by this image segment, never borrowed from a previous entity.
+					$local_media_text = substr( $source_text, (int) $url_match[1] + strlen( $url ) );
+					if ( preg_match( '/\n\s*(?:участник\w*|сотрудник\w*|услуг\w*|отзыв\w*|team\s+member|service|testimonial|review)\s*#?\d+/iu', $local_media_text, $next_owner, PREG_OFFSET_CAPTURE ) ) { $local_media_text = substr( $local_media_text, 0, (int) $next_owner[0][1] ); }
+				}
+
 				if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)\s*[:\-]?\s*(?:«([^»]{1,300})»|"([^"]{1,300})"|“([^”]{1,300})”)/iu', $local_media_text, $alt_match ) ) {
 					$alt = trim( (string) ( $alt_match[1] ?: ( $alt_match[2] ?: $alt_match[3] ) ) );
 				}
@@ -1177,6 +1214,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$service_groups = array_values( $groups_by_id );
 	} elseif ( $archetype === 'pricing' ) { $service_groups = $pricing_items; }
+	elseif ( in_array( $archetype, [ 'team', 'testimonials' ], true ) ) { $service_groups = wpae_brief_ir_entity_groups( $archetype, $content, $media_references ); }
 
 	$explicit_constraints = [];
 	foreach ( $constraints as $constraint ) {
@@ -1409,6 +1447,7 @@ function wpae_brief_ir_validate( array $brief ): array {
 			if ( ! is_array( $item ) || ! is_string( $brief['source_text'] ?? null ) || ( $item['copy_status'] ?? '' ) !== 'explicit' || count( $span ) !== 2 || ! is_int( $span[0] ) || ! is_int( $span[1] ) || $span[0] < 0 || $span[1] < $span[0] || $span[1] > strlen( $brief['source_text'] ) || substr( $brief['source_text'], $span[0], $span[1] - $span[0] ) !== ( $item['exact_text'] ?? '' ) ) { $errors[] = 'explicit_content_provenance:' . $id; }
 		}
 	}
+	if ( ! empty( $brief['canonical_create'] ) && in_array( $brief['intent']['archetype'] ?? '', [ 'team', 'testimonials' ], true ) && ( $brief['groups'] ?? [] ) !== wpae_brief_ir_entity_groups( $brief['intent']['archetype'], (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) ) ) { $errors[] = 'entity_groups_source_bindings_mismatch'; }
 	$services_validation = [];
 	if ( ( $brief['intent']['archetype'] ?? '' ) === 'services' ) {
 		$services_validation = wpae_brief_ir_validate_services( $brief );

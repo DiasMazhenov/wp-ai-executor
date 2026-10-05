@@ -1493,4 +1493,90 @@ foreach ( [ 'pricing', 'team', 'services' ] as $family ) {
  }
 }
 
+// M3.1: canonical entity groups and real grid/row topology over identical exact copy.
+foreach ( [ 'team', 'testimonials' ] as $family ) {
+ foreach ( [ 2, 3, 4, 6 ] as $count ) {
+  $prompt = 'Создай блок ' . ( $family === 'team' ? 'команды' : 'отзывов' ) . '. Без фото. Надзаголовок «ПРОВЕРКА». Заголовок «Тестовая секция». Описание «Точное описание всей секции». ';
+  for ( $i=1; $i<=$count; $i++ ) {
+   $prompt .= $family === 'team' ? 'Участник '.$i.' имя «Имя '.$i.'». Участник '.$i.' должность «Роль '.$i.'». Участник '.$i.' биография «'.($i%2?'Коротко.':rtrim(str_repeat('Длинное точное описание. ',8))).'». ' : 'Отзыв '.$i.' текст «'.($i%2?'Точная цитата.':rtrim(str_repeat('Длинная точная цитата. ',8))).'». Отзыв '.$i.' автор «Автор '.$i.'». Отзыв '.$i.' компания «Компания '.$i.'». ';
+  }
+  $brief=wpae_brief_ir_parse($prompt); $brief['canonical_create']=true;
+  if (!wpae_brief_ir_validate($brief)['ok'] || count($brief['groups'])!==$count) { fwrite(STDERR,wp_json_encode(['intent'=>$brief['intent'],'groups'=>$brief['groups'],'validation'=>wpae_brief_ir_validate($brief)],JSON_UNESCAPED_UNICODE).'\n'); }
+  $check(wpae_brief_ir_validate($brief)['ok'] && count($brief['groups'])===$count,'Canonical entity intake '.$family.' '.$count);
+  $native_variants=[];
+  foreach(['grid','editorial_rows'] as $variant) {
+   $plan=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'composition_record'=>$family.'.'.$variant,'visual_profile'=>'editorial_light']);
+   $validation=wpae_design_plan_validate($plan,$brief);
+   $check($validation['ok'],'Entity Plan '.$family.' '.$count.' '.$variant.' '.implode(',',$validation['errors']));
+   $check($plan['sections'][0]['children'][1]['items']===$brief['groups'],'Frozen groups consumed unchanged');
+   $ir=wpae_elementor_ir_from_design_plan($plan,$brief);
+   $native=wpae_elementor_ir_compile($ir,$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
+   $check($native['ok'],'Entity native compiler '.$family.' '.$variant);
+   $flat=$walk_elements($native['elementor_data']);
+   $titles=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['title']??'')==='Тестовая секция'));
+   $check(($titles[0]['settings']['header_size']??'')==='h2','Entity intro H2');
+   $encoded=wp_json_encode($native['elementor_data'],JSON_UNESCAPED_UNICODE);
+   foreach($brief['content'] as $slot) {$check(str_contains($encoded,$slot['exact_text']),'Exact entity slot '.$slot['id']);}
+   $bad=$plan; $bad['sections'][0]['children'][1]['items'][0][$family==='team'?'name_ref':'quote_ref']=$brief['groups'][1][$family==='team'?'name_ref':'quote_ref'];
+   $check(!wpae_design_plan_validate($bad,$brief)['ok'],'Cross-owner/frozen binding refuses');
+   $required=$brief;$required['layout_constraints']=array_values(array_filter($required['layout_constraints'],static fn(array $c):bool=>($c['kind']??'')!=='media_intent'));$required['layout_constraints'][]=['kind'=>'media_intent','value'=>'required'];
+   $required_plan=wpae_design_plan_from_brief($required,['canonical_create'=>true,'composition_record'=>$family.'.'.$variant]);
+   $check(!wpae_design_plan_validate($required_plan,$required)['ok'],'Required entity portrait missing refuses');
+   $bad=$plan;$bad['visual_policy']['entity_layout']['columns']['mobile']=2;
+   $check(!wpae_design_plan_validate($bad,$brief)['ok'],'Entity responsive policy cannot diverge from record');
+   $unknown=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'composition_record'=>'unknown.entity.record']);
+   $check(!wpae_design_plan_validate($unknown,$brief)['ok'],'Unknown entity record refuses');
+   $unknown_profile=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'composition_record'=>$family.'.'.$variant,'visual_profile'=>'unknown']);
+   $check(!wpae_design_plan_validate($unknown_profile,$brief)['ok'],'Unknown entity profile refuses');
+   $images=array_values(array_filter($flat,static fn(array $n):bool=>($n['widgetType']??'')==='image'));
+   $check(!$images,'Forbidden entity photos are not invented');
+   $native_variants[$variant]=$native['elementor_data'];
+  }
+  $check($native_variants['grid']!==$native_variants['editorial_rows'],'Distinct entity structures');
+ }
+}
+
+// Authorized media is validated by entity slot, never globally enabled for all families.
+foreach ( [ 'team', 'testimonials' ] as $family ) {
+ $prompt=$family==='team'?'Блок команды. Участник 1 имя «Имя». Участник 1 должность «Роль». Участник 1 биография «Био». Участник 1 ссылка «Связаться», ссылка #person.':'Блок отзывов. Отзыв 1 текст «Цитата». Отзыв 1 автор «Автор». Отзыв 1 компания «Компания». Отзыв 1 рейтинг «4 из 5». Отзыв 1 ссылка «Источник», ссылка #quote.';
+ $brief=wpae_brief_ir_parse($prompt);$brief['canonical_create']=true;
+ $asset=['asset_id'=>'entity_fixture_asset','source_url'=>'https://example.com/fixture/portrait.jpg','attachment_id'=>null,'role'=>'portrait','group_id'=>$brief['groups'][0]['group_id'],'alt'=>'Synthetic portrait fixture','license'=>'Contract fixture','attribution'=>'Contract fixture','allowed_reuse'=>true,'provenance'=>['source'=>'synthetic_test_fixture']];
+ $brief['media_references']=[$asset];$brief['groups']=wpae_brief_ir_entity_groups($family,$brief['content'],$brief['media_references']);
+ foreach(['grid','editorial_rows'] as $variant){
+  $ctx=['canonical_create'=>true,'composition_record'=>$family.'.'.$variant];$plan=wpae_design_plan_from_brief($brief,$ctx);
+  $v=wpae_design_plan_validate($plan,$brief);$check($v['ok'],'Owned authorized media and action '.$family.' '.implode(',',$v['errors']));
+  $native=wpae_elementor_ir_compile(wpae_elementor_ir_from_design_plan($plan,$brief),$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
+  $nodes=$walk_elements($native['elementor_data']);$images=array_values(array_filter($nodes,static fn(array $n):bool=>($n['widgetType']??'')==='image'));
+  $check(count($images)===1 && $images[0]['settings']['image']['url']===$asset['source_url'],'Owned portrait survives native serialization');
+  $buttons=array_values(array_filter($nodes,static fn(array $n):bool=>($n['widgetType']??'')==='button'));
+  $check(count($buttons)===1 && $buttons[0]['settings']['link']['url']===($family==='team'?'#person':'#quote'),'Owned entity action survives');
+  foreach(['owner','role','forbidden','required','license'] as $fault){
+   $bad=$brief;
+   if($fault==='owner'){$bad['media_references'][0]['group_id']='other_1';}
+   elseif($fault==='role'){$bad['media_references'][0]['role']='decorative';}
+   elseif($fault==='license'){$bad['media_references'][0]['allowed_reuse']=false;}
+   elseif($fault==='required'){$bad['media_references']=[];unset($bad['groups'][0]['media_ref']);$bad['layout_constraints'][]=['kind'=>'media_intent','value'=>'required'];}
+   else{$bad['layout_constraints'][]=['kind'=>'media_intent','value'=>'forbidden'];}
+   // Replace unspecified policy, so the explicit test intent is the sole decision.
+   if(in_array($fault,['required','forbidden'],true)){$bad['layout_constraints']=array_values(array_filter($bad['layout_constraints'],static fn(array $c):bool=>($c['kind']??'')!=='media_intent'||($c['value']??'')===$fault));}
+   $badplan=wpae_design_plan_from_brief($bad,$ctx);$check(!wpae_design_plan_validate($badplan,$bad)['ok'],'Entity media refusal '.$family.' '.$fault);
+  }
+ }
+}
+
+// Saved live fixtures use the same deterministic grammar before any production write.
+foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact-request.txt','testimonials.grid'], ['E-services-exact-request.txt','services.photo_cards'], ['F-pricing-exact-request.txt','pricing.tiers'] ] as [$fixture,$record] ) {
+ $prompt=file_get_contents(dirname(__DIR__).'/docs/audits/2026-10-05-m3-1-entities/'.$fixture);
+ $brief=wpae_brief_ir_parse($prompt);if($brief['intent']['archetype']!=='services'){$brief['canonical_create']=true;}
+ $ctx=['canonical_create'=>true]; if(str_starts_with($record,'services.')){$ctx['services_recipe_id']=$record;}else{$ctx['composition_record']=$record;}
+ $plan=wpae_design_plan_from_brief($brief,$ctx);$v=wpae_design_plan_validate($plan,$brief);
+ $check(wpae_brief_ir_validate($brief)['ok'] && $v['ok'],'Saved fixture validates '.$fixture.' '.implode(',',$v['errors']));
+ $ir=wpae_elementor_ir_from_design_plan($plan,$brief);$native=wpae_elementor_ir_compile($ir,$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
+ $check($native['ok'],'Saved fixture native compiler '.$fixture);
+ if($record==='pricing.tiers'){
+  $check(count($brief['pricing_items'])===3 && array_map(static fn(array $g):int=>count($g['feature_refs']),$brief['pricing_items'])===[1,4,2],'Pricing unequal features retained');
+  $flat=$walk_elements($native['elementor_data']);
+  $check(count(array_filter($flat,static fn(array $n):bool=>($n['settings']['editor']??'')==='Три синтетических пакета для проверки точного содержания и разной длины списка возможностей'))===1,'Pricing full intro body retained');
+ }
+}
 fwrite( STDOUT, "design pipeline contract: {$checks} checks OK\n" );

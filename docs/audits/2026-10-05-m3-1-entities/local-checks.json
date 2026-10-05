@@ -1,0 +1,24 @@
+{
+  "source": "v02.11.266",
+  "design_plan": 826,
+  "runtime": 1349,
+  "node": {
+    "passed": 15,
+    "failed": 0
+  },
+  "patch_guard": "PASS",
+  "catalog": {
+    "manifest": 158,
+    "trees": 156,
+    "previews": 156
+  },
+  "package": {
+    "hashes": 252,
+    "probe_cases": 4,
+    "compact_serialization": true,
+    "full_serialization": "historical malformed UTF8 limitation"
+  },
+  "php_lint": "PASS",
+  "diff_check": "PASS",
+  "live": "NOT_RUN"
+}

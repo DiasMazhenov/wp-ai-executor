@@ -21,7 +21,7 @@ function wpae_design_plan_schema(): array {
 	return [
 		'schema' => WPAE_DESIGN_PLAN_SCHEMA,
 		'archetypes' => [ 'about', 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta' ],
-		'migrated_create' => [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'services' ],
+		'migrated_create' => [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'services', 'team', 'testimonials' ],
 		'family_compositions' => wpae_composition_family_compositions(),
 		'compositions' => [ 'editorial_list', 'split_60_40', 'split_50_50', 'split_40_60', 'stacked_left', 'linear', 'three_cards' ],
 		'responsive' => [ 'split_60_40', 'split_50_50', 'split_40_60', 'copy_first_stack', 'stack' ],
@@ -137,6 +137,12 @@ function wpae_design_plan_pairs( array $brief, string $first_role, string $secon
 }
 
 function wpae_design_plan_grouped_items( array $brief, string $prefix, array $role_map, array $required_fields, int $minimum, int $maximum ): array {
+	if ( ! empty( $brief['canonical_create'] ) && in_array( $prefix, [ 'team', 'testimonial' ], true ) ) {
+		$items = (array) ( $brief['groups'] ?? [] ); $errors = [];
+		foreach ( $items as $item ) { foreach ( (array) ( $item['errors'] ?? [] ) as $error ) { $errors[] = $item['group_id'] . '_' . $error; } foreach ( $required_fields as $field ) { if ( empty( $item[$field] ) ) { $errors[] = $item['group_id'] . '_missing_' . $field; } } }
+		if ( count( $items ) < $minimum || count( $items ) > $maximum ) { $errors[] = $prefix . '_item_count_out_of_range'; }
+		return [ 'items' => $items, 'errors' => array_values( array_unique( $errors ) ) ];
+	}
 	$items = [];
 	$errors = [];
 	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
@@ -888,8 +894,9 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		'eyebrow_colors' => [ 'plain' => $values['color.primary'], 'pill' => $values['color.surface'] ],
 		'item_surface' => [ 'padding' => $values['space.card'] ?? '1.5rem', 'radius' => $values['radius.card'], 'background' => $values['color.surface'] ],
 		// Inline values (price + period) keep their shared start axis when space narrows.
+		'entity_layout' => [ 'variant' => $record_policy['entity_layout'] ?? 'grid', 'columns' => [ 'desktop' => ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ], 'gap' => $pick( 'item_copy_gap', '0.75rem' ) ],
 		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
-		'collection' => [ 'implementation' => 'native_grid', 'columns' => [ 'desktop' => (int) $pick( 'columns', $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
+		'collection' => [ 'implementation' => 'native_grid', 'columns' => [ 'desktop' => (int) $pick( 'columns', ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 1 : $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
 	];
 	$field_sources['inline_value'] = 'documented_default';
@@ -923,7 +930,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 	}
 	$media_intent = (string) wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' );
 	$explicit_composition = wpae_design_plan_constraint_value( $brief, 'composition' );
-	$composition = (string) ( $explicit_composition ?? ( in_array( $archetype, [ 'hero', 'about' ], true ) ? 'split_60_40' : ( $archetype === 'pricing' || ( $archetype === 'benefits' && ! empty( $context['canonical_create'] ) ) ? 'three_cards' : 'linear' ) ) );
+	$composition = (string) ( $explicit_composition ?? ( in_array( $archetype, [ 'hero', 'about' ], true ) ? 'split_60_40' : ( $archetype === 'pricing' || ( in_array( $archetype, [ 'benefits', 'team', 'testimonials' ], true ) && ! empty( $context['canonical_create'] ) ) ? 'three_cards' : 'linear' ) ) );
 	$media_references = array_values( array_filter( (array) ( $brief['media_references'] ?? [] ), static fn( $media ): bool => is_array( $media ) && wpae_design_plan_media_reference_valid( $media ) && ( ! in_array( $archetype, [ 'hero', 'about' ], true ) || ( $media['role'] ?? '' ) === $archetype ) ) );
 	if ( empty( $context['canonical_create'] ) && in_array( $archetype, [ 'hero', 'about' ], true ) && empty( $media_references ) ) {
 		$default_hero_media = wpae_design_plan_default_hero_media( $brief );
@@ -949,7 +956,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$media_side = 'right';
 	}
 	$record_selection = [];
-	if ( ! empty( $context['canonical_create'] ) && in_array( $archetype, [ 'hero', 'about', 'benefits', 'pricing', 'faq' ], true ) ) {
+	if ( ! empty( $context['canonical_create'] ) && in_array( $archetype, [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials' ], true ) ) {
 		$record_selection = wpae_composition_resolve( $brief, $context, $composition, $media_side );
 		if ( empty( $record_selection['errors'] ) ) {
 			$composition = $record_selection['record']['composition'];
@@ -1057,7 +1064,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			}
 			$pricing_refs[] = array_intersect_key( $item, array_flip( [ 'group_id', 'feature_refs', 'label_ref', 'price_ref', 'period_ref', 'description_ref', 'cta_ref', 'price_text', 'provenance' ] ) );
 		}
-		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title' ] );
+		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body' ] );
 		$section['children'] = [
 			[
 				'role' => 'pricing_cards',
@@ -1170,19 +1177,19 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		if ( (bool) array_filter( $grouped['items'], static fn( array $item ): bool => ! empty( $item['media_ref'] ) ) ) {
 			$team_widgets[] = 'image';
 		}
-		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title' ] );
+		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body', 'cta', 'cta_2', 'cta_3', 'cta_4' ] );
 		$section['children'] = [];
 		if ( ! empty( $intro_refs ) ) {
-			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
+			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor', 'button' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
 		}
 		$section['children'][] = [
 				'role' => 'team_cards',
 				'allowed_widgets' => $team_widgets,
-				'content_refs' => wpae_design_plan_group_refs( $grouped['items'], [ 'name_ref', 'position_ref', 'bio_ref' ] ),
+				'content_refs' => wpae_design_plan_group_refs( $grouped['items'], [ 'name_ref', 'position_ref', 'bio_ref', 'action_ref' ] ),
 				'items' => $grouped['items'],
 				'item_errors' => $grouped['errors'],
 				'token_refs' => [ 'color.surface', 'color.text', 'color.muted', 'color.border', 'radius.card', 'space.component' ],
-				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
+				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'entity_layout' => $record_selection['record']['policy']['entity_layout'] ?? 'grid' ],
 				'responsive_policy' => 'stack',
 				'editable_fields' => [ 'text', 'media', 'alt' ],
 				'provenance' => [ 'source' => 'brief', 'roles' => [ 'team_name', 'team_position', 'team_bio' ] ],
@@ -1193,19 +1200,19 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		if ( (bool) array_filter( $grouped['items'], static fn( array $item ): bool => ! empty( $item['media_ref'] ) ) ) {
 			$testimonial_widgets[] = 'image';
 		}
-		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title' ] );
+		$intro_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body', 'cta', 'cta_2', 'cta_3', 'cta_4' ] );
 		$section['children'] = [];
 		if ( ! empty( $intro_refs ) ) {
-			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
+			$section['children'][] = [ 'role' => 'copy_group', 'allowed_widgets' => [ 'heading', 'text-editor', 'button' ], 'content_refs' => $intro_refs, 'token_refs' => [ 'color.text', 'color.primary', 'type.display', 'type.body' ], 'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ], 'responsive_policy' => 'stack', 'editable_fields' => [ 'text' ] ];
 		}
 		$section['children'][] = [
 				'role' => 'testimonial_cards',
 				'allowed_widgets' => $testimonial_widgets,
-				'content_refs' => wpae_design_plan_group_refs( $grouped['items'], [ 'quote_ref', 'author_ref', 'meta_ref' ] ),
+				'content_refs' => wpae_design_plan_group_refs( $grouped['items'], [ 'quote_ref', 'author_ref', 'meta_ref', 'rating_ref', 'action_ref' ] ),
 				'items' => $grouped['items'],
 				'item_errors' => $grouped['errors'],
 				'token_refs' => [ 'color.surface', 'color.text', 'color.muted', 'color.border', 'radius.card', 'space.component' ],
-				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
+				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'entity_layout' => $record_selection['record']['policy']['entity_layout'] ?? 'grid' ],
 				'responsive_policy' => 'stack',
 				'editable_fields' => [ 'text' ],
 				'provenance' => [ 'source' => 'brief', 'roles' => [ 'testimonial_quote', 'testimonial_author', 'testimonial_meta' ] ],
@@ -1458,10 +1465,10 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 	if ( ! empty( $brief['canonical_create'] ) ) {
 		$allowed_compositions = $schema['family_compositions'][ $plan['archetype'] ?? '' ] ?? [];
 		if ( ! in_array( $plan['sections'][0]['composition'] ?? '', $allowed_compositions, true ) ) { $errors[] = 'family_composition_unsupported'; }
-		if ( empty( wpae_design_plan_content_refs( $brief, [ 'title', 'pricing_label', 'feature_title', 'faq_question' ] ) ) ) { $errors[] = 'explicit_copy_required'; }
+		if ( empty( wpae_design_plan_content_refs( $brief, [ 'title', 'pricing_label', 'feature_title', 'faq_question', 'team_name', 'testimonial_quote' ] ) ) ) { $errors[] = 'explicit_copy_required'; }
 		$media_intent = wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' );
 		if ( $media_intent === 'conflict' ) { $errors[] = 'media_policy_conflict'; }
-		if ( ! in_array( $plan['archetype'] ?? '', [ 'hero', 'about' ], true ) && ( $media_intent === 'required' || ! empty( $brief['media_references'] ) ) ) { $errors[] = 'unsupported_media_slots'; }
+		if ( ! in_array( $plan['archetype'] ?? '', [ 'hero', 'about', 'team', 'testimonials' ], true ) && ( $media_intent === 'required' || ! empty( $brief['media_references'] ) ) ) { $errors[] = 'unsupported_media_slots'; }
 		$reference_validation = wpae_reference_set_validate( (array) ( $brief['media_references'] ?? [] ) );
 		$errors = array_merge( $errors, $reference_validation['errors'] );
 		foreach ( (array) ( $brief['media_references'] ?? [] ) as $media ) {
@@ -1471,6 +1478,34 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		if ( in_array( $media_intent, [ 'forbidden', 'conflict' ], true ) && ! empty( $brief['media_references'] ) ) { $errors[] = 'media_policy_conflict'; }
 		if ( count( (array) ( $brief['media_references'] ?? [] ) ) !== count( (array) ( $plan['media_references'] ?? [] ) ) ) { $errors[] = 'unconsumed_media_reference'; }
 		if ( in_array( $plan['archetype'] ?? '', [ 'hero', 'about' ], true ) && count( (array) ( $plan['media_references'] ?? [] ) ) > 1 ) { $errors[] = 'split_requires_one_media_asset'; }
+		if ( in_array( $plan['archetype'] ?? '', [ 'team', 'testimonials' ], true ) ) {
+			$family = $plan['archetype'];
+			$fields = wpae_brief_ir_entity_fields( $family );
+			$groups = (array) ( $brief['groups'] ?? [] );
+			$expected_role = array_flip( $fields );
+			$media_by_id = array_column( (array) ( $brief['media_references'] ?? [] ), null, 'asset_id' );
+			$entity_policy = $plan['visual_policy']['entity_layout'] ?? [];
+			$variant = $plan['composition_decision']['policy']['entity_layout'] ?? '';
+			if ( ( $entity_policy['variant'] ?? '' ) !== $variant || ( $entity_policy['columns'] ?? [] ) !== [ 'desktop' => $variant === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ] || ! preg_match( '/^(?:0|[1-9]\d*(?:\.\d+)?|0\.\d+)(?:px|rem|em)$/', (string) ( $entity_policy['gap'] ?? '' ) ) ) { $errors[] = 'entity_layout_policy_invalid'; }
+			$consumed = []; $expected_items = [];
+			foreach ( $groups as $group ) {
+				$expected_items[] = $group;
+				foreach ( $expected_role as $field => $role ) {
+					if ( empty( $group[$field] ) ) { continue; }
+					$slot = $content_by_id[$group[$field]] ?? [];
+					if ( ( $slot['role'] ?? '' ) !== $role || ( $slot['group_id'] ?? '' ) !== ( $group['group_id'] ?? '' ) ) { $errors[] = 'entity_slot_owner_or_role:' . $field; }
+					if ( $field === 'action_ref' && ( empty( $slot['url_requested'] ) || empty( $slot['url'] ) ) ) { $errors[] = 'entity_action_url_required'; }
+				}
+				if ( ! empty( $group['media_ref'] ) ) {
+					$asset = $media_by_id[$group['media_ref']] ?? [];
+					if ( ( $asset['group_id'] ?? '' ) !== $group['group_id'] || ( $asset['role'] ?? '' ) !== 'portrait' ) { $errors[] = 'entity_media_owner_or_role'; }
+					$consumed[] = $group['media_ref'];
+				} elseif ( $media_intent === 'required' ) { $errors[] = 'entity_required_portrait_missing:' . $group['group_id']; }
+			}
+			if ( count( $consumed ) !== count( $media_by_id ) || count( array_unique( $consumed ) ) !== count( $consumed ) ) { $errors[] = 'entity_media_unconsumed_or_reused'; }
+			$collection = array_values( array_filter( (array) ( $plan['sections'][0]['children'] ?? [] ), static fn( array $child ): bool => in_array( $child['role'] ?? '', [ 'team_cards', 'testimonial_cards' ], true ) ) );
+			if ( ( $collection[0]['items'] ?? [] ) !== $expected_items ) { $errors[] = 'entity_frozen_group_bindings_changed'; }
+		}
 		$bound_refs = [];
 		foreach ( (array) ( $plan['sections'] ?? [] ) as $section ) {
 			foreach ( (array) ( $section['children'] ?? [] ) as $child ) {

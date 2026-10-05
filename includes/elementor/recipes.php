@@ -378,8 +378,19 @@ function wpae_composition_records(): array {
 			'policy' => [ 'composition' => $composition, 'desktop' => $composition, 'tablet' => 'stack', 'mobile' => 'stack' ], 'variant_kind' => $kind, 'distinct' => $kind !== 'legacy_alias',
 			'capabilities' => $family === 'faq' ? [ 'container', 'accordion' ] : array_merge( [ 'container', 'heading', 'text-editor' ], $family === 'benefits' ? [ 'icon' ] : [ 'button' ] ) ];
 	}
+	foreach ( [ 'team', 'testimonials' ] as $family ) {
+		foreach ( [ 'grid' => 'three_cards', 'editorial_rows' => 'editorial_list' ] as $variant => $composition ) {
+			$id = $family . '.' . $variant;
+			$maximum = $family === 'team' ? 8 : 6;
+			$records[$id] = [ 'id' => $id, 'version' => 1, 'family' => $family, 'scope' => [ 'page' ], 'composition' => $composition,
+				'slots' => [ 'intro' => 'all_exact_section_refs', 'groups' => 'ordered_owned_role_refs', 'media' => 'owned_portrait', 'cta' => 'all_explicit_links' ],
+				'media' => [ 'min' => 0, 'max' => $maximum ], 'groups' => [ 'min' => 1, 'max' => $maximum ],
+				'policy' => [ 'composition' => $composition, 'desktop' => $composition, 'tablet' => 'stack', 'mobile' => 'stack', 'entity_layout' => $variant ],
+				'variant_kind' => 'structural_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button', 'image' ] ];
+		}
+	}
 	foreach ( $records as &$record ) {
-		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
+		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits', 'team', 'testimonials' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
 		if ( $record['id'] === 'benefits.linear' ) { $record['alias_of'] = 'benefits.grid'; }
 		$record['implementation_status'] = 'implemented_source';
 		$record['provenance'] = [ 'source' => 'typed_plan', 'catalog' => 'wpae-compositions-v1' ];
@@ -453,8 +464,8 @@ function wpae_composition_visual_profiles(): array {
 
 /** Safe editor projection: no trees, tokens, credentials or legacy aliases. */
 function wpae_composition_editor_catalog(): array {
- $families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы' ];
- $labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон' ];
+ $families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы', 'team' => 'Команда', 'testimonials' => 'Отзывы' ];
+ $labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон', 'team.grid' => 'Карточки участников', 'team.editorial_rows' => 'Редакционные строки', 'testimonials.grid' => 'Карточки отзывов', 'testimonials.editorial_rows' => 'Редакционные строки' ];
  $records = [];
  foreach ( wpae_composition_records() as $record ) {
   if ( empty( $record['distinct'] ) || $record['implementation_status'] !== 'implemented_source' || ! in_array( 'page', $record['scope'], true ) ) { continue; }

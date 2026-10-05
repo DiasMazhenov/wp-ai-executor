@@ -66,7 +66,10 @@
       "native_evidence": "B-v264-first-1.json",
       "dom_evidence": "B-v264-public-dom.json",
       "readback_evidence": "B-v264-readback.json",
-      "undo_evidence": "B-v264-undo-final.json"
+      "undo_evidence": "B-v264-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     },
     {
       "scenario": "C",
@@ -128,7 +131,10 @@
       "native_evidence": "C-v264-first-1.json",
       "dom_evidence": "C-v264-public-dom.json",
       "readback_evidence": "C-v264-readback.json",
-      "undo_evidence": "C-v264-undo-final.json"
+      "undo_evidence": "C-v264-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     },
     {
       "scenario": "D",
@@ -190,7 +196,10 @@
       "native_evidence": "D-v264-first-1.json",
       "dom_evidence": "D-v264-public-dom.json",
       "readback_evidence": "D-v264-readback.json",
-      "undo_evidence": "D-v264-undo-final.json"
+      "undo_evidence": "D-v264-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     },
     {
       "scenario": "E",
@@ -252,7 +261,11 @@
       "native_evidence": "E-v262-first-1.json",
       "dom_evidence": "E-v262-public-dom.json",
       "readback_evidence": "E-v262-readback.json",
-      "undo_evidence": "E-v262-undo-reload.json"
+      "undo_evidence": "E-v262-undo-reload.json",
+      "generation_version": "v02.11.262",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload",
+      "composition_coverage_note": "about.split_60_40.right selected in UI; Brief did not specify ratio; does not reaccept about.split_50_50.right"
     },
     {
       "scenario": "F",
@@ -314,7 +327,10 @@
       "native_evidence": "F-v264-first-1.json",
       "dom_evidence": "F-v264-fresh-public-dom.json",
       "readback_evidence": "F-v264-fresh-readback.json",
-      "undo_evidence": "F-v264-fresh-undo-final.json"
+      "undo_evidence": "F-v264-fresh-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     },
     {
       "scenario": "G",
@@ -376,7 +392,10 @@
       "native_evidence": "G-v264-first-1.json",
       "dom_evidence": "G-v264-public-dom.json",
       "readback_evidence": "G-v264-readback.json",
-      "undo_evidence": "G-v264-undo-final.json"
+      "undo_evidence": "G-v264-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     },
     {
       "scenario": "H",
@@ -438,7 +457,10 @@
       "native_evidence": "H-v264-first-1.json",
       "dom_evidence": "H-v264-public-dom.json",
       "readback_evidence": "H-v264-readback.json",
-      "undo_evidence": "H-v264-undo-final.json"
+      "undo_evidence": "H-v264-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     },
     {
       "scenario": "I",
@@ -502,7 +524,10 @@
       "readback_evidence": "I-v265-readback.json",
       "undo_evidence": "I-v265-undo-final.json",
       "native_readback": "I-v265-native-after-reload.json",
-      "native_comparison": "I-v265-native-comparison.json"
+      "native_comparison": "I-v265-native-comparison.json",
+      "generation_version": "v02.11.265",
+      "independent_full_native_after_reload": true,
+      "readback_evidence_scope": "full native selection export after reload; recursive authored-field comparison"
     },
     {
       "scenario": "J",
@@ -564,7 +589,10 @@
       "native_evidence": "J-v264-first-1.json",
       "dom_evidence": "J-v264-public-dom.json",
       "readback_evidence": "J-v264-readback.json",
-      "undo_evidence": "J-v264-undo-final.json"
+      "undo_evidence": "J-v264-undo-final.json",
+      "generation_version": "v02.11.264",
+      "independent_full_native_after_reload": false,
+      "readback_evidence_scope": "generated native tree, pre-save owned model guard, saved descriptor/root/revision, reloaded canvas and public DOM; no independent full native export after reload"
     }
   ],
   "limitations": [
@@ -634,9 +662,11 @@
     "native_evidence": "I-v264-first-1.json",
     "dom_evidence": "I-v264-public-dom.json",
     "readback_evidence": "I-v264-readback.json",
-    "undo_evidence": "I-v264-undo-final.json"
+    "undo_evidence": "I-v264-undo-final.json",
+    "generation_version": "v02.11.264"
   },
   "technical_status": "PASS",
   "visual_request_match": "PASS",
-  "composition_quality": "PASS"
+  "composition_quality": "PASS",
+  "coverage_unit": "nine record/profile combinations B-J, not nine independent topologies"
 }
