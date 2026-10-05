@@ -1,0 +1,24 @@
+{
+  "capability": "documented CUA browser viewport.set",
+  "requested": [
+    320,
+    390
+  ],
+  "actual_css_viewport": [
+    1232,
+    923
+  ],
+  "actual_probe_jpeg_dimensions": [
+    1232,
+    923
+  ],
+  "attempts": [
+    "set + AX + readonly DOM",
+    "fresh public screenshot + DOM",
+    "refresh capability handle + public reload",
+    "visible browser + set + DOM"
+  ],
+  "result": "PUBLIC MOBILE AND RESPONSIVE BOUNDARY BLOCKED",
+  "reason": "set resolves but public window.innerWidth/innerHeight and capture remain unchanged; CUA native Codex app access denied by tool policy",
+  "no_alternate_transport": true
+}

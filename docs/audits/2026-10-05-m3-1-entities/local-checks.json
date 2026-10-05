@@ -1,24 +1,27 @@
 {
-  "source": "v02.11.266",
-  "design_plan": 826,
-  "runtime": 1349,
-  "node": {
-    "passed": 15,
-    "failed": 0
+  "source_version": "v02.11.268",
+  "runtime_commit_previous": "017c1ae5fdc4f01c7a4207d4eeda7ff26afaf817",
+  "commit_push_status": "pending for v268 color fix",
+  "php_lint": {
+    "includes/llm/design-plan.php": "PASS",
+    "includes/elementor/elementor-ir.php": "PASS",
+    "tests/m3-entities-contract.php": "PASS",
+    "wp-ai-executor.php": "PASS"
   },
-  "patch_guard": "PASS",
-  "catalog": {
-    "manifest": 158,
-    "trees": 156,
-    "previews": 156
-  },
-  "package": {
-    "hashes": 252,
-    "probe_cases": 4,
-    "compact_serialization": true,
-    "full_serialization": "historical malformed UTF8 limitation"
-  },
-  "php_lint": "PASS",
-  "diff_check": "PASS",
-  "live": "NOT_RUN"
+  "design_pipeline_contract": "827 PASS",
+  "flex_generation_runtime": "1350 PASS",
+  "node_tests": "15/15 PASS after color delta",
+  "elementor_patch_guard": "PASS after color delta",
+  "imported_catalog": "158 manifest / 156 retrievable / 156 preview PASS after color delta",
+  "package_probe": "252 hashes/four cases PASS after v268 manifest refresh",
+  "git_diff_check": "PASS after code/docs changes",
+  "responsive": "BLOCKED actual CSS viewport 1232x923 only",
+  "live": {
+    "A": "published, native compared, public screenshot, undone exact baseline",
+    "B": "published, native compared, public screenshot, undone exact baseline",
+    "C": "published, native compared, public screenshot, undone exact baseline",
+    "D": "published, native compared, public screenshot, undone exact baseline",
+    "E": "v267 published/readback; white-on-white pill defect; local dirty state prevented guarded Undo",
+    "F": "not run"
+  }
 }

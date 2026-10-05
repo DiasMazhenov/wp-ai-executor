@@ -1,0 +1,335 @@
+- heading "Редактировать \"Pricing Contract Live v123\" с помощью Elementor" [level=1]
+- banner:
+  - button "Логотип Elementor":
+    - img "Логотип Elementor"
+  - button "Добавить элемент":
+  - button "Angie":
+  - button "Настройки Страница":
+  - button "История":
+  - separator
+  - button "Pricing Contract Live v123":
+    - generic "Pricing Contract Live v123":
+      - generic: Pricing Contract Live v123
+  - separator
+  - tablist "Сменить устройство":
+    - tab "Компьютер" [selected]:
+    - tab "Планшет - книжная ориентация (до 1024px)":
+    - tab "Мобильный - книжная ориентация (до 767px)":
+  - separator
+  - button "Контрольный список":
+  - button "Что нового":
+  - button "Поиск":
+  - button "Структура" [pressed]:
+  - button "Просмотреть изменения":
+  - button "Опубликовать" [disabled]
+  - button "Сохранить настройки":
+- complementary "Редактировать Контейнер":
+  - text: 
+  - text:  
+  - heading "Редактировать Контейнер" [level=2]
+  - text:  
+  - main:
+    - button " Макет":
+      - generic:  Макет
+    - button " Стиль":
+      - generic:  Стиль
+    - button " Расширенные":
+      - generic:  Расширенные
+    - button "Контейнер":
+      - generic: 
+      - generic: Контейнер
+    - generic: Макет контейнера
+    - combobox "Макет контейнера":
+      - option "Flexbox" [selected]
+      - option "Сетка"
+    - text: 
+    - generic: Ширина макета
+    - combobox "Ширина макета":
+      - option "Ограниченная" [selected]
+      - option "Во всю ширину"
+    - text: 
+    - text:                  
+    - generic: Ширина
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - text: px 
+    - generic: 
+    - generic: px
+    - text: 
+    - slider
+    - spinbutton "Ширина"
+    - text:            
+    - generic: Мин. высота
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - text: px 
+    - generic: 
+    - generic: px
+    - text: 
+    - slider
+    - spinbutton "Мин. высота"
+    - generic: Чтобы получить контейнер полной высоты, используйте 100vh.
+    - text:            
+    - heading "Элементы" [level=3]
+    - generic: Направление
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Ряд - горизонтальный
+    - generic: 
+    - generic: Столбец - вертикальный
+    - generic: 
+    - generic: Ряд - перевернутый
+    - generic: 
+    - generic: Столбец - реверсивный
+    - text:              
+    - generic: Распределение содержимого
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Начало
+    - generic: 
+    - generic: Центр
+    - generic: 
+    - generic: Конец
+    - generic: 
+    - generic: Расстояние между
+    - generic: 
+    - generic: Расстояние около
+    - generic: 
+    - generic: Равное расстояние
+    - text:                  
+    - generic: Выровнять элементы
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Начало
+    - generic: 
+    - generic: Центр
+    - generic: 
+    - generic: Конец
+    - generic: 
+    - generic: Растянуть
+    - text:              
+    - generic: Пробелы
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - text: rem 
+    - generic: 
+    - generic: rem
+    - text: 
+    - list:
+      - spinbutton "Колонка": "2"
+      - generic: Колонка
+      - spinbutton "Строка": "2"
+      - generic: Строка
+      - button "Связать значения":
+        - generic: 
+        - generic: Связать значения
+        - text: 
+    - text:                
+    - generic: Оболочка
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Без упаковки
+    - generic: 
+    - generic: Оболочка
+    - generic: Элементы внутри контейнера могут располагаться в одной строке (без переноса) или разбиваться на несколько строк (перенос).
+    - text:                                      Скр Показ                                                                                                                                                                        
+    - button "Дополнительные опции":
+      - generic: 
+      - generic: Дополнительные опции
+    - link "Нужна помощь":
+      - /url: https://go.elementor.com/widget-container
+      - text: Нужна помощь
+      - generic: 
+  - text:          
+  - generic "Скрыть панель (⌘ + P)":
+    - generic: 
+    - generic: Скрыть панель (⌘ + P)
+- main "Смотреть":
+  - text: 
+  - iframe [id="elementor-preview-iframe"]:
+    - list:
+      - listitem "Добавить Контейнер":
+        - generic: 
+      - listitem "Редактировать Контейнер":
+        - generic: 
+      - listitem "Удалить Контейнер":
+        - generic: 
+    - generic:   
+    - generic:   
+    - generic:   
+    - generic: 
+    - heading "ТЕСТОВЫЕ ОТЗЫВЫ" [level=6]
+    - generic: 
+    - heading "Опыт участников теста" [level=2]
+    - generic: 
+    - generic: Вымышленные примеры разной длины для проверки точности цитат и принадлежности авторам
+    - generic:   
+    - generic:   
+    - generic: 
+    - generic: Все понятно.
+    - generic: 
+    - heading "Тестовый автор 1" [level=3]
+    - generic: 
+    - generic: Синтетическая группа 1
+    - generic:   
+    - generic: 
+    - generic: В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.
+    - generic: 
+    - heading "Тестовый автор 2" [level=3]
+    - generic: 
+    - generic: Синтетическая группа 2
+    - generic:   
+    - generic: 
+    - generic: Все понятно.
+    - generic: 
+    - heading "Тестовый автор 3" [level=3]
+    - generic: 
+    - generic: Синтетическая группа 3
+    - generic:   
+    - generic: 
+    - generic: В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.
+    - generic: 
+    - heading "Тестовый автор 4" [level=3]
+    - generic: 
+    - generic: Синтетическая группа 4
+    - generic:   
+    - generic: 
+    - generic: Все понятно.
+    - generic: 
+    - heading "Тестовый автор 5" [level=3]
+    - generic: 
+    - generic: Синтетическая группа 5
+    - generic:   
+    - generic: 
+    - generic: В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.
+    - generic: 
+    - heading "Тестовый автор 6" [level=3]
+    - generic: 
+    - generic: Синтетическая группа 6
+    - text: 
+    - region "Добавьте новый элемент макета":
+      - text:  
+      - button "Добавить новый контейнер":
+        - generic: 
+      - button "Добавить шаблон":
+        - generic: 
+      - button "Стройте с помощью ИИ":
+        - generic: 
+      - generic: Перетащите виджет
+    - generic: desktop
+- complementary "Структура":
+  - button "Развернуть все элементы":
+    - generic: 
+  - button "":
+    - generic: 
+  - heading "Структура" [level=2]
+  - button "Закрытая структура":
+    - generic: 
+  - generic: 
+  - generic: Показать/скрыть внутренние элементы
+  - generic: 
+  - generic: Контейнер
+  - text: 
+  - text:                                                                         
+  - generic: 
+  - generic: Изменить размер структуры
+- region "LLM-помощник Elementor":
+  - strong: LLM-помощник Elementor
+  - generic: Ответы проходят через настроенный proxy
+  - generic: "Модель: openrouter/free · Версия: v02.11.266"
+  - generic: "Выбрано: 1 объект"
+  - button "Копировать JSON":
+    - generic: 
+  - button "Копировать JSON выделенного":
+    - generic: 
+  - button "Копировать JSON для вставки в Elementor":
+    - generic: 
+  - button "Перегенерировать последний запрос":
+    - generic: 
+  - button "Проверить сохранённый результат":
+    - generic: 
+  - button "Свернуть чат": ×
+  - list "Фазы генерации дизайна":
+    - listitem: Разбор запроса
+    - listitem: Планирование дизайна
+    - listitem: Подбор компонентов
+    - listitem: Проверка responsive
+    - listitem: Сборка Elementor
+    - listitem: Запись
+    - listitem: Рендер
+    - listitem: Visual review
+  - generic: Опишите задачу по текущей странице или выбранному элементу.
+  - button "Отменить создание блока"
+  - button "Проверить owned модель перед Save"
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - button "Отменить создание блока" [disabled]
+  - generic: JSON выделенного скопирован
+  - generic: "Выполняется: Обновляю preview и проверяю результат через AI Vision."
+  - generic: "Актуальный preview и Vision привязаны к существующей операции. Состояние журнала: written."
+  - button "Применить scoped repair отступов"
+  - generic: "AI Vision: score 60. confidence 95%. Требуется дополнительная визуальная проверка. The test reviews block meets all content fidelity requirements and incorporates requested texts, but the layout is monotonous with isolated boxed cards stacked vertically, creating excessive whitespace and lacking a refined grid or container structure. major: The testimonials are stacked in a single vertical column with wide bordered boxes, creating excessive whitespace and a sparse layout feel."
+  - generic: Композиция
+  - combobox "Композиция":
+    - option "Автоматически" [selected]
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Только текст"
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Сетка карточек"
+    - option "Список с иконками"
+    - option "Карточки тарифов"
+    - option "Аккордеон"
+    - option "Карточки участников"
+    - option "Редакционные строки"
+    - option "Карточки отзывов"
+    - option "Редакционные строки"
+  - generic: Оформление
+  - combobox "Оформление" [disabled]:
+    - option "По умолчанию" [selected]
+  - textbox "Спросите, что угодно…"
+  - button "Отправить":
+    - generic: 

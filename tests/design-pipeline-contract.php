@@ -1573,6 +1573,11 @@ foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact
  $check(wpae_brief_ir_validate($brief)['ok'] && $v['ok'],'Saved fixture validates '.$fixture.' '.implode(',',$v['errors']));
  $ir=wpae_elementor_ir_from_design_plan($plan,$brief);$native=wpae_elementor_ir_compile($ir,$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
  $check($native['ok'],'Saved fixture native compiler '.$fixture);
+ if($record==='services.photo_cards'){
+  $svc_flat=$walk_elements($native['elementor_data']);$badge=array_values(array_filter($svc_flat,static fn(array $n):bool=>($n['settings']['_css_classes']??'')==='wpae-generated-badge'))[0]??[];
+  $label=array_values(array_filter($svc_flat,static fn(array $n):bool=>($n['settings']['_css_classes']??'')==='wpae-generated-badge-label'))[0]??[];
+  $check(($plan['visual_policy']['eyebrow_colors']['pill']??'')===$plan['resolved_visual']['values']['color.text'] && ($badge['settings']['background_color']??'')===$plan['visual_policy']['eyebrow_colors']['pill_background'] && ($badge['settings']['border_color']??'')===$plan['visual_policy']['eyebrow_colors']['pill_border'] && ($label['settings']['title_color']??'')===$plan['visual_policy']['eyebrow_colors']['pill'],'Services pill uses coordinated accepted text, background and border colours');
+ }
  if($record==='pricing.tiers'){
   $check(count($brief['pricing_items'])===3 && array_map(static fn(array $g):int=>count($g['feature_refs']),$brief['pricing_items'])===[1,4,2],'Pricing unequal features retained');
   $flat=$walk_elements($native['elementor_data']);

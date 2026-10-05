@@ -1,0 +1,196 @@
+{
+  "post_id": 5214,
+  "initial_baseline_roots": [],
+  "initial_json_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "initial_public_html_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "scenarios": [
+    {
+      "scenario": "A",
+      "name": "Team grid",
+      "source_version": "v02.11.266",
+      "root_id": "3178f61",
+      "operation_id": "wpae-df7ea9c2e4a4d350",
+      "public_source": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "public_mobile": "BLOCKED: actual window.innerWidth remains 1232 despite viewport overrides",
+      "technical_status": "PUBLISHED_AND_RELOADED",
+      "first_render_status": "CAPTURED",
+      "visual_status": "REVIEW_REQUIRED",
+      "notes": "Fixed greeting overlay intersects last line of fourth biography.",
+      "provider_calls": 0,
+      "write_count": 1,
+      "revision": 6,
+      "png": {
+        "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-m3-1-entities/A-v266-public-desktop.png",
+        "dimensions": [
+          1232,
+          923
+        ],
+        "format": "PNG",
+        "opened_and_inspected": true,
+        "source": "public after Publish/reload"
+      },
+      "native_comparison": {
+        "authored_field_differences": [],
+        "additional_native_defaults_allowed": true
+      }
+    },
+    {
+      "scenario": "B",
+      "name": "Team editorial rows",
+      "source_version": "v02.11.266",
+      "root_id": "79bebe3",
+      "operation_id": "wpae-bd8413a091d8594c",
+      "public_source": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "public_mobile": "BLOCKED: actual window.innerWidth remains 1232 despite viewport overrides",
+      "technical_status": "PUBLISHED_AND_RELOADED",
+      "first_render_status": "CAPTURED",
+      "visual_status": "PASS_DESKTOP_ONLY",
+      "notes": "Four rows; no authorized portrait assets.",
+      "provider_calls": 0,
+      "write_count": 1,
+      "revision": 5,
+      "png": {
+        "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-m3-1-entities/B-v266-public-desktop.png",
+        "dimensions": [
+          1217,
+          975
+        ],
+        "format": "PNG",
+        "opened_and_inspected": true,
+        "source": "public after Publish/reload"
+      },
+      "native_comparison": {
+        "authored_field_differences": [],
+        "additional_native_defaults_allowed": true
+      }
+    },
+    {
+      "scenario": "C",
+      "name": "Testimonials grid",
+      "source_version": "v02.11.266",
+      "root_id": "978a738",
+      "operation_id": "wpae-e66b6355ef433f36",
+      "public_source": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "public_mobile": "BLOCKED: actual window.innerWidth remains 1232 despite viewport overrides",
+      "technical_status": "PUBLISHED_AND_RELOADED",
+      "first_render_status": "CAPTURED",
+      "visual_status": "REVIEW_REQUIRED",
+      "notes": "Advisory claimed one column; public DOM/PNG show two. Repetitive card aesthetics remain.",
+      "provider_calls": 0,
+      "write_count": 1,
+      "revision": 5,
+      "png": {
+        "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-m3-1-entities/C-v266-public-desktop.png",
+        "dimensions": [
+          1217,
+          1126
+        ],
+        "format": "PNG",
+        "opened_and_inspected": true,
+        "source": "public after Publish/reload"
+      },
+      "native_comparison": {
+        "authored_field_differences": [],
+        "additional_native_defaults_allowed": true
+      }
+    },
+    {
+      "scenario": "D",
+      "name": "Testimonials editorial rows",
+      "source_version": "v02.11.266",
+      "root_id": "bcc1d46",
+      "operation_id": "wpae-06bb72bdb0e0881b",
+      "public_source": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "public_mobile": "BLOCKED: actual window.innerWidth remains 1232 despite viewport overrides",
+      "technical_status": "PUBLISHED_AND_RELOADED",
+      "first_render_status": "CAPTURED",
+      "visual_status": "PASS_DESKTOP_ONLY",
+      "notes": "Advisory spacing concern not confirmed by measured row gaps/heights.",
+      "provider_calls": 0,
+      "write_count": 1,
+      "revision": 5,
+      "png": {
+        "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-m3-1-entities/D-v266-confirmed-public-desktop.png",
+        "dimensions": [
+          1217,
+          1276
+        ],
+        "format": "PNG",
+        "opened_and_inspected": true,
+        "source": "public after Publish/reload"
+      },
+      "native_comparison": {
+        "authored_field_differences": [],
+        "additional_native_defaults_allowed": true
+      }
+    },
+    {
+      "scenario": "E",
+      "name": "Services photo_cards",
+      "source_version": "v02.11.267",
+      "root_id": "b48abe1",
+      "operation_id": "wpae-008116dc9ff6c108",
+      "public_source": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "public_mobile": "BLOCKED: actual window.innerWidth remains 1232 despite viewport overrides",
+      "technical_status": "PUBLISHED_AND_RELOADED",
+      "first_render_status": "CAPTURED",
+      "visual_status": "BLOCKED_AFTER_FIRST_RENDER",
+      "notes": "White pill text on white background; v268 fix prepared. Guarded Undo stopped due local editor changes.",
+      "provider_calls": 0,
+      "write_count": 1,
+      "revision": 6,
+      "png": {
+        "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-m3-1-entities/E-v267-public-desktop.png",
+        "dimensions": [
+          1217,
+          1092
+        ],
+        "format": "PNG",
+        "opened_and_inspected": true,
+        "source": "public after Publish/reload"
+      },
+      "native_comparison": {
+        "authored_field_differences": [],
+        "additional_native_defaults_allowed": true
+      }
+    },
+    {
+      "scenario": "F",
+      "name": "Pricing tiers",
+      "source_version": "NOT_RUN",
+      "root_id": null,
+      "operation_id": null,
+      "public_source": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "css_viewport": null,
+      "public_mobile": "BLOCKED: actual window.innerWidth remains 1232 despite viewport overrides",
+      "technical_status": "NOT_RUN",
+      "first_render_status": "NOT_RUN",
+      "visual_status": "NOT_RUN",
+      "notes": "Needs editor recovery and v268 install.",
+      "provider_calls": null,
+      "write_count": null
+    }
+  ],
+  "responsive_acceptance": "BLOCKED: browser actual innerWidth 1232 despite explicit viewport overrides",
+  "portrait_acceptance": "BLOCKED: no authorized employee portraits; synthetic/stock portraits not used"
+}

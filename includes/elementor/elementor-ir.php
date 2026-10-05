@@ -483,6 +483,11 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		foreach ( [ 'background_background', 'background_color', 'border_border', 'border_color', 'border_width', 'border_radius', '_padding' ] as $box_key ) { unset( $settings[ $box_key ] ); }
 	}
 	if ( $node['widget_type'] !== 'container' ) { return $settings; }
+	if ( $role === 'services_badge' && isset( $policy['eyebrow_colors']['pill_background'], $policy['eyebrow_colors']['pill_border'] ) ) {
+		$settings['background_background'] = 'classic';
+		$settings['background_color'] = $policy['eyebrow_colors']['pill_background'];
+		$settings['border_color'] = $policy['eyebrow_colors']['pill_border'];
+	}
 	if ( isset( $policy['inline_value'] ) ) {
 		$inline = $policy['inline_value'];
 		$gap = wpae_elementor_ir_dimension_control( $inline['gap'], 'rem', 0.25 );
