@@ -24,7 +24,22 @@ function wpae_accepted_native_defaults( array $node ): array {
     $manager = \Elementor\Plugin::instance()->elements_manager ?? null;
     if ( ! is_object( $manager ) || ! method_exists( $manager, 'create_element_instance' ) ) { return []; }
     $instance = $manager->create_element_instance( $minimal );
-    return $instance ? (array) $instance->get_settings() : [];
+    if ( ! $instance ) { return []; }
+    $controls = method_exists( $instance, 'get_controls' ) ? (array) $instance->get_controls() : [];
+    return wpae_accepted_expand_responsive_defaults( (array) $instance->get_settings(), $controls );
+}
+/** Settings serialization omits declared device defaults; recover only registered values. */
+function wpae_accepted_expand_responsive_defaults( array $defaults, array $controls ): array {
+    foreach ( $controls as $key => $control ) {
+        if ( ! is_array( $control ) || empty( $control['is_responsive'] ) ) { continue; }
+        foreach ( [ 'tablet', 'mobile' ] as $device ) {
+            $device_key = $key . '_' . $device;
+            if ( ! array_key_exists( $device_key, $defaults ) && array_key_exists( $device . '_default', $control ) ) {
+                $defaults[$device_key] = $control[$device . '_default'];
+            }
+        }
+    }
+    return $defaults;
 }
 function wpae_accepted_control_equal( string $key, $a, $b ): bool {
     return hash_equals( wpae_llm_decision_signature( [ [ 'settings' => [ $key => $a ] ] ] ), wpae_llm_decision_signature( [ [ 'settings' => [ $key => $b ] ] ] ) );

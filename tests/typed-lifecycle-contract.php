@@ -163,3 +163,10 @@ $materialized=$expected;$materialized[0]['settings']['padding']['top']='99';$pro
 check($projected===null,'Changed authored spacing still fails after default canonicalization');
 $mismatch=null;wpae_accepted_project_owned_model($expected,$materialized,$defaults,$mismatch);
 check($mismatch===['node_id'=>'test','control'=>'padding','reason'=>'authored_control_changed'],'Bounded mismatch identifies control without disclosing values');
+$responsive_defaults=wpae_accepted_expand_responsive_defaults(['grid_auto_flow'=>'row'],['grid_auto_flow'=>['is_responsive'=>true,'tablet_default'=>'row','mobile_default'=>'row'],'unregistered'=>['mobile_default'=>'row']]);
+check($responsive_defaults===['grid_auto_flow'=>'row','grid_auto_flow_tablet'=>'row','grid_auto_flow_mobile'=>'row'],'Only registered responsive device defaults expand');
+$grid_expected=[['id'=>'grid','elType'=>'container','settings'=>['grid_auto_flow_tablet'=>'row','grid_auto_flow_mobile'=>'row'],'elements'=>[]]];
+$grid_actual=$grid_expected; $grid_actual[0]['settings']=[];
+check(wpae_accepted_project_owned_model($grid_expected,$grid_actual,static fn($n)=>$responsive_defaults)!==null,'Native omitted Grid device defaults preserve authored contract');
+$grid_actual[0]['settings']['grid_auto_flow_tablet']='column';
+check(wpae_accepted_project_owned_model($grid_expected,$grid_actual,static fn($n)=>$responsive_defaults)===null,'Changed Grid flow still refuses');
