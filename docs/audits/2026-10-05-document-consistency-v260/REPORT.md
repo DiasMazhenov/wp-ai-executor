@@ -82,3 +82,8 @@ Local DesignPlan365/runtime1325/Node15of15/patch/catalog158/156/156/lint/package
 ### Publication checkpoint
 
 Runtime v262 commit267bdd72999c8cc4f19e6e1cc9748b7a240cfa09 pushed; independent origin/main matched. Installed PHP/editor remain independently confirmed v261. v262 installation/editor reload are pending the explicit dirty-tab reload question. No dependent write, Native Publish, repair or Undo attempted after scope guard refusal. Tracked working tree clean at publication; foreign/untracked files and raw intermediate JPEGs remain preserved. Current test root5a1b94d remains; baseline[] has not yet been restored after B. Acceptance incomplete.
+
+
+## Current completed technical matrix
+
+See [LIVE_ACCEPTANCE.md](LIVE_ACCEPTANCE.md) for actual B–J results, installation, failures, guarded Undo, review limitations and inline public PNGs. Earlier pending checkpoints are historical. Overall quality remains REVIEW_REQUIRED for Pricing.

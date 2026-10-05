@@ -1,0 +1,27 @@
+{
+  "baseline": {
+    "error": null,
+    "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "rootIds": [],
+    "status": "valid_array"
+  },
+  "operations": [
+    {
+      "accepted_contract_id": "contract-4214b0092cf23fec732bb3e5",
+      "operation_id": "wpae-5f647a16b2a773a0",
+      "operation_identity": "5623c4f0-7895-4ba4-b4da-865e925c79a4",
+      "revision": 6,
+      "root_ids": [
+        "05cdecb"
+      ],
+      "status": "already_undone"
+    }
+  ],
+  "state": {
+    "html_bytes": 0,
+    "html_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "intentional_empty_consistent": true,
+    "json_status": "valid_array",
+    "main_id": 5214
+  }
+}

@@ -1978,3 +1978,16 @@ Local DesignPlan365/runtime1325/Node15of15/patch/catalog158/156/156/lint/package
 ### Publication checkpoint
 
 Runtime v262 commit267bdd72999c8cc4f19e6e1cc9748b7a240cfa09 pushed; independent origin/main matched. Installed PHP/editor remain independently confirmed v261. v262 installation/editor reload are pending the explicit dirty-tab reload question. No dependent write, Native Publish, repair or Undo attempted after scope guard refusal. Tracked working tree clean at publication; foreign/untracked files and raw intermediate JPEGs remain preserved. Current test root5a1b94d remains; baseline[] has not yet been restored after B. Acceptance incomplete.
+
+
+## Current live checkpoint v264 — 2026-10-05
+
+Supersedes historical pending-install/C–J NOT_RUN statements above. Runtime55e3ad6 (v264) is pushed and remote verified; Plugins PHP/reloaded editor independently v02.11.264. v263/v264 corrected strict verification of omitted registered responsive defaults and native slider sizes[] shape, with regressions; no visual repair or guard bypass. Local DesignPlan365/runtime1329/Node15of15/catalog/patch/lint/package252+four probes/diff PASS.
+
+B–J actually generated across Hero/About/Benefits/Pricing/nativeFAQ on existing post5214 through normal plugin chat. Each final scenario: provider0/write1, owned model guard, Publish/public refresh, desktop/mobile PNG opened, seven actual width measurements, editor reload/readback and guarded Undo. Fresh F v264 confirms first-result guard after original v262 refusal. Final editor/server/public roots[], JSONhash4f53cda..., HTMLbytes0. User explicitly confirmed clearing old B; historical37b84f9 is no longer baseline. No manual cleanup, new pages, JSON insertion or applied visual repair.
+
+Technical lifecycle PASS; visual request match PASS at measured widths; overall composition quality REVIEW_REQUIRED for Pricing (centered price with left item copy/CTA). FAQ first mobile capture caught animation; retained negative capture and fresh settled PNG/DOM show full long answer. Advisory negative Vision findings retained and checked against public pixels; not used as automatic replacement. Limits: live Pricing intro absent from exact fixture; 2/3/4/6 breadth local-only; no full independent native JSON export after reload for every row; empty baseline limits neighbor preservation live proof.
+
+Explicit user-authorized dirty-tab recovery: documented CUA existing-tab control; open replacement of current editor URL, confirm version/root, close stale old editor; retain exactly one editor. Actual tab7 replaces6, editorv264. Never infer missing browser tools from Codex Page state; use catalog + CUA documentation. Native Publish completion precedes refreshed public screenshots.
+
+Current evidence and all inline PNGs: [Live acceptance](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/LIVE_ACCEPTANCE.md). Machine matrix records root/operation/identity/revisions/Brief/Plan hashes/PNG source and real CSS viewport. Earlier observations remain historical; final current baseline is empty.

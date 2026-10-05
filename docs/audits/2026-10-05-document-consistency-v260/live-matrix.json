@@ -1,22 +1,575 @@
 {
-  "source": "v02.11.262 published",
-  "installed": "v02.11.261",
-  "post": 5214,
-  "roots": [
-    "5a1b94d"
+  "runtime_commit": "55e3ad6d856b42289386b7a7a2920f75b80f9ddd",
+  "source": "v02.11.264",
+  "installed_php": "v02.11.264",
+  "editor": "v02.11.264",
+  "baseline": [],
+  "final_roots": [],
+  "scenarios": [
+    {
+      "scenario": "B",
+      "post": 5214,
+      "root": "f44d591",
+      "operation": "wpae-8ab590af4e98544a",
+      "identity": "19c51827-558c-4d98-84dd-b1339d61196e",
+      "initial_revision": 4,
+      "readback_revision": 5,
+      "undo_revision": 6,
+      "record": "hero.split_60_40.right",
+      "profile": "editorial_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "plan_hash": "e268f1706d6c16e2c71c637b5f752338f0135a61b21c0b6a8ca1bf69fcf313e5",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/B-v264-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "B-v264-first-0.json",
+      "native_evidence": "B-v264-first-1.json",
+      "dom_evidence": "B-v264-public-dom.json",
+      "readback_evidence": "B-v264-readback.json",
+      "undo_evidence": "B-v264-undo-final.json"
+    },
+    {
+      "scenario": "C",
+      "post": 5214,
+      "root": "66be0be",
+      "operation": "wpae-d1f53175e1de4196",
+      "identity": "cef1dff6-1fd9-488a-804c-227df40cb644",
+      "initial_revision": 4,
+      "readback_revision": 5,
+      "undo_revision": 6,
+      "record": "hero.split_60_40.left",
+      "profile": "editorial_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "plan_hash": "49f12db13a7bc50c36d03ba24d5a4b0573253117ff5f2b8b2a04c361348c1b7e",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/C-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/C-v264-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "C-v264-first-0.json",
+      "native_evidence": "C-v264-first-1.json",
+      "dom_evidence": "C-v264-public-dom.json",
+      "readback_evidence": "C-v264-readback.json",
+      "undo_evidence": "C-v264-undo-final.json"
+    },
+    {
+      "scenario": "D",
+      "post": 5214,
+      "root": "899dc70",
+      "operation": "wpae-a85ac77bedb2ddaf",
+      "identity": "efda4284-5c59-42e4-ad9d-a094b27da7d1",
+      "initial_revision": 4,
+      "readback_revision": 5,
+      "undo_revision": 6,
+      "record": "hero.split_60_40.right",
+      "profile": "soft_cards_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "plan_hash": "337e60d2e08d0def5668c4d8f7a364c6275f33fc81b54e290177bfdd459a3ae4",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/D-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/D-v264-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "D-v264-first-0.json",
+      "native_evidence": "D-v264-first-1.json",
+      "dom_evidence": "D-v264-public-dom.json",
+      "readback_evidence": "D-v264-readback.json",
+      "undo_evidence": "D-v264-undo-final.json"
+    },
+    {
+      "scenario": "E",
+      "post": 5214,
+      "root": "05cdecb",
+      "operation": "wpae-5f647a16b2a773a0",
+      "identity": "5623c4f0-7895-4ba4-b4da-865e925c79a4",
+      "initial_revision": 4,
+      "readback_revision": 5,
+      "undo_revision": 6,
+      "record": "about.split_60_40.right",
+      "profile": "editorial_light",
+      "brief_hash": "f7ead05920b683b0c44911f1cc22a507ef8b8e9088b617df1cde17ec39cf5ebe",
+      "plan_hash": "96e6a64a87eec050293423dd4be16ed5ad95aed61364ab2bdc5aa7b75c7c84ff",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/E-v262-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/E-v262-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "E-v262-first-0.json",
+      "native_evidence": "E-v262-first-1.json",
+      "dom_evidence": "E-v262-public-dom.json",
+      "readback_evidence": "E-v262-readback.json",
+      "undo_evidence": "E-v262-undo-reload.json"
+    },
+    {
+      "scenario": "F",
+      "post": 5214,
+      "root": "5335c00",
+      "operation": "wpae-72128ef4999d70d6",
+      "identity": "5b86899d-da71-4b61-afd5-4105fff3ff48",
+      "initial_revision": 4,
+      "readback_revision": 6,
+      "undo_revision": 7,
+      "record": "benefits.grid",
+      "profile": "editorial_light",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "plan_hash": "d2db2e494a134b59814e8025a29e9f1d015eff3a707849515157b657b10cfadb",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/F-v264-fresh-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/F-v264-fresh-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "F-v264-first-0.json",
+      "native_evidence": "F-v264-first-1.json",
+      "dom_evidence": "F-v264-fresh-public-dom.json",
+      "readback_evidence": "F-v264-fresh-readback.json",
+      "undo_evidence": "F-v264-fresh-undo-final.json"
+    },
+    {
+      "scenario": "G",
+      "post": 5214,
+      "root": "5ab6e68",
+      "operation": "wpae-4c6f1152e1c3a776",
+      "identity": "bb108b94-2cdf-487b-9ea4-1a6e4b15263b",
+      "initial_revision": 4,
+      "readback_revision": 5,
+      "undo_revision": 6,
+      "record": "benefits.editorial_list",
+      "profile": "editorial_light",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "plan_hash": "4f3b068df85ee3ec3e08ca51f4947959f8fda7de529b822a9826c388553fca43",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/G-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/G-v264-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "G-v264-first-0.json",
+      "native_evidence": "G-v264-first-1.json",
+      "dom_evidence": "G-v264-public-dom.json",
+      "readback_evidence": "G-v264-readback.json",
+      "undo_evidence": "G-v264-undo-final.json"
+    },
+    {
+      "scenario": "H",
+      "post": 5214,
+      "root": "e0d7d38",
+      "operation": "wpae-2f4bcf12a7419413",
+      "identity": "4269d23e-8646-4a5d-a61f-c75feb5ef70b",
+      "initial_revision": 4,
+      "readback_revision": 6,
+      "undo_revision": 7,
+      "record": "benefits.grid",
+      "profile": "soft_cards_light",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "plan_hash": "155ea57aefbda0d743ea46e6ba9d93fd3e8669335b20a372a2004c40380dab5c",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/H-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/H-v264-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "H-v264-first-0.json",
+      "native_evidence": "H-v264-first-1.json",
+      "dom_evidence": "H-v264-public-dom.json",
+      "readback_evidence": "H-v264-readback.json",
+      "undo_evidence": "H-v264-undo-final.json"
+    },
+    {
+      "scenario": "I",
+      "post": 5214,
+      "root": "c5aba89",
+      "operation": "wpae-7b238d325fe6dba5",
+      "identity": "fe5d4090-9d04-4db6-b558-364661f913b1",
+      "initial_revision": 4,
+      "readback_revision": 5,
+      "undo_revision": 6,
+      "record": "pricing.tiers",
+      "profile": "default",
+      "brief_hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+      "plan_hash": "a4f54411458177ff00bdd9f8eea56edca7deeb2a2965eebf9c5c6a7beac6b427",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "REVIEW_REQUIRED",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        768,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/I-v264-public-390.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "I-v264-first-0.json",
+      "native_evidence": "I-v264-first-1.json",
+      "dom_evidence": "I-v264-public-dom.json",
+      "readback_evidence": "I-v264-readback.json",
+      "undo_evidence": "I-v264-undo-final.json"
+    },
+    {
+      "scenario": "J",
+      "post": 5214,
+      "root": "59a770e",
+      "operation": "wpae-0198aa58bfe9eaaf",
+      "identity": "049d3f79-e6e0-4d2f-a681-fe57d9d240ca",
+      "initial_revision": 4,
+      "readback_revision": 6,
+      "undo_revision": 7,
+      "record": "faq.native",
+      "profile": "default",
+      "brief_hash": "6736225f9b09f80b93763a48b452499a9482b7a244f3f828bf97a750c4a0daac",
+      "plan_hash": "8360257f6baff07c136d9990eb073df9824e5cafebcbe014b760415fc9224794",
+      "provider_calls": 0,
+      "write_count": 1,
+      "technical": "PASS",
+      "visual_match": "PASS",
+      "composition_quality": "PASS",
+      "repair_applied": false,
+      "baseline_restored": true,
+      "actual_widths": [
+        320,
+        390,
+        767,
+        767,
+        1024,
+        1025,
+        1280
+      ],
+      "document_overflow": false,
+      "pngs": [
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/J-v264-public-1280.png",
+          "dimensions": [
+            1280,
+            1000
+          ],
+          "css_viewport": [
+            1280,
+            1000
+          ],
+          "source": "public"
+        },
+        {
+          "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-05-document-consistency-v260/J-v264-public-390-settled.png",
+          "dimensions": [
+            390,
+            1000
+          ],
+          "css_viewport": [
+            390,
+            1000
+          ],
+          "source": "public"
+        }
+      ],
+      "first_evidence": "J-v264-first-0.json",
+      "native_evidence": "J-v264-first-1.json",
+      "dom_evidence": "J-v264-public-dom.json",
+      "readback_evidence": "J-v264-readback.json",
+      "undo_evidence": "J-v264-undo-final.json"
+    }
   ],
-  "B": {
-    "operation": "wpae-1a17d1d28a4633e6",
-    "initial_revision": 4,
-    "generation": "PASS",
-    "authored_field_comparison": "PASS",
-    "native_save_readback": "BLOCKED",
-    "geometry": "PARTIAL editor1025",
-    "visual_composition": "REVIEW_REQUIRED",
-    "undo": "NOT_RUN"
-  },
-  "C_to_J": "NOT_RUN",
-  "blocker": "Scope/revision model refusal; pending explicit reload authorization. No dependent writes.",
-  "runtime_commit": "267bdd72999c8cc4f19e6e1cc9748b7a240cfa09",
-  "push": "remote HEAD matched"
+  "limitations": [
+    "Pricing quality review remains: price centered and item copy/CTA left. No supplied intro in fixture; live Pricing H2 intro unexercised.",
+    "Public DOM measures render; static LayoutReport is separate.",
+    "J first 768 sample read actual767; corrected settled-answer measurements cover actual768.",
+    "Final empty baseline cannot demonstrate preservation of a concurrent foreign root; local guard regressions cover it.",
+    "Native pre-Save guard and saved root/revision plus public DOM were checked; no independent full post-reload native JSON snapshot for every scenario."
+  ]
 }
