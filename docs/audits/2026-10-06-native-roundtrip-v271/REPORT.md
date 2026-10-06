@@ -89,3 +89,11 @@ Screenshot bytes Browser Use сохранены как JPEG, signature пров�
 ## Статус завершения
 
 Локальная задача source/contract/tests завершена и закоммичена. Live acceptance заблокирована подтверждённой ошибкой копирования WP Pusher: PHP/editor v271 не установлены, операция существующего FAQ остаётся changed_target, baseline [] не подтверждён, поэтому generation count этого этапа равен 0. Нового FAQ screenshot после Publish/reload нет; исторические PNG выше явно маркированы v270.
+
+## Push-to-Deploy follow-up — 2026-10-06
+
+The user supplied WP AI Executor's plugin-specific Push-to-Deploy endpoint. WP Pusher documents this as a secret endpoint where an HTTP request triggers an update; its token is intentionally omitted from this audit. The first attempt navigated the existing WP Pusher Browser Use tab to the endpoint. `Page.navigate` timed out, and Chromium displayed `ERR_HTTP_RESPONSE_CODE_FAILURE`. This replaced the visible Pusher page and did not provide a successful deployment response.
+
+A subsequent non-navigation Node REPL `fetch` against the validated WP AI Executor package endpoint failed before connection with `ENOTFOUND`. Existing Plugins and editor tabs were separately screenshot-checked after the navigation attempt and both still displayed v02.11.270. No editor reload, live page write, recovery/Undo, or generation occurred. The v271 installation and Accordion recovery remain blocked.
+
+Sources: [WP Pusher Push-to-Deploy](https://docs.wppusher.com/article/24-automatic-updates-with-push-to-deploy); [WP Pusher plugin management](https://docs.wppusher.com/article/13-working-with-plugins-and-themes).

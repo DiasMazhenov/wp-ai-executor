@@ -2070,3 +2070,11 @@ The target-only WP Pusher update of WP AI Executor was tried twice; the second a
 Full native recursive comparison found only two authored answer values wrapped in exact paragraphs and the corresponding htmlCache change; all other controls/tree/order/count/IDs match. Current public DOM computed question color is rgb(51,51,51) on white; active answer paragraph margin-bottom is 14.4px. Public CSS viewport is 1232×923. The existing editor mobile frame opens only the short answer and is not public mobile evidence.
 
 See [v271 roundtrip audit](docs/audits/2026-10-06-native-roundtrip-v271/REPORT.md), machine diff, and saved WP Pusher failure screenshot.
+
+### Push-to-Deploy follow-up — 2026-10-06
+
+The user provided WP AI Executor's plugin-specific Push-to-Deploy endpoint. Official WP Pusher documentation describes it as a secret endpoint where an HTTP request triggers an update; the token is intentionally omitted here. I first treated “use this URL” as permission to navigate the existing WP Pusher tab to the endpoint. Browser Use `Page.navigate` timed out, and Chromium displayed `ERR_HTTP_RESPONSE_CODE_FAILURE`. That navigation was a poor choice of interaction because it replaced the visible WP Pusher page.
+
+To distinguish the HTTP trigger from page navigation, a subsequent non-navigation Node REPL `fetch` was attempted against the same validated WP AI Executor package endpoint. It failed before connecting with `ENOTFOUND`, so no successful response or deploy is evidenced. Independent screenshots taken after the navigation attempt still showed Plugins PHP v02.11.270 and editor inline config v02.11.270. The editor was not reloaded; no live write, recovery/Undo, or generation occurred. Thus v271 remains uninstalled/unconfirmed and the existing FAQ recovery gate remains unresolved.
+
+Sources: [WP Pusher Push-to-Deploy](https://docs.wppusher.com/article/24-automatic-updates-with-push-to-deploy); [WP Pusher plugin management](https://docs.wppusher.com/article/13-working-with-plugins-and-themes).

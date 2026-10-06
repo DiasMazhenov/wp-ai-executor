@@ -1140,3 +1140,9 @@ Current post=5214 root set is [1a1d059]. The user deleted historical b48abe1 and
 Existing native files compare with exactly three recursive differences: two settings.tabs[*].tab_content values gained exact single <p> wrappers, and htmlCache reflected those wrappers. No other authored controls, tree, order, count or repeater IDs changed. Fresh public DOM still renders both exact questions/answers; current CSS viewport 1232×923. Paragraph has 14.4px bottom margin (not visually neutral); public active question is rgb(51,51,51) on white, while pale green in the old mobile editor capture is not present in public computed styles.
 
 Install error screenshot and diff/report: [v271 audit](docs/audits/2026-10-06-native-roundtrip-v271/REPORT.md). The WP Pusher screenshot is failure evidence, not block acceptance. No new post-Publish screenshot exists because no generation ran.
+
+### WP Pusher Push-to-Deploy — 2026-10-06
+
+For WP AI Executor, use the plugin-specific Push-to-Deploy endpoint shown in the existing WP Pusher row. WP Pusher documents this as a secret endpoint where an HTTP request triggers an update; its token must not be saved in project files, logs, or reports. Prefer an HTTP request without navigating an authorized browser tab. Treat the request result and installed version as separate evidence: independently verify Plugins PHP version and the editor inline version after a safe reload.
+
+In this checkpoint, a Browser Use `Page.navigate` attempt timed out and Chromium showed `ERR_HTTP_RESPONSE_CODE_FAILURE`. A non-navigation Node REPL `fetch` then failed before connection with `ENOTFOUND`. Plugins and the existing Elementor editor were independently screenshot-confirmed at v02.11.270 after the navigation attempt; v271 is not installed/confirmed. The editor was not reloaded, and no page write, Undo, or live generation was run. See the [v271 audit](docs/audits/2026-10-06-native-roundtrip-v271/REPORT.md).
