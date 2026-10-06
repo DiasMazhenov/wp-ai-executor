@@ -1,0 +1,79 @@
+{
+  "schema": "wpae-acceptance-matrix-v1",
+  "date": "2026-10-07",
+  "source_commit": "c6034f566e9c34d8a56b6365e05dc4497ec7da1e",
+  "source_version": "v02.11.275",
+  "post_id": 5214,
+  "cases": [
+    {
+      "id": "benefits-short-two-item-live",
+      "fixture": "inline exact request in REPORT.md",
+      "family": "benefits",
+      "route": "ordinary plugin chat → BriefIR → DesignPlan → ElementorIR → compiler → transaction/readback",
+      "record": "benefits.grid",
+      "composition_identity": "benefits.three_cards (legacy identifier)",
+      "visual_profile": "resolved default; no explicit profile",
+      "selection_source": "automatic_density_policy",
+      "selection_policy": "benefits_two_item_copy_density_v1",
+      "generation_count": 1,
+      "retry_or_repair_count": 0,
+      "provider_calls": 0,
+      "write_count": 1,
+      "root_id": "65e8e26",
+      "operation_id": "wpae-8118ac62c0878a4f",
+      "operation_identity": "00fba9fd-6ce9-4575-b7ee-2d5d867771e6",
+      "accepted_contract_id": "contract-dae0a478237312196148cd88",
+      "revision": {
+        "generation": 4,
+        "after_publish_and_reload": 6,
+        "after_guarded_undo": 7
+      },
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "native_topology": "PASS",
+        "desktop_geometry": "PASS",
+        "desktop_visual_composition": "PASS",
+        "public_mobile": "BLOCKED",
+        "overlay_attribution": "PASS",
+        "document_restoration": "PASS"
+      },
+      "desktop_public": {
+        "css_viewport": [1232, 923],
+        "root_size": [1232, 438.984375],
+        "collection_size": [1140, 185],
+        "grid_columns": [558, 558],
+        "gap": 24,
+        "horizontal_overflow": false,
+        "overlay_overlaps_authored_content": false
+      },
+      "screenshots": [
+        {
+          "path": "screenshots/benefits-first-editor-v275.png",
+          "source": "Elementor editor before Publish",
+          "css_viewport": [1232, 923],
+          "dimensions": [1232, 923],
+          "purpose": "first-result evidence; editor chrome and chat overlap part of card two"
+        },
+        {
+          "path": "screenshots/benefits-public-after-reload-viewport-v275.png",
+          "source": "public page after Publish/reload",
+          "css_viewport": [1232, 923],
+          "dimensions": [1232, 923],
+          "purpose": "desktop composition acceptance"
+        },
+        {
+          "path": "screenshots/benefits-public-after-reload-full-v275.png",
+          "source": "public page after Publish/reload, fullPage capture",
+          "css_viewport": [1232, 923],
+          "dimensions": [1232, 923],
+          "purpose": "full-page content review"
+        }
+      ],
+      "public_mobile_block_reason": "Documented Browser Use/iab controls did not expose public viewport resize or device emulation; actual public CSS width remained 1232px.",
+      "final_root_set": []
+    }
+  ],
+  "final_root_set": [],
+  "restoration": "Operation-scoped guarded Undo; editor and public root sets empty; Publish disabled."
+}

@@ -1,0 +1,361 @@
+{
+  "schema": "wpae-benefits-density-live-v275",
+  "generated_at": "2026-10-07",
+  "post_id": 5214,
+  "source": {
+    "commit": "c6034f566e9c34d8a56b6365e05dc4497ec7da1e",
+    "version": "v02.11.275",
+    "origin_main_verified": "c6034f566e9c34d8a56b6365e05dc4497ec7da1e",
+    "install": "WP Pusher success; Plugins PHP v02.11.275; editor inline bootstrap v02.11.275"
+  },
+  "request": "Создай Benefits без фото\nНадзаголовок: «ПРЕИМУЩЕСТВА»\nЗаголовок: «Работаем понятно»\nПреимущество 1: «Понятный план»\nОписание преимущества 1: «Сроки согласованы.»\nПреимущество 2: «Общая команда»\nОписание преимущества 2: «Работаем вместе.»",
+  "baseline": {
+    "editor_before": {
+      "root_ids": [],
+      "html_bytes": 0,
+      "json_status": "valid_array",
+      "intentional_empty_consistent": true,
+      "publish_disabled": true,
+      "revision": 6
+    },
+    "public_before": {
+      "generated_roots": []
+    }
+  },
+  "generation": {
+    "route": "local_deterministic",
+    "action_path": "pipeline",
+    "provider_calls": 0,
+    "write_count": 1,
+    "brief": {
+      "schema": "wpae-brief-v1",
+      "hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "locale": "ru",
+      "archetype": "benefits",
+      "intake_source": "deterministic_parser",
+      "content_count": 6,
+      "ambiguity_count": 0,
+      "warnings": [],
+      "validation": {
+        "ok": true,
+        "errors": [],
+        "services": []
+      }
+    },
+    "plan": {
+      "hash": "2a9934b853b5916f8701ac60a456fde2b1db809da5ff6fd0f68387a5b4465d77",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "archetype": "benefits",
+      "record_id": "benefits.grid",
+      "composition_identity": "benefits.three_cards",
+      "selection_source": "automatic_density_policy",
+      "selection_policy": "benefits_two_item_copy_density_v1",
+      "selection_metrics": {
+        "item_count": 2,
+        "max_title_chars": 13,
+        "max_body_chars": 18,
+        "max_item_chars": 31
+      },
+      "visual_profile": "default (no explicit profile)"
+    },
+    "operation": {
+      "id": "wpae-8118ac62c0878a4f",
+      "identity": "00fba9fd-6ce9-4575-b7ee-2d5d867771e6",
+      "accepted_contract_id": "contract-dae0a478237312196148cd88",
+      "accepted_contract_hash": "dae0a478237312196148cd88227fd4fddf7ef2558359c3a60c57ebb1a4449d7f",
+      "root_ids": [
+        "65e8e26"
+      ],
+      "generation_revision": 4,
+      "compiled_hash": "cbdb01bdd55e637ae363e0d41a5340561d78bb7ec1a75d69e0a223e6a352070a",
+      "saved_hash": "8870edecb60df2b4a9f01a87e07dc4b03605213c6cfe9da33ae5282bb6abed23"
+    },
+    "publish_reload": {
+      "publish_clicked": true,
+      "editor_reloaded": true,
+      "refreshed_descriptor": {
+        "status": "available",
+        "revision": 6,
+        "root_ids": [
+          "65e8e26"
+        ],
+        "operation_id": "wpae-8118ac62c0878a4f"
+      },
+      "owned_model_check": "Owned модель соответствует принятому контракту: wpae-8118ac62c0878a4f",
+      "post_reload_publish_disabled": true
+    }
+  },
+  "public_readback": {
+    "allGeneratedRoots": [
+      "65e8e26"
+    ],
+    "buttons": [],
+    "cards": [
+      {
+        "align": "stretch",
+        "body": "Сроки согласованы.",
+        "bodyBox": {
+          "h": 25.6015625,
+          "w": 508,
+          "x": 71,
+          "y": 348.3828125
+        },
+        "display": "flex",
+        "gap": "12px",
+        "h": 185,
+        "id": "2be834a",
+        "justify": "flex-start",
+        "overflow": "visible",
+        "title": "Понятный план",
+        "titleBox": {
+          "h": 23.3984375,
+          "w": 508,
+          "x": 71,
+          "y": 312.984375
+        },
+        "w": 558,
+        "x": 46,
+        "y": 213.984375
+      },
+      {
+        "align": "stretch",
+        "body": "Работаем вместе.",
+        "bodyBox": {
+          "h": 25.6015625,
+          "w": 508,
+          "x": 653,
+          "y": 348.3828125
+        },
+        "display": "flex",
+        "gap": "12px",
+        "h": 185,
+        "id": "01aa563",
+        "justify": "flex-start",
+        "overflow": "visible",
+        "title": "Общая команда",
+        "titleBox": {
+          "h": 23.3984375,
+          "w": 508,
+          "x": 653,
+          "y": 312.984375
+        },
+        "w": 558,
+        "x": 628,
+        "y": 213.984375
+      }
+    ],
+    "collection": {
+      "alignItems": "start",
+      "display": "grid",
+      "gap": "24px",
+      "gridTemplateColumns": "558px 558px",
+      "h": 185,
+      "overflow": "visible",
+      "w": 1140,
+      "x": 46,
+      "y": 213.984375
+    },
+    "documentOverflow": {
+      "clientHeight": 923,
+      "clientWidth": 1232,
+      "scrollHeight": 923,
+      "scrollWidth": 1232
+    },
+    "root": {
+      "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-65e8e26 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "display": "flex",
+      "h": 438.984375,
+      "id": "65e8e26",
+      "overflow": "visible",
+      "text": "ПРЕИМУЩЕСТВА\nРаботаем понятно\nПонятный план\nСроки согласованы.\nОбщая команда\nРаботаем вместе.",
+      "type": "container",
+      "w": 1232,
+      "x": 0,
+      "y": 32
+    },
+    "siteChat": [
+      {
+        "cls": "wpdsac-chat wpdsac-position--bottom-right",
+        "id": "wpdsac-chat-1",
+        "tag": "SECTION",
+        "text": "AI-Dana"
+      },
+      {
+        "cls": "wpdsac-chat__intro-bubble",
+        "id": "",
+        "tag": "BUTTON",
+        "text": "Здравствуйте!"
+      },
+      {
+        "cls": "wpdsac-chat__toggle",
+        "id": "",
+        "tag": "DIV",
+        "text": "AI-Dana"
+      },
+      {
+        "cls": "wpdsac-chat__toggle-title",
+        "id": "",
+        "tag": "SPAN",
+        "text": "AI-Dana"
+      },
+      {
+        "cls": "wpdsac-chat__panel",
+        "id": "wpdsac-chat-1-panel",
+        "tag": "DIV",
+        "text": "\n\t\t\n\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tЗдравствуйте!\n\t\t\t\t\n\t\t\t\n\t\t\n\n\t\t\n\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\tПозвонить!\t\t\t"
+      },
+      {
+        "cls": "wpdsac-chat__conversation",
+        "id": "",
+        "tag": "DIV",
+        "text": "\n\t\t\t\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tЗдравствуйте!\n\t\t\t\t\n\t\t\t\n\t\t"
+      },
+      {
+        "cls": "wpdsac-chat__messages",
+        "id": "",
+        "tag": "DIV",
+        "text": "\n\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tЗдравствуйте!\n\t\t\t\t\n\t\t\t"
+      },
+      {
+        "cls": "wpdsac-chat__message-row wpdsac-chat__message-row--bot",
+        "id": "",
+        "tag": "DIV",
+        "text": "\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\tЗдравствуйте!\n\t\t\t\t"
+      }
+    ],
+    "title": "Pricing Contract Live v123 — Mazhenov Design",
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": [
+      1232,
+      923
+    ]
+  },
+  "public_typography": {
+    "eyebrow": {
+      "box": {
+        "h": 14.3984375,
+        "w": 115.7109375,
+        "x": 59,
+        "y": 110.59375
+      },
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "text": "ПРЕИМУЩЕСТВА",
+      "textAlign": "start"
+    },
+    "firstIcon": null,
+    "headings": [
+      {
+        "box": {
+          "h": 14.3984375,
+          "w": 115.7109375,
+          "x": 59,
+          "y": 110.59375
+        },
+        "fontSize": "12px",
+        "fontWeight": "600",
+        "lineHeight": "14.4px",
+        "tag": "H6",
+        "text": "ПРЕИМУЩЕСТВА",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "h": 38.3984375,
+          "w": 295.203125,
+          "x": 46,
+          "y": 143.5859375
+        },
+        "fontSize": "32px",
+        "fontWeight": "700",
+        "lineHeight": "38.4px",
+        "tag": "H2",
+        "text": "Работаем понятно",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "h": 23.3984375,
+          "w": 508,
+          "x": 71,
+          "y": 312.984375
+        },
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "lineHeight": "23.4px",
+        "tag": "H3",
+        "text": "Понятный план",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "h": 23.3984375,
+          "w": 508,
+          "x": 653,
+          "y": 312.984375
+        },
+        "fontSize": "18px",
+        "fontWeight": "600",
+        "lineHeight": "23.4px",
+        "tag": "H3",
+        "text": "Общая команда",
+        "textAlign": "start"
+      }
+    ]
+  },
+  "screenshots": {
+    "first_editor_before_publish": {
+      "path": "screenshots/benefits-first-editor-v275.png",
+      "source": "Elementor editor",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "png": [
+        1232,
+        923
+      ]
+    },
+    "public_viewport_after_publish_reload": {
+      "path": "screenshots/benefits-public-after-reload-viewport-v275.png",
+      "source": "public",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "png": [
+        1232,
+        923
+      ]
+    },
+    "public_full_after_publish_reload": {
+      "path": "screenshots/benefits-public-after-reload-full-v275.png",
+      "source": "public fullPage=true",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "png": [
+        1232,
+        923
+      ]
+    }
+  },
+  "site_overlay": "Greeting bubble and avatar are visible at page bottom-right, below the generated root; neither overlaps the section/cards in the inspected pixels.",
+  "public_mobile": {
+    "status": "BLOCKED",
+    "reason": "The documented Browser Use/iab APIs for this session expose no public viewport resize or device emulation. Actual public CSS width remained 1232px; editor preview is not counted."
+  },
+  "restoration": {
+    "status": "PASS",
+    "root_id": "65e8e26",
+    "operation_id": "wpae-8118ac62c0878a4f",
+    "operation_identity": "00fba9fd-6ce9-4575-b7ee-2d5d867771e6",
+    "status_after_undo": "already_undone",
+    "revision_after_undo": 7,
+    "editor_root_ids_after_undo": [],
+    "public_root_ids_after_undo": [],
+    "test_copy_present": false,
+    "publish_disabled": true
+  }
+}

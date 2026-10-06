@@ -1,0 +1,23 @@
+{
+  "operation_id": "wpae-8118ac62c0878a4f",
+  "operation_identity": "00fba9fd-6ce9-4575-b7ee-2d5d867771e6",
+  "accepted_contract_id": "contract-dae0a478237312196148cd88",
+  "accepted_contract_hash": "dae0a478237312196148cd88227fd4fddf7ef2558359c3a60c57ebb1a4449d7f",
+  "root_ids": [
+    "65e8e26"
+  ],
+  "generation_revision": 4,
+  "post_publish_editor_descriptor_revision": 6,
+  "status": "available",
+  "read_only_owned_model_check": "matches accepted contract",
+  "page_id": 5214,
+  "editor_version": "v02.11.275",
+  "document_state": {
+    "main_id": 5214,
+    "html_hash": "359804249ac257e6cbf89b6c4a4b2aa08309d17aba33af0bcb072f9814f3b9d1",
+    "html_bytes": 247,
+    "json_status": "valid_array",
+    "intentional_empty_consistent": false
+  },
+  "publish_disabled_after_reload": true
+}
