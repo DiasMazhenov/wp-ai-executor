@@ -561,10 +561,16 @@ $benefits_list_walk = static function ( array $nodes ) use ( &$benefits_list_wal
 	return $all;
 };
 $benefits_list_flat = $benefits_list_walk( (array) ( $benefits_list_native['elementor_data'] ?? [] ) );
-$benefits_list_collection = array_values( array_filter( $benefits_list_flat, static fn( array $n ): bool => ( $n['settings']['width']['unit'] ?? '' ) === 'custom' && ( $n['settings']['width']['size'] ?? '' ) === 'min(100%, 54rem)' ) )[0] ?? [];
+$benefits_list_collection = array_values( array_filter( $benefits_list_flat, static function ( array $n ): bool {
+	$rows = array_values( (array) ( $n['elements'] ?? [] ) );
+	return ( $n['settings']['container_type'] ?? '' ) === 'flex'
+		&& ( $n['settings']['flex_direction'] ?? '' ) === 'column'
+		&& count( $rows ) === 2
+		&& array_reduce( $rows, static fn( bool $ok, array $row ): bool => $ok && str_contains( (string) ( $row['settings']['_css_classes'] ?? '' ), 'wpae-benefits-list-row' ), true );
+} ) )[0] ?? [];
 $benefits_list_rows = array_values( array_filter( $benefits_list_flat, static fn( array $n ): bool => ( $n['settings']['_css_classes'] ?? '' ) === 'wpae-benefits-list-row' ) );
-$check( wpae_design_plan_validate( $benefits_list_plan, $benefits_list_brief )['ok'] && ! empty( $benefits_list_native['ok'] ) && ( $benefits_list_plan['composition_decision']['identity'] ?? '' ) === 'benefits.editorial_list' && ( $benefits_list_plan['visual_policy']['provenance']['field_sources']['collection_width_desktop'] ?? '' ) === 'documented_default', 'Benefits editorial_list freezes its selected record and documented collection-width provenance' );
-$check( count( $benefits_list_rows ) === 2 && ( $benefits_list_collection['settings']['container_type'] ?? '' ) === 'flex' && ( $benefits_list_collection['settings']['flex_direction'] ?? '' ) === 'column' && ! isset( $benefits_list_collection['settings']['grid_columns_grid'] ), 'Benefits editorial_list stays a native vertical list and retains the accepted 54rem reading axis' );
+$check( wpae_design_plan_validate( $benefits_list_plan, $benefits_list_brief )['ok'] && ! empty( $benefits_list_native['ok'] ) && ( $benefits_list_plan['composition_decision']['identity'] ?? '' ) === 'benefits.editorial_list' && ( $benefits_list_plan['visual_policy']['provenance']['field_sources']['collection_width_desktop'] ?? '' ) === 'documented_default' && ( $benefits_list_plan['visual_policy']['collection']['width'] ?? [] ) === [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ], 'Benefits editorial_list keeps one frozen record while the full-width collection default is separately attributed' );
+$check( count( $benefits_list_rows ) === 2 && ( $benefits_list_collection['settings']['width']['unit'] ?? '' ) === '%' && (float) ( $benefits_list_collection['settings']['width']['size'] ?? 0 ) === 100.0 && ( $benefits_list_collection['settings']['width_tablet']['unit'] ?? '' ) === '%' && (float) ( $benefits_list_collection['settings']['width_tablet']['size'] ?? 0 ) === 100.0 && ( $benefits_list_collection['settings']['width_mobile']['unit'] ?? '' ) === '%' && (float) ( $benefits_list_collection['settings']['width_mobile']['size'] ?? 0 ) === 100.0 && ( $benefits_list_collection['settings']['container_type'] ?? '' ) === 'flex' && ( $benefits_list_collection['settings']['flex_direction'] ?? '' ) === 'column' && ! isset( $benefits_list_collection['settings']['grid_columns_grid'] ) && ( $benefits_list_plan['visual_policy']['list_row']['copy_measure'] ?? '' ) === '48rem', 'Benefits keeps a vertical native list, full available collection track, and separate 48rem row-copy measure at every breakpoint' );
 $benefits_list_tracks_match = count( $benefits_list_rows ) === 2;
 $benefits_list_checks = [];
 foreach ( $benefits_list_rows as $benefits_list_row ) {
@@ -1586,6 +1592,16 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
    $titles=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['title']??'')==='Тестовая секция'));
    $check(($titles[0]['settings']['header_size']??'')==='h2','Entity intro H2');
    if($variant==='editorial_rows'){
+    $collection_policy=(array)($plan['visual_policy']['collection']??[]);
+    $collection_class=$family==='team'?'wpae-team_cards':'wpae-testimonial_cards';
+    $collection_nodes=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['_css_classes']??'')===$collection_class));
+    $collection_native=$collection_nodes[0]??[];
+    $collection_width_matches=($collection_policy['width']??[])===['desktop'=>'100%','tablet'=>'100%','mobile'=>'100%'];
+    foreach([''=>'','_tablet'=>'tablet','_mobile'=>'mobile'] as $suffix=>$device){
+     $width=(array)($collection_native['settings']['width'.$suffix]??[]);
+     $collection_width_matches=$collection_width_matches&&($width['unit']??'')==='%'&&(float)($width['size']??0)===100.0;
+    }
+    $check(($plan['composition_decision']['record_id']??'')===$family.'.editorial_rows'&&($plan['composition_decision']['policy']['composition']??'')==='editorial_list'&&($collection_policy['axis']??'')==='list'&&$collection_width_matches,'Editorial entity record keeps the legacy list composition identity but owns a full-width native collection at every breakpoint '.$family);
     $expected_copy_measure=(string)$plan['visual_policy']['entity_layout']['tracks']['copy_measure'];
     $copy_measures=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['width']['unit']??'')==='custom'&&str_contains((string)($n['settings']['width']['size']??''),$expected_copy_measure)));
     $copy_measure_gaps=array_values(array_filter($copy_measures,static fn(array $n):bool=>($n['settings']['flex_gap']['unit']??'')==='rem'&&(float)($n['settings']['flex_gap']['size']??0)===0.75));

@@ -916,9 +916,12 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	if ( in_array( $item_count, [ 4, 6 ], true ) ) { $columns = 2; }
 	$entity_variant = (string) ( $record_policy['entity_layout'] ?? '' );
 	$is_list = $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list' || $entity_variant === 'editorial_rows';
-	$is_icon_list = $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list';
 	$collection_width = [
-		'desktop' => $pick( 'collection_width_desktop', $is_icon_list ? '54rem' : '100%' ),
+		// Collection width describes the available native track. Keep text measure
+		// in list_row/entity_layout instead of turning a semantic list alias into
+		// a max-width on the entire collection (Team/Testimonials also use the
+		// historical `editorial_list` composition label).
+		'desktop' => $pick( 'collection_width_desktop', '100%' ),
 		'tablet' => $pick( 'collection_width_tablet', '100%' ),
 		'mobile' => $pick( 'collection_width_mobile', '100%' ),
 	];
