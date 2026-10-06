@@ -1,0 +1,12 @@
+{
+  "post": 5214,
+  "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+  "fixtureSha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
+  "family": "testimonials",
+  "composition": "testimonials.editorial_rows",
+  "profile": "default",
+  "editorRoots": [],
+  "publishDisabled": true,
+  "pluginInlineVersion": "v02.11.274",
+  "recordedAt": "2026-10-06T19:11:15.889Z"
+}

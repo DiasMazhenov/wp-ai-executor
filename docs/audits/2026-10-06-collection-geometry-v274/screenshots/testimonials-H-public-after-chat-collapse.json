@@ -1,0 +1,16 @@
+{
+  "chat": {
+    "expanded": "false",
+    "introVisible": false
+  },
+  "roots": null,
+  "root_probe_status": "invalid_selector_for_root_discovery; do not treat null as an empty-root readback. The operation-scoped Undo and root restoration are evidenced by testimonials-H-undo-public-baseline.json.",
+  "scroll": {
+    "height": 1166,
+    "width": 1217
+  },
+  "viewport": {
+    "height": 923,
+    "width": 1232
+  }
+}

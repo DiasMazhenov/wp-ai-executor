@@ -1,0 +1,200 @@
+{
+  "schema": "wpae-collection-geometry-acceptance-v274",
+  "date": "2026-10-07",
+  "scope": "One live generation each for Benefits editorial_list, Team editorial_rows, and Testimonials editorial_rows on existing post 5214 after the common collection-width fix.",
+  "source": {
+    "runtime_commit": "407f43e16cbc49946ab2e3884fb7726e95d58bef",
+    "version": "v02.11.274",
+    "change": "Default native collection tracks to full width independently of item copy measure; preserve legacy editorial_list identity.",
+    "runtime_push": "Previously reported successful; the current independent git ls-remote failed with DNS error 'Could not resolve host: github.com', so remote HEAD is unverified in this follow-up."
+  },
+  "install": {
+    "method": "WP Pusher, WP AI Executor only",
+    "plugins_php_version": "v02.11.274",
+    "editor_inline_version_after_reload": "v02.11.274",
+    "other_plugins_or_settings_changed": false
+  },
+  "post_id": 5214,
+  "baseline_before_each": [],
+  "final_editor_and_public_root_set": [],
+  "primary_generations": 3,
+  "retries": 0,
+  "repairs": 0,
+  "writes": 3,
+  "provider_calls": 0,
+  "public_desktop_css_viewport": [1232, 923],
+  "public_mobile": {
+    "status": "BLOCKED",
+    "reason": "The documented Browser Use tab API provided screenshot and DOM access but no public viewport resize/emulation action. Actual public window.innerWidth remained 1232 CSS px. Editor preview measurements are listed separately and are not public-mobile proof."
+  },
+  "local_checks_for_runtime_commit": {
+    "php_tests_design_pipeline_contract": "PASS, 889 checks",
+    "php_tests_flex_generation_runtime": "PASS, 1414 checks",
+    "php_tests_elementor_patch_guard": "PASS",
+    "node_test_suites": "PASS, 18/18",
+    "changed_php_lint": "PASS",
+    "catalog_and_package_hash_probe": "PASS, 253 hashes, no mismatches",
+    "git_diff_check": "PASS"
+  },
+  "scenarios": [
+    {
+      "key": "benefits-F",
+      "family": "benefits",
+      "fixture": "docs/audits/2026-10-05-visual-policy/F-G-H-exact-request.txt",
+      "fixture_sha256": "76c4e7077891d99eb2346d39dd5a298e1d77e28513794ab68d67a3933c709405",
+      "record": "benefits.editorial_list",
+      "profile": "default (no explicit profile recorded)",
+      "composition_identity": "benefits.editorial_list",
+      "brief_hash": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
+      "plan_hash": "3033b3fa4e4934bf9371025b291052438f093b99b9e67d1f43b9ac580196664f",
+      "record_hash": "de9ca242c30b4b50230c1529adc5e29783db7d6d9f114277031c06c6f71e2788",
+      "pipeline_route": "local_deterministic; trace also labels the typed preflight route reliable_structured",
+      "provider_calls": 0,
+      "write_count": 1,
+      "post_id": 5214,
+      "root_id": "6a3d621",
+      "operation_id": "wpae-c48cde283a344462",
+      "operation_identity": "06818206-033b-49d2-92ae-355ada6ff9f8",
+      "accepted_contract_id": "contract-f8045f0c7c38ec14a7176d84",
+      "generation_revision": 4,
+      "post_publish_descriptor_revision": 5,
+      "undo": "Guarded operation-scoped Undo succeeded; public and editor root sets returned to [].",
+      "native_readback": {
+        "before_publish": "screenshots/benefits-F-native-before-publish.json",
+        "after_reload": "screenshots/benefits-F-native-after-reload.json",
+        "authored_content": "Exact two title/body pairs and intro retained; native output remains a vertical icon list with no photos/actions."
+      },
+      "public_geometry": {
+        "metrics": "screenshots/benefits-F-public-after-reload-metrics.json",
+        "viewport_css": [1232, 923],
+        "root": {"x": 0, "y": 32, "width": 1232, "height": 483.98},
+        "collection": {"x": 46, "width": 1140, "height": 230, "row_gap": 20},
+        "rows": {"count": 2, "each_height": 105, "icon_copy_gap": 16},
+        "overflow": "none; scrollWidth equals clientWidth"
+      },
+      "screenshots": {
+        "public_desktop_after_publish_reload": {"path": "screenshots/benefits-F-public-after-reload-desktop.png", "source": "public", "css_viewport": [1232, 923], "png": [1232, 923]},
+        "public_additional_capture": {"path": "screenshots/benefits-F-public-after-reload-full.png", "source": "public", "css_viewport": [1232, 923], "png": [1232, 923], "note": "This file is viewport-sized, not a full-page capture despite its historical filename."},
+        "first_result_editor": {"path": "screenshots/benefits-F-first-editor.png", "source": "Elementor editor before Publish", "png": [1232, 923]}
+      },
+      "editor_mobile_preview": "Not captured for this scenario.",
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED",
+        "visual_composition": "PARTIAL_SPARSE_TWO_SHORT_ITEMS_AND_LARGE_EMPTY_PAGE_AREA",
+        "structure": "PASS_VERTICAL_LIST",
+        "document_restoration": "PASS"
+      }
+    },
+    {
+      "key": "team-G",
+      "family": "team",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "fixture_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
+      "record": "team.editorial_rows",
+      "profile": "default (no explicit profile recorded)",
+      "legacy_composition_identity": "team.editorial_list",
+      "brief_hash": "8335a524db685d6cc755baab2b545f415672c1cc58c48834c516b42bc73b78dd",
+      "plan_hash": "325c786dc74f716c41c7e55640c72effefa4c78d7ec056bc3f24edc4420a7539",
+      "record_hash": "ffaea52b36377285954bf3a4766500d300ae7ef9bbbaace7d4d18fcae8450da8",
+      "pipeline_route": "local_deterministic; trace also labels the typed preflight route reliable_structured",
+      "provider_calls": 0,
+      "write_count": 1,
+      "post_id": 5214,
+      "root_id": "4239089",
+      "operation_id": "wpae-e7efb62fe7148e7a",
+      "operation_identity": "5c7f42ac-6718-47e6-9595-2e55bb500e53",
+      "accepted_contract_id": "contract-29e09fa5911c2bbc737696ac",
+      "generation_revision": 4,
+      "post_publish_descriptor_revision": 6,
+      "undo": "Operation-scoped guarded Undo returned already_undone; independent editor/public evidence confirmed root set [].",
+      "native_readback": {
+        "before_publish": "screenshots/team-G-native-before-publish.json",
+        "after_reload": "screenshots/team-G-native-after-reload.json",
+        "authored_content": "All four synthetic name/position/bio triples retained; no portraits, actions, or links."
+      },
+      "public_geometry": {
+        "metrics": "screenshots/team-G-public-after-reload-metrics.json",
+        "viewport_css": [1232, 923],
+        "root": {"x": 0, "y": 32, "width": 1232, "height": 866.59},
+        "collection": {"x": 46, "width": 1140},
+        "row_heights": [111, 136.6, 111, 126.8],
+        "overflow": "none; row text remains complete and wraps naturally",
+        "typography": "eyebrow H6 12px; section title H2 32px; entity titles H3 18px"
+      },
+      "screenshots": {
+        "public_desktop_after_publish": {"path": "screenshots/team-G-public-after-publish-desktop.png", "source": "public", "css_viewport": [1232, 923], "png": [1232, 923]},
+        "public_desktop_after_reload": {"path": "screenshots/team-G-public-after-reload-desktop.png", "source": "public", "css_viewport": [1232, 923], "png": [1232, 923]},
+        "first_result_editor": {"path": "screenshots/team-G-first-editor.png", "source": "Elementor editor before Publish", "png": [1232, 923]},
+        "editor_mobile_preview": {"path": "screenshots/team-G-editor-mobile-preview.png", "source": "Elementor device preview, not public", "outer_png": [1232, 923], "nested_css_viewport": [360, 736]}
+      },
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED; EDITOR_PREVIEW_STACKS_NATURALLY",
+        "visual_composition": "PARTIAL_SITE_AVATAR_TOUCHES_BLANK_EDGE_OF_LAST_ROW; AUTHORED_COPY_NOT_OBSCURED",
+        "structure": "PASS_EDITORIAL_ROWS",
+        "document_restoration": "PASS"
+      }
+    },
+    {
+      "key": "testimonials-H",
+      "family": "testimonials",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "fixture_sha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
+      "record": "testimonials.editorial_rows",
+      "profile": "default (no explicit profile recorded)",
+      "legacy_composition_identity": "testimonials.editorial_list",
+      "brief_hash": "53eedbedf3b4fd549bf506b17f614e4cc604e469a989ebd2d1809034c4e9978b",
+      "plan_hash": "77195f194842d4f4f12e5943fe5066becb296ca478c0d4d59c5cd6b9c1f9456d",
+      "record_hash": "73e5a072aca859cd78e8e581d08c16f054b57be23e3fda8c26f3ba636f2de56a",
+      "pipeline_route": "local_deterministic; trace also labels the typed preflight route reliable_structured",
+      "provider_calls": 0,
+      "write_count": 1,
+      "post_id": 5214,
+      "root_id": "600e501",
+      "operation_id": "wpae-e57dfb90fdcb9c78",
+      "operation_identity": "5c03b246-cae4-424b-a33e-244d70cbee37",
+      "accepted_contract_id": "contract-8329c09bf8148bb88f4284f3",
+      "accepted_contract_hash": "8329c09bf8148bb88f4284f336ec7df017217361d44e9745d4a006150ae54b18",
+      "generation_revision": 4,
+      "post_publish_descriptor_revision": 5,
+      "undo": "Operation-scoped guarded Undo completed; descriptor state was already_undone; editor/public root set [].",
+      "native_readback": {
+        "after_reload": "screenshots/testimonials-H-native-after-reload.json",
+        "authored_content": "Exact intro, six quote/author/meta associations and full long copy retained; no images, ratings, actions, or links."
+      },
+      "public_geometry": {
+        "metrics": "screenshots/testimonials-H-public-first-metrics.json",
+        "viewport_css": [1232, 923],
+        "collection": {"x": 38.5, "y": 281.19, "width": 1140, "height": 813.41, "row_gap": 20},
+        "row_heights": [111, 126.8, 111, 126.8, 111, 126.8],
+        "inside_each_row": {"identity_track": 253.91, "gap": 32, "copy_track": 804.09},
+        "overflow": "none; full exact quotes and attribution remain visible",
+        "typography": "eyebrow H6 12px; section title H2 32px; author H3 18px"
+      },
+      "screenshots": {
+        "public_desktop_after_publish_reload_chat_collapsed": {"path": "screenshots/testimonials-H-public-viewport-chat-collapsed.png", "source": "public after native site-chat collapse", "css_viewport": [1232, 923], "png": [1217, 912]},
+        "public_full_after_publish_reload_chat_collapsed": {"path": "screenshots/testimonials-H-public-full-chat-collapsed.png", "source": "public after native site-chat collapse", "css_viewport": [1232, 923], "png": [1217, 1166]},
+        "first_result_editor": {"path": "screenshots/testimonials-H-first-editor-before-publish.png", "source": "Elementor editor before Publish", "png": [1232, 923]},
+        "editor_mobile_preview_top": {"path": "screenshots/testimonials-H-editor-mobile-preview-top.png", "source": "Elementor device preview, not public", "outer_png": [1232, 923], "nested_css_viewport": [360, 736]},
+        "editor_mobile_preview_bottom": {"path": "screenshots/testimonials-H-editor-mobile-preview-bottom.png", "source": "Elementor device preview, not public", "outer_png": [1232, 923], "nested_css_viewport": [360, 736]}
+      },
+      "site_overlay": "The greeting was collapsed through its normal site UI. The avatar launcher remains over blank edge space of the fifth row; it does not cover quote/author text in the inspected pixels.",
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED; EDITOR_PREVIEW_STACKS_NATURALLY",
+        "visual_composition": "PARTIAL_SITE_LAUNCHER_OVERLAPS_BLANK_CARD_EDGE",
+        "structure": "PASS_EDITORIAL_ROWS",
+        "document_restoration": "PASS"
+      }
+    }
+  ],
+  "final_status": "The shared full-width collection default is confirmed in public desktop DOM for three families. Lifecycle, content and native readback passed. Benefits remains compositionally sparse with its exact two short items. Team and Testimonials are readable editorial rows. Public mobile and fully unobstructed page-only visual evidence remain incomplete.",
+  "evidence_directory": "docs/audits/2026-10-06-collection-geometry-v274/screenshots/"
+}

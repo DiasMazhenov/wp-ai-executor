@@ -1,0 +1,152 @@
+{
+  "doc": {
+    "height": 2043,
+    "width": 345
+  },
+  "root": {
+    "overflow": "visible",
+    "rect": {
+      "height": 1791.03,
+      "width": 345,
+      "x": 0,
+      "y": -121.5
+    }
+  },
+  "rows": [
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "0px",
+      "id": "29f4c74",
+      "rect": {
+        "height": 161.79,
+        "width": 313,
+        "x": 16,
+        "y": -89.5
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "0px",
+      "id": "f6b8a78",
+      "rect": {
+        "height": 161.79,
+        "width": 313,
+        "x": 16,
+        "y": -89.5
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "24px",
+      "id": "b6d6f6c",
+      "rect": {
+        "height": 28.19,
+        "width": 168.5,
+        "x": 16,
+        "y": -89.5
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "16px",
+      "id": "64fe870",
+      "rect": {
+        "height": 1533.24,
+        "width": 313,
+        "x": 16,
+        "y": 104.29
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "12px",
+      "id": "80627d6",
+      "rect": {
+        "height": 152.6,
+        "width": 313,
+        "x": 16,
+        "y": 104.29
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "16px",
+      "id": "0404592",
+      "rect": {
+        "height": 102.6,
+        "width": 263,
+        "x": 41,
+        "y": 129.29
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "12px",
+      "id": "8f19635",
+      "rect": {
+        "height": 61,
+        "width": 263,
+        "x": 41,
+        "y": 129.29
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "12px",
+      "id": "d9d1eae",
+      "rect": {
+        "height": 25.6,
+        "width": 263,
+        "x": 41,
+        "y": 206.29
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "12px",
+      "id": "9ca293d",
+      "rect": {
+        "height": 25.6,
+        "width": 263,
+        "x": 41,
+        "y": 206.29
+      }
+    },
+    {
+      "columns": "none",
+      "direction": "column",
+      "display": "flex",
+      "gap": "12px",
+      "id": "9632a1b",
+      "rect": {
+        "height": 331.81,
+        "width": 313,
+        "x": 16,
+        "y": 272.89
+      }
+    }
+  ],
+  "text": "й опыт.\nТестовый автор 5\nСинтетическая группа 5\nВсе понятно.\nТестовый автор 6\nСинтетическая группа 6\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+  "viewport": {
+    "height": 736,
+    "width": 360
+  }
+}
