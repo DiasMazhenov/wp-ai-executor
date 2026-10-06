@@ -1,0 +1,128 @@
+{
+  "schema": "wpae-native-roundtrip-live-progress-v1",
+  "date": "2026-10-06",
+  "source": {
+    "version": "v02.11.271",
+    "source_commit": "c2328d4e1efd5d32acb48ef4cffce017fdbd4503",
+    "installed_plugin_version": "v02.11.271",
+    "editor_inline_version": "v02.11.271"
+  },
+  "post_id": 5214,
+  "baseline": {
+    "before_generation": {
+      "editor_roots": [],
+      "public_roots": []
+    },
+    "current": {
+      "editor_canvas": "empty_after_reload",
+      "public_roots": [
+        "743c441"
+      ],
+      "public_cache_or_saved_state_mismatch": true
+    }
+  },
+  "request": "Создай FAQ\nВопрос 1: «Как начать?»\nОтвет 1: «Обсудим задачу.»\nВопрос 2: «Как согласовать?»\nОтвет 2: «Сначала обсудим задачу и согласуем ожидаемый результат. Затем покажем план, уточним сроки и распределим ответственность. После согласования выполним работу, проверим детали вместе и передадим готовый результат с понятными рекомендациями.»",
+  "generation": {
+    "route": "local_deterministic",
+    "provider_calls": 0,
+    "write_count": 1,
+    "brief_hash": "6736225f9b09f80b93763a48b452499a9482b7a244f3f828bf97a750c4a0daac",
+    "plan_hash": "a0b855a3ca90458857d97171bb6cf1fc6970d61076f35c53f5eddf955a58b589",
+    "record": "faq.native",
+    "composition": "faq.linear",
+    "root_id": "743c441",
+    "nested_ids": [
+      "c647941",
+      "7f4991e"
+    ],
+    "operation_id": "wpae-2b557435872ed3d4",
+    "operation_identity": "9239401f-7908-4fb3-8740-dc848058539b",
+    "accepted_contract_id": "contract-a956bdb56e42bef4ff541d59",
+    "accepted_contract_hash": "a956bdb56e42bef4ff541d59cf5da77f985d68b9ed46757b761dfebf4a600827",
+    "initial_revision": 4
+  },
+  "publish": "completed; HTTP 200; Publish disabled after save",
+  "after_reload": {
+    "editor": "canvas empty; Publish disabled",
+    "public": "root 743c441 rendered; exact question/answer text present; source https://mazhenov.kz/pricing-contract-live-v123/",
+    "public_viewport_css": {
+      "width": 1232,
+      "height": 923,
+      "device_pixel_ratio": 2
+    },
+    "root_geometry_collapsed": {
+      "x": 0,
+      "y": 32,
+      "width": 1232,
+      "height": 358.398
+    },
+    "accordion_geometry_collapsed": {
+      "id": "7f4991e",
+      "x": 71,
+      "y": 129,
+      "width": 1090,
+      "height": 164.398
+    },
+    "expanded_answer": {
+      "question": "Как согласовать?",
+      "exact_text_preserved": true,
+      "paragraph_geometry": {
+        "x": 83,
+        "y": 239,
+        "width": 629.453,
+        "height": 96,
+        "font_size": "16px",
+        "line_height": "24px",
+        "overflow": "visible",
+        "scroll_width": 629,
+        "client_width": 629,
+        "scroll_height": 96,
+        "client_height": 96
+      },
+      "root_height": 430.398,
+      "body_scroll_width": 1232
+    }
+  },
+  "ownership_refresh": {
+    "revision": 5,
+    "status": "changed_target/owned_root_missing_or_duplicated",
+    "write_count": 0,
+    "guarded_undo": "not executed; protected root mismatch"
+  },
+  "review": {
+    "vision_score": 68,
+    "vision_confidence": 0.95,
+    "vision_finding": "Reported second answer truncated; false positive: editor/public DOM contained the full exact answer, with visible paragraph geometry and no overflow.",
+    "composition": "Single white rounded bordered Accordion on beige full-width section; clear readable rows. Large empty remainder belongs to otherwise empty page. Site chat greeting appears lower-right and does not overlap the FAQ at desktop."
+  },
+  "mobile": {
+    "public_status": "BLOCKED",
+    "reason": "Documented Browser Use capabilities for the existing public tab expose pageAssets and webmcp only; no viewport control. Actual window.innerWidth remained 1232px. No public-mobile PASS."
+  },
+  "user_provided_reference": {
+    "file": "evidence/faq-user-provided-selected-native-subtree.json",
+    "scope": "selected nested container and Accordion only, IDs c647941/7f4991e; not full page tree. Shared nonempty settings match captured initial draft; e.g. white surface, 1px #d1d5db border, 12px radius, 1.5rem desktop padding, responsive mobile padding, title_hover_color #111827.",
+    "screenshot_relation": "Screenshots were captured after the agent Publish/reload and before this later user-provided export; they do not prove the visual effect of any later user adjustments."
+  },
+  "screenshots": [],
+  "screenshot_status": "previously captured and inspected; files removed after user requested skipping FAQ and deleting obsolete screenshots",
+  "completion": "This historical FAQ attempt is excluded from the current non-FAQ test matrix. The user later cleared its root; no further FAQ generation was run in the current continuation.",
+  "editor_public_mismatch": "Fresh descriptor rev5 reports changed_target/owned_root_missing_or_duplicated; no guarded Undo executed. User-provided selected subtree shares IDs with operation but is not a full page-native snapshot.",
+  "screenshots_removed_by_user_request": [
+    "screenshots/faq-v271-first-editor-before-publish.jpg",
+    "screenshots/faq-v271-first-editor-before-publish.png",
+    "screenshots/faq-v271-public-desktop-before-expand.jpg",
+    "screenshots/faq-v271-public-desktop-before-expand.png",
+    "screenshots/faq-v271-public-full-second-answer-open.jpg",
+    "screenshots/faq-v271-public-full-second-answer-open.png",
+    "screenshots/faq-v271-editor-reloaded-empty-canvas.jpg",
+    "screenshots/faq-v271-editor-reloaded-empty-canvas.png"
+  ],
+  "subsequent_user_confirmed_reset": {
+    "post_id": 5214,
+    "editor_roots": [],
+    "public_roots": [],
+    "confirmation": "The user said the page had been cleared and authorized continuing from an empty baseline.",
+    "scope": "Later state; does not change the recorded historical descriptor refusal above."
+  }
+}

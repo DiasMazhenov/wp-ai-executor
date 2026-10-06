@@ -1,0 +1,632 @@
+{
+  "body_overflow": [
+    1217,
+    1217
+  ],
+  "cards": [
+    {
+      "body": {
+        "paragraph": null,
+        "rect": {
+          "height": 51.2,
+          "width": 318.3,
+          "x": 57,
+          "y": 618.8
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "12px",
+          "display": "block",
+          "flexDirection": "row",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "height": "51.2031px",
+          "justifyContent": "normal",
+          "lineHeight": "25.6px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Формулируем задачу и согласуем план работ"
+      },
+      "cta": {
+        "href": "#strategy",
+        "rect": {
+          "height": 39,
+          "width": 192.5,
+          "x": 57,
+          "y": 867.6
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "fontSize": "15px",
+          "fontWeight": "500",
+          "gap": "normal",
+          "height": "39px",
+          "justifyContent": "normal",
+          "lineHeight": "15px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "12px 24px",
+          "rowGap": "normal",
+          "textAlign": "center"
+        },
+        "text": "Обсудить стратегию"
+      },
+      "id": "a7e3567",
+      "image": {
+        "alt": "Архитектор изучает чертежи у современного здания.",
+        "loaded": true,
+        "natural": [
+          1200,
+          900
+        ],
+        "rect": {
+          "height": 260,
+          "width": 318.3,
+          "x": 57,
+          "y": 287.4
+        },
+        "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200",
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "normal",
+          "height": "260px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "cover",
+          "overflow": "clip",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "center"
+        }
+      },
+      "rect": {
+        "height": 669.2,
+        "width": 368.3,
+        "x": 32,
+        "y": 262.4
+      },
+      "scroll": [
+        366,
+        366,
+        667,
+        667
+      ],
+      "style": {
+        "alignItems": "stretch",
+        "columnGap": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "669.211px",
+        "justifyContent": "space-between",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "objectFit": "fill",
+        "overflow": "hidden",
+        "padding": "24px",
+        "rowGap": "20px",
+        "textAlign": "start"
+      },
+      "title": {
+        "rect": {
+          "height": 23.4,
+          "width": 318.3,
+          "x": 57,
+          "y": 583.4
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "fontSize": "18px",
+          "fontWeight": "600",
+          "gap": "normal",
+          "height": "23.3984px",
+          "justifyContent": "normal",
+          "lineHeight": "23.4px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start"
+        },
+        "tag": "H3",
+        "text": "Стратегия проекта"
+      }
+    },
+    {
+      "body": {
+        "paragraph": null,
+        "rect": {
+          "height": 204.8,
+          "width": 318.3,
+          "x": 449.3,
+          "y": 618.8
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "12px",
+          "display": "block",
+          "flexDirection": "row",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "height": "204.812px",
+          "justifyContent": "normal",
+          "lineHeight": "25.6px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Разрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана"
+      },
+      "cta": {
+        "href": "#projects",
+        "rect": {
+          "height": 39,
+          "width": 182,
+          "x": 449.3,
+          "y": 867.6
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "fontSize": "15px",
+          "fontWeight": "500",
+          "gap": "normal",
+          "height": "39px",
+          "justifyContent": "normal",
+          "lineHeight": "15px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "12px 24px",
+          "rowGap": "normal",
+          "textAlign": "center"
+        },
+        "text": "Смотреть проекты"
+      },
+      "id": "631acaf",
+      "image": {
+        "alt": "Современный архитектурный интерьер.",
+        "loaded": true,
+        "natural": [
+          1200,
+          900
+        ],
+        "rect": {
+          "height": 260,
+          "width": 318.3,
+          "x": 449.3,
+          "y": 287.4
+        },
+        "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200",
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "normal",
+          "height": "260px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "cover",
+          "overflow": "clip",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "center"
+        }
+      },
+      "rect": {
+        "height": 669.2,
+        "width": 368.3,
+        "x": 424.3,
+        "y": 262.4
+      },
+      "scroll": [
+        366,
+        366,
+        667,
+        667
+      ],
+      "style": {
+        "alignItems": "stretch",
+        "columnGap": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "669.211px",
+        "justifyContent": "space-between",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "objectFit": "fill",
+        "overflow": "hidden",
+        "padding": "24px",
+        "rowGap": "20px",
+        "textAlign": "start"
+      },
+      "title": {
+        "rect": {
+          "height": 23.4,
+          "width": 318.3,
+          "x": 449.3,
+          "y": 583.4
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "fontSize": "18px",
+          "fontWeight": "600",
+          "gap": "normal",
+          "height": "23.3984px",
+          "justifyContent": "normal",
+          "lineHeight": "23.4px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start"
+        },
+        "tag": "H3",
+        "text": "Архитектура и дизайн"
+      }
+    },
+    {
+      "body": {
+        "paragraph": null,
+        "rect": {
+          "height": 102.4,
+          "width": 318.3,
+          "x": 841.7,
+          "y": 618.8
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "12px",
+          "display": "block",
+          "flexDirection": "row",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "height": "102.406px",
+          "justifyContent": "normal",
+          "lineHeight": "25.6px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Проверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла"
+      },
+      "cta": {
+        "href": "#support",
+        "rect": {
+          "height": 39,
+          "width": 232.2,
+          "x": 841.7,
+          "y": 867.6
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "fontSize": "15px",
+          "fontWeight": "500",
+          "gap": "normal",
+          "height": "39px",
+          "justifyContent": "normal",
+          "lineHeight": "15px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "12px 24px",
+          "rowGap": "normal",
+          "textAlign": "center"
+        },
+        "text": "Обсудить сопровождение"
+      },
+      "id": "e07fe33",
+      "image": {
+        "alt": "Специалисты обсуждают проектные чертежи.",
+        "loaded": true,
+        "natural": [
+          1200,
+          900
+        ],
+        "rect": {
+          "height": 260,
+          "width": 318.3,
+          "x": 841.7,
+          "y": 287.4
+        },
+        "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=900&ixlib=rb-4.1.0&q=80&w=1200",
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "inline-block",
+          "flexDirection": "row",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "normal",
+          "height": "260px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "cover",
+          "overflow": "clip",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "center"
+        }
+      },
+      "rect": {
+        "height": 669.2,
+        "width": 368.3,
+        "x": 816.7,
+        "y": 262.4
+      },
+      "scroll": [
+        366,
+        366,
+        667,
+        667
+      ],
+      "style": {
+        "alignItems": "stretch",
+        "columnGap": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "669.211px",
+        "justifyContent": "space-between",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "objectFit": "fill",
+        "overflow": "hidden",
+        "padding": "24px",
+        "rowGap": "20px",
+        "textAlign": "start"
+      },
+      "title": {
+        "rect": {
+          "height": 23.4,
+          "width": 318.3,
+          "x": 841.7,
+          "y": 583.4
+        },
+        "style": {
+          "alignItems": "normal",
+          "columnGap": "normal",
+          "display": "block",
+          "flexDirection": "row",
+          "fontSize": "18px",
+          "fontWeight": "600",
+          "gap": "normal",
+          "height": "23.3984px",
+          "justifyContent": "normal",
+          "lineHeight": "23.4px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "objectFit": "fill",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start"
+        },
+        "tag": "H3",
+        "text": "Сопровождение"
+      }
+    }
+  ],
+  "device_pixel_ratio": 2,
+  "document_overflow": [
+    1217,
+    1217
+  ],
+  "fidelity": {
+    "card_count": 3,
+    "description": true,
+    "eyebrow": true,
+    "full_root_text_includes_all_exact": true,
+    "services": [
+      {
+        "alt": "Архитектор изучает чертежи у современного здания.",
+        "body": true,
+        "cta": true,
+        "href": true,
+        "media_present": true,
+        "title": true
+      },
+      {
+        "alt": "Современный архитектурный интерьер.",
+        "body": true,
+        "cta": true,
+        "href": true,
+        "media_present": true,
+        "title": true
+      },
+      {
+        "alt": "Специалисты обсуждают проектные чертежи.",
+        "body": true,
+        "cta": true,
+        "href": true,
+        "media_present": true,
+        "title": true
+      }
+    ],
+    "title": true
+  },
+  "intro": {
+    "description": "Точный состав услуг с разной длиной описаний и отдельными действиями",
+    "description_rect": {
+      "height": 41.6,
+      "width": 568.6,
+      "x": 32,
+      "y": 188.8
+    },
+    "description_style": {
+      "alignItems": "normal",
+      "columnGap": "0px",
+      "display": "block",
+      "flexDirection": "row",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "0px",
+      "height": "41.6016px",
+      "justifyContent": "normal",
+      "lineHeight": "25.6px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "objectFit": "fill",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "0px",
+      "textAlign": "start"
+    },
+    "eyebrow": "УСЛУГИ ДЛЯ ПРОЕКТА",
+    "eyebrow_rect": {
+      "height": 14.4,
+      "width": 157.7,
+      "x": 62,
+      "y": 114
+    },
+    "eyebrow_style": {
+      "alignItems": "normal",
+      "columnGap": "24px",
+      "display": "block",
+      "flexDirection": "row",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "24px",
+      "height": "14.3984px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "objectFit": "fill",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "24px",
+      "textAlign": "start"
+    },
+    "title": "Три направления работы",
+    "title_rect": {
+      "height": 38.4,
+      "width": 405.3,
+      "x": 32,
+      "y": 150.4
+    },
+    "title_style": {
+      "alignItems": "normal",
+      "columnGap": "normal",
+      "display": "block",
+      "flexDirection": "row",
+      "fontSize": "32px",
+      "fontWeight": "700",
+      "gap": "normal",
+      "height": "38.3984px",
+      "justifyContent": "normal",
+      "lineHeight": "38.4px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "objectFit": "fill",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "normal",
+      "textAlign": "start"
+    },
+    "title_tag": "H2"
+  },
+  "post_id": 5214,
+  "root": {
+    "rect": {
+      "height": 971.6,
+      "width": 1217,
+      "x": 0,
+      "y": 32
+    },
+    "scroll": [
+      1217,
+      1217,
+      972,
+      972
+    ],
+    "style": {
+      "alignItems": "normal",
+      "columnGap": "normal",
+      "display": "flex",
+      "flexDirection": "column",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "normal",
+      "height": "971.609px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "objectFit": "fill",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "rowGap": "normal",
+      "textAlign": "start"
+    }
+  },
+  "root_id": null,
+  "source": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport_css": [
+    1232,
+    923
+  ]
+}

@@ -1,0 +1,521 @@
+{
+  "cards": [
+    {
+      "card": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "467.602px",
+        "id": "a7e3567",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "hidden",
+        "padding": "24px",
+        "rect": [
+          16,
+          207,
+          313,
+          467.6
+        ],
+        "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию",
+        "textAlign": "start"
+      },
+      "copy": {
+        "align": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "51.2031px",
+        "id": "89656e9",
+        "justify": "normal",
+        "lineHeight": "25.6px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "paragraph": null,
+        "paragraphOverflow": null,
+        "rect": [
+          41,
+          519.4,
+          263,
+          51.2
+        ],
+        "text": "Формулируем задачу и согласуем план работ",
+        "textAlign": "start"
+      },
+      "cta": {
+        "align": "normal",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "gap": "normal",
+        "height": "39px",
+        "href": "#strategy",
+        "id": "",
+        "justify": "normal",
+        "lineHeight": "15px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "rect": [
+          41,
+          610.6,
+          192.5,
+          39
+        ],
+        "text": "Обсудить стратегию",
+        "textAlign": "center"
+      },
+      "image": {
+        "align": "normal",
+        "alt": "Архитектор изучает чертежи у современного здания.",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "16px",
+        "gap": "normal",
+        "height": "220px",
+        "id": "",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "loaded": true,
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "natural": [
+          1200,
+          900
+        ],
+        "objectFit": "cover",
+        "overflow": "clip",
+        "padding": "0px",
+        "rect": [
+          41,
+          232,
+          263,
+          220
+        ],
+        "text": "",
+        "textAlign": "center"
+      },
+      "title": {
+        "align": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "23.3984px",
+        "id": "5f58da3",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "rect": [
+          41,
+          484,
+          263,
+          23.4
+        ],
+        "text": "Стратегия проекта",
+        "textAlign": "start"
+      }
+    },
+    {
+      "card": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "646.812px",
+        "id": "631acaf",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "hidden",
+        "padding": "24px",
+        "rect": [
+          16,
+          690.6,
+          313,
+          646.8
+        ],
+        "text": "Архитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты",
+        "textAlign": "start"
+      },
+      "copy": {
+        "align": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "230.414px",
+        "id": "a9c5f47",
+        "justify": "normal",
+        "lineHeight": "25.6px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "paragraph": null,
+        "paragraphOverflow": null,
+        "rect": [
+          41,
+          1003,
+          263,
+          230.4
+        ],
+        "text": "Разрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана",
+        "textAlign": "start"
+      },
+      "cta": {
+        "align": "normal",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "gap": "normal",
+        "height": "39px",
+        "href": "#projects",
+        "id": "",
+        "justify": "normal",
+        "lineHeight": "15px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "rect": [
+          41,
+          1273.4,
+          182,
+          39
+        ],
+        "text": "Смотреть проекты",
+        "textAlign": "center"
+      },
+      "image": {
+        "align": "normal",
+        "alt": "Современный архитектурный интерьер.",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "16px",
+        "gap": "normal",
+        "height": "220px",
+        "id": "",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "loaded": true,
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "natural": [
+          1200,
+          900
+        ],
+        "objectFit": "cover",
+        "overflow": "clip",
+        "padding": "0px",
+        "rect": [
+          41,
+          715.6,
+          263,
+          220
+        ],
+        "text": "",
+        "textAlign": "center"
+      },
+      "title": {
+        "align": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "23.3984px",
+        "id": "c413743",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "rect": [
+          41,
+          967.6,
+          263,
+          23.4
+        ],
+        "text": "Архитектура и дизайн",
+        "textAlign": "start"
+      }
+    },
+    {
+      "card": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "544.406px",
+        "id": "e07fe33",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "hidden",
+        "padding": "24px",
+        "rect": [
+          16,
+          1353.4,
+          313,
+          544.4
+        ],
+        "text": "Сопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение",
+        "textAlign": "start"
+      },
+      "copy": {
+        "align": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "128.008px",
+        "id": "7770a5e",
+        "justify": "normal",
+        "lineHeight": "25.6px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "paragraph": null,
+        "paragraphOverflow": null,
+        "rect": [
+          41,
+          1665.8,
+          263,
+          128
+        ],
+        "text": "Проверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла",
+        "textAlign": "start"
+      },
+      "cta": {
+        "align": "normal",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "15px",
+        "gap": "normal",
+        "height": "39px",
+        "href": "#support",
+        "id": "",
+        "justify": "normal",
+        "lineHeight": "15px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "12px 24px",
+        "rect": [
+          41,
+          1833.8,
+          232.2,
+          39
+        ],
+        "text": "Обсудить сопровождение",
+        "textAlign": "center"
+      },
+      "image": {
+        "align": "normal",
+        "alt": "Специалисты обсуждают проектные чертежи.",
+        "direction": "row",
+        "display": "inline-block",
+        "fontSize": "16px",
+        "gap": "normal",
+        "height": "220px",
+        "id": "",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "loaded": true,
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "natural": [
+          1200,
+          900
+        ],
+        "objectFit": "cover",
+        "overflow": "clip",
+        "padding": "0px",
+        "rect": [
+          41,
+          1378.4,
+          263,
+          220
+        ],
+        "text": "",
+        "textAlign": "center"
+      },
+      "title": {
+        "align": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "23.3984px",
+        "id": "9aa26c8",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "rect": [
+          41,
+          1630.4,
+          263,
+          23.4
+        ],
+        "text": "Сопровождение",
+        "textAlign": "start"
+      }
+    }
+  ],
+  "collection": {
+    "align": "stretch",
+    "direction": "row",
+    "display": "grid",
+    "fontSize": "16px",
+    "gap": "16px",
+    "height": "1690.82px",
+    "id": "259395e",
+    "justify": "start",
+    "lineHeight": "24px",
+    "maxHeight": "none",
+    "minHeight": "auto",
+    "overflow": "visible",
+    "padding": "0px",
+    "rect": [
+      16,
+      207,
+      313,
+      1690.8
+    ],
+    "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение",
+    "textAlign": "start"
+  },
+  "dpr": 2,
+  "exactFullBodyVisible": true,
+  "intro": {
+    "description": {
+      "align": "normal",
+      "direction": "row",
+      "display": "block",
+      "fontSize": "16px",
+      "gap": "0px",
+      "height": "67.2031px",
+      "id": "4129758",
+      "justify": "normal",
+      "lineHeight": "25.6px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "rect": [
+        16,
+        107.8,
+        313,
+        67.2
+      ],
+      "text": "Точный состав услуг с разной длиной описаний и отдельными действиями",
+      "textAlign": "start"
+    },
+    "eyebrow": {
+      "align": "normal",
+      "direction": "row",
+      "display": "block",
+      "fontSize": "16px",
+      "gap": "24px",
+      "height": "15px",
+      "id": "7765adc",
+      "justify": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "rect": [
+        46,
+        42,
+        157.7,
+        15
+      ],
+      "text": "УСЛУГИ ДЛЯ ПРОЕКТА",
+      "textAlign": "start"
+    },
+    "title": {
+      "align": "normal",
+      "direction": "row",
+      "display": "block",
+      "fontSize": "16px",
+      "gap": "0px",
+      "height": "40.7969px",
+      "id": "a6e434c",
+      "justify": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "rect": [
+        16,
+        67,
+        304,
+        40.8
+      ],
+      "text": "Три направления работы",
+      "textAlign": "start"
+    }
+  },
+  "overflow": {
+    "body": [
+      345,
+      345
+    ],
+    "document": [
+      345,
+      345
+    ]
+  },
+  "post_id": 5214,
+  "root": {
+    "align": "normal",
+    "direction": "column",
+    "display": "flex",
+    "fontSize": "16px",
+    "gap": "normal",
+    "height": "1929.82px",
+    "id": "77b0786",
+    "justify": "normal",
+    "lineHeight": "24px",
+    "maxHeight": "none",
+    "minHeight": "0px",
+    "overflow": "visible",
+    "padding": "0px 16px",
+    "rect": [
+      0,
+      0,
+      345,
+      1929.8
+    ],
+    "text": "УСЛУГИ ДЛЯ ПРОЕКТА\nТри направления работы\nТочный состав услуг с разной длиной описаний и отдельными действиями\nСтратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение",
+    "textAlign": "start"
+  },
+  "root_id": "77b0786",
+  "source": "Elementor editor mobile preview (not public mobile)",
+  "viewport_css": [
+    360,
+    736
+  ]
+}

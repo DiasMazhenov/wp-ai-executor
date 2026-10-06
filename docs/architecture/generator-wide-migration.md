@@ -713,3 +713,10 @@ Source commit c2328d4e1efd5d32acb48ef4cffce017fdbd4503 (v02.11.271) is pushed; W
 - Explicit editorial_list must remain a list; do not silently convert it to grid. An intro-aside/list-right option would need its own declared composition.
 - Nine prior fixture runs demonstrate nine fixed record/profile combinations, not user selection among several alternative concepts from one Brief. A future selector should operate over the existing catalog, honor explicit selection/media intent/entity amount/visual direction and decide once. No selector is implemented here.
 - CTA remains an incomplete migration outside this native-roundtrip scope.
+
+
+### Non-FAQ family live follow-up — v271 — 2026-10-06
+
+The same accepted card/visual policy pipeline was exercised on one fresh Services run after its earlier root had been deleted before readback. The pipeline selected `services.photo_cards`, froze one Brief and one DesignPlan, compiled and wrote one root, then native Publish/reload readback matched the accepted authored projection. Public desktop showed three catalog media slots, exact text and CTA targets; the CTA footer shared a horizontal baseline. Measurements also exposed large body-to-footer flexible gaps on short-copy cards and a site-owned chat greeting overlap on CTA 3. These are visual-quality findings, not a reason to mutate the page or hide the overlay. The scoped Undo refreshed the descriptor for the same operation and restored the confirmed empty document. See [the run report](../audits/2026-10-06-other-families-v271/REPORT.md).
+
+The six other previously successful non-FAQ typed families were not regenerated: Pricing at two and three items, Hero split, About split, Benefits editorial list, Team grid, and Testimonials editorial rows. FAQ is excluded by the user's scope. CTA remains a separate legacy route and is blocked before write until canonical ownership and operation-scoped Undo are established; no legacy smoke was substituted with a typed family. Public mobile viewport control was unavailable in this run; editor mobile preview at 360×736 is not public-mobile proof.

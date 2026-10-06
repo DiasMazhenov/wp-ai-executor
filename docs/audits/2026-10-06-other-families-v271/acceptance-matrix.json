@@ -1,0 +1,110 @@
+{
+  "schema": "wpae-non-faq-family-acceptance-v1",
+  "date": "2026-10-06",
+  "post_id": 5214,
+  "source_version": "v02.11.271",
+  "source_commit": "c2328d4e1efd5d32acb48ef4cffce017fdbd4503",
+  "family_count_excluding_faq": 7,
+  "primary_generations_this_continuation": 1,
+  "repeats_this_continuation": 0,
+  "provider_calls_this_continuation": 0,
+  "families": [
+    {
+      "family": "services",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/E-services-exact-request.txt",
+      "fixture_sha256": "245e0a8451118781bbe27b0724a2d1325a1cbaf78bf7528e987abc6296cc8795",
+      "route": "local_deterministic / canonical typed pipeline",
+      "record": "services.photo_cards",
+      "profile": "none explicitly selected; resolved safe defaults",
+      "root": "77b0786",
+      "operation_id": "wpae-750dacf4726ed1f9",
+      "identity": "35314405-ae70-40f2-8368-05ade426c175",
+      "accepted_contract": "contract-1596f84fb2515fe15df00ba0",
+      "accepted_contract_hash": "1596f84fb2515fe15df00ba012f39616e3a81b6c16a763dc44a6161429c43b01",
+      "brief_hash": "7dce09d62950eca4b49455b824c3eac0f0ab06b9f46dd8c8d268f56a8a801e92",
+      "plan_hash": "4b318be730da67807ad1d20e7a24fcd5ad445d0848ea2e32aca04b9b94ee1aab",
+      "generation_revision": 4,
+      "descriptor_revision_after_publish_reload": 5,
+      "descriptor_revision_after_undo": 6,
+      "write_count": 1,
+      "statuses": {
+        "lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "independent_native_readback": "PASS",
+        "public_desktop_geometry": "PASS_WITH_SITE_OVERLAP",
+        "public_mobile": "BLOCKED: existing public tab exposes no documented viewport control; actual CSS viewport stayed 1232x923",
+        "editor_mobile_preview": "PASS_SEPARATE_EVIDENCE at iframe CSS viewport 360x736",
+        "visual_composition": "PARTIAL: common CTA baseline achieved; large flexible body/footer gaps remain and site chat overlaps part of CTA 3",
+        "structural_variation": "PASS: three distinct media/title/body/action records in services.photo_cards",
+        "document_restoration": "PASS: guarded Undo restored editor and public roots []"
+      },
+      "evidence": {
+        "first_trace": "evidence/services-first-render-trace.json",
+        "first_native_tree": "evidence/services-first-render-native.json",
+        "independent_editor_native_after_reload": "evidence/services-editor-native-after-reload.json",
+        "authored_readback_and_public_measurements": "evidence/services-authored-readback-v271.json",
+        "public_geometry": "evidence/services-public-geometry-v271.json",
+        "editor_mobile_geometry": "evidence/services-editor-mobile-geometry-v271.json"
+      }
+    },
+    {
+      "family": "pricing",
+      "fixtures": [
+        "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#b--pricing-two-tiers",
+        "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#c--pricing-three-tiers"
+      ],
+      "route": "canonical typed pipeline in v270",
+      "composition_id": "pricing.three_cards (legacy identifier); actual Plan/native item_count follows fixture",
+      "status": "SKIPPED_PER_USER: both two-tier and three-tier cases were previously accepted and operation-scoped Undo restored []",
+      "evidence": "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md"
+    },
+    {
+      "family": "hero",
+      "record": "hero.split_60_40.right",
+      "status": "SKIPPED_PER_USER: previously successful v270 generation and guarded Undo",
+      "evidence": "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#d--hero"
+    },
+    {
+      "family": "about",
+      "record": "about.split_60_40.left",
+      "status": "SKIPPED_PER_USER: previously successful v270 generation and guarded Undo",
+      "evidence": "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#e--about"
+    },
+    {
+      "family": "benefits",
+      "record": "benefits.editorial_list",
+      "status": "SKIPPED_PER_USER: previously successful v270 editorial-list generation and guarded Undo",
+      "evidence": "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#f--benefits"
+    },
+    {
+      "family": "team",
+      "record": "team.grid",
+      "status": "SKIPPED_PER_USER: previously successful v270 generation and guarded Undo",
+      "evidence": "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#g--team"
+    },
+    {
+      "family": "testimonials",
+      "record": "testimonials.editorial_rows",
+      "status": "SKIPPED_PER_USER: previously successful v270 generation and guarded Undo",
+      "evidence": "docs/audits/2026-10-06-lifecycle-layout-v270/REPORT.md#h--testimonials"
+    }
+  ],
+  "excluded_or_separate_routes": {
+    "faq": "EXCLUDED_BY_USER. Prior FAQ captures from the immediately preceding attempt were removed; historical v270 evidence remains unchanged.",
+    "cta": "SEPARATE_LEGACY_SMOKE_TEST_BLOCKED_BEFORE_WRITE: cta.band lacks canonical typed ownership and operation-scoped Undo safety is not proven. No substitute family was generated."
+  },
+  "final_root_set": [],
+  "screenshot_cleanup": {
+    "removed_files": [
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-first-editor-before-publish.jpg",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-first-editor-before-publish.png",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-public-desktop-before-expand.jpg",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-public-desktop-before-expand.png",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-public-full-second-answer-open.jpg",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-public-full-second-answer-open.png",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-editor-reloaded-empty-canvas.jpg",
+      "docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-v271-editor-reloaded-empty-canvas.png"
+    ],
+    "preserved": "Historical v270 FAQ screenshots and accepted-family screenshots remain with their original reports; they are not stale current-run artifacts."
+  }
+}
