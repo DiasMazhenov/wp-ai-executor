@@ -239,7 +239,7 @@
     "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
     "includes/llm/brief-ir.php": "d699888449ead6f3b764638c3630af22b5ad2ffbcf760421bcbe24aba603badd",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "ae2542414d1d2b4b6659a3a1a577521a935d65d9ef00c28af216cbb082c1d78c",
+    "includes/llm/design-plan.php": "e890babbb1fb142b41a276654338a76539d9cb933ac885b52e518a2418e42d22",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
     "includes/llm/llm.php": "39597f782ab6784d80d76634149e8523c0cfe2363dc8f547dc1f55ec4a7a71fa",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "de735d92f220bc08d61f348915ab803816fc81bdb3fcea4ed085be5b7e36d017"
+    "wp-ai-executor.php": "3548cf804bf05165ca670b3e537049938709874f7da612395d641a87e221426d"
   }
 }

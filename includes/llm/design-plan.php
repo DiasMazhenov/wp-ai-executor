@@ -146,6 +146,52 @@ function wpae_design_plan_pairs( array $brief, string $first_role, string $secon
 	return [ 'items' => $items, 'errors' => array_values( array_unique( $errors ) ) ];
 }
 
+/** Select an available collection presentation from canonical copy, before the Plan is frozen. */
+function wpae_design_plan_automatic_collection_composition( array $brief ): array {
+	if ( ( $brief['intent']['archetype'] ?? '' ) !== 'benefits' ) {
+		return [];
+	}
+	$groups = array_values( (array) ( $brief['groups'] ?? [] ) );
+	if ( count( $groups ) !== 2 ) {
+		return [];
+	}
+	$content_by_id = array_column( (array) ( $brief['content'] ?? [] ), null, 'id' );
+	$length = static function ( string $text ): int {
+		if ( function_exists( 'mb_strlen' ) ) {
+			return mb_strlen( $text );
+		}
+		$matched = preg_match_all( '/./us', $text, $unused );
+		return $matched === false ? strlen( $text ) : $matched;
+	};
+	$max_title_length = 0;
+	$max_body_length = 0;
+	$max_item_length = 0;
+	foreach ( $groups as $group ) {
+		$refs = (array) ( $group['role_refs'] ?? [] );
+		$title = (array) ( $content_by_id[ (string) ( $refs['feature_title'][0] ?? '' ) ] ?? [] );
+		$body = (array) ( $content_by_id[ (string) ( $refs['feature_body'][0] ?? '' ) ] ?? [] );
+		$title_text = trim( (string) ( $title['exact_text'] ?? '' ) );
+		$body_text = trim( (string) ( $body['exact_text'] ?? '' ) );
+		if ( $title_text === '' || $body_text === '' ) {
+			return [];
+		}
+		$title_length = $length( $title_text );
+		$body_length = $length( $body_text );
+		$max_title_length = max( $max_title_length, $title_length );
+		$max_body_length = max( $max_body_length, $body_length );
+		$max_item_length = max( $max_item_length, $title_length + $body_length );
+	}
+	// Two-column Benefits suit compact title/copy pairs; longer descriptions
+	// retain the existing editorial-list topology and its single reading axis.
+	$compact_pairs = $max_title_length <= 48 && $max_body_length <= 84 && $max_item_length <= 120;
+	return [
+		'composition' => $compact_pairs ? 'three_cards' : 'editorial_list',
+		'source' => 'automatic_density_policy',
+		'policy' => 'benefits_two_item_copy_density_v1',
+		'metrics' => [ 'item_count' => 2, 'max_title_chars' => $max_title_length, 'max_body_chars' => $max_body_length, 'max_item_chars' => $max_item_length ],
+	];
+}
+
 function wpae_design_plan_grouped_items( array $brief, string $prefix, array $role_map, array $required_fields, int $minimum, int $maximum ): array {
 	if ( ! empty( $brief['canonical_create'] ) && in_array( $prefix, [ 'team', 'testimonial' ], true ) ) {
 		$items = (array) ( $brief['groups'] ?? [] ); $errors = [];
@@ -1018,6 +1064,13 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 	$media_intent = (string) wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' );
 	$explicit_composition = wpae_design_plan_constraint_value( $brief, 'composition' );
 	$composition = (string) ( $explicit_composition ?? ( in_array( $archetype, [ 'hero', 'about' ], true ) ? 'split_60_40' : ( $archetype === 'pricing' || ( in_array( $archetype, [ 'benefits', 'team', 'testimonials' ], true ) && ! empty( $context['canonical_create'] ) ) ? 'three_cards' : 'linear' ) ) );
+	$automatic_composition = [];
+	if ( ! empty( $context['canonical_create'] ) && $archetype === 'benefits' && $explicit_composition === null && empty( $context['composition_record'] ) ) {
+		$automatic_composition = wpae_design_plan_automatic_collection_composition( $brief );
+		if ( ! empty( $automatic_composition['composition'] ) ) {
+			$composition = (string) $automatic_composition['composition'];
+		}
+	}
 	$media_references = array_values( array_filter( (array) ( $brief['media_references'] ?? [] ), static fn( $media ): bool => is_array( $media ) && wpae_design_plan_media_reference_valid( $media ) && ( ! in_array( $archetype, [ 'hero', 'about' ], true ) || ( $media['role'] ?? '' ) === $archetype ) ) );
 	if ( empty( $context['canonical_create'] ) && in_array( $archetype, [ 'hero', 'about' ], true ) && empty( $media_references ) ) {
 		$default_hero_media = wpae_design_plan_default_hero_media( $brief );
@@ -1048,6 +1101,9 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		if ( empty( $record_selection['errors'] ) ) {
 			$composition = $record_selection['record']['composition'];
 			$media_side = $record_selection['record']['policy']['media_side'] ?? $media_side;
+			if ( ! empty( $automatic_composition['source'] ) ) {
+				$record_selection['source'] = (string) $automatic_composition['source'];
+			}
 		}
 	}
 	$cta_refs = wpae_design_plan_content_refs( $brief, [ 'cta', 'cta_2', 'cta_3' ] );
@@ -1395,7 +1451,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'composition_decision' => array_merge( [ 'identity' => $archetype . '.' . $composition, 'source' => $explicit_composition !== null ? 'explicit_brief' : 'documented_default', 'slot_bindings' => $section['children'] ], empty( $record_selection ) ? [] : [
 			'record_id' => $record_selection['record']['id'] ?? '', 'record_version' => $record_selection['record']['version'] ?? 0, 'record_hash' => $record_selection['record']['hash'] ?? '',
 			'variant_kind' => $record_selection['record']['variant_kind'] ?? '', 'distinct' => $record_selection['record']['distinct'] ?? false, 'source' => $record_selection['source'] ?? 'unresolved', 'policy' => $record_selection['record']['policy'] ?? [], 'visual_profile' => $record_selection['visual_profile'] ?? '', 'errors' => $record_selection['errors'],
-		] ),
+		], empty( $automatic_composition ) ? [] : [ 'selection_policy' => (string) ( $automatic_composition['policy'] ?? '' ), 'selection_metrics' => (array) ( $automatic_composition['metrics'] ?? [] ) ] ),
 		'resolved_visual' => $resolved_visual,
 		'visual_policy' => ! empty( $context['canonical_create'] ) ? wpae_design_plan_visual_policy( $brief, (array) ( $record_selection['record'] ?? [] ), $resolved_visual, $composition, [ 'tablet' => $record_selection['record']['policy']['tablet'] ?? ( $hero_has_media ? 'split_50_50' : 'stack' ), 'mobile' => $record_selection['record']['policy']['mobile'] ?? 'stack' ], max( array_merge( [ 0 ], array_map( static fn( array $child ): int => count( (array) ( $child['items'] ?? [] ) ), $section['children'] ) ) ) ) : null,
 		'schema' => WPAE_DESIGN_PLAN_SCHEMA,

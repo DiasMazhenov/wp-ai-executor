@@ -2987,6 +2987,45 @@ $GLOBALS['responses'] = [ provider_reply( 'not valid json' ) ];
 $services_invalid_json_adapter = wpae_brief_ir_services_structured_extract( $services_natural_message );
 check( empty( $services_timeout_adapter['ok'] ) && empty( $services_invalid_json_adapter['ok'] ) && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === $services_adapter_writes_before, 'Structured extraction timeout and invalid JSON return refusals without crossing any write boundary' );
 if ( $saved_services_options === null ) { unset( $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] ); } else { $GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = $saved_services_options; }
+$benefits_route_global_keys = [ 'page_data', 'http_calls', 'writes', 'responses', 'library', 'options', 'library_retrieval_calls', 'test_project_typography_tokens', 'test_required_ds_classes', 'm1_write_attempts', 'typed_last_update_params' ];
+$benefits_route_global_snapshot = [];
+foreach ( $benefits_route_global_keys as $key ) {
+	$benefits_route_global_snapshot[ $key ] = [ 'set' => array_key_exists( $key, $GLOBALS ), 'value' => $GLOBALS[ $key ] ?? null ];
+}
+$GLOBALS['page_data'] = [];
+$GLOBALS['http_calls'] = [];
+$GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$GLOBALS['library'] = [ 'status' => 'none', 'available_count' => 0, 'candidate_count' => 0, 'candidates' => [], 'selection_candidates' => [] ];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
+$benefits_route_request = new WP_REST_Request();
+$benefits_route_request->set_param( 'message', "Создай Benefits без фото\nНадзаголовок: «ПРЕИМУЩЕСТВА»\nЗаголовок: «Работаем понятно»\nПреимущество 1: «Понятный план»\nОписание преимущества 1: «Сроки согласованы.»\nПреимущество 2: «Общая команда»\nОписание преимущества 2: «Работаем вместе.»" );
+$benefits_route_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'benefits-density-chat-contract' ] );
+$benefits_route_response = wpae_llm_chat_request( $benefits_route_request );
+$benefits_route_data = $benefits_route_response instanceof WP_REST_Response ? $benefits_route_response->get_data() : [];
+$benefits_route_diagnostics = (array) ( $benefits_route_data['diagnostics'] ?? [] );
+$benefits_route_pipeline = (array) ( $benefits_route_diagnostics['design_pipeline'] ?? [] );
+$benefits_route_readback = wpae_get_elementor_data_for_post( 42 );
+$benefits_route_find_grid = static function ( array $nodes ) use ( &$benefits_route_find_grid ): array {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-feature-cards' ) { return $node; }
+		$found = $benefits_route_find_grid( (array) ( $node['elements'] ?? [] ) );
+		if ( $found ) { return $found; }
+	}
+	return [];
+};
+$benefits_route_grid = $benefits_route_find_grid( $benefits_route_readback );
+$benefits_route_decision = (array) ( $benefits_route_pipeline['plan']['composition_decision'] ?? [] );
+$benefits_route_ledger = (array) ( $benefits_route_diagnostics['operation_ledger'] ?? [] );
+check( ! empty( $benefits_route_data['ok'] ) && ( $benefits_route_diagnostics['action_path'] ?? '' ) === 'pipeline' && ( $benefits_route_diagnostics['provider_calls'] ?? -1 ) === 0 && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === 1 && ( $benefits_route_diagnostics['write_count'] ?? 0 ) === 1, 'Canonical ordinary Benefits plugin chat uses Brief/Plan/native pipeline and performs one deterministic mock transaction write' );
+check( ( $benefits_route_pipeline['brief']['hash'] ?? '' ) !== '' && ( $benefits_route_pipeline['brief']['hash'] ?? '' ) === ( $benefits_route_pipeline['plan']['brief_hash'] ?? '' ) && ( $benefits_route_pipeline['plan']['validation']['ok'] ?? false ) && ( $benefits_route_pipeline['elementor_ir']['validation']['ok'] ?? false ) && ( $benefits_route_pipeline['frozen_decisions']['readback_matches'] ?? false ) && ( $benefits_route_ledger['current_state'] ?? '' ) === 'written' && count( (array) ( $benefits_route_ledger['root_ids'] ?? [] ) ) === 1, 'Benefits chat Plan hash, one accepted operation/root and compiler readback signature are retained through mock transaction' );
+check( ( $benefits_route_decision['record_id'] ?? '' ) === 'benefits.grid' && ( $benefits_route_decision['source'] ?? '' ) === 'automatic_density_policy' && ( $benefits_route_grid['settings']['container_type'] ?? '' ) === 'grid' && ( $benefits_route_grid['settings']['grid_columns_grid']['size'] ?? 0 ) === 2 && ( $benefits_route_grid['settings']['grid_columns_grid_mobile']['size'] ?? 0 ) === 1 && count( (array) ( $benefits_route_grid['elements'] ?? [] ) ) === 2 && wp_json_encode( $benefits_route_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ), 'Mock readback contains the frozen two-column Benefits topology and exact one-column mobile controls' );
+foreach ( $benefits_route_global_snapshot as $key => $snapshot ) {
+	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
+}
+
 if ( getenv( 'WPAE_SERVICES_BRIEF_DEMO' ) === '1' ) {
 	$services_demo_brief = array_diff_key( $services_multiline_brief, [ 'source_text' => true ] );
 	$services_demo_brief['validation'] = wpae_brief_ir_validate( $services_multiline_brief );
