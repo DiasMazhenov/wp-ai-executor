@@ -4360,7 +4360,7 @@ function wpae_llm_normalize_hero_composition( array $elements, int &$changed = 0
             'background_hover_color', 'background_hover_image', 'background_video_fallback',
             'background_slideshow_gallery', 'background_overlay_video_fallback',
             'background_overlay_slideshow_gallery', 'grid_columns_grid', 'grid_columns_grid_tablet',
-            'grid_columns_grid_mobile', 'grid_rows_grid', 'grid_gaps', 'grid_align_items',
+            'grid_columns_grid_mobile', 'grid_rows_grid', 'grid_gaps', 'grid_align_items', 'grid_justify_items', 'grid_justify_items_tablet', 'grid_justify_items_mobile',
         ] as $key ) {
             unset( $root_settings[ $key ] );
         }
@@ -7586,15 +7586,37 @@ function wpae_llm_normalize_bento_grid( array &$element, int &$changed, string $
     }
 }
 
+/** True when an accepted compiler policy already owns layout in this native subtree. */
+function wpae_llm_contains_accepted_visual_policy( array $elements ): bool {
+	foreach ( $elements as $element ) {
+		if ( ! is_array( $element ) ) {
+			continue;
+		}
+		$settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
+		if ( (int) ( $settings['_wpae_visual_policy_version'] ?? 0 ) === 1 ) {
+			return true;
+		}
+		if ( is_array( $element['elements'] ?? null ) && wpae_llm_contains_accepted_visual_policy( $element['elements'] ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
 function wpae_llm_normalize_bento_grids_recursive( array &$elements, int &$changed, string $archetype = '' ): void {
     if ( $archetype === 'process' ) {
         return;
     }
-    foreach ( $elements as &$element ) {
-        if ( ! is_array( $element ) ) {
-            continue;
-        }
-        if ( ( $element['elType'] ?? '' ) === 'container' ) {
+	foreach ( $elements as &$element ) {
+		if ( ! is_array( $element ) ) {
+			continue;
+		}
+		// Typed layout is frozen in DesignPlan/ElementorIR. Legacy bento
+		// normalization must not rewrite its geometry after compilation.
+		if ( wpae_llm_contains_accepted_visual_policy( [ $element ] ) ) {
+			continue;
+		}
+		if ( ( $element['elType'] ?? '' ) === 'container' ) {
             $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
             $classes = preg_split( '/\s+/', trim( (string) ( $settings['_css_classes'] ?? '' ) ) );
             if ( is_array( $classes ) && in_array( 'wpae-bento-grid', $classes, true ) ) {
@@ -7625,12 +7647,15 @@ function wpae_llm_enforce_flex_layout_contract( array $elements, string $archety
         }
         return $did_change;
     };
-    $walk = static function ( array &$nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $repeatable, $clear_negative_margins ): void {
-        foreach ( $nodes as &$element ) {
-            if ( ! is_array( $element ) ) {
-                continue;
-            }
-            if ( ( $element['elType'] ?? '' ) === 'container' ) {
+	$walk = static function ( array &$nodes, int $depth = 0 ) use ( &$walk, &$changed, $archetype, $repeatable, $clear_negative_margins ): void {
+		foreach ( $nodes as &$element ) {
+			if ( ! is_array( $element ) ) {
+				continue;
+			}
+			if ( wpae_llm_contains_accepted_visual_policy( [ $element ] ) ) {
+				continue;
+			}
+			if ( ( $element['elType'] ?? '' ) === 'container' ) {
                 $settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
                 $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];
                 $before = wp_json_encode( [ $settings, $children ] );
@@ -8790,6 +8815,9 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
         if ( ! is_array( $root ) || (string) ( $root['elType'] ?? '' ) !== 'container' ) {
             continue;
         }
+        if ( wpae_llm_contains_accepted_visual_policy( [ $root ] ) ) {
+            continue;
+        }
         $root['settings'] = is_array( $root['settings'] ?? null ) ? $root['settings'] : [];
         $root['elements'] = is_array( $root['elements'] ?? null ) ? $root['elements'] : [];
         $original_settings = $root['settings'];
@@ -8817,7 +8845,7 @@ function wpae_llm_apply_generation_visual_grammar( array $elements, string $arch
             $root['settings']['flex_gap_mobile'] = [ 'column' => '0.75', 'row' => '0.75', 'isLinked' => true, 'unit' => 'rem', 'size' => '0.75' ];
             $root['settings']['padding'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
             $root['settings']['padding_mobile'] = [ 'unit' => 'rem', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ];
-            foreach ( [ 'grid_columns_grid', 'grid_columns_grid_tablet', 'grid_columns_grid_mobile', 'grid_rows_grid', 'grid_gaps', 'grid_align_items' ] as $grid_key ) {
+            foreach ( [ 'grid_columns_grid', 'grid_columns_grid_tablet', 'grid_columns_grid_mobile', 'grid_rows_grid', 'grid_gaps', 'grid_align_items', 'grid_justify_items', 'grid_justify_items_tablet', 'grid_justify_items_mobile' ] as $grid_key ) {
                 unset( $root['settings'][ $grid_key ] );
             }
             $root['elements'] = [ $badge, $content_shell ];
@@ -10099,6 +10127,9 @@ function wpae_llm_apply_bento_layout( array $elements, string $archetype, int &$
         if ( ! is_array( $element ) ) {
             continue;
         }
+		if ( wpae_llm_contains_accepted_visual_policy( [ $element ] ) ) {
+			continue;
+		}
 
 		$settings = is_array( $element['settings'] ?? null ) ? $element['settings'] : [];
         $children = is_array( $element['elements'] ?? null ) ? $element['elements'] : [];

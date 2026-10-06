@@ -78,7 +78,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			}, [ 'desktop', 'tablet', 'mobile' ] ) ]
 			: ( $recipe_id === 'services.split_editorial'
 				? [ 'lead' => [ 'desktop' => [ 'flex_direction' => 'row', 'flex_wrap' => 'nowrap', 'copy_basis_percent' => 52, 'image_basis_percent' => 44, 'gap_px' => 32, 'flex_shrink' => 1 ], 'tablet' => [ 'flex_direction' => 'column', 'child_basis_percent' => 100, 'gap_px' => 24 ], 'mobile' => [ 'flex_direction' => 'column', 'child_basis_percent' => 100, 'gap_px' => 20 ] ] ]
-				: [ 'list' => [ 'desktop' => [ 'flex_direction' => 'column', 'gap_px' => 24 ], 'tablet' => [ 'flex_direction' => 'column', 'gap_px' => 24 ], 'mobile' => [ 'flex_direction' => 'column', 'gap_px' => 20 ] ], 'row' => [ 'flex_direction' => 'row', 'icon_width_px' => 36, 'copy_basis_percent' => 90, 'copy_min_width_px' => 0, 'gap_px' => 24 ] ] );
+				: [ 'list' => array_map( static function ( string $device ) use ( $collection_policy ): array { return [ 'flex_direction' => 'column', 'max_width' => $collection_policy['width'][$device] ?? '100%', 'alignment' => $collection_policy['alignment'] ?? 'start', 'gap_px' => wpae_layout_report_length_px( $collection_policy['gap'][$device] ?? '1.25rem', 1200, 20 ) ]; }, [ 'desktop', 'tablet', 'mobile' ] ), 'row' => [ 'flex_direction' => 'row', 'icon_width' => ( $plan['visual_policy']['list_row']['icon_width'] ?? '44px' ), 'copy_measure' => ( $plan['visual_policy']['list_row']['copy_measure'] ?? '48rem' ), 'gap_by_device' => ( $plan['visual_policy']['list_row']['gap'] ?? [] ), 'copy_width_owner' => 'remaining_native_flex_width_after_icon_and_gap' ] ] );
 		$container_width_samples = array_map( 'intval', (array) ( $options['container_widths'] ?? [ 320, 390, 480, 768, 1024, 1200 ] ) );
 		$container_width_samples = array_values( array_unique( array_filter( $container_width_samples, static fn( int $width ): bool => $width > 0 ) ) );
 		foreach ( $container_width_samples as $container_sample ) {
@@ -107,12 +107,16 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 				$overflow = $required_width > $available + 0.01;
 				$sample += [ 'axis' => $stack ? 'column' : 'row', 'gap_px' => $gap, 'raw_copy_basis_width_px' => round( $copy_basis, 2 ), 'raw_image_basis_width_px' => round( $image_basis, 2 ), 'native_flex_shrink_adjustment_px' => round( $shrink, 2 ), 'effective_copy_width_px' => round( $copy_effective, 2 ), 'effective_image_width_px' => round( $image_effective, 2 ), 'required_width_after_native_shrink_px' => round( $required_width, 2 ), 'overflow' => $overflow ];
 			} else {
-				$gap = $device === 'mobile' ? 20 : 24;
-				$row_gap = 24;
-				$icon_width = 36.0;
-				$copy_basis = $available * 0.9;
-				$copy_effective = max( 0.0, min( $copy_basis, $available - $icon_width - $gap ) );
-				$sample += [ 'list_gap_px' => $row_gap, 'item_axis' => 'row', 'item_gap_px' => $gap, 'icon_width_px' => $icon_width, 'copy_basis_percent' => 90, 'copy_effective_width_px' => round( $copy_effective, 2 ), 'overflow' => ( $icon_width + $gap + $copy_effective ) > $available + 0.01 ];
+				$row_policy = (array) ( $plan['visual_policy']['list_row'] ?? [] );
+				$collection_width = (string) ( $collection_policy['width'][$device] ?? '100%' );
+				$list_width_cap = str_ends_with( $collection_width, '%' ) ? $available * (float) rtrim( $collection_width, '%' ) / 100 : wpae_layout_report_length_px( $collection_width, $container_sample, $available );
+				$list_width = min( $available, max( 0.0, $list_width_cap ) );
+				$gap = wpae_layout_report_length_px( $row_policy['gap'][$device] ?? '1rem', $container_sample, 16 );
+				$row_gap = wpae_layout_report_length_px( $collection_policy['gap'][$device] ?? '1.25rem', $container_sample, 20 );
+				$icon_width = wpae_layout_report_length_px( $row_policy['icon_width'] ?? '44px', $container_sample, 44 );
+				$copy_measure = wpae_layout_report_length_px( $row_policy['copy_measure'] ?? '48rem', $container_sample, 768 );
+				$copy_effective = min( $copy_measure, max( 0.0, $list_width - $icon_width - $gap ) );
+				$sample += [ 'axis' => 'vertical_list_with_horizontal_item_rows', 'list_width_px' => round( $list_width, 2 ), 'collection_alignment' => $collection_policy['alignment'] ?? 'start', 'list_gap_px' => round( $row_gap, 2 ), 'item_axis' => $row_policy['direction'][$device] ?? 'row', 'item_gap_px' => round( $gap, 2 ), 'icon_width_px' => round( $icon_width, 2 ), 'copy_measure_px' => round( $copy_measure, 2 ), 'copy_available_width_px' => round( max( 0.0, $list_width - $icon_width - $gap ), 2 ), 'copy_effective_width_px' => round( $copy_effective, 2 ), 'overflow' => ( $icon_width + $gap + $copy_effective ) > $list_width + 0.01 ];
 			}
 			$sample['card_or_row_inner_padding_px'] = $recipe_layout['card_or_row_padding_px'][ $device ] ?? 0;
 			$recipe_layout['geometry_samples'][] = $sample;
@@ -137,7 +141,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 				'columns' => $columns,
 				'column_gap_px' => $gap,
 				'collection_implementation' => $recipe_id === 'services.photo_cards' ? $collection_implementation : null,
-				'column_basis_percent' => $recipe_id === 'services.photo_cards' ? null : ( $recipe_id === 'services.split_editorial' ? ( ! $tablet && ! $mobile ? [ 'copy' => 52, 'image' => 44 ] : [ 'copy' => 100 ] ) : [ 'icon' => 10, 'copy' => 90 ] ),
+				'column_basis_percent' => $recipe_id === 'services.photo_cards' || $recipe_id === 'services.text_icon_list' ? null : ( $recipe_id === 'services.split_editorial' ? ( ! $tablet && ! $mobile ? [ 'copy' => 52, 'image' => 44 ] : [ 'copy' => 100 ] ) : null ),
 				'column_width_formula' => $recipe_id === 'services.photo_cards' ? '(container_width - (columns - 1) * gap) / columns' : null,
 				'estimated_column_width_px' => round( $column_width, 2 ),
 				'axis' => $recipe_id === 'services.photo_cards'
@@ -253,16 +257,33 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 	$collections = [];
 	if ( ! empty( $plan['visual_policy'] ) ) {
 		foreach ( $children as $child ) {
-			if ( ! in_array( $child['role'] ?? '', [ 'feature_cards', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid' ], true ) ) { continue; }
+			if ( ! in_array( $child['role'] ?? '', [ 'feature_cards', 'feature_list', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid', 'services_text_icon_list' ], true ) ) { continue; }
 			$collection = $plan['visual_policy']['collection'];
 			$samples = [];
 			foreach ( $reports as $row ) {
 				$device = $row['device_assumption'];
-				$columns = $collection['columns'][ $device ];
-				$gap = wpae_layout_report_length_px( $collection['gap'][ $device ], $row['viewport_width'], 24 );
 				$width = $row['container_width'];
+				$gap = wpae_layout_report_length_px( $collection['gap'][ $device ] ?? '1.5rem', $row['viewport_width'], 24 );
+				if ( ( $collection['axis'] ?? 'grid' ) === 'list' ) {
+					$width_spec = (string) ( $collection['width'][$device] ?? '100%' );
+					$width_cap = str_ends_with( $width_spec, '%' ) ? $width * (float) rtrim( $width_spec, '%' ) / 100 : wpae_layout_report_length_px( $width_spec, $row['viewport_width'], $width );
+					$used_width = min( $width, max( 0, $width_cap ) );
+					$sample = [ 'breakpoint' => $row['breakpoint'], 'device' => $device, 'axis' => 'list', 'container_width_px' => $width, 'max_width_spec' => $width_spec, 'used_width_px' => round( $used_width, 2 ), 'alignment' => $collection['alignment'] ?? 'start', 'items' => count( (array) ( $child['items'] ?? [] ) ), 'vertical_gap_px' => round( $gap, 2 ), 'formula' => 'min(container_width, accepted collection width)', 'item_height_mode' => $collection['item_height'] ?? 'legacy_unspecified', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
+					$tracks = (array) ( $plan['visual_policy']['entity_layout']['tracks'] ?? [] );
+					if ( $tracks ) {
+						$track_gap = wpae_layout_report_length_px( $tracks['gap'][$device] ?? '1rem', $row['viewport_width'], 16 );
+						$track_width = max( 0, $used_width - $track_gap );
+						$identity = $track_width * ( (float) ( $tracks['identity_percent'] ?? 50 ) / 100 );
+						$copy = $track_width * ( (float) ( $tracks['copy_percent'] ?? 50 ) / 100 );
+						$copy_measure = wpae_layout_report_length_px( $tracks['copy_measure'] ?? '100rem', $row['viewport_width'], $copy );
+						$sample['entity_tracks'] = [ 'identity_percent' => $tracks['identity_percent'] ?? null, 'copy_percent' => $tracks['copy_percent'] ?? null, 'gap_px' => round( $track_gap, 2 ), 'identity_width_px' => round( $identity, 2 ), 'copy_available_width_px' => round( $copy, 2 ), 'copy_measure_px' => round( min( $copy, $copy_measure ), 2 ), 'direction' => $tracks['direction'][$device] ?? null, 'mobile_order' => $tracks['mobile_order'] ?? [] ];
+					}
+					$samples[] = $sample;
+					continue;
+				}
+				$columns = max( 1, (int) ( $collection['columns'][$device] ?? 1 ) );
 				$cell = max( 0, ( $width - max( 0, $columns - 1 ) * $gap ) / $columns );
-				$samples[] = [ 'breakpoint' => $row['breakpoint'], 'container_width' => $width, 'columns' => $columns, 'gap_px' => $gap, 'cell_width_px' => $cell, 'used_width' => $cell * $columns + max( 0, $columns - 1 ) * $gap, 'formula' => '(container_width - (columns - 1) * gap) / columns', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
+				$samples[] = [ 'breakpoint' => $row['breakpoint'], 'device' => $device, 'axis' => 'grid', 'container_width' => $width, 'columns' => $columns, 'gap_px' => $gap, 'cell_width_px' => $cell, 'used_width' => $cell * $columns + max( 0, $columns - 1 ) * $gap, 'formula' => '(container_width - (columns - 1) * gap) / columns', 'item_height_mode' => $collection['item_height'] ?? 'legacy_unspecified', 'cross_axis_item_alignment' => ( $collection['item_height'] ?? '' ) === 'content' ? 'start' : 'stretch', 'inline_item_alignment' => 'stretch', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
 			}
 			$collections[] = [ 'role' => $child['role'], 'item_count' => count( (array) ( $child['items'] ?? [] ) ), 'native_controls' => $collection, 'samples' => $samples ];
 		}

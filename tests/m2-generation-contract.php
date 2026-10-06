@@ -270,8 +270,29 @@ foreach ( [ 'hero' => 'h1', 'about' => 'h2' ] as $family => $level ) {
 
 foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
  $case = $run_services_route( $m2_benefits, [], $incompatible_pricing_fixture, 'm2-list-reading-scope-' . $profile, false, 'active', 'active', [ 'composition_record' => 'benefits.editorial_list', 'composition_version' => 1, 'visual_profile' => $profile ] );
+ $direct_brief = wpae_brief_ir_parse( $m2_benefits );
+ $direct_plan = wpae_design_plan_from_brief( $direct_brief, [ 'canonical_create' => true, 'composition_record' => 'benefits.editorial_list', 'composition_version' => 1, 'visual_profile' => $profile ] );
+ $direct_ir = wpae_elementor_ir_from_design_plan( $direct_plan, $direct_brief );
+ $direct_compiled = wpae_elementor_ir_compile( $direct_ir, $direct_brief, [], [ 'resolved_visual' => $direct_plan['resolved_visual'] ?? [] ] );
+ $find_list = static function ( array $nodes ) use ( &$find_list ) { foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } $children = (array) ( $node['elements'] ?? [] ); $has_row = (bool) array_filter( $children, static fn( $child ): bool => is_array( $child ) && str_contains( (string) ( $child['settings']['_css_classes'] ?? '' ), 'wpae-benefits-list-row' ) ); if ( $has_row ) { return $node; } $found = $find_list( $children ); if ( $found ) { return $found; } } return null; };
+ $direct_data = (array) ( $direct_compiled['elementor_data'] ?? [] );
+ $collection = $find_list( $direct_data );
+ $source_rows = array_values( array_filter( (array) ( $collection['elements'] ?? [] ), static fn( array $node ): bool => str_contains( (string) ( $node['settings']['_css_classes'] ?? '' ), 'wpae-benefits-list-row' ) ) );
+ $accepted_policy = (array) ( $direct_plan['visual_policy']['collection'] ?? [] );
+ check( ! empty( $direct_compiled['ok'] ) && ( $accepted_policy['axis'] ?? '' ) === 'list' && ( $collection['settings']['container_type'] ?? '' ) === 'flex' && ( $collection['settings']['flex_direction'] ?? '' ) === 'column' && ( $collection['settings']['width']['unit'] ?? '' ) === 'custom' && ( $collection['settings']['width']['size'] ?? '' ) === 'min(100%, 54rem)' && ( $collection['settings']['width_mobile']['unit'] ?? '' ) === '%' && (float) ( $collection['settings']['width_mobile']['size'] ?? 0 ) === 100.0, 'Benefits accepted collection width is preserved through its enclosing section and remains a native linear list ' . $profile );
+ $row_geometry = array_map( static fn( array $row ): array => [ 'direction' => $row['settings']['flex_direction'] ?? null, 'marker' => $row['settings']['_wpae_visual_policy_version'] ?? null, 'gap' => $row['settings']['flex_gap'] ?? null, 'min_height' => $row['settings']['min_height'] ?? null, 'max_height' => $row['settings']['max_height'] ?? null ], $source_rows );
+ check( count( $source_rows ) === count( $direct_brief['groups'] ) && array_reduce( $source_rows, static fn( bool $ok, array $row ): bool => $ok && ( $row['settings']['flex_direction'] ?? '' ) === 'row' && ( $row['settings']['_wpae_visual_policy_version'] ?? 0 ) === 1 && ( $row['settings']['flex_gap']['unit'] ?? '' ) === 'rem' && (float) ( $row['settings']['flex_gap']['size'] ?? 0 ) === 1.0 && empty( $row['settings']['min_height'] ) && empty( $row['settings']['max_height'] ), true ), 'Benefits icon/copy rows keep accepted native horizontal tracks, gap, and natural full-height text ' . $profile . ' ' . wp_json_encode( $row_geometry ) );
+ $legacy_bento_changed = 0; $legacy_candidate = wpae_llm_apply_bento_layout( $direct_data, 'benefits', $legacy_bento_changed );
+ $legacy_changed = 0; $legacy_candidate = wpae_llm_normalize_native_visual_contract( $legacy_candidate, $m2_benefits, 'benefits', $legacy_changed, $direct_brief );
+ $legacy_changed = 0; $legacy_candidate = wpae_llm_apply_generation_visual_grammar( $legacy_candidate, 'benefits', $legacy_changed );
+ $legacy_changed = 0; wpae_llm_normalize_bento_grids_recursive( $legacy_candidate, $legacy_changed, 'benefits' );
+ $legacy_changed = 0; $legacy_candidate = wpae_llm_enforce_flex_layout_contract( $legacy_candidate, 'benefits', $legacy_changed );
+ check( wpae_llm_decision_signature( $legacy_candidate ) === wpae_llm_decision_signature( $direct_data ), 'Legacy visual/bento/flex normalizers leave accepted typed geometry unchanged ' . $profile );
  $rows = $case['written']['elements'][0]['elements'] ?? [];
- check( ! empty( $case['response']['ok'] ) && count( $rows ) === 2 && $rows[0]['elements'][1]['settings']['content_width'] === 'full' && ! isset( $rows[0]['elements'][1]['settings']['boxed_width'] ) && ( $rows[0]['elements'][1]['elements'][0]['widgetType'] ?? '' ) === 'heading', 'Section reading width must not center item copy away from native list icon ' . $profile );
+ $written_list = $find_list( [ $case['written'] ] );
+ $production_copy = wpae_llm_collect_action_content( [ $case['written'] ] );
+ $compiled_copy = wpae_llm_collect_action_content( $direct_data );
+ check( ! empty( $case['response']['ok'] ) && count( $rows ) === 2 && ( $written_list['settings']['flex_direction'] ?? '' ) === 'column' && ( $written_list['settings']['width']['size'] ?? '' ) === 'min(100%, 54rem)' && ! str_contains( (string) ( $written_list['settings']['_css_classes'] ?? '' ), 'wpae-bento-grid' ) && $production_copy === $compiled_copy, 'Production chat write/readback preserves linear width, unboxed item copy and exact authored content ' . $profile );
 }
 
 // Pricing collection responsive controls translate the accepted stack policy.

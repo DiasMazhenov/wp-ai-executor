@@ -56,7 +56,7 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "3020071626a0fd8314c71a4f0e58fb874585fe2d60f2e9fc795272d0898477f3",
-    "includes/elementor/elementor-ir.php": "7fad343d0065564136423392aa569a5d9112f8d21049ca96390c6442cdf6a861",
+    "includes/elementor/elementor-ir.php": "8bdaa9563b25d498a499fa2abc128d91af23f4dc704c2ff58664377db8c8f6c2",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
     "includes/elementor/imported-templates/03-pricing.json": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
@@ -216,7 +216,7 @@
     "includes/elementor/imported-templates/theme-builder-footer-elementor-pro-cfbed702.json": "cfbed7020e2c74b80c15b217c50accf90f40d74823649475810974c3304873e1",
     "includes/elementor/imported-templates/theme-builder-header-elementor-pro-43da6d96.json": "43da6d9619da2be8bad1fb500ba98a6772305666cb386de6ce2b80946c46f745",
     "includes/elementor/imported-templates/venue.json": "3f91487de940fb3789237c85099da0918cf37ccdb488e79022d293d07cfa3c36",
-    "includes/elementor/layout-report.php": "c1678e16b08aa69e26919cf4cced46c164b70a9b40003872e98d64db0c2bbcdd",
+    "includes/elementor/layout-report.php": "3dd46be7ecd9e2a755196d1a028d10bb20c35c088e7164951567366eb4a4c3a4",
     "includes/elementor/native-compiler.php": "819facedb8944c91c6be8020d11b4614a687fd943a790b6dcb6d092f263b5492",
     "includes/elementor/native-roundtrip.php": "c79b742fa2f186b081a94687ce6888f46b5e6cc0a5e372bae831ea20ba4d01d1",
     "includes/elementor/normalize.php": "f147d2fd8b5c0cbac34f510fa1470d835d34ebda92e8171c564443d71e6f8ee9",
@@ -239,9 +239,9 @@
     "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
     "includes/llm/brief-ir.php": "d699888449ead6f3b764638c3630af22b5ad2ffbcf760421bcbe24aba603badd",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "e17ce44a2fd6332c02ccfb6c3d30323649cf34a369bfe6e9b3c6126a59c535f3",
+    "includes/llm/design-plan.php": "08545fa402a4cd1e949acd29e9ab3b7443990f765e53c7e52afbea0b8774dfcc",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "6428a926a5b6567c216c9de24b51c7edc31978626862444f81997ba3a4381082",
+    "includes/llm/llm.php": "39597f782ab6784d80d76634149e8523c0cfe2363dc8f547dc1f55ec4a7a71fa",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
     "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "896fc4126b5700b9e25831fcbc49b46275dcbf072f3b433863a941e7c7216548"
+    "wp-ai-executor.php": "5e61b7581c2e94dec4d61483a381e3e0aa3e35055f775e9bba2385e9b2b21ffa"
   }
 }

@@ -38,6 +38,16 @@ function wpae_design_plan_constraint_value( array $brief, string $kind, $default
 	return $default;
 }
 
+/** Restrict frozen geometry to simple, bounded native lengths. */
+function wpae_design_plan_layout_measure_valid( $value, bool $allow_percent = false ): bool {
+	if ( ! is_string( $value ) && ! is_numeric( $value ) ) { return false; }
+	$value = trim( (string) $value );
+	if ( ! preg_match( '/^(?:0|[1-9]\d*(?:\.\d+)?|0\.\d+)(px|rem|em|%)$/', $value, $matches ) ) { return false; }
+	if ( $matches[1] === '%' && ! $allow_percent ) { return false; }
+	$number = (float) substr( $value, 0, -strlen( $matches[1] ) );
+	return $number >= 0 && $number <= ( $matches[1] === '%' ? 100 : 1600 );
+}
+
 function wpae_design_plan_content_refs( array $brief, array $roles = [] ): array {
 	$refs = [];
 	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
@@ -904,6 +914,51 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	$item_count = $item_count ?: count( (array) ( $brief['groups'] ?? [] ) );
 	$columns = min( 3, max( 1, $item_count ) );
 	if ( in_array( $item_count, [ 4, 6 ], true ) ) { $columns = 2; }
+	$entity_variant = (string) ( $record_policy['entity_layout'] ?? '' );
+	$is_list = $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list' || $entity_variant === 'editorial_rows';
+	$is_icon_list = $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list';
+	$collection_width = [
+		'desktop' => $pick( 'collection_width_desktop', $is_icon_list ? '54rem' : '100%' ),
+		'tablet' => $pick( 'collection_width_tablet', '100%' ),
+		'mobile' => $pick( 'collection_width_mobile', '100%' ),
+	];
+	$collection_gap = [
+		'desktop' => $pick( 'collection_gap_desktop', $is_list ? '1.25rem' : $values['space.component'] ),
+		'tablet' => $pick( 'collection_gap_tablet', $is_list ? '1.125rem' : ( $values['space.component_tablet'] ?? $values['space.component'] ) ),
+		'mobile' => $pick( 'collection_gap_mobile', $is_list ? '1rem' : ( $values['space.component_mobile'] ?? '1rem' ) ),
+	];
+	$has_authored_actions = false;
+	foreach ( (array) ( $brief['groups'] ?? [] ) as $group ) {
+		if ( is_array( $group ) && ( ! empty( $group['action_ref'] ) || ! empty( $group['cta_ref'] ) ) ) { $has_authored_actions = true; break; }
+	}
+	if ( ! $has_authored_actions ) {
+		foreach ( (array) ( $brief['content'] ?? [] ) as $content_slot ) {
+			if ( is_array( $content_slot ) && preg_match( '/(?:action|cta)/i', (string) ( $content_slot['role'] ?? '' ) ) && trim( (string) ( $content_slot['id'] ?? $content_slot['exact_text'] ?? '' ) ) !== '' ) { $has_authored_actions = true; break; }
+		}
+	}
+	if ( ! $has_authored_actions ) {
+		foreach ( (array) ( $brief['recipe_items'] ?? [] ) as $recipe_item ) {
+			if ( is_array( $recipe_item ) && ( ! empty( $recipe_item['action_ref'] ) || ! empty( $recipe_item['cta_ref'] ) ) ) { $has_authored_actions = true; break; }
+		}
+	}
+	$item_height_mode = (string) $pick( 'collection_item_height', $has_authored_actions ? 'equal_row' : 'content' );
+	$collection_alignment = (string) $pick( 'collection_alignment', 'start' );
+	$entity_tracks = null;
+	if ( $entity_variant === 'editorial_rows' ) {
+		$identity_default = $family === 'team' ? 34 : 24;
+		$entity_tracks = [
+			'identity_percent' => (int) $pick( 'entity_identity_percent', $identity_default ),
+			'copy_percent' => (int) $pick( 'entity_copy_percent', 100 - $identity_default ),
+			'copy_measure' => $pick( 'entity_copy_measure', $family === 'team' ? '48rem' : '54rem' ),
+			'gap' => [
+				'desktop' => $pick( 'entity_gap_desktop', '2rem' ),
+				'tablet' => $pick( 'entity_gap_tablet', '1.5rem' ),
+				'mobile' => $pick( 'entity_gap_mobile', '1rem' ),
+			],
+			'direction' => [ 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column' ],
+			'mobile_order' => [ 'identity', 'copy' ],
+		];
+	}
 	// New accepted repeat groups use equal fraction tracks so native Grid owns
 	// (container width - all gaps) / columns without percentage compensation.
 	$collection_implementation_default = 'native_grid';
@@ -920,13 +975,15 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		'eyebrow_colors' => [ 'plain' => $values['color.primary'], 'pill' => $family === 'services' ? $values['color.text'] : $values['color.surface'], 'pill_background' => $family === 'services' ? $values['color.surface'] : $values['color.primary'], 'pill_border' => $family === 'services' ? $values['color.muted'] : $values['color.primary'] ],
 		'item_surface' => [ 'padding' => $values['space.card'] ?? '1.5rem', 'radius' => $values['radius.card'], 'background' => $values['color.surface'] ],
 		// Inline values (price + period) keep their shared start axis when space narrows.
-		'entity_layout' => [ 'variant' => $record_policy['entity_layout'] ?? 'grid', 'columns' => [ 'desktop' => ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ], 'gap' => $pick( 'item_copy_gap', '0.75rem' ) ],
+		'entity_layout' => array_filter( [ 'variant' => $record_policy['entity_layout'] ?? 'grid', 'columns' => [ 'desktop' => $entity_variant === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ], 'gap' => $pick( 'item_copy_gap', '0.75rem' ), 'tracks' => $entity_tracks ], static fn( $value ): bool => $value !== null ),
 		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
-		'collection' => [ 'implementation' => $collection_implementation, 'item_count' => $item_count, 'columns' => [ 'desktop' => (int) $pick( 'columns', ( $record_policy['entity_layout'] ?? '' ) === 'editorial_rows' ? 1 : $columns ), 'tablet' => ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ] ],
+		'collection' => [ 'implementation' => $collection_implementation, 'axis' => $is_list ? 'list' : 'grid', 'alignment' => $collection_alignment, 'width' => $collection_width, 'item_height' => $item_height_mode, 'item_count' => $item_count, 'columns' => [ 'desktop' => (int) $pick( 'columns', $is_list ? 1 : $columns ), 'tablet' => $is_list || ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( 2, $columns ), 'mobile' => 1 ], 'gap' => $collection_gap ],
+		'list_row' => $is_list && ( $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list' ) ? [ 'icon_width' => $pick( 'list_icon_width', '44px' ), 'gap' => [ 'desktop' => $pick( 'list_item_gap_desktop', '1rem' ), 'tablet' => $pick( 'list_item_gap_tablet', '1rem' ), 'mobile' => $pick( 'list_item_gap_mobile', '0.75rem' ) ], 'copy_measure' => $pick( 'list_copy_measure', '48rem' ), 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ] ] : null,
 		'cards' => [ 'direction' => 'column', 'row_alignment' => 'stretch', 'body_actions_distribution' => 'space_between', 'body_copy_gap' => $pick( 'item_copy_gap', '0.75rem' ), 'media_copy_gap' => $pick( 'item_media_gap', $values['space.component'] ), 'body_actions_gap' => $pick( 'item_cta_gap', '1.25rem' ), 'mobile_height' => 'content', 'footer' => 'when_actions_exist' ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
 	];
 	$field_sources['inline_value'] = 'documented_default';
+	$policy = array_filter( $policy, static fn( $value ): bool => $value !== null );
 	$policy['provenance'] = [ 'record_id' => $record['id'] ?? '', 'profile' => $visual['profile'] ?? '', 'field_sources' => $field_sources, 'token_sources' => $visual['sources'] ?? [] ];
 	return $policy;
 }
@@ -939,7 +996,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		if ( $archetype !== 'services' ) {
 			$recipe_plan['archetype'] = $archetype;
 		}
-		if ( ! empty( $context['canonical_create'] ) ) { $recipe_plan['resolved_visual'] = wpae_design_plan_resolve_visual( $brief, $context ); $recipe_plan['visual_policy'] = wpae_design_plan_visual_policy( $brief, [], $recipe_plan['resolved_visual'], 'linear', $recipe_plan['responsive'], 0, (string) ( $recipe_plan['recipe_id'] ?? '' ) ); }
+		if ( ! empty( $context['canonical_create'] ) ) { $recipe_plan['resolved_visual'] = wpae_design_plan_resolve_visual( $brief, $context ); $recipe_plan['visual_policy'] = wpae_design_plan_visual_policy( $brief, [], $recipe_plan['resolved_visual'], 'linear', $recipe_plan['responsive'], count( (array) ( $recipe_plan['slot_bindings']['services'] ?? [] ) ), (string) ( $recipe_plan['recipe_id'] ?? '' ) ); }
 		return $recipe_plan;
 	}
 	if ( ! in_array( $archetype, wpae_design_plan_schema()['archetypes'], true ) ) {
@@ -1760,6 +1817,42 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			$cards = $visual_policy['cards'];
 			if ( ! is_array( $cards ) || ( $cards['direction'] ?? '' ) !== 'column' || ( $cards['row_alignment'] ?? '' ) !== 'stretch' || ( $cards['body_actions_distribution'] ?? '' ) !== 'space_between' || ( $cards['mobile_height'] ?? '' ) !== 'content' || ( $cards['footer'] ?? '' ) !== 'when_actions_exist' ) { $errors[] = 'visual_policy_cards_invalid'; }
 			foreach ( [ 'body_copy_gap', 'media_copy_gap', 'body_actions_gap' ] as $gap_key ) { if ( ! preg_match( '/^(?:0|[1-9]\d*(?:\.\d+)?|0\.\d+)(?:px|rem|em)$/', (string) ( $cards[$gap_key] ?? '' ) ) ) { $errors[] = 'visual_policy_cards_spacing_invalid'; } }
+		}
+		$collection = (array) ( $visual_policy['collection'] ?? [] );
+		if ( isset( $collection['axis'] ) ) {
+			$expected_axis = ( ( $plan['sections'][0]['composition'] ?? '' ) === 'editorial_list' || ( $plan['recipe_id'] ?? '' ) === 'services.text_icon_list' || ( $visual_policy['entity_layout']['variant'] ?? '' ) === 'editorial_rows' ) ? 'list' : 'grid';
+			if ( ! in_array( $collection['axis'], [ 'grid', 'list' ], true ) || $collection['axis'] !== $expected_axis ) { $errors[] = 'visual_policy_collection_axis_invalid'; }
+			if ( ! in_array( $collection['alignment'] ?? '', [ 'start', 'center', 'end' ], true ) ) { $errors[] = 'visual_policy_collection_alignment_invalid'; }
+			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) {
+				if ( ! wpae_design_plan_layout_measure_valid( $collection['width'][$device] ?? null, true ) ) { $errors[] = 'visual_policy_collection_width_invalid:' . $device; }
+				if ( ! wpae_design_plan_layout_measure_valid( $collection['gap'][$device] ?? null ) ) { $errors[] = 'visual_policy_collection_gap_invalid:' . $device; }
+			}
+			if ( ! in_array( $collection['item_height'] ?? '', [ 'equal_row', 'content' ], true ) ) { $errors[] = 'visual_policy_collection_item_height_invalid'; }
+			if ( $collection['axis'] === 'list' && array_filter( (array) ( $collection['columns'] ?? [] ), static fn( $count ): bool => $count !== 1 ) ) { $errors[] = 'visual_policy_list_columns_invalid'; }
+			$contains_action = static function ( $value ) use ( &$contains_action ): bool {
+				if ( ! is_array( $value ) ) { return false; }
+				foreach ( $value as $key => $child ) {
+					if ( is_string( $key ) && preg_match( '/(?:action|cta)_ref$/', $key ) && is_scalar( $child ) && trim( (string) $child ) !== '' ) { return true; }
+					if ( $contains_action( $child ) ) { return true; }
+				}
+				return false;
+			};
+			if ( ( $collection['item_height'] ?? '' ) === 'content' && $contains_action( [ $brief['groups'] ?? [], $brief['content'] ?? [], $plan['sections'] ?? [], $plan['slot_bindings'] ?? [] ] ) ) { $errors[] = 'visual_policy_content_height_with_actions'; }
+		}
+		if ( isset( $visual_policy['list_row'] ) ) {
+			$row = (array) $visual_policy['list_row'];
+			if ( ( $collection['axis'] ?? '' ) !== 'list' || ! in_array( $row['direction']['desktop'] ?? '', [ 'row' ], true ) || ! in_array( $row['direction']['tablet'] ?? '', [ 'row' ], true ) || ! in_array( $row['direction']['mobile'] ?? '', [ 'row' ], true ) ) { $errors[] = 'visual_policy_list_row_invalid'; }
+			if ( ! wpae_design_plan_layout_measure_valid( $row['icon_width'] ?? null ) || ! wpae_design_plan_layout_measure_valid( $row['copy_measure'] ?? null ) ) { $errors[] = 'visual_policy_list_row_measure_invalid'; }
+			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! wpae_design_plan_layout_measure_valid( $row['gap'][$device] ?? null ) ) { $errors[] = 'visual_policy_list_row_gap_invalid:' . $device; } }
+		}
+		$entity_tracks = (array) ( $visual_policy['entity_layout']['tracks'] ?? [] );
+		if ( $entity_tracks ) {
+			$identity_percent = $entity_tracks['identity_percent'] ?? null;
+			$copy_percent = $entity_tracks['copy_percent'] ?? null;
+			if ( ( $visual_policy['entity_layout']['variant'] ?? '' ) !== 'editorial_rows' || ! is_int( $identity_percent ) || ! is_int( $copy_percent ) || $identity_percent < 20 || $identity_percent > 45 || $copy_percent < 55 || $copy_percent > 80 || $identity_percent + $copy_percent !== 100 ) { $errors[] = 'visual_policy_entity_tracks_invalid'; }
+			if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks['copy_measure'] ?? null ) ) { $errors[] = 'visual_policy_entity_copy_measure_invalid'; }
+			if ( ( $entity_tracks['direction'] ?? [] ) !== [ 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column' ] || ( $entity_tracks['mobile_order'] ?? [] ) !== [ 'identity', 'copy' ] ) { $errors[] = 'visual_policy_entity_responsive_invalid'; }
+			foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) { if ( ! wpae_design_plan_layout_measure_valid( $entity_tracks['gap'][$device] ?? null ) ) { $errors[] = 'visual_policy_entity_gap_invalid:' . $device; } }
 		}
 		if ( isset( $visual_policy['inline_value'] ) ) {
 			$inline = $visual_policy['inline_value'];
