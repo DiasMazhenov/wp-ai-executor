@@ -90,3 +90,9 @@ The operation-scoped Undo succeeded without manual deletion. Fresh editor state 
 The machine-readable [acceptance matrix](acceptance-matrix.json), [DOM measurements](live-measurements.json), first-result [pipeline trace](screenshots/benefits-first-trace-v275.json), post-reload [operation descriptor](screenshots/operation-after-reload-v275.json), and [final baseline readback](screenshots/final-baseline-v275.json) preserve the source evidence. JPEG screenshot bytes were retained alongside the converted PNGs; PNG format and 1232×923 dimensions were checked, and each PNG was opened and visually inspected.
 
 Generation count: 1. Retry/repair count: 0. Root: `65e8e26`. Overall: technical lifecycle, exact content, native topology, desktop geometry and desktop visual composition pass; public mobile remains blocked.
+
+## Remote status and remaining evidence
+
+Runtime commit `c6034f566e9c34d8a56b6365e05dc4497ec7da1e` was pushed and independently confirmed on `origin/main` before the documentation commit. The scoped report/evidence commit `787d5af5419936846908774be3332ef70bba4c6b` was then pushed; a separate `git ls-remote origin refs/heads/main` returned that exact SHA. The report, matrix, canonical context, handoff report, architecture note and checked screenshots are therefore published.
+
+The only material browser-evidence gap is public mobile rendering. A practical follow-up is to capture this same accepted composition at a real public mobile CSS viewport once the documented Browser Use controls expose viewport emulation. The page is already restored to the empty root set, so that visual check does not require another generation.
