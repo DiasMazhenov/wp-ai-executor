@@ -94,6 +94,36 @@ Screenshot bytes Browser Use сохранены как JPEG, signature пров�
 
 The user supplied WP AI Executor's plugin-specific Push-to-Deploy endpoint. WP Pusher documents this as a secret endpoint where an HTTP request triggers an update; its token is intentionally omitted from this audit. The first attempt navigated the existing WP Pusher Browser Use tab to the endpoint. `Page.navigate` timed out, and Chromium displayed `ERR_HTTP_RESPONSE_CODE_FAILURE`. This replaced the visible Pusher page and did not provide a successful deployment response.
 
-A subsequent non-navigation Node REPL `fetch` against the validated WP AI Executor package endpoint failed before connection with `ENOTFOUND`. Existing Plugins and editor tabs were separately screenshot-checked after the navigation attempt and both still displayed v02.11.270. No editor reload, live page write, recovery/Undo, or generation occurred. The v271 installation and Accordion recovery remain blocked.
+A subsequent non-navigation Node REPL `fetch` against the validated WP AI Executor package endpoint failed before connection with `ENOTFOUND`. Existing Plugins and editor tabs were separately screenshot-checked after the navigation attempt and both still displayed v02.11.270. No editor reload, live page write, recovery/Undo, or generation occurred. The v271 installation and Accordion recovery remain blocked. These statements are historical and the installation outcome below supersedes them.
 
 Sources: [WP Pusher Push-to-Deploy](https://docs.wppusher.com/article/24-automatic-updates-with-push-to-deploy); [WP Pusher plugin management](https://docs.wppusher.com/article/13-working-with-plugins-and-themes).
+
+## Correction and live checkpoint — 2026-10-06
+
+The preceding Push-to-Deploy paragraph is historical and is superseded for installation status by this checkpoint. The secret URL was not used. A root `.gitattributes` export-ignore change was committed as `53d8d212e8a82f1d630671c53497d810792deaf9` and pushed; independent `git ls-remote origin refs/heads/main` matched that SHA. It excludes development `docs/`, `tests/`, and root documents from GitHub source archives. Tracked archive size fell from 57,378,466 bytes / 900 files to 3,174,512 bytes / 278 files. The resulting archive includes `wp-ai-executor.php`, `wpae-package.json`, and all 253 manifest files. Probe: 253 hashes, 0 mismatches, 4 probe cases. The exact WP Pusher copy failure was not disclosed, so archive bloat is a strong evidence-based cause, not a confirmed internal error trace.
+
+The normal update control in the existing WP Pusher Plugins row for `DiasMazhenov/wp-ai-executor` reported “Plugin was successfully updated.” Plugins PHP reported `v02.11.271`. The existing Elementor editor was clean (Publish disabled), reloaded in the same tab, and its inline config independently reported `v02.11.271`. No other plugin or WordPress setting was changed. Source runtime remains v271; the packaging commit did not change plugin code or raise the version.
+
+### Fresh read-only page and operation state
+
+After install, the fresh editor saved-baseline bootstrap reported one root, `[1a1d059]`, and public DOM after a public-tab reload reported the same generated root and FAQ text. The saved server-bootstrap native tree is recorded in [faq-current-server-native-after-v271.json](faq-current-server-native-after-v271.json). It preserves root/widget IDs and the Accordion question/answer entries; no JSON was imported or written. Public CSS viewport is 1232×923.
+
+The FAQ descriptor was read through its own “Обновить серверный descriptor” UI control, not a raw endpoint. Exact returned scope: post 5214, operation `wpae-c616e5dbb2a2a125`, identity `5e6a84de-849f-4012-a012-284fbcbfb2af`, accepted contract `contract-93cf3469f9d3e1e759c2d774`, root `1a1d059`, revision 5. Fresh eligibility remained `unavailable/contract_expired`; `write_count=0`. The v271 accepted-contract path intentionally refuses expired/missing contracts, so the proof-gated recovery cannot authorize Undo in this state. Undo remained disabled; no request to mutate was sent, no root was manually removed, and no new generation was started. Final live root set remains `[1a1d059]`. The historic baseline `b48abe1` and Services root `bcfeab4` were user-deleted earlier; neither was recreated. Live-generation count for this continuation is 0.
+
+Fresh visual evidence below is a current public viewport capture of the existing v270 FAQ after the v271 install and reload. It is not a new v271 generation or post-generation acceptance screenshot. Its bytes were captured with Browser Use, initially JPEG (28,011 bytes, JPEG signature `FF D8 FF E0`), converted to PNG, verified as 1232×923 RGB, opened, and visually inspected. The current render shows the native two-item Accordion on the pale beige section, one short answer open, and the site-owned chat bubble at lower right outside the FAQ card. No mobile viewport was claimed.
+
+![Existing FAQ root after v271 install — post 5214, root 1a1d059, operation wpae-c616e5dbb2a2a125 / identity 5e6a84de-849f-4012-a012-284fbcbfb2af, revision 5, public CSS viewport 1232×923, PNG 1232×923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-current-public-after-v271-viewport.png)
+
+[Download the current public PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-native-roundtrip-v271/screenshots/faq-current-public-after-v271-viewport.png)
+
+### Separate statuses
+
+| Area | Status |
+|---|---|
+| Source / packaging | v271 unchanged; scoped archive policy commit `53d8d21` pushed and remote-verified |
+| Install | WP Pusher target-only update succeeded after archive reduction |
+| Installed PHP / editor inline | Both independently show `v02.11.271` |
+| Existing operation read-only descriptor | Exact operation scope confirmed; revision 5; `contract_expired`; `write_count=0` |
+| Guarded Undo / document restoration | Blocked by the expired contract; no mutation attempted; root `[1a1d059]` remains |
+| New v271 FAQ generation | NOT RUN; zero new generations; baseline precondition not met |
+| Current visual evidence | Existing v270 root only; screenshot saved/opened; not v271 acceptance |
