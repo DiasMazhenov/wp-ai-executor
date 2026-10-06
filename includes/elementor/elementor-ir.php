@@ -692,7 +692,10 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		$gap = $has_actions ? $actions_gap : $copy_gap;
 		$settings['flex_gap'] = $settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
 	}
-	if ( in_array( $role, [ 'card_body', 'services_photo_panel' ], true ) ) {
+	// Editorial entity rows own the spacing between identity and copy through
+	// their accepted tracks. Do not let the generic card-body fallback replace
+	// those responsive native controls after visual-policy translation.
+	if ( in_array( $role, [ 'card_body', 'services_photo_panel' ], true ) && ! ( $role === 'card_body' && isset( $policy['entity_layout']['tracks'] ) ) ) {
 		$card = (array) ( $policy['cards'] ?? [] );
 		$gap_value = ( $role === 'card_body' && array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['widget_type'] ?? '' ) === 'image' ) ) ? ( $card['media_copy_gap'] ?? $policy['spacing']['item_copy'] ) : ( $card['body_copy_gap'] ?? $policy['spacing']['item_copy'] );
 		$gap = wpae_elementor_ir_dimension_control( $gap_value, 'rem', 0.75 );

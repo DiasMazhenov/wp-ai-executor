@@ -269,6 +269,14 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 					$width_cap = str_ends_with( $width_spec, '%' ) ? $width * (float) rtrim( $width_spec, '%' ) / 100 : wpae_layout_report_length_px( $width_spec, $row['viewport_width'], $width );
 					$used_width = min( $width, max( 0, $width_cap ) );
 					$sample = [ 'breakpoint' => $row['breakpoint'], 'device' => $device, 'axis' => 'list', 'container_width_px' => $width, 'max_width_spec' => $width_spec, 'used_width_px' => round( $used_width, 2 ), 'alignment' => $collection['alignment'] ?? 'start', 'items' => count( (array) ( $child['items'] ?? [] ) ), 'vertical_gap_px' => round( $gap, 2 ), 'formula' => 'min(container_width, accepted collection width)', 'item_height_mode' => $collection['item_height'] ?? 'legacy_unspecified', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
+					$list_row = (array) ( $plan['visual_policy']['list_row'] ?? [] );
+					if ( $list_row ) {
+						$item_gap = wpae_layout_report_length_px( $list_row['gap'][$device] ?? '1rem', $row['viewport_width'], 16 );
+						$icon_width = wpae_layout_report_length_px( $list_row['icon_width'] ?? '44px', $row['viewport_width'], 44 );
+						$copy_measure = wpae_layout_report_length_px( $list_row['copy_measure'] ?? '48rem', $row['viewport_width'], 768 );
+						$copy_available = max( 0, $used_width - $icon_width - $item_gap );
+						$sample['list_row_tracks'] = [ 'direction' => $list_row['direction'][$device] ?? null, 'icon_width_px' => round( $icon_width, 2 ), 'item_gap_px' => round( $item_gap, 2 ), 'copy_available_width_px' => round( $copy_available, 2 ), 'copy_measure_px' => round( $copy_measure, 2 ), 'copy_effective_width_px' => round( min( $copy_available, $copy_measure ), 2 ), 'copy_width_owner' => 'remaining_native_flex_width_after_icon_and_gap', 'formula' => 'max(0, collection_width - icon_width - item_gap)', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
+					}
 					$tracks = (array) ( $plan['visual_policy']['entity_layout']['tracks'] ?? [] );
 					if ( $tracks ) {
 						$track_gap = wpae_layout_report_length_px( $tracks['gap'][$device] ?? '1rem', $row['viewport_width'], 16 );

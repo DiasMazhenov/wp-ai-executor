@@ -549,6 +549,37 @@ $unpaired_benefits = wpae_design_plan_from_brief( wpae_brief_ir_parse( "Features
 $unpaired_validation = wpae_design_plan_validate( $unpaired_benefits );
 $check( ! $unpaired_validation['ok'] && in_array( 'benefits_unpaired_feature_title', $unpaired_validation['errors'], true ), 'unpaired feature content is rejected instead of assigned to a different card' );
 
+$benefits_list_prompt = "Создай Benefits без фото\nНадзаголовок: «ПРЕИМУЩЕСТВА»\nЗаголовок: «Работаем понятно»\nПреимущество 1: «Понятный план»\nОписание преимущества 1: «Сроки согласованы.»\nПреимущество 2: «Общая команда»\nОписание преимущества 2: «Работаем вместе.»";
+$benefits_list_brief = wpae_brief_ir_parse( $benefits_list_prompt );
+$benefits_list_brief['canonical_create'] = true;
+$benefits_list_plan = wpae_design_plan_from_brief( $benefits_list_brief, [ 'canonical_create' => true, 'composition_record' => 'benefits.editorial_list', 'visual_profile' => 'editorial_light' ] );
+$benefits_list_ir = wpae_elementor_ir_from_design_plan( $benefits_list_plan, $benefits_list_brief );
+$benefits_list_native = wpae_elementor_ir_compile( $benefits_list_ir, $benefits_list_brief, [], [ 'resolved_visual' => $benefits_list_plan['resolved_visual'] ] );
+$benefits_list_walk = static function ( array $nodes ) use ( &$benefits_list_walk ): array {
+	$all = [];
+	foreach ( $nodes as $node ) { if ( is_array( $node ) ) { $all[] = $node; $all = array_merge( $all, $benefits_list_walk( (array) ( $node['elements'] ?? [] ) ) ); } }
+	return $all;
+};
+$benefits_list_flat = $benefits_list_walk( (array) ( $benefits_list_native['elementor_data'] ?? [] ) );
+$benefits_list_collection = array_values( array_filter( $benefits_list_flat, static fn( array $n ): bool => ( $n['settings']['width']['unit'] ?? '' ) === 'custom' && ( $n['settings']['width']['size'] ?? '' ) === 'min(100%, 54rem)' ) )[0] ?? [];
+$benefits_list_rows = array_values( array_filter( $benefits_list_flat, static fn( array $n ): bool => ( $n['settings']['_css_classes'] ?? '' ) === 'wpae-benefits-list-row' ) );
+$check( wpae_design_plan_validate( $benefits_list_plan, $benefits_list_brief )['ok'] && ! empty( $benefits_list_native['ok'] ) && ( $benefits_list_plan['composition_decision']['identity'] ?? '' ) === 'benefits.editorial_list' && ( $benefits_list_plan['visual_policy']['provenance']['field_sources']['collection_width_desktop'] ?? '' ) === 'documented_default', 'Benefits editorial_list freezes its selected record and documented collection-width provenance' );
+$check( count( $benefits_list_rows ) === 2 && ( $benefits_list_collection['settings']['container_type'] ?? '' ) === 'flex' && ( $benefits_list_collection['settings']['flex_direction'] ?? '' ) === 'column' && ! isset( $benefits_list_collection['settings']['grid_columns_grid'] ), 'Benefits editorial_list stays a native vertical list and retains the accepted 54rem reading axis' );
+$benefits_list_tracks_match = count( $benefits_list_rows ) === 2;
+$benefits_list_checks = [];
+foreach ( $benefits_list_rows as $benefits_list_row ) {
+	$icon = (array) ( $benefits_list_row['elements'][0] ?? [] );
+	$copy = (array) ( $benefits_list_row['elements'][1] ?? [] );
+	$copy_children = (array) ( $copy['elements'] ?? [] );
+	$benefits_list_checks[] = ( $icon['widgetType'] ?? '' ) === 'icon' && ( $icon['settings']['_element_custom_width']['unit'] ?? '' ) === 'px' && (float) ( $icon['settings']['_element_custom_width']['size'] ?? 0 ) === 44.0 && ( $icon['settings']['_flex_shrink'] ?? null ) === 0 && ( $copy['settings']['width']['unit'] ?? '' ) === '%' && (float) ( $copy['settings']['width']['size'] ?? 0 ) === 100.0 && ( $copy_children[0]['settings']['width']['unit'] ?? '' ) === 'custom' && str_contains( (string) ( $copy_children[0]['settings']['width']['size'] ?? '' ), '48rem' ) && (float) ( $benefits_list_row['settings']['flex_gap']['size'] ?? 0 ) === 1.0 && (float) ( $benefits_list_row['settings']['flex_gap_mobile']['size'] ?? 0 ) === 0.75;
+}
+$benefits_list_tracks_match = $benefits_list_tracks_match && ! in_array( false, $benefits_list_checks, true );
+$check( $benefits_list_tracks_match, 'Benefits icon/copy rows keep native 44px icon, remaining copy width, separate reading measure, and device gaps' );
+$benefits_list_report = wpae_layout_report_for_plan( $benefits_list_plan );
+$benefits_list_report_samples = (array) ( $benefits_list_report['collections'][0]['samples'] ?? [] );
+$benefits_list_report_tracks = array_map( static fn( array $sample ): array => (array) ( $sample['list_row_tracks'] ?? [] ), $benefits_list_report_samples );
+$check( count( $benefits_list_report_tracks ) === 4 && ( $benefits_list_report_tracks[0]['icon_width_px'] ?? 0 ) === 44.0 && ( $benefits_list_report_tracks[0]['item_gap_px'] ?? 0 ) === 16.0 && ( $benefits_list_report_tracks[0]['copy_available_width_px'] ?? 0 ) > 0 && ( $benefits_list_report_tracks[0]['visual_render_verified'] ?? true ) === false, 'LayoutReport statically describes Benefits list tracks without claiming rendered geometry' );
+
 $boundary_url_a = 'https://example.com/cta/' . str_repeat( 'длинный-сегмент-', 18 ) . 'финал';
 $boundary_prompt = "pricing\nКнопка: «Начать проект», описание: " . str_repeat( 'Длинное описание с переносом строки. ', 14 ) . "\nссылка {$boundary_url_a}.\nКнопка: «Вторая кнопка», ссылка #second.";
 $boundary_brief = wpae_brief_ir_parse( $boundary_prompt );
@@ -1548,6 +1579,10 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
    $native=wpae_elementor_ir_compile($ir,$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
    $check($native['ok'],'Entity native compiler '.$family.' '.$variant);
    $flat=$walk_elements($native['elementor_data']);
+   if($variant==='grid'){
+    $entity_collection=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'&&count((array)($n['elements']??[]))===$count))[0]??[];
+    $check(($plan['visual_policy']['collection']['item_height']??'')==='content'&&($entity_collection['settings']['grid_align_items']??'')==='start'&&($entity_collection['settings']['grid_align_items_mobile']??'')==='start','No-action entity grid uses accepted content height without cross-axis card stretch '.$family.' '.$count);
+   }
    $titles=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['title']??'')==='Тестовая секция'));
    $check(($titles[0]['settings']['header_size']??'')==='h2','Entity intro H2');
    if($variant==='editorial_rows'){
@@ -1557,6 +1592,21 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
     $expected_copy_percent=(int)$plan['visual_policy']['entity_layout']['tracks']['copy_percent'];
     $copy_tracks=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['width']['unit']??'')==='%'&&($n['settings']['width']['size']??0)===$expected_copy_percent));
     $check(count($copy_measures)>0&&count($copy_measure_gaps)>0&&count($copy_tracks)>0,'Editorial entity rows preserve copy track, reading measure, and authored item rhythm '.$family);
+    $tracks=$plan['visual_policy']['entity_layout']['tracks'];
+    $entity_rows=array_values(array_filter($flat,static function(array $n)use($tracks):bool{
+     $settings=(array)($n['settings']??[]);$children=array_values((array)($n['elements']??[]));
+     return ($settings['flex_direction']??'')==='row'&&count($children)===2
+      &&($children[0]['settings']['width']['unit']??'')==='%'&&($children[0]['settings']['width']['size']??0)===$tracks['identity_percent']
+      &&($children[1]['settings']['width']['unit']??'')==='%'&&($children[1]['settings']['width']['size']??0)===$tracks['copy_percent'];
+    }));
+    $gap_controls_match=count($entity_rows)===$count;
+    foreach($entity_rows as $row){
+     foreach(['desktop'=>'','tablet'=>'_tablet','mobile'=>'_mobile'] as $device=>$suffix){
+      $gap=(array)($row['settings']['flex_gap'.$suffix]??[]);
+      $gap_controls_match=$gap_controls_match&&($gap['unit']??'')==='rem'&&(float)($gap['size']??-1)===(float)rtrim((string)$tracks['gap'][$device],'rem');
+     }
+    }
+    $check($gap_controls_match,'Entity identity/copy native row gap and responsive controls follow the accepted Plan for every item '.$family.' '.$count);
    }
    $encoded=wp_json_encode($native['elementor_data'],JSON_UNESCAPED_UNICODE);
    foreach($brief['content'] as $slot) {$check(str_contains($encoded,$slot['exact_text']),'Exact entity slot '.$slot['id']);}
@@ -1590,6 +1640,13 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
   $v=wpae_design_plan_validate($plan,$brief);$check($v['ok'],'Owned authorized media and action '.$family.' '.implode(',',$v['errors']));
   $native=wpae_elementor_ir_compile(wpae_elementor_ir_from_design_plan($plan,$brief),$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
   $nodes=$walk_elements($native['elementor_data']);$images=array_values(array_filter($nodes,static fn(array $n):bool=>($n['widgetType']??'')==='image'));
+  if($variant==='grid'){
+   $collection=array_values(array_filter($nodes,static fn(array $n):bool=>($n['settings']['container_type']??'')==='grid'&&count((array)($n['elements']??[]))===1))[0]??[];
+   $bad_height=$plan;$bad_height['visual_policy']['collection']['item_height']='content';
+   $height_validation=wpae_design_plan_validate($bad_height,$brief);
+   $check(($plan['visual_policy']['collection']['item_height']??'')==='equal_row'&&($collection['settings']['grid_align_items']??'')==='stretch','Authored entity actions retain equal-row collection geometry '.$family);
+   $check(!$height_validation['ok']&&in_array('visual_policy_content_height_with_actions',$height_validation['errors'],true),'Content-height mode refuses authored entity actions before compilation '.$family);
+  }
   $check(count($images)===1 && $images[0]['settings']['image']['url']===$asset['source_url'],'Owned portrait survives native serialization');
   $buttons=array_values(array_filter($nodes,static fn(array $n):bool=>($n['widgetType']??'')==='button'));
   $check(count($buttons)===1 && $buttons[0]['settings']['link']['url']===($family==='team'?'#person':'#quote'),'Owned entity action survives');
