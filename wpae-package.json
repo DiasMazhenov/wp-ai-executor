@@ -7,7 +7,7 @@
     "assets/css/elementor-llm-chat.css": "2f7dbbdba9d8a593426d49ac6291c3a96d0f51ff3090efad5799b1e709458c33",
     "assets/js/elementor-block-library-ui.js": "609bf4f58257801a0bfbb101c9d82b2ab252978bec77ef7904b2c26e0905f710",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "3d2a3ec31a2b717720026a873f641b0486a1d069f2ef512d6194b1c69e09ca53",
+    "assets/js/elementor-llm-chat.js": "a5e1d1437c951dba506366ae736ede9fe0a0c79558e98f5ece5c60c05a02ff00",
     "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
     "assets/previews/vocario-404.jpg": "46c02d4078d7fd9595d83585d2fd89e82273096be63f111d7567a4a1c05a1a0f",
     "assets/previews/vocario-about-us.jpg": "0ec916cb2daf9c7f934da367a4aa9082777509c8bbc3ef9eef6ab5513406ca0a",
@@ -25,7 +25,7 @@
     "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
     "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
     "includes/design/token-resolution.php": "91df94a3227d2dd88c0275f4cc6e4a9566712bdb54c33e60808f406d45168815",
-    "includes/elementor/accepted-contract.php": "8d6e14107f24159140bda4988a8f3f8aed99a0a414df6576ddfa18a85989e4c5",
+    "includes/elementor/accepted-contract.php": "06507e4c363369f4bf4e48b84f4e8a5095dc5409754cbb51de6787b29d0f180c",
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
     "includes/elementor/capability-registry.php": "5c997dfe1c5be11f1b95ccd347c82b36b2d9f8a01d659302484328593179822b",
@@ -56,7 +56,7 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "3020071626a0fd8314c71a4f0e58fb874585fe2d60f2e9fc795272d0898477f3",
-    "includes/elementor/elementor-ir.php": "f89b992bd619887363a6d200a04937dc2b2fc5052a1f931983bddbc03a3d4c6f",
+    "includes/elementor/elementor-ir.php": "7fad343d0065564136423392aa569a5d9112f8d21049ca96390c6442cdf6a861",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
     "includes/elementor/imported-templates/03-pricing.json": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
@@ -218,6 +218,7 @@
     "includes/elementor/imported-templates/venue.json": "3f91487de940fb3789237c85099da0918cf37ccdb488e79022d293d07cfa3c36",
     "includes/elementor/layout-report.php": "c1678e16b08aa69e26919cf4cced46c164b70a9b40003872e98d64db0c2bbcdd",
     "includes/elementor/native-compiler.php": "819facedb8944c91c6be8020d11b4614a687fd943a790b6dcb6d092f263b5492",
+    "includes/elementor/native-roundtrip.php": "c79b742fa2f186b081a94687ce6888f46b5e6cc0a5e372bae831ea20ba4d01d1",
     "includes/elementor/normalize.php": "f147d2fd8b5c0cbac34f510fa1470d835d34ebda92e8171c564443d71e6f8ee9",
     "includes/elementor/operation-ledger.php": "5ae2d93fc7ffc252ffb008772078c7b750fcefa465a4471d232bd283365cb7d1",
     "includes/elementor/page-update.php": "730de82233388b142b2ee901f93e6b2b39e8682a9aa923c90296a465e7d342b2",
@@ -240,7 +241,7 @@
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
     "includes/llm/design-plan.php": "e17ce44a2fd6332c02ccfb6c3d30323649cf34a369bfe6e9b3c6126a59c535f3",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "c3b95799a71a31dbcb8dc49a21b8bde5f704a4cc00a0af39e5b7d85ef9322309",
+    "includes/llm/llm.php": "6428a926a5b6567c216c9de24b51c7edc31978626862444f81997ba3a4381082",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
     "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -254,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "4eadad917db8d7bd1c7289ea0f3dc007ff918019ba1d1c6e7de45a0467e0808f"
+    "wp-ai-executor.php": "896fc4126b5700b9e25831fcbc49b46275dcbf072f3b433863a941e7c7216548"
   }
 }

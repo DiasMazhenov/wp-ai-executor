@@ -1,0 +1,134 @@
+<?php
+/** Versioned, control-aware native serialization rules shared by compiler and verifier. */
+defined( 'ABSPATH' ) || exit;
+
+const WPAE_NATIVE_ROUNDTRIP_VERSION = 'wpae-native-roundtrip-v1';
+
+/** Elementor Accordion repeater IDs are technical identifiers, not authored content. */
+function wpae_native_roundtrip_is_elementor_repeater_id( $value ): bool {
+	return is_string( $value ) && preg_match( '/^[A-Za-z0-9_-]{7}$/', $value ) === 1;
+}
+
+/** Only verified single-line plain text is wrapped; authored HTML remains untouched. */
+function wpae_native_roundtrip_plain_text_paragraph( $value ): ?string {
+	if ( ! is_string( $value ) || $value === '' || trim( $value ) === '' || strpbrk( $value, "<>\r\n" ) !== false ) {
+		return null;
+	}
+	return '<p>' . $value . '</p>';
+}
+
+/** Apply the native editor's confirmed plain-text WYSIWYG representation before freeze. */
+function wpae_native_roundtrip_compile_tree( array $elements ): array {
+	$decisions = [];
+	$walk = static function ( array $nodes, string $path = '$' ) use ( &$walk, &$decisions ): array {
+		foreach ( $nodes as $index => &$node ) {
+			if ( ! is_array( $node ) ) { continue; }
+			$node_path = $path . '[' . (int) $index . ']';
+			if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'accordion' ) {
+				$tabs = (array) ( $node['settings']['tabs'] ?? [] );
+				foreach ( $tabs as $tab_index => &$tab ) {
+					if ( ! is_array( $tab ) || ! array_key_exists( 'tab_content', $tab ) ) { continue; }
+					$source = $tab['tab_content'];
+					$native = wpae_native_roundtrip_plain_text_paragraph( $source );
+					if ( $native === null ) { continue; }
+					$tab['tab_content'] = $native;
+					$decisions[] = [
+						'control' => $node_path . '.settings.tabs[' . (int) $tab_index . '].tab_content',
+						'kind' => 'plain_text_to_single_paragraph',
+						'source_sha256' => hash( 'sha256', $source ),
+						'native_sha256' => hash( 'sha256', $native ),
+						'exact_copy_preserved' => true,
+					];
+				}
+				unset( $tab );
+				$node['settings']['tabs'] = $tabs;
+			}
+			if ( is_array( $node['elements'] ?? null ) ) { $node['elements'] = $walk( $node['elements'], $node_path . '.elements' ); }
+		}
+		unset( $node );
+		return $nodes;
+	};
+	return [
+		'elements' => $walk( $elements ),
+		'diagnostics' => [
+			'version' => WPAE_NATIVE_ROUNDTRIP_VERSION,
+			'control_aware' => true,
+			'authored_copy' => 'BriefIR exact_text retained; native representation freezes before accepted signature',
+			'repeater_order_and_count' => 'authored and strictly compared',
+			'repeater_ids' => 'technical-only; seven-character Elementor IDs may be projected to the accepted IDs',
+			'allowed_legacy_serialization' => 'one exact <p> wrapper around single-line plain Accordion answer text',
+			'registered_platform_defaults' => [],
+			'decisions' => $decisions,
+		],
+	];
+}
+
+/**
+ * Project one Accordion tabs control into the accepted representation.
+ * Only the exact legacy WYSIWYG paragraph wrapper and valid technical repeater IDs are canonicalized.
+ */
+function wpae_native_roundtrip_project_accordion_tabs( $expected, $actual, ?array &$mismatch = null, ?array &$changes = null, ?string $adapter_version = null ): ?array {
+	$changes = [];
+	$known_versions = [ null, WPAE_NATIVE_ROUNDTRIP_VERSION ];
+	if ( ! in_array( $adapter_version, $known_versions, true ) ) {
+		$mismatch = [ 'control' => 'tabs', 'reason' => 'unknown_native_roundtrip_version' ];
+		return null;
+	}
+	if ( ! is_array( $expected ) || ! is_array( $actual ) || array_values( $expected ) !== $expected || array_values( $actual ) !== $actual || count( $expected ) !== count( $actual ) ) {
+		$mismatch = [ 'reason' => 'accordion_repeater_count_or_shape' ];
+		return null;
+	}
+	$projected = [];
+	$actual_ids = [];
+	foreach ( $expected as $index => $expected_tab ) {
+		$actual_tab = $actual[ $index ] ?? null;
+		if ( ! is_array( $expected_tab ) || ! is_array( $actual_tab ) ) {
+			$mismatch = [ 'control' => 'tabs', 'reason' => 'accordion_repeater_item_shape', 'item_index' => $index ];
+			return null;
+		}
+		$expected_keys = array_keys( $expected_tab );
+		$actual_keys = array_keys( $actual_tab );
+		sort( $expected_keys ); sort( $actual_keys );
+		if ( $expected_keys !== $actual_keys ) {
+			$mismatch = [ 'control' => 'tabs', 'reason' => 'accordion_repeater_fields_changed', 'item_index' => $index ];
+			return null;
+		}
+		$expected_id = $expected_tab['_id'] ?? null;
+		$actual_id = $actual_tab['_id'] ?? null;
+		if ( wpae_native_roundtrip_is_elementor_repeater_id( $actual_id ) ) {
+			if ( isset( $actual_ids[ $actual_id ] ) ) {
+				$mismatch = [ 'control' => 'tabs._id', 'reason' => 'invalid_or_duplicate_technical_repeater_id', 'item_index' => $index ];
+				return null;
+			}
+			$actual_ids[ $actual_id ] = true;
+		}
+		if ( $expected_id !== $actual_id ) {
+			if ( ! wpae_native_roundtrip_is_elementor_repeater_id( $expected_id ) || ! wpae_native_roundtrip_is_elementor_repeater_id( $actual_id ) ) {
+				$mismatch = [ 'control' => 'tabs._id', 'reason' => 'invalid_or_duplicate_technical_repeater_id', 'item_index' => $index ];
+				return null;
+			}
+			$changes[] = [ 'control' => 'tabs[' . $index . ']._id', 'kind' => 'technical_repeater_id', 'exact' => true ];
+		}
+		foreach ( $expected_tab as $key => $expected_value ) {
+			$actual_value = $actual_tab[ $key ] ?? null;
+			if ( $key === '_id' ) { continue; }
+			if ( $key === 'tab_content' && $expected_value !== $actual_value ) {
+				$paragraph = wpae_native_roundtrip_plain_text_paragraph( $expected_value );
+				if ( $paragraph === null || $actual_value !== $paragraph ) {
+					$mismatch = [ 'control' => 'tabs.tab_content', 'reason' => 'authored_control_changed', 'item_index' => $index ];
+					return null;
+				}
+				$actual_tab[ $key ] = $expected_value;
+				$changes[] = [ 'control' => 'tabs[' . $index . '].tab_content', 'kind' => 'legacy_single_paragraph_serialization', 'source_sha256' => hash( 'sha256', $expected_value ), 'native_sha256' => hash( 'sha256', $actual_value ), 'exact_copy_preserved' => true ];
+				continue;
+			}
+			if ( $expected_value !== $actual_value ) {
+				$mismatch = [ 'control' => 'tabs.' . sanitize_key( (string) $key ), 'reason' => 'authored_control_changed', 'item_index' => $index ];
+				return null;
+			}
+		}
+		$actual_tab['_id'] = $expected_tab['_id'] ?? null;
+		$projected[] = $actual_tab;
+	}
+	return $projected;
+}

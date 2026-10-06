@@ -11351,7 +11351,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 			];
             $accepted_prepared = null;
             if ( $migrated_active_create ) {
-                $accepted_prepared = wpae_accepted_contract_prepare( $brief_ir, $design_plan_v1, $ir_compiled['elementor_data'] );
+				$accepted_prepared = wpae_accepted_contract_prepare( $brief_ir, $design_plan_v1, $ir_compiled['elementor_data'], [], '', (array) ( $ir_compiled['report']['native_roundtrip'] ?? [] ) );
                 if ( empty( $accepted_prepared['ok'] ) ) { return new WP_Error( 'wpae_contract_refused', $accepted_prepared['reason'], [ 'status' => 422, 'write_count' => 0 ] ); }
             }
 			$active_execution = wpae_llm_execute_action( $active_action, $selected_post_id, (string) ( $design_plan_v1['archetype'] ?? '' ), -1, $message, true, [ 'expected_before_document' => $editor_document_before, 'expected_before_html_hash' => $editor_html_hash, 'frozen_decisions' => $migrated_active_create, 'accepted_signature' => wpae_llm_decision_signature( $ir_compiled['elementor_data'] ), 'deterministic_ids' => true, 'operation_id' => $operation_ledger['operation_id'] ?? '', 'operation_identity' => $operation_identity, 'replace_root_ids' => $replacement_requested ? $replacement_guard['root_ids'] : [], 'replacement_guard' => $replacement_requested ? [ 'operation_id' => $replacement_parent['operation_id'], 'operation_identity' => $replacement_parent['operation_identity'], 'revision' => $replacement_parent['revision'], 'root_ids' => $replacement_guard['root_ids'] ] : [] ] );

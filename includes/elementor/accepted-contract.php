@@ -2,6 +2,7 @@
 /** Bounded server-owned typed decisions. No browser state is authoritative. */
 defined( 'ABSPATH' ) || exit;
 require_once dirname( __DIR__ ) . '/vision/report-store.php';
+require_once __DIR__ . '/native-roundtrip.php';
 const WPAE_ACCEPTED_CONTRACT_OPTION = 'wp_ai_executor_accepted_contracts';
 const WPAE_ACCEPTED_CONTRACT_SCHEMA = 'wpae-accepted-contract-v1';
 const WPAE_ACCEPTED_CONTRACT_TTL = 7200;
@@ -45,10 +46,17 @@ function wpae_accepted_expand_responsive_defaults( array $defaults, array $contr
     }
     return $defaults;
 }
-function wpae_accepted_control_equal( string $key, $a, $b ): bool {
-    return hash_equals( wpae_llm_decision_signature( [ [ 'settings' => [ $key => $a ] ] ] ), wpae_llm_decision_signature( [ [ 'settings' => [ $key => $b ] ] ] ) );
+function wpae_accepted_control_equal( string $key, $a, $b, string $widget_type = '', ?array &$projected_value = null, ?array &$mismatch = null, ?array &$roundtrip_changes = null, ?string $adapter_version = null ): bool {
+	if ( $widget_type === 'accordion' && $key === 'tabs' ) {
+		$projected_value = wpae_native_roundtrip_project_accordion_tabs( $a, $b, $mismatch, $roundtrip_changes, $adapter_version );
+		return $projected_value !== null;
+	}
+	$projected_value = $b;
+	return hash_equals( wpae_llm_decision_signature( [ [ 'settings' => [ $key => $a ] ] ] ), wpae_llm_decision_signature( [ [ 'settings' => [ $key => $b ] ] ] ) );
 }
-function wpae_accepted_project_owned_model( array $expected, array $current, ?callable $defaults_provider = null, ?array &$mismatch = null ): ?array {
+function wpae_accepted_project_owned_model( array $expected, array $current, ?callable $defaults_provider = null, ?array &$mismatch = null, array $roundtrip_context = [], ?array &$roundtrip_changes = null ): ?array {
+	if ( $roundtrip_changes === null ) { $roundtrip_changes = []; }
+	$adapter_version = $roundtrip_context['version'] ?? null;
     if ( count( $expected ) !== count( $current ) ) { $mismatch = [ 'reason' => 'node_count' ]; return null; }
     $projected = [];
     foreach ( $expected as $index => $node ) {
@@ -58,23 +66,35 @@ function wpae_accepted_project_owned_model( array $expected, array $current, ?ca
         $authored = (array) ( $node['settings'] ?? [] ); $settings = (array) ( $actual['settings'] ?? [] );
         foreach ( $settings as $key => $value ) {
             if ( array_key_exists( $key, $authored ) ) { continue; }
-            if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key] ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'extra_nondefault_control' ]; return null; }
-            unset( $settings[$key] );
+			$normalized_default = null; $control_mismatch = null; $control_changes = null;
+			if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key], (string) ( $node['widgetType'] ?? '' ), $normalized_default, $control_mismatch, $control_changes, $adapter_version ) ) { $mismatch = $control_mismatch ?: [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'extra_nondefault_control' ]; return null; }
+			if ( $control_changes ) { foreach ( $control_changes as $change ) { $roundtrip_changes[] = array_merge( [ 'node_id' => (string) ( $node['id'] ?? '' ) ], $change ); } }
+			unset( $settings[$key] );
         }
         foreach ( $authored as $key => $value ) {
-            if ( array_key_exists( $key, $settings ) ) { if ( ! wpae_accepted_control_equal( $key, $value, $settings[$key] ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_changed' ]; return null; } continue; }
-            if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key] ) ) { $mismatch = [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_missing' ]; return null; }
-            $settings[$key] = $value;
-        }
-        $children = wpae_accepted_project_owned_model( (array) ( $node['elements'] ?? [] ), (array) ( $actual['elements'] ?? [] ), $defaults_provider, $mismatch );
+			if ( array_key_exists( $key, $settings ) ) {
+				$normalized_value = null; $control_mismatch = null; $control_changes = null;
+				if ( ! wpae_accepted_control_equal( $key, $value, $settings[$key], (string) ( $node['widgetType'] ?? '' ), $normalized_value, $control_mismatch, $control_changes, $adapter_version ) ) { $mismatch = $control_mismatch ?: [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_changed' ]; return null; }
+				if ( $key === 'tabs' && ( $node['widgetType'] ?? '' ) === 'accordion' ) { $settings[$key] = $normalized_value; }
+				if ( $control_changes ) { foreach ( $control_changes as $change ) { $roundtrip_changes[] = array_merge( [ 'node_id' => (string) ( $node['id'] ?? '' ) ], $change ); } }
+				continue;
+			}
+			$normalized_default = null; $control_mismatch = null; $control_changes = null;
+			if ( ! array_key_exists( $key, $defaults ) || ! wpae_accepted_control_equal( $key, $value, $defaults[$key], (string) ( $node['widgetType'] ?? '' ), $normalized_default, $control_mismatch, $control_changes, $adapter_version ) ) { $mismatch = $control_mismatch ?: [ 'node_id' => $node['id'] ?? '', 'control' => $key, 'reason' => 'authored_control_missing' ]; return null; }
+			if ( $key === 'tabs' && ( $node['widgetType'] ?? '' ) === 'accordion' ) { $settings[$key] = $normalized_default; }
+			if ( $control_changes ) { foreach ( $control_changes as $change ) { $roundtrip_changes[] = array_merge( [ 'node_id' => (string) ( $node['id'] ?? '' ) ], $change ); } }
+			$settings[$key] = $value;
+		}
+		$children = wpae_accepted_project_owned_model( (array) ( $node['elements'] ?? [] ), (array) ( $actual['elements'] ?? [] ), $defaults_provider, $mismatch, $roundtrip_context, $roundtrip_changes );
         if ( $children === null ) { return null; }
         $actual['settings'] = $settings; $actual['elements'] = $children; $projected[] = $actual;
     }
     return $projected;
 }
-function wpae_accepted_owned_matches( array $expected, array $current ): bool {
-    $projected = wpae_accepted_project_owned_model( $expected, $current );
-    return $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $expected ), wpae_accepted_owned_fingerprint( $projected ) );
+function wpae_accepted_owned_matches( array $expected, array $current, array $roundtrip_context = [] ): bool {
+	$changes = []; $mismatch = null;
+	$projected = wpae_accepted_project_owned_model( $expected, $current, null, $mismatch, $roundtrip_context, $changes );
+	return $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $expected ), wpae_accepted_owned_fingerprint( $projected ) );
 }
 
 function wpae_accepted_contract_store(): array {
@@ -97,10 +117,12 @@ function wpae_accepted_contract_get( array $operation ): array {
 }
 
 /** Select known IR fields, never HTTP context/history, credentials or foreign roots. */
-function wpae_accepted_contract_prepare( array $brief, array $plan, array $compiled, array $before_owned = [], string $parent_id = '' ): array {
+function wpae_accepted_contract_prepare( array $brief, array $plan, array $compiled, array $before_owned = [], string $parent_id = '', array $native_roundtrip = [] ): array {
     $brief = array_intersect_key( $brief, array_flip( [ 'source_text', 'locale', 'parser_version', 'pricing_items', 'style_references', 'explicit_constraints', 'ambiguities', 'warnings', 'schema', 'version', 'canonical_create', 'archetype', 'intent', 'scope', 'content', 'content_items', 'groups', 'media_references', 'layout_constraints', 'style_constraints', 'policy', 'behavior', 'exact_text', 'constraints', 'required_widgets', 'copy_policy', 'provenance', 'hash' ] ) );
     // Brief and Plan are already server-built typed data, not raw request context.
-    $prepared = [ 'schema' => WPAE_ACCEPTED_CONTRACT_SCHEMA, 'brief' => $brief, 'plan' => $plan, 'composition' => $plan['composition_decision'] ?? [], 'profile' => $plan['resolved_visual']['profile'] ?? '', 'resolved_visual' => $plan['resolved_visual'] ?? [], 'compiler_schema' => 'elementor-ir-v2/native-compiler-v1', 'compiled_signature' => wpae_llm_decision_signature( $compiled ), 'before_owned' => $before_owned, 'compiled_owned' => $compiled, 'parent_operation_id' => $parent_id ];
+	$roundtrip = array_intersect_key( $native_roundtrip, array_flip( [ 'version', 'control_aware', 'repeater_order_and_count', 'repeater_ids', 'allowed_legacy_serialization', 'decisions' ] ) );
+	$prepared = [ 'schema' => WPAE_ACCEPTED_CONTRACT_SCHEMA, 'brief' => $brief, 'plan' => $plan, 'composition' => $plan['composition_decision'] ?? [], 'profile' => $plan['resolved_visual']['profile'] ?? '', 'resolved_visual' => $plan['resolved_visual'] ?? [], 'compiler_schema' => 'elementor-ir-v2/native-compiler-v1', 'compiled_signature' => wpae_llm_decision_signature( $compiled ), 'before_owned' => $before_owned, 'compiled_owned' => $compiled, 'parent_operation_id' => $parent_id ];
+	if ( $roundtrip ) { $prepared['native_roundtrip'] = $roundtrip; }
     if ( strlen( wp_json_encode( $prepared ) ) + strlen( wp_json_encode( $compiled ) ) + 4096 > WPAE_ACCEPTED_CONTRACT_BYTES ) { return [ 'ok' => false, 'reason' => 'contract_too_large' ]; }
     return [ 'ok' => true, 'prepared' => $prepared ];
 }
@@ -131,19 +153,52 @@ function wpae_accepted_contract_seal( array $prepared, array $operation, array $
     return is_array( $result ) ? $result : [ 'ok' => false, 'reason' => 'contract_lock_busy' ];
 }
 
+/** Bind a narrowly accepted native serialization projection to the exact read-only snapshot. */
+function wpae_accepted_native_roundtrip_proof( array $operation, array $loaded, array $data, array $owned, array $changes ): array {
+	$proof = [
+		'post_id' => (int) ( $operation['post_id'] ?? 0 ),
+		'operation_id' => (string) ( $operation['operation_id'] ?? '' ),
+		'operation_identity' => (string) ( $operation['operation_identity'] ?? '' ),
+		'accepted_contract_id' => (string) ( $operation['accepted_contract_id'] ?? '' ),
+		'accepted_contract_hash' => (string) ( $loaded['hash'] ?? '' ),
+		'root_ids' => array_values( array_map( 'strval', (array) ( $operation['root_ids'] ?? [] ) ) ),
+		'revision' => (int) ( $operation['revision'] ?? 0 ),
+		'adapter_version' => WPAE_NATIVE_ROUNDTRIP_VERSION,
+		'owned_payload_sha256' => hash( 'sha256', wp_json_encode( $owned ) ),
+		'document_payload_sha256' => hash( 'sha256', wp_json_encode( $data ) ),
+		'transformations' => $changes,
+	];
+	$proof['proof_sha256'] = hash( 'sha256', wp_json_encode( $proof ) );
+	return $proof;
+}
+
+function wpae_accepted_native_roundtrip_proof_matches( $candidate, array $expected ): bool {
+	if ( ! is_array( $candidate ) ) { return false; }
+	$expected_json = wp_json_encode( $expected );
+	$candidate_json = wp_json_encode( $candidate );
+	return is_string( $expected_json ) && is_string( $candidate_json ) && hash_equals( hash( 'sha256', $expected_json ), hash( 'sha256', $candidate_json ) );
+}
+
 function wpae_accepted_contract_eligibility( array $operation, array $data ): array {
     if ( ! empty( $operation['typed_undone'] ) ) { return [ 'status' => 'already_undone' ]; }
     $loaded = wpae_accepted_contract_get( $operation );
     if ( empty( $loaded['ok'] ) ) { return [ 'status' => 'unavailable', 'reason' => $loaded['reason'] ]; }
-    $contract = $loaded['contract'];
+	$contract = $loaded['contract'];
     $operation_roots = array_values( array_map( 'strval', (array) ( $operation['root_ids'] ?? [] ) ) );
     $contract_roots = array_values( array_map( 'strval', (array) ( $contract['owned_root_ids'] ?? [] ) ) );
     if ( $operation_roots !== $contract_roots ) { return [ 'status' => 'unavailable', 'reason' => 'operation_root_scope_mismatch' ]; }
     if ( count( (array) $contract['owned_root_ids'] ) !== 1 ) { return [ 'status' => 'ambiguous', 'reason' => 'single_owned_root_required' ]; }
     $owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
     if ( count( $owned ) !== 1 ) { return [ 'status' => 'changed_target', 'reason' => 'owned_root_missing_or_duplicated' ]; }
-    $mismatch = [];
-    $projected = wpae_accepted_project_owned_model( (array) $contract['after_owned'], $owned, null, $mismatch );
+	$roundtrip_version = null;
+	if ( isset( $contract['native_roundtrip'] ) ) {
+		$roundtrip_version = $contract['native_roundtrip']['version'] ?? '';
+		if ( $roundtrip_version !== WPAE_NATIVE_ROUNDTRIP_VERSION ) { return [ 'status' => 'unavailable', 'reason' => 'unknown_native_roundtrip_version' ]; }
+	}
+	$roundtrip_context = isset( $contract['native_roundtrip'] ) ? [ 'version' => $roundtrip_version ] : [];
+	$mismatch = [];
+	$roundtrip_changes = [];
+	$projected = wpae_accepted_project_owned_model( (array) $contract['after_owned'], $owned, null, $mismatch, $roundtrip_context, $roundtrip_changes );
     if ( $projected === null ) {
         return [ 'status' => 'changed_target', 'reason' => 'owned_fingerprint_changed', 'mismatch' => array_intersect_key( $mismatch, array_flip( [ 'node_id', 'control', 'reason' ] ) ) ];
     }
@@ -153,7 +208,9 @@ function wpae_accepted_contract_eligibility( array $operation, array $data ): ar
     foreach ( wpae_design_operation_store() as $candidate ) {
         if ( ( $candidate['parent_operation_id'] ?? '' ) === $operation['operation_id'] && empty( $candidate['typed_undone'] ) && in_array( $candidate['current_state'] ?? '', [ 'written', 'rendered', 'reviewed', 'completed' ], true ) ) { return [ 'status' => 'ambiguous', 'reason' => 'active_child_operation' ]; }
     }
-    return [ 'status' => 'available', 'action' => empty( $contract['parent_operation_id'] ) ? 'undo_creation' : 'undo_repair', 'expires_at' => $loaded['expires_at'] ];
+	$result = [ 'status' => 'available', 'action' => empty( $contract['parent_operation_id'] ) ? 'undo_creation' : 'undo_repair', 'expires_at' => $loaded['expires_at'] ];
+	if ( $roundtrip_changes ) { $result['native_roundtrip_recovery'] = wpae_accepted_native_roundtrip_proof( $operation, $loaded, $data, $owned, $roundtrip_changes ); }
+	return $result;
 }
 
 function wpae_accepted_contract_descriptors( int $post_id, array $data ): array {
@@ -174,7 +231,11 @@ function wpae_accepted_document_inverse( WP_REST_Request $request, array $curren
     if ( ! str_ends_with( $id, '-undo' ) ) { return false; }
     $operation = wpae_design_operation_find_by_id( substr( $id, 0, -5 ) );
     if ( ! $operation || (int) $operation['post_id'] !== (int) $request->get_param( 'post_id' ) || (int) $operation['revision'] !== (int) $request->get_param( 'accepted_undo_revision' ) || $operation['operation_identity'] !== $request->get_param( 'accepted_undo_identity' ) ) { return false; }
-    if ( wpae_accepted_contract_eligibility( $operation, $current )['status'] !== 'available' ) { return false; }
+	$eligibility = wpae_accepted_contract_eligibility( $operation, $current );
+	if ( $eligibility['status'] !== 'available' ) { return false; }
+	$proof = $eligibility['native_roundtrip_recovery'] ?? null;
+	$submitted_proof = $request->get_param( 'accepted_native_roundtrip_proof' );
+	if ( ( $proof !== null && ! wpae_accepted_native_roundtrip_proof_matches( $submitted_proof, $proof ) ) || ( $proof === null && $submitted_proof !== null ) ) { return false; }
     $contract = wpae_accepted_contract_get( $operation )['contract'];
     $inverse = [];
     foreach ( $current as $root ) {
@@ -202,7 +263,10 @@ function wpae_accepted_contract_undo( WP_REST_Request $request ): WP_REST_Respon
         $data = wpae_get_elementor_data_for_post( $post_id );
         if ( ! is_array( $data ) ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_readback_unavailable' ], 409 ); }
         $eligibility = wpae_accepted_contract_eligibility( $operation, $data );
-        if ( $eligibility['status'] !== 'available' ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_' . $eligibility['status'], 'eligibility' => $eligibility ], 409 ); }
+		if ( $eligibility['status'] !== 'available' ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_' . $eligibility['status'], 'eligibility' => $eligibility ], 409 ); }
+		$roundtrip_proof = $eligibility['native_roundtrip_recovery'] ?? null;
+		$submitted_proof = $request->get_param( 'accepted_native_roundtrip_proof' );
+		if ( ( $roundtrip_proof !== null && ! wpae_accepted_native_roundtrip_proof_matches( $submitted_proof, $roundtrip_proof ) ) || ( $roundtrip_proof === null && $submitted_proof !== null ) ) { return new WP_REST_Response( [ 'ok' => false, 'code' => 'typed_undo_native_roundtrip_proof_mismatch', 'eligibility' => $eligibility, 'write_count' => 0 ], 409 ); }
         $contract = wpae_accepted_contract_get( $operation )['contract'];
         $next = [];
         foreach ( $data as $root ) {
@@ -210,7 +274,8 @@ function wpae_accepted_contract_undo( WP_REST_Request $request ): WP_REST_Respon
             else { $next[] = $root; }
         }
         $update = new WP_REST_Request( 'POST', '/ai-executor/v1/elementor/update' );
-        foreach ( [ 'post_id' => $post_id, 'elementor_data' => $next, 'expected_before_elementor_data' => $data, 'template' => get_post_meta( $post_id, '_wp_page_template', true ), 'operation_id' => $id . '-undo', 'operation_root_ids' => $contract['owned_root_ids'] ] as $key => $value ) { $update->set_param( $key, $value ); }
+		foreach ( [ 'post_id' => $post_id, 'elementor_data' => $next, 'expected_before_elementor_data' => $data, 'template' => get_post_meta( $post_id, '_wp_page_template', true ), 'operation_id' => $id . '-undo', 'operation_root_ids' => $contract['owned_root_ids'] ] as $key => $value ) { $update->set_param( $key, $value ); }
+		if ( $roundtrip_proof !== null ) { $update->set_param( 'accepted_native_roundtrip_proof', $roundtrip_proof ); }
         $update->set_param( 'accepted_undo_revision', $operation['revision'] );
         $update->set_param( 'accepted_undo_identity', $operation['operation_identity'] );
         $update->set_param( 'dry_run', true );
@@ -255,11 +320,12 @@ function wpae_accepted_elementor_save_guard( array $data, $document ): array {
     $loaded = $operation ? wpae_accepted_contract_get( $operation ) : [ 'ok' => false ];
     if ( empty( $loaded['ok'] ) ) { throw new RuntimeException( 'Typed save blocked: accepted contract unavailable.' ); }
     $contract = $loaded['contract'];
+	$roundtrip_context = isset( $contract['native_roundtrip'] ) ? [ 'version' => $contract['native_roundtrip']['version'] ?? '' ] : [];
     // Native Save payload is already authored; generation defaults must not alter it.
     $document_model = wpae_get_elementor_data_for_post( $post_id );
-    if ( ! is_array( $document_model ) || ! wpae_accepted_owned_matches( $document_model, $data['elements'] ) ) { throw new RuntimeException( 'Typed save blocked: whole native document differs from fresh server data. Local edits preserved.' ); }
-    $owned = wpae_accepted_owned_roots( $data['elements'], $contract['owned_root_ids'] );
-    if ( ! wpae_accepted_owned_matches( $contract['after_owned'], $owned ) ) { throw new RuntimeException( 'Typed save blocked: editor owned tree differs from accepted server decisions. Local edits preserved; resync required.' ); }
+	if ( ! is_array( $document_model ) || ! wpae_accepted_owned_matches( $document_model, $data['elements'], $roundtrip_context ) ) { throw new RuntimeException( 'Typed save blocked: whole native document differs from fresh server data. Local edits preserved.' ); }
+	$owned = wpae_accepted_owned_roots( $data['elements'], $contract['owned_root_ids'] );
+	if ( ! wpae_accepted_owned_matches( $contract['after_owned'], $owned, $roundtrip_context ) ) { throw new RuntimeException( 'Typed save blocked: editor owned tree differs from accepted server decisions. Local edits preserved; resync required.' ); }
     return $data;
 }
 
@@ -348,27 +414,34 @@ function wpae_accepted_lifecycle_request( array $context ) {
     $contract = $loaded['contract'];
     $owned = wpae_accepted_owned_roots( $data, $contract['owned_root_ids'] );
     $action = $context['lifecycle_action'] ?? '';
-    if ( $action === 'check_document_model' ) {
-        // Read-only fresh native comparison protects foreign/local edits before Undo reload.
-        $model = $context['editor_document_model'] ?? null;
-        $mismatch = null;
-        $projected = is_array( $model ) ? wpae_accepted_project_owned_model( $data, $model, null, $mismatch ) : null;
-        $matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $data ), wpae_accepted_owned_fingerprint( $projected ) );
-        return new WP_REST_Response( [ 'mismatch' => $mismatch, 'ok' => $matches, 'code' => $matches ? 'typed_document_model_matches' : 'typed_document_model_mismatch', 'operation_id' => $operation['operation_id'], 'root_ids' => array_column( $data, 'id' ), 'write_count' => 0 ], $matches ? 200 : 409 );
+	if ( $action === 'check_document_model' ) {
+		// Read-only fresh native comparison protects foreign/local edits before Undo reload.
+		$model = $context['editor_document_model'] ?? null;
+		$mismatch = null;
+		$projection_changes = [];
+		$projected = is_array( $model ) ? wpae_accepted_project_owned_model( $data, $model, null, $mismatch, [], $projection_changes ) : null;
+		$matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $data ), wpae_accepted_owned_fingerprint( $projected ) );
+		$required_proof = $eligibility['native_roundtrip_recovery'] ?? null;
+		$submitted_proof = $context['accepted_native_roundtrip_proof'] ?? null;
+		$proof_matches = ( $required_proof === null && $submitted_proof === null ) || ( $required_proof !== null && wpae_accepted_native_roundtrip_proof_matches( $submitted_proof, $required_proof ) );
+		$matches = $matches && $proof_matches;
+		if ( ! $proof_matches && $mismatch === null ) { $mismatch = [ 'reason' => 'native_roundtrip_proof_mismatch' ]; }
+		return new WP_REST_Response( [ 'mismatch' => $mismatch, 'native_roundtrip_recovery' => $required_proof, 'ok' => $matches, 'code' => $matches ? 'typed_document_model_matches' : 'typed_document_model_mismatch', 'operation_id' => $operation['operation_id'], 'root_ids' => array_column( $data, 'id' ), 'write_count' => 0 ], $matches ? 200 : 409 );
     }
     if ( $action === 'resync' ) {
         $model = $context['editor_owned_model'] ?? null;
         if ( ! is_array( $model ) ) { return new WP_Error( 'wpae_typed_resync_model_missing', 'Нужно текущее owned model.', [ 'status' => 409 ] ); }
         $current_model = $model;
-        $matches_before = wpae_accepted_owned_matches( $contract['before_owned'], $current_model );
-        $matches_after = wpae_accepted_owned_matches( $contract['after_owned'], $current_model );
+		$roundtrip_context = isset( $contract['native_roundtrip'] ) ? [ 'version' => $contract['native_roundtrip']['version'] ?? '' ] : [];
+		$matches_before = wpae_accepted_owned_matches( $contract['before_owned'], $current_model, $roundtrip_context );
+		$matches_after = wpae_accepted_owned_matches( $contract['after_owned'], $current_model, $roundtrip_context );
         if ( ! $matches_before && ! $matches_after ) { return new WP_Error( 'wpae_typed_resync_local_conflict', 'Owned local changes не перезаписаны.', [ 'status' => 409 ] ); }
         return new WP_REST_Response( [ 'ok' => true, 'editor_sync' => [ 'elements' => $owned, 'mode' => $model ? 'replace' : 'insert', 'replace_element_id' => $contract['owned_root_ids'][0], 'operation_owned_root_ids' => $contract['owned_root_ids'], 'after_top_level_ids' => array_column( $data, 'id' ) ], 'write_count' => 0 ], 200 );
     }
     if ( $action === 'check_model' ) {
         $model = $context['editor_owned_model'] ?? null;
         $mismatch = null;
-        $projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], $model, null, $mismatch ) : null;
+		$projected = is_array( $model ) ? wpae_accepted_project_owned_model( $contract['after_owned'], $model, null, $mismatch, isset( $contract['native_roundtrip'] ) ? [ 'version' => $contract['native_roundtrip']['version'] ?? '' ] : [] ) : null;
         $matches = $projected !== null && hash_equals( wpae_accepted_owned_fingerprint( $contract['after_owned'] ), wpae_accepted_owned_fingerprint( $projected ) );
         return new WP_REST_Response( [ 'ok' => $matches, 'code' => $matches ? 'typed_model_matches' : 'typed_editor_model_mismatch', 'operation_id' => $operation['operation_id'], 'contract_hash' => $loaded['hash'], 'mismatch' => $mismatch, 'write_count' => 0 ], $matches ? 200 : 409 );
     }
@@ -392,7 +465,7 @@ function wpae_accepted_lifecycle_request( array $context ) {
     $ir = wpae_elementor_ir_from_design_plan( $plan, $brief );
     $compiled = wpae_native_elementor_compile( $ir, $brief, [], [ 'resolved_visual' => $plan['resolved_visual'] ] );
     if ( empty( $compiled['ok'] ) || count( $compiled['elementor_data'] ?? [] ) !== 1 ) { return new WP_Error( 'wpae_typed_compile_failed', 'Repair compiler отказал.', [ 'status' => 422, 'write_count' => 0 ] ); }
-    $prepared = wpae_accepted_contract_prepare( $brief, $plan, $compiled['elementor_data'], $owned, $operation['operation_id'] );
+	$prepared = wpae_accepted_contract_prepare( $brief, $plan, $compiled['elementor_data'], $owned, $operation['operation_id'], (array) ( $compiled['report']['native_roundtrip'] ?? [] ) );
     if ( empty( $prepared['ok'] ) ) { return new WP_Error( 'wpae_typed_contract_size', $prepared['reason'], [ 'status' => 422, 'write_count' => 0 ] ); }
     $identity = sanitize_text_field( (string) ( $context['operation_identity'] ?? '' ) );
     if ( $identity === '' ) { return new WP_Error( 'wpae_typed_identity_required', 'Нужна новая identity repair.', [ 'status' => 400, 'write_count' => 0 ] ); }

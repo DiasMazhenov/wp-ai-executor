@@ -9,6 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 require_once dirname( __DIR__ ) . '/design/token-resolution.php';
 require_once dirname( __DIR__ ) . '/llm/design-plan.php';
+require_once __DIR__ . '/native-roundtrip.php';
 
 const WPAE_ELEMENTOR_IR_SCHEMA = 'wpae-elementor-ir-v2';
 
@@ -1953,6 +1954,9 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
             $data[] = $compiled_root;
 		}
 	}
+	$native_roundtrip = wpae_native_roundtrip_compile_tree( $data );
+	$data = $native_roundtrip['elements'];
+	$report['native_roundtrip'] = $native_roundtrip['diagnostics'];
 	$counter = static function ( array $nodes ) use ( &$counter ): int {
 		$count = count( $nodes );
 		foreach ( $nodes as $node ) {

@@ -35,6 +35,18 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $describe['accepted_revision']=$stale_ui_revision;
     $fresh_descriptor=wpae_accepted_lifecycle_request($describe);
     check($fresh_descriptor instanceof WP_REST_Response && $fresh_descriptor->get_data()['operation']['revision']===$operation['revision'] && $fresh_descriptor->get_data()['operation']['eligibility']['status']==='available' && $fresh_descriptor->get_data()['write_count']===0 && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only refresh returns the post-save revision for the same operation without a write '.$record);
+    if ( $record === 'faq.native' ) {
+		$repeat_revision = (int) $operation['revision'];
+		wpae_accepted_save_guard_set( $operation );
+		$repeat_save = wpae_accepted_elementor_save_guard( [ 'elements' => $GLOBALS['page_data'] ], $saved_document );
+		wpae_accepted_elementor_after_save( $saved_document );
+		$operation = wpae_design_operation_find_by_id( $operation['operation_id'] );
+		$repeat_eligibility = wpae_accepted_contract_eligibility( $operation, $GLOBALS['page_data'] );
+		check( $repeat_save['elements'] === $GLOBALS['page_data'] && (int) $operation['revision'] === $repeat_revision + 1 && $repeat_eligibility['status'] === 'available', 'Repeated native Accordion Save/reload keeps the pre-frozen paragraph representation idempotent and eligible' );
+		$describe['accepted_revision'] = $repeat_revision;
+		$fresh_repeat_descriptor = wpae_accepted_lifecycle_request( $describe );
+		check( $fresh_repeat_descriptor instanceof WP_REST_Response && $fresh_repeat_descriptor->get_data()['operation']['revision'] === $operation['revision'] && $fresh_repeat_descriptor->get_data()['operation']['eligibility']['status'] === 'available' && $fresh_repeat_descriptor->get_data()['write_count'] === 0, 'Read-only refresh observes the revision after the repeated FAQ native Save' );
+	}
     // A ledger change after the read-only descriptor must invalidate both the
     // document check and a later Undo. The refresh is not a mutation lease.
     $refreshed_revision = (int) $operation['revision'];
@@ -223,3 +235,80 @@ $grid_actual[0]['settings']['grid_auto_flow_tablet']='column';
 check(wpae_accepted_project_owned_model($grid_expected,$grid_actual,static fn($n)=>$responsive_defaults)===null,'Changed Grid flow still refuses');
 $slider_defaults=wpae_accepted_expand_responsive_defaults([],['grid_columns_grid'=>['type'=>'slider','is_responsive'=>true,'default'=>['unit'=>'fr','size'=>3,'sizes'=>[]],'mobile_default'=>['unit'=>'fr','size'=>1]]]);
 check($slider_defaults['grid_columns_grid_mobile']===['unit'=>'fr','size'=>1,'sizes'=>[]],'Native declared slider device default retains empty sizes slot without inheriting desktop size');
+
+$roundtrip_expected = [[ 'id'=>'faqroot1', 'elType'=>'container', 'settings'=>[], 'elements'=>[[ 'id'=>'faqacc1', 'elType'=>'widget', 'widgetType'=>'accordion', 'settings'=>[ 'tabs'=>[
+	[ '_id'=>'tab001a', 'tab_title'=>'First?', 'tab_content'=>'Exact first answer.' ],
+	[ '_id'=>'tab002b', 'tab_title'=>'Second?', 'tab_content'=>'Long exact answer.' ],
+] ], 'elements'=>[] ]] ]];
+$roundtrip_actual = $roundtrip_expected;
+$roundtrip_actual[0]['elements'][0]['settings']['tabs'][0]['_id'] = 'sav001a';
+$roundtrip_actual[0]['elements'][0]['settings']['tabs'][0]['tab_content'] = '<p>Exact first answer.</p>';
+$roundtrip_actual[0]['elements'][0]['settings']['tabs'][1]['_id'] = 'sav002b';
+$roundtrip_actual[0]['elements'][0]['settings']['tabs'][1]['tab_content'] = '<p>Long exact answer.</p>';
+$roundtrip_mismatch = null; $roundtrip_changes = [];
+$roundtrip_projected = wpae_accepted_project_owned_model( $roundtrip_expected, $roundtrip_actual, null, $roundtrip_mismatch, [], $roundtrip_changes );
+check( $roundtrip_projected === $roundtrip_expected && count( $roundtrip_changes ) === 4, 'Legacy native Save paragraph wrappers and valid repeater ID rewrites project to the frozen Accordion representation' );
+$tamper_cases = [];
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][0]['tab_content'] = '<p>Exact first answer changed.</p>'; $tamper_cases['one changed answer character'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][0]['tab_title'] = 'Different?'; $tamper_cases['changed question'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'] = array_reverse( $tampered[0]['elements'][0]['settings']['tabs'] ); $tamper_cases['reordered question and answer pairs'] = $tampered;
+$tampered = $roundtrip_actual; array_pop( $tampered[0]['elements'][0]['settings']['tabs'] ); $tamper_cases['removed repeater item'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][] = [ '_id'=>'sav003c', 'tab_title'=>'Third?', 'tab_content'=>'Unrequested answer.' ]; $tamper_cases['added repeater item'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][0]['tab_content'] = '<p class="changed">Exact first answer.</p>'; $tamper_cases['styled paragraph wrapper'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][0]['tab_content'] = '<p style="color:red">Exact first answer.</p>'; $tamper_cases['paragraph attribute'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][0]['tab_content'] = '<p><a href="#changed">Exact first answer.</a></p>'; $tamper_cases['answer link markup'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['selected_icon'] = [ 'value'=>'fas fa-star' ]; $tamper_cases['other authored Accordion control'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][0]['_id'] = 'bad-id'; $tamper_cases['invalid repeater id'] = $tampered;
+$tampered = $roundtrip_actual; $tampered[0]['elements'][0]['settings']['tabs'][1]['_id'] = $tampered[0]['elements'][0]['settings']['tabs'][0]['_id']; $tamper_cases['duplicate repeater id'] = $tampered;
+foreach ( $tamper_cases as $label => $tampered ) {
+	check( wpae_accepted_project_owned_model( $roundtrip_expected, $tampered ) === null, 'Strict Accordion projection refuses ' . $label );
+}
+$roundtrip_unknown_version = null; $roundtrip_unknown_changes = [];
+check( wpae_native_roundtrip_project_accordion_tabs( $roundtrip_expected[0]['elements'][0]['settings']['tabs'], $roundtrip_actual[0]['elements'][0]['settings']['tabs'], $roundtrip_unknown_version, $roundtrip_unknown_changes, 'wpae-native-roundtrip-unknown' ) === null && ( $roundtrip_unknown_version['reason'] ?? '' ) === 'unknown_native_roundtrip_version', 'Unknown adapter version fails closed' );
+$non_accordion_expected = [[ 'id'=>'widget1', 'elType'=>'widget', 'widgetType'=>'text-editor', 'settings'=>[ 'tabs'=>[ [ 'tab_content'=>'Exact first answer.' ] ] ], 'elements'=>[] ]];
+$non_accordion_actual = $non_accordion_expected; $non_accordion_actual[0]['settings']['tabs'][0]['tab_content'] = '<p>Exact first answer.</p>';
+check( wpae_accepted_project_owned_model( $non_accordion_expected, $non_accordion_actual ) === null, 'Accordion serialization rule is not applied to another widget type' );
+$proof_operation = [ 'post_id'=>5214, 'operation_id'=>'wpae-test-roundtrip', 'operation_identity'=>'test-roundtrip-identity', 'accepted_contract_id'=>'contract-test-roundtrip', 'root_ids'=>['faqroot1'], 'revision'=>8 ];
+$proof_loaded = [ 'hash'=>hash( 'sha256', 'accepted-contract-test-payload' ) ];
+$proof = wpae_accepted_native_roundtrip_proof( $proof_operation, $proof_loaded, $roundtrip_actual, [ $roundtrip_actual[0] ], $roundtrip_changes );
+check( wpae_accepted_native_roundtrip_proof_matches( $proof, $proof ), 'Read-only serialization proof matches the exact operation/revision/contract/root/document snapshot' );
+foreach ( [ 'revision'=>9, 'operation_identity'=>'substituted-identity', 'accepted_contract_id'=>'substituted-contract', 'root_ids'=>['otherroot'], 'post_id'=>999 ] as $key=>$changed_value ) {
+	$changed_operation = $proof_operation; $changed_operation[$key] = $changed_value;
+	$changed_proof = wpae_accepted_native_roundtrip_proof( $changed_operation, $proof_loaded, $roundtrip_actual, [ $roundtrip_actual[0] ], $roundtrip_changes );
+	check( ! wpae_accepted_native_roundtrip_proof_matches( $changed_proof, $proof ), 'Serialization proof rejects substituted ' . $key );
+}
+$changed_document = $roundtrip_actual; $changed_document[0]['elements'][0]['settings']['tabs'][0]['tab_content'] = '<p>Changed after refresh.</p>';
+check( wpae_native_roundtrip_project_accordion_tabs( $roundtrip_expected[0]['elements'][0]['settings']['tabs'], $changed_document[0]['elements'][0]['settings']['tabs'] ) === null, 'Model mutation after descriptor refresh blocks lifecycle before a write' );
+
+$roundtrip_saved_options = $GLOBALS['options']; $roundtrip_saved_page = $GLOBALS['page_data']; $roundtrip_saved_writes = (int) ( $GLOBALS['m1_write_attempts'] ?? 0 );
+$roundtrip_live_operation = [ 'operation_id'=>'wpae-test-roundtrip', 'post_id'=>5214, 'operation_identity'=>'test-roundtrip-identity', 'revision'=>11, 'root_ids'=>['faqroot1'], 'accepted_contract_id'=>'', 'accepted_contract_hash'=>'', 'typed_undone'=>false ];
+$roundtrip_payload = [ 'schema'=>WPAE_ACCEPTED_CONTRACT_SCHEMA, 'operation_id'=>$roundtrip_live_operation['operation_id'], 'post_id'=>5214, 'owned_root_ids'=>['faqroot1'], 'before_owned'=>[], 'after_owned'=>$roundtrip_expected, 'parent_operation_id'=>'' ];
+$roundtrip_payload_hash = hash( 'sha256', wp_json_encode( $roundtrip_payload ) );
+$roundtrip_contract_id = 'contract-' . substr( $roundtrip_payload_hash, 0, 24 );
+$roundtrip_live_operation['accepted_contract_id'] = $roundtrip_contract_id; $roundtrip_live_operation['accepted_contract_hash'] = $roundtrip_payload_hash;
+$roundtrip_store = wpae_accepted_contract_store();
+$roundtrip_store[$roundtrip_contract_id] = [ 'payload'=>$roundtrip_payload, 'expires_at'=>time() + WPAE_ACCEPTED_CONTRACT_TTL ];
+update_option( WPAE_ACCEPTED_CONTRACT_OPTION, $roundtrip_store, false );
+$roundtrip_operations = wpae_design_operation_store(); $roundtrip_operations[] = $roundtrip_live_operation; wpae_design_operation_save( $roundtrip_operations );
+$roundtrip_neighbor = container_node( 'neighbor1', [ 'owner_note'=>'preserve exactly' ], [] );
+$GLOBALS['page_data'] = [ $roundtrip_actual[0], $roundtrip_neighbor ];
+$roundtrip_context = [ 'post_id'=>5214, 'accepted_operation_id'=>$roundtrip_live_operation['operation_id'], 'accepted_identity'=>$roundtrip_live_operation['operation_identity'], 'accepted_contract_id'=>$roundtrip_contract_id, 'accepted_root_ids'=>['faqroot1'], 'accepted_revision'=>11, 'lifecycle_action'=>'describe_operation' ];
+$roundtrip_descriptor = wpae_accepted_lifecycle_request( $roundtrip_context )->get_data();
+$roundtrip_eligibility = $roundtrip_descriptor['operation']['eligibility'] ?? [];
+$roundtrip_proof_live = $roundtrip_eligibility['native_roundtrip_recovery'] ?? null;
+check( ( $roundtrip_eligibility['status'] ?? '' ) === 'available' && is_array( $roundtrip_proof_live ) && ( $roundtrip_proof_live['revision'] ?? 0 ) === 11 && $roundtrip_descriptor['write_count'] === 0, 'Legacy saved FAQ gets a fresh, read-only, revision-bound native roundtrip recovery proof' );
+$roundtrip_document_context = $roundtrip_context; $roundtrip_document_context['lifecycle_action']='check_document_model'; $roundtrip_document_context['editor_document_model']=$GLOBALS['page_data'];
+check( wpae_accepted_lifecycle_request( $roundtrip_document_context )->get_status() === 409, 'Whole-document check refuses a missing legacy normalization proof' );
+$roundtrip_document_context['accepted_native_roundtrip_proof'] = $roundtrip_proof_live;
+check( wpae_accepted_lifecycle_request( $roundtrip_document_context )->get_data()['ok'], 'Whole-document check accepts the exact saved native FAQ and current proof' );
+$roundtrip_race_page = $GLOBALS['page_data']; $GLOBALS['page_data'][1]['settings']['owner_note']='changed after descriptor';
+$roundtrip_undo_request = new WP_REST_Request();
+foreach ( [ 'typed_undo'=>true, 'post_id'=>5214, 'operation_id'=>$roundtrip_live_operation['operation_id'], 'operation_identity'=>$roundtrip_live_operation['operation_identity'], 'accepted_contract_id'=>$roundtrip_contract_id, 'accepted_root_ids'=>['faqroot1'], 'revision'=>11 ] as $key=>$value ) { $roundtrip_undo_request->set_param( $key, $value ); }
+$roundtrip_undo_request->set_param( 'accepted_native_roundtrip_proof', $roundtrip_proof_live );
+$roundtrip_write_count = (int) $GLOBALS['m1_write_attempts'];
+check( wpae_llm_undo( $roundtrip_undo_request )->get_data()['code'] === 'typed_undo_native_roundtrip_proof_mismatch' && (int) $GLOBALS['m1_write_attempts'] === $roundtrip_write_count, 'Full-document mutation after refresh invalidates proof and refuses Undo before write' );
+$GLOBALS['page_data'] = $roundtrip_race_page;
+$roundtrip_undo_request->set_param( 'accepted_native_roundtrip_proof', $roundtrip_proof_live );
+$roundtrip_undo = wpae_llm_undo( $roundtrip_undo_request )->get_data();
+check( ! empty( $roundtrip_undo['ok'] ) && $GLOBALS['page_data'] === [ $roundtrip_neighbor ], 'Verified legacy FAQ Undo removes only its owned root and preserves the neighboring native root' );
+$GLOBALS['options'] = $roundtrip_saved_options; $GLOBALS['page_data'] = $roundtrip_saved_page; $GLOBALS['m1_write_attempts'] = $roundtrip_saved_writes;

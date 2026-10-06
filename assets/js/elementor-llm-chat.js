@@ -1846,7 +1846,8 @@
             accepted_identity: String(operation.operation_identity || ''),
             accepted_contract_id: String(operation.accepted_contract_id || ''),
             accepted_root_ids: Array.isArray(operation.root_ids) ? operation.root_ids.map(String) : [],
-            accepted_revision: Number(operation.revision || 0) };
+            accepted_revision: Number(operation.revision || 0),
+            accepted_native_roundtrip_proof: operation.native_roundtrip_recovery || null };
     }
     function sameTypedOperationScope(current, expected) {
         return Boolean(current && Number(current.post_id) === Number(config.postId)
@@ -1856,14 +1857,24 @@
             && JSON.stringify((current.root_ids || []).map(String)) === JSON.stringify((expected.root_ids || []).map(String))
             && Number(current.revision) > 0);
     }
-    function refreshTypedOperationDescriptor(operation) {
+    function describeTypedOperation(operation) {
         return typedLifecyclePost(typedOperationContext(operation, 'describe_operation')).then(function (result) {
             if (!sameTypedOperationScope(result.operation, operation)) throw new Error('Точная operation/post/identity/contract/root scope не совпала; локальная модель сохранена.');
             var eligibility = result.operation.eligibility || {};
-            if (eligibility.status !== 'available') {
-                throw new Error('Серверный descriptor revision ' + Number(result.operation.revision || 0) + ': owned-модель не разрешает lifecycle (' + String(eligibility.status || 'unknown') + (eligibility.reason ? '/' + String(eligibility.reason) : '') + '). Запись не выполнялась.');
-            }
             operation.revision = Number(result.operation.revision);
+            operation.status = String(eligibility.status || 'unknown');
+            operation.action = String(eligibility.action || operation.action || 'undo_creation');
+            operation.reason = String(eligibility.reason || '');
+            operation.native_roundtrip_recovery = eligibility.native_roundtrip_recovery || null;
+            operation.eligibility = eligibility;
+            return { operation: operation, eligibility: eligibility, write_count: Number(result.write_count || 0) };
+        });
+    }
+    function refreshTypedOperationDescriptor(operation) {
+        return describeTypedOperation(operation).then(function (fresh) {
+            if (fresh.eligibility.status !== 'available') {
+                throw new Error('Серверный descriptor revision ' + Number(operation.revision || 0) + ': owned-модель не разрешает lifecycle (' + String(fresh.eligibility.status || 'unknown') + (fresh.eligibility.reason ? '/' + String(fresh.eligibility.reason) : '') + '). Запись не выполнялась.');
+            }
             return operation;
         });
     }
@@ -1928,7 +1939,7 @@
                 var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
                 if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo остановлен: модель изменилась после проверки native readback.');
                 return fetch(config.undoEndpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': config.nonce },
-                body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, accepted_contract_id: descriptor.accepted_contract_id, accepted_root_ids: descriptor.root_ids, revision: descriptor.revision })
+                body: JSON.stringify({ typed_undo: true, post_id: Number(config.postId), operation_id: descriptor.operation_id, operation_identity: descriptor.operation_identity, accepted_contract_id: descriptor.accepted_contract_id, accepted_root_ids: descriptor.root_ids, revision: descriptor.revision, accepted_native_roundtrip_proof: descriptor.native_roundtrip_recovery || null })
             }).then(function (response) { return response.json().then(function (body) { if (!response.ok || !body.ok) throw new Error(body.code || body.error || 'Undo refusal');
                     var current = getEditorModelChildren(window.elementor.getPreviewContainer()).map(serializeTypedModel);
                     if (!editorPublishIsClean() || JSON.stringify(model) !== JSON.stringify(current)) throw new Error('Undo выполнен на сервере, но reload остановлен: локальные изменения сохранены в редакторе.');
@@ -1937,6 +1948,19 @@
             }).catch(function (error) { button.disabled = false; addMessage('assistant', error.message); });
         });
         row.appendChild(button);
+        var describe = document.createElement('button'); describe.type = 'button'; describe.className = 'wpae-llm-icon-button';
+        describe.textContent = 'Обновить серверный descriptor';
+        describe.title = 'Read-only: проверяет operation, revision, contract, roots и owned native model';
+        describe.addEventListener('click', function () {
+            if (requestInFlight) return;
+            describe.disabled = true;
+            describeTypedOperation(descriptor).then(function (fresh) {
+                button.disabled = fresh.eligibility.status !== 'available';
+                button.title = String(fresh.eligibility.status || '') + ': ' + String(fresh.eligibility.reason || descriptor.operation_id || '');
+                addMessage('assistant', 'Свежий read-only descriptor: operation ' + descriptor.operation_id + ', revision ' + descriptor.revision + ', status ' + fresh.eligibility.status + (fresh.eligibility.reason ? '/' + fresh.eligibility.reason : '') + '. write_count=0.');
+            }).catch(function (error) { addMessage('assistant', 'Descriptor не обновлён: ' + error.message); }).finally(function () { describe.disabled = false; });
+        });
+        row.appendChild(describe);
         if (descriptor.status === 'available') {
             var verify = document.createElement('button'); verify.type = 'button'; verify.className = 'wpae-llm-icon-button';
             verify.textContent = 'Проверить owned модель перед Save';
