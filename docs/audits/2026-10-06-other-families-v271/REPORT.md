@@ -8,7 +8,7 @@ The seven typed families in this comparison are Services, Pricing, Hero, About, 
 
 **Correction:** the v271 Services generation below was redundant and should not have been run. It happened before the user clarified that Services was also an already-tested family. The operation was safely undone, both editor and public roots are `[]`, and the evidence is retained transparently as a redundant run; it is not counted as a required new family test. The previously accepted v269 operation remains the relevant earlier acceptance.
 
-FAQ is excluded by the user's latest instruction. A preceding FAQ attempt had been captured, but its eight JPEG/PNG screenshot files were removed at the user's request. The historic v270 FAQ evidence is retained with its own report. CTA is a separate legacy compatibility smoke test, not one of the seven accepted typed families: the `cta.band` route has no canonical typed record and no proven operation-scoped Undo. It was blocked before any request or write. No fake substitute block was generated.
+FAQ is excluded by the user's latest instruction. A preceding FAQ attempt had been captured, but its eight JPEG/PNG screenshot files were removed at the user's request. The historic v270 FAQ evidence is retained with its own report. CTA is a separate legacy compatibility smoke test, not one of the seven accepted typed families: the `cta.band` route has no canonical typed record. The exact fixture was later sent through the ordinary chat; the library adapter preflight refused it before provider invocation or write. No fake substitute block was generated.
 
 ## Source, install, and live target
 
@@ -81,9 +81,9 @@ The fresh read-only descriptor after Publish/reload confirmed the same operation
 | Team | Skipped per user; previous successful four-entity grid; site greeting overlap recorded | v270 G row/gallery |
 | Testimonials | Skipped per user; previous successful editorial rows; site greeting overlap recorded | v270 H row/gallery |
 | FAQ | Excluded by user; no FAQ generation in this continuation | Eight screenshots from the immediately preceding FAQ attempt were deleted; historic v270 screenshots remain attached to their old report |
-| CTA | Blocked before request/write | Legacy `cta.band`, no canonical typed composition and no proof of safe operation-scoped Undo |
+| CTA | **Preflight refused; no generation/write** | Exact fixture sent through the normal chat. Diagnostics: `archetype=cta`, 22 candidates, 0 compatible, provider calls 0, `write_count=0`; no operation/root/revision. See the [follow-up report](../2026-10-06-remaining-blocks-followup/REPORT.md). |
 
-The exact machine-readable matrix is [`acceptance-matrix.json`](acceptance-matrix.json). For the requested seven-family matrix, required new generations were zero because every family had prior successful generation/content/lifecycle evidence. One redundant Services generation was actually performed before the user's clarification; it was undone. No retry occurred. The final post 5214 root set is `[]`.
+The exact machine-readable matrix is [`acceptance-matrix.json`](acceptance-matrix.json). For the requested seven-family matrix, required new generations were zero because every typed family had prior successful generation/content/lifecycle evidence. One redundant Services generation was actually performed before the user's clarification; it was undone. The separate CTA smoke made one chat preflight attempt but did not reach generation: provider calls 0, writes 0, and no operation/root was created. No retry occurred. The final post 5214 root set is `[]`.
 
 ## Screenshot cleanup
 
@@ -101,3 +101,11 @@ Removed only the eight JPEG/PNG files from the immediately preceding v271 FAQ at
 - **Restoration:** operation-scoped Undo PASS; final editor/public roots `[]`.
 - **Local tests:** not rerun; runtime did not change. JSON syntax, screenshot signatures/dimensions, and documentation diff checks are run for this evidence update.
 - **Commit/push:** report-only changes are prepared separately from runtime. Their commit/push status is recorded after the staged-diff review.
+
+## CTA compatibility preflight follow-up — 2026-10-06
+
+The existing exact fixture `docs/audits/2026-10-06-lifecycle-layout-v270/J-cta-exact-request.txt` (SHA-256 `2984c86e1cf89e922eebabe8da740b4b45fe8a930a4ae14556338191e66769fc`) was submitted once through the normal plugin chat on the existing Elementor editor for post `5214`. Plugins PHP and the editor inline config independently reported `v02.11.271`. Editor Publish was disabled and the canvas was empty before the request.
+
+The chat identified `archetype=cta` and refused with “Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны.” Its diagnostics reported `candidate_count=22`, `compatible_candidate_count=0`, `provider_call_count=0`, and `write_count=0`. No provider call, compiler transaction, operation ID, identity, root, revision, or Undo was created. A fresh public reload at CSS viewport `1232×923` still had root IDs `[]`; all three CTA strings were absent. This is a confirmed preflight refusal, not a failed save or a generated CTA result.
+
+The fresh editor screenshot is [CTA preflight refusal — editor PNG](../2026-10-06-remaining-blocks-followup/screenshots/cta-v271-preflight-refusal.png). It was captured through the existing Browser Use tab as JPEG bytes, persisted, converted to PNG, format/dimensions checked, and opened for visual review. The source/editor viewport is `1232×923`; PNG is `1232×923`. No public or mobile block screenshot exists because no block was written. Services, FAQ, and previously accepted families were not regenerated. The requested matrix therefore still has zero required new generations; CTA remains unaccepted and blocked at library compatibility preflight.

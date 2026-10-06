@@ -1,0 +1,297 @@
+{
+  "cards": [
+    {
+      "align": "normal",
+      "cls": "elementor-element-overlay",
+      "display": "block",
+      "gap": "normal",
+      "grid": "none",
+      "h": 1509.2,
+      "id": null,
+      "overflow": "visible",
+      "padding": "0px",
+      "text": "",
+      "w": 313,
+      "x": 16,
+      "y": 225.8
+    },
+    {
+      "align": "normal",
+      "cls": "elementor-shape elementor-shape-top",
+      "display": "block",
+      "gap": "normal",
+      "grid": "none",
+      "h": 0,
+      "id": null,
+      "overflow": "hidden",
+      "padding": "0px",
+      "text": "",
+      "w": 313,
+      "x": 16,
+      "y": 224.8
+    },
+    {
+      "align": "normal",
+      "cls": "elementor-shape elementor-shape-bottom",
+      "display": "block",
+      "gap": "normal",
+      "grid": "none",
+      "h": 0,
+      "id": null,
+      "overflow": "hidden",
+      "padding": "0px",
+      "text": "",
+      "w": 313,
+      "x": 16,
+      "y": 1736
+    },
+    {
+      "align": "stretch",
+      "cls": "elementor-element elementor-element-edit-mode elementor-element-2fa95ad e-con e-child e-flex e-con-f",
+      "display": "flex",
+      "gap": "12px",
+      "grid": "none",
+      "h": 148.6,
+      "id": "2fa95ad",
+      "overflow": "visible",
+      "padding": "24px",
+      "text": "Все понятно.\nТестовый автор 1\nСинтетическая группа 1",
+      "w": 313,
+      "x": 16,
+      "y": 225.8
+    },
+    {
+      "align": "stretch",
+      "cls": "elementor-element elementor-element-edit-mode elementor-element-8c9329f e-con e-child e-flex e-con-f",
+      "display": "flex",
+      "gap": "12px",
+      "grid": "none",
+      "h": 327.8,
+      "id": "8c9329f",
+      "overflow": "visible",
+      "padding": "24px",
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эт",
+      "w": 313,
+      "x": 16,
+      "y": 390.4
+    },
+    {
+      "align": "stretch",
+      "cls": "elementor-element elementor-element-edit-mode elementor-element-111a041 e-con e-child e-flex e-con-f",
+      "display": "flex",
+      "gap": "12px",
+      "grid": "none",
+      "h": 148.6,
+      "id": "111a041",
+      "overflow": "visible",
+      "padding": "24px",
+      "text": "Все понятно.\nТестовый автор 3\nСинтетическая группа 3",
+      "w": 313,
+      "x": 16,
+      "y": 734.2
+    },
+    {
+      "align": "stretch",
+      "cls": "elementor-element elementor-element-edit-mode elementor-element-0fb5ca9 e-con e-child e-flex e-con-f",
+      "display": "flex",
+      "gap": "12px",
+      "grid": "none",
+      "h": 327.8,
+      "id": "0fb5ca9",
+      "overflow": "visible",
+      "padding": "24px",
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эт",
+      "w": 313,
+      "x": 16,
+      "y": 898.8
+    },
+    {
+      "align": "stretch",
+      "cls": "elementor-element elementor-element-edit-mode elementor-element-a9ee096 e-con e-child e-flex e-con-f",
+      "display": "flex",
+      "gap": "12px",
+      "grid": "none",
+      "h": 148.6,
+      "id": "a9ee096",
+      "overflow": "visible",
+      "padding": "24px",
+      "text": "Все понятно.\nТестовый автор 5\nСинтетическая группа 5",
+      "w": 313,
+      "x": 16,
+      "y": 1242.6
+    },
+    {
+      "align": "stretch",
+      "cls": "elementor-element elementor-element-edit-mode elementor-element-6c89ad9 e-con e-child e-flex e-con-f",
+      "display": "flex",
+      "gap": "12px",
+      "grid": "none",
+      "h": 327.8,
+      "id": "6c89ad9",
+      "overflow": "visible",
+      "padding": "24px",
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эт",
+      "w": 313,
+      "x": 16,
+      "y": 1407.2
+    },
+    {
+      "align": "normal",
+      "cls": "elementor-empty-view",
+      "display": "none",
+      "gap": "normal",
+      "grid": "none",
+      "h": 0,
+      "id": null,
+      "overflow": "visible",
+      "padding": "0px",
+      "text": "",
+      "w": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "align": "normal",
+      "cls": "ui-resizable-handle ui-resizable-e",
+      "display": "block",
+      "gap": "normal",
+      "grid": "none",
+      "h": 1509.2,
+      "id": null,
+      "overflow": "visible",
+      "padding": "0px",
+      "text": "",
+      "w": 10,
+      "x": 319,
+      "y": 225.8
+    },
+    {
+      "align": "normal",
+      "cls": "e-grid-outline",
+      "display": "none",
+      "gap": "normal",
+      "grid": "repeat(1, 1fr)",
+      "h": 0,
+      "id": null,
+      "overflow": "visible",
+      "padding": "0px",
+      "text": "",
+      "w": 0,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "collection": {
+    "align": "stretch",
+    "cls": "elementor-element elementor-element-edit-mode elementor-element-53ff993 e-con e-child e-grid e-con-f",
+    "display": "grid",
+    "gap": "16px",
+    "grid": "313px",
+    "h": 1509.2,
+    "id": "53ff993",
+    "overflow": "visible",
+    "padding": "0px",
+    "text": "Все понятно.\nТестовый автор 1\nСинтетическая группа 1\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержан",
+    "w": 313,
+    "x": 16,
+    "y": 225.8
+  },
+  "headings": [
+    {
+      "font": "12px",
+      "line": "14.4px",
+      "rect": {
+        "h": 15,
+        "w": 142.5,
+        "x": 29,
+        "y": 38.59375
+      },
+      "tag": "H6",
+      "text": "ТЕСТОВЫЕ ОТЗЫВЫ"
+    },
+    {
+      "font": "24px",
+      "line": "28.8px",
+      "rect": {
+        "h": 28.796875,
+        "w": 280.359375,
+        "x": 16,
+        "y": 72.1875
+      },
+      "tag": "H2",
+      "text": "Опыт участников теста"
+    },
+    {
+      "font": "18px",
+      "line": "23.4px",
+      "rect": {
+        "h": 23.3984375,
+        "w": 263,
+        "x": 41,
+        "y": 288.390625
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 1"
+    },
+    {
+      "font": "18px",
+      "line": "23.4px",
+      "rect": {
+        "h": 23.3984375,
+        "w": 263,
+        "x": 41,
+        "y": 632.203125
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 2"
+    },
+    {
+      "font": "18px",
+      "line": "23.4px",
+      "rect": {
+        "h": 23.3984375,
+        "w": 263,
+        "x": 41,
+        "y": 796.8046875
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 3"
+    },
+    {
+      "font": "18px",
+      "line": "23.4px",
+      "rect": {
+        "h": 23.3984375,
+        "w": 263,
+        "x": 41,
+        "y": 1140.6171875
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 4"
+    },
+    {
+      "font": "18px",
+      "line": "23.4px",
+      "rect": {
+        "h": 23.3984375,
+        "w": 263,
+        "x": 41,
+        "y": 1305.21875
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 5"
+    },
+    {
+      "font": "18px",
+      "line": "23.4px",
+      "rect": {
+        "h": 23.3984375,
+        "w": 263,
+        "x": 41,
+        "y": 1649.03125
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 6"
+    }
+  ]
+}

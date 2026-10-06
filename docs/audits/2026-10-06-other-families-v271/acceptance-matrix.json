@@ -7,6 +7,8 @@
   "family_count_excluding_faq": 7,
   "required_new_generations_this_continuation": 0,
   "actual_redundant_generations_this_continuation": 1,
+  "cta_preflight_attempts_this_continuation": 1,
+  "cta_live_generations_this_continuation": 0,
   "retries_this_continuation": 0,
   "provider_calls_this_continuation": 0,
   "families": [
@@ -105,7 +107,39 @@
   ],
   "excluded_or_separate_routes": {
     "faq": "EXCLUDED_BY_USER. Prior FAQ captures from the immediately preceding attempt were removed; historical v270 evidence remains unchanged.",
-    "cta": "SEPARATE_LEGACY_SMOKE_TEST_BLOCKED_BEFORE_WRITE: cta.band lacks canonical typed ownership and operation-scoped Undo safety is not proven. No substitute family was generated."
+    "cta": "SEPARATE_COMPATIBILITY_SMOKE: exact fixture was sent through the normal plugin chat; library adapter preflight refused 22 candidates (0 compatible), provider_call_count=0, write_count=0. No operation/root/revision was created. CTA remains outside migrated_create and has no canonical composition record."
+  },
+  "cta_preflight_attempt": {
+    "fixture": "docs/audits/2026-10-06-lifecycle-layout-v270/J-cta-exact-request.txt",
+    "fixture_sha256": "2984c86e1cf89e922eebabe8da740b4b45fe8a930a4ae14556338191e66769fc",
+    "submitted_via": "existing post=5214 Elementor plugin chat",
+    "source_version": "v02.11.271",
+    "installed_php_version": "v02.11.271",
+    "editor_inline_version": "v02.11.271",
+    "response": "Подходящий шаблон библиотеки не прошёл производственную проверку адаптера; изменения не записаны.",
+    "diagnostics": {
+      "post_id": 5214,
+      "archetype": "cta",
+      "candidate_count": 22,
+      "compatible_candidate_count": 0,
+      "provider_call_count": 0,
+      "write_count": 0
+    },
+    "operation_id": null,
+    "identity": null,
+    "root_id": null,
+    "revision": null,
+    "editor_publish_disabled": true,
+    "editor_root_set": [],
+    "public_root_set_after_reload": [],
+    "public_css_viewport": [1232, 923],
+    "cta_copy_present_public": false,
+    "visual_acceptance": "NOT RUN: no block was written",
+    "document_restoration": "PASS: no write occurred; root set remained []",
+    "evidence": {
+      "editor_refusal_screenshot_png": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/cta-v271-preflight-refusal.png",
+      "editor_refusal_screenshot_jpeg": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/cta-v271-preflight-refusal.jpg"
+    }
   },
   "final_root_set": [],
   "screenshot_cleanup": {

@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-10-06T14:08:53.236Z",
+  "postId": 5214,
+  "editor": {
+    "cssViewport": {
+      "height": 923,
+      "width": 1232
+    },
+    "publishDisabled": true,
+    "source": "editor outer UI; canvas roots queried through iframe selector below",
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor"
+  },
+  "editorRootIds": [],
+  "public": {
+    "cssViewport": {
+      "height": 923,
+      "width": 1232
+    },
+    "documentWidth": 1232,
+    "roots": [],
+    "scrollWidth": 1232,
+    "source": "public",
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/"
+  },
+  "result": "editor and public root sets are empty; Publish disabled"
+}

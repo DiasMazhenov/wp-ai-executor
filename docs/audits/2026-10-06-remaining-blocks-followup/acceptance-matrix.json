@@ -1,0 +1,206 @@
+{
+  "schema": "wpae-remaining-blocks-followup-v2",
+  "date": "2026-10-06",
+  "post_id": 5214,
+  "source_version": "v02.11.271",
+  "runtime_commit": "c2328d4e1efd5d32acb48ef4cffce017fdbd4503",
+  "repo_head_before_docs": "b8e42e9bd9f3e0eb5fa34b09dc63feb930c713d5",
+  "installed_php_version": "v02.11.271",
+  "editor_inline_version": "v02.11.271",
+  "scope_excluded": ["Services", "FAQ"],
+  "previously_accepted_and_skipped": [
+    "Hero",
+    "About",
+    "Benefits",
+    "Pricing (two and three tiers)",
+    "Team: team.grid",
+    "Testimonials: testimonials.editorial_rows"
+  ],
+  "counts": {
+    "new_live_generations": 2,
+    "generation_retries": 0,
+    "scoped_undo_passes": 2,
+    "final_editor_roots": [],
+    "final_public_roots": []
+  },
+  "generations": [
+    {
+      "family": "Team",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "record_id": "team.editorial_rows",
+      "profile": "default",
+      "route": "local_deterministic / pipeline",
+      "brief_hash": "8335a524db685d6cc755baab2b545f415672c1cc58c48834c516b42bc73b78dd",
+      "plan_hash": "4b224dd2c29d3a2a6037e329df0bdefc7ea46aedd94cba405f3c377f5cdd44da",
+      "record_hash": "ffaea52b36377285954bf3a4766500d300ae7ef9bbbaace7d4d18fcae8450da8",
+      "provider_calls": 0,
+      "write_count": 1,
+      "operation_id": "wpae-1ae82f92fec16468",
+      "identity": "869a0aca-0789-45d0-942a-973f434f4060",
+      "accepted_contract_id": "contract-1e0495616ff06c03731a693d",
+      "accepted_contract_hash": "1e0495616ff06c03731a693d7d18a99f4a69f55321d5f6162157d435172cce77",
+      "root_id": "18789cc",
+      "revision": {
+        "generation": 4,
+        "after_publish_descriptor": 6,
+        "after_scoped_undo_descriptor": 7
+      },
+      "first_result_repaired": false,
+      "native_readback": "PASS: 36-node accepted tree; exact four name/role/bio groups; no portrait or action widgets",
+      "public_geometry": {
+        "css_viewport": [1232, 923],
+        "container_width": 1140,
+        "rows": 4,
+        "row_heights_px": [111, 127, 111, 127],
+        "overflow": "none"
+      },
+      "technical_lifecycle": "PASS: Publish/readback, operation-scoped Undo; descriptor status already_undone at revision 7",
+      "content_fidelity": "PASS",
+      "responsive_geometry": "PARTIAL: public desktop measured; public mobile and editor mobile not captured",
+      "visual_composition": "PARTIAL: editorial rows read clearly; site greeting overlaps part of final biography",
+      "document_restoration": "PASS: editor/public roots [] after guarded Undo",
+      "screenshots": [
+        {
+          "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/team-editorial-rows-public-viewport.png",
+          "source": "public",
+          "css_viewport": [1232, 923],
+          "png_dimensions": [1232, 923]
+        },
+        {
+          "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/team-editorial-rows-public-full.png",
+          "source": "public",
+          "css_viewport": [1232, 923],
+          "png_dimensions": [1232, 923]
+        }
+      ]
+    },
+    {
+      "family": "Testimonials",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "record_id": "testimonials.grid",
+      "legacy_composition_identity": "testimonials.three_cards",
+      "profile": "default",
+      "route": "local_deterministic / pipeline",
+      "brief_hash": "53eedbedf3b4fd549bf506b17f614e4cc604e469a989ebd2d1809034c4e9978b",
+      "plan_hash": "92e5c4b36d2aad589ee2a385b477531927b37453274c6d56ba9c87786381e538",
+      "record_hash": "77a8235bead676e5cb9d2ec3ffe16d299d7e43cf7e711a7e841b0d2c5c0f6382",
+      "actual_item_count": 6,
+      "provider_calls": 0,
+      "write_count": 1,
+      "operation_id": "wpae-7338a43ebdcd7d8b",
+      "identity": "d2f9c2ba-655a-46f8-b3f0-9c7e68660018",
+      "accepted_contract_id": "contract-096876cf222f2dd25508cc62",
+      "accepted_contract_hash": "096876cf222f2dd25508cc628cf69476252a525da294f1cb647fd4a173e8b620",
+      "root_id": "4c9e82b",
+      "revision": {
+        "generation": 4,
+        "after_publish_descriptor": 6,
+        "after_scoped_undo_descriptor": 7
+      },
+      "first_result_repaired": false,
+      "native_readback": "PASS: 38-node tree; exact six quote/author/meta groups; no image, rating, or link widgets; frozen readback signature matches",
+      "public_geometry": {
+        "css_viewport": [1232, 923],
+        "container_width": 1140,
+        "actual_desktop_columns": 2,
+        "desktop_column_widths_px": [558, 558],
+        "desktop_gap_px": 24,
+        "tablet_policy": "stack",
+        "mobile_policy": "stack",
+        "short_card_height_px": 225.4,
+        "long_card_height_px": 225.4,
+        "short_card_content_height_px": 98.6,
+        "overflow": "none"
+      },
+      "technical_lifecycle": "PASS: Publish, editor/public readback, operation-scoped Undo; descriptor status already_undone at revision 7",
+      "content_fidelity": "PASS",
+      "responsive_geometry": "PARTIAL: editor mobile preview measured 360x736; public mobile not captured",
+      "visual_composition": "PARTIAL: legible two-column grid; short entries leave open space; site chat/avatar overlaps part of final quote",
+      "document_restoration": "PASS: editor/public roots [] after guarded Undo",
+      "screenshots": [
+        {
+          "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/testimonials-grid-public-viewport.png",
+          "source": "public",
+          "css_viewport": [1232, 923],
+          "png_dimensions": [1217, 912]
+        },
+        {
+          "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/testimonials-grid-public-full.png",
+          "source": "public",
+          "css_viewport": [1232, 923],
+          "png_dimensions": [1217, 1077]
+        },
+        {
+          "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/testimonials-grid-public-chat-collapsed.png",
+          "source": "public",
+          "css_viewport": [1232, 923],
+          "png_dimensions": [1217, 912]
+        },
+        {
+          "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/testimonials-grid-editor-mobile-preview-clear.png",
+          "source": "editor_mobile_preview",
+          "editor_frame_css_viewport": [360, 736],
+          "png_dimensions": [1232, 923]
+        }
+      ]
+    }
+  ],
+  "compatibility_refusals": {
+    "cta": {
+      "fixture": "docs/audits/2026-10-06-lifecycle-layout-v270/J-cta-exact-request.txt",
+      "fixture_sha256": "2984c86e1cf89e922eebabe8da740b4b45fe8a930a4ae14556338191e66769fc",
+      "archetype": "cta",
+      "candidate_count": 22,
+      "compatible_candidate_count": 0,
+      "provider_calls": 0,
+      "write_count": 0,
+      "operation_id": null,
+      "identity": null,
+      "root_id": null,
+      "reason": "production library-adapter preflight refused; cta.band still has no canonical typed composition record",
+      "result": "BLOCKED before transaction",
+      "screenshot": {
+        "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/cta-v271-preflight-refusal.png",
+        "source": "editor",
+        "css_viewport": [1232, 923],
+        "png_dimensions": [1232, 923]
+      }
+    },
+    "partners": {
+      "fixtures": [
+        "docs/audits/2026-10-06-remaining-blocks-followup/fixtures/partners-carousel-exact-request.txt",
+        "docs/audits/2026-10-06-remaining-blocks-followup/fixtures/partners-carousel-explicit-family-retry.txt"
+      ],
+      "attempts": [
+        {
+          "route": "plugin chat; initial request was classified as mega_menu",
+          "candidate_count": 7,
+          "compatible_candidate_count": 0,
+          "provider_calls": 0,
+          "write_count": 0,
+          "result": "refused before write"
+        },
+        {
+          "route": "library_agent; explicit partners carousel request",
+          "candidate_count": 1,
+          "provider_calls": 2,
+          "write_count": 0,
+          "request_identity": "a8f2659c-151f-4a49-b640-db3099722564",
+          "result": "model_declined; no operation/root created"
+        }
+      ],
+      "accepted_record": null,
+      "status": "BLOCKED before write; no native block generated",
+      "screenshot": {
+        "path": "docs/audits/2026-10-06-remaining-blocks-followup/screenshots/partners-v271-refusal-editor.png",
+        "source": "editor",
+        "css_viewport": [1232, 923],
+        "png_dimensions": [1232, 923]
+      }
+    }
+  },
+  "final_root_set": [],
+  "final_baseline_evidence": "docs/audits/2026-10-06-remaining-blocks-followup/evidence/final-baseline-roots.json",
+  "runtime_changed": false,
+  "local_runtime_tests_rerun": false
+}

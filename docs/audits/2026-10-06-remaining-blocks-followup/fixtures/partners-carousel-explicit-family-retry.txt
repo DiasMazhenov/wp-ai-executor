@@ -1,0 +1,10 @@
+Создай отдельный блок «Карусель партнёров» в контенте текущей страницы. Надзаголовок: «ПАРТНЁРЫ». Заголовок: «С кем мы работаем».
+
+Используй один стандартный нативный Elementor Image Carousel, ровно с пятью изображениями в таком порядке:
+1. https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/4-2.png
+2. https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/2-2.png
+3. https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/1-2.png
+4. https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/3-2.png
+5. https://templatekit.kitprostudio.com/vocario/wp-content/uploads/sites/141/2026/07/5-2.png
+
+Настройки карусели: четыре видимых слайда на desktop, три на tablet и два на mobile; navigation выключена; autoplay включён, autoplay speed 5000 ms; infinite включён; transition speed 500 ms; custom image spacing 83 px desktop и 60 px tablet; ссылки и lightbox выключены. Не добавляй карточки, выдуманные названия партнёров, CTA или фотографии людей. Сохрани порядок изображений и точный текст.
