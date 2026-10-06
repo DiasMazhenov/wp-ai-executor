@@ -4,7 +4,9 @@ Date: 2026-10-06. Target: existing Elementor `post=5214`; public URL `https://ma
 
 ## Scope and prior accepted work
 
-The seven typed families in this comparison are Services, Pricing, Hero, About, Benefits, Team, and Testimonials. Six already had successful live scenarios on v270, so they were deliberately skipped as requested: Pricing (two and three tiers), Hero, About, Benefits, Team, and Testimonials. Their exact operations, roots, screenshots, and separate limitations remain in [the v270 acceptance report](../2026-10-06-lifecycle-layout-v270/REPORT.md). Services A from v270 had been deleted before save/reload readback, so that was not a complete acceptance; the same fixture was run once here to close that gap.
+The seven typed families in this comparison are Services, Pricing, Hero, About, Benefits, Team, and Testimonials. Six already had successful live scenarios on v270, so they were deliberately skipped: Pricing (two and three tiers), Hero, About, Benefits, Team, and Testimonials. Services had also already passed generation/content checks and guarded Undo in v269 (`2c663fd`, operation `wpae-87e49a31a93a5752`). Its visual review was PARTIAL because the site widget overlapped a CTA and public mobile was not captured. The v270 Services attempt was deleted before save/reload readback and its matrix explicitly said “Do not rerun Services”; that incomplete later attempt did not invalidate the prior successful run. Therefore the user's skip-successful-families rule applied to Services too.
+
+**Correction:** the v271 Services generation below was redundant and should not have been run. It happened before the user clarified that Services was also an already-tested family. The operation was safely undone, both editor and public roots are `[]`, and the evidence is retained transparently as a redundant run; it is not counted as a required new family test. The previously accepted v269 operation remains the relevant earlier acceptance.
 
 FAQ is excluded by the user's latest instruction. A preceding FAQ attempt had been captured, but its eight JPEG/PNG screenshot files were removed at the user's request. The historic v270 FAQ evidence is retained with its own report. CTA is a separate legacy compatibility smoke test, not one of the seven accepted typed families: the `cta.band` route has no canonical typed record and no proven operation-scoped Undo. It was blocked before any request or write. No fake substitute block was generated.
 
@@ -15,9 +17,9 @@ FAQ is excluded by the user's latest instruction. A preceding FAQ attempt had be
 - Existing authorized tabs and post 5214 were reused. Before generation, editor and freshly reloaded public output both had root set `[]`; no dirty state was present. The user had confirmed clearing the page.
 - Exact Services fixture: [`E-services-exact-request.txt`](../../2026-10-05-m3-1-entities/E-services-exact-request.txt), SHA-256 `245e0a8451118781bbe27b0724a2d1325a1cbaf78bf7528e987abc6296cc8795`.
 
-## Live generation: Services
+## Redundant live run: Services — not required for this matrix
 
-One unchanged request was sent once through the normal WP AI Executor plugin chat. No imported JSON or manual Elementor controls were used. Route was `local_deterministic`; one Brief and one accepted DesignPlan were frozen; `provider_calls=0`, `write_count=1`. Selected recipe was `services.photo_cards`, source `explicit_request`; there was no explicitly selected visual profile, so the recorded safe defaults were used. Brief hash: `7dce09d62950eca4b49455b824c3eac0f0ab06b9f46dd8c8d268f56a8a801e92`. Plan hash: `4b318be730da67807ad1d20e7a24fcd5ad445d0848ea2e32aca04b9b94ee1aab`.
+Before the correction arrived, one unchanged request was sent once through the normal WP AI Executor plugin chat. No imported JSON or manual Elementor controls were used. Route was `local_deterministic`; one Brief and one accepted DesignPlan were frozen; `provider_calls=0`, `write_count=1`. Selected recipe was `services.photo_cards`, source `explicit_request`; there was no explicitly selected visual profile, so the recorded safe defaults were used. Brief hash: `7dce09d62950eca4b49455b824c3eac0f0ab06b9f46dd8c8d268f56a8a801e92`. Plan hash: `4b318be730da67807ad1d20e7a24fcd5ad445d0848ea2e32aca04b9b94ee1aab`. This extra run adds no required family coverage beyond v269.
 
 Operation `wpae-750dacf4726ed1f9`, identity `35314405-ae70-40f2-8368-05ade426c175`, accepted contract `contract-1596f84fb2515fe15df00ba0` (hash `1596f84fb2515fe15df00ba012f39616e3a81b6c16a763dc44a6161429c43b01`), generation revision 4, root `77b0786`. The first render was saved before Publish in [`services-first-render-trace.json`](evidence/services-first-render-trace.json) and [`services-first-render-native.json`](evidence/services-first-render-native.json). No repair was applied. Vision's score 60 and its claims of missing card surfaces/broken wrapping were contradicted by the measured public DOM and saved pixels; those findings were not used to trigger cosmetic patches.
 
@@ -71,7 +73,7 @@ The fresh read-only descriptor after Publish/reload confirmed the same operation
 
 | Family | Current continuation result | Separate evidence/status |
 |---|---|---|
-| Services | One live generation, full native/readback and guarded Undo; public desktop exact and aligned CTA axis; visual PARTIAL, public mobile BLOCKED | This report and `evidence/` / `screenshots/` above |
+| Services | **Should have been skipped**: prior v269 generation/content and guarded Undo PASS, visual PARTIAL. One redundant v271 generation happened before the clarification; it has full native readback and guarded Undo but adds no required family coverage. | Prior acceptance: [v269 Services row](../2026-10-06-cross-family-v269/REPORT.md#live-matrix). Redundant run evidence and screenshots are retained above. |
 | Pricing | Skipped per user; two- and three-tier cases previously succeeded and were undone | v270 B/C rows and gallery in [v270 report](../2026-10-06-lifecycle-layout-v270/REPORT.md) |
 | Hero | Skipped per user; previous successful split generation | v270 D row/gallery |
 | About | Skipped per user; previous successful image-left editorial split | v270 E row/gallery |
@@ -81,7 +83,7 @@ The fresh read-only descriptor after Publish/reload confirmed the same operation
 | FAQ | Excluded by user; no FAQ generation in this continuation | Eight screenshots from the immediately preceding FAQ attempt were deleted; historic v270 screenshots remain attached to their old report |
 | CTA | Blocked before request/write | Legacy `cta.band`, no canonical typed composition and no proof of safe operation-scoped Undo |
 
-The exact machine-readable matrix is [`acceptance-matrix.json`](acceptance-matrix.json). This continuation contains one primary live generation and zero repeats. The final post 5214 root set is `[]`.
+The exact machine-readable matrix is [`acceptance-matrix.json`](acceptance-matrix.json). For the requested seven-family matrix, required new generations were zero because every family had prior successful generation/content/lifecycle evidence. One redundant Services generation was actually performed before the user's clarification; it was undone. No retry occurred. The final post 5214 root set is `[]`.
 
 ## Screenshot cleanup
 
@@ -91,7 +93,7 @@ Removed only the eight JPEG/PNG files from the immediately preceding v271 FAQ at
 
 - **Source:** v02.11.271, runtime source commit `c2328d4e1efd5d32acb48ef4cffce017fdbd4503`; no code change here.
 - **Install/editor:** Plugins PHP and reloaded inline editor independently showed v02.11.271.
-- **Generation:** Services one Brief / one Plan / one write; route local deterministic; provider calls 0.
+- **Generation:** Required new generations 0; one redundant Services Brief / Plan / write actually occurred before clarification; route local deterministic; provider calls 0; safely undone.
 - **Readback/content:** exact native authored fields after Publish/reload; PASS.
 - **Desktop geometry:** no horizontal overflow, equal cards and common CTA baseline; site overlap remains.
 - **Visual composition:** PARTIAL because flexible content/footer whitespace and `SITE_OVERLAP`; not an overall design PASS.

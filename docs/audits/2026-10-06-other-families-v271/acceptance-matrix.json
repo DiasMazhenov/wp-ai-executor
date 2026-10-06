@@ -5,12 +5,25 @@
   "source_version": "v02.11.271",
   "source_commit": "c2328d4e1efd5d32acb48ef4cffce017fdbd4503",
   "family_count_excluding_faq": 7,
-  "primary_generations_this_continuation": 1,
-  "repeats_this_continuation": 0,
+  "required_new_generations_this_continuation": 0,
+  "actual_redundant_generations_this_continuation": 1,
+  "retries_this_continuation": 0,
   "provider_calls_this_continuation": 0,
   "families": [
     {
       "family": "services",
+      "prior_accepted_evidence": {
+        "audit": "docs/audits/2026-10-06-cross-family-v269/REPORT.md",
+        "root": "2c663fd",
+        "operation_id": "wpae-87e49a31a93a5752",
+        "identity": "f3995921-56dd-41a7-abb4-d98ef30a6d33",
+        "revision": 4,
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "guarded_undo": "PASS",
+        "visual_review": "PARTIAL: site chat overlapped CTA 3; public mobile was not captured"
+      },
+      "user_correction": "This family had already been tested successfully and must be skipped. v270 acceptance matrix explicitly said Do not rerun Services. The v271 run below was redundant and is retained only as factual audit evidence.",
       "fixture": "docs/audits/2026-10-05-m3-1-entities/E-services-exact-request.txt",
       "fixture_sha256": "245e0a8451118781bbe27b0724a2d1325a1cbaf78bf7528e987abc6296cc8795",
       "route": "local_deterministic / canonical typed pipeline",
@@ -28,15 +41,16 @@
       "descriptor_revision_after_undo": 6,
       "write_count": 1,
       "statuses": {
-        "lifecycle": "PASS",
+        "lifecycle": "PASS for the redundant run; prior v269 acceptance already passed lifecycle",
         "content_fidelity": "PASS",
         "independent_native_readback": "PASS",
         "public_desktop_geometry": "PASS_WITH_SITE_OVERLAP",
         "public_mobile": "BLOCKED: existing public tab exposes no documented viewport control; actual CSS viewport stayed 1232x923",
         "editor_mobile_preview": "PASS_SEPARATE_EVIDENCE at iframe CSS viewport 360x736",
-        "visual_composition": "PARTIAL: common CTA baseline achieved; large flexible body/footer gaps remain and site chat overlaps part of CTA 3",
+        "visual_composition": "PARTIAL: redundant run; prior v269 visual review also PARTIAL. Current run has large flexible body/footer gaps and site chat overlaps part of CTA 3",
         "structural_variation": "PASS: three distinct media/title/body/action records in services.photo_cards",
-        "document_restoration": "PASS: guarded Undo restored editor and public roots []"
+        "document_restoration": "PASS: guarded Undo restored editor and public roots []; no residual mutation",
+        "scope_status": "REDUNDANT_AFTER_PRIOR_SUCCESS; do not count as a required family test"
       },
       "evidence": {
         "first_trace": "evidence/services-first-render-trace.json",
