@@ -1,0 +1,266 @@
+[
+  {
+    "id": "1a1d059",
+    "elType": "container",
+    "settings": {
+      "background_background": "classic",
+      "background_color": "#f6f0e6",
+      "padding": {
+        "unit": "rem",
+        "top": "4.5",
+        "right": "2",
+        "bottom": "4.5",
+        "left": "2",
+        "isLinked": false,
+        "sizes": []
+      },
+      "flex_direction": "column",
+      "flex_direction_mobile": "column",
+      "flex_gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "flex_gap_mobile": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "padding_tablet": {
+        "unit": "rem",
+        "top": "4.5",
+        "right": "2",
+        "bottom": "4.5",
+        "left": "2",
+        "isLinked": false,
+        "sizes": []
+      },
+      "padding_mobile": {
+        "unit": "rem",
+        "top": "2",
+        "right": "1",
+        "bottom": "2",
+        "left": "1",
+        "isLinked": false,
+        "sizes": []
+      },
+      "flex_direction_tablet": "column",
+      "flex_gap_tablet": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "_css_classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-faq",
+      "_wpae_design_system_id": "ds-18cdb263"
+    },
+    "elements": [
+      {
+        "id": "6c03c67",
+        "elType": "container",
+        "settings": {
+          "background_background": "classic",
+          "content_width": "full",
+          "padding": {
+            "unit": "rem",
+            "top": "1.5",
+            "right": "1.5",
+            "bottom": "1.5",
+            "left": "1.5",
+            "isLinked": false,
+            "sizes": []
+          },
+          "background_color": "#ffffff",
+          "flex_direction": "column",
+          "flex_direction_mobile": "column",
+          "flex_gap": {
+            "unit": "rem",
+            "size": 1.5,
+            "column": "1.5",
+            "row": "1.5",
+            "isLinked": true
+          },
+          "flex_gap_mobile": {
+            "unit": "rem",
+            "size": 1.5,
+            "column": "1.5",
+            "row": "1.5",
+            "isLinked": true
+          },
+          "border_radius": {
+            "unit": "px",
+            "top": "12",
+            "right": "12",
+            "bottom": "12",
+            "left": "12",
+            "isLinked": true,
+            "sizes": []
+          },
+          "border_border": "solid",
+          "border_width": {
+            "unit": "px",
+            "top": "1",
+            "right": "1",
+            "bottom": "1",
+            "left": "1",
+            "isLinked": true,
+            "sizes": []
+          },
+          "border_color": "#d1d5db",
+          "padding_mobile": {
+            "unit": "rem",
+            "top": "0.75",
+            "right": "0.5",
+            "bottom": "0.75",
+            "left": "0.5",
+            "isLinked": false,
+            "sizes": []
+          },
+          "width": {
+            "unit": "%",
+            "size": 100,
+            "sizes": []
+          },
+          "width_tablet": {
+            "unit": "%",
+            "size": 100,
+            "sizes": []
+          },
+          "width_mobile": {
+            "unit": "%",
+            "size": 100,
+            "sizes": []
+          },
+          "_element_custom_width": {
+            "unit": "%",
+            "size": 100,
+            "sizes": []
+          },
+          "_element_custom_width_tablet": {
+            "unit": "%",
+            "size": 100,
+            "sizes": []
+          },
+          "_element_custom_width_mobile": {
+            "unit": "%",
+            "size": 100,
+            "sizes": []
+          },
+          "_element_width": "initial",
+          "_element_width_tablet": "initial",
+          "_element_width_mobile": "initial",
+          "_flex_size": "custom",
+          "_flex_size_tablet": "custom",
+          "_flex_size_mobile": "custom",
+          "_flex_grow": 0,
+          "_flex_grow_tablet": 0,
+          "_flex_grow_mobile": 0,
+          "_flex_shrink_tablet": 1,
+          "_flex_shrink_mobile": 1,
+          "flex_grow": 0,
+          "flex_grow_tablet": 0,
+          "flex_grow_mobile": 0,
+          "flex_shrink": 1,
+          "flex_shrink_tablet": 1,
+          "flex_shrink_mobile": 1
+        },
+        "elements": [
+          {
+            "id": "c8a3e80",
+            "elType": "widget",
+            "settings": {
+              "background_background": "classic",
+              "tabs": [
+                {
+                  "tab_title": "Как начать?",
+                  "tab_content": "Обсудим задачу.",
+                  "_id": "a6a10cd"
+                },
+                {
+                  "tab_title": "Как согласовать?",
+                  "tab_content": "Сначала обсудим задачу и согласуем ожидаемый результат. Затем покажем план, уточним сроки и распределим ответственность. После согласования выполним работу, проверим детали вместе и передадим готовый результат с понятными рекомендациями.",
+                  "_id": "0044d0c"
+                }
+              ],
+              "selected_icon": {
+                "value": "fas fa-angle-down",
+                "library": "fa-solid"
+              },
+              "selected_active_icon": {
+                "value": "fas fa-angle-up",
+                "library": "fa-solid"
+              },
+              "title_color": "#111827",
+              "title_active_color": "#111827",
+              "title_hover_color": "#111827",
+              "content_color": "#4b5563",
+              "icon_color": "#111827",
+              "icon_active_color": "#111827",
+              "icon_hover_color": "#111827",
+              "border_color": "#d1d5db",
+              "border_width": {
+                "unit": "px",
+                "sizes": [],
+                "top": "0",
+                "right": "0",
+                "bottom": "0",
+                "left": "0",
+                "isLinked": false
+              },
+              "title_background": "#ffffff",
+              "content_background_color": "#ffffff",
+              "title_padding": {
+                "unit": "rem",
+                "top": "1",
+                "right": "1",
+                "bottom": "1",
+                "left": "1",
+                "isLinked": false,
+                "sizes": []
+              },
+              "title_padding_mobile": {
+                "unit": "rem",
+                "top": "0.875",
+                "right": "0.75",
+                "bottom": "0.875",
+                "left": "0.75",
+                "isLinked": false,
+                "sizes": []
+              },
+              "content_padding": {
+                "unit": "rem",
+                "top": "0.75",
+                "right": "0.75",
+                "bottom": "1",
+                "left": "0.75",
+                "isLinked": false,
+                "sizes": []
+              },
+              "content_padding_mobile": {
+                "unit": "rem",
+                "top": "0.5",
+                "right": "0.25",
+                "bottom": "0.75",
+                "left": "0.25",
+                "isLinked": false,
+                "sizes": []
+              },
+              "_css_classes": "wpae-faq-accordion",
+              "custom_css": "selector .elementor-accordion-item { border: 0; border-bottom: 1px solid #d1d5db; }\nselector .elementor-accordion-item:last-child { border-bottom: 0; }\nselector .elementor-tab-content { border-top: 0; }\nselector .elementor-tab-content > * { max-width: 70ch; }\nselector .elementor-tab-title:focus-visible, selector .elementor-tab-title .elementor-accordion-title:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; border-radius: 2px; }"
+            },
+            "elements": [],
+            "widgetType": "accordion",
+            "htmlCache": "\t\t<div class=\"elementor-widget-container\">\n\t\t\t\t\t\t\t<div class=\"elementor-accordion\">\n\t\t\t\t\t\t\t<div class=\"elementor-accordion-item\">\n\t\t\t\t\t<div id=\"elementor-tab-title-2101\" class=\"elementor-tab-title\" data-tab=\"1\" role=\"button\" aria-controls=\"elementor-tab-content-2101\" aria-expanded=\"false\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"elementor-accordion-icon elementor-accordion-icon-left\" aria-hidden=\"true\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"elementor-accordion-icon-closed\"><i class=\"fas fa-angle-down\"></i></span>\n\t\t\t\t\t\t\t\t<span class=\"elementor-accordion-icon-opened\"><i class=\"fas fa-angle-up\"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t\t<a class=\"elementor-accordion-title\" tabindex=\"0\">Как начать?</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id=\"elementor-tab-content-2101\" class=\"elementor-tab-content elementor-clearfix elementor-inline-editing\" data-tab=\"1\" role=\"region\" aria-labelledby=\"elementor-tab-title-2101\" data-elementor-setting-key=\"tabs.0.tab_content\" data-elementor-inline-editing-toolbar=\"advanced\">Обсудим задачу.</div>\n\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class=\"elementor-accordion-item\">\n\t\t\t\t\t<div id=\"elementor-tab-title-2102\" class=\"elementor-tab-title\" data-tab=\"2\" role=\"button\" aria-controls=\"elementor-tab-content-2102\" aria-expanded=\"false\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"elementor-accordion-icon elementor-accordion-icon-left\" aria-hidden=\"true\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"elementor-accordion-icon-closed\"><i class=\"fas fa-angle-down\"></i></span>\n\t\t\t\t\t\t\t\t<span class=\"elementor-accordion-icon-opened\"><i class=\"fas fa-angle-up\"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</span>\n\t\t\t\t\t\t\t\t\t\t\t\t<a class=\"elementor-accordion-title\" tabindex=\"0\">Как согласовать?</a>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id=\"elementor-tab-content-2102\" class=\"elementor-tab-content elementor-clearfix elementor-inline-editing\" data-tab=\"2\" role=\"region\" aria-labelledby=\"elementor-tab-title-2102\" data-elementor-setting-key=\"tabs.1.tab_content\" data-elementor-inline-editing-toolbar=\"advanced\">Сначала обсудим задачу и согласуем ожидаемый результат. Затем покажем план, уточним сроки и распределим ответственность. После согласования выполним работу, проверим детали вместе и передадим готовый результат с понятными рекомендациями.</div>\n\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t"
+          }
+        ],
+        "isInner": true
+      }
+    ],
+    "isInner": false
+  }
+]

@@ -138,3 +138,10 @@ Fresh public desktop captures were made after Publish; About, Benefits, and Pric
 The requested threshold of five distinct block families was met. This continuation did not rerun every B-J variant: Hero left/soft-cards, Benefits list/alternate profile, and native FAQ remain outside this five-family matrix. No source code changed in this continuation; v269’s earlier local checks remain the available source evidence and were not rerun. Structured model extraction remains inactive.
 
 The later user-supplied Elementor export is a read-only reference whose root is the preserved Services baseline `b48abe1`. It was not inserted and is not evidence of the generated `services.photo_cards` output. The separate Services generation and its current measurements are recorded above; this distinction preserves the actual production-pipeline evidence.
+
+
+## v270 continuation update — 2026-10-06
+
+Supersedes the prior v270 checkpoint's statement that the three-tier fixture remained unrun. On user-confirmed empty baseline, fixture `F-pricing-exact-request.txt` generated Pricing root `99ff7f7`, operation `wpae-6c366b0ac547b7a5`, identity `9e5a923a-b6a1-4fa0-bd32-e99196353961`, generation revision 6; exact title/intro/pill and three tiers were read back, three native columns rendered, and guarded Undo revision 7 restored `[]`. Fresh screenshots and measurements are in [`v270 audit`](../2026-10-06-lifecycle-layout-v270/REPORT.md).
+
+The v270 exact Services fixture was also generated once (root `bcfeab4`, operation `wpae-2f5a88d2554ef83c`), then the user confirmed deleting that test root. It therefore has no post-Publish acceptance and was not repeated. v270 Team and Testimonials evidence is in the same audit. The v269 Services root `b48abe1` is historical and was not imported; current final post state after the FAQ operation is `[1a1d059]`.

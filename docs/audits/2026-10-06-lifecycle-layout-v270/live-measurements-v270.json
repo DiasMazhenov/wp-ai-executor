@@ -1,0 +1,305 @@
+{
+  "post_id": 5214,
+  "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "source_version": "v02.11.270",
+  "public_css_viewport": [
+    1232,
+    923
+  ],
+  "editor_mobile_preview_css_viewport": [
+    360,
+    736
+  ],
+  "measurements": [
+    {
+      "scenario": "B",
+      "root": "f19f307",
+      "recipe": "pricing.tiers",
+      "columns_px": [
+        558,
+        558
+      ],
+      "gap_px": 24,
+      "card_height_px": 295.6,
+      "cta_bottom_aligned": true,
+      "overflow": false
+    },
+    {
+      "scenario": "C",
+      "root": "99ff7f7",
+      "recipe": "pricing.tiers",
+      "columns_px": [
+        364,
+        364,
+        364
+      ],
+      "gap_px": 24,
+      "card_height_px": 422,
+      "cta_bottom_aligned": true,
+      "overflow": false
+    },
+    {
+      "scenario": "D",
+      "root": "cd4d98d",
+      "recipe": "hero.split_60_40.right",
+      "copy_x_px": 46,
+      "media_x_px": 738,
+      "media_width_px": 448,
+      "media_height_px": 252,
+      "gap_px": 24,
+      "h1_font_px": 52,
+      "image_loaded": true,
+      "image_natural_px": [
+        1200,
+        675
+      ],
+      "overflow": false
+    },
+    {
+      "scenario": "E",
+      "root": "6ee89b6",
+      "recipe": "about.split_60_40.left",
+      "root_height_px": 412,
+      "image_loaded": true,
+      "image_natural_px": [
+        1200,
+        675
+      ],
+      "mobile_order": "copy, CTA, image",
+      "overflow": false
+    },
+    {
+      "scenario": "F",
+      "root": "1126b32",
+      "recipe": "benefits.editorial_list",
+      "rows": 2,
+      "list_width_px": 1140,
+      "row_gap_px": 24,
+      "row_height_px": 97,
+      "photos": 0,
+      "desktop_unused_right_space": "visually substantial",
+      "overflow": false
+    },
+    {
+      "scenario": "G",
+      "root": "d861368",
+      "recipe": "team.grid",
+      "columns_px": [
+        558,
+        558
+      ],
+      "gap_px": 24,
+      "bios": "full and wrapped; natural row height",
+      "photos": 0,
+      "actions": 0,
+      "overflow": false,
+      "site_overlap": "greeting intersects bottom edge of final card"
+    },
+    {
+      "scenario": "H",
+      "root": "7bb2750",
+      "recipe": "testimonials.editorial_rows",
+      "items": 6,
+      "layout": "author/meta left, quote right; rows grow with text",
+      "overflow": false,
+      "site_overlap": "greeting covers part of final long quote"
+    },
+    {
+      "scenario": "I",
+      "root": "1a1d059",
+      "recipe": "faq.native",
+      "long_answer_rect_px": [
+        1090,
+        76
+      ],
+      "long_answer_font_px": 16,
+      "long_answer_line_height_px": 24,
+      "overflow": false
+    }
+  ],
+  "screenshot_rules": "All PNGs in screenshot list have file signature and pixel size checked and were opened/visually inspected. Public desktop screenshots follow Publish/reload. Public mobile is not evidenced. Editor mobile is separately labelled.",
+  "screenshots": [
+    {
+      "scenario": "B",
+      "source": "public",
+      "file": "screenshots/pricing-2-public-desktop.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "C",
+      "source": "public",
+      "file": "screenshots/pricing-3-public-desktop.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "C",
+      "source": "Elementor mobile preview",
+      "file": "screenshots/pricing-3-editor-mobile-preview.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "preview_css_viewport": [
+        360,
+        736
+      ]
+    },
+    {
+      "scenario": "D",
+      "source": "public",
+      "file": "screenshots/hero-D-public-desktop.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "E",
+      "source": "public",
+      "file": "screenshots/about-E-public-desktop.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "E",
+      "source": "Elementor mobile preview",
+      "file": "screenshots/about-E-editor-mobile-preview.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "preview_css_viewport": [
+        360,
+        736
+      ]
+    },
+    {
+      "scenario": "F",
+      "source": "public",
+      "file": "screenshots/benefits-F-public-desktop.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "F",
+      "source": "Elementor mobile preview",
+      "file": "screenshots/benefits-F-editor-mobile-preview.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "preview_css_viewport": [
+        360,
+        736
+      ]
+    },
+    {
+      "scenario": "G",
+      "source": "public",
+      "file": "screenshots/team-G-public-desktop.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "G",
+      "source": "Elementor mobile preview",
+      "file": "screenshots/team-G-editor-mobile-preview.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "preview_css_viewport": [
+        360,
+        736
+      ]
+    },
+    {
+      "scenario": "H",
+      "source": "public full",
+      "file": "screenshots/testimonials-H-public-full.png",
+      "png_px": [
+        1217,
+        1265
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "H",
+      "source": "Elementor mobile preview",
+      "file": "screenshots/testimonials-H-editor-mobile-preview.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "preview_css_viewport": [
+        360,
+        736
+      ]
+    },
+    {
+      "scenario": "I",
+      "source": "public; long answer opened and settled",
+      "file": "screenshots/faq-I-final-public-long-answer-open.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "css_viewport": [
+        1232,
+        923
+      ]
+    },
+    {
+      "scenario": "I",
+      "source": "Elementor mobile preview",
+      "file": "screenshots/faq-I-editor-mobile-preview.png",
+      "png_px": [
+        1232,
+        923
+      ],
+      "preview_css_viewport": [
+        360,
+        736
+      ]
+    }
+  ]
+}

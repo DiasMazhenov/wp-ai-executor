@@ -1,0 +1,21 @@
+{
+  "pluginVersion": "v02.11.270",
+  "baseline": {
+    "error": null,
+    "hash": "d8c2e2405d32cd6f6282ac69968f0d0def74572e796b7dbfc35948df8a67641c",
+    "rootIds": [
+      "1a1d059"
+    ],
+    "status": "valid_array"
+  },
+  "operation": {
+    "accepted_contract_id": "contract-93cf3469f9d3e1e759c2d774",
+    "operation_id": "wpae-c616e5dbb2a2a125",
+    "operation_identity": "5e6a84de-849f-4012-a012-284fbcbfb2af",
+    "revision": 5,
+    "root_ids": [
+      "1a1d059"
+    ],
+    "status": "available"
+  }
+}

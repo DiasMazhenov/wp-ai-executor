@@ -3,15 +3,26 @@
   "target": {
     "post_id": 5214,
     "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
-    "fresh_editor_root_ids": [],
-    "fresh_public_root_ids": [],
-    "saved_elementor_json_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-    "saved_html_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fresh_editor_root_ids": [
+      "1a1d059"
+    ],
+    "fresh_public_root_ids": [
+      "1a1d059"
+    ],
+    "saved_elementor_json_sha256": "8e0451b15dc2730dda0a916010ed69a667d93379aeae9ed6835e7d75ada7726f",
+    "saved_html_sha256": null,
     "pending_operation": null,
-    "writes_this_continuation": 0,
     "required_historical_baseline": "b48abe1",
     "required_historical_baseline_present": false,
-    "previously_open_public_tab_stale_roots": ["b48abe1", "efdd267"]
+    "previously_open_public_tab_stale_roots": [
+      "b48abe1",
+      "efdd267"
+    ],
+    "actual_test_baseline": "[] user-confirmed after clearing page",
+    "final_current_root": "1a1d059",
+    "generation_writes_this_continuation": 9,
+    "additional_native_publish_saves": 1,
+    "user_deleted_test_root_count": 1
   },
   "release": {
     "source_version": "v02.11.270",
@@ -46,17 +57,198 @@
     "interpretation": "This does not isolate a stale-revision-only cause."
   },
   "screenshots": [
-    {"file": "screenshots/baseline-empty-editor-v270.png", "format": "PNG", "dimensions": [1642, 1231], "css_viewport": [1643, 1231], "source": "editor after reload", "root_ids": [], "sha256_jpeg_source": "336c973fbe75d54866988633b0910c5ea043c4784b4ade5b87160ff08089570a", "opened_and_inspected": true, "acceptance_role": "current-state diagnostic"},
-    {"file": "screenshots/baseline-empty-public-full.png", "format": "PNG", "dimensions": [2189, 1640], "css_viewport": [1643, 1231], "source": "public after fresh navigation", "root_ids": [], "sha256_jpeg_source": "b5eac6fe89d21bdfdc1b3b892e2168e7bb32d9e7cb7532f5fc3b51c9a0b32a7e", "opened_and_inspected": true, "acceptance_role": "current-state diagnostic"},
-    {"file": "screenshots/services-v269-current-public-full.png", "format": "PNG", "dimensions": [2163, 2615], "css_viewport": [1643, 1231], "source": "stale previously open public tab before fresh navigation", "root_ids_visible_in_stale_dom": ["b48abe1", "efdd267"], "sha256_jpeg_source": "d7cb80c967eae49db9c11b4355b565086f837c4f86b8cfd395e560826d668527", "opened_and_inspected": true, "acceptance_role": "stale diagnostic only"},
-    {"file": "screenshots/services-v269-current-public-viewport.png", "format": "PNG", "dimensions": [1489, 1216], "css_viewport": [1643, 1231], "source": "stale previously open public tab viewport", "root_ids_visible_in_stale_dom": ["b48abe1", "efdd267"], "sha256_jpeg_source": "5c54121edca1064549aa4c74990e215dbf2b10ab1d8a7639e40bce9b4b21fbdd", "opened_and_inspected": true, "acceptance_role": "stale diagnostic only"},
-    {"file": "screenshots/services-v269-descriptor-refusal-editor.png", "format": "PNG", "dimensions": [1642, 1231], "css_viewport": null, "source": "v269 editor refusal capture", "sha256_jpeg_source": "b10f7427d8cf01af6b68cb5a2b9a6637e202db600c548d8d2f0c01fcca3cb9ab", "opened_and_inspected": true, "acceptance_role": "historical lifecycle diagnostic; CSS viewport not measured at capture time"}
+    {
+      "file": "screenshots/baseline-empty-editor-v270.png",
+      "format": "PNG",
+      "dimensions": [
+        1642,
+        1231
+      ],
+      "css_viewport": [
+        1643,
+        1231
+      ],
+      "source": "editor after reload",
+      "root_ids": [],
+      "sha256_jpeg_source": "336c973fbe75d54866988633b0910c5ea043c4784b4ade5b87160ff08089570a",
+      "opened_and_inspected": true,
+      "acceptance_role": "current-state diagnostic"
+    },
+    {
+      "file": "screenshots/baseline-empty-public-full.png",
+      "format": "PNG",
+      "dimensions": [
+        2189,
+        1640
+      ],
+      "css_viewport": [
+        1643,
+        1231
+      ],
+      "source": "public after fresh navigation",
+      "root_ids": [],
+      "sha256_jpeg_source": "b5eac6fe89d21bdfdc1b3b892e2168e7bb32d9e7cb7532f5fc3b51c9a0b32a7e",
+      "opened_and_inspected": true,
+      "acceptance_role": "current-state diagnostic"
+    },
+    {
+      "file": "screenshots/services-v269-current-public-full.png",
+      "format": "PNG",
+      "dimensions": [
+        2163,
+        2615
+      ],
+      "css_viewport": [
+        1643,
+        1231
+      ],
+      "source": "stale previously open public tab before fresh navigation",
+      "root_ids_visible_in_stale_dom": [
+        "b48abe1",
+        "efdd267"
+      ],
+      "sha256_jpeg_source": "d7cb80c967eae49db9c11b4355b565086f837c4f86b8cfd395e560826d668527",
+      "opened_and_inspected": true,
+      "acceptance_role": "stale diagnostic only"
+    },
+    {
+      "file": "screenshots/services-v269-current-public-viewport.png",
+      "format": "PNG",
+      "dimensions": [
+        1489,
+        1216
+      ],
+      "css_viewport": [
+        1643,
+        1231
+      ],
+      "source": "stale previously open public tab viewport",
+      "root_ids_visible_in_stale_dom": [
+        "b48abe1",
+        "efdd267"
+      ],
+      "sha256_jpeg_source": "5c54121edca1064549aa4c74990e215dbf2b10ab1d8a7639e40bce9b4b21fbdd",
+      "opened_and_inspected": true,
+      "acceptance_role": "stale diagnostic only"
+    },
+    {
+      "file": "screenshots/services-v269-descriptor-refusal-editor.png",
+      "format": "PNG",
+      "dimensions": [
+        1642,
+        1231
+      ],
+      "css_viewport": null,
+      "source": "v269 editor refusal capture",
+      "sha256_jpeg_source": "b10f7427d8cf01af6b68cb5a2b9a6637e202db600c548d8d2f0c01fcca3cb9ab",
+      "opened_and_inspected": true,
+      "acceptance_role": "historical lifecycle diagnostic; CSS viewport not measured at capture time"
+    }
   ],
   "acceptance": {
-    "v270_live_generations": 0,
-    "v270_repeats": 0,
+    "primary_generations": 9,
+    "repeat_generations": 0,
+    "distinct_families": 8,
+    "successful_guarded_undos": 7,
+    "guarded_undo_refusals": 1,
+    "cta_generation": 0,
+    "final_root_set": [
+      "1a1d059"
+    ],
+    "public_mobile_generated_block_evidence": false,
     "baseline_restored": false,
-    "screenshot_workflow_tested": true,
-    "public_mobile_generated_block_evidence": false
-  }
+    "screenshots_saved_verified_and_inspected": true
+  },
+  "checkpoint_from_prior_report": {
+    "fresh_editor_roots_before_live_generations": [],
+    "historical_baseline_b48abe1_present": false,
+    "previously_open_public_tab_had_stale_roots": [
+      "b48abe1",
+      "efdd267"
+    ],
+    "interpretation": "A later user clarification confirmed that the user deleted the generated Services root; the empty page was the chosen live test baseline, not a failed save."
+  },
+  "latest_live_operations": [
+    {
+      "scenario": "B",
+      "operation_id": "wpae-d100b2dc1c76cbd8",
+      "identity": "d56e1e02-f770-4d27-9eff-c0cb7d0ec797",
+      "root": "f19f307",
+      "revision": 5,
+      "undo_revision": 6,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "C",
+      "operation_id": "wpae-6c366b0ac547b7a5",
+      "identity": "9e5a923a-b6a1-4fa0-bd32-e99196353961",
+      "root": "99ff7f7",
+      "revision": 6,
+      "undo_revision": 7,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "D",
+      "operation_id": "wpae-d8ab197c302660bd",
+      "identity": "b43085c3-3115-4e40-91c5-3a04d7615018",
+      "root": "cd4d98d",
+      "revision": 5,
+      "undo_revision": 6,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "E",
+      "operation_id": "wpae-517673afeecdaed6",
+      "identity": "4f481f6c-0e2d-44e4-aea1-c19dcd1d1082",
+      "root": "6ee89b6",
+      "revision": 6,
+      "undo_revision": 7,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "F",
+      "operation_id": "wpae-d30a078ae23ba42a",
+      "identity": "4b67bc43-fc7a-49e2-a657-5359a9047e5d",
+      "root": "1126b32",
+      "revision": 5,
+      "undo_revision": 6,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "G",
+      "operation_id": "wpae-d35757c357effecc",
+      "identity": "94be84ec-403e-46f9-a755-4926b597c8f6",
+      "root": "d861368",
+      "revision": 6,
+      "undo_revision": 7,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "H",
+      "operation_id": "wpae-a7a3bf847b5e4c10",
+      "identity": "55506376-7ca2-4d57-81ce-f316a1c944c7",
+      "root": "7bb2750",
+      "revision": 5,
+      "undo_revision": 6,
+      "result": "guarded Undo PASS; baseline []"
+    },
+    {
+      "scenario": "I",
+      "operation_id": "wpae-c616e5dbb2a2a125",
+      "identity": "5e6a84de-849f-4012-a012-284fbcbfb2af",
+      "root": "1a1d059",
+      "revision": 5,
+      "result": "Undo refused: owned_fingerprint_changed; root remains"
+    }
+  ],
+  "public_viewport": {
+    "window_inner_width": 1232,
+    "window_inner_height": 923,
+    "public_mobile": "BLOCKED: attempted documented viewport override did not change the actual public window width",
+    "editor_mobile_preview": [
+      360,
+      736
+    ]
+  },
+  "screenshots_current_run": "See live-measurements-v270.json; public captures are fresh after Publish/reload, PNG validated and visually opened."
 }

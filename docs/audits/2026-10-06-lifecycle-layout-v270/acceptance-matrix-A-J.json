@@ -1,127 +1,356 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "date": "2026-10-06",
-  "target_post_id": 5214,
-  "current_v270_root_set": [],
-  "historical_baseline_root": "b48abe1",
-  "primary_generations_v270": 0,
-  "repeats_v270": 0,
+  "release": {
+    "source_version": "v02.11.270",
+    "runtime_commit": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "reporting_head_before_docs": "864019713a4a34e6a86e3ce01358e32a8b870686",
+    "push_remote_head": "5c35b5cac6bee711231b18b6c6dd2859c2bcb777",
+    "installed_php_version": "v02.11.270",
+    "reloaded_editor_inline_version": "v02.11.270"
+  },
+  "target": {
+    "post_id": 5214,
+    "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "user_confirmed_initial_baseline_roots": [],
+    "historical_baseline_b48abe1": "not present; treated as historical and not imported",
+    "final_editor_and_public_root_set": [
+      "1a1d059"
+    ],
+    "saved_elementor_json_sha256": "8e0451b15dc2730dda0a916010ed69a667d93379aeae9ed6835e7d75ada7726f"
+  },
+  "counts": {
+    "primary_generations": 9,
+    "repeat_generations": 0,
+    "distinct_families_generated": 8,
+    "scenario_cases_generated": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I"
+    ],
+    "plugin_generation_writes": 9,
+    "additional_publish_saves": 1,
+    "user_deleted_test_roots": 1,
+    "guarded_undos_passed": 7,
+    "guarded_undos_refused": 1,
+    "cta_writes": 0
+  },
+  "viewport": {
+    "public_actual_css_px": [
+      1232,
+      923
+    ],
+    "public_mobile": "BLOCKED: public viewport override did not change actual window.innerWidth; public remained 1232px",
+    "elementor_mobile_preview_css_px": [
+      360,
+      736
+    ],
+    "note": "Editor preview evidence is not public mobile evidence; its screenshot raster remains the 1232x923 desktop app viewport."
+  },
   "scenarios": [
     {
       "id": "A",
       "family": "Services",
-      "fixture": "../2026-10-05-m3-1-entities/E-services-exact-request.txt",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/E-services-exact-request.txt",
+      "fixture_sha256": "245e0a8451118781bbe27b0724a2d1325a1cbaf78bf7528e987abc6296cc8795",
       "requested_record_or_route": "services.photo_cards",
-      "required_profile": "same accepted record/profile as prior Services request; v270 live selection not made",
-      "criteria": ["three exact services", "distinct allowed image/alt ownership", "three exact CTA hrefs", "aligned desktop action baseline", "natural mobile height"],
-      "v270_status": "BLOCKED_BASELINE_MISMATCH",
-      "v270_root_id": null,
-      "v270_operation_id": null,
-      "prior_evidence": {
-        "version": "v02.11.269",
-        "root_id": "efdd267",
-        "operation_id": "wpae-e387c462a25a14dc",
-        "identity": "5746a737-6c38-44e5-bbea-e323dfb8979a",
-        "revision_initial": 4,
-        "fresh_descriptor_revision": 6,
-        "fresh_descriptor_status": "unavailable",
-        "fresh_descriptor_reason": "contract_expired",
-        "visual_finding": "full copy, images and pill were present; card CTA baselines differed and site overlay intersected CTA 3"
-      }
+      "profile": "editorial_light",
+      "operation_id": "wpae-2f5a88d2554ef83c",
+      "identity": null,
+      "contract": null,
+      "root_id": "bcfeab4",
+      "generation_revision": null,
+      "provider_calls": 0,
+      "write_count": 1,
+      "status": {
+        "technical_lifecycle": "GENERATION_ONLY; user deleted test root before Publish/reload readback",
+        "content_fidelity": "NOT_VERIFIED_AFTER_SAVE",
+        "responsive_geometry": "NOT_RUN",
+        "visual_composition": "first editor screenshot captured; no public acceptance",
+        "structural_variation": "photo cards requested",
+        "document_restoration": "USER_DELETED_TEST_ROOT; empty user-confirmed baseline restored"
+      },
+      "notes": "User confirmed they deleted this root and that the cleared post is the intended baseline. This was not evidence of failed Publish. Do not rerun Services.",
+      "screenshots": [
+        "screenshots/services-A-first-editor-before-publish.png"
+      ]
     },
     {
       "id": "B",
       "family": "Pricing",
-      "fixture": "../2026-10-05-visual-policy/I-exact-request.txt",
-      "requested_record_or_route": "pricing.tiers (legacy composition id pricing.three_cards)",
-      "required_profile": "historical default profile; v270 selection not made",
-      "criteria": ["exactly two tiers", "full prices/features/CTA", "two native columns with Plan-matched responsive policy"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.269", "root_id": "8859f30", "operation_id": "wpae-e67a76fd2b2199d1", "historical_undo": "PASS", "native_item_count": 2}
+      "fixture": "docs/audits/2026-10-05-visual-policy/I-exact-request.txt",
+      "fixture_sha256": "398f714aa232ed6b2f800b5ff59786ec1d2fb8955f720232da0ecd9b85290764",
+      "requested_record_or_route": "pricing.tiers; legacy composition id pricing.three_cards",
+      "profile": "default resolved profile",
+      "operation_id": "wpae-d100b2dc1c76cbd8",
+      "identity": "d56e1e02-f770-4d27-9eff-c0cb7d0ec797",
+      "contract": "contract-bbad77821e2cdc4445b16b69",
+      "root_id": "f19f307",
+      "generation_revision": 5,
+      "undo_revision": 6,
+      "provider_calls": 0,
+      "write_count": 1,
+      "saved_native_json_sha256": "50e9a1addc191b2d96baa02cd39a13568aa9d82d1294c099dd62a22e4f273889",
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/readback and guarded Undo PASS",
+        "content_fidelity": "PASS; exactly two tiers, prices/features and CTA hrefs #start/#project",
+        "responsive_geometry": "desktop PASS; public mobile BLOCKED; editor mobile preview NOT CAPTURED",
+        "visual_composition": "desktop PASS; two equal cards, shared CTA bottom axis, no overflow",
+        "structural_variation": "PASS; native output contains 2 tiers",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; two 558px tracks, 24px gap, card height 295.6px; CTA y 335.6px aligned. Full independent JSON export was not retained; after-reload native summary and public DOM evidence retained.",
+      "screenshots": [
+        "screenshots/pricing-2-public-desktop.png",
+        "screenshots/pricing-2-public-full.png"
+      ]
     },
     {
       "id": "C",
       "family": "Pricing",
-      "fixture": "../2026-10-05-m3-1-entities/F-pricing-exact-request.txt",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/F-pricing-exact-request.txt",
+      "fixture_sha256": "0373acbc1ded8ed9aac8e12c48533a0ec83273023efe49e70542fb560f82b46e",
       "requested_record_or_route": "pricing.tiers",
-      "required_profile": "existing default profile; v270 selection not made",
-      "criteria": ["exactly three tiers", "exact pill/title/intro", "prices/features/CTA and columns preserve exact Brief"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": null
+      "profile": "editorial_light",
+      "operation_id": "wpae-6c366b0ac547b7a5",
+      "identity": "9e5a923a-b6a1-4fa0-bd32-e99196353961",
+      "contract": "contract-7d267a948cfbf7a596b6379",
+      "root_id": "99ff7f7",
+      "generation_revision": 6,
+      "undo_revision": 7,
+      "provider_calls": 0,
+      "write_count": 1,
+      "saved_native_json_sha256": "1bca1542331fdc990e813b0bd8a73aedcce6fb489cdaea52c57e42e1610d4191",
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/native readback and guarded Undo PASS",
+        "content_fidelity": "PASS; three exact tiers, intro, pill, features and links #start/#project/#support",
+        "responsive_geometry": "desktop PASS; public mobile BLOCKED; Elementor mobile preview 360x736 PASS",
+        "visual_composition": "desktop/editor preview good; public mobile not evidenced",
+        "structural_variation": "PASS; actual 3-tier native grid, no empty third card",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; three equal 364px tracks with 24px gaps; card heights 422px and CTAs aligned on common bottom axis; no clipping/overflow.",
+      "screenshots": [
+        "screenshots/pricing-3-public-desktop.png",
+        "screenshots/pricing-3-public-full.png",
+        "screenshots/pricing-3-editor-mobile-preview.png"
+      ]
     },
     {
       "id": "D",
       "family": "Hero",
-      "fixture": "../2026-10-05-visual-policy/B-C-D-exact-request.txt",
-      "requested_record_or_route": "Hero split, image right, editorial_light",
-      "required_profile": "editorial_light",
-      "criteria": ["H1 hierarchy", "exact copy/CTA", "approved asset and alt", "desktop split geometry", "logical mobile order"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.269", "root_id": "4c5d508", "operation_id": "wpae-41612dd2fb2d5967", "historical_undo": "PASS", "historical_screenshot": "not saved for this operation"}
+      "fixture": "docs/audits/2026-10-05-visual-policy/B-C-D-exact-request.txt",
+      "fixture_sha256": "45ab4bf7c9b4fbfa0884199f0eaf089d8c3469a0ba143c9968a17f63b54cef6a",
+      "requested_record_or_route": "hero.split_60_40.right",
+      "profile": "editorial_light",
+      "operation_id": "wpae-d8ab197c302660bd",
+      "identity": "b43085c3-3115-4e40-91c5-3a04d7615018",
+      "contract": "contract-3c2a6cc2059a62a375621def",
+      "root_id": "cd4d98d",
+      "generation_revision": 5,
+      "undo_revision": 6,
+      "provider_calls": 0,
+      "write_count": 1,
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/native readback and guarded Undo PASS",
+        "content_fidelity": "PASS; exact H1/copy/CTA #start, approved asset and alt",
+        "responsive_geometry": "desktop PASS; public mobile BLOCKED; editor mobile preview NOT CAPTURED",
+        "visual_composition": "desktop PASS; balanced 60/40 split; Vision spacing complaint contradicted by DOM/pixels",
+        "structural_variation": "PASS; Hero split with right media",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; root copy x46, media x738, media 448x252, gap 24; H1 52px; image loaded, natural 1200x675, exact alt; no overflow.",
+      "screenshots": [
+        "screenshots/hero-D-public-desktop.png",
+        "screenshots/hero-D-public-full.png"
+      ]
     },
     {
       "id": "E",
       "family": "About",
-      "fixture": "../2026-10-05-visual-policy/E-exact-request.txt",
-      "requested_record_or_route": "About split with image left",
-      "required_profile": "existing fixture/profile; v270 selection not made",
-      "criteria": ["H2", "full body", "image-left composition", "natural height and mobile order"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.269", "root_id": "b4825de", "operation_id": "wpae-3a0b99add34d4807", "historical_record": "about.split_60_40.right", "historical_undo": "PASS"}
+      "fixture": "docs/audits/2026-10-05-visual-policy/E-exact-request.txt",
+      "fixture_sha256": "4b4790d8cb1de9f8792fda55cb3ace07c742362d775b3a085e8502e4763fd490",
+      "requested_record_or_route": "about.split_60_40.left",
+      "profile": "editorial_light",
+      "operation_id": "wpae-517673afeecdaed6",
+      "identity": "4f481f6c-0e2d-44e4-aea1-c19dcd1d1082",
+      "contract": "contract-fcf06d507761da7956e2925a",
+      "root_id": "6ee89b6",
+      "generation_revision": 6,
+      "undo_revision": 7,
+      "provider_calls": 0,
+      "write_count": 1,
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/native readback and guarded Undo PASS",
+        "content_fidelity": "PASS; full exact body, H2, image left and CTA #about",
+        "responsive_geometry": "desktop PASS; Elementor mobile preview 360x736 PASS; public mobile BLOCKED",
+        "visual_composition": "PASS desktop; authored editorial split differs from Hero; minor overlay intersects page edge only",
+        "structural_variation": "PASS; image-left About split",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; image loaded at 1200x675 natural; root height 412px. Editor mobile order copy then CTA then image; no horizontal overflow.",
+      "screenshots": [
+        "screenshots/about-E-public-desktop.png",
+        "screenshots/about-E-public-full.png",
+        "screenshots/about-E-editor-mobile-preview.png"
+      ]
     },
     {
       "id": "F",
       "family": "Benefits",
-      "fixture": "../2026-10-05-visual-policy/F-G-H-exact-request.txt",
+      "fixture": "docs/audits/2026-10-05-visual-policy/F-G-H-exact-request.txt",
+      "fixture_sha256": "76c4e7077891d99eb2346d39dd5a298e1d77e28513794ab68d67a3933c709405",
       "requested_record_or_route": "benefits.editorial_list",
-      "required_profile": "existing allowed profile; v270 selection not made",
-      "criteria": ["exact title/body pairs", "allowed icons", "no photos", "editorial rhythm and wrapping"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.269", "root_id": "206f35b", "operation_id": "wpae-0d749e5381b1b802", "historical_record": "benefits.grid", "same_composition": false}
+      "profile": "editorial_light",
+      "operation_id": "wpae-d30a078ae23ba42a",
+      "identity": "4b67bc43-fc7a-49e2-a657-5359a9047e5d",
+      "contract": "contract-7c429a1b7c3a885f1506a60c",
+      "root_id": "1126b32",
+      "generation_revision": 5,
+      "undo_revision": 6,
+      "provider_calls": 0,
+      "write_count": 1,
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/native readback and guarded Undo PASS",
+        "content_fidelity": "PASS; exact two title/body pairs, check icons, no photos or CTA",
+        "responsive_geometry": "desktop PASS; Elementor mobile preview 360x736 PASS; public mobile BLOCKED",
+        "visual_composition": "PARTIAL; intended airy editorial list, but large unused right side on desktop",
+        "structural_variation": "PASS; editorial list rather than repeated cards",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; row list width 1140px, 24px row gap, row height 97px; no horizontal overflow. Editor mobile rows 263px wide and grow naturally.",
+      "screenshots": [
+        "screenshots/benefits-F-public-desktop.png",
+        "screenshots/benefits-F-public-full.png",
+        "screenshots/benefits-F-editor-mobile-preview.png"
+      ]
     },
     {
       "id": "G",
       "family": "Team",
-      "fixture": "../2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "fixture_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
       "requested_record_or_route": "team.grid",
-      "required_profile": "fixture profile; v270 selection not made",
-      "criteria": ["four exact people/field ownership", "no invented portraits", "long bio natural height", "no empty actions footer"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.266", "root_id": "3178f61", "operation_id": "wpae-df7ea9c2e4a4d350", "historical_visual_status": "REVIEW_REQUIRED"}
+      "profile": "default resolved profile",
+      "operation_id": "wpae-d35757c357effecc",
+      "identity": "94be84ec-403e-46f9-a755-4926b597c8f6",
+      "contract": "contract-44d1f0748e0d83ec37dc991f",
+      "root_id": "d861368",
+      "generation_revision": 6,
+      "undo_revision": 7,
+      "provider_calls": 0,
+      "write_count": 1,
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/native readback and guarded Undo PASS",
+        "content_fidelity": "PASS; four synthetic name/position/bio groups, no photos/actions",
+        "responsive_geometry": "desktop PASS; Elementor mobile preview 360x736 PASS; public mobile BLOCKED",
+        "visual_composition": "PARTIAL; two-column native cards work; site greeting overlaps lower edge of final card",
+        "structural_variation": "PASS; Team grid distinct from editorial list/rows",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; two columns 558px with 24px gap; long bios wrap fully; no horizontal overflow. Editor mobile one column and natural bio height.",
+      "screenshots": [
+        "screenshots/team-G-public-desktop.png",
+        "screenshots/team-G-public-full.png",
+        "screenshots/team-G-editor-mobile-preview.png"
+      ]
     },
     {
       "id": "H",
       "family": "Testimonials",
-      "fixture": "../2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "fixture_sha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
       "requested_record_or_route": "testimonials.editorial_rows",
-      "required_profile": "fixture profile; v270 selection not made",
-      "criteria": ["exact quote/author/meta ownership", "no added rating/avatar/logo", "reading measure", "no empty actions footer"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.266", "root_id": "bcc1d46", "operation_id": "wpae-06bb72bdb0e0881b", "historical_visual_status": "PASS_DESKTOP_ONLY"}
+      "profile": "editorial_light",
+      "operation_id": "wpae-a7a3bf847b5e4c10",
+      "identity": "55506376-7ca2-4d57-81ce-f316a1c944c7",
+      "contract": "contract-85e95cfb7094243bf544245c",
+      "root_id": "7bb2750",
+      "generation_revision": 5,
+      "undo_revision": 6,
+      "provider_calls": 0,
+      "write_count": 1,
+      "status": {
+        "technical_lifecycle": "PASS; Publish/reload/native readback and guarded Undo PASS",
+        "content_fidelity": "PASS; all six exact quote/author/meta tuples, no ratings/avatars/logos",
+        "responsive_geometry": "desktop PASS; Elementor mobile preview 360x736 PASS; public mobile BLOCKED",
+        "visual_composition": "PARTIAL; editorial rows clear, but site greeting overlays part of last long quote",
+        "structural_variation": "PASS; six editorial rows, not Services cards",
+        "document_restoration": "PASS; baseline [] confirmed after Undo"
+      },
+      "measurements": "Public CSS viewport 1232x923; six separate rows; full-page PNG is 1217x1265; no horizontal overflow. Last row text accessibility partially obscured by site overlay (SITE_OVERLAP).",
+      "screenshots": [
+        "screenshots/testimonials-H-public-desktop.png",
+        "screenshots/testimonials-H-public-full.png",
+        "screenshots/testimonials-H-editor-mobile-preview.png"
+      ]
     },
     {
       "id": "I",
       "family": "FAQ",
-      "fixture": "../2026-10-05-visual-policy/J-exact-request.txt",
+      "fixture": "docs/audits/2026-10-05-visual-policy/J-exact-request.txt",
+      "fixture_sha256": "bd52bb291c2ca737077875f2160dfa95e4e532a9b487957453c62dec33266424",
       "requested_record_or_route": "faq.native",
-      "required_profile": "existing default profile; v270 selection not made",
-      "criteria": ["native Accordion", "exact question/answer pairs", "open every item", "save/reload and no clipping"],
-      "v270_status": "NOT_RUN",
-      "prior_evidence": {"version": "v02.11.264", "root_id": "59a770e", "operation_id": "wpae-0198aa58bfe9eaaf", "historical_settled_answer_evidence": true, "historical_undo": "PASS"}
+      "profile": "default resolved profile",
+      "operation_id": "wpae-c616e5dbb2a2a125",
+      "identity": "5e6a84de-849f-4012-a012-284fbcbfb2af",
+      "contract": "contract-93cf3469f9d3e1e759c2d774",
+      "root_id": "1a1d059",
+      "generation_revision": 5,
+      "current_operation_status": "changed_target / owned_fingerprint_changed",
+      "provider_calls": 0,
+      "write_count": 1,
+      "additional_native_publish": "one; normalized Accordion tabs after editor interaction, not a second generation",
+      "status": {
+        "technical_lifecycle": "GENERATION/PUBLISH/RELOAD PASS; scoped Undo safely REFUSED after fingerprint changed",
+        "content_fidelity": "PASS; exact question/answer pairs; each public item opened and checked",
+        "responsive_geometry": "desktop PASS; Elementor mobile preview 360x736 shows first answer; public mobile BLOCKED",
+        "visual_composition": "desktop PASS for native Accordion; long answer visible after settled click; mobile long-answer visual NOT VERIFIED",
+        "structural_variation": "PASS; one native Accordion widget",
+        "document_restoration": "BLOCKED; root remains and baseline [] not restored"
+      },
+      "measurements": "Public CSS viewport 1232x923; second answer after settled click rect 1090x76 at 16px/24px line height; no clipping/overflow. Guarded Undo refusal: operation descriptor reports owned_fingerprint_changed; UI first stopped for unsaved editor model, then read-only model check reported tabs authored_control_changed.",
+      "screenshots": [
+        "screenshots/faq-I-final-public-first-answer-open.png",
+        "screenshots/faq-I-final-public-long-answer-open.png",
+        "screenshots/faq-I-final-public-long-answer-open-full.png",
+        "screenshots/faq-I-editor-mobile-preview.png"
+      ]
     },
     {
       "id": "J",
       "family": "CTA",
-      "fixture": "J-cta-exact-request.txt",
+      "fixture": "docs/audits/2026-10-06-lifecycle-layout-v270/J-cta-exact-request.txt",
       "requested_record_or_route": "legacy cta.band; no canonical typed CTA record",
-      "required_profile": "existing defaults; no v270 route chosen",
-      "criteria": ["exact heading/description", "primary #contact and secondary #projects", "no image", "CTA not misrouted as Hero", "operation-scoped Undo safety"],
-      "v270_status": "NOT_RUN",
-      "reason": "No canonical record and safe scoped lifecycle was not proven; stopped before prompt/write."
+      "profile": "no typed profile selected",
+      "operation_id": null,
+      "identity": null,
+      "root_id": null,
+      "status": {
+        "technical_lifecycle": "BLOCKED before generation; no canonical operation-scoped Undo proof",
+        "content_fidelity": "NOT RUN",
+        "responsive_geometry": "NOT RUN",
+        "visual_composition": "NOT RUN",
+        "structural_variation": "NOT RUN",
+        "document_restoration": "NOT APPLICABLE"
+      },
+      "notes": "No live request/write was sent; this route was explicitly excluded from migration and had no canonical record. Also stopped after FAQ Undo refused and baseline was not restored.",
+      "screenshots": []
     }
   ],
-  "status_legend": {
-    "NOT_RUN": "No v270 generation or acceptance was performed.",
-    "BLOCKED_BASELINE_MISMATCH": "Current page baseline did not match the required preserved-root state; no write was authorized by the live state."
+  "overall": {
+    "source_and_install": "PASS, separately confirmed",
+    "generation_and_content": "8 scenarios read back; A Services root user-deleted before post-save acceptance",
+    "responsive_geometry": "desktop/preview partial evidence; public mobile blocked",
+    "visual_composition": "mixed by scenario; site-owned chat overlaps Team/Testimonial content; Benefits broad right whitespace",
+    "structural_variation": "Hero/About split, Benefits list, Team grid, Testimonials rows, Pricing grids, FAQ Accordion evidenced",
+    "document_restoration": "7 guarded Undos restored []; FAQ remains root 1a1d059; no manual deletion",
+    "complete_acceptance": "INCOMPLETE"
   }
 }

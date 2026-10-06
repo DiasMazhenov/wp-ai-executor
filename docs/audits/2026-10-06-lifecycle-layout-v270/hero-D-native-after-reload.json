@@ -1,0 +1,281 @@
+[
+  {
+    "elType": "container",
+    "elements": [
+      {
+        "elType": "container",
+        "elements": [
+          {
+            "elType": "container",
+            "elements": [
+              "[MaxDepth]",
+              "[MaxDepth]",
+              "[MaxDepth]",
+              "[MaxDepth]"
+            ],
+            "id": "7073147",
+            "isInner": true,
+            "settings": {
+              "align_self": "flex-start",
+              "background_background": "classic",
+              "background_color": "transparent",
+              "content_width": "full",
+              "flex_align_items": "flex-start",
+              "flex_direction": "column",
+              "flex_gap": "[MaxDepth]",
+              "padding": "[MaxDepth]",
+              "width": "[MaxDepth]",
+              "width_mobile": "[MaxDepth]",
+              "width_tablet": "[MaxDepth]"
+            }
+          }
+        ],
+        "id": "dfccfe9",
+        "isInner": true,
+        "settings": {
+          "_element_custom_width": {
+            "size": 60,
+            "sizes": [],
+            "unit": "%"
+          },
+          "_element_custom_width_mobile": {
+            "size": 100,
+            "sizes": [],
+            "unit": "%"
+          },
+          "_element_custom_width_tablet": {
+            "size": 50,
+            "sizes": [],
+            "unit": "%"
+          },
+          "_element_width": "initial",
+          "_element_width_mobile": "initial",
+          "_element_width_tablet": "initial",
+          "_flex_grow": 0,
+          "_flex_grow_mobile": 0,
+          "_flex_grow_tablet": 0,
+          "_flex_shrink_mobile": 1,
+          "_flex_shrink_tablet": 1,
+          "_flex_size": "custom",
+          "_flex_size_mobile": "custom",
+          "_flex_size_tablet": "custom",
+          "align_self": "flex-start",
+          "background_background": "classic",
+          "background_color": "transparent",
+          "content_width": "full",
+          "flex_align_items": "flex-start",
+          "flex_align_items_mobile": "flex-start",
+          "flex_align_items_tablet": "flex-start",
+          "flex_direction": "column",
+          "flex_direction_mobile": "column",
+          "flex_gap": {
+            "column": "0",
+            "isLinked": true,
+            "row": "0",
+            "unit": "px"
+          },
+          "flex_gap_mobile": {
+            "column": "0",
+            "isLinked": true,
+            "row": "0",
+            "unit": "px"
+          },
+          "flex_gap_tablet": {
+            "column": "0",
+            "isLinked": true,
+            "row": "0",
+            "unit": "px"
+          },
+          "flex_grow": 0,
+          "flex_grow_mobile": 0,
+          "flex_grow_tablet": 0,
+          "flex_shrink": 1,
+          "flex_shrink_mobile": 1,
+          "flex_shrink_tablet": 1,
+          "padding": {
+            "bottom": "0",
+            "isLinked": true,
+            "left": "0",
+            "right": "0",
+            "top": "0",
+            "unit": "rem"
+          },
+          "text_align": "left",
+          "width": {
+            "size": 60,
+            "sizes": [],
+            "unit": "%"
+          },
+          "width_mobile": {
+            "size": 100,
+            "sizes": [],
+            "unit": "%"
+          },
+          "width_tablet": {
+            "size": 50,
+            "sizes": [],
+            "unit": "%"
+          }
+        }
+      },
+      {
+        "elType": "container",
+        "elements": [
+          {
+            "elType": "widget",
+            "elements": [],
+            "htmlCache": "\t\t<div class=\"elementor-widget-container\">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<img src=\"https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&#038;fit=crop&#038;fm=jpg&#038;h=675&#038;ixlib=rb-4.1.0&#038;q=80&#038;w=1200\" title=\"\" alt=\"Современный архитектурный интерьер.\" loading=\"lazy\" />\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t",
+            "id": "add771a",
+            "settings": {
+              "background_background": "classic",
+              "image": "[MaxDepth]",
+              "image_border_radius": "[MaxDepth]",
+              "image_size": "full",
+              "object-fit": "cover",
+              "width": "[MaxDepth]",
+              "width_mobile": "[MaxDepth]"
+            },
+            "widgetType": "image"
+          }
+        ],
+        "id": "2af464d",
+        "isInner": true,
+        "settings": {
+          "_element_custom_width": {
+            "size": 40,
+            "sizes": [],
+            "unit": "%"
+          },
+          "_element_custom_width_mobile": {
+            "size": 100,
+            "sizes": [],
+            "unit": "%"
+          },
+          "_element_custom_width_tablet": {
+            "size": 50,
+            "sizes": [],
+            "unit": "%"
+          },
+          "_element_width": "initial",
+          "_element_width_mobile": "initial",
+          "_element_width_tablet": "initial",
+          "_flex_grow": 0,
+          "_flex_grow_mobile": 0,
+          "_flex_grow_tablet": 0,
+          "_flex_shrink_mobile": 1,
+          "_flex_shrink_tablet": 1,
+          "_flex_size": "custom",
+          "_flex_size_mobile": "custom",
+          "_flex_size_tablet": "custom",
+          "background_background": "classic",
+          "background_color": "#ffffff",
+          "content_width": "full",
+          "flex_direction": "column",
+          "flex_direction_mobile": "column",
+          "flex_gap": {
+            "column": "1.5",
+            "isLinked": true,
+            "row": "1.5",
+            "size": 1.5,
+            "unit": "rem"
+          },
+          "flex_gap_mobile": {
+            "column": "1.5",
+            "isLinked": true,
+            "row": "1.5",
+            "size": 1.5,
+            "unit": "rem"
+          },
+          "flex_grow": 0,
+          "flex_grow_mobile": 0,
+          "flex_grow_tablet": 0,
+          "flex_shrink": 1,
+          "flex_shrink_mobile": 1,
+          "flex_shrink_tablet": 1,
+          "padding": {
+            "bottom": "0",
+            "isLinked": true,
+            "left": "0",
+            "right": "0",
+            "top": "0",
+            "unit": "rem"
+          },
+          "width": {
+            "size": 40,
+            "sizes": [],
+            "unit": "%"
+          },
+          "width_mobile": {
+            "size": 100,
+            "sizes": [],
+            "unit": "%"
+          },
+          "width_tablet": {
+            "size": 50,
+            "sizes": [],
+            "unit": "%"
+          }
+        }
+      }
+    ],
+    "id": "cd4d98d",
+    "isInner": false,
+    "settings": {
+      "_css_classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-hero",
+      "_wpae_design_system_id": "ds-18cdb263",
+      "background_background": "classic",
+      "background_color": "#ffffff",
+      "flex_direction": "row",
+      "flex_direction_mobile": "column",
+      "flex_direction_tablet": "row",
+      "flex_gap": {
+        "column": "1.25",
+        "isLinked": true,
+        "row": "1.25",
+        "size": 1.25,
+        "unit": "rem"
+      },
+      "flex_gap_mobile": {
+        "column": "0.875",
+        "isLinked": true,
+        "row": "0.875",
+        "size": 0.875,
+        "unit": "rem"
+      },
+      "flex_gap_tablet": {
+        "column": "1",
+        "isLinked": true,
+        "row": "1",
+        "size": 1,
+        "unit": "rem"
+      },
+      "padding": {
+        "bottom": "5",
+        "isLinked": false,
+        "left": "2",
+        "right": "2",
+        "sizes": [],
+        "top": "5",
+        "unit": "rem"
+      },
+      "padding_mobile": {
+        "bottom": "2.5",
+        "isLinked": false,
+        "left": "1",
+        "right": "1",
+        "sizes": [],
+        "top": "2.5",
+        "unit": "rem"
+      },
+      "padding_tablet": {
+        "bottom": "3.5",
+        "isLinked": false,
+        "left": "2",
+        "right": "2",
+        "sizes": [],
+        "top": "3.5",
+        "unit": "rem"
+      }
+    }
+  }
+]

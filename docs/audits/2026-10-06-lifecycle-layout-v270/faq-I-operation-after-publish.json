@@ -1,0 +1,22 @@
+{
+  "baseline": {
+    "error": null,
+    "hash": "8e0451b15dc2730dda0a916010ed69a667d93379aeae9ed6835e7d75ada7726f",
+    "rootIds": [
+      "1a1d059"
+    ],
+    "status": "valid_array"
+  },
+  "operation": {
+    "contract": "contract-93cf3469f9d3e1e759c2d774",
+    "identity": "5e6a84de-849f-4012-a012-284fbcbfb2af",
+    "operation_id": "wpae-c616e5dbb2a2a125",
+    "reason": "owned_fingerprint_changed",
+    "revision": 5,
+    "root_ids": [
+      "1a1d059"
+    ],
+    "status": "changed_target"
+  },
+  "version": "v02.11.270"
+}

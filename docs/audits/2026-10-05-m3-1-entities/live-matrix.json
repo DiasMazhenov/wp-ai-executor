@@ -212,5 +212,30 @@
     },
     "fresh_v270_generations": 0,
     "interpretation": "The old E-root statement remains historical; no JSON import or root restoration was performed in the v270 continuation."
+  },
+  "v270_continuation": {
+    "report": "../2026-10-06-lifecycle-layout-v270/REPORT.md",
+    "status": "partially accepted; not a complete M3.1 acceptance",
+    "pricing_three_tier": {
+      "root_id": "99ff7f7",
+      "operation_id": "wpae-6c366b0ac547b7a5",
+      "identity": "9e5a923a-b6a1-4fa0-bd32-e99196353961",
+      "generation_revision": 6,
+      "undo_revision": 7,
+      "guarded_undo": "PASS",
+      "fixture": "F-pricing-exact-request.txt"
+    },
+    "services": {
+      "root_id": "bcfeab4",
+      "operation_id": "wpae-2f5a88d2554ef83c",
+      "status": "user_deleted_before post-Publish readback; not repeated"
+    },
+    "team_root": "d861368",
+    "testimonials_root": "7bb2750",
+    "final_post_root_set": [
+      "1a1d059"
+    ],
+    "public_mobile": "BLOCKED",
+    "faq_undo": "REFUSED safely after owned fingerprint changed"
   }
 }

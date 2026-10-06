@@ -1,3 +1,117 @@
+# Lifecycle synchronization and shared card layout — v270 live continuation
+
+Date: 2026-10-06 (Asia/Almaty)
+Target: existing post `5214`; public page [pricing-contract-live-v123](https://mazhenov.kz/pricing-contract-live-v123/)
+Source/runtime: v02.11.270, runtime commit `5c35b5cac6bee711231b18b6c6dd2859c2bcb777`; report started at HEAD `864019713a4a34e6a86e3ce01358e32a8b870686`.
+
+> **Correction:** The earlier v270 checkpoint reported no live generation because it observed an empty canvas after the user had deleted the prior Services test root. The user later explicitly confirmed that deletion and authorized continuing from the cleared page. The empty canvas was the intended test baseline, not evidence of a failed Publish. This section is authoritative for the continuation; the historical checkpoint is preserved below.
+
+## Execution and release state
+
+The installed source was already v02.11.270; Plugins PHP and the reloaded editor inline version both independently reported v270. No runtime source changed in this continuation, so no version bump or repeat of the full local suite was needed. No alternate page, draft, imported template, manual Elementor controls, or direct generation path was used. Each generation below used the regular plugin chat and native Publish.
+
+Initial user-confirmed test baseline: `[]`. Nine first generations were attempted across eight distinct families; no repeat generation was made. The Services root `bcfeab4` was removed by the user after its first editor preview, as the user clarified. That case has no post-Publish readback or guarded Undo acceptance and was not repeated. B–I used the regular plugin chat path and native Publish. Seven operation-scoped Undos succeeded for B–H and restored `[]`. FAQ I remains because the ownership/fingerprint guard refused its Undo. CTA J was not generated: `cta.band` is legacy, has no canonical typed record, and a safe scoped Undo has not been proven; after the FAQ guard refusal, no further writes were safe.
+
+## A–J live matrix
+
+Status dimensions are separate: lifecycle, content fidelity, responsive geometry, visual composition, structural variation, and document restoration. Fixture SHA-256 values are recorded as exact-request fixture hashes; Brief hashes were not captured for these runs and are not fabricated. The per-case operation/root/revision, native evidence, measurements and screenshot index are in [acceptance-matrix-A-J.json](acceptance-matrix-A-J.json) and [live-measurements-v270.json](live-measurements-v270.json).
+
+| Case | Family / accepted route | Root / operation / identity / generation revision | Result and restoration |
+|---|---|---|---|
+| A | Services `services.photo_cards`, `editorial_light` | `bcfeab4` / `wpae-2f5a88d2554ef83c` / identity not retained / revision not retained | One generation/write. User deleted the root before post-Publish acceptance; first editor evidence only. Not rerun. |
+| B | Pricing `pricing.tiers` (legacy composition ID `pricing.three_cards`), two tiers | `f19f307` / `wpae-d100b2dc1c76cbd8` / `d56e1e02-f770-4d27-9eff-c0cb7d0ec797` / r5 | Exact two tiers and distinct `#start`, `#project` links; 2 native columns, aligned actions; guarded Undo r6 restored `[]`. Full native export was not retained; native readback summary and public DOM were. |
+| C | Pricing `pricing.tiers`, three tiers | `99ff7f7` / `wpae-6c366b0ac547b7a5` / `9e5a923a-b6a1-4fa0-bd32-e99196353961` / r6 | Exact three tiers, pill, section title/intro, prices/features/CTAs; guarded Undo r7 restored `[]`. |
+| D | Hero `hero.split_60_40.right`, `editorial_light` | `cd4d98d` / `wpae-d8ab197c302660bd` / `b43085c3-3115-4e40-91c5-3a04d7615018` / r5 | Exact Hero copy, H1, approved loaded image/alt and `#start`; distinct right-media split; Undo r6 restored `[]`. |
+| E | About `about.split_60_40.left`, `editorial_light` | `6ee89b6` / `wpae-517673afeecdaed6` / `4f481f6c-0e2d-44e4-aea1-c19dcd1d1082` / r6 | Full exact body, H2, image-left editorial split, `#about`; mobile preview copy-first; Undo r7 restored `[]`. |
+| F | Benefits `benefits.editorial_list`, `editorial_light` | `1126b32` / `wpae-d30a078ae23ba42a` / `4b67bc43-fc7a-49e2-a657-5359a9047e5d` / r5 | Two exact title/body pairs and icons; no photos/actions; genuinely one-column list; Undo r6 restored `[]`. Large unused right side remains a visual limitation. |
+| G | Team `team.grid`, four synthetic people | `d861368` / `wpae-d35757c357effecc` / `94be84ec-403e-46f9-a755-4926b597c8f6` / r6 | Four exact name/position/bio groups, no portraits or CTA/footer; two-column native grid; greeting overlaps lower edge of final card; Undo r7 restored `[]`. |
+| H | Testimonials `testimonials.editorial_rows`, six records | `7bb2750` / `wpae-a7a3bf847b5e4c10` / `55506376-7ca2-4d57-81ce-f316a1c944c7` / r5 | Six exact quote/author/meta groups; no ratings, avatars or logos; editorial rows; greeting overlaps part of final quote; Undo r6 restored `[]`. |
+| I | FAQ `faq.native`, `default` | `1a1d059` / `wpae-c616e5dbb2a2a125` / `5e6a84de-849f-4012-a012-284fbcbfb2af` / r5 | Native Accordion; exact questions and answers verified open on public page. Subsequent native `tabs` serialization changed owned fingerprint; guarded Undo refused. Root remains. |
+| J | CTA legacy `cta.band`, no canonical typed record | — | Not run, blocked before request/write for lack of canonical ownership plus operation-scoped Undo proof; no CTA substitute used. |
+
+## Rendering, screenshot and design review
+
+Public `window.innerWidth/innerHeight` was `1232×923`; public mobile could not be established because the documented viewport override did not change the actual window. Therefore public mobile is **BLOCKED** for all cases. Elementor mobile preview was inspected separately at `360×736` for C, E, F, G, H and I. Its screenshot files are desktop-app rasters `1232×923` with the editor preview frame showing the 360×736 device; they are not public-mobile screenshots. Pricing's native tablet grid control is one fractional track; desktop has the actual item count (two or three). Public tablet/mobile breakpoints were not measured.
+
+Fresh public screenshots were captured after Publish/reload for B–I, saved as JPEG-returned bytes then converted/validated as PNG, opened and visually inspected. The exact paths, PNG sizes, source type and viewport are in `live-measurements-v270.json`. Visual findings:
+
+- **Pricing two tiers:** two equally sized outlined cards, complete exact prices/features, buttons share the lower edge. No accidental third card.
+- **Pricing three tiers:** pill and intro are present; three equal columns and aligned CTAs; longer middle copy expands naturally. The two-tier and three-tier output differ structurally by real native item count.
+- **Hero:** H1 and right-side image have clear 60/40 reading order; loaded image crop is balanced. A Vision spacing warning was not supported by measured DOM or pixels.
+- **About:** image-left, H2/copy/CTA-right; composition is editorial rather than another Hero with renamed heading. Full copy remained visible.
+- **Benefits:** explicit editorial list is preserved, icons and copy read clearly. The sparse two-item list leaves substantial unused space on the right; this is a visual-quality limitation, not a reason to silently turn it into a card grid.
+- **Team:** two-column card topology and natural long bios; no fabricated portraits/footer. Site greeting overlaps the bottom edge of the last card (`SITE_OVERLAP`).
+- **Testimonials:** six two-part editorial rows with correct author/quote ownership and no added commercial adornments. Site greeting covers part of the last long quote (`SITE_OVERLAP`), so accessibility of that fragment is incomplete.
+- **FAQ:** native Accordion, exact answers; each public answer opened using the native control. The long answer is fully visible after animation. The long-answer editor-mobile visual is not verified.
+
+No desktop overflow or clipping was observed in the measured target roots. Mobile geometry is only partly covered by Elementor preview; public mobile, 320px/390px breakpoints and narrow desktop transitions remain unverified. No Vision score substitutes for those missing measurements.
+
+### Gallery
+
+All public screenshots below are post-Publish/reload; public CSS viewport is `1232×923`. Each PNG is `1232×923` except the full Testimonials capture (`1217×1265`). Operation and identity are in the matrix above.
+
+**B — Pricing, two tiers**
+![Pricing two-tier public desktop, post 5214, root f19f307, operation wpae-d100b2dc1c76cbd8, revision 5, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/pricing-2-public-desktop.png)
+[Download Pricing two-tier PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/pricing-2-public-desktop.png)
+
+**C — Pricing, three tiers**
+![Pricing three-tier public desktop, post 5214, root 99ff7f7, operation wpae-6c366b0ac547b7a5, revision 6, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/pricing-3-public-desktop.png)
+[Download Pricing three-tier PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/pricing-3-public-desktop.png)
+
+**D — Hero**
+![Hero public desktop, post 5214, root cd4d98d, operation wpae-d8ab197c302660bd, revision 5, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/hero-D-public-desktop.png)
+[Download Hero PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/hero-D-public-desktop.png)
+
+**E — About**
+![About public desktop, post 5214, root 6ee89b6, operation wpae-517673afeecdaed6, revision 6, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/about-E-public-desktop.png)
+[Download About PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/about-E-public-desktop.png)
+
+**F — Benefits**
+![Benefits editorial list public desktop, post 5214, root 1126b32, operation wpae-d30a078ae23ba42a, revision 5, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/benefits-F-public-desktop.png)
+[Download Benefits PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/benefits-F-public-desktop.png)
+
+**G — Team**
+![Team grid public desktop, post 5214, root d861368, operation wpae-d35757c357effecc, revision 6, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/team-G-public-desktop.png)
+[Download Team PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/team-G-public-desktop.png)
+
+**H — Testimonials, full view**
+![Testimonials editorial rows public full, post 5214, root 7bb2750, operation wpae-a7a3bf847b5e4c10, revision 5, CSS viewport 1232x923, PNG 1217x1265; site greeting overlaps last quote](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/testimonials-H-public-full.png)
+[Download Testimonials full PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/testimonials-H-public-full.png)
+
+**I — FAQ, long answer opened**
+![FAQ native Accordion long answer open public, post 5214, root 1a1d059, operation wpae-c616e5dbb2a2a125, revision 5, CSS viewport 1232x923, PNG 1232x923](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/faq-I-final-public-long-answer-open.png)
+[Download FAQ PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/faq-I-final-public-long-answer-open.png)
+
+Editor preview captures at the 360×736 device setting (not public-mobile evidence): [Pricing C](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/pricing-3-editor-mobile-preview.png), [About E](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/about-E-editor-mobile-preview.png), [Benefits F](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/benefits-F-editor-mobile-preview.png), [Team G](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/team-G-editor-mobile-preview.png), [Testimonials H](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/testimonials-H-editor-mobile-preview.png), [FAQ I](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/faq-I-editor-mobile-preview.png).
+
+## FAQ lifecycle refusal and final target state
+
+FAQ generation had one Brief/Plan/record decision and one insertion write. The native public Q/A strings survived Publish/reload. To inspect the Accordion, an editor-side interaction changed the native `tabs` authored control representation (plain text became paragraph-wrapped serialization), leaving the editor dirty. The safe Undo UI first stopped with `Undo остановлен: несохранённые изменения редактора сохранены локально.` The read-only model check then returned `typed_editor_model_mismatch`, `control=tabs`, `reason=authored_control_changed`. After the normal Publish serialized that editor representation, the operation descriptor reported `changed_target`, reason `owned_fingerprint_changed` at revision 5. The ownership guard was correct to refuse Undo. No manual root deletion, guard bypass or whole-document replacement was attempted.
+
+Fresh editor and public reads both contain only root `[1a1d059]`, saved JSON hash `8e0451b15dc2730dda0a916010ed69a667d93379aeae9ed6835e7d75ada7726f`. The original requested historic root `b48abe1` was absent before these tests and was never imported or recreated; the user-confirmed actual test baseline was empty. Seven successful operation-scoped Undos restored that empty baseline. FAQ is the sole remaining test root.
+
+## Checks and status boundary
+
+The v270 runtime had already passed before this docs/evidence continuation: Design Pipeline Contract `848`; Flex Runtime `1380`; Node suites `18/18`; Elementor patch guard PASS; catalog `158 manifest / 156 retrievable / 156 previews`; PHP lint of 10 changed PHP files PASS; package probe `252` hashes, zero mismatches, four scenarios PASS; `git diff --check` PASS at runtime release. No source changed during these live runs; package hashes and version were not changed. A docs-only diff check is rerun before commit.
+
+| Layer | Current result |
+|---|---|
+| Source / push / install / editor version | v270; independently confirmed before the live matrix |
+| Generations | 9 primary attempts, 0 repeats; 8 distinct families; CTA not run |
+| Content/native readback | B–I read back after Publish/reload; Services A was user-deleted before readback |
+| Desktop geometry | Measurements and public screenshots for B–I; PASS with noted overlays/spacing limitation |
+| Public mobile | BLOCKED; viewport remained 1232px |
+| Elementor mobile preview | Captured for C/E/F/G/H/I; distinct from public mobile |
+| Guarded Undo/restoration | B–H PASS to `[]`; A user-deleted; I refused safely and remains |
+| Final root set | `[1a1d059]` |
+| Overall | INCOMPLETE; do not label full acceptance PASS |
+
+## Historical v270 source-only checkpoint (superseded)
+
+The earlier report body below is retained as a timestamped record of the source-only observation before the user clarified deletion of the Services root. Its “0 generations” matrix, empty final root set and “live NOT RUN” conclusions are superseded by the current matrix above.
+
+---
+
 # Lifecycle synchronization and shared card layout — v270 checkpoint
 
 Date: 2026-10-06 (Asia/Almaty)

@@ -1,0 +1,12 @@
+{
+  "post_id": 5214,
+  "operation_id": "wpae-6c366b0ac547b7a5",
+  "operation_identity": "9e5a923a-b6a1-4fa0-bd32-e99196353961",
+  "accepted_contract_id": "contract-7d267a948cfbf7a596b6379",
+  "root_ids": [
+    "99ff7f7"
+  ],
+  "revision": 6,
+  "status": "available",
+  "brief_fixture": "docs/audits/2026-10-05-m3-1-entities/F-pricing-exact-request.txt"
+}

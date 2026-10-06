@@ -1,0 +1,170 @@
+{
+  "post_id": 5214,
+  "root_ids": [
+    "f19f307"
+  ],
+  "root_count": 1,
+  "widget_count": 14,
+  "root_classes": [
+    "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing"
+  ],
+  "grid": [
+    {
+      "columns": {
+        "size": 2,
+        "sizes": [],
+        "unit": "fr"
+      },
+      "gaps": {
+        "column": "1.5",
+        "isLinked": true,
+        "row": "1.5",
+        "size": 1.5,
+        "unit": "rem"
+      },
+      "id": "3bde6f6",
+      "mobileGaps": {
+        "column": "1",
+        "isLinked": true,
+        "row": "1",
+        "size": 1,
+        "unit": "rem"
+      },
+      "tablet": {
+        "size": 1,
+        "sizes": [],
+        "unit": "fr"
+      },
+      "tabletGaps": {
+        "column": "1.5",
+        "isLinked": true,
+        "row": "1.5",
+        "size": 1.5,
+        "unit": "rem"
+      }
+    }
+  ],
+  "authored_native_widgets": [
+    {
+      "id": "13b480c",
+      "settings": {
+        "title": "Старт",
+        "title_color": "#111827"
+      },
+      "widget": "heading"
+    },
+    {
+      "id": "f35e01f",
+      "settings": {
+        "title": "50 000 ₸",
+        "title_color": "#111827"
+      },
+      "widget": "heading"
+    },
+    {
+      "id": "bfd2023",
+      "settings": {
+        "editor": "/мес",
+        "text_color": "#4b5563"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "74f28da",
+      "settings": {
+        "editor": "Малый проект",
+        "text_color": "#4b5563"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "d4f4b5e",
+      "settings": {
+        "editor": "Аудит",
+        "text_color": "#6b7280"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "2c83cca",
+      "settings": {
+        "editor": "План",
+        "text_color": "#6b7280"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "f3662b6",
+      "settings": {
+        "button_text_color": "#ffffff",
+        "text": "Выбрать Старт"
+      },
+      "widget": "button"
+    },
+    {
+      "id": "7fd2a26",
+      "settings": {
+        "title": "Проект",
+        "title_color": "#111827"
+      },
+      "widget": "heading"
+    },
+    {
+      "id": "5ceb12f",
+      "settings": {
+        "title": "150 000 ₸",
+        "title_color": "#111827"
+      },
+      "widget": "heading"
+    },
+    {
+      "id": "0407a45",
+      "settings": {
+        "editor": "/год",
+        "text_color": "#4b5563"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "5ef767c",
+      "settings": {
+        "editor": "Полный проект",
+        "text_color": "#4b5563"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "30ee0bd",
+      "settings": {
+        "editor": "Дизайн",
+        "text_color": "#6b7280"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "f295c0a",
+      "settings": {
+        "editor": "Разработка",
+        "text_color": "#6b7280"
+      },
+      "widget": "text-editor"
+    },
+    {
+      "id": "d039318",
+      "settings": {
+        "button_text_color": "#ffffff",
+        "text": "Выбрать Проект"
+      },
+      "widget": "button"
+    }
+  ],
+  "operation": {
+    "operation_id": "wpae-d100b2dc1c76cbd8",
+    "operation_identity": "d56e1e02-f770-4d27-9eff-c0cb7d0ec797",
+    "accepted_contract_id": "contract-bbad77821e2cdc4445b16b69",
+    "root_ids": [
+      "f19f307"
+    ],
+    "revision": 5
+  }
+}

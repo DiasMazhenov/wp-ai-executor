@@ -3,9 +3,16 @@
   "date": "2026-10-06",
   "target": {
     "post_id": 5214,
-    "baseline_roots_before": ["b48abe1"],
-    "final_roots_after_guarded_undo": ["b48abe1"],
-    "current_public_roots_after_screenshot_recovery_undo_refusal_recorded_at_v269": ["b48abe1", "efdd267"],
+    "baseline_roots_before": [
+      "b48abe1"
+    ],
+    "final_roots_after_guarded_undo": [
+      "b48abe1"
+    ],
+    "current_public_roots_after_screenshot_recovery_undo_refusal_recorded_at_v269": [
+      "b48abe1",
+      "efdd267"
+    ],
     "current_fresh_editor_roots_v270": [],
     "current_fresh_public_roots_v270": [],
     "current_saved_json_sha256_v270": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
@@ -57,17 +64,47 @@
       "plan_sha256": null,
       "fixture": "../2026-10-05-m3-1-entities/E-services-exact-request.txt",
       "assets": [
-        {"asset_id": "photo-1772442198689-af331f8f9617", "alt": "Архитектор изучает чертежи у современного здания."},
-        {"asset_id": "photo-1766230976347-c5badd3f76c9", "alt": "Современный архитектурный интерьер."},
-        {"asset_id": "photo-1778074762022-c33cc42f79ae", "alt": "Специалисты обсуждают проектные чертежи."}
+        {
+          "asset_id": "photo-1772442198689-af331f8f9617",
+          "alt": "Архитектор изучает чертежи у современного здания."
+        },
+        {
+          "asset_id": "photo-1766230976347-c5badd3f76c9",
+          "alt": "Современный архитектурный интерьер."
+        },
+        {
+          "asset_id": "photo-1778074762022-c33cc42f79ae",
+          "alt": "Специалисты обсуждают проектные чертежи."
+        }
       ],
-      "public_viewports_css_px": {"desktop": [1232, 923]},
-      "measurements": {"service_cards": 3, "ctas": ["#strategy", "#projects", "#support"], "greeting_overlay_intersects": "third CTA"},
+      "public_viewports_css_px": {
+        "desktop": [
+          1232,
+          923
+        ]
+      },
+      "measurements": {
+        "service_cards": 3,
+        "ctas": [
+          "#strategy",
+          "#projects",
+          "#support"
+        ],
+        "greeting_overlay_intersects": "third CTA"
+      },
       "readback": "editor reload and public DOM checked; exact text and distinct CTA links present",
       "technical_status": "PASS",
       "visual_status": "PARTIAL",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
+      "screenshot": {
+        "fresh_after_publish": true,
+        "source": "public",
+        "bytes_returned_as": "JPEG",
+        "saved_file": false,
+        "png_dimensions": null,
+        "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION",
+        "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."
+      }
     },
     {
       "family": "Hero",
@@ -79,21 +116,49 @@
       "brief_sha256": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
       "plan_sha256": "fd0c890d18df2d3008e9e79879b14520e673419272f5bc2eacc3af83757d0add",
       "fixture": "../2026-10-05-visual-policy/B-C-D-exact-request.txt",
-      "public_viewports_css_px": {"desktop": [1232, 923]},
+      "public_viewports_css_px": {
+        "desktop": [
+          1232,
+          923
+        ]
+      },
       "document_width_css_px": 1217,
-      "root_rect_document_css_px": {"x": 0, "y": 527.7, "width": 1217, "height": 395.1},
+      "root_rect_document_css_px": {
+        "x": 0,
+        "y": 527.7,
+        "width": 1217,
+        "height": 395.1
+      },
       "copy_width_css_px": 669.6,
       "media_width_css_px": 446.4,
       "gap_css_px": 24,
-      "heading": {"semantic": "H1", "font_size_px": 56, "font_weight": 700, "line_height_px": 58.8},
-      "image": {"loaded": true, "natural_width_px": 1200, "natural_height_px": 675, "alt": "Современный архитектурный интерьер."},
+      "heading": {
+        "semantic": "H1",
+        "font_size_px": 56,
+        "font_weight": 700,
+        "line_height_px": 58.8
+      },
+      "image": {
+        "loaded": true,
+        "natural_width_px": 1200,
+        "natural_height_px": 675,
+        "alt": "Современный архитектурный интерьер."
+      },
       "horizontal_overflow": false,
       "greeting_overlay_intersects": "part of media",
       "public_mobile": "NOT RUN",
       "technical_status": "PASS",
       "visual_status": "PASS at measured desktop; mobile NOT RUN",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
+      "screenshot": {
+        "fresh_after_publish": true,
+        "source": "public",
+        "bytes_returned_as": "JPEG",
+        "saved_file": false,
+        "png_dimensions": null,
+        "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION",
+        "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."
+      }
     },
     {
       "family": "About",
@@ -105,14 +170,60 @@
       "brief_sha256": "f7ead05920b683b0c44911f1cc22a507ef8b8e9088b617df1cde17ec39cf5ebe",
       "plan_sha256": "07ff57fe9295a81b6c81b1709d1b635260dcc394ed57f5bdf3477d604d57bd99",
       "fixture": "../2026-10-05-visual-policy/E-exact-request.txt",
-      "public_viewports_css_px": {"desktop": [1232, 923], "mobile": [390, 844]},
-      "desktop": {"document_width_css_px": 1217, "root_rect_document_css_px": {"x": 0, "y": 517.2, "width": 1217, "height": 405.8}, "copy_width_css_px": 669.6, "media_width_css_px": 446.4, "gap_css_px": 24, "heading": {"semantic": "H2", "font_size_px": 56, "font_weight": 700, "line_height_px": 58.8, "lines": 2}},
-      "mobile": {"document_width_css_px": 375, "root_width_css_px": 375, "copy_first": true, "image_below_copy": true, "heading": {"font_size_px": 36, "line_height_px": 37.8}, "horizontal_overflow": false, "greeting_overlay_intersects": "part of body and media"},
+      "public_viewports_css_px": {
+        "desktop": [
+          1232,
+          923
+        ],
+        "mobile": [
+          390,
+          844
+        ]
+      },
+      "desktop": {
+        "document_width_css_px": 1217,
+        "root_rect_document_css_px": {
+          "x": 0,
+          "y": 517.2,
+          "width": 1217,
+          "height": 405.8
+        },
+        "copy_width_css_px": 669.6,
+        "media_width_css_px": 446.4,
+        "gap_css_px": 24,
+        "heading": {
+          "semantic": "H2",
+          "font_size_px": 56,
+          "font_weight": 700,
+          "line_height_px": 58.8,
+          "lines": 2
+        }
+      },
+      "mobile": {
+        "document_width_css_px": 375,
+        "root_width_css_px": 375,
+        "copy_first": true,
+        "image_below_copy": true,
+        "heading": {
+          "font_size_px": 36,
+          "line_height_px": 37.8
+        },
+        "horizontal_overflow": false,
+        "greeting_overlay_intersects": "part of body and media"
+      },
       "image_loaded": true,
       "technical_status": "PASS",
       "visual_status": "PARTIAL due to site overlay; measured geometry PASS",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
+      "screenshot": {
+        "fresh_after_publish": true,
+        "source": "public",
+        "bytes_returned_as": "JPEG",
+        "saved_file": false,
+        "png_dimensions": null,
+        "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION",
+        "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."
+      }
     },
     {
       "family": "Benefits",
@@ -124,15 +235,52 @@
       "brief_sha256": "89aa68ade81152988f2a7468191283d7d7f0a301b3fe25ba0b11d9622c8c1f92",
       "plan_sha256": "6360ea60677b961d8dc13cc1909b76dbb6d5289865d765ce273c67edbbba2cf1",
       "fixture": "../2026-10-05-visual-policy/F-G-H-exact-request.txt",
-      "public_viewports_css_px": {"desktop": [1232, 923], "mobile": [390, 844]},
-      "desktop": {"document_width_css_px": 1217, "grid_rect_css_px": {"x": 38.5, "width": 1140}, "columns_css_px": [558, 558], "gap_css_px": 24, "card_height_css_px": 185, "card_padding_css_px": 24},
-      "mobile": {"document_width_css_px": 375, "grid_width_css_px": 343, "columns": 1, "gap_css_px": 16, "images": 0, "greeting_overlay_intersects": "first heading and part of icon"},
+      "public_viewports_css_px": {
+        "desktop": [
+          1232,
+          923
+        ],
+        "mobile": [
+          390,
+          844
+        ]
+      },
+      "desktop": {
+        "document_width_css_px": 1217,
+        "grid_rect_css_px": {
+          "x": 38.5,
+          "width": 1140
+        },
+        "columns_css_px": [
+          558,
+          558
+        ],
+        "gap_css_px": 24,
+        "card_height_css_px": 185,
+        "card_padding_css_px": 24
+      },
+      "mobile": {
+        "document_width_css_px": 375,
+        "grid_width_css_px": 343,
+        "columns": 1,
+        "gap_css_px": 16,
+        "images": 0,
+        "greeting_overlay_intersects": "first heading and part of icon"
+      },
       "items": 2,
       "horizontal_overflow": false,
       "technical_status": "PASS",
       "visual_status": "PARTIAL due to site overlay; measured grid geometry PASS",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
+      "screenshot": {
+        "fresh_after_publish": true,
+        "source": "public",
+        "bytes_returned_as": "JPEG",
+        "saved_file": false,
+        "png_dimensions": null,
+        "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION",
+        "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."
+      }
     },
     {
       "family": "Pricing",
@@ -144,17 +292,64 @@
       "brief_sha256": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
       "plan_sha256": "61c22fc0b165f5e353a11ce0f4be0cb4af439c98b0518906e602f61782501de7",
       "fixture": "../2026-10-05-visual-policy/I-exact-request.txt",
-      "public_viewports_css_px": {"desktop": [1232, 923], "mobile": [390, 844]},
-      "desktop": {"document_width_css_px": 1217, "root_rect_document_css_px": {"x": 0, "y": 953.2, "width": 1217, "height": 439.6}, "grid_rect_document_css_px": {"x": 38.5, "width": 1140}, "columns_css_px": [558, 558], "gap_css_px": 24, "card_height_css_px": 295.6, "card_padding_css_px": 24},
-      "mobile": {"document_width_css_px": 375, "grid_width_css_px": 343, "columns": 1, "gap_css_px": 16, "card_height_css_px": 287.9, "horizontal_overflow": false, "greeting_overlay_intersects": "first card feature area"},
+      "public_viewports_css_px": {
+        "desktop": [
+          1232,
+          923
+        ],
+        "mobile": [
+          390,
+          844
+        ]
+      },
+      "desktop": {
+        "document_width_css_px": 1217,
+        "root_rect_document_css_px": {
+          "x": 0,
+          "y": 953.2,
+          "width": 1217,
+          "height": 439.6
+        },
+        "grid_rect_document_css_px": {
+          "x": 38.5,
+          "width": 1140
+        },
+        "columns_css_px": [
+          558,
+          558
+        ],
+        "gap_css_px": 24,
+        "card_height_css_px": 295.6,
+        "card_padding_css_px": 24
+      },
+      "mobile": {
+        "document_width_css_px": 375,
+        "grid_width_css_px": 343,
+        "columns": 1,
+        "gap_css_px": 16,
+        "card_height_css_px": 287.9,
+        "horizontal_overflow": false,
+        "greeting_overlay_intersects": "first card feature area"
+      },
       "requested_tier_count": 2,
       "plan_record": "pricing.three_cards",
       "native_rendered_tier_count": 2,
-      "ctas": ["#start", "#project"],
+      "ctas": [
+        "#start",
+        "#project"
+      ],
       "technical_status": "PASS",
       "visual_status": "PARTIAL due to mobile site overlay; desktop composition PASS; record/count discrepancy remains",
       "undo_status": "PASS",
-      "screenshot": {"fresh_after_publish": true, "source": "public", "bytes_returned_as": "JPEG", "saved_file": false, "png_dimensions": null, "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION", "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."}
+      "screenshot": {
+        "fresh_after_publish": true,
+        "source": "public",
+        "bytes_returned_as": "JPEG",
+        "saved_file": false,
+        "png_dimensions": null,
+        "status": "NOT_SAVED_FOR_HISTORICAL_OPERATION",
+        "reason": "This particular earlier operation has no persisted PNG artifact. Later Browser Use testing proved the bytes can be saved; no screenshot is retroactively assigned to this operation."
+      }
     }
   ],
   "screenshot_artifacts": {
@@ -165,9 +360,49 @@
     "generic_blocked_status_correction": "Do not describe the saving path as unavailable. Verify the documented Browser Use route. A concrete tool/security/filesystem error remains a blocker.",
     "v270_current_diagnostics": "../2026-10-06-lifecycle-layout-v270/current-state.json",
     "fresh_recovery_pngs": [
-      {"path": "screenshots/services-after-publish-public-full.png", "source": "public", "css_viewport": [1232, 923], "png_dimensions": [1217, 1988], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267"},
-      {"path": "screenshots/services-after-publish-public-desktop.png", "source": "public", "css_viewport": [1232, 923], "png_dimensions": [1217, 912], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267", "framing": "viewport capture; lower card portions clipped"},
-      {"path": "screenshots/services-undo-refusal-editor.png", "source": "editor", "css_viewport": [1232, 923], "png_dimensions": [1232, 923], "operation_id": "wpae-e387c462a25a14dc", "root_id": "efdd267"}
+      {
+        "path": "screenshots/services-after-publish-public-full.png",
+        "source": "public",
+        "css_viewport": [
+          1232,
+          923
+        ],
+        "png_dimensions": [
+          1217,
+          1988
+        ],
+        "operation_id": "wpae-e387c462a25a14dc",
+        "root_id": "efdd267"
+      },
+      {
+        "path": "screenshots/services-after-publish-public-desktop.png",
+        "source": "public",
+        "css_viewport": [
+          1232,
+          923
+        ],
+        "png_dimensions": [
+          1217,
+          912
+        ],
+        "operation_id": "wpae-e387c462a25a14dc",
+        "root_id": "efdd267",
+        "framing": "viewport capture; lower card portions clipped"
+      },
+      {
+        "path": "screenshots/services-undo-refusal-editor.png",
+        "source": "editor",
+        "css_viewport": [
+          1232,
+          923
+        ],
+        "png_dimensions": [
+          1232,
+          923
+        ],
+        "operation_id": "wpae-e387c462a25a14dc",
+        "root_id": "efdd267"
+      }
     ],
     "public_mobile": "NOT CAPTURED; existing public tab actual CSS viewport was 1232x923 and no documented viewport setter was exposed",
     "other_four_families": "Fresh screenshot re-runs stopped after Services Undo refusal; no new images were captured",
@@ -190,17 +425,72 @@
     "ledger_revision": 4,
     "root_id": "efdd267",
     "publish_and_public_reload": "PASS",
-    "readback": {"exact_copy": true, "ctas": ["#strategy", "#projects", "#support"], "images_loaded": 3, "catalog_alts_exact": true, "document_width_css_px": 1217, "horizontal_overflow": false},
+    "readback": {
+      "exact_copy": true,
+      "ctas": [
+        "#strategy",
+        "#projects",
+        "#support"
+      ],
+      "images_loaded": 3,
+      "catalog_alts_exact": true,
+      "document_width_css_px": 1217,
+      "horizontal_overflow": false
+    },
     "visual_review": "PARTIAL: full desktop Services block readable; scrolled viewport AI-Dana bubble overlaps part of third CTA; public mobile not captured",
-    "guarded_undo": {"status": "REFUSED", "ui_message": "Точная операция/revision не подтверждены.", "operation_button_state_before_click": "available", "public_readback_after_reload_root_ids_v269_at_that_time": ["b48abe1", "efdd267"], "manual_removal": false, "dependent_generations_stopped": true},
+    "guarded_undo": {
+      "status": "REFUSED",
+      "ui_message": "Точная операция/revision не подтверждены.",
+      "operation_button_state_before_click": "available",
+      "public_readback_after_reload_root_ids_v269_at_that_time": [
+        "b48abe1",
+        "efdd267"
+      ],
+      "manual_removal": false,
+      "dependent_generations_stopped": true
+    },
     "pipeline_trace": "screenshots/services-generation-trace.json",
-    "fresh_v270_descriptor": {"revision": 6, "status": "unavailable", "reason": "contract_expired"},
+    "fresh_v270_descriptor": {
+      "revision": 6,
+      "status": "unavailable",
+      "reason": "contract_expired"
+    },
     "fresh_v270_undo": "NOT_ATTEMPTED: accepted contract expired; no unsafe retry or manual delete",
     "current_fresh_editor_and_public_roots_v270": [],
     "current_baseline_note": "Historical b48abe1 is absent from fresh editor/public readback. No import/recreation/write occurred in v270 continuation.",
     "v270_live_generation": "NOT RUN",
     "visual_hypothesis": "v269 stale-tab Services render showed different CTA y positions and excess short-card whitespace; v270 layout change has not been live tested."
   },
-  "remaining_matrix": ["Hero left/soft-cards", "Benefits list/alternate profile", "native FAQ"],
-  "structured_model_extraction": "inactive"
+  "remaining_matrix": [
+    "Hero left/soft-cards",
+    "Benefits list/alternate profile",
+    "native FAQ"
+  ],
+  "structured_model_extraction": "inactive",
+  "follow_up_v270": {
+    "report": "../2026-10-06-lifecycle-layout-v270/REPORT.md",
+    "matrix": "../2026-10-06-lifecycle-layout-v270/acceptance-matrix-A-J.json",
+    "measurements": "../2026-10-06-lifecycle-layout-v270/live-measurements-v270.json",
+    "status": "separate follow-up; does not change historical v269 roots or evidence",
+    "primary_generations": 9,
+    "repeat_generations": 0,
+    "families": [
+      "Services",
+      "Pricing",
+      "Hero",
+      "About",
+      "Benefits",
+      "Team",
+      "Testimonials",
+      "FAQ"
+    ],
+    "public_css_viewport": [
+      1232,
+      923
+    ],
+    "public_mobile": "BLOCKED: actual public viewport did not change from 1232px",
+    "guarded_undos_passed": 7,
+    "remaining_root": "1a1d059",
+    "cta": "not run; legacy route lacks canonical typed record and safe scoped Undo proof"
+  }
 }

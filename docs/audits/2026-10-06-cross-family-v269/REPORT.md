@@ -107,3 +107,8 @@ Fresh diagnostic PNGs (all bytes saved, signature/dimensions checked, opened and
 [Download fresh editor baseline PNG](/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-06-lifecycle-layout-v270/screenshots/baseline-empty-editor-v270.png)
 
 See [the v270 lifecycle/layout audit](../2026-10-06-lifecycle-layout-v270/REPORT.md) for code/test/release evidence and current scenario statuses. No Services/Hero/About/Benefits/Pricing/Team/Testimonials/FAQ/CTA block was generated under v270 in that continuation.
+
+
+## Separate v270 continuation — 2026-10-06
+
+The historical v269 case table above remains version-specific. A later v270 run generated nine first results on the user-confirmed empty post 5214 baseline, including a fresh Services generation (root `bcfeab4`) which the user deleted before post-Publish readback, two Pricing counts, Hero, About, Benefits, Team, Testimonials and native FAQ. This does not retrofit PNG evidence onto the older v269 operations. Seven v270 guarded Undos restored `[]`; FAQ root `1a1d059` remains after a safe `owned_fingerprint_changed` refusal. See [v270 live report](../2026-10-06-lifecycle-layout-v270/REPORT.md) and its [measurement/screenshot index](../2026-10-06-lifecycle-layout-v270/live-measurements-v270.json).
