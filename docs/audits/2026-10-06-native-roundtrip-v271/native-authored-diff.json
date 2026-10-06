@@ -1,0 +1,89 @@
+{
+  "source_snapshot": "v02.11.270 saved native data; prior live evidence, unchanged in the current v271 source task",
+  "post_id": 5214,
+  "root_id": "1a1d059",
+  "widget_id": "c8a3e80",
+  "widget_type": "accordion",
+  "operation_id": "wpae-c616e5dbb2a2a125",
+  "operation_identity": "5e6a84de-849f-4012-a012-284fbcbfb2af",
+  "accepted_contract_id": "contract-93cf3469f9d3e1e759c2d774",
+  "latest_observed_revision": 5,
+  "latest_observed_operation_status": "changed_target",
+  "latest_observed_reason": "owned_fingerprint_changed",
+  "before_file": {
+    "path": "docs/audits/2026-10-06-lifecycle-layout-v270/faq-I-native-after-reload.json",
+    "sha256": "b8022d5f09b4434dd5f36634e8cabef29ae5e176d22cbb023cc28e3f7b024f11"
+  },
+  "after_publish_file": {
+    "path": "docs/audits/2026-10-06-lifecycle-layout-v270/faq-I-native-after-publish-normalization.json",
+    "sha256": "200c4bbd136dfda5f7feb5f432119efd9f31bff16a353db2ca0723a0f40928d0"
+  },
+  "full_recursive_diff": {
+    "difference_count_including_htmlCache": 3,
+    "authored_control_difference_count": 2,
+    "htmlCache_difference_count": 1,
+    "exact_paths": [
+      "[0].elements[0].elements[0].htmlCache",
+      "[0].elements[0].elements[0].settings.tabs[0].tab_content",
+      "[0].elements[0].elements[0].settings.tabs[1].tab_content"
+    ],
+    "authored_changes": [
+      {
+        "path": "settings.tabs[0].tab_content",
+        "before": "Обсудим задачу.",
+        "after": "<p>Обсудим задачу.</p>"
+      },
+      {
+        "path": "settings.tabs[1].tab_content",
+        "before": "Сначала обсудим задачу и согласуем ожидаемый результат. Затем покажем план, уточним сроки и распределим ответственность. После согласования выполним работу, проверим детали вместе и передадим готовый результат с понятными рекомендациями.",
+        "after": "<p>Сначала обсудим задачу и согласуем ожидаемый результат. Затем покажем план, уточним сроки и распределим ответственность. После согласования выполним работу, проверим детали вместе и передадим готовый результат с понятными рекомендациями.</p>"
+      }
+    ],
+    "other_authored_controls_equal": true,
+    "node_ids_types_hierarchy_order_and_tab_count_equal": true,
+    "technical_repeater_ids_unchanged": true,
+    "htmlCache_before_sha256": "70fb9d920034f16a8826bffdacf02358d77e500a90fd6adcb21c88ed019383db",
+    "htmlCache_after_sha256": "be5d2682b48be0921d06e6200db0e8fee4dc1313d9a6ee4268c0be7418ae3b8b",
+    "htmlCache_scope": "same Accordion structure and IDs; rendered answer content changed to exact single <p> wrappers matching authored tab_content"
+  },
+  "visual_current_live_read": {
+    "public_url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "css_viewport": [
+      1232,
+      923
+    ],
+    "accordion_roots": [
+      "1a1d059"
+    ],
+    "expanded_question": "Как согласовать?",
+    "expanded_answer_rect_px": [
+      1090,
+      138.3984375
+    ],
+    "answer_p_font_size": "16px",
+    "answer_p_line_height": "24px",
+    "answer_p_margin_bottom": "14.4px",
+    "answer_p_color": "rgb(75, 85, 99)",
+    "question_color": "rgb(51, 51, 51)",
+    "question_background": "rgb(255, 255, 255)",
+    "question_font_size": "16px",
+    "question_font_weight": "700",
+    "note": "Current computed public colors do not show the pale-green editor selection. Paragraph wrapper has measurable 14.4px bottom margin; it is not visually neutral."
+  },
+  "install_attempt": {
+    "target": "WP AI Executor only",
+    "result": "failed",
+    "wp_pusher_error": "An error occured: Не удалось скопировать файл.",
+    "plugins_php_version": "v02.11.270",
+    "editor_inline_version": "v02.11.270",
+    "screenshot_png": "screenshots/wppusher-install-attempt.png",
+    "screenshot_px": [
+      1217,
+      912
+    ],
+    "attempt_count": 2,
+    "retry_policy": "One retry after checking independent Plugins version; stopped after the same application copy error."
+  },
+  "generation_count_new": 0,
+  "reason_new_generation_not_run": "v271 install failed; existing v270 operation is still changed_target and the versioned proof-gated recovery path is not present live, so baseline cannot yet be restored safely."
+}
