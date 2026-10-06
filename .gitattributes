@@ -1,0 +1,9 @@
+# Keep development documentation and test fixtures out of GitHub source archives.
+docs/ export-ignore
+tests/ export-ignore
+context.md export-ignore
+LUNA_HANDOFF_REPORT.md export-ignore
+PLAN.md export-ignore
+PRODUCT.md export-ignore
+README.md export-ignore
+ERRORS.md export-ignore
