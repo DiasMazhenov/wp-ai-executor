@@ -112,3 +112,12 @@ See [the v270 lifecycle/layout audit](../2026-10-06-lifecycle-layout-v270/REPORT
 ## Separate v270 continuation — 2026-10-06
 
 The historical v269 case table above remains version-specific. A later v270 run generated nine first results on the user-confirmed empty post 5214 baseline, including a fresh Services generation (root `bcfeab4`) which the user deleted before post-Publish readback, two Pricing counts, Hero, About, Benefits, Team, Testimonials and native FAQ. This does not retrofit PNG evidence onto the older v269 operations. Seven v270 guarded Undos restored `[]`; FAQ root `1a1d059` remains after a safe `owned_fingerprint_changed` refusal. See [v270 live report](../2026-10-06-lifecycle-layout-v270/REPORT.md) and its [measurement/screenshot index](../2026-10-06-lifecycle-layout-v270/live-measurements-v270.json).
+
+
+### v273 common collection geometry retest — 2026-10-06
+
+The later v02.11.273 source commit 92e1c769f7967cbb78aa806afb9fa1b33b7f8d0a fixed accepted entity row tracks being overwritten by the generic card_body spacing fallback and extended static LayoutReport list-row track estimates. After WP Pusher update and independent Plugins/editor version checks, exactly four affected compositions were generated once each on post 5214: Benefits editorial_list, Team editorial_rows, Testimonials editorial_rows and Testimonials grid. This supersedes earlier same-day statuses for these four compositions only; older v269/v270/v271 results remain historical.
+
+All four v273 native exports after reload retained full fixture copy and distinct native topologies. Public desktop DOM measured the accepted list/row widths and two-column grid; the Testimonials grid's short card now measured its natural 148.6px box instead of stretching its box to 225.4px. Every operation-scoped Undo restored roots []. There were four primary generations, zero retries and zero repairs.
+
+Fresh PNGs and separate status boundaries are in [the v273 collection geometry audit](../2026-10-06-collection-geometry-v272/REPORT.md) and [machine matrix](../2026-10-06-collection-geometry-v272/acceptance-matrix-v273.json). Desktop technical/content evidence passes. Visual/responsive is partial: the two-item Benefits list still has substantial unanchored whitespace; public mobile remains blocked after the single unsuccessful documented viewport-control check, while Elementor mobile preview is separately measured at 360×736. v273 Brief/Plan hashes and operation identity/contract fields were not retained. Earlier mismatching diagnostic files were excluded.

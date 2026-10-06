@@ -1,0 +1,336 @@
+{
+  "schema": "wpae-collection-geometry-acceptance-v1",
+  "date": "2026-10-06",
+  "source": {
+    "commit": "92e1c769f7967cbb78aa806afb9fa1b33b7f8d0a",
+    "version": "v02.11.273"
+  },
+  "install": {
+    "method": "WP Pusher existing plugin row",
+    "plugins_php_version": "v02.11.273",
+    "editor_inline_version_after_reload": "v02.11.273",
+    "other_plugins_or_settings_changed": false
+  },
+  "post_id": 5214,
+  "baseline_before_first": [],
+  "final_root_set": [],
+  "primary_generations": 4,
+  "retries": 0,
+  "repairs": 0,
+  "public_css_viewport": {
+    "window_inner_width": 1232,
+    "window_inner_height": 923,
+    "document_client_width": "1217 on pages with vertical scrollbar; Benefits snapshot 1232"
+  },
+  "public_mobile": {
+    "status": "BLOCKED",
+    "reason": "previously tested public viewport override did not set a mobile CSS viewport; not retried"
+  },
+  "scenarios": [
+    {
+      "key": "benefits_editorial_list",
+      "family": "benefits",
+      "fixture": "docs/audits/2026-10-05-visual-policy/F-G-H-exact-request.txt",
+      "fixture_sha256": "76c4e7077891d99eb2346d39dd5a298e1d77e28513794ab68d67a3933c709405",
+      "record_selected_in_ui": "benefits.editorial_list",
+      "profile_selected_in_ui": "editorial_light",
+      "brief_hash": null,
+      "plan_hash": null,
+      "provider_calls": null,
+      "operation_id": "wpae-0e3ca208e817d55b",
+      "operation_identity": null,
+      "accepted_contract": null,
+      "root_id": "8738daf",
+      "descriptor_revision_after_publish": 5,
+      "revision_before_undo": 5,
+      "revision_after_undo": 6,
+      "undo_status": "already_undone",
+      "native_export": "benefits-F-native-after-reload-v273.json",
+      "public_geometry": "benefits-F-public-geometry-v273.json",
+      "baseline_snapshot": "benefits-F-post-undo-baseline-v273.json",
+      "screenshots": {
+        "public_desktop": {
+          "path": "screenshots/benefits-public-desktop-v273.png",
+          "png": [
+            1232,
+            923
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/benefits-public-desktop-v273.jpg"
+        },
+        "public_full": {
+          "path": "screenshots/benefits-public-full-v273.png",
+          "png": [
+            1232,
+            923
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/benefits-public-full-v273.jpg"
+        },
+        "editor_mobile_preview": {
+          "path": "screenshots/benefits-editor-mobile-preview-clear-v273.png",
+          "png": [
+            1232,
+            923
+          ],
+          "nested_css_viewport": [
+            360,
+            736
+          ],
+          "source_jpeg": "screenshots/benefits-editor-mobile-preview-clear-v273.jpg"
+        }
+      },
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED",
+        "visual_composition": "PARTIAL_SPARSE_TWO_ITEM_LIST",
+        "structure": "PASS",
+        "restoration": "PASS"
+      },
+      "first_result_capture": {
+        "path": "screenshots/benefits-editor-first-v273.png",
+        "png": [
+          1232,
+          923
+        ],
+        "source": "editor before Publish",
+        "css_viewport": null,
+        "source_jpeg": "screenshots/benefits-editor-first-v273.jpg"
+      }
+    },
+    {
+      "key": "team_editorial_rows",
+      "family": "team",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "fixture_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
+      "record_selected_in_ui": "team.editorial_rows",
+      "profile_selected_in_ui": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "provider_calls": null,
+      "operation_id": "wpae-73f20e7c0fac6e87",
+      "operation_identity": null,
+      "accepted_contract": null,
+      "root_id": "714a368",
+      "descriptor_revision_after_publish": 5,
+      "revision_before_undo": 5,
+      "revision_after_undo": null,
+      "undo_status": "guarded_undo_succeeded_final_roots_empty",
+      "native_export": "team-F-native-after-reload-v273.json",
+      "public_geometry": null,
+      "baseline_snapshot": null,
+      "screenshots": {
+        "public_desktop": {
+          "path": "screenshots/team-editorial-rows-public-desktop-v273.png",
+          "png": [
+            1217,
+            912
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/team-editorial-rows-public-desktop-v273.jpg"
+        },
+        "public_full": {
+          "path": "screenshots/team-editorial-rows-public-full-v273.png",
+          "png": [
+            1217,
+            950
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/team-editorial-rows-public-full-v273.jpg"
+        },
+        "editor_mobile_preview": {
+          "path": "screenshots/team-editorial-rows-editor-mobile-clear-v273.png",
+          "png": [
+            1232,
+            923
+          ],
+          "nested_css_viewport": [
+            360,
+            736
+          ],
+          "source_jpeg": "screenshots/team-editorial-rows-editor-mobile-clear-v273.jpg"
+        }
+      },
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED",
+        "visual_composition": "PARTIAL_SITE_AVATAR_EDGE",
+        "structure": "PASS",
+        "restoration": "PASS"
+      },
+      "first_result_capture": {
+        "path": null,
+        "note": "No dedicated v273 first-result screenshot was retained; no edits or repairs occurred before the published screenshot of this same generated root."
+      }
+    },
+    {
+      "key": "testimonials_editorial_rows",
+      "family": "testimonials",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "fixture_sha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
+      "record_selected_in_ui": "testimonials.editorial_rows",
+      "profile_selected_in_ui": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "provider_calls": null,
+      "operation_id": "wpae-5ccd1164cd1af497",
+      "operation_identity": null,
+      "accepted_contract": null,
+      "root_id": "9d41294",
+      "descriptor_revision_after_publish": 6,
+      "revision_before_undo": 6,
+      "revision_after_undo": null,
+      "undo_status": "guarded_undo_succeeded_final_roots_empty",
+      "native_export": "testimonials-H-native-after-reload-v273.json",
+      "public_geometry": null,
+      "baseline_snapshot": null,
+      "screenshots": {
+        "public_desktop": {
+          "path": "screenshots/testimonials-editorial-rows-public-desktop-v273.png",
+          "png": [
+            1217,
+            912
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/testimonials-editorial-rows-public-desktop-v273.jpg"
+        },
+        "public_full": {
+          "path": "screenshots/testimonials-editorial-rows-public-full-v273.png",
+          "png": [
+            1217,
+            1166
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/testimonials-editorial-rows-public-full-v273.jpg"
+        },
+        "editor_mobile_preview": {
+          "path": "screenshots/testimonials-editorial-rows-editor-mobile-clear-v273.png",
+          "png": [
+            1232,
+            923
+          ],
+          "nested_css_viewport": [
+            360,
+            736
+          ],
+          "source_jpeg": "screenshots/testimonials-editorial-rows-editor-mobile-clear-v273.jpg"
+        }
+      },
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED",
+        "visual_composition": "PARTIAL_EDITOR_MOBILE_UNVERIFIED_PUBLIC",
+        "structure": "PASS",
+        "restoration": "PASS"
+      },
+      "first_result_capture": {
+        "path": null,
+        "note": "No dedicated v273 first-result screenshot was retained; no edits or repairs occurred before the published screenshot of this same generated root."
+      }
+    },
+    {
+      "key": "testimonials_grid",
+      "family": "testimonials",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "fixture_sha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
+      "record_selected_in_ui": "testimonials.grid",
+      "profile_selected_in_ui": "default",
+      "brief_hash": null,
+      "plan_hash": null,
+      "provider_calls": null,
+      "operation_id": "wpae-5be2e92def4ff778",
+      "operation_identity": null,
+      "accepted_contract": null,
+      "root_id": "fc73813",
+      "descriptor_revision_after_publish": 5,
+      "revision_before_undo": 5,
+      "revision_after_undo": 6,
+      "undo_status": "already_undone",
+      "native_export": "testimonials-grid-native-after-reload-v273.json",
+      "public_geometry": "testimonials-grid-public-geometry-v273.json",
+      "baseline_snapshot": "testimonials-grid-post-undo-baseline-v273.json",
+      "screenshots": {
+        "public_desktop": {
+          "path": "screenshots/testimonials-grid-public-desktop-v273.png",
+          "png": [
+            1217,
+            912
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/testimonials-grid-public-desktop-v273.jpg"
+        },
+        "public_full": {
+          "path": "screenshots/testimonials-grid-public-full-v273.png",
+          "png": [
+            1217,
+            1077
+          ],
+          "css_viewport": [
+            1232,
+            923
+          ],
+          "source_jpeg": "screenshots/testimonials-grid-public-full-v273.jpg"
+        },
+        "editor_mobile_preview": {
+          "path": "screenshots/testimonials-grid-editor-mobile-preview-v273.png",
+          "png": [
+            1232,
+            923
+          ],
+          "nested_css_viewport": [
+            360,
+            736
+          ],
+          "source_jpeg": "screenshots/testimonials-grid-editor-mobile-preview-v273.jpg"
+        }
+      },
+      "statuses": {
+        "technical_lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "desktop_geometry": "PASS",
+        "responsive_geometry": "PARTIAL_PUBLIC_MOBILE_BLOCKED",
+        "visual_composition": "PARTIAL_SITE_OVERLAY_EDGE",
+        "structure": "PASS",
+        "restoration": "PASS"
+      },
+      "first_result_capture": {
+        "path": "screenshots/testimonials-grid-editor-first-v273.png",
+        "png": [
+          1232,
+          923
+        ],
+        "source": "editor before Publish",
+        "css_viewport": null,
+        "source_jpeg": "screenshots/testimonials-grid-editor-first-v273.jpg"
+      }
+    }
+  ],
+  "trace_retention_note": "Values left null were not retained in the v273 audit evidence. Earlier unversioned diagnostics in this folder are from earlier runs and are excluded."
+}

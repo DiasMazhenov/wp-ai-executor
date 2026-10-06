@@ -1,0 +1,24 @@
+{
+  "post_id": 5214,
+  "operation_id": "wpae-5be2e92def4ff778",
+  "beforeUndoRevision": 5,
+  "descriptorAfterUndo": "Свежий read-only descriptor: operation wpae-5be2e92def4ff778, revision 6, status already_undone. write_count=0.\nКомпозиция\nАвтоматически\nФото справа · текст/фото 60/40\nФото слева · текст/фото 60/40\nФото справа · текст/фо",
+  "editor": {
+    "ids": [],
+    "text": "Перетащите виджет",
+    "viewport": [
+      1025,
+      860
+    ]
+  },
+  "editorPublishDisabled": true,
+  "public": {
+    "clientWidth": 1232,
+    "roots": [],
+    "scrollWidth": 1232,
+    "viewport": [
+      1232,
+      923
+    ]
+  }
+}

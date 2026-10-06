@@ -1,0 +1,26 @@
+{
+  "scenario": "Benefits F scoped Undo complete",
+  "post_id": 5214,
+  "editor": {
+    "roots": [],
+    "text": "Перетащите виджет",
+    "viewport": [
+      1025,
+      860
+    ]
+  },
+  "public": {
+    "roots": [],
+    "viewport": [
+      1232,
+      923
+    ]
+  },
+  "publishDisabled": true,
+  "benefitsOperation": {
+    "id": "wpae-0e3ca208e817d55b",
+    "beforeUndoRevision": 5,
+    "afterUndoRevision": 6,
+    "status": "already_undone"
+  }
+}
