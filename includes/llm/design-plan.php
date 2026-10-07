@@ -2191,10 +2191,20 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 	$project = (array) ( $palette['values'] ?? [] );
 	$project_report = [ 'resolved' => [], 'fallbacks' => [], 'missing' => (array) ( $palette['missing'] ?? [] ) ];
 	$page_input = ! empty( $context['page_tokens_confirmed'] ) && is_array( $context['page_tokens'] ?? null ) ? $context['page_tokens'] : [];
+	$page_source = sanitize_key( (string) ( $context['page_tokens_source'] ?? '' ) );
+	$uses_preview_inheritance = $page_source === 'elementor_preview_computed_body';
+	$preview_page = [];
 	$page = array_intersect_key( $page_input, array_fill_keys( $color_refs, true ) );
 	foreach ( $page as $token => $value ) {
 		$transparent_allowed = $value === 'transparent' && in_array( $token, [ 'color.surface', 'color.border' ], true );
 		if ( ! is_string( $value ) || ( ! $transparent_allowed && ! preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $value ) ) ) { unset( $page[$token] ); }
+	}
+	if ( $uses_preview_inheritance ) {
+		// The current Elementor preview may supply only its measured body context.
+		// Do not let inherited CSS replace an explicitly configured WPAE/Elementor
+		// palette role; it only fills roles that have no confirmed palette owner.
+		$preview_page = array_diff_key( array_intersect_key( $page, array_flip( [ 'color.page_bg', 'color.text' ] ) ), $project );
+		$page = [];
 	}
 	// Reference colors describe an example, not the owner's palette. They can
 	// guide non-color styling but never replace confirmed site color roles.
@@ -2206,10 +2216,18 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 	$radius = wpae_design_plan_constraint_value( $brief, 'border_radius', '' );
 	if ( preg_match( '/^\d+(?:\.\d+)?(?:px|rem|em)$/', (string) $radius ) ) { $explicit['radius.card'] = $radius; }
 	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) { if ( ( $constraint['kind'] ?? '' ) === 'visual_token' && array_key_exists( $constraint['token'] ?? '', array_replace( $defaults, $profile ) ) ) { $explicit[ $constraint['token'] ] = $constraint['value']; } }
-	$values = array_replace( $non_color_defaults, $project, $page, $profile, $explicit );
+	$values = array_replace( $non_color_defaults, $project, $preview_page, $page, $profile, $explicit );
 	if ( ! isset( $values['color.surface'] ) && isset( $values['color.page_bg'] ) ) {
 		$values['color.surface'] = $values['color.page_bg'];
 		$palette['sources']['color.surface'] = 'semantic_alias:confirmed_color.page_bg';
+	}
+	if ( ! isset( $values['color.muted'] ) && isset( $values['color.text'] ) ) {
+		$values['color.muted'] = $values['color.text'];
+		$palette['sources']['color.muted'] = 'semantic_alias:confirmed_color.text';
+	}
+	if ( ! isset( $values['color.border'] ) && isset( $values['color.page_bg'] ) ) {
+		$values['color.border'] = 'transparent';
+		$palette['sources']['color.border'] = 'no_confirmed_border_role_transparent';
 	}
 	$value_errors = [];
 	foreach ( (array) ( $palette['missing'] ?? [] ) as $missing_role ) {
@@ -2248,8 +2266,10 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 	}
 	$adjustments = [];
 	if ( $profile_id === '' && in_array( 'color.muted_on_color.page_bg', (array) ( $contrast['errors'] ?? [] ), true ) && ! isset( $explicit['color.muted'] ) ) { $value_errors[] = 'confirmed_muted_color_fails_contrast'; }
+	$viewport = is_array( $context['page_tokens_viewport'] ?? null ) ? $context['page_tokens_viewport'] : [];
+	$page_context = $uses_preview_inheritance && $preview_page ? [ 'source' => 'elementor_preview_computed_body', 'post_id' => absint( $context['post_id'] ?? 0 ), 'viewport' => [ 'width' => absint( $viewport['width'] ?? 0 ), 'height' => absint( $viewport['height'] ?? 0 ) ], 'roles' => array_keys( $preview_page ) ] : null;
 	$sources = [];
-	foreach ( $values as $ref => $value ) { $sources[ $ref ] = isset( $explicit[ $ref ] ) ? 'explicit_brief' : ( isset( $profile[ $ref ] ) ? 'visual_profile:' . $profile_id : ( isset( $page[ $ref ] ) ? 'confirmed_page' : ( $palette['sources'][$ref] ?? ( str_starts_with( $ref, 'color.' ) ? 'unconfirmed' : 'safe_default' ) ) ) ); }
+	foreach ( $values as $ref => $value ) { $sources[ $ref ] = isset( $explicit[ $ref ] ) ? 'explicit_brief' : ( isset( $profile[ $ref ] ) ? 'visual_profile:' . $profile_id : ( isset( $preview_page[ $ref ] ) ? 'confirmed_elementor_preview_body' : ( isset( $page[ $ref ] ) ? 'confirmed_page' : ( $palette['sources'][$ref] ?? ( str_starts_with( $ref, 'color.' ) ? 'unconfirmed' : 'safe_default' ) ) ) ) ); }
 	if ( $adjustments ) { $sources['color.muted'] = 'plan_contrast_adjustment'; }
-	return [ 'errors' => array_values( array_unique( $value_errors ) ), 'profile' => $profile_id, 'values' => $values, 'sources' => $sources, 'palette' => [ 'sources' => $palette['sources'] ?? [], 'missing' => $palette['missing'] ?? [], 'unconfirmed_project_defaults' => $palette['unconfirmed'] ?? [], 'elementor_global_color_ids' => $palette['global_color_ids'] ?? [] ], 'precedence' => [ 'safe_non_color_default', 'elementor_global_color', 'confirmed_wpae_project_option', 'confirmed_page', 'selected_visual_profile_non_color', 'explicit_brief' ], 'adjustments' => $adjustments, 'contrast' => $contrast ];
+	return [ 'errors' => array_values( array_unique( $value_errors ) ), 'profile' => $profile_id, 'values' => $values, 'sources' => $sources, 'palette' => [ 'sources' => $palette['sources'] ?? [], 'missing' => $palette['missing'] ?? [], 'unconfirmed_project_defaults' => $palette['unconfirmed'] ?? [], 'elementor_global_color_ids' => $palette['global_color_ids'] ?? [] ], 'page_context' => $page_context, 'precedence' => [ 'safe_non_color_default', 'confirmed_wpae_project_option_or_elementor_global_color', 'elementor_preview_inherited_context_missing_roles_only', 'confirmed_page', 'selected_visual_profile_non_color', 'explicit_brief' ], 'adjustments' => $adjustments, 'contrast' => $contrast ];
 }

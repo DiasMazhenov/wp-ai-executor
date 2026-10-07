@@ -146,7 +146,7 @@ function wpae_elementor_compose_typed( WP_REST_Request $request ): WP_REST_Respo
 	$validation = wpae_brief_ir_validate( $brief );
 	if ( empty( $validation['ok'] ) ) { return new WP_REST_Response( [ 'ok' => false, 'errors' => $validation['errors'], 'write_count' => 0 ], 422 ); }
 	$context = [ 'canonical_create' => true ];
-	foreach ( [ 'composition_record', 'composition_version', 'visual_profile', 'page_tokens', 'page_tokens_confirmed', 'reference_tokens', 'reference_tokens_confirmed', 'media_references', 'services_lead_service_ref' ] as $key ) { $value = $request->get_param( $key ); if ( $value !== null ) { $context[$key] = $value; } }
+	foreach ( [ 'composition_record', 'composition_version', 'visual_profile', 'page_tokens', 'page_tokens_confirmed', 'page_tokens_source', 'page_tokens_viewport', 'reference_tokens', 'reference_tokens_confirmed', 'media_references', 'services_lead_service_ref' ] as $key ) { $value = $request->get_param( $key ); if ( $value !== null ) { $context[$key] = $value; } }
 	$decision = wpae_composition_decide( $brief, $context );
 	if ( ! empty( $decision['errors'] ) ) { return new WP_REST_Response( [ 'ok' => false, 'errors' => $decision['errors'], 'diagnostics' => [ 'brief_hash' => wpae_brief_ir_hash( $brief ), 'composition_decision' => $decision ], 'write_count' => 0, 'provider_calls' => 0 ], 422 ); }
 	$record_ids = [ (string) $decision['record']['id'] ];

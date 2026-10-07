@@ -7,7 +7,7 @@
     "assets/css/elementor-llm-chat.css": "2f7dbbdba9d8a593426d49ac6291c3a96d0f51ff3090efad5799b1e709458c33",
     "assets/js/elementor-block-library-ui.js": "609bf4f58257801a0bfbb101c9d82b2ab252978bec77ef7904b2c26e0905f710",
     "assets/js/elementor-block-library.js": "476bc6dde4e73a28f8a1dbab5f266914082ddb185fc2cceee7b288dc73937ce9",
-    "assets/js/elementor-llm-chat.js": "a5e1d1437c951dba506366ae736ede9fe0a0c79558e98f5ece5c60c05a02ff00",
+    "assets/js/elementor-llm-chat.js": "50a57f590b38801d42057c9fa74d7ecf0d7404caa67e4ae7372f287d59ad3f20",
     "assets/previews/mega-menu-c3372.png": "919b3408e0499922c988d3b8ffcf76d7a126d07c22b4c918a22a09956672ef32",
     "assets/previews/vocario-404.jpg": "46c02d4078d7fd9595d83585d2fd89e82273096be63f111d7567a4a1c05a1a0f",
     "assets/previews/vocario-about-us.jpg": "0ec916cb2daf9c7f934da367a4aa9082777509c8bbc3ef9eef6ab5513406ca0a",
@@ -29,7 +29,7 @@
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
     "includes/elementor/capability-registry.php": "5c997dfe1c5be11f1b95ccd347c82b36b2d9f8a01d659302484328593179822b",
-    "includes/elementor/compose.php": "8a8c149f487cab6e0bff089aa2f5cc63db52285200aee4e93bce8fd79cf54b42",
+    "includes/elementor/compose.php": "1c14a78c2d343b46fb2d225046cd42e0e643e8606c5b027b1c05d3c5ace28acb",
     "includes/elementor/copyelement/about-c70.json": "33583fb531cec389f699d44547e5135dcd718235b16390398841b3e5f87ea7bf",
     "includes/elementor/copyelement/image-box-c2644.json": "9c396b28525f14a33184ab30575605580d2498264fa87e1b1b92ec8d1ca97f43",
     "includes/elementor/copyelement/image-carousel-a4516bb.json": "adce53f13e2bff9b0ca5744515a980e043334124e03f32ac24e285d12c34f376",
@@ -239,9 +239,9 @@
     "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
     "includes/llm/brief-ir.php": "faffac86ceac85db8de19d49972a17a5a2edb9de3d3d07adbd59b48a906ae359",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "01e4cccf2eb7f1fe39fb06d3af8b62ef1b9cfd7e3b790c3ddc119387f2ee27e2",
+    "includes/llm/design-plan.php": "227c539d2a9241c88df89081690ff05730f19ae9b951e704a91a84eb23d5248d",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
-    "includes/llm/llm.php": "49122b7a8ffb39c3d9131122e75f4e8acd2e1e22ba1710d19a7f77e20a77df7e",
+    "includes/llm/llm.php": "40fd7be95b288ccbae75ac0723882af4fcc49932fafa5d60e2013aeee0d2a989",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
     "includes/llm/transport.php": "59bc527779226944f3ace50613ad979e23988291152347fbdcae00aa47455cb0",
     "includes/media/media.php": "e94a37117765a062d2dde75dd582edf3fe9a20eb35c37000ce4d56914130d61a",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "ee08ca94c1a75a548d2395fddb679bbac8902d7e1a6431ad54bca6df477f7427"
+    "wp-ai-executor.php": "1dc6c9ddf9382934702884d0a349eb92627f32a1b40cdb3533e5d624a2e48181"
   }
 }

@@ -242,6 +242,23 @@ $wpae_test_elementor_kit_settings = $saved_kit_settings;
 if ( $saved_palette_option === null ) { unset( $wpae_test_options['wp_ai_executor_design_tokens'] ); } else { $wpae_test_options['wp_ai_executor_design_tokens'] = $saved_palette_option; }
 $check( ! empty( $incomplete_palette_plan['errors'] ) && in_array( 'confirmed_palette_role_missing:color_page_bg', $incomplete_palette_plan['errors'], true ) && ! array_key_exists( 'color.page_bg', $incomplete_palette_plan['values'] ), 'M2.2 incomplete palette fails before freeze without inventing a default section color' );
 
+$wpae_test_options['wp_ai_executor_design_tokens'] = [];
+$wpae_test_elementor_kit_settings = [ 'system_colors' => [
+	[ '_id' => 'primary', 'title' => 'Первый', 'color' => '#000000' ],
+	[ '_id' => 'secondary', 'title' => 'Второй', 'color' => '#54595f' ],
+	[ '_id' => 'text', 'title' => 'Текст', 'color' => '#7a7a7a' ],
+	[ '_id' => 'accent', 'title' => 'Акцент', 'color' => '#61ce70' ],
+] ];
+$preview_inherited_plan = wpae_design_plan_resolve_visual( [], [ 'post_id' => 5214, 'canonical_create' => true, 'visual_profile' => 'editorial_light', 'page_tokens_confirmed' => true, 'page_tokens_source' => 'elementor_preview_computed_body', 'page_tokens' => [ 'color.page_bg' => '#ffffff', 'color.text' => '#333333' ], 'page_tokens_viewport' => [ 'width' => 1025, 'height' => 860 ] ] );
+$check( $preview_inherited_plan['values']['color.page_bg'] === '#ffffff' && $preview_inherited_plan['values']['color.surface'] === '#ffffff' && $preview_inherited_plan['values']['color.text'] === '#333333' && $preview_inherited_plan['values']['color.muted'] === '#333333' && $preview_inherited_plan['values']['color.border'] === 'transparent' && $preview_inherited_plan['values']['color.primary'] === '#000000', 'M2.2 measured preview body context fills only missing roles; surfaces/text aliases retain verified contrast and user-owned primary' );
+$check( $preview_inherited_plan['sources']['color.page_bg'] === 'confirmed_elementor_preview_body' && $preview_inherited_plan['sources']['color.text'] === 'confirmed_elementor_preview_body' && $preview_inherited_plan['sources']['color.surface'] === 'semantic_alias:confirmed_color.page_bg' && $preview_inherited_plan['sources']['color.muted'] === 'semantic_alias:confirmed_color.text' && $preview_inherited_plan['sources']['color.border'] === 'no_confirmed_border_role_transparent' && ! empty( $preview_inherited_plan['contrast']['ok'] ) && $preview_inherited_plan['page_context'] === [ 'source' => 'elementor_preview_computed_body', 'post_id' => 5214, 'viewport' => [ 'width' => 1025, 'height' => 860 ], 'roles' => [ 'color.page_bg', 'color.text' ] ], 'M2.2 inherited palette provenance includes exact source/viewport and contrast outcome' );
+$wpae_test_elementor_kit_settings = $saved_kit_settings;
+if ( $saved_palette_option === null ) { unset( $wpae_test_options['wp_ai_executor_design_tokens'] ); } else { $wpae_test_options['wp_ai_executor_design_tokens'] = $saved_palette_option; }
+$preserved_brand_plan = wpae_design_plan_resolve_visual( [], [ 'post_id' => 5214, 'canonical_create' => true, 'visual_profile' => 'soft_cards_light', 'page_tokens_confirmed' => true, 'page_tokens_source' => 'elementor_preview_computed_body', 'page_tokens' => [ 'color.page_bg' => '#ffffff', 'color.text' => '#333333' ] ] );
+$check( $preserved_brand_plan['values']['color.page_bg'] === '#f6f0e6' && $preserved_brand_plan['values']['color.text'] === '#111827' && $preserved_brand_plan['values']['color.surface'] === '#ffffff' && $preserved_brand_plan['values']['color.muted'] === '#4b5563' && $preserved_brand_plan['sources']['color.page_bg'] === 'elementor_global_color', 'M2.2 measured page inheritance cannot replace confirmed project/Elementor palette roles' );
+$wpae_test_elementor_kit_settings = $saved_kit_settings;
+if ( $saved_palette_option === null ) { unset( $wpae_test_options['wp_ai_executor_design_tokens'] ); } else { $wpae_test_options['wp_ai_executor_design_tokens'] = $saved_palette_option; }
+
 $token_override_settings = [ 'text_color' => '#6b7280', '__globals__' => [ 'text_color' => 'globals/colors?id=bffb171', 'border_color' => 'globals/colors?id=secondary' ] ];
 $token_override_report = [ 'mapped' => [], 'native_paths' => [], 'evidence' => [], 'source_roles' => [] ];
 wpae_token_map_set( $token_override_settings, 'text_color', '#6b7280', 'service-copy', 'palette.muted', $token_override_report );

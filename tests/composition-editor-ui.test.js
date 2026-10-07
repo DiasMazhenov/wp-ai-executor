@@ -41,7 +41,7 @@ test('safe PHP projection, grouped distinct records, profiles and Automatic',()=
 });
 function requestHarness() {
  const e=controls(); const storage=new Map(); let identity=''; let sequence=0;const posts=[];
- Object.assign(e,{requestInFlight:false,editorSyncConflict:null,liveGeneratedRootIds:[],selectedElements:()=>[],targetedDesignReplacement:()=>null,readOperationIdentity:()=>identity,rememberOperationIdentity:x=>{identity=x;},newOperationIdentity:()=>`identity-${++sequence}`,clearOperationRoots(){},lastBriefKey:'brief',getPreviewWidgetCount:()=>0,messages:{querySelectorAll:()=>[]},status:{},send:{disabled:false},resetPipelinePhases(){},setPipelinePhase(){},addMessage(){},getPreviewBackgroundImageUrls:()=>[],captureEditorRootSnapshot:()=>({ids:[],fingerprints:{}}),readProviderRetry:()=>null,readVisionRepair:()=>null,clearProviderRetry(){},isProviderRateLimited:()=>false,isProviderUnavailable:()=>false,deliveryRetryPending:false,strings:{},window:{elementor:{getPreviewContainer:()=>({})},sessionStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){}},fetch:(url,options)=>{posts.push(JSON.parse(options.body));return Promise.reject(new Error('transport response lost'));}});
+ Object.assign(e,{requestInFlight:false,editorSyncConflict:null,liveGeneratedRootIds:[],selectedElements:()=>[],targetedDesignReplacement:()=>null,readOperationIdentity:()=>identity,rememberOperationIdentity:x=>{identity=x;},newOperationIdentity:()=>`identity-${++sequence}`,clearOperationRoots(){},lastBriefKey:'brief',getPreviewWidgetCount:()=>0,messages:{querySelectorAll:()=>[]},status:{},send:{disabled:false},resetPipelinePhases(){},setPipelinePhase(){},addMessage(){},getPreviewBackgroundImageUrls:()=>[],getPreviewInheritedPaletteContext:()=>({page_tokens_confirmed:true,page_tokens_source:'elementor_preview_computed_body',page_tokens:{'color.page_bg':'#ffffff','color.text':'#333333'},page_tokens_viewport:{width:1025,height:860}}),captureEditorRootSnapshot:()=>({ids:[],fingerprints:{}}),readProviderRetry:()=>null,readVisionRepair:()=>null,clearProviderRetry(){},isProviderRateLimited:()=>false,isProviderUnavailable:()=>false,deliveryRetryPending:false,strings:{},window:{location:{href:'https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor',origin:'https://mazhenov.kz'},elementor:{getPreviewContainer:()=>({})},sessionStorage:{setItem:(k,v)=>storage.set(k,v),getItem:k=>storage.get(k)},setInterval:()=>1,clearInterval(){},setTimeout:()=>1,clearTimeout(){}},fetch:(url,options)=>{posts.push(JSON.parse(options.body));return Promise.reject(new Error('transport response lost'));}});
  e.getEditorModelId=m=>m.id; e.getEditorModelFingerprint=m=>JSON.stringify(m);
  vm.runInContext(js.slice(js.indexOf('    function getEditorModelChildren('),js.indexOf('    function collectEditorModelTree(')),e);
  vm.runInContext(js.slice(js.indexOf('    function serializeTypedModel('),js.indexOf('    function verifyTypedEditorModel(')),e);
@@ -57,6 +57,7 @@ test('real submit request payload and replay keep snapshot and operation identit
  await e.request('duplicate while busy',false,{});assert.equal(posts.length,1);
  await pending;
  assert.equal(posts[0].message,'original');assert.equal(posts[0].context.composition_version,1);
+ assert.equal(posts[0].context.page_tokens_source,'elementor_preview_computed_body');assert.deepEqual(plain(posts[0].context.page_tokens),{'color.page_bg':'#ffffff','color.text':'#333333'});assert.deepEqual(plain(posts[0].context.page_tokens_viewport),{width:1025,height:860});
  e.compositionSelect.value='pricing.tiers';e.refreshCompositionProfiles();
  const snapshot=e.readDeliverySnapshot('original');
  await e.request('original',false,{retryCurrentOperation:true,deliverySnapshot:snapshot});
@@ -72,6 +73,22 @@ test('real submit request payload and replay keep snapshot and operation identit
  e.compositionSelect.value='hero.text_only';e.refreshCompositionProfiles();e.profileSelect.value='editorial_light';await e.request('scoped',false,opt);
  assert.ok(!('composition_record' in posts.at(-1).context));assert.ok(!('visual_profile' in posts.at(-1).context));
  }
+});
+
+test('preview palette context accepts only opaque styles from the current same-origin post preview',()=>{
+ const helper=js.slice(js.indexOf('    function previewOpaqueColorToHex('),js.indexOf('    function reloadPreviewIframe()'));
+ const run=(src,bg,text,post=5214)=>{
+  const doc={location:{href:src},body:{classList:{contains:(name)=>name==='page-id-5214'}},documentElement:{clientWidth:1025,clientHeight:860},defaultView:{getComputedStyle:()=>({backgroundColor:bg,color:text})}};
+  const iframe={src,contentDocument:doc,clientWidth:1025,clientHeight:860,getAttribute:()=>src};
+  const env={config:{postId:5214},window:{location:{href:'https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor',origin:'https://mazhenov.kz'}},URL,Number,String,Array,getPreviewIframe:()=>iframe};
+  vm.createContext(env);vm.runInContext(helper,env);
+  return env.getPreviewInheritedPaletteContext();
+ };
+ const good=run('https://mazhenov.kz/pricing-contract-live-v123/?elementor-preview=5214&ver=1','rgb(255, 255, 255)','rgb(51, 51, 51)');
+ assert.deepEqual(plain(good),{page_tokens_confirmed:true,page_tokens_source:'elementor_preview_computed_body',page_tokens:{'color.page_bg':'#ffffff','color.text':'#333333'},page_tokens_viewport:{width:1025,height:860}});
+ assert.equal(run('https://mazhenov.kz/pricing-contract-live-v123/?elementor-preview=5214','rgba(255, 255, 255, 0.5)','rgb(51, 51, 51)'),null,'translucent background cannot confirm the painted canvas');
+ assert.equal(run('https://other.example/?elementor-preview=5214','rgb(255, 255, 255)','rgb(51, 51, 51)'),null,'cross-origin page cannot supply the context');
+ assert.equal(run('https://mazhenov.kz/?elementor-preview=999','rgb(255, 255, 255)','rgb(51, 51, 51)'),null,'a different post preview cannot supply the context');
 });
 
 test('fresh create refuses native HTML fallback over an empty saved baseline before any provider request',async()=>{

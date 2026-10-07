@@ -1040,6 +1040,48 @@
         Array.prototype.slice.call(doc.querySelectorAll('[data-element_type="container"], [data-id]')).forEach(collect);
         return Array.from(new Set(urls));
     }
+    function previewOpaqueColorToHex(value) {
+        var color = String(value || '').trim();
+        var hex = color.match(/^#([0-9a-f]{6})$/i);
+        if (hex) return '#' + hex[1].toLowerCase();
+        var rgb = color.match(/^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*([01](?:\.\d+)?))?\s*\)$/i);
+        if (!rgb || (rgb[4] !== undefined && Number(rgb[4]) !== 1)) return '';
+        var channels = [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+        if (channels.some(function (channel) { return channel < 0 || channel > 255; })) return '';
+        return '#' + channels.map(function (channel) { return channel.toString(16).padStart(2, '0'); }).join('');
+    }
+    function getPreviewInheritedPaletteContext() {
+        var iframe = getPreviewIframe();
+        var doc = iframe && iframe.contentDocument;
+        if (!doc || !doc.body || !doc.defaultView || typeof doc.defaultView.getComputedStyle !== 'function') return null;
+        var iframeSource = iframe.getAttribute('src') || iframe.src || '';
+        var previewUrl;
+        var documentUrl;
+        try {
+            previewUrl = new URL(iframeSource, window.location.href);
+            if (previewUrl.origin !== window.location.origin || Number(previewUrl.searchParams.get('elementor-preview')) !== Number(config.postId)) return null;
+            documentUrl = new URL(doc.location.href);
+            if (documentUrl.origin !== previewUrl.origin) return null;
+            var documentPreviewPost = Number(documentUrl.searchParams.get('elementor-preview') || 0);
+            var bodyIdentifiesPost = !!(doc.body.classList && doc.body.classList.contains('page-id-' + Number(config.postId)));
+            if (documentPreviewPost !== Number(config.postId) && !bodyIdentifiesPost) return null;
+        } catch (error) {
+            return null;
+        }
+        var bodyStyle;
+        try { bodyStyle = doc.defaultView.getComputedStyle(doc.body); } catch (error) { return null; }
+        var pageBackground = previewOpaqueColorToHex(bodyStyle.backgroundColor);
+        var bodyText = previewOpaqueColorToHex(bodyStyle.color);
+        var width = Number(doc.documentElement && doc.documentElement.clientWidth || iframe.clientWidth || 0);
+        var height = Number(doc.documentElement && doc.documentElement.clientHeight || iframe.clientHeight || 0);
+        if (!pageBackground || !bodyText || !Number.isInteger(width) || width < 1 || width > 10000 || !Number.isInteger(height) || height < 1 || height > 10000) return null;
+        return {
+            page_tokens_confirmed: true,
+            page_tokens_source: 'elementor_preview_computed_body',
+            page_tokens: { 'color.page_bg': pageBackground, 'color.text': bodyText },
+            page_tokens_viewport: { width: width, height: height }
+        };
+    }
     function reloadPreviewIframe() {
         var iframe = getPreviewIframe();
         if (!iframe) return Promise.resolve(false);
@@ -2183,6 +2225,10 @@
             requestContext.replaces_operation = options.replacesOperation;
         }
         Object.assign(requestContext, compositionSelectionSnapshot(options, requestSelection));
+        if (!options.deliverySnapshot && !options.lifecycleContext && !options.retryCurrentOperation && !options.targetedDesignRepair && !options.replaceExistingRoot && !options.visionRepair && !options.visionRegenerate) {
+            var inheritedPaletteContext = getPreviewInheritedPaletteContext();
+            if (inheritedPaletteContext) Object.assign(requestContext, inheritedPaletteContext);
+        }
         if (options.lifecycleContext) Object.assign(requestContext, options.lifecycleContext);
         if (options.deliverySnapshot) {
             message = options.deliverySnapshot.message;
