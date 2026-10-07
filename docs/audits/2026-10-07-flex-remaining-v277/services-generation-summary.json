@@ -1,0 +1,79 @@
+{
+  "schema": "wpae-live-acceptance-summary-v1",
+  "source": {
+    "repository_head_at_start": "5f668f4a1b5454f897f6f6fcc9f9c64ed48382fa",
+    "runtime_commit": "1ffb1fc099c1d14a721e416c72aca189955874e3",
+    "runtime_version": "v02.11.277",
+    "installed_plugin_php_version": "v02.11.277",
+    "editor_inline_version_after_reload": "v02.11.277"
+  },
+  "post_id": 5214,
+  "baseline_roots_before": [],
+  "scenario": {
+    "family": "services",
+    "recipe": "services.text_icon_list",
+    "recipe_source": "explicit_request",
+    "fixture": "services-text-icon-exact-request.txt",
+    "fixture_sha256": "917afaa2133773d564f601be700a7820e6f1d8d9d735ad7173542a5dfc65fb04",
+    "visual_profile": "no explicit profile was selected or retained in the saved evidence",
+    "operation_id": "wpae-6ec007474100025d",
+    "operation_identity": "ed370486-8d33-4475-afa8-be6f7e669f42",
+    "accepted_contract_id": "contract-029059887d0ad275117106c1",
+    "accepted_contract_hash": "029059887d0ad275117106c1269518d3beb579dfcbceca4b13270401796af113",
+    "root_id": "8e3d0dd",
+    "rollback_snapshot_id": "d41d53cf275e953cf906e8b2",
+    "brief_hash": "66deee4445262c1ae1ddb84bcd643fa7021d64d735c02b7f2d66b7d07f9b6e95",
+    "plan_hash": "44088d8b27dbd6013ddbb69e2036f36a79ae1fec549147679d9405d2c0d53b53",
+    "revisions": {
+      "generation": 4,
+      "after_publish_reload_descriptor": 6,
+      "undo_revision": null
+    },
+    "route": "local_deterministic",
+    "action_path": "typed pipeline",
+    "provider_calls": 0,
+    "write_count": 1,
+    "publish_reload": "confirmed",
+    "owned_model_readback": "available; accepted contract and root matched",
+    "native_readback": {
+      "root_id": "8e3d0dd",
+      "native_widget_count": 17,
+      "native_flex_container_count": 19,
+      "all_three_ordered_service_rows_present": true,
+      "photos_or_media_placeholders": 0,
+      "cta_hrefs": ["#strategy", "#projects", "#support"]
+    },
+    "public_dom": {
+      "desktop_css_viewport": "1232x923",
+      "desktop_document_width": 1217,
+      "desktop_root": {"x": 0, "y": 32, "width": 1217, "height": 893},
+      "desktop_rows": [
+        {"x": 32, "y": 262, "width": 1153, "height": 144, "display": "flex", "direction": "row", "gap": "16px", "cta_y": 351},
+        {"x": 32, "y": 447, "width": 1153, "height": 195, "display": "flex", "direction": "row", "gap": "16px", "cta_y": 588},
+        {"x": 32, "y": 684, "width": 1153, "height": 170, "display": "flex", "direction": "row", "gap": "16px", "cta_y": 798}
+      ],
+      "mobile_css_viewport": "390x844",
+      "mobile_document_width": 375,
+      "horizontal_overflow": false,
+      "all_authored_text_in_public_dom": true
+    },
+    "visual_review": {
+      "desktop": "PARTIAL: clear heading and three ordered horizontal list rows; exact long description fits and controls remain legible. The desktop CTAs naturally sit at different vertical coordinates because each row keeps its own content height.",
+      "mobile": "PARTIAL: list order and text remain in the DOM, but the site-owned chat greeting overlaps the long second description and its CTA in the public full-page frame.",
+      "vision_advisory": "score 85, confidence 95; minor spacing concern only; no repair was made"
+    },
+    "screenshots": {
+      "services-public-desktop.png": {"source": "public", "css_viewport": "1232x923", "png_dimensions": "1217x912"},
+      "services-public-desktop-full.png": {"source": "public", "css_viewport": "1232x923", "png_dimensions": "1217x925"},
+      "services-public-mobile.png": {"source": "public", "css_viewport": "390x844", "png_dimensions": "375x812"},
+      "services-public-mobile-full.png": {"source": "public", "css_viewport": "390x844", "png_dimensions": "375x1115"},
+      "services-editor-first-before-publish.jpg": {"source": "editor, before Publish", "dimensions": "1232x923", "format": "JPEG"}
+    },
+    "undo": {
+      "method": "operation-scoped guarded Undo",
+      "result": "confirmed; editor root count 0 and public roots [] after reload",
+      "final_roots": []
+    },
+    "evidence_boundary": "This file is a concise transcription of the live trace, read-only descriptor, editor readback and public DOM observations; the original operation trace was not saved as a raw JSON export."
+  }
+}

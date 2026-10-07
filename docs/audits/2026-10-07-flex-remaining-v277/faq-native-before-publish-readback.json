@@ -1,0 +1,31 @@
+{
+  "postId": 5214,
+  "operationId": "wpae-d703ca87007f9393",
+  "operationIdentity": "b913540f-4b50-4831-a2b0-8e7259a7e646",
+  "rootId": "effd65c",
+  "generationRevision": 4,
+  "acceptedContractId": "contract-d289bb996a5c841ee50a7dff",
+  "acceptedContractHash": "d289bb996a5c841ee50a7dff1e44f2b2f7474692d0e11ce8de6a4bc11418cf0e",
+  "briefHash": "6736225f9b09f80b93763a48b452499a9482b7a244f3f828bf97a750c4a0daac",
+  "planHash": "4c2321c0f7d748fbd2a4e231d514e90887acede680c4714ad260fee24d500a68",
+  "recordId": "faq.native",
+  "route": "local_deterministic",
+  "providerCalls": 0,
+  "writeCount": 1,
+  "nativeWidgetType": "accordion.default",
+  "items": [
+    {
+      "answer": "Обсудим задачу.",
+      "expanded": "true",
+      "title": "Как начать?",
+      "widgetType": "accordion.default"
+    },
+    {
+      "answer": "Сначала обсудим задачу и согласуем ожидаемый результат. Затем покажем план, уточним сроки и распределим ответственность. После согласования выполним работу, проверим детали вместе и передадим готовый результат с понятными рекомендациями.",
+      "expanded": "false",
+      "title": "Как согласовать?",
+      "widgetType": "accordion.default"
+    }
+  ],
+  "visionFinding": "Vision called answer 2 truncated; native Accordion DOM contains exact 237-character answer and native roundtrip has exact_copy_preserved=true, therefore advisory finding is disproved by DOM evidence."
+}
