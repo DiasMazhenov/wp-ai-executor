@@ -61,6 +61,13 @@ $m2_preview = static function ( array $brief, array $context, string $instance )
  $request->set_param( 'instance_id', $instance );
  return wpae_elementor_compose( $request )->get_data();
 };
+$m2_auto_preview = static function ( array $brief, array $context, string $instance ): array {
+ unset( $context['composition_record'], $context['composition_version'], $context['visual_profile'], $context['services_recipe_id'] );
+ $request = new WP_REST_Request(); $request->set_param( 'canonical_brief', $brief );
+ foreach ( $context as $key => $value ) { $request->set_param( $key, $value ); }
+ $request->set_param( 'preview_alternatives', true ); $request->set_param( 'instance_id', $instance );
+ return wpae_elementor_compose( $request )->get_data();
+};
 foreach ( $m2_cases as $name => [ $prompt, $context, $record, $profile ] ) {
  $brief = wpae_brief_ir_parse( $prompt ); $brief['canonical_create'] = true;
  if ( ! empty( $context['media_references'] ) ) {
@@ -147,6 +154,13 @@ $visual_brief = $base['brief']; $visual_brief['layout_constraints'][] = [ 'kind'
 $profile_ctx = array_merge( $base['context'], [ 'canonical_create' => true, 'visual_profile' => 'editorial_light', 'page_tokens_confirmed' => true, 'page_tokens' => [ 'color.primary' => '#654321', 'radius.card' => '2rem' ], 'reference_tokens_confirmed' => true, 'reference_tokens' => [ 'radius.card' => '3rem' ] ] );
 $visual_plan = wpae_design_plan_from_brief( $visual_brief, $profile_ctx );
 check( $visual_plan['resolved_visual']['values']['color.primary'] === '#123456' && $visual_plan['resolved_visual']['sources']['color.primary'] === 'explicit_brief' && $visual_plan['resolved_visual']['values']['radius.card'] === '0.25rem' && $visual_plan['resolved_visual']['sources']['radius.card'] === 'visual_profile:editorial_light' && $visual_plan['resolved_visual']['sources']['space.section'] === 'visual_profile:editorial_light', 'M2 explicit > selected profile > inherited confirmed context provenance' );
+$visual_plan_validation = wpae_design_plan_validate( $visual_plan, $visual_brief );
+$stale_palette_validation_plan = $visual_plan;
+$stale_palette_validation_plan['resolved_visual']['values']['color.muted'] = '#aaaaaa';
+$stale_palette_validation_plan['resolved_visual']['contrast'] = [ 'ok' => true, 'errors' => [] ];
+$stale_palette_validation_plan['resolved_visual']['errors'] = [];
+$stale_palette_validation = wpae_design_plan_validate( $stale_palette_validation_plan, $visual_brief );
+check( ! empty( $visual_plan_validation['ok'] ) && in_array( 'contrast:color.muted_on_color.page_bg', $stale_palette_validation['errors'], true ), 'M2.2 accepted Plan validates confirmed palette, and revalidation measures its frozen values instead of bundled token defaults' );
 $legacy_definitions = wpae_elementor_recipe_definitions();
 check( count( $legacy_definitions ) === 8, 'M2 all eight legacy recipes audited' );
 $assert_recipe_flex = static function ( array $nodes ) use ( &$assert_recipe_flex ): bool {
@@ -187,8 +201,63 @@ check( ( $faq_native[0]['elements'][0]['elements'][0]['widgetType'] ?? '' ) === 
 $faq_native[0]['elements'][0]['elements'][0]['settings']['tabs'][0]['tab_content'] = 'Foreign answer';
 check( $signature !== wpae_llm_decision_signature( $faq_native ), 'M2 dropping Accordion repeater IDs never drops exact FAQ answer fidelity' );
 
-foreach ( [ 'hero.text_only' => 'hero_stack', 'hero.split_60_40.right' => 'hero_split', 'about.split_50_50.right' => 'about_split', 'benefits.grid' => 'benefits_grid', 'benefits.editorial_list' => 'benefits_list', 'pricing.tiers' => 'pricing', 'faq.native' => 'faq' ] as $m2_case => $m1_case ) {
- check( wpae_llm_decision_signature( [ $m2_results[$m2_case]['result']['written'] ] ) === wpae_llm_decision_signature( [ $m1_results[$m1_case]['written'] ] ), 'M2 no visual profile preserves M1 native behavior ' . $m2_case );
+foreach ( [ 'hero.text_only', 'hero.split_60_40.right', 'about.split_50_50.right', 'benefits.grid', 'benefits.editorial_list', 'pricing.tiers', 'faq.native' ] as $m2_case ) {
+ $decision = $m2_results[$m2_case]['result']['response']['diagnostics']['design_pipeline']['plan']['composition_decision'] ?? [];
+ $record = wpae_composition_records()[ $decision['record_id'] ?? '' ] ?? [];
+ $expected_profile = in_array( 'editorial_light', (array) ( $record['visual_profiles'] ?? [] ), true ) ? 'editorial_light' : '';
+ check( ( $decision['visual_profile'] ?? '' ) === $expected_profile && ( $m2_results[$m2_case]['preview']['diagnostics']['composition_decision']['visual_profile'] ?? '' ) === $expected_profile, 'M2 default visual profile is frozen consistently through chat and no-write composer ' . $m2_case );
+}
+$auto_benefits_brief = $m2_results['benefits.grid']['brief'];
+$auto_benefits_context = [ 'page_tokens_confirmed' => true, 'page_tokens' => [ 'color.page_bg' => '#f6f0e6', 'color.surface' => '#ffffff', 'color.text' => '#111827', 'color.muted' => '#4b5563', 'color.primary' => '#4460ec', 'color.border' => '#d1d5db', 'color.focus' => '#2563eb', 'color.hover' => '#2563eb' ] ];
+$auto_before_page = $GLOBALS['page_data']; $auto_before_writes = $GLOBALS['writes'];
+$auto_benefits = $m2_auto_preview( $auto_benefits_brief, $auto_benefits_context, 'm2-auto-benefits-shared-brief' );
+$auto_benefits_again = $m2_auto_preview( $auto_benefits_brief, $auto_benefits_context, 'm2-auto-benefits-shared-brief' );
+$auto_benefits_alternatives = array_values( (array) ( $auto_benefits['alternatives'] ?? [] ) );
+$auto_benefits_alt = $auto_benefits_alternatives[0] ?? [];
+$auto_benefits_expected_hash = wpae_brief_ir_hash( $auto_benefits_brief );
+$auto_benefits_accounting_matches = ! empty( $auto_benefits['ok'] ) && ! empty( $auto_benefits_alt['elementor_data'] ) && $m2_account( $auto_benefits['elementor_data'] ) === $m2_account( $auto_benefits_alt['elementor_data'] );
+check( ! empty( $auto_benefits['ok'] ) && $auto_benefits['write_count'] === 0 && $auto_benefits['provider_calls'] === 0 && $GLOBALS['page_data'] === $auto_before_page && $GLOBALS['writes'] === $auto_before_writes && $auto_benefits['selection']['brief_hash'] === $auto_benefits_expected_hash, 'M2.2 shared Brief alternatives compile without provider calls, writes, or page mutation and retain its canonical hash' );
+$auto_benefits_native_signature = wpae_composition_native_layout_signature( (array) ( $auto_benefits['elementor_data'] ?? [] ) );
+check( ( $auto_benefits['recipe_id'] ?? '' ) === 'benefits.grid' && count( $auto_benefits_alternatives ) === 1 && ( $auto_benefits_alt['record_id'] ?? '' ) === 'benefits.editorial_list' && $auto_benefits_alt['record_version'] === 1 && $auto_benefits_alt['record_hash'] === wpae_composition_records()['benefits.editorial_list']['hash'] && $auto_benefits_native_signature !== $auto_benefits_alt['native_layout_signature'] && wpae_composition_topology_signature( wpae_composition_records()['benefits.grid'] ) !== $auto_benefits_alt['topology_signature'], 'M2.2 returns one genuinely distinct, versioned Benefits alternative instead of an alias, color, or ID variation' );
+check( $auto_benefits_accounting_matches && ( $auto_benefits['selection']['brief_hash'] ?? '' ) === ( $auto_benefits_alt['brief_hash'] ?? '' ) && ( $auto_benefits['diagnostics']['composition_decision']['record_id'] ?? '' ) === 'benefits.grid' && ( $auto_benefits_alt['plan']['composition_decision']['record_id'] ?? '' ) === 'benefits.editorial_list', 'M2.2 selected and alternative records preserve exact content/entity order and freeze separate accepted Plans from the same Brief: ' . wp_json_encode( [ 'accounting_matches' => $auto_benefits_accounting_matches, 'selection_hash' => $auto_benefits['selection']['brief_hash'] ?? '', 'alternative_hash' => $auto_benefits_alt['brief_hash'] ?? '', 'selected_record' => $auto_benefits['diagnostics']['composition_decision']['record_id'] ?? '', 'alternative_record' => $auto_benefits_alt['plan']['composition_decision']['record_id'] ?? '', 'selected_copy' => $m2_account( (array) ( $auto_benefits['elementor_data'] ?? [] ) ), 'alternative_copy' => $m2_account( (array) ( $auto_benefits_alt['elementor_data'] ?? [] ) ) ], JSON_UNESCAPED_UNICODE ) );
+check( ( $auto_benefits_again['recipe_id'] ?? '' ) === ( $auto_benefits['recipe_id'] ?? '' ) && array_column( (array) ( $auto_benefits_again['alternatives'] ?? [] ), 'record_id' ) === array_column( $auto_benefits_alternatives, 'record_id' ) && wpae_composition_native_layout_signature( (array) ( $auto_benefits_again['elementor_data'] ?? [] ) ) === $auto_benefits_native_signature, 'M2.2 repeated no-write preview of the same Brief is deterministic' );
+$auto_benefits_explicit_alt = $m2_preview( $auto_benefits_brief, [ 'composition_record' => 'benefits.editorial_list', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ], 'm2-auto-benefits-explicit-alt' );
+check( ! empty( $auto_benefits_explicit_alt['ok'] ) && $auto_benefits_explicit_alt['recipe_id'] === 'benefits.editorial_list' && $auto_benefits_explicit_alt['alternatives'] === [] && $auto_benefits_explicit_alt['write_count'] === 0 && $m2_account( $auto_benefits_explicit_alt['elementor_data'] ) === $m2_account( $auto_benefits['elementor_data'] ), 'M2.2 a different composition is an explicit separate preview action that preserves the same exact content' );
+foreach ( [ 'pricing.tiers', 'faq.native' ] as $single_variant_record ) {
+ $single_record_case = $m2_results[$single_variant_record];
+ $single_brief = (array) ( $single_record_case['brief'] ?? [] );
+ $single_preview = $m2_auto_preview( $single_brief, [], 'm2-single-' . sanitize_key( str_replace( '.', '-', $single_variant_record ) ) );
+ check( ! empty( $single_preview['ok'] ) && $single_preview['write_count'] === 0 && $single_preview['recipe_id'] === $single_variant_record && $single_preview['alternatives'] === [], 'M2.2 does not invent an alternative for single-candidate composition ' . $single_variant_record );
+}
+$single_process_brief = wpae_brief_ir_parse( (string) file_get_contents( __DIR__ . '/../docs/audits/2026-10-07-quality-followup-v276/process-exact-request.txt' ) );
+$single_process_brief['canonical_create'] = true;
+$single_process_preview = $m2_auto_preview( $single_process_brief, [], 'm2-single-process-ordered-steps' );
+check( ! empty( $single_process_preview['ok'] ) && $single_process_preview['write_count'] === 0 && $single_process_preview['recipe_id'] === 'process.ordered_steps' && $single_process_preview['alternatives'] === [], 'M2.2 does not invent an alternative for single-candidate Process' );
+$m2_count_widget_types = static function ( array $nodes, string $widget_type ) use ( &$m2_count_widget_types ): int {
+	$count = 0;
+	foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } if ( ( $node['widgetType'] ?? '' ) === $widget_type ) { $count++; } $count += $m2_count_widget_types( (array) ( $node['elements'] ?? [] ), $widget_type ); }
+	return $count;
+};
+$m2_auto_entity_cases = [
+	'team' => [ 'file' => __DIR__ . '/../docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt', 'selected' => 'team.editorial_rows', 'alternative' => 'team.grid' ],
+	'testimonials' => [ 'file' => __DIR__ . '/../docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt', 'selected' => 'testimonials.editorial_rows', 'alternative' => 'testimonials.grid' ],
+];
+$m2_entity_items = static function ( array $decision, string $role ): array {
+	foreach ( (array) ( $decision['slot_bindings'] ?? [] ) as $binding ) { if ( is_array( $binding ) && ( $binding['role'] ?? '' ) === $role ) { return (array) ( $binding['items'] ?? [] ); } }
+	return [];
+};
+foreach ( $m2_auto_entity_cases as $family => $case ) {
+	$entity_brief = wpae_brief_ir_parse( (string) file_get_contents( $case['file'] ) ); $entity_brief['canonical_create'] = true;
+	$before_page = $GLOBALS['page_data']; $before_writes = $GLOBALS['writes'];
+	$entity_preview = $m2_auto_preview( $entity_brief, [], 'm2-auto-' . $family . '-uneven' );
+	$entity_alternative = (array) ( $entity_preview['alternatives'][0] ?? [] );
+	$entity_selected = (array) ( $entity_preview['elementor_data'] ?? [] ); $entity_alt_native = (array) ( $entity_alternative['elementor_data'] ?? [] );
+	check( ! empty( $entity_preview['ok'] ) && $entity_preview['recipe_id'] === $case['selected'] && count( (array) ( $entity_brief['groups'] ?? [] ) ) >= 4 && (int) ( $entity_preview['selection']['metrics']['entity_length_spread'] ?? 0 ) >= 180, 'M2.2 content-ranked ' . $family . ' selects editorial rows for uneven authored entities, not a manually fixed composition' );
+	check( $entity_preview['write_count'] === 0 && $entity_preview['provider_calls'] === 0 && $GLOBALS['page_data'] === $before_page && $GLOBALS['writes'] === $before_writes && ( $entity_alternative['record_id'] ?? '' ) === $case['alternative'] && $entity_preview['selection']['brief_hash'] === ( $entity_alternative['brief_hash'] ?? '' ), 'M2.2 ' . $family . ' returns one same-Brief alternative without provider or transaction' );
+	$selected_bindings = $m2_entity_items( (array) ( $entity_preview['diagnostics']['composition_decision'] ?? [] ), $family === 'team' ? 'team_cards' : 'testimonial_cards' );
+	$alternative_bindings = $m2_entity_items( (array) ( $entity_alternative['plan']['composition_decision'] ?? [] ), $family === 'team' ? 'team_cards' : 'testimonial_cards' );
+	$entity_variant_checks = [ 'entity_refs_and_ownership' => $selected_bindings === $alternative_bindings && count( $selected_bindings ) === count( (array) ( $entity_brief['groups'] ?? [] ) ), 'native_signature' => wpae_composition_native_layout_signature( $entity_selected ) !== ( $entity_alternative['native_layout_signature'] ?? '' ), 'topology_signature' => wpae_composition_topology_signature( wpae_composition_records()[$case['selected']] ) !== ( $entity_alternative['topology_signature'] ?? '' ), 'images' => $m2_count_widget_types( $entity_selected, 'image' ), 'buttons' => $m2_count_widget_types( $entity_selected, 'button' ) ];
+	check( $entity_variant_checks['entity_refs_and_ownership'] && $entity_variant_checks['native_signature'] && $entity_variant_checks['topology_signature'] && $entity_variant_checks['images'] === 0 && $entity_variant_checks['buttons'] === 0, 'M2.2 ' . $family . ' variants preserve exact entity refs/order/ownership while changing native topology and honoring no-media/no-action intent: ' . wp_json_encode( $entity_variant_checks ) );
 }
 foreach ( [ 'ratio_conflict', 'multiple_assets', 'group_cardinality' ] as $reason ) {
  $bad = $base['brief'];
@@ -215,7 +284,8 @@ $mixed = wpae_elementor_compose( $request )->get_data();
 check( empty( $mixed['ok'] ) && $mixed['write_count'] === 0 && $mixed['errors'] === [ 'mixed_legacy_typed_contract' ], 'M2 mixed legacy/typed payload refuses rather than discarding metrics/proof slots' );
 $library_brief = $base['brief']; $library_brief['policy']['library']['source'] = 'required';
 $library_preview = $m2_preview( $library_brief, $base['context'], 'library-only' );
-check( empty( $library_preview['ok'] ) && $library_preview['write_count'] === 0 && in_array( 'composition_library_slot_map_unavailable', $library_preview['errors'], true ), 'M2 composer honors library-only canonical Brief and refuses unverified typed slot map' );
+$library_decision_reasons = (array) ( $library_preview['diagnostics']['composition_decision']['rejected'][ $base['context']['composition_record'] ?? '' ] ?? [] );
+check( empty( $library_preview['ok'] ) && $library_preview['write_count'] === 0 && in_array( 'composition_library_slot_map_unavailable', $library_decision_reasons, true ), 'M2 composer honors library-only canonical Brief and rejects an unverified typed slot map before compile/write' );
 if ( getenv( 'WPAE_M2_CHAT_DEMO' ) === '1' ) { foreach ( $m2_demo as $row ) { echo wp_json_encode( $row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . "\n"; } }
 
 // Editor integration: the static report must consume accepted responsive tokens.
@@ -361,7 +431,7 @@ $pricing_intro_prompt="Создай Pricing\nНадзаголовок: «ТАР�
 $pricing_intro=$run_services_route($pricing_intro_prompt,[],[],'visual-pricing-intro',false,'active','active',['composition_record'=>'pricing.tiers']);
 $pricing_titles=array_values(array_filter($visual_policy_nodes([$pricing_intro['written']??[]]),static fn(array $n):bool=>($n['settings']['title']??'')==='Выберите формат'));
 check(!empty($pricing_intro['response']['ok']) && count($pricing_titles)===1 && $pricing_titles[0]['settings']['header_size']==='h2','Pricing intro semantic H2 independently of display typography');
-$align_prompt="Создай Hero без фото\nЗаголовок: «Ось текста»\nIntro text align: left\nIntro container align: center\nReading measure: 30rem";
+$align_prompt="Создай Hero без фото\nЗаголовок: «Ось текста»\nОписание: «Поясняющий текст для проверки оси и ширины чтения.»\nIntro text align: left\nIntro container align: center\nReading measure: 30rem";
 $align_case=$run_services_route($align_prompt,[],[],'visual-explicit-reading-axis',false,'active','active',['composition_record'=>'hero.text_only','visual_profile'=>'soft_cards_light']);
 $align_measure=$align_case['written']['elements'][0]['elements'][0]['settings']??[];
 check(!empty($align_case['response']['ok']) && $align_measure['width']['unit']==='custom' && $align_measure['width']['size']==='min(100%, 30rem)' && $align_measure['align_self']==='center' && $align_measure['flex_align_items']==='flex-start','Explicit centered reading container with left text is an intentional accepted variant');

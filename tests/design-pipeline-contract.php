@@ -64,6 +64,15 @@ if ( ! function_exists( 'get_option' ) ) {
 		return $wpae_test_options[ $key ] ?? $default;
 	}
 }
+if ( ! function_exists( 'get_post_meta' ) ) {
+	function get_post_meta( $post_id, $key = '', $single = false ) {
+		global $wpae_test_elementor_kit_settings;
+		if ( (int) $post_id === 8 && $key === '_elementor_page_settings' ) {
+			return $single ? ( $wpae_test_elementor_kit_settings ?? [] ) : [ $wpae_test_elementor_kit_settings ?? [] ];
+		}
+		return $single ? '' : [];
+	}
+}
 if ( ! function_exists( 'update_option' ) ) {
 	function update_option( $key, $value, $autoload = false ): bool {
 		global $wpae_test_options;
@@ -180,6 +189,25 @@ require_once __DIR__ . '/../includes/design/system.php';
 require_once __DIR__ . '/../includes/elementor/validation-rules.php';
 require_once __DIR__ . '/../includes/elementor/normalize.php';
 
+// Canonical-create fixtures use explicit active-kit Global Colors. This keeps
+// their accepted palette confirmed while the resolver tests default ambiguity.
+$wpae_test_options['elementor_active_kit'] = 8;
+$wpae_test_elementor_kit_settings = [
+	'system_colors' => [
+		[ '_id' => 'primary', 'title' => 'Primary', 'color' => '#4460EC' ],
+		[ '_id' => 'secondary', 'title' => 'Secondary', 'color' => '#4b5563' ],
+		[ '_id' => 'text', 'title' => 'Text', 'color' => '#111827' ],
+		[ '_id' => 'accent', 'title' => 'Accent', 'color' => '#61CE70' ],
+	],
+	'custom_colors' => [
+		[ '_id' => 'pagebg', 'title' => 'Page Background', 'color' => '#f6f0e6' ],
+		[ '_id' => 'surface', 'title' => 'Surface', 'color' => '#ffffff' ],
+		[ '_id' => 'border', 'title' => 'Border', 'color' => '#d1d5db' ],
+		[ '_id' => 'focus', 'title' => 'Focus', 'color' => '#2563eb' ],
+		[ '_id' => 'hover', 'title' => 'Hover', 'color' => '#2563eb' ],
+	],
+];
+
 $checks = 0;
 $check = static function ( bool $condition, string $message ) use ( &$checks ): void {
 	if ( ! $condition ) {
@@ -188,6 +216,31 @@ $check = static function ( bool $condition, string $message ) use ( &$checks ): 
 	}
 	$checks++;
 };
+
+$elementor_stock_palette = wpae_design_palette_resolve_sources( [], [ 'system_colors' => [
+	[ '_id' => 'primary', 'title' => 'Primary', 'color' => '#6ec1e4' ],
+	[ '_id' => 'secondary', 'title' => 'Secondary', 'color' => '#54595f' ],
+	[ '_id' => 'text', 'title' => 'Text', 'color' => '#7a7a7a' ],
+	[ '_id' => 'accent', 'title' => 'Accent', 'color' => '#61ce70' ],
+] ] );
+$check( ! isset( $elementor_stock_palette['values']['color.primary'], $elementor_stock_palette['values']['color.text'], $elementor_stock_palette['values']['color.muted'] ) && count( array_filter( [ 'primary', 'secondary', 'text', 'accent' ], static fn( $id ): bool => ( $elementor_stock_palette['unconfirmed']['elementor_system_color.' . $id] ?? '' ) === 'matches_elementor_stock_default' ) ) === 4, 'M2.2 Elementor stock system colors are recorded as unconfirmed, not accepted as brand palette' );
+$profile_palette_plan = wpae_design_plan_resolve_visual( [], [ 'canonical_create' => true, 'visual_profile' => 'soft_cards_light' ] );
+$check( $profile_palette_plan['values']['color.page_bg'] === '#f6f0e6' && $profile_palette_plan['values']['color.surface'] === '#ffffff' && $profile_palette_plan['values']['color.primary'] === '#4460ec' && $profile_palette_plan['sources']['color.page_bg'] === 'elementor_global_color' && ! str_starts_with( $profile_palette_plan['sources']['color.page_bg'], 'visual_profile:' ), 'M2.2 selected visual profile preserves confirmed site colors instead of its embedded colors' );
+$explicit_palette_plan = wpae_design_plan_resolve_visual( [ 'layout_constraints' => [ [ 'kind' => 'visual_token', 'token' => 'color.page_bg', 'value' => '#eeddcc' ] ] ], [ 'canonical_create' => true, 'visual_profile' => 'editorial_light' ] );
+$check( $explicit_palette_plan['values']['color.page_bg'] === '#eeddcc' && $explicit_palette_plan['sources']['color.page_bg'] === 'explicit_brief', 'M2.2 explicit Brief color override retains value and provenance above site palette' );
+$saved_palette_option = $wpae_test_options['wp_ai_executor_design_tokens'] ?? null;
+$saved_kit_settings = $wpae_test_elementor_kit_settings;
+$wpae_test_options['wp_ai_executor_design_tokens'] = [];
+$wpae_test_elementor_kit_settings = [ 'system_colors' => [
+	[ '_id' => 'primary', 'title' => 'Primary', 'color' => '#6ec1e4' ],
+	[ '_id' => 'secondary', 'title' => 'Secondary', 'color' => '#54595f' ],
+	[ '_id' => 'text', 'title' => 'Text', 'color' => '#7a7a7a' ],
+	[ '_id' => 'accent', 'title' => 'Accent', 'color' => '#61ce70' ],
+] ];
+$incomplete_palette_plan = wpae_design_plan_resolve_visual( [], [ 'canonical_create' => true ] );
+$wpae_test_elementor_kit_settings = $saved_kit_settings;
+if ( $saved_palette_option === null ) { unset( $wpae_test_options['wp_ai_executor_design_tokens'] ); } else { $wpae_test_options['wp_ai_executor_design_tokens'] = $saved_palette_option; }
+$check( ! empty( $incomplete_palette_plan['errors'] ) && in_array( 'confirmed_palette_role_missing:color_page_bg', $incomplete_palette_plan['errors'], true ) && ! array_key_exists( 'color.page_bg', $incomplete_palette_plan['values'] ), 'M2.2 incomplete palette fails before freeze without inventing a default section color' );
 
 $token_override_settings = [ 'text_color' => '#6b7280', '__globals__' => [ 'text_color' => 'globals/colors?id=bffb171', 'border_color' => 'globals/colors?id=secondary' ] ];
 $token_override_report = [ 'mapped' => [], 'native_paths' => [], 'evidence' => [], 'source_roles' => [] ];
@@ -545,10 +598,15 @@ foreach ( (array) ( $two_benefits_tree['elementor_data'][0]['elements'] ?? [] ) 
 		break;
 	}
 }
-$check( wpae_design_plan_validate( $two_benefits_plan, $two_benefits_brief )['ok'] && ( $two_benefits_plan['composition_decision']['record_id'] ?? '' ) === 'benefits.grid' && ( $two_benefits_plan['composition_decision']['source'] ?? '' ) === 'automatic_density_policy' && ( $two_benefits_plan['composition_decision']['selection_policy'] ?? '' ) === 'benefits_two_item_copy_density_v1', 'short, generic two-item Benefits resolves its existing grid record automatically before Plan freeze' );
+$check( wpae_design_plan_validate( $two_benefits_plan, $two_benefits_brief )['ok'] && ( $two_benefits_plan['composition_decision']['record_id'] ?? '' ) === 'benefits.grid' && ( $two_benefits_plan['composition_decision']['source'] ?? '' ) === 'content_ranked_catalog' && ( $two_benefits_plan['composition_decision']['selection_policy'] ?? '' ) === 'wpae-composition-selection-v2', 'short, generic two-item Benefits resolves its existing grid record through the shared catalog before Plan freeze' );
 $check( count( (array) ( $two_benefits_group['elements'] ?? [] ) ) === 2 && array_column( array_map( static fn( array $card ): array => [ 'title' => $card['elements'][1]['settings']['title'] ?? '', 'body' => trim( wp_strip_all_tags( (string) ( $card['elements'][2]['settings']['editor'] ?? '' ) ) ) ], (array) ( $two_benefits_group['elements'] ?? [] ) ), 'title' ) === [ 'Понятный план', 'Общая команда' ] && array_column( array_map( static fn( array $card ): array => [ 'body' => trim( wp_strip_all_tags( (string) ( $card['elements'][2]['settings']['editor'] ?? '' ) ) ) ], (array) ( $two_benefits_group['elements'] ?? [] ) ), 'body' ) === [ 'Сроки согласованы.', 'Работаем вместе.' ], 'automatic Benefits grid preserves the exact ordered short title/body pairs' );
-$check( ( $two_benefits_group['settings']['container_type'] ?? '' ) === 'flex' && ( $two_benefits_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $two_benefits_group['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $two_benefits_group['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $two_benefits_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $two_benefits_group['elements'][0]['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 1.5rem) / 2)' && ( $two_benefits_group['elements'][0]['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100 && ! isset( $two_benefits_group['settings']['grid_columns_grid'] ) && ( $two_benefits_plan['visual_policy']['collection']['item_count'] ?? 0 ) === 2, 'short Benefits preserve two gap-aware desktop Flex tracks and one native track at tablet/mobile' );
-$check( ( $two_benefits_group['elements'][0]['elements'][1]['settings']['header_size'] ?? '' ) === 'h3' && (float) ( $two_benefits_group['elements'][0]['elements'][1]['settings']['typography_font_size']['size'] ?? 0 ) === 1.125, 'benefit card title uses component typography rather than hero display type' );
+$benefits_desktop_gap = (string) ( $two_benefits_plan['visual_policy']['collection']['gap']['desktop'] ?? '' );
+$benefits_expected_track = 'calc((100% - ' . $benefits_desktop_gap . ') / 2)';
+$check( ( $two_benefits_group['settings']['container_type'] ?? '' ) === 'flex' && ( $two_benefits_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $two_benefits_group['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $two_benefits_group['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $two_benefits_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $two_benefits_group['elements'][0]['settings']['_element_custom_width']['size'] ?? '' ) === $benefits_expected_track && ( $two_benefits_group['settings']['flex_gap']['size'] ?? '' ) === (float) $benefits_desktop_gap && ( $two_benefits_group['settings']['flex_gap']['unit'] ?? '' ) === 'rem' && ( $two_benefits_group['elements'][0]['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100 && ! isset( $two_benefits_group['settings']['grid_columns_grid'] ) && ( $two_benefits_plan['visual_policy']['collection']['item_count'] ?? 0 ) === 2, 'short Benefits preserve two gap-aware desktop Flex tracks and one native track at tablet/mobile' );
+$benefits_item_type = (array) ( $two_benefits_plan['visual_policy']['typography']['item_title'] ?? [] );
+$benefits_native_item_type = (array) ( $two_benefits_group['elements'][0]['elements'][1]['settings'] ?? [] );
+$benefits_expected_item_size = (float) preg_replace( '/[^0-9.]/', '', (string) ( $benefits_item_type['desktop'] ?? '' ) );
+$check( ( $benefits_native_item_type['header_size'] ?? '' ) === 'h3' && ( $benefits_native_item_type['typography_font_size']['unit'] ?? '' ) === 'rem' && (float) ( $benefits_native_item_type['typography_font_size']['size'] ?? 0 ) === $benefits_expected_item_size && ( $benefits_native_item_type['typography_font_weight'] ?? '' ) === (string) ( $benefits_item_type['weight'] ?? '' ), 'benefit item title native type matches the accepted component role rather than hero display type' );
 $benefits_surface = (array) ( $two_benefits_plan['visual_policy']['item_surface'] ?? [] );
 $benefits_card_padding = wpae_elementor_ir_dimension_control( $benefits_surface['padding'] ?? '0px', 'px', 0, false ); unset( $benefits_card_padding['size'], $benefits_card_padding['sizes'] );
 $benefits_card_radius = wpae_elementor_ir_dimension_control( $benefits_surface['radius'] ?? '0px', 'px', 0 ); unset( $benefits_card_radius['size'], $benefits_card_radius['sizes'] );
@@ -575,7 +633,7 @@ $long_benefits_group = array_values( array_filter( $long_benefits_flat, static f
 $long_benefits_validation = wpae_design_plan_validate( $long_benefits_plan, $long_benefits_brief );
 $long_benefits_expected_body = trim( str_repeat( 'The written scope keeps each approval visible. ', 5 ) );
 $long_benefits_bodies = array_values( array_map( static fn( array $node ): string => trim( wp_strip_all_tags( (string) ( $node['settings']['editor'] ?? '' ) ) ), array_filter( $long_benefits_flat, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'text-editor' ) ) );
-$check( ! empty( $long_benefits_validation['ok'] ) && ( $long_benefits_plan['composition_decision']['record_id'] ?? '' ) === 'benefits.editorial_list' && ( $long_benefits_plan['composition_decision']['source'] ?? '' ) === 'automatic_density_policy' && ( $long_benefits_group['settings']['container_type'] ?? '' ) === 'flex' && ( $long_benefits_group['settings']['flex_direction'] ?? '' ) === 'column' && in_array( $long_benefits_expected_body, $long_benefits_bodies, true ), 'long generic two-item Benefits preserves full copy in the vertical editorial topology' );
+$check( ! empty( $long_benefits_validation['ok'] ) && ( $long_benefits_plan['composition_decision']['record_id'] ?? '' ) === 'benefits.editorial_list' && ( $long_benefits_plan['composition_decision']['source'] ?? '' ) === 'content_ranked_catalog' && ( $long_benefits_group['settings']['container_type'] ?? '' ) === 'flex' && ( $long_benefits_group['settings']['flex_direction'] ?? '' ) === 'column' && in_array( $long_benefits_expected_body, $long_benefits_bodies, true ), 'long generic two-item Benefits preserves full copy in the vertical editorial topology' );
 $unpaired_benefits = wpae_design_plan_from_brief( wpae_brief_ir_parse( "Features\nFeature: «Structured pages»\nFeature: «Editable content»\nFeature description: «Only the first item has an explicit description.»" ) );
 $unpaired_validation = wpae_design_plan_validate( $unpaired_benefits );
 $check( ! $unpaired_validation['ok'] && in_array( 'benefits_unpaired_feature_title', $unpaired_validation['errors'], true ), 'unpaired feature content is rejected instead of assigned to a different card' );
@@ -944,7 +1002,7 @@ foreach ( (array) ( $typed_process_plan['sections'][0]['children'] ?? [] ) as $t
 		$typed_process_exact_pairs[] = [ $typed_process_content[ $typed_process_step['label_ref'] ]['exact_text'] ?? '', $typed_process_content[ $typed_process_step['text_ref'] ]['exact_text'] ?? '' ];
 	}
 }
-$check( ! empty( $typed_process_validation['ok'] ) && ! empty( $typed_process_ir_validation['ok'] ) && ! empty( $typed_process_native['ok'] ) && ( $typed_process_plan['composition_decision']['record_id'] ?? '' ) === 'process.ordered_steps' && ( $typed_process_plan['composition_decision']['record_hash'] ?? '' ) === ( wpae_composition_records()['process.ordered_steps']['hash'] ?? '' ) && ( $typed_process_plan['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light', 'canonical Process freezes its registered typed record and selected profile through Plan, IR validation, and native compilation' );
+$check( ! empty( $typed_process_validation['ok'] ) && ! empty( $typed_process_ir_validation['ok'] ) && ! empty( $typed_process_native['ok'] ) && ( $typed_process_plan['composition_decision']['record_id'] ?? '' ) === 'process.ordered_steps' && ( $typed_process_plan['composition_decision']['record_hash'] ?? '' ) === ( wpae_composition_records()['process.ordered_steps']['hash'] ?? '' ) && ( $typed_process_plan['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light', 'canonical Process freezes its registered typed record and selected profile through Plan, IR validation, and native compilation: ' . wp_json_encode( [ 'plan_validation' => $typed_process_validation, 'decision' => $typed_process_plan['composition_decision'] ?? null, 'ir_validation' => $typed_process_ir_validation, 'native' => [ 'ok' => $typed_process_native['ok'] ?? false, 'errors' => $typed_process_native['errors'] ?? [] ] ], JSON_UNESCAPED_UNICODE ) );
 $check( $typed_process_exact_pairs === [ [ 'Бриф', 'Фиксируем цель страницы и приоритетное действие' ], [ 'Структура', 'Собираем смысловой маршрут, контент и необходимые доказательства для посетителя' ], [ 'Сборка', 'Создаём нативный Elementor-блок, затем адаптируем его для узких экранов' ], [ 'Проверка', 'Сверяем тексты, мобильный порядок и CTA перед публикацией' ] ] && count( $typed_process_cards ) === 4 && empty( array_filter( $typed_process_nodes, static fn( array $node ): bool => in_array( $node['widgetType'] ?? '', [ 'image', 'button' ], true ) ) ), 'typed Process preserves the exact four ordered label/body pairs with no invented media or actions' );
 $typed_process_header = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['settings']['title'] ?? '' ) === 'Как мы работаем' ) )[0] ?? [];
 $typed_process_badge = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) )[0] ?? [];
@@ -961,6 +1019,7 @@ $typed_process_native_marker_rows = array_values( array_filter( $typed_process_n
 $typed_process_surface_ok = $typed_process_surface_ok && count( $typed_process_interior ) === 4 && count( $typed_process_native_marker_rows ) === 4 && array_reduce( $typed_process_native_marker_rows, static fn( bool $ok, array $node ): bool => $ok && ( $node['settings']['background_color'] ?? '' ) === 'transparent' && ( $node['settings']['padding']['top'] ?? '' ) === '0', true );
 $check( $typed_process_surface_ok, 'typed Process applies the accepted surface once to each complete step card and keeps marker wrappers out of that surface' );
 $typed_process_card_counts_ok = true;
+$typed_process_counts_debug = [];
 foreach ( [ 3, 4, 6 ] as $typed_step_count ) {
 	$typed_prompt = "Создай блок процесса. Заголовок: «Маршрут работы».\n";
 	for ( $step_index = 1; $step_index <= $typed_step_count; $step_index++ ) { $typed_prompt .= 'Этап «Этап ' . $step_index . '»: «Описание этапа ' . $step_index . ' с достаточно длинным текстом, который должен переноситься и сохраняться целиком.»' . "\n"; }
@@ -970,12 +1029,17 @@ foreach ( [ 3, 4, 6 ] as $typed_step_count ) {
 	$typed_native = wpae_elementor_ir_compile( $typed_ir, $typed_brief, [], [ 'resolved_visual' => $typed_plan['resolved_visual'] ] );
 	$typed_flat = $walk_elements( (array) ( $typed_native['elementor_data'] ?? [] ) );
 	$typed_collection = array_values( array_filter( $typed_flat, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-process-items' ) )[0] ?? [];
-	$typed_process_card_counts_ok = $typed_process_card_counts_ok && ! empty( wpae_design_plan_validate( $typed_plan, $typed_brief )['ok'] ) && ! empty( wpae_elementor_ir_validate( $typed_ir, $typed_brief )['ok'] ) && ! empty( $typed_native['ok'] ) && count( (array) ( $typed_collection['elements'] ?? [] ) ) === $typed_step_count && ( $typed_collection['settings']['flex_direction'] ?? '' ) === 'row' && ( $typed_collection['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $typed_collection['settings']['flex_direction_mobile'] ?? '' ) === 'column';
+	$typed_plan_check = wpae_design_plan_validate( $typed_plan, $typed_brief );
+	$typed_ir_check = wpae_elementor_ir_validate( $typed_ir, $typed_brief );
+	$typed_process_counts_debug[] = [ 'count' => $typed_step_count, 'plan' => $typed_plan_check, 'ir' => $typed_ir_check, 'native' => [ 'ok' => $typed_native['ok'] ?? false, 'errors' => $typed_native['errors'] ?? [] ], 'cards' => count( (array) ( $typed_collection['elements'] ?? [] ) ), 'settings' => $typed_collection['settings'] ?? [] ];
+	$typed_process_card_counts_ok = $typed_process_card_counts_ok && ! empty( $typed_plan_check['ok'] ) && ! empty( $typed_ir_check['ok'] ) && ! empty( $typed_native['ok'] ) && count( (array) ( $typed_collection['elements'] ?? [] ) ) === $typed_step_count && ( $typed_collection['settings']['flex_direction'] ?? '' ) === 'row' && ( $typed_collection['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $typed_collection['settings']['flex_direction_mobile'] ?? '' ) === 'column';
 }
 $typed_bad_process_brief = wpae_brief_ir_parse( "Создай блок процесса. Заголовок: «Маршрут».\nЭтап «Первый»: «Первое описание».\nЭтап «Второй»: «Второе описание»." ); $typed_bad_process_brief['canonical_create'] = true;
 $typed_bad_process_plan = wpae_design_plan_from_brief( $typed_bad_process_brief, [ 'canonical_create' => true, 'composition_record' => 'process.ordered_steps' ] );
-$typed_process_card_counts_ok = $typed_process_card_counts_ok && in_array( 'composition_group_cardinality', wpae_design_plan_validate( $typed_bad_process_plan, $typed_bad_process_brief )['errors'], true );
-$check( $typed_process_card_counts_ok, 'typed Process accepts supported 3/4/6 counts with native responsive tracks and refuses unsupported 2-step cardinality' );
+$typed_bad_process_validation = wpae_design_plan_validate( $typed_bad_process_plan, $typed_bad_process_brief );
+$typed_bad_process_reasons = (array) ( $typed_bad_process_plan['composition_decision']['rejected_candidates']['process.ordered_steps'] ?? [] );
+$typed_process_card_counts_ok = $typed_process_card_counts_ok && in_array( 'composition_group_cardinality', $typed_bad_process_reasons, true ) && ! empty( $typed_bad_process_validation['errors'] );
+$check( $typed_process_card_counts_ok, 'typed Process accepts supported 3/4/6 counts and reports the explicit hard cardinality reason for unsupported 2-step input: ' . wp_json_encode( [ 'cases' => array_map( static fn( array $case ): array => [ 'count' => $case['count'], 'plan_errors' => $case['plan']['errors'] ?? [], 'ir_errors' => $case['ir']['errors'] ?? [], 'native_errors' => $case['native']['errors'] ?? [], 'cards' => $case['cards'], 'desktop' => $case['settings']['flex_direction'] ?? '', 'tablet' => $case['settings']['flex_direction_tablet'] ?? '', 'mobile' => $case['settings']['flex_direction_mobile'] ?? '' ], $typed_process_counts_debug ), 'bad_errors' => $typed_bad_process_validation['errors'] ?? [], 'bad_reasons' => $typed_bad_process_reasons ], JSON_UNESCAPED_UNICODE ) );
 $hero_image_url = 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85';
 $hero_image_prompt = "Hero\nEyebrow: «АРХИТЕКТУРА»\nЗаголовок: «Пространство для идей, длинный заголовок для проверки переноса»\nОписание: «Опишите задачу и получите понятный первый шаг.»\nКнопка: «Начать проект» ссылка #contact\nКнопка 2: «Смотреть проекты» ссылка #projects\nТекст 40%, визуальная часть 60%. Фото слева. Изображение: {$hero_image_url}\nAlt: «Современный интерьер студии с панорамным окном и видом на природу»\nLicense: «Unsplash License»\nPhoto by: «Neon Wang»";
 [ $hero_photo_brief, $hero_photo_plan, $hero_photo_validation, $hero_photo_compiled, $hero_photo_nodes ] = $compile_prompt( $hero_image_prompt, 'hero-unsplash-regression' );

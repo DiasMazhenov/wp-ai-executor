@@ -302,7 +302,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						$cta_count = count( array_filter( array_keys( $widgets ), static fn( string $key ): bool => str_starts_with( $key, 'cta_' ) ) );
 						$button_key = 'cta_' . $cta_count;
 						$button_role = $cta_count === 0 ? 'cta_primary' : 'cta_secondary';
-						$widgets[ $button_key ] = wpae_elementor_ir_node( $child_id . '-' . $button_key, $button_role, 'button', [ $content_ref ], [ 'color.primary', 'color.text', 'color.surface' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
+						$widgets[ $button_key ] = wpae_elementor_ir_node( $child_id . '-' . $button_key, $button_role, 'button', [ $content_ref ], [ 'color.primary', 'color.text', 'color.surface', 'color.hover', 'color.focus' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 					}
 				}
 					$ordered_widgets = [];
@@ -318,7 +318,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						}
 					}
 					if ( $role === 'cta_copy_group' && ! empty( $cta_widgets ) ) {
-						$ordered_widgets[] = wpae_elementor_ir_node( $child_id . '-actions', 'cta_actions', 'container', [], [ 'space.component', 'color.primary', 'color.surface', 'color.text' ], $cta_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+						$ordered_widgets[] = wpae_elementor_ir_node( $child_id . '-actions', 'cta_actions', 'container', [], [ 'space.component', 'color.primary', 'color.surface', 'color.text', 'color.hover', 'color.focus' ], $cta_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
 					} else {
 						$ordered_widgets = array_merge( $ordered_widgets, $cta_widgets );
 					}
@@ -420,7 +420,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$details = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-details', 'pricing_details', 'container', [], [ 'space.component' ], $details_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 					$card_widgets = [ wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-body', 'card_body', 'container', [], [ 'space.component' ], [ $details ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ) ];
 					$cta_widgets = [];
-					$add_tier_widget( $cta_widgets, 'cta_ref', 'cta_primary', 'button', [ 'color.primary', 'color.text', 'color.surface' ] );
+					$add_tier_widget( $cta_widgets, 'cta_ref', 'cta_primary', 'button', [ 'color.primary', 'color.text', 'color.surface', 'color.hover', 'color.focus' ] );
 					if ( $cta_widgets ) { $card_widgets[] = wpae_elementor_ir_node( $child_id . '-card-' . $card_number . '-actions', 'card_actions', 'container', [], [ 'space.component' ], $cta_widgets, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] ); }
 					if ( count( $details_widgets ) + count( $cta_widgets ) < 3 ) {
 						$warnings[] = $child_id . ':pricing_tier_' . $card_number . '_incomplete';
@@ -1761,12 +1761,18 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $role === 'cta_secondary' ) {
 			$settings['background_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
 			$settings['button_text_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['button_background_hover_color'] = (string) ( $token_values['color.hover'] ?? $token_values['color.primary'] ?? '#4460EC' );
+			$settings['hover_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['border_border'] = 'solid';
 			$settings['border_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
+			$settings['button_hover_border_color'] = (string) ( $token_values['color.hover'] ?? $token_values['color.primary'] ?? '#4460EC' );
 			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
 		} else {
 			$settings['background_color'] = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['button_text_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['button_background_hover_color'] = (string) ( $token_values['color.hover'] ?? $token_values['color.primary'] ?? '#4460EC' );
+			$settings['hover_color'] = (string) ( $token_values['color.surface'] ?? '#ffffff' );
+			$settings['button_hover_border_color'] = (string) ( $token_values['color.hover'] ?? $token_values['color.primary'] ?? '#4460EC' );
 		}
 	} elseif ( $widget_type === 'image' ) {
 		$media = $media_map[ sanitize_key( (string) ( $node['media_refs'][0] ?? '' ) ) ] ?? [];

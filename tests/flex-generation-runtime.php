@@ -45,7 +45,10 @@ function wp_parse_url( $url ) { return parse_url( $url ); }
 function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
 function home_url( $path = '' ) { return 'https://example.test' . $path; }
 function get_bloginfo( $key ) { return 'Test site'; }
-function get_option( $key, $default = false ) { return $GLOBALS['options'][ $key ] ?? $default; }
+function get_option( $key, $default = false ) {
+    if ( $key === 'elementor_active_kit' ) { return 8; }
+    return $GLOBALS['options'][ $key ] ?? $default;
+}
 function update_option( $key, $value, $autoload = false ) { $GLOBALS['options'][ $key ] = $value; return true; }
 function delete_option( $key ) { unset( $GLOBALS['options'][ $key ] ); return true; }
 function delete_post_meta( $id, $key ) {
@@ -187,9 +190,29 @@ function wp_delete_post( $id, $force_delete = false ) {
     return $GLOBALS['delete_autosave_result'] ?? (object) [ 'ID' => (int) $id ];
 }
 function get_post_meta( $id, $key = '', $single = false ) {
+    if ( (int) $id === 8 && $key === '_elementor_page_settings' ) {
+        $kit = $GLOBALS['test_elementor_kit_settings'] ?? [];
+        return $single ? $kit : [ $kit ];
+    }
     $meta = [ '_elementor_data' => [ $GLOBALS['m1_raw_saved'] ?? wp_json_encode( $GLOBALS['page_data'] ) ], '_elementor_css' => [ $GLOBALS['css_cache'] ?? '' ] ];
     return $key === '' ? $meta : ( $single ? ( $meta[ $key ][0] ?? '' ) : ( $meta[ $key ] ?? [] ) );
 }
+
+$GLOBALS['test_elementor_kit_settings'] = [
+    'system_colors' => [
+        [ '_id' => 'primary', 'title' => 'Primary', 'color' => '#4460EC' ],
+        [ '_id' => 'secondary', 'title' => 'Secondary', 'color' => '#4b5563' ],
+        [ '_id' => 'text', 'title' => 'Text', 'color' => '#111827' ],
+        [ '_id' => 'accent', 'title' => 'Accent', 'color' => '#61CE70' ],
+    ],
+    'custom_colors' => [
+        [ '_id' => 'pagebg', 'title' => 'Page Background', 'color' => '#f6f0e6' ],
+        [ '_id' => 'surface', 'title' => 'Surface', 'color' => '#ffffff' ],
+        [ '_id' => 'border', 'title' => 'Border', 'color' => '#d1d5db' ],
+        [ '_id' => 'focus', 'title' => 'Focus', 'color' => '#2563eb' ],
+        [ '_id' => 'hover', 'title' => 'Hover', 'color' => '#2563eb' ],
+    ],
+];
 
 require __DIR__ . '/../includes/llm/llm.php';
 require __DIR__ . '/../includes/elementor/validation-rules.php';
@@ -2438,10 +2461,10 @@ $services_content_plan_hash = (string) ( $services_response_data['diagnostics'][
 $services_plan_brief_hash = (string) ( $services_response_data['diagnostics']['design_pipeline']['plan']['brief_hash'] ?? '' );
 $services_readback_matches = wp_json_encode( $services_readback ) === wp_json_encode( $GLOBALS['page_data'] );
 check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'pipeline' && ( $services_response_data['diagnostics']['provider_calls'] ?? -1 ) === 0 && count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, 'Active ordinary Services chat with a retrieved library candidate takes the typed pipeline and one mocked write: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'services' => $services_trace, 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '' ] ) );
-check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) === $services_retrieval_before && ( $services_trace['effective_route'] ?? '' ) === 'services_typed_recipe_pipeline' && ( $services_trace['recipe_id'] ?? '' ) === 'services.text_icon_list' && ( $services_trace['recipe_source'] ?? '' ) === 'documented_default' && empty( $services_trace['library_required'] ) && empty( $services_trace['library_applied'] ), 'M2 ordinary canonical Services skips unused retrieval and preserves the typed recipe contract' );
+check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) === $services_retrieval_before && ( $services_trace['effective_route'] ?? '' ) === 'services_typed_recipe_pipeline' && ( $services_trace['recipe_id'] ?? '' ) === 'services.icon_cards' && ( $services_trace['recipe_source'] ?? '' ) === 'content_ranked_catalog' && empty( $services_trace['library_required'] ) && empty( $services_trace['library_applied'] ), 'M2 ordinary canonical Services uses the shared content selector without unused retrieval ' . wp_json_encode( $services_trace ) );
 check( $services_brief_hash !== '' && $services_brief_hash === $services_content_plan_hash && $services_brief_hash === $services_plan_brief_hash && ( $services_operation_ledger['brief_hash'] ?? '' ) === $services_brief_hash, 'One canonical Brief hash is shared by content plan, DesignPlan and durable operation ledger' );
 check( count( $services_written ) === 1 && count( (array) $services_readback ) === count( (array) $GLOBALS['page_data'] ) && $services_readback_matches && ( $services_operation_ledger['current_state'] ?? '' ) === 'written' && ( $services_operation_ledger['root_ids'] ?? [] ) === [ (string) ( $services_written[0]['id'] ?? '' ) ] && ( $services_operation_ledger['saved_hash'] ?? '' ) === hash( 'sha256', (string) wp_json_encode( $services_readback ) ), 'One successful transaction has a matching saved readback and operation/root/hash record' );
-check( count( $services_typed_list ) === 1 && count( $services_typed_rows ) === 3 && ! $find_service_class_nodes( $services_written, 'wpae-services-photo-grid' ) && ! $find_service_class_nodes( $services_written, 'wpae-services-split-lead' ) && ! $find_service_class_nodes( $services_written, 'wpae-bento-grid' ) && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3 && ! in_array( 'image', $services_written_widgets, true ), 'Existing execute normalizers preserve the selected text/icon recipe topology through mocked write/readback' );
+check( count( $services_typed_list ) === 0 && count( $services_typed_rows ) === 0 && count( $find_service_class_nodes( $services_written, 'wpae-services-icon-cards' ) ) === 1 && ! $find_service_class_nodes( $services_written, 'wpae-services-photo-grid' ) && ! $find_service_class_nodes( $services_written, 'wpae-services-split-lead' ) && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3 && ! in_array( 'image', $services_written_widgets, true ), 'Execute/readback preserves the shared selector’s icon-card recipe and exact native topology' );
 check( in_array( 'Наши услуги', $services_heading_values, true ) && in_array( 'УСЛУГИ', $services_heading_values, true ) && count( array_intersect( [ 'Стратегия проекта', 'Архитектура и дизайн', 'Сопровождение' ], $services_heading_values ) ) === 3 && count( array_intersect( [ 'Формулируем задачу и согласуем план работ.', 'Разрабатываем решение под заданный контекст.', 'Проверяем соответствие согласованному проекту.' ], $services_text_values ) ) === 3 && ! str_contains( $services_written_json, 'Сам выберет подходящий шаблон' ), 'Typed Services route preserves exact section and ordered service copy without leaking instructions' );
 $find_services_grid = static function ( array $nodes ) use ( &$find_services_grid ): array {
 	foreach ( $nodes as $node ) {
@@ -2632,7 +2655,7 @@ $services_catalog_nonlead_paths = [ (string) parse_url( (string) $services_catal
 check( count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-split-lead' ) ) === 1 && count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-editorial-row' ) ) === 2 && str_contains( (string) $services_split_json, $services_catalog_lead_path ) && str_contains( (string) $services_split_json, (string) $services_catalog_lead['alt'] ) && ! str_contains( (string) $services_split_json, $services_catalog_nonlead_paths[0] ) && ! str_contains( (string) $services_split_json, $services_catalog_nonlead_paths[1] ) && ( $services_split_trace['media_status'] ?? '' ) === 'resolved_per_service', 'Split lead parses the explicit second service from the chat source and binds only that catalog image; the other services remain ordered rows: ' . wp_json_encode( [ 'lead_nodes' => count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-split-lead' ) ), 'rows' => count( $route_find_class( [ $services_split_route['written'] ], 'wpae-services-editorial-row' ) ), 'expected_url' => $services_catalog_lead['source_url'], 'urls' => $services_split_urls, 'media_status' => $services_split_trace['media_status'] ?? '' ], JSON_UNESCAPED_UNICODE ) );
 $services_split_without_lead_message = $services_live_three_cta_message . "\nИспользуй services.split_editorial.";
 $services_split_without_lead = $run_services_route( $services_split_without_lead_message, [], $services_library_fixture, 'services-split-no-lead-identity', false, 'active', 'active', [ 'media_references' => [ $services_split_asset ] ] );
-check( ( $services_split_without_lead['error']['code'] ?? '' ) === 'wpae_services_brief_or_recipe_invalid' && ( $services_split_without_lead['error']['data']['details']['refusal_reason'] ?? '' ) === 'services_split_editorial_lead_service_ref_required' && $services_split_without_lead['provider_call_count'] === 0 && $services_split_without_lead['writes'] === 0, 'A single image never invents a split lead ref or silently chooses split_editorial' );
+check( ( $services_split_without_lead['error']['code'] ?? '' ) === 'wpae_services_brief_or_recipe_invalid' && ( $services_split_without_lead['error']['data']['details']['refusal_reason'] ?? '' ) === 'services_split_editorial_lead_service_ref_required' && $services_split_without_lead['provider_call_count'] === 0 && $services_split_without_lead['writes'] === 0, 'A single image never invents a split lead ref or silently chooses split_editorial: ' . wp_json_encode( $services_split_without_lead['error'] ?? null, JSON_UNESCAPED_UNICODE ) );
 $services_recipe_conflict = $run_services_route( $services_message . "\nИспользуй photo_cards и services.text_icon_list.", [], $services_library_fixture, 'services-recipe-conflict-identity' );
 check( ( $services_recipe_conflict['error']['code'] ?? '' ) === 'wpae_services_brief_or_recipe_invalid' && ( $services_recipe_conflict['error']['data']['details']['refusal_reason'] ?? '' ) === 'services_recipe_selection_conflict' && ( $services_recipe_conflict['error']['data']['details']['write_count'] ?? null ) === 0 && array_key_exists( 'media_status', (array) ( $services_recipe_conflict['error']['data']['details'] ?? [] ) ) && $services_recipe_conflict['provider_call_count'] === 0 && $services_recipe_conflict['writes'] === 0 && $services_recipe_conflict['roots'] === array_column( $legacy_page, 'id' ), 'Conflicting recipe choices stop at canonical Brief decision without hidden legacy generator or write' );
 $services_text_icon_message = $services_live_three_cta_message . "\nСписок услуг с иконками. Не добавляй фото.";
@@ -3022,10 +3045,12 @@ $benefits_route_find_grid = static function ( array $nodes ) use ( &$benefits_ro
 };
 $benefits_route_grid = $benefits_route_find_grid( $benefits_route_readback );
 $benefits_route_decision = (array) ( $benefits_route_pipeline['plan']['composition_decision'] ?? [] );
+$benefits_route_collection = (array) ( $benefits_route_pipeline['plan']['visual_policy']['collection'] ?? [] );
+$benefits_route_expected_track = wpae_elementor_ir_flex_equal_track_dimension( (string) ( $benefits_route_collection['gap']['desktop'] ?? '' ), (int) ( $benefits_route_collection['columns']['desktop'] ?? 0 ) );
 $benefits_route_ledger = (array) ( $benefits_route_diagnostics['operation_ledger'] ?? [] );
 check( ! empty( $benefits_route_data['ok'] ) && ( $benefits_route_diagnostics['action_path'] ?? '' ) === 'pipeline' && ( $benefits_route_diagnostics['provider_calls'] ?? -1 ) === 0 && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === 1 && ( $benefits_route_diagnostics['write_count'] ?? 0 ) === 1, 'Canonical ordinary Benefits plugin chat uses Brief/Plan/native pipeline and performs one deterministic mock transaction write' );
 check( ( $benefits_route_pipeline['brief']['hash'] ?? '' ) !== '' && ( $benefits_route_pipeline['brief']['hash'] ?? '' ) === ( $benefits_route_pipeline['plan']['brief_hash'] ?? '' ) && ( $benefits_route_pipeline['plan']['validation']['ok'] ?? false ) && ( $benefits_route_pipeline['elementor_ir']['validation']['ok'] ?? false ) && ( $benefits_route_pipeline['frozen_decisions']['readback_matches'] ?? false ) && ( $benefits_route_ledger['current_state'] ?? '' ) === 'written' && count( (array) ( $benefits_route_ledger['root_ids'] ?? [] ) ) === 1, 'Benefits chat Plan hash, one accepted operation/root and compiler readback signature are retained through mock transaction' );
-check( ( $benefits_route_decision['record_id'] ?? '' ) === 'benefits.grid' && ( $benefits_route_decision['source'] ?? '' ) === 'automatic_density_policy' && ( $benefits_route_grid['settings']['container_type'] ?? '' ) === 'flex' && ( $benefits_route_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $benefits_route_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $benefits_route_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $benefits_route_grid['elements'][0]['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 1.5rem) / 2)' && count( (array) ( $benefits_route_grid['elements'] ?? [] ) ) === 2 && wp_json_encode( $benefits_route_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ), 'Mock readback contains the frozen two-column Benefits Flex topology and exact one-column mobile controls' );
+check( ( $benefits_route_decision['record_id'] ?? '' ) === 'benefits.grid' && ( $benefits_route_decision['source'] ?? '' ) === 'content_ranked_catalog' && ( $benefits_route_decision['selection_policy'] ?? '' ) === 'wpae-composition-selection-v2' && ( $benefits_route_grid['settings']['container_type'] ?? '' ) === 'flex' && ( $benefits_route_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $benefits_route_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $benefits_route_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $benefits_route_grid['elements'][0]['settings']['_element_custom_width'] ?? [] ) === $benefits_route_expected_track && ( $benefits_route_grid['settings']['flex_gap']['size'] ?? '' ) === (float) ( $benefits_route_collection['gap']['desktop'] ?? 0 ) && count( (array) ( $benefits_route_grid['elements'] ?? [] ) ) === 2 && wp_json_encode( $benefits_route_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ), 'Mock readback contains the shared-selector Benefits Flex topology and Plan-derived gap-aware tracks' );
 foreach ( $benefits_route_global_snapshot as $key => $snapshot ) {
 	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
 }

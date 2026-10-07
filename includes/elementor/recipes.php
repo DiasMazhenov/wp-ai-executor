@@ -462,52 +462,306 @@ function wpae_composition_family_compositions(): array {
 	return $families;
 }
 
-/** Resolve once. A conflicting explicit selection is a refusal, never a downgrade. */
-function wpae_composition_resolve( array $brief, array $context, string $composition, string $side ): array {
-	$records = wpae_composition_records();
-	$family = (string) ( $brief['intent']['archetype'] ?? '' );
-	$id = $context['composition_record'] ?? '';
-	$explicit = $id !== '';
+/** Content-length hints guide composition choice but are never render measurements. */
+function wpae_composition_content_metrics( array $brief ): array {
+	$texts = [];
+	$content = [];
+	foreach ( (array) ( $brief['content'] ?? [] ) as $item ) {
+		if ( ! is_array( $item ) ) { continue; }
+		$id = (string) ( $item['id'] ?? '' );
+		$text = trim( (string) ( $item['exact_text'] ?? '' ) );
+		if ( $id !== '' ) { $content[ $id ] = $item; }
+		if ( $text !== '' ) { $texts[] = [ 'id' => $id, 'role' => (string) ( $item['role'] ?? '' ), 'group_id' => (string) ( $item['group_id'] ?? '' ), 'chars' => function_exists( 'mb_strlen' ) ? mb_strlen( $text ) : strlen( $text ) ]; }
+	}
+	$groups = array_values( array_filter( (array) ( $brief['groups'] ?? [] ), 'is_array' ) );
+	if ( ! $groups && ( $brief['intent']['archetype'] ?? '' ) === 'services' && function_exists( 'wpae_brief_ir_service_groups' ) ) {
+		$groups = wpae_brief_ir_service_groups( (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) );
+	}
+	$group_lengths = [];
+	foreach ( $groups as $group ) {
+		$ids = [];
+		foreach ( (array) ( $group['role_refs'] ?? [] ) as $refs ) { foreach ( (array) $refs as $ref ) { $ids[] = (string) $ref; } }
+		foreach ( [ 'title_ref', 'body_ref', 'name_ref', 'position_ref', 'bio_ref', 'quote_ref', 'author_ref', 'meta_ref', 'label_ref', 'text_ref', 'description_ref' ] as $key ) { if ( ! empty( $group[$key] ) ) { $ids[] = (string) $group[$key]; } }
+		$sum = 0;
+		foreach ( array_unique( $ids ) as $id ) { $item = $content[$id] ?? []; $text = trim( (string) ( $item['exact_text'] ?? '' ) ); $sum += function_exists( 'mb_strlen' ) ? mb_strlen( $text ) : strlen( $text ); }
+		$group_lengths[] = $sum;
+	}
+	if ( ! $group_lengths && $texts ) { $group_lengths = array_column( $texts, 'chars' ); }
+	$lengths = array_values( array_filter( $group_lengths, static fn( $value ): bool => $value > 0 ) );
+	$role_lengths = [];
+	foreach ( $texts as $item ) { $role_lengths[$item['role']][] = $item['chars']; }
+	$max_roles = static function ( array $roles ) use ( $role_lengths ): int {
+		$values = [];
+		foreach ( $roles as $role ) { $values = array_merge( $values, (array) ( $role_lengths[$role] ?? [] ) ); }
+		return max( $values ?: [ 0 ] );
+	};
+	$cta_refs = [];
+	foreach ( $texts as $item ) {
+		if ( preg_match( '/(?:^|_)cta(?:$|_)/', $item['role'] ) === 1 && $item['id'] !== '' ) { $cta_refs[] = $item['id']; }
+	}
+	foreach ( $groups as $group ) {
+		foreach ( [ 'cta_ref', 'action_ref' ] as $ref_key ) { if ( ! empty( $group[$ref_key] ) ) { $cta_refs[] = (string) $group[$ref_key]; } }
+	}
+	$cta_refs = array_values( array_unique( $cta_refs ) );
+	$cta_items = array_values( array_filter( $texts, static fn( $item ): bool => in_array( $item['id'], $cta_refs, true ) ) );
+	$pricing = (array) ( $brief['pricing_items'] ?? [] );
+	$faq_pairs = 0;
+	foreach ( $texts as $item ) { if ( $item['role'] === 'faq_question' ) { $faq_pairs++; } }
+	if ( ( $brief['intent']['archetype'] ?? '' ) === 'pricing' && $pricing ) { $groups = $pricing; $lengths = []; }
+	if ( ( $brief['intent']['archetype'] ?? '' ) === 'process' && function_exists( 'wpae_design_plan_process_content' ) ) { $groups = (array) ( wpae_design_plan_process_content( $brief )['steps'] ?? [] ); }
+	return [
+		'item_count' => count( $groups ),
+		'max_title_chars' => $max_roles( [ 'title', 'service_title', 'feature_title', 'team_name', 'testimonial_author', 'pricing_label', 'faq_question', 'process_step_title' ] ),
+		'max_body_chars' => $max_roles( [ 'body', 'service_body', 'feature_body', 'team_bio', 'testimonial_quote', 'faq_answer', 'process_step_body', 'text' ] ),
+		'max_entity_chars' => max( $lengths ?: [ 0 ] ),
+		'min_entity_chars' => min( $lengths ?: [ 0 ] ),
+		'entity_length_spread' => $lengths ? max( $lengths ) - min( $lengths ) : 0,
+		'cta_count' => count( $cta_refs ),
+		'max_cta_chars' => max( array_column( $cta_items, 'chars' ) ?: [ 0 ] ),
+		'faq_pair_count' => $faq_pairs,
+	];
+}
+
+function wpae_composition_candidate_compatibility( array $brief, array $context, array $record ): array {
 	$errors = [];
-	if ( ! is_string( $id ) ) { return [ 'errors' => [ 'composition_record_invalid' ] ]; }
-	if ( ! $explicit ) {
-		foreach ( $records as $candidate ) {
-			if ( $candidate['family'] === $family && $candidate['composition'] === $composition && ( $candidate['policy']['media_side'] ?? $side ) === $side ) { $id = $candidate['id']; break; }
-		}
-	}
-	$record = $records[ $id ] ?? [];
-	if ( ! $record ) { return [ 'errors' => [ 'composition_record_unknown' ] ]; }
-	if ( ( $brief['policy']['library']['source'] ?? '' ) === 'required' ) {
-		$verified_services_photo_map = $family === 'services'
-			&& ( $record['id'] ?? '' ) === 'services.photo_cards'
-			&& function_exists( 'wpae_design_plan_services_photo_template_slot_map' )
-			&& ! empty( wpae_design_plan_services_photo_template_slot_map()['ok'] );
-		if ( ! $verified_services_photo_map ) { $errors[] = 'composition_library_slot_map_unavailable'; }
-	}
-	if ( isset( $context['composition_version'] ) && $context['composition_version'] !== $record['version'] ) { $errors[] = 'composition_version_unknown'; }
-	if ( $record['family'] !== $family ) { $errors[] = 'composition_cross_family'; }
-	if ( ! in_array( $brief['intent']['scope'] ?? 'page', $record['scope'], true ) ) { $errors[] = 'composition_scope_unsupported'; }
+	$family = sanitize_key( (string) ( $brief['intent']['archetype'] ?? '' ) );
+	$id = (string) ( $record['id'] ?? '' );
+	if ( ( $record['family'] ?? '' ) !== $family ) { $errors[] = 'composition_cross_family'; }
+	if ( ! in_array( (string) ( $brief['intent']['scope'] ?? 'page' ), (array) ( $record['scope'] ?? [] ), true ) ) { $errors[] = 'composition_scope_unsupported'; }
+	if ( isset( $context['composition_record'] ) && (string) $context['composition_record'] !== $id ) { $errors[] = 'explicit_record_not_selected'; }
+	if ( isset( $context['composition_version'] ) && (int) $context['composition_version'] !== (int) ( $record['version'] ?? 0 ) ) { $errors[] = 'composition_version_unknown'; }
 	foreach ( [ 'composition', 'media_side' ] as $kind ) {
-		$value = wpae_design_plan_constraint_value( $brief, $kind );
-		if ( $value !== null && $value !== ( $record['policy'][ $kind ] ?? null ) ) { $errors[] = 'composition_brief_conflict:' . $kind; }
+		$value = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, $kind ) : null;
+		$record_value = ( $record['policy'][$kind] ?? ( $kind === 'composition' ? ( $record['composition'] ?? null ) : null ) );
+		if ( $value !== null && $value !== $record_value ) { $errors[] = 'composition_brief_conflict:' . $kind; }
 	}
-	$media_by_id = [];
-	foreach ( array_merge( (array) ( $brief['media_references'] ?? [] ), (array) ( $context['media_references'] ?? [] ) ) as $media_reference ) {
-		if ( is_array( $media_reference ) ) {
-			$asset_id = trim( (string) ( $media_reference['asset_id'] ?? '' ) );
-			if ( $asset_id !== '' ) { $media_by_id[ $asset_id ] = true; }
+	$services_recipe = '';
+	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) { if ( is_array( $constraint ) && ( $constraint['kind'] ?? '' ) === 'services_recipe' ) { $services_recipe = trim( (string) ( $constraint['value'] ?? '' ) ); } }
+	if ( $services_recipe !== '' && $services_recipe !== $id ) { $errors[] = 'composition_brief_conflict:services_recipe'; }
+	if ( ( $brief['policy']['library']['source'] ?? '' ) === 'required' ) {
+		$mapped = $family === 'services' && $id === 'services.photo_cards' && function_exists( 'wpae_design_plan_services_photo_template_slot_map' ) && ! empty( wpae_design_plan_services_photo_template_slot_map()['ok'] );
+		if ( ! $mapped ) { $errors[] = 'composition_library_slot_map_unavailable'; }
+	}
+	$groups = array_values( array_filter( (array) ( $brief['groups'] ?? [] ), 'is_array' ) );
+	if ( ! $groups && $family === 'services' && function_exists( 'wpae_brief_ir_service_groups' ) ) { $groups = wpae_brief_ir_service_groups( (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) ); }
+	if ( $family === 'pricing' ) { $groups = array_values( array_filter( (array) ( $brief['pricing_items'] ?? [] ), 'is_array' ) ); }
+	if ( $family === 'process' && function_exists( 'wpae_design_plan_process_content' ) ) { $groups = (array) ( wpae_design_plan_process_content( $brief )['steps'] ?? [] ); }
+	$minimum = (int) ( $record['groups']['min'] ?? 0 ); $maximum = $record['groups']['max'] ?? null;
+	if ( count( $groups ) < $minimum || ( $maximum !== null && count( $groups ) > (int) $maximum ) ) { $errors[] = 'composition_group_cardinality'; }
+	$seen_groups = [];
+	foreach ( $groups as $group ) {
+		$group_id = sanitize_key( (string) ( $group['group_id'] ?? '' ) );
+		if ( $group_id !== '' && isset( $seen_groups[$group_id] ) ) { $errors[] = 'composition_duplicate_entity:' . $group_id; }
+		if ( $group_id !== '' ) { $seen_groups[$group_id] = true; }
+		if ( ! empty( $group['errors'] ) ) { $errors[] = 'composition_entity_ambiguous:' . ( $group_id ?: 'unknown' ); }
+	}
+	$media_intent = sanitize_key( (string) ( function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) : 'unspecified' ) );
+	$group_id_values = array_map(
+		static fn( $group ): string => sanitize_key( (string) ( $group['group_id'] ?? '' ) ),
+		$groups
+	);
+	$group_ids = array_fill_keys( array_values( array_filter( $group_id_values ) ), true );
+	$content_by_id = array_column( array_values( array_filter( (array) ( $brief['content'] ?? [] ), 'is_array' ) ), null, 'id' );
+	$required_roles = [
+		'benefits' => [ 'feature_title', 'feature_body' ],
+		'services' => [ 'service_title', 'service_body' ],
+		'team' => [ 'team_name', 'team_position' ],
+		'testimonials' => [ 'testimonial_quote', 'testimonial_author' ],
+		'pricing' => [ 'pricing_label', 'pricing_price' ],
+		'faq' => [ 'faq_question', 'faq_answer' ],
+		'process' => [ 'label', 'text' ],
+	];
+	if ( in_array( $family, [ 'hero', 'about' ], true ) ) { $required_roles[$family] = [ 'title', 'body' ]; }
+	foreach ( (array) ( $required_roles[$family] ?? [] ) as $role ) {
+		$owned_refs = [];
+		foreach ( $groups as $group ) {
+			$refs = (array) ( $group['role_refs'] ?? [] );
+			$role_refs = (array) ( $refs[$role] ?? [] );
+			$field_map = [ 'service_title' => 'title_ref', 'service_body' => 'body_ref', 'feature_title' => 'title_ref', 'feature_body' => 'body_ref', 'team_name' => 'name_ref', 'team_position' => 'position_ref', 'team_bio' => 'bio_ref', 'testimonial_quote' => 'quote_ref', 'testimonial_author' => 'author_ref', 'testimonial_meta' => 'meta_ref', 'pricing_label' => 'label_ref', 'pricing_price' => 'price_ref', 'faq_question' => 'question_ref', 'faq_answer' => 'answer_ref', 'label' => 'label_ref', 'text' => 'text_ref', 'title' => 'title_ref', 'body' => 'body_ref' ];
+			if ( isset( $field_map[$role], $group[$field_map[$role]] ) ) { $role_refs[] = (string) $group[$field_map[$role]]; }
+			foreach ( $role_refs as $ref ) {
+				$item = $content_by_id[(string) $ref] ?? [];
+				if ( ! $item || ( $item['role'] ?? '' ) !== $role || ( ! empty( $item['group_id'] ) && sanitize_key( (string) $item['group_id'] ) !== sanitize_key( (string) ( $group['group_id'] ?? '' ) ) ) ) {
+					$errors[] = 'composition_content_owner_mismatch:' . sanitize_key( $role );
+					continue;
+				}
+				$owned_refs[] = (string) $ref;
+			}
+		}
+		if ( in_array( $family, [ 'hero', 'about' ], true ) ) {
+			$owned_refs = array_merge( $owned_refs, array_column( array_values( array_filter( (array) ( $brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['role'] ?? '' ) === $role ) ), 'id' ) );
+		}
+		$all_role_refs = array_column( array_values( array_filter( (array) ( $brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['role'] ?? '' ) === $role ) ), 'id' );
+		if ( ! $all_role_refs || array_diff( $all_role_refs, $owned_refs ) ) { $errors[] = 'composition_required_content_unbound:' . sanitize_key( $role ); }
+	}
+	foreach ( $groups as $group ) {
+		$refs = (array) ( $group['role_refs'] ?? [] );
+		$flat_refs = [];
+		foreach ( $refs as $role_refs ) { foreach ( (array) $role_refs as $ref ) { $flat_refs[] = (string) $ref; } }
+		foreach ( [ 'title_ref', 'text_ref', 'body_ref', 'name_ref', 'position_ref', 'bio_ref', 'quote_ref', 'author_ref', 'meta_ref', 'label_ref', 'price_ref', 'period_ref', 'description_ref', 'question_ref', 'answer_ref', 'cta_ref', 'action_ref' ] as $field ) { if ( ! empty( $group[$field] ) ) { $flat_refs[] = (string) $group[$field]; } }
+		foreach ( array_unique( $flat_refs ) as $ref ) {
+			$item = $content_by_id[$ref] ?? [];
+			if ( ! $item || ( ! empty( $item['group_id'] ) && sanitize_key( (string) $item['group_id'] ) !== sanitize_key( (string) ( $group['group_id'] ?? '' ) ) ) ) { $errors[] = 'composition_content_reference_unowned'; continue; }
+			if ( in_array( (string) ( $item['role'] ?? '' ), [ 'service_cta', 'team_action', 'testimonial_action', 'pricing_cta' ], true ) && ( empty( $item['url_requested'] ) || trim( (string) ( $item['url'] ?? '' ) ) === '' ) ) { $errors[] = 'composition_link_reference_incomplete'; }
 		}
 	}
-	$count = count( $media_by_id );
-	if ( $count < $record['media']['min'] || $count > $record['media']['max'] ) { $errors[] = 'composition_media_cardinality'; }
-	$groups = count( (array) ( $brief['groups'] ?? [] ) );
-	if ( $family === 'process' && function_exists( 'wpae_design_plan_process_content' ) ) {
-		$groups = count( (array) ( wpae_design_plan_process_content( $brief )['steps'] ?? [] ) );
+	$owned_media = [];
+	foreach ( array_merge( (array) ( $brief['media_references'] ?? [] ), (array) ( $context['media_references'] ?? [] ) ) as $asset ) {
+		if ( ! is_array( $asset ) || trim( (string) ( $asset['asset_id'] ?? '' ) ) === '' ) { continue; }
+		$role = sanitize_key( (string) ( $asset['role'] ?? '' ) );
+		$group_id = sanitize_key( (string) ( $asset['group_id'] ?? '' ) );
+		$role_owned = [ 'hero' => [ 'hero' ], 'about' => [ 'about' ], 'services' => [ 'card_image', 'service_image', 'photo' ], 'team' => [ 'portrait' ], 'testimonials' => [ 'portrait', 'avatar', 'testimonial_image' ] ][$family] ?? [];
+		$owned_group = $group_id !== '' && isset( $group_ids[$group_id] );
+		$section_asset = in_array( $family, [ 'hero', 'about' ], true ) && in_array( $group_id, [ $family, 'hero_visual', 'about_visual' ], true );
+		$group_scoped_service_media = $family === 'services' && $role === '' && $owned_group;
+		if ( ( in_array( $role, $role_owned, true ) || $group_scoped_service_media ) && ( $owned_group || $section_asset ) ) { $owned_media[] = $asset; }
 	}
-	if ( $groups < $record['groups']['min'] || ( $record['groups']['max'] !== null && $groups > $record['groups']['max'] ) ) { $errors[] = 'composition_group_cardinality'; }
+	$family_media_roles = [ 'hero' => [ 'hero' ], 'about' => [ 'about' ], 'services' => [ 'card_image', 'service_image', 'photo' ], 'team' => [ 'portrait' ], 'testimonials' => [ 'portrait', 'avatar', 'testimonial_image' ] ][$family] ?? [];
+	foreach ( (array) ( $context['candidate_media_by_record'][$id] ?? [] ) as $asset ) {
+		if ( ! is_array( $asset ) || trim( (string) ( $asset['asset_id'] ?? '' ) ) === '' ) { $errors[] = 'composition_candidate_media_invalid'; continue; }
+		if ( ! function_exists( 'wpae_design_plan_media_reference_valid' ) || ! wpae_design_plan_media_reference_valid( $asset ) || empty( $asset['allowed_reuse'] ) || trim( (string) ( $asset['alt'] ?? '' ) ) === '' ) { $errors[] = 'composition_candidate_media_unverified:' . sanitize_key( (string) $asset['asset_id'] ); continue; }
+		$asset_role = sanitize_key( (string) ( $asset['role'] ?? '' ) ); $asset_group = sanitize_key( (string) ( $asset['group_id'] ?? '' ) );
+		$owned_group = $asset_group !== '' && isset( $group_ids[$asset_group] );
+		$section_asset = in_array( $family, [ 'hero', 'about' ], true ) && in_array( $asset_group, [ $family, 'hero_visual', 'about_visual' ], true );
+		$group_scoped_service_media = $family === 'services' && $asset_role === '' && $owned_group;
+		if ( ( ! in_array( $asset_role, $family_media_roles, true ) && ! $group_scoped_service_media ) || ( ! $owned_group && ! $section_asset ) ) { $errors[] = 'composition_candidate_media_owner_or_role_mismatch:' . sanitize_key( (string) $asset['asset_id'] ); continue; }
+		$owned_media[] = $asset;
+	}
+	$unique_media = [];
+	foreach ( $owned_media as $asset ) { $asset_id = sanitize_key( (string) ( $asset['asset_id'] ?? '' ) ); if ( $asset_id !== '' ) { $unique_media[$asset_id] = $asset; } }
+	$owned_media = array_values( $unique_media );
+	$media_min = (int) ( $record['media']['min'] ?? 0 ); $media_max = $record['media']['max'] ?? null;
+	if ( $media_intent === 'forbidden' && $media_min > 0 ) { $errors[] = 'composition_media_forbidden'; }
+	if ( $media_min > count( $owned_media ) ) { $errors[] = 'composition_required_media_missing'; }
+	if ( $media_max !== null && count( $owned_media ) > (int) $media_max && ( $media_min > 0 || $media_intent === 'required' ) ) { $errors[] = 'composition_media_cardinality'; }
+	if ( $media_intent === 'required' && ( $media_max === null || (int) $media_max === 0 || count( $owned_media ) === 0 ) ) { $errors[] = 'composition_required_media_unsupported'; }
+	if ( $family === 'services' && $media_min > 0 ) {
+		$assets_by_group = [];
+		foreach ( $owned_media as $asset ) { $group_id = sanitize_key( (string) ( $asset['group_id'] ?? '' ) ); if ( $group_id !== '' ) { $assets_by_group[$group_id] = true; } }
+		if ( $id === 'services.photo_cards' ) { foreach ( array_keys( $group_ids ) as $group_id ) { if ( ! isset( $assets_by_group[$group_id] ) ) { $errors[] = 'composition_required_media_owner_missing:' . $group_id; } } }
+		if ( $id === 'services.split_editorial' ) {
+			$lead = sanitize_key( (string) ( $context['services_lead_service_ref'] ?? '' ) );
+			if ( $lead === '' || ! isset( $group_ids[$lead] ) || ! isset( $assets_by_group[$lead] ) ) { $errors[] = 'composition_split_lead_media_unresolved'; }
+		}
+	}
 	$profile = $context['visual_profile'] ?? '';
-	if ( ! is_string( $profile ) || ( $profile !== '' && ! in_array( $profile, $record['visual_profiles'], true ) ) ) { $errors[] = 'composition_visual_profile_unsupported'; }
-	return [ 'record' => $record, 'source' => $explicit ? 'explicit_record' : ( wpae_design_plan_constraint_value( $brief, 'composition' ) !== null || wpae_design_plan_constraint_value( $brief, 'media_side' ) !== null ? 'explicit_brief' : 'documented_default' ), 'visual_profile' => is_string( $profile ) ? $profile : '', 'errors' => $errors ];
+	if ( ! is_string( $profile ) || ( $profile !== '' && ! in_array( $profile, (array) ( $record['visual_profiles'] ?? [] ), true ) ) ) { $errors[] = 'composition_visual_profile_unsupported'; }
+	$required_capabilities = array_values( array_unique( array_map( 'sanitize_key', (array) ( $record['capabilities'] ?? [] ) ) ) );
+	if ( function_exists( 'wpae_widget_capability_report' ) ) {
+		$capabilities = wpae_widget_capability_report( $required_capabilities );
+		if ( empty( $capabilities['ok'] ) ) { $errors[] = 'composition_runtime_capability_unavailable'; }
+	}
+	return [ 'compatible' => empty( $errors ), 'reasons' => array_values( array_unique( $errors ) ), 'group_count' => count( $groups ), 'owned_media_count' => count( $owned_media ) ];
+}
+
+/** One deterministic decision stage shared by canonical create and the typed composer. */
+function wpae_composition_decide( array $brief, array $context = [], ?array $candidate_ids = null ): array {
+	$records = wpae_composition_records();
+	$family = sanitize_key( (string) ( $brief['intent']['archetype'] ?? '' ) );
+	$metrics = wpae_composition_content_metrics( $brief );
+	$brief_profile = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'visual_profile' ) : null;
+	$context_profile = is_string( $context['visual_profile'] ?? null ) ? trim( (string) $context['visual_profile'] ) : '';
+	if ( is_string( $brief_profile ) && $brief_profile !== '' && $context_profile !== '' && $brief_profile !== $context_profile ) {
+		return [ 'errors' => [ 'composition_visual_profile_conflict' ], 'source' => 'explicit_conflict', 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [] ];
+	}
+	if ( is_string( $brief_profile ) && $brief_profile !== '' ) { $context['visual_profile'] = $brief_profile; }
+	$explicit_record = isset( $context['composition_record'] ) && is_string( $context['composition_record'] ) && $context['composition_record'] !== '';
+	$explicit_composition = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'composition' ) : null;
+	$explicit_side = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'media_side' ) : null;
+	$source = $explicit_record ? 'explicit_record' : ( $explicit_composition !== null || $explicit_side !== null ? 'explicit_brief' : 'content_ranked_catalog' );
+	if ( $explicit_record && ! isset( $records[$context['composition_record']] ) ) { return [ 'errors' => [ 'composition_record_unknown' ], 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [ (string) $context['composition_record'] => [ 'composition_record_unknown' ] ] ]; }
+	$catalog_ids = array_keys( $records ); sort( $catalog_ids );
+	$catalog_identity = hash( 'sha256', wp_json_encode( array_map( static fn( $id ): array => [ $id, $records[$id]['version'], $records[$id]['hash'] ], $catalog_ids ) ) );
+	$ranked = []; $rejected = [];
+	$allowed_ids = $candidate_ids !== null ? array_fill_keys( $candidate_ids, true ) : null;
+	foreach ( $records as $id => $record ) {
+		if ( $allowed_ids !== null && ! isset( $allowed_ids[$id] ) ) { continue; }
+		$compatibility = wpae_composition_candidate_compatibility( $brief, $context, $record );
+		if ( empty( $compatibility['compatible'] ) ) { $rejected[$id] = $compatibility['reasons']; continue; }
+		$score = 0; $reasons = [];
+		if ( $explicit_record ) { $score += 10000; $reasons[] = 'honored_explicit_record'; }
+		elseif ( $explicit_composition !== null || $explicit_side !== null ) { $score += 5000; $reasons[] = 'honored_explicit_brief_constraint'; }
+		else {
+			$spread = (int) $metrics['entity_length_spread']; $body = (int) $metrics['max_body_chars']; $count = (int) $metrics['item_count'];
+			switch ( $family ) {
+				case 'benefits':
+					$compact = $count === 2 && (int) $metrics['max_title_chars'] <= 48 && $body <= 84 && (int) $metrics['max_entity_chars'] <= 120;
+					$want = $compact ? 'benefits.grid' : 'benefits.editorial_list';
+					if ( $id === $want ) { $score += 300; $reasons[] = $compact ? 'compact_copy_favors_cards' : 'long_copy_favors_editorial_list'; }
+					break;
+				case 'services':
+					$want = ( (int) $metrics['max_body_chars'] >= 210 || $spread >= 170 ) ? 'services.text_icon_list' : 'services.icon_cards';
+					if ( $media_intent = sanitize_key( (string) ( function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) : 'unspecified' ) ) ) { if ( $media_intent === 'required' ) { $want = 'services.photo_cards'; } }
+					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'services.text_icon_list' ? 'long_or_uneven_copy_favors_list' : ( $want === 'services.photo_cards' ? 'required_media_favors_photo_cards' : 'balanced_copy_favors_icon_cards' ); }
+					break;
+				case 'testimonials':
+					$want = $body >= 240 || $spread >= 180 ? 'testimonials.editorial_rows' : 'testimonials.grid';
+					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'testimonials.editorial_rows' ? 'long_or_uneven_quotes_favor_editorial_rows' : 'compact_quotes_favor_cards'; }
+					break;
+				case 'team':
+					$want = $body >= 180 || $spread >= 140 ? 'team.editorial_rows' : 'team.grid';
+					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'team.editorial_rows' ? 'long_or_uneven_biographies_favor_rows' : 'compact_biographies_favor_cards'; }
+					break;
+				case 'hero': case 'about':
+					$has_media = (int) $compatibility['owned_media_count'] > 0;
+					$desired = $family . '.' . ( $has_media ? ( $body > 280 ? 'split_50_50' : 'split_60_40' ) : 'text_only' );
+					if ( $id === $desired . '.right' || $id === $desired ) { $score += 200; $reasons[] = $has_media ? 'copy_and_media_balance' : 'no_owned_media'; }
+					if ( $has_media && str_ends_with( $id, '.right' ) ) { $score += 20; $reasons[] = 'documented_media_right_default'; }
+					break;
+				default: break;
+			}
+		}
+		$profile = is_string( $context['visual_profile'] ?? null ) ? (string) $context['visual_profile'] : '';
+		if ( $profile === '' && in_array( 'editorial_light', (array) ( $record['visual_profiles'] ?? [] ), true ) ) { $profile = 'editorial_light'; }
+		$ranked[] = [ 'record' => $record, 'compatibility' => $compatibility, 'score' => $score, 'reasons' => $reasons ?: [ 'only_compatible_record' ], 'visual_profile' => $profile ];
+	}
+	usort( $ranked, static function ( array $left, array $right ): int { return ( $right['score'] <=> $left['score'] ) ?: strcmp( (string) $left['record']['id'], (string) $right['record']['id'] ); } );
+	if ( ! $ranked ) { return [ 'errors' => [ 'composition_no_compatible_candidate' ], 'source' => $source, 'policy_version' => 'wpae-composition-selection-v2', 'catalog_id' => 'wpae-compositions-v1', 'catalog_identity' => $catalog_identity, 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'metrics' => $metrics, 'rejected' => $rejected, 'candidates' => [] ]; }
+	$selected = $ranked[0];
+	$alternatives = [];
+	if ( ! $explicit_record ) {
+		$selected_signature = wpae_composition_topology_signature( $selected['record'] );
+		foreach ( array_slice( $ranked, 1 ) as $candidate ) {
+			if ( empty( $candidate['record']['distinct'] ) || wpae_composition_topology_signature( $candidate['record'] ) === $selected_signature ) { continue; }
+			$alternatives[] = [ 'record_id' => $candidate['record']['id'], 'record_version' => $candidate['record']['version'], 'record_hash' => $candidate['record']['hash'], 'variant_kind' => $candidate['record']['variant_kind'], 'visual_profile' => $candidate['visual_profile'], 'reasons' => $candidate['reasons'], 'topology_signature' => wpae_composition_topology_signature( $candidate['record'] ) ];
+			if ( count( $alternatives ) === 2 ) { break; }
+		}
+	}
+	return [ 'record' => $selected['record'], 'source' => $source, 'visual_profile' => $selected['visual_profile'], 'errors' => [], 'policy_version' => 'wpae-composition-selection-v2', 'catalog_id' => 'wpae-compositions-v1', 'catalog_identity' => $catalog_identity, 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'metrics' => $metrics, 'selection_reasons' => $selected['reasons'], 'alternatives' => $alternatives, 'rejected' => $rejected, 'candidates' => array_map( static fn( $candidate ): array => [ 'record_id' => $candidate['record']['id'], 'record_version' => $candidate['record']['version'], 'record_hash' => $candidate['record']['hash'], 'score' => $candidate['score'], 'reasons' => $candidate['reasons'], 'visual_profile' => $candidate['visual_profile'], 'topology_signature' => wpae_composition_topology_signature( $candidate['record'] ) ], $ranked ) ];
+}
+
+/** Materialize one already-ranked candidate without invoking selection again. */
+function wpae_composition_decision_for_record( array $brief, array $decision, string $record_id ): array {
+	$records = wpae_composition_records();
+	$record = $records[$record_id] ?? [];
+	$catalog_ids = array_keys( $records ); sort( $catalog_ids );
+	$catalog_identity = hash( 'sha256', wp_json_encode( array_map( static fn( $id ): array => [ $id, $records[$id]['version'], $records[$id]['hash'] ], $catalog_ids ) ) );
+	if ( ! $record || ! empty( $decision['errors'] ) || ( $decision['policy_version'] ?? '' ) !== 'wpae-composition-selection-v2' || ( $decision['catalog_id'] ?? '' ) !== 'wpae-compositions-v1' || ( $decision['catalog_identity'] ?? '' ) !== $catalog_identity || ( $decision['brief_hash'] ?? '' ) !== ( function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '' ) ) {
+		return [ 'errors' => [ 'composition_decision_stale_or_untrusted' ] ];
+	}
+	$candidate = null;
+	foreach ( (array) ( $decision['candidates'] ?? [] ) as $item ) { if ( is_array( $item ) && ( $item['record_id'] ?? '' ) === $record_id ) { $candidate = $item; break; } }
+	if ( ! is_array( $candidate ) || (int) ( $candidate['record_version'] ?? 0 ) !== (int) $record['version'] || ( $candidate['record_hash'] ?? '' ) !== (string) $record['hash'] ) {
+		return [ 'errors' => [ 'composition_candidate_not_in_accepted_catalog' ] ];
+	}
+	$alternatives = array_values( array_filter( (array) ( $decision['alternatives'] ?? [] ), static fn( $item ): bool => is_array( $item ) && ( $item['record_id'] ?? '' ) !== $record_id ) );
+	return array_merge( $decision, [ 'record' => $record, 'visual_profile' => (string) ( $candidate['visual_profile'] ?? '' ), 'selection_reasons' => (array) ( $candidate['reasons'] ?? [] ), 'alternatives' => $alternatives, 'selected_candidate' => $candidate, 'errors' => [] ] );
+}
+
+function wpae_composition_topology_signature( array $record ): string {
+	$policy = (array) ( $record['policy'] ?? [] );
+	$shape = [ 'family' => $record['family'] ?? '', 'composition' => $record['composition'] ?? '', 'desktop' => $policy['desktop'] ?? '', 'tablet' => $policy['tablet'] ?? '', 'mobile' => $policy['mobile'] ?? '', 'media_side' => $policy['media_side'] ?? '', 'entity_layout' => $policy['entity_layout'] ?? '', 'capabilities' => array_values( (array) ( $record['capabilities'] ?? [] ) ) ];
+	return hash( 'sha256', wp_json_encode( $shape ) );
+}
+
+/** Compatibility facade for old callers: it now delegates to the common chooser. */
+function wpae_composition_resolve( array $brief, array $context, string $composition, string $side ): array {
+	$ids = array_keys( array_filter( wpae_composition_records(), static fn( $record ): bool => ( $record['family'] ?? '' ) === ( $brief['intent']['archetype'] ?? '' ) && ( $record['composition'] ?? '' ) === $composition && ( $record['policy']['media_side'] ?? $side ) === $side ) );
+	if ( empty( $context['composition_record'] ) && ! $ids ) { return [ 'errors' => [ 'composition_record_missing' ] ]; }
+	if ( empty( $context['composition_record'] ) ) { $context['composition_candidate_ids'] = $ids; }
+	$decision = wpae_composition_decide( $brief, $context, empty( $context['composition_record'] ) ? $ids : null );
+	if ( ! empty( $decision['errors'] ) ) { return $decision; }
+	return array_merge( $decision, [ 'source' => $decision['source'], 'record' => $decision['record'] ] );
 }
 
 /** Old REST recipes have one actual tree each; every other label is an alias. */
@@ -524,10 +778,12 @@ function wpae_elementor_recipe_variants( array $recipe ): array {
 function wpae_composition_visual_profiles(): array {
 	$type = static fn( string $desktop, string $tablet, string $mobile, string $weight, string $line ): array => [ 'font_family' => 'inherit', 'desktop' => $desktop, 'tablet' => $tablet, 'mobile' => $mobile, 'weight' => $weight, 'line_height' => $line, 'line_height_tablet' => $line, 'line_height_mobile' => $line ];
 	return [
-		'editorial_light' => [ 'color.page_bg' => '#ffffff', 'color.surface' => '#ffffff', 'color.text' => '#17202a', 'color.muted' => '#475569', 'color.border' => '#cbd5e1',
+		// Visual profiles own layout, rhythm, typography and shape. Brand colors
+		// are resolved from confirmed project/site sources before Plan freeze.
+		'editorial_light' => [
 			'type.display' => $type( '3.25rem', '2.5rem', '2rem', '700', '1.1' ), 'type.section_title' => $type( '2.5rem', '2rem', '1.75rem', '700', '1.15' ), 'type.body' => $type( '1.0625rem', '1rem', '1rem', '400', '1.65' ), 'type.feature' => $type( '1.25rem', '1.1875rem', '1.125rem', '600', '1.25' ),
 			'space.section' => '5rem', 'space.section_tablet' => '3.5rem', 'space.section_mobile' => '2.5rem', 'space.component' => '1.25rem', 'space.component_tablet' => '1rem', 'space.component_mobile' => '0.875rem', 'radius.card' => '0.25rem', 'layout.copy_width' => '38rem', 'space.card' => '1.25rem' ],
-		'soft_cards_light' => [ 'color.page_bg' => '#f1f5f9', 'color.surface' => '#ffffff', 'color.text' => '#0f172a', 'color.muted' => '#475569', 'color.border' => '#b8c4d2',
+		'soft_cards_light' => [
 			'type.display' => $type( '2.75rem', '2.25rem', '1.875rem', '600', '1.2' ), 'type.section_title' => $type( '2.125rem', '1.875rem', '1.625rem', '700', '1.2' ), 'type.body' => $type( '1rem', '1rem', '0.9375rem', '400', '1.6' ), 'type.feature' => $type( '1.1875rem', '1.125rem', '1.0625rem', '600', '1.35' ),
 			'space.section' => '4rem', 'space.section_tablet' => '3rem', 'space.section_mobile' => '2rem', 'space.component' => '1.75rem', 'space.component_tablet' => '1.25rem', 'space.component_mobile' => '1rem', 'radius.card' => '1.25rem', 'layout.copy_width' => '32rem', 'space.card' => '1.75rem' ],
 	];
