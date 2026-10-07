@@ -1932,6 +1932,20 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
  }
 }
 
+// M2.2 selection provenance distinguishes the user's request from the frozen decision.
+$selection_provenance_prompt = 'Создай блок команды. Без фото. Надзаголовок «ТЕСТ». Заголовок «Люди и роли». Участник 1 имя «Участник один». Участник 1 должность «Дизайнер». Участник 1 биография «Короткая биография.» Участник 2 имя «Участник два». Участник 2 должность «Руководитель проекта». Участник 2 биография «' . str_repeat( 'Длинная биография сохраняет факты и проверяет переносы. ', 5 ) . '»';
+$selection_provenance_brief = wpae_brief_ir_parse( $selection_provenance_prompt );
+$selection_explicit = wpae_composition_decide( $selection_provenance_brief, [ 'composition_record' => 'team.grid', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$selection_automatic = wpae_composition_decide( $selection_provenance_brief, [] );
+$selection_stale = wpae_composition_decide( $selection_provenance_brief, [ 'composition_record' => 'team.grid', 'composition_version' => 99, 'visual_profile' => 'editorial_light' ] );
+$selection_conflict_brief = $selection_provenance_brief;
+$selection_conflict_brief['layout_constraints'][] = [ 'kind' => 'visual_profile', 'value' => 'editorial_light' ];
+$selection_profile_conflict = wpae_composition_decide( $selection_conflict_brief, [ 'visual_profile' => 'soft_cards_light' ] );
+$check( empty( $selection_explicit['errors'] ) && ( $selection_explicit['source'] ?? '' ) === 'explicit_record' && ( $selection_explicit['request_selection']['mode'] ?? '' ) === 'explicit_record' && ( $selection_explicit['request_selection']['record_id'] ?? '' ) === 'team.grid' && ( $selection_explicit['request_selection']['record_version'] ?? 0 ) === 1 && ( $selection_explicit['request_selection']['visual_profile'] ?? '' ) === 'editorial_light' && ( $selection_explicit['visual_profile'] ?? '' ) === 'editorial_light', 'M2.2 explicit selection snapshot preserves record/version/profile separately from the accepted choice' );
+$check( empty( $selection_automatic['errors'] ) && ( $selection_automatic['source'] ?? '' ) === 'content_ranked_catalog' && ( $selection_automatic['request_selection']['mode'] ?? '' ) === 'automatic' && array_key_exists( 'record_id', $selection_automatic['request_selection'] ?? [] ) && $selection_automatic['request_selection']['record_id'] === null && ( $selection_automatic['request_selection']['visual_profile_source'] ?? '' ) === 'not_requested' && ( $selection_automatic['record']['id'] ?? '' ) === 'team.editorial_rows' && ( $selection_automatic['visual_profile'] ?? '' ) === 'editorial_light', 'M2.2 automatic selection keeps the request automatic while retaining ranked record and documented default profile' );
+$check( in_array( 'composition_record_version_conflict', (array) ( $selection_stale['errors'] ?? [] ), true ) && ( $selection_stale['request_selection']['record_version'] ?? 0 ) === 99, 'M2.2 stale UI record version refuses before a DesignPlan can freeze' );
+$check( in_array( 'composition_visual_profile_conflict', (array) ( $selection_profile_conflict['errors'] ?? [] ), true ) && ( $selection_profile_conflict['request_selection']['visual_profile_source'] ?? '' ) === 'explicit_brief', 'M2.2 conflicting explicit visual profile remains a no-write decision refusal' );
+
 // Authorized media is validated by entity slot, never globally enabled for all families.
 foreach ( [ 'team', 'testimonials' ] as $family ) {
  $prompt=$family==='team'?'Блок команды. Участник 1 имя «Имя». Участник 1 должность «Роль». Участник 1 биография «Био». Участник 1 ссылка «Связаться», ссылка #person.':'Блок отзывов. Отзыв 1 текст «Цитата». Отзыв 1 автор «Автор». Отзыв 1 компания «Компания». Отзыв 1 рейтинг «4 из 5». Отзыв 1 ссылка «Источник», ссылка #quote.';

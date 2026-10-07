@@ -65,7 +65,7 @@ test('real submit request payload and replay keep snapshot and operation identit
  assert.equal(posts[1].context.visual_profile,'editorial_light');assert.equal(posts[1].context.operation_identity,posts[0].context.operation_identity);
  assert.deepEqual(posts[1].history,posts[0].history);assert.equal(posts[1].context.retry_current_operation,true);
  await e.request('new user submit',false,{});
- assert.notEqual(posts[2].context.operation_identity,posts[0].context.operation_identity);
+ assert.notEqual(posts[2].context.operation_identity,posts[0].context.operation_identity);assert.equal(posts[2].context.composition_record,'pricing.tiers');assert.notEqual(posts[2].context.composition_record,posts[1].context.composition_record,'new request reads current UI selectors instead of replaying the old delivery snapshot');
  await e.request('original',false,{retryCurrentOperation:true,deliverySnapshot:snapshot});assert.equal(posts.length,3,'stale replay stops');
  e.compositionSelect.value='';e.refreshCompositionProfiles();await e.request('automatic',false,{});
  assert.ok(!('composition_record' in posts[3].context));assert.ok(!('visual_profile' in posts[3].context));

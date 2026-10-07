@@ -26,6 +26,8 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     $writes_before=$GLOBALS['m1_write_attempts'];
     $initial_descriptor = wpae_accepted_lifecycle_request( $describe )->get_data();
     check( $initial_descriptor['operation']['revision'] === $operation['revision'] && $initial_descriptor['operation']['eligibility']['status'] === 'available' && $initial_descriptor['write_count'] === 0 && $GLOBALS['m1_write_attempts'] === $writes_before, 'Read-only descriptor binds current scope/revision and eligibility without document write ' . $record );
+	$selection_evidence = (array) ( $initial_descriptor['operation']['composition_evidence'] ?? [] );
+	check( ( $selection_evidence['schema'] ?? '' ) === 'wpae-composition-evidence-v1' && ( $selection_evidence['status'] ?? '' ) === 'complete' && ( $selection_evidence['request']['mode'] ?? '' ) === 'explicit_record' && ( $selection_evidence['request']['record_id'] ?? '' ) === $record && ( $selection_evidence['accepted']['record_id'] ?? '' ) === $record && ( $selection_evidence['operation']['operation_identity'] ?? '' ) === $operation['operation_identity'] && ( $selection_evidence['operation']['post_id'] ?? 0 ) === 42 && ( $selection_evidence['operation']['root_ids'] ?? [] ) === $operation['root_ids'] && ( $selection_evidence['operation']['revision'] ?? 0 ) === $operation['revision'] && ( $selection_evidence['hashes']['brief_sha256'] ?? '' ) === $operation['brief_hash'] && ( $selection_evidence['hashes']['plan_sha256'] ?? '' ) === $operation['plan_hash'] && ( $selection_evidence['generation']['provider_calls'] ?? -1 ) === 0 && ( $selection_evidence['generation']['transaction_write_count'] ?? 0 ) === 1 && ( $selection_evidence['native']['saved_native_fingerprint'] ?? '' ) !== '', 'Read-only accepted contract evidence exposes exact request/accepted choice, hashes, actual generation counts, roots and saved native fingerprint ' . $record );
     $stale_ui_revision=(int)$operation['revision'];
     wpae_accepted_save_guard_set($operation);
     $saved_document=new class { function get_main_id(){return 42;} };
@@ -34,7 +36,8 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     check((int)$operation['revision']===$stale_ui_revision+1,'Native Elementor after-save advances the durable operation revision '.$record);
     $describe['accepted_revision']=$stale_ui_revision;
     $fresh_descriptor=wpae_accepted_lifecycle_request($describe);
-    check($fresh_descriptor instanceof WP_REST_Response && $fresh_descriptor->get_data()['operation']['revision']===$operation['revision'] && $fresh_descriptor->get_data()['operation']['eligibility']['status']==='available' && $fresh_descriptor->get_data()['write_count']===0 && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only refresh returns the post-save revision for the same operation without a write '.$record);
+	$fresh_data = $fresh_descriptor instanceof WP_REST_Response ? $fresh_descriptor->get_data() : [];
+	check($fresh_descriptor instanceof WP_REST_Response && $fresh_data['operation']['revision']===$operation['revision'] && $fresh_data['operation']['eligibility']['status']==='available' && $fresh_data['operation']['composition_evidence']['operation']['revision']===$operation['revision'] && $fresh_data['operation']['composition_evidence']['generation']['transaction_write_count']===1 && $fresh_data['write_count']===0 && $GLOBALS['m1_write_attempts']===$writes_before,'Read-only refresh returns post-save revision and separately reports the original transaction write count without writing '.$record);
     if ( $record === 'faq.native' ) {
 		$repeat_revision = (int) $operation['revision'];
 		wpae_accepted_save_guard_set( $operation );
@@ -135,7 +138,7 @@ foreach ( [ 'hero.text_only' => 'hero_stack', 'benefits.grid' => 'benefits_grid'
     check(wpae_llm_undo($undo)->get_data()['code']==='typed_undo_busy','Concurrent Undo refused before write ' . $record);
     wpae_design_operation_release_lock($held);
     $descriptors=wpae_accepted_contract_descriptors(42,$GLOBALS['page_data']);
-    check($descriptors[0]['status']==='available' && $descriptors[0]['accepted_contract_id']===$operation['accepted_contract_id'],'Reload bootstrap derives owned eligibility from server ' . $record);
+	check($descriptors[0]['status']==='available' && $descriptors[0]['accepted_contract_id']===$operation['accepted_contract_id'] && ( $descriptors[0]['composition_evidence']['accepted']['record_id'] ?? '' ) === $record && ( $descriptors[0]['composition_evidence']['operation']['operation_identity'] ?? '' ) === $operation['operation_identity'],'Reload bootstrap derives owned eligibility and exact accepted choice from the same server contract ' . $record);
     $empty_request = new WP_REST_Request();
     foreach ( [ 'post_id'=>42, 'operation_id'=>$operation['operation_id'].'-undo', 'accepted_undo_identity'=>$operation['operation_identity'], 'accepted_undo_revision'=>$operation['revision'] ] as $k=>$v ) { $empty_request->set_param($k,$v); }
     check(wpae_accepted_empty_inverse($empty_request,$owned,[]), 'Empty inverse attests exact owned creation '.$record);

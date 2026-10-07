@@ -128,27 +128,105 @@ function wpae_accepted_contract_get( array $operation ): array {
     if ( (int) ( $stored['expires_at'] ?? 0 ) <= time() ) { return [ 'ok' => false, 'reason' => 'contract_expired' ]; }
     $payload = $stored['payload'] ?? [];
     $hash = hash( 'sha256', wp_json_encode( $payload ) );
-    if ( ! hash_equals( (string) ( $operation['accepted_contract_hash'] ?? '' ), $hash ) || (string) ( $payload['operation_id'] ?? '' ) !== (string) ( $operation['operation_id'] ?? '' ) || (int) ( $payload['post_id'] ?? 0 ) !== (int) ( $operation['post_id'] ?? 0 ) ) {
+    if ( ! hash_equals( (string) ( $operation['accepted_contract_hash'] ?? '' ), $hash ) || (string) ( $payload['operation_id'] ?? '' ) !== (string) ( $operation['operation_id'] ?? '' ) || (int) ( $payload['post_id'] ?? 0 ) !== (int) ( $operation['post_id'] ?? 0 ) || ( isset( $payload['operation_identity'] ) && (string) $payload['operation_identity'] !== (string) ( $operation['operation_identity'] ?? '' ) ) ) {
         return [ 'ok' => false, 'reason' => 'contract_binding_mismatch' ];
     }
     return [ 'ok' => true, 'contract' => $payload, 'hash' => $hash, 'expires_at' => $stored['expires_at'] ];
 }
 
+/** Compact evidence derived from the one frozen DesignPlan, never from compiler inference. */
+function wpae_accepted_contract_composition_evidence_from_plan( array $brief, array $plan, array $generation = [] ): array {
+	$decision = (array) ( $plan['composition_decision'] ?? [] );
+	$request = is_array( $decision['request_selection'] ?? null ) ? $decision['request_selection'] : null;
+	$visual = (array) ( $plan['resolved_visual'] ?? [] );
+	$visual_policy = (array) ( $plan['visual_policy'] ?? [] );
+	$surface = (array) ( $visual_policy['section_surface'] ?? [] );
+	$surface_token = (string) ( $surface['token'] ?? '' );
+	$surface_value = $surface_token === 'surface_override' ? (string) ( $surface['value'] ?? '' ) : (string) ( ( $visual['values'] ?? [] )[$surface_token] ?? '' );
+	$accent = (array) ( ( $visual['palette'] ?? [] )['accent_reference'] ?? [] );
+	$underlay = (string) ( ( $visual['contrast_context'] ?? [] )['color.section_bg_underlay'] ?? ( $visual['contrast_context'] ?? [] )['background_underlay'] ?? '' );
+	$brief_hash = function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '';
+	$plan_hash = function_exists( 'wpae_design_plan_hash' ) ? wpae_design_plan_hash( $plan ) : '';
+	return [
+		'schema' => 'wpae-composition-evidence-v1',
+		'status' => $request === null ? 'historical_request_unknown' : 'complete',
+		'request' => $request ?? [ 'mode' => 'unknown', 'reason' => 'not_present_in_frozen_plan' ],
+		'accepted' => [
+			'record_id' => (string) ( $decision['record_id'] ?? '' ),
+			'record_version' => (int) ( $decision['record_version'] ?? 0 ),
+			'record_hash' => (string) ( $decision['record_hash'] ?? '' ),
+			'source' => (string) ( $decision['source'] ?? '' ),
+			'visual_profile' => (string) ( $decision['visual_profile'] ?? $visual['profile'] ?? '' ),
+			'selection_reasons' => array_values( (array) ( $decision['selection_reasons'] ?? [] ) ),
+			'selection_policy' => (string) ( $decision['selection_policy'] ?? '' ),
+			'catalog_id' => (string) ( $decision['catalog_id'] ?? '' ),
+			'catalog_identity' => (string) ( $decision['catalog_identity'] ?? '' ),
+		],
+		'hashes' => [ 'brief_sha256' => $brief_hash, 'plan_sha256' => $plan_hash ],
+		'surface' => [
+			'profile' => (string) ( $visual['profile'] ?? '' ),
+			'section_surface' => $surface,
+			'resolved_value' => $surface_value,
+			'value_source' => (string) ( ( $visual['sources'] ?? [] )[$surface_token] ?? $surface['source'] ?? '' ),
+			'accent_reference' => array_intersect_key( $accent, array_flip( [ 'value', 'source', 'confirmed', 'reference_id' ] ) ),
+			'opaque_underlay' => $underlay,
+		],
+		'generation' => [
+			'route' => sanitize_key( (string) ( $generation['route'] ?? '' ) ),
+			'provider_calls' => max( 0, (int) ( $generation['provider_calls'] ?? 0 ) ),
+			'provider_call_count_source' => (string) ( $generation['provider_call_count_source'] ?? 'design_pipeline_preflight' ),
+		],
+	];
+}
+
+/** Add operation and saved-native facts only after the contract is bound and verified. */
+function wpae_accepted_contract_composition_evidence( array $operation ): array {
+	$loaded = wpae_accepted_contract_get( $operation );
+	if ( empty( $loaded['ok'] ) ) { return [ 'schema' => 'wpae-composition-evidence-v1', 'status' => 'unavailable', 'reason' => (string) ( $loaded['reason'] ?? 'contract_unavailable' ) ]; }
+	$contract = (array) $loaded['contract'];
+	$operation_roots = array_values( array_map( 'strval', (array) ( $operation['root_ids'] ?? [] ) ) );
+	$contract_roots = array_values( array_map( 'strval', (array) ( $contract['owned_root_ids'] ?? [] ) ) );
+	if ( $operation_roots !== $contract_roots ) { return [ 'schema' => 'wpae-composition-evidence-v1', 'status' => 'unavailable', 'reason' => 'operation_root_scope_mismatch' ]; }
+	$evidence = is_array( $contract['composition_evidence'] ?? null ) ? $contract['composition_evidence'] : wpae_accepted_contract_composition_evidence_from_plan( (array) ( $contract['brief'] ?? [] ), (array) ( $contract['plan'] ?? [] ), (array) ( $contract['generation'] ?? [] ) );
+	$plan_hash = function_exists( 'wpae_design_plan_hash' ) ? wpae_design_plan_hash( (array) ( $contract['plan'] ?? [] ) ) : '';
+	$brief_hash = function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( (array) ( $contract['brief'] ?? [] ) ) : '';
+	if ( ( (string) ( $operation['plan_hash'] ?? '' ) !== '' && ! hash_equals( (string) $operation['plan_hash'], $plan_hash ) ) || ( (string) ( $operation['brief_hash'] ?? '' ) !== '' && ! hash_equals( (string) $operation['brief_hash'], $brief_hash ) ) ) {
+		return [ 'schema' => 'wpae-composition-evidence-v1', 'status' => 'unavailable', 'reason' => 'operation_plan_or_brief_hash_mismatch' ];
+	}
+	$evidence['operation'] = [
+		'post_id' => (int) ( $operation['post_id'] ?? 0 ),
+		'operation_id' => (string) ( $operation['operation_id'] ?? '' ),
+		'operation_identity' => (string) ( $operation['operation_identity'] ?? '' ),
+		'root_ids' => $operation_roots,
+		'revision' => (int) ( $operation['revision'] ?? 0 ),
+		'accepted_contract_id' => (string) ( $operation['accepted_contract_id'] ?? '' ),
+		'accepted_contract_sha256' => (string) ( $loaded['hash'] ?? '' ),
+		'saved_document_sha256' => (string) ( $operation['saved_hash'] ?? $contract['saved_hash'] ?? '' ),
+	];
+	$evidence['native'] = [ 'saved_native_fingerprint' => (string) ( $contract['owned_fingerprint'] ?? '' ), 'saved_root_ids' => $contract_roots ];
+	$evidence['generation']['transaction_write_count'] = max( 0, (int) ( ( $contract['generation'] ?? [] )['transaction_write_count'] ?? 0 ) );
+	$evidence['generation']['transaction_write_count_source'] = (string) ( ( $contract['generation'] ?? [] )['transaction_write_count_source'] ?? 'unavailable' );
+	return $evidence;
+}
+
 /** Select known IR fields, never HTTP context/history, credentials or foreign roots. */
-function wpae_accepted_contract_prepare( array $brief, array $plan, array $compiled, array $before_owned = [], string $parent_id = '', array $native_roundtrip = [] ): array {
+function wpae_accepted_contract_prepare( array $brief, array $plan, array $compiled, array $before_owned = [], string $parent_id = '', array $native_roundtrip = [], array $generation = [] ): array {
     $brief = array_intersect_key( $brief, array_flip( [ 'source_text', 'locale', 'parser_version', 'pricing_items', 'style_references', 'explicit_constraints', 'ambiguities', 'warnings', 'schema', 'version', 'canonical_create', 'archetype', 'intent', 'scope', 'content', 'content_items', 'groups', 'media_references', 'layout_constraints', 'style_constraints', 'policy', 'behavior', 'exact_text', 'constraints', 'required_widgets', 'copy_policy', 'provenance', 'hash' ] ) );
     // Brief and Plan are already server-built typed data, not raw request context.
 	$roundtrip = array_intersect_key( $native_roundtrip, array_flip( [ 'version', 'control_aware', 'repeater_order_and_count', 'repeater_ids', 'allowed_legacy_serialization', 'decisions' ] ) );
-	$prepared = [ 'schema' => WPAE_ACCEPTED_CONTRACT_SCHEMA, 'brief' => $brief, 'plan' => $plan, 'composition' => $plan['composition_decision'] ?? [], 'profile' => $plan['resolved_visual']['profile'] ?? '', 'resolved_visual' => $plan['resolved_visual'] ?? [], 'compiler_schema' => 'elementor-ir-v2/native-compiler-v1', 'compiled_signature' => wpae_llm_decision_signature( $compiled ), 'before_owned' => $before_owned, 'compiled_owned' => $compiled, 'parent_operation_id' => $parent_id ];
+	$generation_evidence = array_intersect_key( $generation, array_flip( [ 'route', 'provider_calls', 'provider_call_count_source' ] ) );
+	$prepared = [ 'schema' => WPAE_ACCEPTED_CONTRACT_SCHEMA, 'brief' => $brief, 'plan' => $plan, 'composition' => $plan['composition_decision'] ?? [], 'profile' => $plan['resolved_visual']['profile'] ?? '', 'resolved_visual' => $plan['resolved_visual'] ?? [], 'composition_evidence' => wpae_accepted_contract_composition_evidence_from_plan( $brief, $plan, $generation_evidence ), 'generation' => array_merge( $generation_evidence, [ 'transaction_write_count' => 0, 'transaction_write_count_source' => 'not_written_at_prepare' ] ), 'compiler_schema' => 'elementor-ir-v2/native-compiler-v1', 'compiled_signature' => wpae_llm_decision_signature( $compiled ), 'before_owned' => $before_owned, 'compiled_owned' => $compiled, 'parent_operation_id' => $parent_id ];
 	if ( $roundtrip ) { $prepared['native_roundtrip'] = $roundtrip; }
     if ( strlen( wp_json_encode( $prepared ) ) + strlen( wp_json_encode( $compiled ) ) + 4096 > WPAE_ACCEPTED_CONTRACT_BYTES ) { return [ 'ok' => false, 'reason' => 'contract_too_large' ]; }
     return [ 'ok' => true, 'prepared' => $prepared ];
 }
 
 /** Sealed once, only after verified readback. Binding cannot be overwritten. */
-function wpae_accepted_contract_seal( array $prepared, array $operation, array $saved_owned ): array {
+function wpae_accepted_contract_seal( array $prepared, array $operation, array $saved_owned, array $generation = [] ): array {
     if ( ! hash_equals( (string) $prepared['compiled_signature'], wpae_llm_decision_signature( $saved_owned ) ) ) { return [ 'ok' => false, 'reason' => 'contract_readback_mismatch' ]; }
-    $payload = array_merge( $prepared, [ 'operation_id' => $operation['operation_id'], 'post_id' => $operation['post_id'], 'saved_revision' => $operation['revision'], 'saved_hash' => $operation['saved_hash'], 'owned_root_ids' => array_column( $saved_owned, 'id' ), 'after_owned' => $saved_owned, 'owned_fingerprint' => wpae_accepted_owned_fingerprint( $saved_owned ) ] );
+	$generation_write_count = max( 0, (int) ( $generation['write_count'] ?? 1 ) );
+	$prepared['generation'] = array_merge( (array) ( $prepared['generation'] ?? [] ), [ 'transaction_write_count' => $generation_write_count, 'transaction_write_count_source' => $generation_write_count === 1 ? 'successful_transaction_and_readback' : 'explicit_generation_evidence' ] );
+	$payload = array_merge( $prepared, [ 'operation_id' => $operation['operation_id'], 'operation_identity' => $operation['operation_identity'] ?? '', 'post_id' => $operation['post_id'], 'saved_revision' => $operation['revision'], 'saved_hash' => $operation['saved_hash'], 'owned_root_ids' => array_column( $saved_owned, 'id' ), 'after_owned' => $saved_owned, 'owned_fingerprint' => wpae_accepted_owned_fingerprint( $saved_owned ) ] );
     if ( strlen( wp_json_encode( $payload ) ) > WPAE_ACCEPTED_CONTRACT_BYTES ) { return [ 'ok' => false, 'reason' => 'contract_too_large' ]; }
     $hash = hash( 'sha256', wp_json_encode( $payload ) );
     $id = 'contract-' . substr( $hash, 0, 24 );
@@ -233,7 +311,9 @@ function wpae_accepted_contract_descriptors( int $post_id, array $data ): array 
     foreach ( array_reverse( wpae_design_operation_store() ) as $operation ) {
         if ( (int) ( $operation['post_id'] ?? 0 ) !== $post_id || empty( $operation['root_ids'] ) ) { continue; }
         $eligibility = wpae_accepted_contract_eligibility( $operation, $data );
-        $descriptors[] = array_merge( $eligibility, array_intersect_key( $operation, array_flip( [ 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id' ] ) ) );
+        $descriptor = array_merge( $eligibility, array_intersect_key( $operation, array_flip( [ 'post_id', 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id', 'accepted_contract_hash', 'brief_hash', 'plan_hash', 'saved_hash' ] ) ) );
+		$descriptor['composition_evidence'] = wpae_accepted_contract_composition_evidence( $operation );
+		$descriptors[] = $descriptor;
         if ( count( $descriptors ) === 20 ) { break; }
     }
     return $descriptors;
@@ -415,8 +495,9 @@ function wpae_accepted_lifecycle_request( array $context ) {
         // Describe is strictly read-only: return the current server descriptor even
         // when the target is ineligible, so the UI can report the actual revision
         // and reason. The client must not treat an ineligible descriptor as approval.
-        $descriptor = array_intersect_key( $operation, array_flip( [ 'post_id', 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id' ] ) );
+        $descriptor = array_intersect_key( $operation, array_flip( [ 'post_id', 'operation_id', 'operation_identity', 'revision', 'root_ids', 'accepted_contract_id', 'accepted_contract_hash', 'brief_hash', 'plan_hash', 'saved_hash' ] ) );
         $descriptor['eligibility'] = $eligibility;
+		$descriptor['composition_evidence'] = wpae_accepted_contract_composition_evidence( $operation );
         return new WP_REST_Response( [ 'ok' => true, 'write_count' => 0, 'operation' => $descriptor ], 200 );
     }
     if ( ! current_user_can( 'edit_post', $post_id ) || ! $operation || (int) $operation['post_id'] !== $post_id || (int) ( $context['accepted_revision'] ?? 0 ) !== (int) $operation['revision'] || (string) ( $context['accepted_identity'] ?? '' ) !== (string) $operation['operation_identity'] || ! wpae_accepted_lifecycle_scope_matches( $operation, $context ) ) { return new WP_Error( 'wpae_typed_scope_conflict', 'Точная операция/revision и её root/contract scope не подтверждены.', [ 'status' => 409, 'write_count' => 0 ] ); }

@@ -661,15 +661,28 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 	$metrics = wpae_composition_content_metrics( $brief );
 	$brief_profile = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'visual_profile' ) : null;
 	$context_profile = is_string( $context['visual_profile'] ?? null ) ? trim( (string) $context['visual_profile'] ) : '';
-	if ( is_string( $brief_profile ) && $brief_profile !== '' && $context_profile !== '' && $brief_profile !== $context_profile ) {
-		return [ 'errors' => [ 'composition_visual_profile_conflict' ], 'source' => 'explicit_conflict', 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [] ];
-	}
-	if ( is_string( $brief_profile ) && $brief_profile !== '' ) { $context['visual_profile'] = $brief_profile; }
 	$explicit_record = isset( $context['composition_record'] ) && is_string( $context['composition_record'] ) && $context['composition_record'] !== '';
 	$explicit_composition = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'composition' ) : null;
 	$explicit_side = function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'media_side' ) : null;
+	$requested_profile = is_string( $brief_profile ) && $brief_profile !== '' ? $brief_profile : $context_profile;
+	$requested_selection = [
+		'mode' => $explicit_record ? 'explicit_record' : ( $explicit_composition !== null || $explicit_side !== null ? 'explicit_brief' : 'automatic' ),
+		'record_id' => $explicit_record && preg_match( '/^[a-z0-9][a-z0-9_.-]{0,127}$/i', trim( (string) $context['composition_record'] ) ) ? trim( (string) $context['composition_record'] ) : null,
+		'record_version' => $explicit_record && isset( $context['composition_version'] ) && is_numeric( $context['composition_version'] ) ? (int) $context['composition_version'] : null,
+		'visual_profile' => $requested_profile !== '' ? sanitize_key( $requested_profile ) : null,
+		'visual_profile_source' => is_string( $brief_profile ) && $brief_profile !== '' ? 'explicit_brief' : ( $context_profile !== '' ? 'ui_selector' : 'not_requested' ),
+		'brief_composition' => is_string( $explicit_composition ) && $explicit_composition !== '' ? sanitize_key( $explicit_composition ) : null,
+		'brief_media_side' => is_string( $explicit_side ) && $explicit_side !== '' ? sanitize_key( $explicit_side ) : null,
+	];
+	if ( is_string( $brief_profile ) && $brief_profile !== '' && $context_profile !== '' && $brief_profile !== $context_profile ) {
+		return [ 'errors' => [ 'composition_visual_profile_conflict' ], 'source' => 'explicit_conflict', 'request_selection' => $requested_selection, 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [] ];
+	}
+	if ( is_string( $brief_profile ) && $brief_profile !== '' ) { $context['visual_profile'] = $brief_profile; }
 	$source = $explicit_record ? 'explicit_record' : ( $explicit_composition !== null || $explicit_side !== null ? 'explicit_brief' : 'content_ranked_catalog' );
-	if ( $explicit_record && ! isset( $records[$context['composition_record']] ) ) { return [ 'errors' => [ 'composition_record_unknown' ], 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [ (string) $context['composition_record'] => [ 'composition_record_unknown' ] ] ]; }
+	if ( $explicit_record && ! isset( $records[$context['composition_record']] ) ) { return [ 'errors' => [ 'composition_record_unknown' ], 'request_selection' => $requested_selection, 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [ (string) $context['composition_record'] => [ 'composition_record_unknown' ] ] ]; }
+	if ( $explicit_record && $requested_selection['record_version'] !== null && (int) $records[$context['composition_record']]['version'] !== $requested_selection['record_version'] ) {
+		return [ 'errors' => [ 'composition_record_version_conflict' ], 'source' => 'explicit_conflict', 'request_selection' => $requested_selection, 'policy_version' => 'wpae-composition-selection-v2', 'metrics' => $metrics, 'rejected' => [ (string) $context['composition_record'] => [ 'composition_record_version_conflict' ] ] ];
+	}
 	$catalog_ids = array_keys( $records ); sort( $catalog_ids );
 	$catalog_identity = hash( 'sha256', wp_json_encode( array_map( static fn( $id ): array => [ $id, $records[$id]['version'], $records[$id]['hash'] ], $catalog_ids ) ) );
 	$ranked = []; $rejected = [];
@@ -716,7 +729,7 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 		$ranked[] = [ 'record' => $record, 'compatibility' => $compatibility, 'score' => $score, 'reasons' => $reasons ?: [ 'only_compatible_record' ], 'visual_profile' => $profile ];
 	}
 	usort( $ranked, static function ( array $left, array $right ): int { return ( $right['score'] <=> $left['score'] ) ?: strcmp( (string) $left['record']['id'], (string) $right['record']['id'] ); } );
-	if ( ! $ranked ) { return [ 'errors' => [ 'composition_no_compatible_candidate' ], 'source' => $source, 'policy_version' => 'wpae-composition-selection-v2', 'catalog_id' => 'wpae-compositions-v1', 'catalog_identity' => $catalog_identity, 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'metrics' => $metrics, 'rejected' => $rejected, 'candidates' => [] ]; }
+	if ( ! $ranked ) { return [ 'errors' => [ 'composition_no_compatible_candidate' ], 'source' => $source, 'request_selection' => $requested_selection, 'policy_version' => 'wpae-composition-selection-v2', 'catalog_id' => 'wpae-compositions-v1', 'catalog_identity' => $catalog_identity, 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'metrics' => $metrics, 'rejected' => $rejected, 'candidates' => [] ]; }
 	$selected = $ranked[0];
 	$alternatives = [];
 	if ( ! $explicit_record ) {
@@ -727,7 +740,7 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 			if ( count( $alternatives ) === 2 ) { break; }
 		}
 	}
-	return [ 'record' => $selected['record'], 'source' => $source, 'visual_profile' => $selected['visual_profile'], 'errors' => [], 'policy_version' => 'wpae-composition-selection-v2', 'catalog_id' => 'wpae-compositions-v1', 'catalog_identity' => $catalog_identity, 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'metrics' => $metrics, 'selection_reasons' => $selected['reasons'], 'alternatives' => $alternatives, 'rejected' => $rejected, 'candidates' => array_map( static fn( $candidate ): array => [ 'record_id' => $candidate['record']['id'], 'record_version' => $candidate['record']['version'], 'record_hash' => $candidate['record']['hash'], 'score' => $candidate['score'], 'reasons' => $candidate['reasons'], 'visual_profile' => $candidate['visual_profile'], 'topology_signature' => wpae_composition_topology_signature( $candidate['record'] ) ], $ranked ) ];
+	return [ 'record' => $selected['record'], 'source' => $source, 'request_selection' => $requested_selection, 'visual_profile' => $selected['visual_profile'], 'errors' => [], 'policy_version' => 'wpae-composition-selection-v2', 'catalog_id' => 'wpae-compositions-v1', 'catalog_identity' => $catalog_identity, 'brief_hash' => function_exists( 'wpae_brief_ir_hash' ) ? wpae_brief_ir_hash( $brief ) : '', 'metrics' => $metrics, 'selection_reasons' => $selected['reasons'], 'alternatives' => $alternatives, 'rejected' => $rejected, 'candidates' => array_map( static fn( $candidate ): array => [ 'record_id' => $candidate['record']['id'], 'record_version' => $candidate['record']['version'], 'record_hash' => $candidate['record']['hash'], 'score' => $candidate['score'], 'reasons' => $candidate['reasons'], 'visual_profile' => $candidate['visual_profile'], 'topology_signature' => wpae_composition_topology_signature( $candidate['record'] ) ], $ranked ) ];
 }
 
 /** Materialize one already-ranked candidate without invoking selection again. */
