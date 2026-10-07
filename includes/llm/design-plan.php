@@ -492,8 +492,9 @@ function wpae_design_plan_services_recipe_decision( array $brief, array $context
 	$constraints = array_values( array_filter( (array) ( $brief['layout_constraints'] ?? [] ), 'is_array' ) );
 	$recognized = [];
 	$explicit_context_recipe = trim( (string) ( $context['services_recipe_id'] ?? '' ) );
-	if ( $explicit_context_recipe !== '' ) {
-		$recognized[] = [ 'recipe_id' => $explicit_context_recipe, 'source' => 'explicit_context' ];
+	$selected_composition_record = trim( (string) ( $context['composition_record'] ?? '' ) );
+	foreach ( array_unique( array_filter( [ $explicit_context_recipe, str_starts_with( $selected_composition_record, 'services.' ) ? $selected_composition_record : '' ] ) ) as $context_recipe_id ) {
+		$recognized[] = [ 'recipe_id' => $context_recipe_id, 'source' => 'explicit_context' ];
 	}
 	foreach ( $constraints as $constraint ) {
 		if ( ( $constraint['kind'] ?? '' ) === 'services_recipe' ) {
@@ -509,7 +510,7 @@ function wpae_design_plan_services_recipe_decision( array $brief, array $context
 	}
 	$explicit_recipe_id = (string) ( $recognized_ids[0] ?? '' );
 	$source = $explicit_recipe_id !== '' ? (string) ( $recognized[0]['source'] ?? 'explicit_request' ) : 'documented_default';
-	if ( $explicit_context_recipe !== '' ) {
+	if ( $explicit_context_recipe !== '' || str_starts_with( $selected_composition_record, 'services.' ) ) {
 		$source = 'explicit_context';
 	} elseif ( $explicit_recipe_id !== '' ) {
 		$source = 'explicit_request';

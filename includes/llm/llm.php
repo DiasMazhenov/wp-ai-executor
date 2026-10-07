@@ -11020,9 +11020,11 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ! $replacement_requested;
 	$services_planning_context = [ 'post_id' => $selected_post_id ];
 	if ( is_array( $editor_context_input ) ) {
-		foreach ( [ 'services_recipe_id', 'services_lead_service_ref' ] as $context_key ) {
+		foreach ( [ 'services_recipe_id', 'services_lead_service_ref', 'composition_record', 'composition_version', 'visual_profile' ] as $context_key ) {
 			if ( array_key_exists( $context_key, $editor_context_input ) && is_scalar( $editor_context_input[ $context_key ] ) ) {
-				$services_planning_context[ $context_key ] = trim( (string) $editor_context_input[ $context_key ] );
+				$services_planning_context[ $context_key ] = $context_key === 'composition_version'
+					? (int) $editor_context_input[ $context_key ]
+					: trim( (string) $editor_context_input[ $context_key ] );
 			}
 		}
 		if ( is_array( $editor_context_input['media_references'] ?? null ) ) {
