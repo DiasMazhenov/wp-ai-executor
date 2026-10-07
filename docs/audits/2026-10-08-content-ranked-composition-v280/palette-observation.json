@@ -1,0 +1,22 @@
+{
+  "source": "Elementor editor Site Settings > Global Colors, opened read-only",
+  "observed_at": "2026-10-08",
+  "system_colors": [
+    {"label": "Первый", "value": "#000000", "source_status": "modified_from_stock_default", "semantic_role": "primary"},
+    {"label": "Второй", "value": "#54595F", "source_status": "Elementor_stock_default", "semantic_role": null},
+    {"label": "Текст", "value": "#7A7A7A", "source_status": "Elementor_stock_default", "semantic_role": null},
+    {"label": "Акцент", "value": "#61CE70", "source_status": "Elementor_stock_default", "semantic_role": null}
+  ],
+  "custom_colors": [
+    {"label": "Желтый", "value": "#FFD618", "source_status": "saved_custom_color", "semantic_role": null},
+    {"label": "Новый глобальный цвет", "value": "#0BF4F3", "source_status": "saved_custom_color", "semantic_role": null},
+    {"label": "Синий", "value": "#0D6EFF", "source_status": "saved_custom_color", "semantic_role": null},
+    {"label": "bg-gray", "value": "#121212", "source_status": "saved_custom_color", "semantic_role": null},
+    {"label": "autopapa", "value": "#EC4040", "source_status": "saved_custom_color", "semantic_role": null},
+    {"label": "Белый", "value": "#FFFFFF", "source_status": "saved_custom_color", "semantic_role": null}
+  ],
+  "wpae_saved_palette": "bundled defaults; excluded as unconfirmed by v280 strict provenance contract",
+  "missing_required_roles": ["color.page_bg", "color.surface", "color.text", "color.muted"],
+  "derived_aliases": ["color.focus <- color.primary", "color.hover <- color.primary"],
+  "decision": "Do not infer semantic roles from profile/template/screenshot. v280 safely refuses to freeze an accepted DesignPlan until required roles are confirmed."
+}

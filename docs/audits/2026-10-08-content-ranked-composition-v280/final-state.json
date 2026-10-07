@@ -1,0 +1,35 @@
+{
+  "post_id": 5214,
+  "source_commit": "535b0c35dc001c9d780233dfa23953986164dea9",
+  "source_version": "v02.11.280",
+  "runtime_commit_remote_confirmed_at_push": "535b0c35dc001c9d780233dfa23953986164dea9",
+  "installation": {
+    "plugin": "WP AI Executor only",
+    "wppusher_success_message": true,
+    "plugins_php_version": "v02.11.280",
+    "editor_inline_version_after_reload": "v02.11.280",
+    "php_version": "8.3.22"
+  },
+  "root_sets": {
+    "initial_editor": [],
+    "initial_public": [],
+    "final_editor": [],
+    "final_public": []
+  },
+  "editor": {
+    "publish_disabled": true,
+    "css_viewport": "1232x923",
+    "no_unsaved_page_model": true
+  },
+  "server_descriptor_baseline": {
+    "operation_id": "wpae-ab76671d039660df",
+    "revision": 7,
+    "status": "already_undone",
+    "write_count": 0
+  },
+  "new_live_scenario_writes": 0,
+  "new_roots": [],
+  "settings_or_other_plugins_changed": false,
+  "public_generation_geometry": "NOT_RUN; no generated root was created",
+  "operation_scoped_undo": "NOT_APPLICABLE; all scenario requests stopped before transaction/write"
+}

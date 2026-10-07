@@ -1,0 +1,179 @@
+{
+  "audit": "M2.2 content-ranked composition live acceptance",
+  "source_version": "v02.11.280",
+  "source_commit": "535b0c35dc001c9d780233dfa23953986164dea9",
+  "post_id": 5214,
+  "initial_root_set": [],
+  "source": {
+    "commit": "535b0c35dc001c9d780233dfa23953986164dea9",
+    "version": "v02.11.280",
+    "remote_main_verified": "535b0c35dc001c9d780233dfa23953986164dea9"
+  },
+  "installation": {
+    "wppusher_message": "Plugin was successfully updated.",
+    "plugins_php_version": "v02.11.280",
+    "reloaded_editor_inline_version": "v02.11.280",
+    "php_version": "8.3.22",
+    "other_plugins_or_settings_changed": false
+  },
+  "baseline_confirmation": {
+    "editor_roots": [],
+    "public_roots": [],
+    "fresh_read_only_descriptor": {
+      "operation_id": "wpae-ab76671d039660df",
+      "revision": 7,
+      "status": "already_undone",
+      "write_count": 0
+    },
+    "editor_publish_disabled": true,
+    "public_css_viewport": "1232x923"
+  },
+  "palette": {
+    "ui_source": "existing Elementor Site Settings > Global Colors panel; read-only inspection",
+    "confirmed_values_seen": [
+      {"label": "Первый", "value": "#000000", "role": "primary"},
+      {"label": "Желтый", "value": "#FFD618", "role": null},
+      {"label": "Новый глобальный цвет", "value": "#0BF4F3", "role": null},
+      {"label": "Синий", "value": "#0D6EFF", "role": null},
+      {"label": "bg-gray", "value": "#121212", "role": null},
+      {"label": "autopapa", "value": "#EC4040", "role": null},
+      {"label": "Белый", "value": "#FFFFFF", "role": null}
+    ],
+    "unconfirmed_stock_values": [
+      {"label": "Второй", "value": "#54595F"},
+      {"label": "Текст", "value": "#7A7A7A"},
+      {"label": "Акцент", "value": "#61CE70"}
+    ],
+    "missing_required_roles": ["color.page_bg", "color.surface", "color.text", "color.muted"],
+    "result": "safe Plan refusal; no color was inferred from profile, template, screenshot or bundled defaults"
+  },
+  "preliminary_attempts": [
+    {
+      "id": "A-input-0",
+      "fixture": "fixtures/A-attempt-0-unbound-brief.txt",
+      "fixture_sha256": "6c1e07350eb8ced6b68971195c43246ae59579c8c27a37733f6acc6baca41d2e",
+      "request_id": "fe45dc50-1a0b-43df-a697-6d38773ffc6b",
+      "result": "Plan rejected before provider/write; prompt used unsupported free-form field phrases and only three reviews",
+      "plan_errors": ["composition_no_compatible_candidate", "entity_layout_policy_invalid", "unbound_explicit_content:text", "testimonials_items_out_of_range", "confirmed_palette_role_missing:color_page_bg", "confirmed_palette_role_missing:color_surface", "confirmed_palette_role_missing:color_text", "confirmed_palette_role_missing:color_muted"],
+      "provider_calls": 0,
+      "write_count": 0
+    },
+    {
+      "id": "A-input-1",
+      "fixture": "fixtures/A-attempt-1-too-long.txt",
+      "fixture_sha256": "50c0da5bbc13d801f87a38f0b30a55c27b18a20c3b132c640f0c697108342644",
+      "utf8_bytes": 4464,
+      "result": "Plugin chat returned 'Сообщение слишком длинное.' before a typed diagnostic; no request/operation ID, provider call, or write was created"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "A",
+      "fixture": "fixtures/A-testimonials-uneven-auto.txt",
+      "family": "testimonials",
+      "selection": "automatic",
+      "selected_composition_ui": "Автоматически",
+      "profile": "default",
+      "goal": "Long and uneven quote lengths select a compatible editorial/list composition automatically without changing content or associations.",
+      "live_status": "BLOCKED_BEFORE_WRITE_PALETTE",
+      "fixture_sha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
+      "fixture_origin": "same exact Testimonials brief previously accepted under explicit records; this run selected Automatic",
+      "request_id": "72c87a3b-d008-457f-9879-d43eaa604604",
+      "operation_id": null,
+      "root_id": null,
+      "revision": null,
+      "brief_ok": true,
+      "plan_errors": [
+        "confirmed_palette_role_missing:color_page_bg",
+        "confirmed_palette_role_missing:color_surface",
+        "confirmed_palette_role_missing:color_text",
+        "confirmed_palette_role_missing:color_muted",
+        "resolved_visual_contrast",
+        "unresolved_palette_provenance:color_page_bg",
+        "unresolved_palette_provenance:color_surface",
+        "unresolved_palette_provenance:color_text",
+        "unresolved_palette_provenance:color_muted",
+        "unresolved_palette_provenance:color_border"
+      ],
+      "provider_calls": 0,
+      "write_count": 0,
+      "visual_status": "NOT_RUN_NO_BLOCK_CREATED",
+      "acceptance": ["decision provenance", "save/reload", "native readback", "exact content and author associations", "public desktop/mobile DOM", "screenshots", "operation-scoped Undo", "baseline restoration"]
+    },
+    {
+      "id": "B",
+      "fixture": "fixtures/B-C-team-shared-brief.txt",
+      "family": "team",
+      "selection": "explicit team.grid via composition selector",
+      "selected_composition_ui": "team.grid",
+      "profile": "default",
+      "goal": "First structural alternative for the same canonical Team Brief.",
+      "live_status": "BLOCKED_BEFORE_WRITE_PALETTE",
+      "fixture_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
+      "fixture_origin": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt; same exact Brief reused for C",
+      "request_id": "e02c02cc-7ebf-4aa7-9482-c8cacfb17491",
+      "operation_id": null,
+      "root_id": null,
+      "revision": null,
+      "brief_ok": true,
+      "plan_errors": [
+        "confirmed_palette_role_missing:color_page_bg",
+        "confirmed_palette_role_missing:color_surface",
+        "confirmed_palette_role_missing:color_text",
+        "confirmed_palette_role_missing:color_muted",
+        "resolved_visual_contrast",
+        "unresolved_palette_provenance:color_page_bg",
+        "unresolved_palette_provenance:color_surface",
+        "unresolved_palette_provenance:color_text",
+        "unresolved_palette_provenance:color_muted",
+        "unresolved_palette_provenance:color_border"
+      ],
+      "provider_calls": 0,
+      "write_count": 0,
+      "visual_status": "NOT_RUN_NO_BLOCK_CREATED",
+      "acceptance": ["decision provenance", "save/reload", "native readback", "exact content and entity associations", "public desktop/mobile DOM", "screenshots", "operation-scoped Undo", "baseline restoration"]
+    },
+    {
+      "id": "C",
+      "fixture": "fixtures/B-C-team-shared-brief.txt",
+      "family": "team",
+      "selection": "explicit team.editorial_rows via composition selector",
+      "selected_composition_ui": "team.editorial_rows",
+      "profile": "default",
+      "goal": "Second structural alternative using the byte-identical Brief from B; compare topology excluding IDs, colors and copy.",
+      "live_status": "BLOCKED_BEFORE_WRITE_PALETTE",
+      "fixture_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
+      "fixture_origin": "same byte-identical Brief as B; composition selector changed to team.editorial_rows",
+      "request_id": "838ed32c-a917-44b1-927c-8ffdb6b0ee54",
+      "operation_id": null,
+      "root_id": null,
+      "revision": null,
+      "brief_ok": true,
+      "plan_errors": [
+        "confirmed_palette_role_missing:color_page_bg",
+        "confirmed_palette_role_missing:color_surface",
+        "confirmed_palette_role_missing:color_text",
+        "confirmed_palette_role_missing:color_muted",
+        "resolved_visual_contrast",
+        "unresolved_palette_provenance:color_page_bg",
+        "unresolved_palette_provenance:color_surface",
+        "unresolved_palette_provenance:color_text",
+        "unresolved_palette_provenance:color_muted",
+        "unresolved_palette_provenance:color_border"
+      ],
+      "provider_calls": 0,
+      "write_count": 0,
+      "visual_status": "NOT_RUN_NO_BLOCK_CREATED",
+      "acceptance": ["decision provenance", "save/reload", "native readback", "exact content and entity associations", "public desktop/mobile DOM", "screenshots", "operation-scoped Undo", "baseline restoration"]
+    }
+  ],
+  "notes": [
+    "No page or draft was created; only the existing post 5214 is in scope.",
+    "The three requested scenarios each reached Brief/DesignPlan and were stopped before any provider call or write by the same missing confirmed palette roles.",
+    "Two preliminary A fixture submissions were not counted as generation: an unbound natural-language brief failed parser binding, and a structured request was rejected as too long. Both diagnostics and exact prompts are preserved.",
+    "The editor refusal screenshots are not public render evidence and do not satisfy successful generation visual acceptance.",
+    "No live write began; therefore Publish/reload, native readback, DOM geometry, operation-scoped Undo and public desktop/mobile block screenshots are not applicable.",
+    "The selector for B/C is an explicit existing UI action; the shared brief text itself remains identical.",
+    "Public mobile requires a real CSS viewport and matching innerWidth/clientWidth measurements."
+  ]
+}

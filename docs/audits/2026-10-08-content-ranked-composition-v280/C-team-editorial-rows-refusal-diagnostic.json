@@ -1,0 +1,285 @@
+{
+  "operation_identity": "838ed32c-a917-44b1-927c-8ffdb6b0ee54",
+  "post_id": 5214,
+  "plan_errors": [
+    "confirmed_palette_role_missing:color_page_bg",
+    "confirmed_palette_role_missing:color_surface",
+    "confirmed_palette_role_missing:color_text",
+    "confirmed_palette_role_missing:color_muted",
+    "resolved_visual_contrast",
+    "unresolved_palette_provenance:color_page_bg",
+    "unresolved_palette_provenance:color_surface",
+    "unresolved_palette_provenance:color_text",
+    "unresolved_palette_provenance:color_muted",
+    "unresolved_palette_provenance:color_border"
+  ],
+  "brief": {
+    "ok": true,
+    "errors": [],
+    "services": []
+  },
+  "plan": {
+    "ok": false,
+    "errors": [
+      "confirmed_palette_role_missing:color_page_bg",
+      "confirmed_palette_role_missing:color_surface",
+      "confirmed_palette_role_missing:color_text",
+      "confirmed_palette_role_missing:color_muted",
+      "resolved_visual_contrast",
+      "unresolved_palette_provenance:color_page_bg",
+      "unresolved_palette_provenance:color_surface",
+      "unresolved_palette_provenance:color_text",
+      "unresolved_palette_provenance:color_muted",
+      "unresolved_palette_provenance:color_border"
+    ],
+    "capabilities": {
+      "schema": "wpae-widget-capability-v1",
+      "ok": true,
+      "requested": [
+        "container",
+        "heading",
+        "text-editor",
+        "button",
+        "image"
+      ],
+      "available": [
+        "container",
+        "heading",
+        "text-editor",
+        "button",
+        "image"
+      ],
+      "resolved": [
+        {
+          "from": "container",
+          "to": "container",
+          "downgraded": false,
+          "runtime_result": "structural"
+        },
+        {
+          "from": "heading",
+          "to": "heading",
+          "downgraded": false,
+          "runtime_result": "present"
+        },
+        {
+          "from": "text-editor",
+          "to": "text-editor",
+          "downgraded": false,
+          "runtime_result": "present"
+        },
+        {
+          "from": "button",
+          "to": "button",
+          "downgraded": false,
+          "runtime_result": "present"
+        },
+        {
+          "from": "image",
+          "to": "image",
+          "downgraded": false,
+          "runtime_result": "present"
+        }
+      ],
+      "unavailable": [],
+      "unknown": [],
+      "downgrades": [],
+      "failures": []
+    },
+    "tokens": {
+      "ok": true,
+      "resolved": [
+        {
+          "token": "color.page_bg",
+          "value": "color.page_bg",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.surface",
+          "value": "color.surface",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.text",
+          "value": "color.text",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.muted",
+          "value": "color.muted",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.primary",
+          "value": "#000000",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.border",
+          "value": "color.border",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.focus",
+          "value": "#000000",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "color.hover",
+          "value": "#000000",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "type.display",
+          "value": {
+            "font_family": "inherit",
+            "desktop": "3.25rem",
+            "tablet": "2.5rem",
+            "mobile": "2rem",
+            "weight": "700",
+            "line_height": "1.1",
+            "line_height_tablet": "1.1",
+            "line_height_mobile": "1.1"
+          },
+          "source": "resolved_plan"
+        },
+        {
+          "token": "type.section_title",
+          "value": {
+            "font_family": "inherit",
+            "desktop": "2.5rem",
+            "tablet": "2rem",
+            "mobile": "1.75rem",
+            "weight": "700",
+            "line_height": "1.15",
+            "line_height_tablet": "1.15",
+            "line_height_mobile": "1.15"
+          },
+          "source": "resolved_plan"
+        },
+        {
+          "token": "type.body",
+          "value": {
+            "font_family": "inherit",
+            "desktop": "1.0625rem",
+            "tablet": "1rem",
+            "mobile": "1rem",
+            "weight": "400",
+            "line_height": "1.65",
+            "line_height_tablet": "1.65",
+            "line_height_mobile": "1.65"
+          },
+          "source": "resolved_plan"
+        },
+        {
+          "token": "space.section",
+          "value": "5rem",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "space.component",
+          "value": "1.25rem",
+          "source": "resolved_plan"
+        },
+        {
+          "token": "radius.card",
+          "value": "0.25rem",
+          "source": "resolved_plan"
+        }
+      ],
+      "missing": [],
+      "fallbacks": [],
+      "collisions": []
+    },
+    "contrast": {
+      "ok": true,
+      "pairs": [
+        {
+          "foreground": "color.text",
+          "background": "color.page_bg",
+          "ratio": 15.64916362485115,
+          "minimum": 4.5,
+          "font_size_px": 16,
+          "font_weight": 400,
+          "large_text": false,
+          "ui_object": false
+        },
+        {
+          "foreground": "color.muted",
+          "background": "color.page_bg",
+          "ratio": 6.666771905041054,
+          "minimum": 4.5,
+          "font_size_px": 16,
+          "font_weight": 400,
+          "large_text": false,
+          "ui_object": false
+        },
+        {
+          "foreground": "color.surface",
+          "background": "color.primary",
+          "ratio": 21,
+          "minimum": 3,
+          "font_size_px": 16,
+          "font_weight": 400,
+          "large_text": false,
+          "ui_object": true
+        },
+        {
+          "foreground": "color.surface",
+          "background": "color.hover",
+          "ratio": 21,
+          "minimum": 3,
+          "font_size_px": 16,
+          "font_weight": 400,
+          "large_text": false,
+          "ui_object": true
+        },
+        {
+          "foreground": "color.focus",
+          "background": "color.page_bg",
+          "ratio": 18.525235551750967,
+          "minimum": 3,
+          "font_size_px": 16,
+          "font_weight": 400,
+          "large_text": false,
+          "ui_object": true
+        }
+      ],
+      "errors": []
+    }
+  },
+  "layout": {
+    "schema": "wpae-layout-report-v1",
+    "ok": true,
+    "violations": [],
+    "breakpoints": [
+      {
+        "breakpoint": "desktop",
+        "container_width": 1376,
+        "used_width": 1376,
+        "mobile_stack_result": "stack"
+      },
+      {
+        "breakpoint": "laptop",
+        "container_width": 960,
+        "used_width": 960,
+        "mobile_stack_result": "stack"
+      },
+      {
+        "breakpoint": "tablet",
+        "container_width": 704,
+        "used_width": 704,
+        "mobile_stack_result": "stack"
+      },
+      {
+        "breakpoint": "mobile",
+        "container_width": 358,
+        "used_width": 358,
+        "mobile_stack_result": "stack"
+      }
+    ]
+  },
+  "services": [],
+  "provider_calls": 0,
+  "write_count": 0
+}
