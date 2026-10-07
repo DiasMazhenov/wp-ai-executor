@@ -2417,13 +2417,39 @@ $GLOBALS['http_calls'] = $GLOBALS['writes'] = [];
 $GLOBALS['responses'] = [];
 $GLOBALS['test_project_typography_tokens'] = true;
 $services_retrieval_before = count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) );
+$services_original_kit_settings = $GLOBALS['test_elementor_kit_settings'];
+// Exercise the real chat entrypoint with preview-confirmed page colors as the
+// only source for page background/text. Services must carry this context into
+// the same accepted Plan that already contains its automatic composition.
+$GLOBALS['test_elementor_kit_settings'] = [
+	'system_colors' => [
+		[ '_id' => 'primary', 'title' => 'Primary', 'color' => '#4460EC' ],
+		[ '_id' => 'secondary', 'title' => 'Secondary', 'color' => '#4b5563' ],
+		[ '_id' => 'accent', 'title' => 'Accent', 'color' => '#61CE70' ],
+	],
+	'custom_colors' => [
+		[ '_id' => 'focus', 'title' => 'Focus', 'color' => '#2563eb' ],
+		[ '_id' => 'hover', 'title' => 'Hover', 'color' => '#2563eb' ],
+	],
+];
 $services_request = new WP_REST_Request();
 $services_request->set_param( 'message', $services_message );
-$services_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'services-active-default-identity' ] );
+$services_request->set_param( 'context', [
+	'post_id' => 42,
+	'operation_identity' => 'services-active-default-identity',
+	'page_tokens_confirmed' => true,
+	'page_tokens_source' => 'elementor_preview_computed_body',
+	'page_tokens' => [ 'color.page_bg' => '#f6f0e6', 'color.text' => '#111827' ],
+	'page_tokens_viewport' => [ 'width' => 1025, 'height' => 860 ],
+] );
 $services_response = wpae_llm_chat_request( $services_request );
+$GLOBALS['test_elementor_kit_settings'] = $services_original_kit_settings;
 unset( $GLOBALS['test_project_typography_tokens'] );
 $services_response_data = $services_response instanceof WP_REST_Response ? $services_response->get_data() : [];
 $services_trace = (array) ( $services_response_data['diagnostics']['design_pipeline']['services'] ?? [] );
+$services_pipeline = (array) ( $services_response_data['diagnostics']['design_pipeline'] ?? [] );
+$services_accepted_decision = (array) ( $services_pipeline['plan']['composition_decision'] ?? [] );
+$services_resolved_visual = (array) ( $services_pipeline['plan']['resolved_visual'] ?? [] );
 $services_written = array_slice( (array) $GLOBALS['page_data'], count( $legacy_page ) );
 $services_written_json = wp_json_encode( $services_written, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 $services_heading_values = [];
@@ -2462,6 +2488,8 @@ $services_plan_brief_hash = (string) ( $services_response_data['diagnostics']['d
 $services_readback_matches = wp_json_encode( $services_readback ) === wp_json_encode( $GLOBALS['page_data'] );
 check( ! empty( $services_response_data['ok'] ) && ( $services_response_data['diagnostics']['action_path'] ?? '' ) === 'pipeline' && ( $services_response_data['diagnostics']['provider_calls'] ?? -1 ) === 0 && count( $GLOBALS['http_calls'] ) === 0 && count( $GLOBALS['writes'] ) === 1, 'Active ordinary Services chat with a retrieved library candidate takes the typed pipeline and one mocked write: ' . wp_json_encode( [ 'ok' => $services_response_data['ok'] ?? false, 'path' => $services_response_data['diagnostics']['action_path'] ?? '', 'provider_calls' => count( $GLOBALS['http_calls'] ), 'writes' => count( $GLOBALS['writes'] ), 'services' => $services_trace, 'error' => $services_response instanceof WP_Error ? $services_response->get_error_code() : '' ] ) );
 check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) === $services_retrieval_before && ( $services_trace['effective_route'] ?? '' ) === 'services_typed_recipe_pipeline' && ( $services_trace['recipe_id'] ?? '' ) === 'services.icon_cards' && ( $services_trace['recipe_source'] ?? '' ) === 'content_ranked_catalog' && empty( $services_trace['library_required'] ) && empty( $services_trace['library_applied'] ), 'M2 ordinary canonical Services uses the shared content selector without unused retrieval ' . wp_json_encode( $services_trace ) );
+check( ( $services_accepted_decision['request_selection']['mode'] ?? '' ) === 'automatic' && array_key_exists( 'record_id', $services_accepted_decision['request_selection'] ?? [] ) && $services_accepted_decision['request_selection']['record_id'] === null && ( $services_accepted_decision['record']['id'] ?? '' ) === 'services.icon_cards' && ( $services_accepted_decision['policy_version'] ?? '' ) === 'wpae-composition-selection-v2' && ( $services_accepted_decision['visual_profile'] ?? '' ) === 'editorial_light' && ( $services_resolved_visual['profile'] ?? '' ) === 'editorial_light', 'M2.2 automatic Services request remains automatic while the accepted record/profile are frozen in the single Plan' );
+check( ( $services_resolved_visual['values']['color.page_bg'] ?? '' ) === '#f6f0e6' && ( $services_resolved_visual['sources']['color.page_bg'] ?? '' ) === 'confirmed_elementor_preview_body' && ( $services_resolved_visual['values']['color.text'] ?? '' ) === '#111827' && ( $services_resolved_visual['sources']['color.text'] ?? '' ) === 'confirmed_elementor_preview_body' && ( $services_resolved_visual['page_context']['viewport']['width'] ?? 0 ) === 1025 && ! empty( $services_pipeline['plan']['validation']['ok'] ), 'M2.2 Services carries confirmed preview palette and viewport through the real chat entrypoint into the accepted, validated DesignPlan' );
 check( $services_brief_hash !== '' && $services_brief_hash === $services_content_plan_hash && $services_brief_hash === $services_plan_brief_hash && ( $services_operation_ledger['brief_hash'] ?? '' ) === $services_brief_hash, 'One canonical Brief hash is shared by content plan, DesignPlan and durable operation ledger' );
 check( count( $services_written ) === 1 && count( (array) $services_readback ) === count( (array) $GLOBALS['page_data'] ) && $services_readback_matches && ( $services_operation_ledger['current_state'] ?? '' ) === 'written' && ( $services_operation_ledger['root_ids'] ?? [] ) === [ (string) ( $services_written[0]['id'] ?? '' ) ] && ( $services_operation_ledger['saved_hash'] ?? '' ) === hash( 'sha256', (string) wp_json_encode( $services_readback ) ), 'One successful transaction has a matching saved readback and operation/root/hash record' );
 check( count( $services_typed_list ) === 0 && count( $services_typed_rows ) === 0 && count( $find_service_class_nodes( $services_written, 'wpae-services-icon-cards' ) ) === 1 && ! $find_service_class_nodes( $services_written, 'wpae-services-photo-grid' ) && ! $find_service_class_nodes( $services_written, 'wpae-services-split-lead' ) && count( array_filter( $services_written_widgets, static fn( string $type ): bool => $type === 'icon' ) ) === 3 && ! in_array( 'image', $services_written_widgets, true ), 'Execute/readback preserves the shared selector’s icon-card recipe and exact native topology' );

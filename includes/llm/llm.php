@@ -10898,6 +10898,34 @@ function wpae_llm_execution_failure_diagnostics( array $execution ): array {
     ];
 }
 
+/** Build the allowlisted planning context shared by the typed Services decision and Plan. */
+function wpae_llm_services_planning_context( int $post_id, array $editor_context ): array {
+	$context = [ 'post_id' => absint( $post_id ) ];
+	$string_fields = [ 'services_recipe_id', 'services_lead_service_ref', 'composition_record', 'visual_profile', 'page_tokens_source' ];
+	foreach ( $string_fields as $field ) {
+		if ( array_key_exists( $field, $editor_context ) && is_scalar( $editor_context[ $field ] ) ) {
+			$context[ $field ] = trim( (string) $editor_context[ $field ] );
+		}
+	}
+	if ( array_key_exists( 'composition_version', $editor_context ) && is_numeric( $editor_context['composition_version'] ) ) {
+		$context['composition_version'] = (int) $editor_context['composition_version'];
+	}
+	foreach ( [ 'page_tokens', 'reference_tokens', 'page_tokens_viewport' ] as $field ) {
+		if ( is_array( $editor_context[ $field ] ?? null ) ) {
+			$context[ $field ] = $editor_context[ $field ];
+		}
+	}
+	foreach ( [ 'page_tokens_confirmed', 'reference_tokens_confirmed' ] as $field ) {
+		if ( array_key_exists( $field, $editor_context ) && is_scalar( $editor_context[ $field ] ) ) {
+			$context[ $field ] = (bool) $editor_context[ $field ];
+		}
+	}
+	if ( is_array( $editor_context['media_references'] ?? null ) ) {
+		$context['media_references'] = array_values( array_slice( $editor_context['media_references'], 0, 24 ) );
+	}
+	return $context;
+}
+
 function wpae_llm_chat_request( WP_REST_Request $request ) {
     if ( ! wpae_llm_rate_limit_check() ) {
         return new WP_Error( 'wpae_llm_rate_limited', 'Лимит LLM-запросов исчерпан. Повторите позже.', [ 'status' => 429, 'window_seconds' => WPAE_LLM_CALL_WINDOW ] );
@@ -11018,19 +11046,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ! $vision_repair
 		&& ! $vision_regenerate
 		&& ! $replacement_requested;
-	$services_planning_context = [ 'post_id' => $selected_post_id ];
-	if ( is_array( $editor_context_input ) ) {
-		foreach ( [ 'services_recipe_id', 'services_lead_service_ref', 'composition_record', 'composition_version', 'visual_profile' ] as $context_key ) {
-			if ( array_key_exists( $context_key, $editor_context_input ) && is_scalar( $editor_context_input[ $context_key ] ) ) {
-				$services_planning_context[ $context_key ] = $context_key === 'composition_version'
-					? (int) $editor_context_input[ $context_key ]
-					: trim( (string) $editor_context_input[ $context_key ] );
-			}
-		}
-		if ( is_array( $editor_context_input['media_references'] ?? null ) ) {
-			$services_planning_context['media_references'] = array_values( array_slice( $editor_context_input['media_references'], 0, 24 ) );
-		}
-	}
+	$services_planning_context = wpae_llm_services_planning_context( $selected_post_id, is_array( $editor_context_input ) ? $editor_context_input : [] );
 	$services_recipe_decision = [];
 	if ( $services_route_request && ! empty( $services_brief ) && function_exists( 'wpae_design_plan_services_recipe_decision' ) ) {
 		$services_recipe_decision = wpae_design_plan_services_recipe_decision( $services_brief, $services_planning_context );
