@@ -2171,7 +2171,8 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		$errors[] = 'missing_tokens:' . implode( ',', $token_report['missing'] );
 	}
 	$contrast_tokens = $is_current_canonical_plan ? (array) ( $plan['resolved_visual']['values'] ?? [] ) : [];
-	$contrast = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $contrast_tokens ) : [ 'ok' => true, 'errors' => [] ];
+	$contrast_context = $is_current_canonical_plan ? (array) ( $plan['resolved_visual']['contrast_context'] ?? [] ) : [];
+	$contrast = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $contrast_tokens, $contrast_context ) : [ 'ok' => true, 'errors' => [] ];
 	if ( empty( $contrast['ok'] ) ) {
 		$errors[] = 'contrast:' . implode( ',', (array) ( $contrast['errors'] ?? [] ) );
 	}
@@ -2193,6 +2194,9 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 	$page_input = ! empty( $context['page_tokens_confirmed'] ) && is_array( $context['page_tokens'] ?? null ) ? $context['page_tokens'] : [];
 	$page_source = sanitize_key( (string) ( $context['page_tokens_source'] ?? '' ) );
 	$uses_preview_inheritance = $page_source === 'elementor_preview_computed_body';
+	$preview_page_bg_underlay = $uses_preview_inheritance && preg_match( '/^#[0-9a-f]{6}$/i', (string) ( $page_input['color.page_bg'] ?? '' ) )
+		? strtolower( (string) $page_input['color.page_bg'] )
+		: '';
 	$preview_page = [];
 	$page = array_intersect_key( $page_input, array_fill_keys( $color_refs, true ) );
 	foreach ( $page as $token => $value ) {
@@ -2210,16 +2214,25 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 	// guide non-color styling but never replace confirmed site color roles.
 	$profile_id = is_string( $context['visual_profile'] ?? '' ) ? ( $context['visual_profile'] ?? '' ) : '';
 	$profile = array_filter( (array) ( wpae_composition_visual_profiles()[ $profile_id ] ?? [] ), static fn( $value, $key ): bool => ! str_starts_with( (string) $key, 'color.' ), ARRAY_FILTER_USE_BOTH );
+	$page_bg_underlay = '';
+	foreach ( [ $preview_page_bg_underlay, $page['color.page_bg'] ?? '', $project['color.page_bg'] ?? '' ] as $candidate_underlay ) {
+		if ( is_string( $candidate_underlay ) && preg_match( '/^#[0-9a-f]{6}$/i', $candidate_underlay ) ) { $page_bg_underlay = strtolower( $candidate_underlay ); break; }
+	}
 	$explicit = [];
 	$surface = wpae_design_plan_constraint_value( $brief, 'surface_color', '' );
-	if ( preg_match( '/^#[0-9a-f]{6}$/i', (string) $surface ) ) { $explicit['color.page_bg'] = $surface; }
+	if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', (string) $surface ) ) { $explicit['color.page_bg'] = strtolower( (string) $surface ); }
 	$radius = wpae_design_plan_constraint_value( $brief, 'border_radius', '' );
 	if ( preg_match( '/^\d+(?:\.\d+)?(?:px|rem|em)$/', (string) $radius ) ) { $explicit['radius.card'] = $radius; }
 	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) { if ( ( $constraint['kind'] ?? '' ) === 'visual_token' && array_key_exists( $constraint['token'] ?? '', array_replace( $defaults, $profile ) ) ) { $explicit[ $constraint['token'] ] = $constraint['value']; } }
 	$values = array_replace( $non_color_defaults, $project, $preview_page, $page, $profile, $explicit );
 	if ( ! isset( $values['color.surface'] ) && isset( $values['color.page_bg'] ) ) {
-		$values['color.surface'] = $values['color.page_bg'];
-		$palette['sources']['color.surface'] = 'semantic_alias:confirmed_color.page_bg';
+		if ( strlen( ltrim( (string) $values['color.page_bg'], '#' ) ) === 8 && $page_bg_underlay !== '' ) {
+			$values['color.surface'] = $page_bg_underlay;
+			$palette['sources']['color.surface'] = 'semantic_alias:opaque_page_background_underlay';
+		} else {
+			$values['color.surface'] = $values['color.page_bg'];
+			$palette['sources']['color.surface'] = 'semantic_alias:confirmed_color.page_bg';
+		}
 	}
 	if ( ! isset( $values['color.muted'] ) && isset( $values['color.text'] ) ) {
 		$values['color.muted'] = $values['color.text'];
@@ -2234,25 +2247,30 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 		if ( ! array_key_exists( $missing_role, $values ) || ( $values[$missing_role] === 'transparent' && $missing_role !== 'color.border' && empty( $values['color.page_bg'] ) ) ) { $value_errors[] = 'confirmed_palette_role_missing:' . str_replace( '.', '_', (string) $missing_role ); }
 	}
 	if ( ( $values['color.surface'] ?? '' ) === 'transparent' && empty( $values['color.page_bg'] ) ) { $value_errors[] = 'transparent_surface_without_confirmed_context'; }
+	if ( strlen( ltrim( (string) ( $values['color.page_bg'] ?? '' ), '#' ) ) === 8 && $page_bg_underlay === '' ) { $value_errors[] = 'alpha_page_background_requires_confirmed_opaque_underlay'; }
 	foreach ( $values as $key => $value ) {
 		if ( ! str_starts_with( (string) $key, 'color.' ) ) { continue; }
 		$transparent_allowed = in_array( $key, [ 'color.surface', 'color.border' ], true ) && $value === 'transparent';
-		if ( ! $transparent_allowed && ( ! is_string( $value ) || ! preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) ) {
+		$alpha_allowed = in_array( $key, [ 'color.page_bg', 'color.surface' ], true );
+		$color_pattern = $alpha_allowed ? '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i' : '/^#[0-9a-f]{6}$/i';
+		if ( ! $transparent_allowed && ( ! is_string( $value ) || ! preg_match( $color_pattern, $value ) ) ) {
 			$value_errors[] = 'visual_color_invalid_or_unverifiable:' . sanitize_key( str_replace( '.', '_', (string) $key ) );
 		}
 	}
 	$required_palette_roles = [ 'color.page_bg', 'color.surface', 'color.text', 'color.muted', 'color.primary', 'color.focus', 'color.hover' ];
 	$palette_complete = ! array_diff( $required_palette_roles, array_keys( $values ) );
-	$contrast = $palette_complete ? wpae_design_token_validate_contrast( $values ) : [ 'ok' => false, 'pairs' => [], 'errors' => [ 'confirmed_palette_incomplete' ] ];
+	$contrast_context = $page_bg_underlay !== '' ? [ 'background_underlay' => $page_bg_underlay, 'color.page_bg_underlay' => $page_bg_underlay, 'color.surface_underlay' => $page_bg_underlay ] : [];
+	$contrast = $palette_complete ? wpae_design_token_validate_contrast( $values, $contrast_context ) : [ 'ok' => false, 'pairs' => [], 'errors' => [ 'confirmed_palette_incomplete' ] ];
 	if ( $profile_id !== '' ) {
 		if ( isset( $values['color.surface'], $values['color.text'], $values['color.muted'], $values['color.primary'], $values['color.focus'], $values['color.hover'] ) ) {
-			$surface_contrast = wpae_design_token_validate_contrast( array_replace( $values, [ 'color.page_bg' => $values['color.surface'] ] ) );
+			$surface_contrast = wpae_design_token_validate_contrast( array_replace( $values, [ 'color.page_bg' => $values['color.surface'] ] ), $contrast_context );
 			foreach ( $surface_contrast['errors'] as $error ) { $value_errors[] = 'visual_surface_contrast:' . $error; }
 		}
 	}
 	if ( $profile_id !== '' ) {
 		foreach ( $values as $key => $value ) {
-			if ( str_starts_with( $key, 'color.' ) && ( ! is_string( $value ) || ( $key === 'color.border' ? ( $value !== 'transparent' && ! preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) : ! preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) ) ) { $value_errors[] = 'visual_color_invalid:' . $key; }
+			$profile_color_pattern = in_array( $key, [ 'color.page_bg', 'color.surface' ], true ) ? '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i' : '/^#[0-9a-f]{6}$/i';
+			if ( str_starts_with( $key, 'color.' ) && ( ! is_string( $value ) || ( $key === 'color.border' ? ( $value !== 'transparent' && ! preg_match( '/^#[0-9a-f]{6}$/i', $value ) ) : ! preg_match( $profile_color_pattern, $value ) ) ) ) { $value_errors[] = 'visual_color_invalid:' . $key; }
 			if ( str_starts_with( $key, 'space.' ) || str_starts_with( $key, 'radius.' ) || $key === 'layout.copy_width' ) {
 				if ( ! is_string( $value ) || ! preg_match( '/^\d+(?:\.\d+)?(?:px|rem|em)$/', $value ) ) { $value_errors[] = 'visual_dimension_invalid:' . $key; }
 			}
@@ -2271,5 +2289,5 @@ function wpae_design_plan_resolve_visual( array $brief, array $context ): array 
 	$sources = [];
 	foreach ( $values as $ref => $value ) { $sources[ $ref ] = isset( $explicit[ $ref ] ) ? 'explicit_brief' : ( isset( $profile[ $ref ] ) ? 'visual_profile:' . $profile_id : ( isset( $preview_page[ $ref ] ) ? 'confirmed_elementor_preview_body' : ( isset( $page[ $ref ] ) ? 'confirmed_page' : ( $palette['sources'][$ref] ?? ( str_starts_with( $ref, 'color.' ) ? 'unconfirmed' : 'safe_default' ) ) ) ) ); }
 	if ( $adjustments ) { $sources['color.muted'] = 'plan_contrast_adjustment'; }
-	return [ 'errors' => array_values( array_unique( $value_errors ) ), 'profile' => $profile_id, 'values' => $values, 'sources' => $sources, 'palette' => [ 'sources' => $palette['sources'] ?? [], 'missing' => $palette['missing'] ?? [], 'unconfirmed_project_defaults' => $palette['unconfirmed'] ?? [], 'elementor_global_color_ids' => $palette['global_color_ids'] ?? [] ], 'page_context' => $page_context, 'precedence' => [ 'safe_non_color_default', 'confirmed_wpae_project_option_or_elementor_global_color', 'elementor_preview_inherited_context_missing_roles_only', 'confirmed_page', 'selected_visual_profile_non_color', 'explicit_brief' ], 'adjustments' => $adjustments, 'contrast' => $contrast ];
+	return [ 'errors' => array_values( array_unique( $value_errors ) ), 'profile' => $profile_id, 'values' => $values, 'sources' => $sources, 'palette' => [ 'sources' => $palette['sources'] ?? [], 'missing' => $palette['missing'] ?? [], 'unconfirmed_project_defaults' => $palette['unconfirmed'] ?? [], 'elementor_global_color_ids' => $palette['global_color_ids'] ?? [] ], 'page_context' => $page_context, 'contrast_context' => $contrast_context, 'precedence' => [ 'safe_non_color_default', 'confirmed_wpae_project_option_or_elementor_global_color', 'elementor_preview_inherited_context_missing_roles_only', 'confirmed_page', 'selected_visual_profile_non_color', 'explicit_brief' ], 'adjustments' => $adjustments, 'contrast' => $contrast ];
 }

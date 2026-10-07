@@ -24,7 +24,7 @@
     "assets/previews/vocario-upcoming-event.jpg": "9303a6e4575b2a0a1d1b3680609e5d9e552c0565ea8a225312558fb908716265",
     "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
     "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
-    "includes/design/token-resolution.php": "d954f2b4085ffbc34b8b4fe2c358c7c4ee1c3bd541ec76481b6bb742b898a3fc",
+    "includes/design/token-resolution.php": "093dfb57674ea00b2c0077540ccff7b0fb8da50ffe42296292c892dd0341e508",
     "includes/elementor/accepted-contract.php": "3b234cb4ca29cef19339f5ab6bb67005f5b616591ad0cc34ea952f0bb33e397c",
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
@@ -239,7 +239,7 @@
     "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
     "includes/llm/brief-ir.php": "faffac86ceac85db8de19d49972a17a5a2edb9de3d3d07adbd59b48a906ae359",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "227c539d2a9241c88df89081690ff05730f19ae9b951e704a91a84eb23d5248d",
+    "includes/llm/design-plan.php": "69d0cd16d488a905229dd42561d1195b573caef014b3c05dcd3766a9b1ce9e7d",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
     "includes/llm/llm.php": "40fd7be95b288ccbae75ac0723882af4fcc49932fafa5d60e2013aeee0d2a989",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "044f8e9e52a6d4e7a0df6fb62190237b8873cda8ea799182dcffdde107b14de9"
+    "wp-ai-executor.php": "694c66034987a62086f18616696855becd79c054cd203957fc5d54b9fb8ed2b8"
   }
 }

@@ -228,6 +228,9 @@ $profile_palette_plan = wpae_design_plan_resolve_visual( [], [ 'canonical_create
 $check( $profile_palette_plan['values']['color.page_bg'] === '#f6f0e6' && $profile_palette_plan['values']['color.surface'] === '#ffffff' && $profile_palette_plan['values']['color.primary'] === '#4460ec' && $profile_palette_plan['sources']['color.page_bg'] === 'elementor_global_color' && ! str_starts_with( $profile_palette_plan['sources']['color.page_bg'], 'visual_profile:' ), 'M2.2 selected visual profile preserves confirmed site colors instead of its embedded colors' );
 $explicit_palette_plan = wpae_design_plan_resolve_visual( [ 'layout_constraints' => [ [ 'kind' => 'visual_token', 'token' => 'color.page_bg', 'value' => '#eeddcc' ] ] ], [ 'canonical_create' => true, 'visual_profile' => 'editorial_light' ] );
 $check( $explicit_palette_plan['values']['color.page_bg'] === '#eeddcc' && $explicit_palette_plan['sources']['color.page_bg'] === 'explicit_brief', 'M2.2 explicit Brief color override retains value and provenance above site palette' );
+$tint_visual = wpae_design_plan_resolve_visual( [ 'layout_constraints' => [ [ 'kind' => 'surface_color', 'value' => '#61CE7033' ] ] ], [ 'canonical_create' => true, 'visual_profile' => 'editorial_light', 'page_tokens_confirmed' => true, 'page_tokens_source' => 'elementor_preview_computed_body', 'page_tokens' => [ 'color.page_bg' => '#ffffff', 'color.text' => '#333333' ] ] );
+$page_bg_contrast = array_values( array_filter( (array) ( $tint_visual['contrast']['pairs'] ?? [] ), static fn( array $pair ): bool => ( $pair['background'] ?? '' ) === 'color.page_bg' ) );
+$check( empty( $tint_visual['errors'] ) && ( $tint_visual['values']['color.page_bg'] ?? '' ) === '#61ce7033' && ( $tint_visual['sources']['color.page_bg'] ?? '' ) === 'explicit_brief' && ( $tint_visual['contrast_context']['background_underlay'] ?? '' ) === '#ffffff' && ( $page_bg_contrast[0]['effective_background'] ?? '' ) === '#dff5e2', 'M2.2 explicit translucent accent background survives the selected profile and contrast is composed over measured page body' );
 $saved_palette_option = $wpae_test_options['wp_ai_executor_design_tokens'] ?? null;
 $saved_kit_settings = $wpae_test_elementor_kit_settings;
 $wpae_test_options['wp_ai_executor_design_tokens'] = [];
@@ -721,6 +724,11 @@ $explicit_surface_ir = wpae_elementor_ir_from_design_plan( $explicit_surface_pla
 $explicit_surface_compiled = wpae_elementor_ir_compile( $explicit_surface_ir, $explicit_surface_brief, [ 'palette' => [ 'page_bg' => '#f6f0e6', 'surface' => '#ffffff', 'text' => '#111827', 'muted' => '#4b5563', 'primary' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'explicit-surface' ] );
 $check( ( $explicit_surface_plan['sections'][0]['surface_override'] ?? '' ) === '#123456', 'explicit background is retained in the typed plan' );
 $check( ( $explicit_surface_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#123456', 'explicit background overrides the semantic surface token only at the compiled section' );
+$alpha_surface_brief = wpae_brief_ir_parse( 'pricing: white cards on background #61CE7033' );
+$alpha_surface_plan = wpae_design_plan_from_brief( $alpha_surface_brief );
+$alpha_surface_ir = wpae_elementor_ir_from_design_plan( $alpha_surface_plan, $alpha_surface_brief );
+$alpha_surface_compiled = wpae_elementor_ir_compile( $alpha_surface_ir, $alpha_surface_brief, [ 'palette' => [ 'page_bg' => '#f6f0e6', 'surface' => '#ffffff', 'text' => '#111827', 'muted' => '#4b5563', 'primary' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'explicit-alpha-surface' ] );
+$check( ( $alpha_surface_plan['sections'][0]['surface_override'] ?? '' ) === '#61ce7033' && ( $alpha_surface_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#61ce7033', 'explicit CSS alpha color is preserved from Brief through DesignPlan and native Elementor background control' );
 
 $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
 $check( empty( $unknown['ok'] ) && $unknown['reason'] === 'not_in_capability_registry', 'unknown widget is rejected instead of guessed into a fallback' );

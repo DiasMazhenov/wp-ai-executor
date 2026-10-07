@@ -282,20 +282,31 @@ function wpae_design_token_validate_refs( array $refs, array $tokens = [] ): arr
 	return $report;
 }
 
-function wpae_design_hex_luminance( string $color ): ?float {
-	$color = ltrim( trim( $color ), '#' );
-	if ( strlen( $color ) === 8 ) {
-		$color = substr( $color, 0, 6 );
-	}
-	if ( strlen( $color ) !== 6 || ! ctype_xdigit( $color ) ) {
-		return null;
-	}
+function wpae_design_hex_channels( string $color ): ?array {
+	$hex = ltrim( strtolower( trim( $color ) ), '#' );
+	if ( ! in_array( strlen( $hex ), [ 6, 8 ], true ) || ! ctype_xdigit( $hex ) ) { return null; }
+	return [ hexdec( substr( $hex, 0, 2 ) ), hexdec( substr( $hex, 2, 2 ) ), hexdec( substr( $hex, 4, 2 ) ), strlen( $hex ) === 8 ? hexdec( substr( $hex, 6, 2 ) ) / 255 : 1.0 ];
+}
+
+/** Composite a CSS #RRGGBBAA color over an opaque hex background. */
+function wpae_design_hex_composite( string $color, string $underlay ): ?string {
+	$front = wpae_design_hex_channels( $color ); $back = wpae_design_hex_channels( $underlay );
+	if ( ! is_array( $front ) || ! is_array( $back ) || $back[3] < 0.999999 ) { return null; }
+	$alpha = $front[3];
 	$channels = [];
-	foreach ( str_split( $color, 2 ) as $channel ) {
-		$value = hexdec( $channel ) / 255;
-		$channels[] = $value <= 0.03928 ? $value / 12.92 : pow( ( $value + 0.055 ) / 1.055, 2.4 );
+	for ( $i = 0; $i < 3; $i++ ) { $channels[] = (int) round( $front[$i] * $alpha + $back[$i] * ( 1 - $alpha ) ); }
+	return sprintf( '#%02x%02x%02x', $channels[0], $channels[1], $channels[2] );
+}
+
+function wpae_design_hex_luminance( string $color ): ?float {
+	$channels = wpae_design_hex_channels( $color );
+	if ( ! is_array( $channels ) || $channels[3] < 0.999999 ) { return null; }
+	$luminance_channels = [];
+	foreach ( array_slice( $channels, 0, 3 ) as $channel ) {
+		$value = $channel / 255;
+		$luminance_channels[] = $value <= 0.03928 ? $value / 12.92 : pow( ( $value + 0.055 ) / 1.055, 2.4 );
 	}
-	return ( 0.2126 * $channels[0] ) + ( 0.7152 * $channels[1] ) + ( 0.0722 * $channels[2] );
+	return ( 0.2126 * $luminance_channels[0] ) + ( 0.7152 * $luminance_channels[1] ) + ( 0.0722 * $luminance_channels[2] );
 }
 
 function wpae_design_token_validate_contrast( array $tokens = [], array $context = [] ): array {
@@ -314,13 +325,16 @@ function wpae_design_token_validate_contrast( array $tokens = [], array $context
 		$minimum = ! empty( $pair['ui_object'] ) || $is_large_text ? 3.0 : (float) $pair['minimum'];
 		$foreground = wpae_design_token_value( $pair['foreground'], $tokens );
 		$background = wpae_design_token_value( $pair['background'], $tokens );
-		$foreground_luminance = is_string( $foreground ) ? wpae_design_hex_luminance( $foreground ) : null;
-		$background_luminance = is_string( $background ) ? wpae_design_hex_luminance( $background ) : null;
+		$underlay = (string) ( $context[ $pair['background'] . '_underlay' ] ?? $context['background_underlay'] ?? '' );
+		$effective_background = is_string( $background ) && strlen( ltrim( $background, '#' ) ) === 8 ? ( $underlay !== '' ? wpae_design_hex_composite( $background, $underlay ) : null ) : $background;
+		$effective_foreground = is_string( $foreground ) && strlen( ltrim( $foreground, '#' ) ) === 8 && is_string( $effective_background ) ? wpae_design_hex_composite( $foreground, $effective_background ) : $foreground;
+		$foreground_luminance = is_string( $effective_foreground ) ? wpae_design_hex_luminance( $effective_foreground ) : null;
+		$background_luminance = is_string( $effective_background ) ? wpae_design_hex_luminance( $effective_background ) : null;
 		$ratio = null;
 		if ( $foreground_luminance !== null && $background_luminance !== null ) {
 			$ratio = ( max( $foreground_luminance, $background_luminance ) + 0.05 ) / ( min( $foreground_luminance, $background_luminance ) + 0.05 );
 		}
-		$entry = [ 'foreground' => $pair['foreground'], 'background' => $pair['background'], 'ratio' => $ratio, 'minimum' => $minimum, 'font_size_px' => $font_size_px, 'font_weight' => $font_weight, 'large_text' => $is_large_text, 'ui_object' => ! empty( $pair['ui_object'] ) ];
+		$entry = [ 'foreground' => $pair['foreground'], 'background' => $pair['background'], 'effective_foreground' => $effective_foreground, 'effective_background' => $effective_background, 'ratio' => $ratio, 'minimum' => $minimum, 'font_size_px' => $font_size_px, 'font_weight' => $font_weight, 'large_text' => $is_large_text, 'ui_object' => ! empty( $pair['ui_object'] ) ];
 		$report['pairs'][] = $entry;
 		if ( $ratio === null || $ratio + 0.0001 < $minimum ) {
 			$report['errors'][] = $pair['foreground'] . '_on_' . $pair['background'];
