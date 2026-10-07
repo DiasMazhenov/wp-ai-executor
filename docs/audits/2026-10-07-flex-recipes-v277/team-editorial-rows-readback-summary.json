@@ -1,0 +1,405 @@
+{
+  "post_id": 5214,
+  "captured_at": "2026-10-07T10:46:24.700Z",
+  "format": "wpae-elementor-selection-v1",
+  "root_id": "faf156d",
+  "source": "Elementor editor selection copy after reload",
+  "expected_field_count": 15,
+  "readback_field_count": 15,
+  "exact_authored_copy_match": true,
+  "actual_fields": [
+    "ТЕСТОВАЯ КОМАНДА",
+    "Люди и роли",
+    "Синтетические данные для проверки состава команды и сохранения точного текста",
+    "Тестовый участник 1",
+    "Дизайнер",
+    "Проверяет результат.",
+    "Тестовый участник 2",
+    "Руководитель исследований и проектирования цифровых сервисов",
+    "Отвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки.",
+    "Тестовый участник 3",
+    "Разработчик",
+    "Проверяет результат.",
+    "Тестовый участник 4",
+    "Редактор",
+    "Отвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+  ],
+  "container_count": 25,
+  "all_native_containers_flex": true,
+  "containers": [
+    {
+      "id": "faf156d",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "8bed4e9",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "px",
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "070334c",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "",
+      "columns": null,
+      "gap": {
+        "unit": "px",
+        "size": 0,
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "641aff6",
+      "type": "flex",
+      "dir": "row",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "e0a8792",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "83b4db1",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "2a51882",
+      "type": "flex",
+      "dir": "row",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "fcd87ba",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "e3f7677",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "e5a3c29",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "29b1a0c",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "ebe2d1f",
+      "type": "flex",
+      "dir": "row",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "068609c",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "1664038",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "ef9405c",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "0ec0a8f",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "344d92e",
+      "type": "flex",
+      "dir": "row",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "a7e9bb7",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "8713e08",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "dfbd617",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "f56c1a5",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "711b0af",
+      "type": "flex",
+      "dir": "row",
+      "dirTablet": "column",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "fad88ea",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "5e20ca7",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "column",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "row": "0.75",
+        "column": "0.75",
+        "isLinked": true
+      }
+    },
+    {
+      "id": "54020d8",
+      "type": "flex",
+      "dir": "column",
+      "dirTablet": "",
+      "dirMobile": "",
+      "columns": null,
+      "gap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      }
+    }
+  ]
+}

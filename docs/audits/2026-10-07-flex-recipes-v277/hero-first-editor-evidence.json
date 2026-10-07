@@ -1,0 +1,175 @@
+{
+  "operation": "wpae-0522bdba1ef9256d",
+  "firstResult": true,
+  "ui": {
+    "details": [
+      {
+        "summary": "JSON диагностики LLM",
+        "text": "JSON диагностики LLM\n{\n  \"action_path\": \"pipeline\",\n  \"provider_calls\": 0,\n  \"route\": \"local_deterministic\",\n  \"design_pipeline\": {\n    \"schema\": \"wpae-design-pipeline-trace-v1\",\n    \"mode\": \"active\",\n    \"status\": \"written\",\n    \"brief\": {\n      \"schema\": \"wpae-brief-v1\",\n      \"hash\": \"3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7\",\n      \"locale\": \"ru\",\n      \"archetype\": \"hero\",\n      \"intake_source\": \"deterministic_parser\",\n      \"content_count\": 4,\n      \"ambiguity_count\": 0,\n      \"warnings\": [],\n      \"validation\": {\n        \"ok\": true,\n        \"errors\": [],\n        \"services\": []\n      }\n    },\n    \"library_retrieval\": {\n      \"status\": \"skipped\",\n      \"reason\": \"ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed\",\n      \"called\": false\n    },\n    \"content_plan\": {\n      \"brief_hash\": \"3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7\",\n      \"validation\": {\n        \"ok\": true,\n        \"errors\": [],\n        \"services\": []\n      },\n      \"item_count\": 0\n    },\n    \"plan\": {\n      \"schema\": \"wpae-design-plan-v1\",\n      \"hash\": \"68a390812f3a82277b80b5e79901e68404c8f0ecdde01495081be7c60595fe67\",\n      \"brief_hash\": \"3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7\",\n      \"archetype\": \"hero\",\n      \"composition_decision\": {\n        \"identity\": \"hero.split_60_40\",\n        \"source\": \"explicit_record\",\n        \"slot_bindings\": [\n          {\n            \"role\": \"copy_group\",\n            \"allowed_widgets\": [\n              \"heading\",\n              \"text-editor\",\n              \"button\",\n              \"container\"\n            ],\n            \"content_refs\": [\n              \"hero_eyebrow\",\n              \"hero_title\",\n              \"hero_body\",\n              \"hero_cta\"\n            ],\n            \"token_refs\": [\n              \"color.text\",\n              \"color.muted\",\n              \"color.primary\",\n              \"type.display\",\n              \"type.section_title\",\n              \"type.body\",\n              \"space.component\"\n            ],\n            \"layout_constraints\": {\n              \"min_width\": 0,\n              \"max_width\": 100,\n              \"eyebrow_presentation\": \"pill\"\n            },\n            \"responsive_policy\": \"copy_first_stack\",\n            \"media_refs\": [],\n            \"editable_fields\": [\n              \"text\",\n              \"url\"\n            ],\n            \"provenance\": {\n              \"source\": \"brief\",\n              \"roles\": [\n                \"brand\",\n                \"eyebrow\",\n                \"title\",\n                \"body\",\n                \"cta\"\n              ]\n            }\n          },\n          {\n            \"role\": \"media\",\n            \"allowed_widgets\": [\n              \"image\"\n            ],\n            \"content_refs\": [],\n            \"token_refs\": [\n              \"color.surface\",\n              \"color.border\"\n            ],\n            \"layout_constraints\": {\n              \"min_width\": 0,\n              \"max_width\": 100\n            },\n            \"responsive_policy\": \"copy_first_stack\",\n            \"media_refs\": [\n              \"prompt_media_0\"\n            ],\n            \"editable_fields\": [\n              \"media\",\n              \"alt\"\n            ],\n            \"provenance\": {\n              \"source\": \"brief\",\n              \"roles\": [\n                \"media\"\n              ]\n            }\n          }\n        ],\n        \"record_id\": \"hero.split_60_40.right\",\n        \"record_version\": 1,\n        \"record_hash\": \"6bf72f64361e493711db497be9c1a57247852f949b06c61952949e106064c7fb\",\n        \"variant_kind\": \"layout_alternative\",\n        \"distinct\": true,\n        \"policy\": {\n          \"composition\": \"split_60_40\",\n          \"desktop\": \"split_60_40\",\n          \"tablet\": \"split_50_50\",\n          \"media_side\": \"right\",\n          \"mobile\": \"copy_first_stack\"\n        },\n        \"visual_profile\": \"editorial_light\",\n        \"errors\": []\n      },\n      \"resolved_visual\": {\n        \"errors\": [],\n        \"profile\": \"editorial_light\",\n        \"values\": {\n          \"color.page_bg\": \"#ffffff\",\n          \"color.surface\": \"#ffffff\",\n          \"color.text\": \"#17202a\",\n          \"color.muted\": \"#475569\",\n          \"color.primary\": \"#4460EC\",\n          \"color.border\": \"#cbd5e1\",\n          \"color.focus\": \"#2563eb\",\n          \"type.display\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"3.25rem\",\n            \"tablet\": \"2.5rem\",\n            \"mobile\": \"2rem\",\n            \"weight\": \"700\",\n            \"line_height\": \"1.1\",\n            \"line_height_tablet\": \"1.1\",\n            \"line_height_mobile\": \"1.1\"\n          },\n          \"type.section_title\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"2.5rem\",\n            \"tablet\": \"2rem\",\n            \"mobile\": \"1.75rem\",\n            \"weight\": \"700\",\n            \"line_height\": \"1.15\",\n            \"line_height_tablet\": \"1.15\",\n            \"line_height_mobile\": \"1.15\"\n          },\n          \"type.body\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"1.0625rem\",\n            \"tablet\": \"1rem\",\n            \"mobile\": \"1rem\",\n            \"weight\": \"400\",\n            \"line_height\": \"1.65\",\n            \"line_height_tablet\": \"1.65\",\n            \"line_height_mobile\": \"1.65\"\n          },\n          \"space.section\": \"5rem\",\n          \"space.component\": \"1.25rem\",\n          \"radius.card\": \"0.25rem\",\n          \"type.feature\": {\n            \"font_family\": \"inherit\",\n            \"desktop\": \"1.25rem\",\n            \"tablet\": \"1.1875rem\",\n            \"mobile\": \"1.125rem\",\n            \"weight\": \"600\",\n            \"line_height\": \"1.25\",\n            \"line_height_tablet\": \"1.25\",\n            \"line_height_mobile\": \"1.25\"\n          },\n          \"space.section_tablet\": \"3.5rem\",\n          \"space.section_mobile\": \"2.5rem\",\n          \"space.component_tablet\": \"1rem\",\n          \"space.component_mobile\": \"0.875rem\",\n          \"layout.copy_width\": \"38rem\",\n          \"space.card\": \"1.25rem\"\n        },\n        \"sources\": {\n          \"color.page_bg\": \"visual_profile:editorial_light\",\n          \"color.surface\": \"visual_profile:editorial_light\",\n          \"color.text\": \"visual_profile:editorial_light\",\n          \"color.muted\": \"visual_profile:editorial_light\",\n          \"color.primary\": \"safe_default\",\n          \"color.border\": \"visual_profile:editorial_light\",\n          \"color.focus\": \"safe_default\",\n          \"type.display\": \"visual_profile:editorial_light\",\n          \"type.section_title\": \"visual_profile:editorial_light\",\n          \"type.body\": \"visual_profile:editorial_light\",\n          \"space.section\": \"visual_profile:editorial_light\",\n          \"space.component\": \"visual_profile:editorial_light\",\n          \"radius.card\": \"visual_profile:editorial_light\",\n          \"type.feature\": \"visual_profile:editorial_light\",\n          \"space.section_tablet\": \"visual_profile:editorial_light\",\n          \"space.section_mobile\": \"visual_profile:editorial_light\",\n          \"space.component_tablet\": \"visual_profile:editorial_light\",\n          \"space.component_mobile\": \"visual_profile:editorial_light\",\n          \"layout.copy_width\": \"visual_profile:editorial_light\",\n          \"space.card\": \"visual_profile:editorial_light\"\n        },\n        \"precedence\": [\n          \"safe_default\",\n          \"project\",\n          \"confirmed_page\",\n          \"confirmed_reference\",\n          \"selected_visual_profile\",\n          \"explicit_brief\"\n        ],\n        \"adjustments\": [],\n        \"contrast\": {\n          \"ok\": true,\n          \"pairs\": [\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.page_bg\",\n              \"ratio\": 16.45162216413095,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.page_bg\",\n              \"ratio\": 7.577663953533317,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n        "
+      },
+      {
+        "summary": "JSON сгенерированного дизайна",
+        "text": "JSON сгенерированного дизайна"
+      }
+    ],
+    "operationCards": [
+      "Отменить создание блока\nОбновить серверный descriptor",
+      "Отменить создание блока\nОбновить серверный descriptor",
+      "Отменить создание блока\nОбновить серверный descriptor",
+      "Отменить создание блока\nОбновить серверный descriptor"
+    ],
+    "pageText": "          \"token\": \"color.primary\",\n              \"value\": \"#4460EC\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.text\",\n              \"value\": \"#17202a\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.surface\",\n              \"value\": \"#ffffff\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.surface\",\n              \"value\": \"#ffffff\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.border\",\n              \"value\": \"#cbd5e1\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.surface\",\n              \"value\": \"#ffffff\",\n              \"source\": \"resolved_plan\"\n            },\n            {\n              \"token\": \"color.border\",\n              \"value\": \"#cbd5e1\",\n              \"source\": \"resolved_plan\"\n            }\n          ],\n          \"missing\": [],\n          \"fallbacks\": [],\n          \"collisions\": []\n        },\n        \"node_count\": 10,\n        \"contrast\": {\n          \"ok\": true,\n          \"pairs\": [\n            {\n              \"foreground\": \"color.text\",\n              \"background\": \"color.page_bg\",\n              \"ratio\": 16.45162216413095,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.muted\",\n              \"background\": \"color.page_bg\",\n              \"ratio\": 7.577663953533317,\n              \"minimum\": 4.5,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": false\n            },\n            {\n              \"foreground\": \"color.surface\",\n              \"background\": \"color.primary\",\n              \"ratio\": 5.084545220192164,\n              \"minimum\": 3,\n              \"font_size_px\": 16,\n              \"font_weight\": 400,\n              \"large_text\": false,\n              \"ui_object\": true\n            }\n          ],\n          \"errors\": []\n        },\n        \"native_roundtrip\": {\n          \"version\": \"wpae-native-roundtrip-v1\",\n          \"control_aware\": true,\n          \"authored_copy\": \"BriefIR exact_text retained; native representation freezes before accepted signature\",\n          \"repeater_order_and_count\": \"authored and strictly compared\",\n          \"repeater_ids\": \"technical-only; seven-character Elementor IDs may be projected to the accepted IDs\",\n          \"allowed_legacy_serialization\": \"one exact <p> wrapper around single-line plain Accordion answer text\",\n          \"registered_platform_defaults\": [],\n          \"decisions\": []\n        }\n      }\n    },\n    \"preflight\": {\n      \"selected_scope\": \"page\",\n      \"roots_to_add\": 1,\n      \"nodes_to_change\": 10,\n      \"widgets\": [\n        \"container\",\n        \"heading\",\n        \"text-editor\",\n        \"button\",\n        \"image\"\n      ],\n      \"warnings\": [],\n      \"provider\": \"openrouter\",\n      \"model\": \"openrouter/free\",\n      \"estimated_cost\": null,\n      \"estimated_latency_ms\": null,\n      \"route\": \"local_deterministic\",\n      \"provider_calls\": 0\n    },\n    \"frozen_decisions\": {\n      \"plan_hash\": \"68a390812f3a82277b80b5e79901e68404c8f0ecdde01495081be7c60595fe67\",\n      \"compiled_signature\": \"0bf5cc27eb23c5d07669684c4f75e8cf224f191bd311a063c65a380216ac75c1\",\n      \"readback_signature\": \"0bf5cc27eb23c5d07669684c4f75e8cf224f191bd311a063c65a380216ac75c1\",\n      \"readback_matches\": true\n    }\n  },\n  \"operation_ledger\": {\n    \"schema\": \"wpae-design-operation-v1\",\n    \"operation_id\": \"wpae-0522bdba1ef9256d\",\n    \"operation_identity\": \"63407833-64a8-41e7-a251-545623479df9\",\n    \"idempotency_key\": \"00ac11dacb2cd69802fdd7ec785230d663bd0d8576de86b8ad763f0ec01696db\",\n    \"post_id\": 5214,\n    \"selected_scope\": \"page\",\n    \"operation_type\": \"design\",\n    \"brief_hash\": \"3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7\",\n    \"plan_hash\": \"68a390812f3a82277b80b5e79901e68404c8f0ecdde01495081be7c60595fe67\",\n    \"compiled_hash\": \"9bb43f308df7bf2eaacc13a42721e603d095a5bd51d0e89428555c1fdc0d24af\",\n    \"saved_hash\": \"00d931a8a40ccfa03f28652221390f46f2f19b1f2f414aa4752d0b9d2d8681a8\",\n    \"rendered_html_hash\": \"\",\n    \"vision_report_id\": \"\",\n    \"root_ids\": [\n      \"a3b7647\"\n    ],\n    \"target_fingerprint\": \"2319e4f4cdc2acb3bba0dc8394f8839a8428b2e8675ed0e7bdb1387246f80953\",\n    \"provider\": \"openrouter\",\n    \"model\": \"openrouter/free\",\n    \"latency_ms\": 0,\n    \"retry_count\": 0,\n    \"fallback_used\": false,\n    \"current_state\": \"written\",\n    \"revision\": 4,\n    \"created_at\": \"2026-10-07 10:27:50\",\n    \"updated_at\": \"2026-10-07 10:27:50\",\n    \"rollback_snapshot_id\": \"1c314df0391bfc3ad6e5f371\",\n    \"accepted_contract_id\": \"contract-8e2d98aa6fa8a15e9a89e687\",\n    \"accepted_contract_hash\": \"8e2d98aa6fa8a15e9a89e687b8216e0e7ee415fc0e9563d3c94e5c3f810095c9\",\n    \"parent_operation_id\": \"\"\n  },\n  \"write_count\": 1,\n  \"render_review_pending\": true\n}\nJSON сгенерированного дизайна\nНовые элементы добавлены в открытом Elementor без перезагрузки редактора.\nВыполняется: Обновляю preview и проверяю результат через AI Vision.\nAI Vision: score 68. confidence 95%. Требуется дополнительная визуальная проверка. The hero section layout suffers from poor internal spacing and text alignment issues where words appear overly spaced or detached. While content fidelity is maintained, the visual hierarchy and spacing between elements require refinement. major: Excessive or broken spacing between words in headings and descriptions leads to poor readability.; minor: Text column alignment relative to the visual media card can be better balanced.\nОтменить создание блока\nОбновить серверный descriptor\nПроверить owned модель перед Save\nПрименить scoped repair отступов\nКомпозиция\nАвтоматически\nФото справа · текст/фото 60/40\nФото слева · текст/фото 60/40\nФото справа · текст/фото 50/50\nФото слева · текст/фото 50/50\nФото справа · текст/фото 40/60\nФото слева · текст/фото 40/60\nТолько текст\nФото справа · текст/фото 60/40\nФото слева · текст/фото 60/40\nФото справа · текст/фото 50/50\nФото слева · текст/фото 50/50\nФото справа · текст/фото 40/60\nФото слева · текст/фото 40/60\nСетка карточек\nСписок с иконками\nКарточки тарифов\nАккордеон\nКарточки участников\nРедакционные строки\nКарточки отзывов\nРедакционные строки\nОформление\nПо умолчанию\nСветлое редакционное\nСветлое с мягкими карточками",
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "windowViewport": {
+      "dpr": 2,
+      "height": 923,
+      "width": 1232
+    }
+  },
+  "native": [
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-a3b7647 e-con e-parent e-flex e-con-boxed e-con--row elementor-element-editable ui-resizable",
+      "display": "flex",
+      "flexDirection": "column",
+      "id": "a3b7647",
+      "img": [
+        {
+          "alt": "",
+          "height": 675,
+          "loaded": true,
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "width": 1200
+        }
+      ],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "text": "СТУДИЯ\nРабота со смыслом\nСогласуем задачу и доведём проект до результата.\nНачать",
+      "type": "container"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-b6f3197 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "display": "flex",
+      "flexDirection": "column",
+      "id": "b6f3197",
+      "img": [],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "text": "СТУДИЯ\nРабота со смыслом\nСогласуем задачу и доведём проект до результата.\nНачать",
+      "type": "container"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-5db2b1c e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "display": "flex",
+      "flexDirection": "column",
+      "id": "5db2b1c",
+      "img": [],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "text": "СТУДИЯ\nРабота со смыслом\nСогласуем задачу и доведём проект до результата.\nНачать",
+      "type": "container"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-7ebdeec e-con e-parent e-flex e-con-full e-con--row ui-resizable",
+      "display": "flex",
+      "flexDirection": "row",
+      "id": "7ebdeec",
+      "img": [],
+      "links": [],
+      "text": "СТУДИЯ",
+      "type": "container"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-dda181c elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading elementor-widget__width-initial elementor-widget-tablet__width-initial elementor-widget-mobile__width-initial wpae-generated-badge-label ui-resizable",
+      "display": "block",
+      "flexDirection": "row",
+      "id": "dda181c",
+      "img": [],
+      "links": [],
+      "text": "СТУДИЯ",
+      "type": "widget"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-d54e758 elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading ui-resizable",
+      "display": "block",
+      "flexDirection": "row",
+      "id": "d54e758",
+      "img": [],
+      "links": [],
+      "text": "Работа со смыслом",
+      "type": "widget"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-0acbf94 elementor-element--toggle-edit-tools elementor-widget elementor-widget-text-editor ui-resizable",
+      "display": "block",
+      "flexDirection": "row",
+      "id": "0acbf94",
+      "img": [],
+      "links": [],
+      "text": "Согласуем задачу и доведём проект до результата.",
+      "type": "widget"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-d05fda3 elementor-element--toggle-edit-tools elementor-widget elementor-widget-button elementor-align-left elementor-tablet-align-left elementor-mobile-align-left ui-resizable",
+      "display": "block",
+      "flexDirection": "row",
+      "id": "d05fda3",
+      "img": [],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "text": "Начать",
+      "type": "widget"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-7907dc6 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "display": "flex",
+      "flexDirection": "column",
+      "id": "7907dc6",
+      "img": [
+        {
+          "alt": "",
+          "height": 675,
+          "loaded": true,
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "width": 1200
+        }
+      ],
+      "links": [],
+      "text": "",
+      "type": "container"
+    },
+    {
+      "classes": "elementor-element elementor-element-edit-mode elementor-element-43ab686 elementor-element--toggle-edit-tools elementor-widget elementor-widget-image ui-resizable",
+      "display": "block",
+      "flexDirection": "row",
+      "id": "43ab686",
+      "img": [
+        {
+          "alt": "",
+          "height": 675,
+          "loaded": true,
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+          "width": 1200
+        }
+      ],
+      "links": [],
+      "text": "",
+      "type": "widget"
+    }
+  ]
+}

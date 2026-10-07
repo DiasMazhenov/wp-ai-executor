@@ -1,0 +1,239 @@
+{
+  "audit": "2026-10-07-flex-recipes-v277",
+  "post_id": 5214,
+  "source_commit": "1ffb1fc099c1d14a721e416c72aca189955874e3",
+  "source_version": "v02.11.277",
+  "installed_plugin_php_version": "v02.11.277",
+  "editor_inline_version_after_reload": "v02.11.277",
+  "root_baseline_before": "[]",
+  "root_set_after_each_undo": "[]",
+  "final_root_set": "[]",
+  "counts": {
+    "first_generations": 7,
+    "repeats": 0,
+    "repairs": 0,
+    "guarded_undos": 7,
+    "families": 5,
+    "distinct_composition_records": 7
+  },
+  "excluded_per_user": [
+    "Services",
+    "Benefits",
+    "FAQ",
+    "Process"
+  ],
+  "scenarios": [
+    {
+      "id": "hero-right-split",
+      "family": "Hero",
+      "record": "hero.split_60_40.right",
+      "fixture": "docs/audits/2026-10-05-visual-policy/B-C-D-exact-request.txt",
+      "root": "a3b7647",
+      "operation": "wpae-0522bdba1ef9256d",
+      "identity": "63407833-64a8-41e7-a251-545623479df9",
+      "accepted_contract": "contract-8e2d98aa6fa8a15e9a89e687",
+      "profile": "editorial_light",
+      "brief_hash": "3aa85d2e19936c14b2829a03bbe8c7095e2bb7476e3a772e638b6ea890a8b8a7",
+      "plan_hash": "68a390812f3a82277b80b5e79901e68404c8f0ecdde01495081be7c60595fe67",
+      "revisions": {
+        "generation": 4,
+        "publish_reload": 5,
+        "undo": 6
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Exact Hero title/body/CTA #start; allowed photo loaded with exact alt; copy first on mobile.",
+      "geometry": "Desktop 60/40, copy x46 w672 and media x738 w448 at CSS 1232×923; public mobile CSS 390×844, copy→CTA→media; no overflow.",
+      "public_mobile": "PASS",
+      "screenshots": {
+        "desktop": "screenshots/hero-public-viewport.png",
+        "mobile": "screenshots/hero-public-mobile.png"
+      }
+    },
+    {
+      "id": "about-left-split",
+      "family": "About",
+      "record": "about.split_60_40.left",
+      "fixture": "docs/audits/2026-10-05-visual-policy/E-exact-request.txt",
+      "root": "a0212e4",
+      "operation": "wpae-14fc085e808724a6",
+      "identity": "c93dec3b-d8c9-4b48-8b06-5f86705deef1",
+      "accepted_contract": "contract-d54c4f95b61163a4b787ce06",
+      "profile": "editorial_light",
+      "brief_hash": "f7ead05920b683b0c44911f1cc22a507ef8b8e9088b617df1cde17ec39cf5ebe",
+      "plan_hash": "3940f7d4eb1b37e993dae2120fdfbb272b5b337ef497235272d6ce22a8e45c08",
+      "revisions": {
+        "generation": 4,
+        "publish_reload": 5,
+        "undo": null
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Exact long About copy and CTA #about; image loaded with exact alt; H2; no images fabricated.",
+      "geometry": "Desktop media x46 w448 and copy x514 w672 at CSS 1232×923; public mobile CSS 390×844, copy→CTA→photo; no overflow.",
+      "public_mobile": "PASS",
+      "screenshots": {
+        "desktop": "screenshots/about-public-viewport.png",
+        "mobile": "screenshots/about-public-mobile.png"
+      },
+      "undo_status": "guarded Undo completed; exact revision not retained in saved trace"
+    },
+    {
+      "id": "pricing-two-tiers",
+      "family": "Pricing",
+      "record": "pricing.tiers",
+      "fixture": "docs/audits/2026-10-05-visual-policy/I-exact-request.txt",
+      "root": "c94a3ca",
+      "operation": "wpae-7ebc9bd141096e82",
+      "identity": "c930d3d4-747a-479c-becc-a465031e7401",
+      "accepted_contract": "contract-0fc4975b6351ec0c6d1c4e57",
+      "profile": "default",
+      "brief_hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+      "plan_hash": "9a6621d2750287eec1b67739d13cf5b643111bd92ab7e06f99d5784db9520bb6",
+      "revisions": {
+        "generation": 4,
+        "pre_save_descriptor": 5,
+        "publish_reload": 6,
+        "undo": 7
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Exactly two tiers: 50,000 ₸/мес and 150,000 ₸/год, exact features and #start/#project links; no third card.",
+      "geometry": "Desktop two equal Flex tracks, 558px each with 24px gap at CSS 1232×923. Editor mobile preview stacks; public mobile not captured.",
+      "public_mobile": "NOT_RUN; editor-only preview 360×736",
+      "screenshots": {
+        "desktop": "screenshots/pricing-2-public-viewport.png",
+        "mobile_editor": "screenshots/pricing-2-editor-mobile-preview.png"
+      }
+    },
+    {
+      "id": "team-grid",
+      "family": "Team",
+      "record": "team.grid",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "root": "9be2730",
+      "operation": "wpae-14d16a8a643e2ede",
+      "identity": "60177f5d-9117-4c13-a731-190c84aaaf5c",
+      "accepted_contract": "contract-c8e0d5a01236b75325cc0ffa",
+      "profile": "default",
+      "brief_hash": "8335a524db685d6cc755baab2b545f415672c1cc58c48834c516b42bc73b78dd",
+      "plan_hash": "da1499c0d3e968cdd691a982c2ce324f59be0bfe47bfd402d85cc6a5e514c824",
+      "revisions": {
+        "generation": 4,
+        "publish_reload": 6,
+        "undo": null
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Four synthetic name/position/bio groups exact; no portraits and no actions.",
+      "geometry": "Native Flex wrapped 2×2, 24px gap, natural card heights; desktop CSS 1232×923, no overflow. Public mobile not captured.",
+      "public_mobile": "NOT_RUN; editor-only preview 360×736",
+      "screenshots": {
+        "desktop": "screenshots/team-public-viewport.png",
+        "mobile_editor": "screenshots/team-editor-mobile-preview.png"
+      },
+      "undo_status": "guarded Undo completed; exact revision not retained in saved trace"
+    },
+    {
+      "id": "testimonials-editorial-rows",
+      "family": "Testimonials",
+      "record": "testimonials.editorial_rows",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "root": "a1e7c85",
+      "operation": "wpae-16f34da43f39dbde",
+      "identity": "8d6841e7-edd9-46ff-a545-b72b4d46048c",
+      "accepted_contract": "contract-b798522e02276599249460ca",
+      "profile": "editorial_light",
+      "brief_hash": "53eedbedf3b4fd549bf506b17f614e4cc604e469a989ebd2d1809034c4e9978b",
+      "plan_hash": "09056fb55d714c725109ef8ef51d5bfa9d73bc4c5c0cb2443cd80ee110eb0183",
+      "revisions": {
+        "generation": 4,
+        "publish_reload": 5,
+        "undo": 6
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Six exact quote/author/meta groups; no photo, rating, or links.",
+      "geometry": "Desktop Flex editorial rows at CSS 1232×923; mobile stacked rows at CSS 390×844, full text and no overflow. Site greeting overlaps whitespace near final quote.",
+      "public_mobile": "PASS_WITH_SITE_OVERLAY",
+      "screenshots": {
+        "desktop": "screenshots/testimonials-rows-public-viewport.png",
+        "mobile": "screenshots/testimonials-rows-public-mobile.png"
+      }
+    },
+    {
+      "id": "team-editorial-rows-second-variant",
+      "family": "Team",
+      "record": "team.editorial_rows",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+      "root": "faf156d",
+      "operation": "wpae-1ba864a2453c984a",
+      "identity": "fc72f1a0-0e82-47d7-a185-5de99248d3b4",
+      "accepted_contract": "contract-346f3c8163ffeb261512b312",
+      "profile": "default",
+      "brief_hash": "8335a524db685d6cc755baab2b545f415672c1cc58c48834c516b42bc73b78dd",
+      "plan_hash": "c6c3618442b75ba5a7138391b308d315fcecc33b20aec957f69bf365ff500bf0",
+      "revisions": {
+        "generation": 4,
+        "publish_reload": 6,
+        "undo": 7
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Same exact Team fixture, second composition only; four name/position/bio groups; no portraits/actions.",
+      "geometry": "Desktop identity/copy rows; mobile identity then bio stack; CSS 1232×923 / 390×844, no horizontal overflow. Chat avatar touches whitespace.",
+      "public_mobile": "PASS_WITH_SITE_OVERLAY",
+      "screenshots": {
+        "desktop": "screenshots/team-editorial-rows-public-viewport.png",
+        "mobile": "screenshots/team-editorial-rows-public-mobile-viewport.png"
+      }
+    },
+    {
+      "id": "testimonials-grid",
+      "family": "Testimonials",
+      "record": "testimonials.grid",
+      "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+      "root": "40f2079",
+      "operation": "wpae-149a17d653e7409a",
+      "identity": "763c15d2-5843-4003-8201-796973eaa99c",
+      "accepted_contract": "contract-6215527d1dca2364b27112cc",
+      "accepted_contract_hash": "6215527d1dca2364b27112ccb9a8adb66716f5bc1392adac227693bfeb41f1ca",
+      "profile": "default",
+      "brief_hash": "53eedbedf3b4fd549bf506b17f614e4cc604e469a989ebd2d1809034c4e9978b",
+      "plan_hash": "0cdb3e19e58789c93bbc27fade7b19b62abc0ed313ffd53b0ee008517b82704a",
+      "record_hash": "77a8235bead676e5cb9d2ec3ffe16d299d7e43cf7e711a7e841b0d2c5c0f6382",
+      "revisions": {
+        "generation": 4,
+        "publish_reload": 6,
+        "undo": 7
+      },
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "write_count": 1,
+      "content": "Exact six quote/author/meta groups and pill; no photo/rating; one Brief, one Plan; compiler/readback signatures match. All 17 containers use Flex.",
+      "geometry": "2 equal desktop columns, width 558px/gap 24px, actual CSS 1232×923; mobile one column, natural 148.6/302.2px short/long cards, CSS 390×844; no horizontal overflow. Chat greeting intersects blank bottom padding only.",
+      "public_mobile": "PASS_WITH_SITE_OVERLAY_NO_AUTHORED_TEXT_COVERED",
+      "screenshots": {
+        "desktop": "screenshots/testimonials-grid-public-viewport.png",
+        "desktop_full": "screenshots/testimonials-grid-public-full.png",
+        "mobile": "screenshots/testimonials-grid-public-mobile-viewport.png",
+        "mobile_full": "screenshots/testimonials-grid-public-mobile-full.png"
+      },
+      "evidence": "testimonials-grid-evidence-v277.json"
+    }
+  ],
+  "overall": {
+    "technical_lifecycle": "PASS for seven writes/save-reload/owned checks/guarded Undo; one post-reload selected-tree copy UI failure is recorded separately",
+    "content_fidelity": "PASS on evidence reviewed",
+    "responsive_geometry": "PARTIAL; public mobile missing for Team grid and 2-tier Pricing",
+    "visual_composition": "PARTIAL; site-owned chat overlay exists in some frames; no author text covered in testimonials.grid",
+    "structural_variation": "PASS across split, pricing cards, Team grid/rows, testimonial grid/rows",
+    "document_restoration": "PASS; final roots []"
+  }
+}

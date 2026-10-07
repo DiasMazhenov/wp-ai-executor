@@ -1,0 +1,472 @@
+{
+  "post_id": 5214,
+  "source_commit": "1ffb1fc099c1d14a721e416c72aca189955874e3",
+  "plugin_version": "v02.11.277",
+  "installed_php_version": "v02.11.277",
+  "editor_inline_version": "v02.11.277",
+  "fixture": "docs/audits/2026-10-05-m3-1-entities/A-B-team-exact-request.txt",
+  "prompt": "Создай блок команды. Синтетическая тестовая команда, не реальные сотрудники. Без фото. Надзаголовок «ТЕСТОВАЯ КОМАНДА» в pill-бейдже. Заголовок «Люди и роли». Описание «Синтетические данные для проверки состава команды и сохранения точного текста».\nУчастник 1 имя «Тестовый участник 1». Участник 1 должность «Дизайнер». Участник 1 биография «Проверяет результат.».\nУчастник 2 имя «Тестовый участник 2». Участник 2 должность «Руководитель исследований и проектирования цифровых сервисов». Участник 2 биография «Отвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки.».\nУчастник 3 имя «Тестовый участник 3». Участник 3 должность «Разработчик». Участник 3 биография «Проверяет результат.».\nУчастник 4 имя «Тестовый участник 4». Участник 4 должность «Редактор». Участник 4 биография «Отвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки.».\n",
+  "route": "local_deterministic",
+  "action_path": "pipeline",
+  "provider_calls": 0,
+  "write_count": 1,
+  "brief": {
+    "schema": "wpae-brief-v1",
+    "hash": "8335a524db685d6cc755baab2b545f415672c1cc58c48834c516b42bc73b78dd",
+    "locale": "ru",
+    "archetype": "team",
+    "intake_source": "deterministic_parser",
+    "content_count": 15,
+    "ambiguity_count": 0,
+    "warnings": [],
+    "validation": {
+      "ok": true,
+      "errors": [],
+      "services": []
+    }
+  },
+  "plan": {
+    "hash": "da1499c0d3e968cdd691a982c2ce324f59be0bfe47bfd402d85cc6a5e514c824",
+    "composition": {
+      "identity": "team.three_cards",
+      "source": "explicit_record",
+      "slot_bindings": [
+        {
+          "role": "copy_group",
+          "allowed_widgets": [
+            "heading",
+            "text-editor",
+            "button",
+            "container"
+          ],
+          "content_refs": [
+            "hero_eyebrow",
+            "hero_title",
+            "hero_body"
+          ],
+          "token_refs": [
+            "color.text",
+            "color.primary",
+            "type.display",
+            "type.section_title",
+            "type.body"
+          ],
+          "layout_constraints": {
+            "min_width": 0,
+            "max_width": 100,
+            "eyebrow_presentation": "pill"
+          },
+          "responsive_policy": "stack",
+          "editable_fields": [
+            "text"
+          ]
+        },
+        {
+          "role": "team_cards",
+          "allowed_widgets": [
+            "container",
+            "heading",
+            "text-editor"
+          ],
+          "content_refs": [
+            "team_1_name",
+            "team_1_position",
+            "team_1_bio",
+            "team_2_name",
+            "team_2_position",
+            "team_2_bio",
+            "team_3_name",
+            "team_3_position",
+            "team_3_bio",
+            "team_4_name",
+            "team_4_position",
+            "team_4_bio"
+          ],
+          "items": [
+            {
+              "group_id": "team_1",
+              "provenance": {
+                "source": "brief",
+                "item_id": "team_1",
+                "source_spans": {
+                  "name_ref": [
+                    483,
+                    518
+                  ],
+                  "position_ref": [
+                    562,
+                    578
+                  ],
+                  "bio_ref": [
+                    622,
+                    660
+                  ]
+                }
+              },
+              "errors": [],
+              "name_ref": "team_1_name",
+              "position_ref": "team_1_position",
+              "bio_ref": "team_1_bio"
+            },
+            {
+              "group_id": "team_2",
+              "provenance": {
+                "source": "brief",
+                "item_id": "team_2",
+                "source_spans": {
+                  "name_ref": [
+                    692,
+                    727
+                  ],
+                  "position_ref": [
+                    771,
+                    886
+                  ],
+                  "bio_ref": [
+                    930,
+                    1261
+                  ]
+                }
+              },
+              "errors": [],
+              "name_ref": "team_2_name",
+              "position_ref": "team_2_position",
+              "bio_ref": "team_2_bio"
+            },
+            {
+              "group_id": "team_3",
+              "provenance": {
+                "source": "brief",
+                "item_id": "team_3",
+                "source_spans": {
+                  "name_ref": [
+                    1293,
+                    1328
+                  ],
+                  "position_ref": [
+                    1372,
+                    1394
+                  ],
+                  "bio_ref": [
+                    1438,
+                    1476
+                  ]
+                }
+              },
+              "errors": [],
+              "name_ref": "team_3_name",
+              "position_ref": "team_3_position",
+              "bio_ref": "team_3_bio"
+            },
+            {
+              "group_id": "team_4",
+              "provenance": {
+                "source": "brief",
+                "item_id": "team_4",
+                "source_spans": {
+                  "name_ref": [
+                    1508,
+                    1543
+                  ],
+                  "position_ref": [
+                    1587,
+                    1603
+                  ],
+                  "bio_ref": [
+                    1647,
+                    1978
+                  ]
+                }
+              },
+              "errors": [],
+              "name_ref": "team_4_name",
+              "position_ref": "team_4_position",
+              "bio_ref": "team_4_bio"
+            }
+          ],
+          "item_errors": [],
+          "token_refs": [
+            "color.surface",
+            "color.text",
+            "color.muted",
+            "color.border",
+            "radius.card",
+            "space.component"
+          ],
+          "layout_constraints": {
+            "min_width": 0,
+            "max_width": 100,
+            "entity_layout": "grid"
+          },
+          "responsive_policy": "stack",
+          "editable_fields": [
+            "text",
+            "media",
+            "alt"
+          ],
+          "provenance": {
+            "source": "brief",
+            "roles": [
+              "team_name",
+              "team_position",
+              "team_bio"
+            ]
+          }
+        }
+      ],
+      "record_id": "team.grid",
+      "record_version": 1,
+      "record_hash": "cd48749f8ef014ab115f0c8341ce7ef82e88af013ea34c2477f703556e54a535",
+      "variant_kind": "structural_alternative",
+      "distinct": true,
+      "policy": {
+        "composition": "three_cards",
+        "desktop": "three_cards",
+        "tablet": "stack",
+        "mobile": "stack",
+        "entity_layout": "grid"
+      },
+      "visual_profile": "",
+      "errors": []
+    },
+    "visual_profile": "",
+    "collection": {
+      "implementation": "native_flex_equal",
+      "axis": "grid",
+      "alignment": "start",
+      "width": {
+        "desktop": "100%",
+        "tablet": "100%",
+        "mobile": "100%"
+      },
+      "item_height": "content",
+      "item_count": 4,
+      "columns": {
+        "desktop": 2,
+        "tablet": 1,
+        "mobile": 1
+      },
+      "gap": {
+        "desktop": "1.5rem",
+        "tablet": "1.5rem",
+        "mobile": "1rem"
+      }
+    }
+  },
+  "operation": {
+    "operation_id": "wpae-14d16a8a643e2ede",
+    "identity": "60177f5d-9117-4c13-a731-190c84aaaf5c",
+    "revision_at_generation": 4,
+    "revision_after_publish_reload": 6,
+    "accepted_contract_id": "contract-c8e0d5a01236b75325cc0ffa",
+    "accepted_contract_hash": "c8e0d5a01236b75325cc0ffab31d9cc530b3cba47632e62411ca633559d0c9bf",
+    "root_ids": [
+      "9be2730"
+    ]
+  },
+  "layout_report": {
+    "schema": "wpae-layout-report-v1",
+    "ok": true,
+    "violations": [],
+    "breakpoints": [
+      {
+        "breakpoint": "desktop",
+        "container_width": 1376,
+        "used_width": 1376,
+        "mobile_stack_result": "stack"
+      },
+      {
+        "breakpoint": "laptop",
+        "container_width": 960,
+        "used_width": 960,
+        "mobile_stack_result": "stack"
+      },
+      {
+        "breakpoint": "tablet",
+        "container_width": 704,
+        "used_width": 704,
+        "mobile_stack_result": "stack"
+      },
+      {
+        "breakpoint": "mobile",
+        "container_width": 358,
+        "used_width": 358,
+        "mobile_stack_result": "stack"
+      }
+    ]
+  },
+  "preflight": {
+    "selected_scope": "page",
+    "roots_to_add": 1,
+    "nodes_to_change": 28,
+    "widgets": [
+      "container",
+      "heading",
+      "text-editor"
+    ],
+    "warnings": [],
+    "provider": "openrouter",
+    "model": "openrouter/free",
+    "estimated_cost": null,
+    "estimated_latency_ms": null,
+    "route": "local_deterministic",
+    "provider_calls": 0
+  },
+  "frozen": {
+    "plan_hash": "da1499c0d3e968cdd691a982c2ce324f59be0bfe47bfd402d85cc6a5e514c824",
+    "compiled_signature": "77c730fb61ca553506445e23b6cd51003d0a7977126b0dc596944ccaa09395e4",
+    "readback_signature": "77c730fb61ca553506445e23b6cd51003d0a7977126b0dc596944ccaa09395e4",
+    "readback_matches": true
+  },
+  "editor_mobile_preview": {
+    "css_viewport": {
+      "width": 360,
+      "height": 736
+    },
+    "root_id": "9be2730",
+    "collection": {
+      "display": "flex",
+      "direction": "column",
+      "wrap": "nowrap",
+      "gap": "16px",
+      "content_width": 313
+    },
+    "cards": [
+      {
+        "text": "Тестовый участник 1\nДизайнер\nПроверяет результат.",
+        "rect": {
+          "height": 148.6015625,
+          "width": 313,
+          "x": 16,
+          "y": 225.7890625
+        }
+      },
+      {
+        "text": "Тестовый участник 2\nРуководитель исследований и проектирования цифровых сервисов",
+        "rect": {
+          "height": 353.4140625,
+          "width": 313,
+          "x": 16,
+          "y": 390.390625
+        }
+      },
+      {
+        "text": "Тестовый участник 3\nРазработчик\nПроверяет результат.",
+        "rect": {
+          "height": 148.6015625,
+          "width": 313,
+          "x": 16,
+          "y": 759.8046875
+        }
+      },
+      {
+        "text": "Тестовый участник 4\nРедактор\nОтвечает за согласование задач, проверку прототипов",
+        "rect": {
+          "height": 302.2109375,
+          "width": 313,
+          "x": 16,
+          "y": 924.40625
+        }
+      }
+    ],
+    "overflow": false,
+    "screenshot": "screenshots/team-editor-mobile-preview.png"
+  },
+  "public_desktop": {
+    "css_viewport": {
+      "width": 1232,
+      "height": 923
+    },
+    "collection": {
+      "alignItems": "flex-start",
+      "direction": "row",
+      "display": "flex",
+      "gap": "24px",
+      "rect": {
+        "height": 500.4140625,
+        "width": 1140,
+        "x": 46,
+        "y": 281.1875
+      },
+      "wrap": "wrap"
+    },
+    "cards": [
+      {
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "rect": {
+          "height": 148.6015625,
+          "width": 558,
+          "x": 46,
+          "y": 281.1875
+        },
+        "text": "Тестовый участник 1\nДизайнер\nПроверяет результат."
+      },
+      {
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "rect": {
+          "height": 251.0078125,
+          "width": 558,
+          "x": 628,
+          "y": 281.1875
+        },
+        "text": "Тестовый участник 2\nРуководитель исследований и проектирования цифровых сервисов\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+      },
+      {
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "rect": {
+          "height": 148.6015625,
+          "width": 558,
+          "x": 46,
+          "y": 556.1953125
+        },
+        "text": "Тестовый участник 3\nРазработчик\nПроверяет результат."
+      },
+      {
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "rect": {
+          "height": 225.40625,
+          "width": 558,
+          "x": 628,
+          "y": 556.1953125
+        },
+        "text": "Тестовый участник 4\nРедактор\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+      }
+    ],
+    "root": {
+      "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team elementor-element elementor-element-9be2730 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "9be2730",
+      "rect": {
+        "height": 821.6015625,
+        "width": 1232,
+        "x": 0,
+        "y": 32
+      },
+      "text": "ТЕСТОВАЯ КОМАНДА\nЛюди и роли\nСинтетические данные для проверки состава команды и сохранения точного текста\nТестовый участник 1\nДизайнер\nПроверяет результат.\nТестовый участник 2\nРуководитель исследований и проектирования цифровых сервисов\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки.\nТестовый участник 3\nРазработчик\nПроверяет результат.\nТестовый участник 4\nРедактор\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+    },
+    "overflow": false
+  },
+  "screenshots": {
+    "first_editor": "screenshots/team-first-editor.png",
+    "after_reload_editor": "screenshots/team-editor-after-reload.png",
+    "editor_mobile_preview": "screenshots/team-editor-mobile-preview.png",
+    "public_viewport": "screenshots/team-public-viewport.png",
+    "public_full": "screenshots/team-public-full.png"
+  },
+  "visual_review": {
+    "vision": {
+      "score": 85,
+      "confidence": 95,
+      "advisory": true,
+      "comment": "Vision mentioned card line-break/white-space adjustment; checked against public DOM and PNG."
+    },
+    "human": "Exact pill/title/description and all four name/position/bio groups are visible. The collection is two-column Flex with 24px gap at public desktop and one-column Flex with 16px gap in the editor mobile preview. Short-copy cards stay content-sized while long biographies retain full text; heights differ naturally. No clipping or horizontal overflow. Site floating chat toggle is below the card grid and does not cover tested text."
+  }
+}

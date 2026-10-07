@@ -1,0 +1,203 @@
+{
+  "bodyClientWidth": 1232,
+  "bodyScrollWidth": 1232,
+  "descendants": [
+    {
+      "id": "b6f3197",
+      "images": [],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "overflow": "visible",
+      "rect": {
+        "height": 252,
+        "width": 672,
+        "x": 46,
+        "y": 112
+      },
+      "textAlign": "start",
+      "type": "container"
+    },
+    {
+      "id": "5db2b1c",
+      "images": [],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "overflow": "visible",
+      "rect": {
+        "height": 203.8359375,
+        "width": 608,
+        "x": 46,
+        "y": 112
+      },
+      "textAlign": "start",
+      "type": "container"
+    },
+    {
+      "id": "7ebdeec",
+      "images": [],
+      "links": [],
+      "overflow": "visible",
+      "rect": {
+        "height": 27.5859375,
+        "width": 81.9765625,
+        "x": 46,
+        "y": 112
+      },
+      "textAlign": "start",
+      "type": "container"
+    },
+    {
+      "id": "dda181c",
+      "images": [],
+      "links": [],
+      "overflow": "visible",
+      "rect": {
+        "height": 14.3984375,
+        "width": 55.9765625,
+        "x": 59,
+        "y": 118.59375
+      },
+      "textAlign": "start",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "id": "d54e758",
+      "images": [],
+      "links": [],
+      "overflow": "visible",
+      "rect": {
+        "height": 69.203125,
+        "width": 512.2109375,
+        "x": 46,
+        "y": 139.5859375
+      },
+      "textAlign": "start",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "id": "0acbf94",
+      "images": [],
+      "links": [],
+      "overflow": "visible",
+      "rect": {
+        "height": 44.046875,
+        "width": 418.9765625,
+        "x": 46,
+        "y": 208.7890625
+      },
+      "textAlign": "start",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "d05fda3",
+      "images": [],
+      "links": [
+        {
+          "href": "#start",
+          "text": "Начать"
+        }
+      ],
+      "overflow": "visible",
+      "rect": {
+        "height": 63,
+        "width": 98.6640625,
+        "x": 46,
+        "y": 252.8359375
+      },
+      "textAlign": "left",
+      "type": "widget",
+      "widget": "button.default"
+    },
+    {
+      "id": "7907dc6",
+      "images": [
+        {
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalHeight": 675,
+          "naturalWidth": 1200,
+          "rect": {
+            "height": 252,
+            "width": 448,
+            "x": 738,
+            "y": 112
+          },
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+        }
+      ],
+      "links": [],
+      "overflow": "visible",
+      "rect": {
+        "height": 252,
+        "width": 448,
+        "x": 738,
+        "y": 112
+      },
+      "textAlign": "start",
+      "type": "container"
+    },
+    {
+      "id": "43ab686",
+      "images": [
+        {
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "naturalHeight": 675,
+          "naturalWidth": 1200,
+          "rect": {
+            "height": 252,
+            "width": 448,
+            "x": 738,
+            "y": 112
+          },
+          "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+        }
+      ],
+      "links": [],
+      "overflow": "visible",
+      "rect": {
+        "height": 252,
+        "width": 448,
+        "x": 738,
+        "y": 112
+      },
+      "textAlign": "center",
+      "type": "widget",
+      "widget": "image.default"
+    }
+  ],
+  "direct": [],
+  "dpr": 2,
+  "rootId": "a3b7647",
+  "rootRect": {
+    "height": 412,
+    "width": 1232,
+    "x": 0,
+    "y": 32
+  },
+  "rootStyle": {
+    "alignItems": "normal",
+    "display": "flex",
+    "flexDirection": "column",
+    "gap": "normal",
+    "justifyContent": "normal",
+    "overflow": "visible",
+    "padding": "0px 32px"
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "height": 923,
+    "width": 1232
+  }
+}

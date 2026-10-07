@@ -1,0 +1,197 @@
+{
+  "scenario": "testimonials.grid",
+  "post_id": 5214,
+  "fixture": "docs/audits/2026-10-05-m3-1-entities/C-D-testimonials-exact-request.txt",
+  "fixture_sha256": "9e754a6801ddab082faa49082bab44cb93919232c980d12e221f01c96987040d",
+  "source_version": "v02.11.277",
+  "source_commit": "1ffb1fc099c1d14a721e416c72aca189955874e3",
+  "installed_php_version": "v02.11.277",
+  "editor_inline_after_reload": "v02.11.277",
+  "route": "local_deterministic",
+  "provider_calls": 0,
+  "write_count_at_generation": 1,
+  "brief": {
+    "hash": "53eedbedf3b4fd549bf506b17f614e4cc604e469a989ebd2d1809034c4e9978b",
+    "intake_source": "deterministic_parser",
+    "content_count": 21,
+    "ambiguity_count": 0
+  },
+  "plan": {
+    "hash": "0cdb3e19e58789c93bbc27fade7b19b62abc0ed313ffd53b0ee008517b82704a",
+    "archetype": "testimonials",
+    "record_id": "testimonials.grid",
+    "legacy_identity": "testimonials.three_cards",
+    "record_hash": "77a8235bead676e5cb9d2ec3ffe16d299d7e43cf7e711a7e841b0d2c5c0f6382",
+    "record_version": 1,
+    "profile": "",
+    "collection": {
+      "implementation": "native_flex_equal",
+      "axis": "grid",
+      "alignment": "start",
+      "width": {
+        "desktop": "100%",
+        "tablet": "100%",
+        "mobile": "100%"
+      },
+      "item_height": "content",
+      "item_count": 6,
+      "columns": {
+        "desktop": 2,
+        "tablet": 1,
+        "mobile": 1
+      },
+      "gap": {
+        "desktop": "1.5rem",
+        "tablet": "1.5rem",
+        "mobile": "1rem"
+      }
+    }
+  },
+  "native": {
+    "format": "wpae-elementor-generated-v1",
+    "root_id": "40f2079",
+    "containers_all_flex": true,
+    "compiled_signature": "dc93e3dc4ec1450a3346cc135b6303fb120e61774a72841a64ff8366cf6282ba",
+    "readback_signature": "dc93e3dc4ec1450a3346cc135b6303fb120e61774a72841a64ff8366cf6282ba",
+    "readback_matches_at_generation": true,
+    "post_publish_reload_owned_model_check": "passed at operation revision 6",
+    "after_reload_selection_export": "not available: Elementor selection remained empty; copy-selection UI reported “Выделите элемент в Elementor и повторите.”",
+    "containers_total": 17,
+    "containers_flex": 17
+  },
+  "operation": {
+    "id": "wpae-149a17d653e7409a",
+    "identity": "763c15d2-5843-4003-8201-796973eaa99c",
+    "accepted_contract_id": "contract-6215527d1dca2364b27112cc",
+    "accepted_contract_hash": "6215527d1dca2364b27112ccb9a8adb66716f5bc1392adac227693bfeb41f1ca",
+    "root_ids": [
+      "40f2079"
+    ],
+    "generation_revision": 4,
+    "post_publish_reload_revision": 6,
+    "undo_revision": 7,
+    "undo_status": "already_undone",
+    "post_undo_write_count": 0
+  },
+  "editor": {
+    "page": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "reload_after_publish": true,
+    "root_present_after_reload": true,
+    "publish_disabled_after_publish_and_after_undo": true,
+    "canvas_exact_authored_text_after_reload": true
+  },
+  "visual": {
+    "desktop_css_viewport": [
+      1232,
+      923
+    ],
+    "desktop_root_display": "flex",
+    "desktop_collection_display": "flex",
+    "desktop_collection_direction": "row",
+    "desktop_collection_wrap": "wrap",
+    "desktop_card_columns": 2,
+    "desktop_collection_gap_px": 24,
+    "desktop_card_rects": [
+      {
+        "x": 38.5,
+        "y": 281.2,
+        "width": 558,
+        "height": 148.6
+      },
+      {
+        "x": 620.5,
+        "y": 281.2,
+        "width": 558,
+        "height": 225.4
+      },
+      {
+        "x": 38.5,
+        "y": 530.6,
+        "width": 558,
+        "height": 148.6
+      },
+      {
+        "x": 620.5,
+        "y": 530.6,
+        "width": 558,
+        "height": 225.4
+      },
+      {
+        "x": 38.5,
+        "y": 780,
+        "width": 558,
+        "height": 148.6
+      },
+      {
+        "x": 620.5,
+        "y": 780,
+        "width": 558,
+        "height": 225.4
+      }
+    ],
+    "mobile_css_viewport": [
+      390,
+      844
+    ],
+    "mobile_collection_columns": 1,
+    "mobile_collection_gap_px": 16,
+    "mobile_short_card_height_px": 148.6,
+    "mobile_long_card_height_px": 302.2,
+    "horizontal_overflow": false,
+    "images": 0,
+    "links": 0,
+    "ratings": 0,
+    "site_chat_overlay": "bubble begins y=699.6; last measured item text ends y=687.4, overlay covers only blank lower card padding"
+  },
+  "screenshots": {
+    "desktop_viewport": {
+      "png": "screenshots/testimonials-grid-public-viewport.png",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "png_dimensions": [
+        1217,
+        912
+      ],
+      "sha256": "c58eae139cfc784d6665170d966c02de351c613df8b89f29c935d6332ba823e9"
+    },
+    "desktop_full": {
+      "png": "screenshots/testimonials-grid-public-full.png",
+      "css_viewport": [
+        1232,
+        923
+      ],
+      "png_dimensions": [
+        1217,
+        1077
+      ],
+      "sha256": "8b6ff80737e29c5b331945b28b54b10af0dc2a0bb01159da692638c12144c4e9"
+    },
+    "public_mobile_viewport": {
+      "png": "screenshots/testimonials-grid-public-mobile-viewport.png",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_dimensions": [
+        375,
+        812
+      ],
+      "sha256": "88045e9fafc64c788fa9139b7abaa62f507ae19d3c9a6b3dfeea49d3a77bccdb"
+    },
+    "public_mobile_full": {
+      "png": "screenshots/testimonials-grid-public-mobile-full.png",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_dimensions": [
+        375,
+        1735
+      ],
+      "sha256": "dec3827a3f7fc25972eece2531557dcfffb95ce887ed8af1a7d26c228279136c"
+    }
+  },
+  "final_root_set_after_guarded_undo": []
+}

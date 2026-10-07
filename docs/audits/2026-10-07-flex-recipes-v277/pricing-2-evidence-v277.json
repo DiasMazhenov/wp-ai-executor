@@ -1,0 +1,430 @@
+{
+  "post_id": 5214,
+  "source_commit": "1ffb1fc099c1d14a721e416c72aca189955874e3",
+  "plugin_version": "v02.11.277",
+  "installed_php_version": "v02.11.277",
+  "editor_inline_version": "v02.11.277",
+  "fixture": "docs/audits/2026-10-05-visual-policy/I-exact-request.txt",
+  "prompt": "Создай Pricing\n«Старт» — «50 000 ₸/мес» — «Малый проект»\nFeatures: «Аудит», «План»\nКнопка: «Выбрать Старт», ссылка #start\n«Проект» — «150 000 ₸/год» — «Полный проект»\nFeatures: «Дизайн», «Разработка»\nКнопка: «Выбрать Проект», ссылка #project",
+  "route": "local_deterministic",
+  "action_path": "pipeline",
+  "provider_calls": 0,
+  "write_count": 1,
+  "brief": {
+    "schema": "wpae-brief-v1",
+    "hash": "1029d67d34917aeb74a70dea85e48735ae88446d0b53da61e82c4d4177a44136",
+    "locale": "ru",
+    "archetype": "pricing",
+    "intake_source": "deterministic_parser",
+    "content_count": 14,
+    "ambiguity_count": 8,
+    "warnings": [],
+    "validation": {
+      "ok": true,
+      "errors": [],
+      "services": []
+    }
+  },
+  "plan": {
+    "hash": "9a6621d2750287eec1b67739d13cf5b643111bd92ab7e06f99d5784db9520bb6",
+    "composition": {
+      "identity": "pricing.three_cards",
+      "source": "explicit_record",
+      "slot_bindings": [
+        {
+          "role": "pricing_cards",
+          "allowed_widgets": [
+            "heading",
+            "text-editor",
+            "button"
+          ],
+          "content_refs": [],
+          "items": [
+            {
+              "label_ref": "pricing_1_label",
+              "price_ref": "pricing_1_price",
+              "period_ref": "pricing_1_period",
+              "description_ref": "pricing_1_description",
+              "cta_ref": "pricing_1_cta",
+              "group_id": "pricing_1",
+              "feature_refs": [
+                "pricing_1_feature_1",
+                "pricing_1_feature_2"
+              ],
+              "price_text": "50 000 ₸/мес",
+              "provenance": {
+                "source": "prompt",
+                "source_spans": {
+                  "label": [
+                    23,
+                    33
+                  ],
+                  "price": [
+                    42,
+                    59
+                  ],
+                  "description": [
+                    68,
+                    91
+                  ],
+                  "cta": [
+                    149,
+                    174
+                  ]
+                },
+                "parser": "wpae-brief-parser-v12"
+              }
+            },
+            {
+              "label_ref": "pricing_2_label",
+              "price_ref": "pricing_2_price",
+              "period_ref": "pricing_2_period",
+              "description_ref": "pricing_2_description",
+              "cta_ref": "pricing_2_cta",
+              "group_id": "pricing_2",
+              "feature_refs": [
+                "pricing_2_feature_1",
+                "pricing_2_feature_2"
+              ],
+              "price_text": "150 000 ₸/год",
+              "provenance": {
+                "source": "prompt",
+                "source_spans": {
+                  "label": [
+                    200,
+                    212
+                  ],
+                  "price": [
+                    221,
+                    239
+                  ],
+                  "description": [
+                    248,
+                    273
+                  ],
+                  "cta": [
+                    345,
+                    372
+                  ]
+                },
+                "parser": "wpae-brief-parser-v12"
+              }
+            }
+          ],
+          "token_refs": [
+            "color.surface",
+            "color.text",
+            "color.muted",
+            "color.primary",
+            "color.border",
+            "radius.card",
+            "space.component"
+          ],
+          "layout_constraints": {
+            "min_width": 0,
+            "max_width": 100
+          },
+          "responsive_policy": "stack",
+          "media_refs": [],
+          "editable_fields": [
+            "text",
+            "url"
+          ],
+          "provenance": {
+            "source": "brief",
+            "roles": [
+              "title",
+              "body",
+              "label",
+              "cta"
+            ]
+          }
+        }
+      ],
+      "record_id": "pricing.tiers",
+      "record_version": 1,
+      "record_hash": "4ac6ff61078721ec658f1fd38bb0ac1155ec9b519747c06095b874fbcd1967ce",
+      "variant_kind": "default",
+      "distinct": true,
+      "policy": {
+        "composition": "three_cards",
+        "desktop": "three_cards",
+        "tablet": "stack",
+        "mobile": "stack"
+      },
+      "visual_profile": "",
+      "errors": []
+    },
+    "visual_profile": "",
+    "collection": {
+      "implementation": "native_flex_equal",
+      "axis": "grid",
+      "alignment": "start",
+      "width": {
+        "desktop": "100%",
+        "tablet": "100%",
+        "mobile": "100%"
+      },
+      "item_height": "equal_row",
+      "item_count": 2,
+      "columns": {
+        "desktop": 2,
+        "tablet": 1,
+        "mobile": 1
+      },
+      "gap": {
+        "desktop": "1.5rem",
+        "tablet": "1.5rem",
+        "mobile": "1rem"
+      }
+    }
+  },
+  "operation": {
+    "operation_id": "wpae-7ebc9bd141096e82",
+    "identity": "c930d3d4-747a-479c-becc-a465031e7401",
+    "revision_at_generation": 4,
+    "descriptor_after_pre_save": 5,
+    "descriptor_after_publish_reload": 6,
+    "revision_after_undo": 7,
+    "undo_status": "already_undone",
+    "accepted_contract_id": "contract-0fc4975b6351ec0c6d1c4e57",
+    "accepted_contract_hash": "0fc4975b6351ec0c6d1c4e57143f51a7ca865c90f8739c33a2e87bae3c9e7e39",
+    "root_ids": [
+      "c94a3ca"
+    ]
+  },
+  "first_render": {
+    "vision": {
+      "score": 85,
+      "confidence": 95,
+      "advisory": true,
+      "finding": "claimed required CTA labels were missing"
+    },
+    "verified_against": {
+      "editor_dom": [
+        {
+          "href": "#start",
+          "rect": {
+            "height": 39,
+            "width": 159.3203125,
+            "x": 57,
+            "y": 303.6015625
+          },
+          "text": "Выбрать Старт"
+        },
+        {
+          "href": "#project",
+          "rect": {
+            "height": 39,
+            "width": 170.0703125,
+            "x": 549.5,
+            "y": 303.6015625
+          },
+          "text": "Выбрать Проект"
+        }
+      ],
+      "public_dom": [
+        {
+          "href": "#start",
+          "rect": {
+            "height": 39,
+            "width": 154.3203125,
+            "x": 71,
+            "y": 335.6015625
+          },
+          "text": "Выбрать Старт"
+        },
+        {
+          "href": "#project",
+          "rect": {
+            "height": 39,
+            "width": 165.0703125,
+            "x": 653,
+            "y": 335.6015625
+          },
+          "text": "Выбрать Проект"
+        }
+      ],
+      "public_png": "screenshots/pricing-2-public-viewport.png"
+    },
+    "finding_verdict": "false_positive: both button labels and exact hrefs are present in editor DOM, public DOM, and visible public PNG"
+  },
+  "editor": {
+    "css_viewport": {
+      "width": 1025,
+      "height": 860
+    },
+    "root_id": "c94a3ca",
+    "native_container_count": 11,
+    "flex_container_count": 11,
+    "collection": {
+      "children": [
+        {
+          "rect": {
+            "height": 295.6015625,
+            "width": 468.5,
+            "x": 32,
+            "y": 72
+          },
+          "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+        },
+        {
+          "rect": {
+            "height": 295.6015625,
+            "width": 468.5,
+            "x": 524.5,
+            "y": 72
+          },
+          "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+        }
+      ],
+      "direction": "row",
+      "display": "flex",
+      "gap": "24px",
+      "rect": {
+        "height": 295.6015625,
+        "width": 961,
+        "x": 32,
+        "y": 72
+      },
+      "wrap": "wrap"
+    },
+    "mobile_preview": {
+      "buttons": [
+        {
+          "href": "#start",
+          "text": "Выбрать Старт"
+        },
+        {
+          "href": "#project",
+          "text": "Выбрать Проект"
+        }
+      ],
+      "collection": {
+        "cards": [
+          {
+            "rect": {
+              "height": 287.921875,
+              "width": 313,
+              "x": 16,
+              "y": 32
+            },
+            "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+          },
+          {
+            "rect": {
+              "height": 287.921875,
+              "width": 313,
+              "x": 16,
+              "y": 335.921875
+            },
+            "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+          }
+        ],
+        "direction": "column",
+        "display": "flex",
+        "gap": "16px",
+        "rect": {
+          "height": 591.84375,
+          "width": 313,
+          "x": 16,
+          "y": 32
+        },
+        "wrap": "nowrap"
+      },
+      "rootId": "c94a3ca",
+      "viewport": {
+        "bodyWidth": 345,
+        "docClientWidth": 345,
+        "height": 736,
+        "scrollWidth": 345,
+        "width": 360
+      }
+    }
+  },
+  "public": {
+    "css_viewport": {
+      "width": 1232,
+      "height": 923
+    },
+    "root": {
+      "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-pricing elementor-element elementor-element-c94a3ca e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "c94a3ca",
+      "rect": {
+        "height": 439.6015625,
+        "width": 1232,
+        "x": 0,
+        "y": 32
+      },
+      "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт\nПроект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+    },
+    "collection": {
+      "alignItems": "stretch",
+      "direction": "row",
+      "display": "flex",
+      "gap": "24px",
+      "rect": {
+        "height": 295.6015625,
+        "width": 1140,
+        "x": 46,
+        "y": 104
+      },
+      "wrap": "wrap"
+    },
+    "cards": [
+      {
+        "direction": "column",
+        "display": "flex",
+        "rect": {
+          "height": 295.6015625,
+          "width": 558,
+          "x": 46,
+          "y": 104
+        },
+        "text": "Старт\n50 000 ₸\n/мес\nМалый проект\nАудит\nПлан\nВыбрать Старт"
+      },
+      {
+        "direction": "column",
+        "display": "flex",
+        "rect": {
+          "height": 295.6015625,
+          "width": 558,
+          "x": 628,
+          "y": 104
+        },
+        "text": "Проект\n150 000 ₸\n/год\nПолный проект\nДизайн\nРазработка\nВыбрать Проект"
+      }
+    ],
+    "buttons": [
+      {
+        "href": "#start",
+        "rect": {
+          "height": 39,
+          "width": 154.3203125,
+          "x": 71,
+          "y": 335.6015625
+        },
+        "text": "Выбрать Старт"
+      },
+      {
+        "href": "#project",
+        "rect": {
+          "height": 39,
+          "width": 165.0703125,
+          "x": 653,
+          "y": 335.6015625
+        },
+        "text": "Выбрать Проект"
+      }
+    ],
+    "overflow": false,
+    "mobile_status": "NOT_RUN; editor mobile preview is separate evidence"
+  },
+  "visual_review": "Two visible native cards; titles/prices/features and separate CTA links are exact. Both card widths are equal; desktop gap is 24px and both CTAs share the same baseline. Mobile editor preview stacks the two cards and retains full text. Public page screenshot shows the floating site greeting below, not on top of either card. Large blank space below is the otherwise empty test page.",
+  "screenshots": {
+    "first_editor": "screenshots/pricing-2-first-editor.png",
+    "public_viewport": "screenshots/pricing-2-public-viewport.png",
+    "public_full": "screenshots/pricing-2-public-full.png",
+    "editor_mobile_preview": "screenshots/pricing-2-editor-mobile-preview.png"
+  }
+}

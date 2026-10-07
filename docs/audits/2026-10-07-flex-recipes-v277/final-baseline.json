@@ -1,0 +1,48 @@
+{
+  "recorded_at": "2026-10-07",
+  "post_id": 5214,
+  "source_commit": "1ffb1fc099c1d14a721e416c72aca189955874e3",
+  "source_version": "v02.11.277",
+  "editor": {
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "inline_version": "v02.11.277",
+    "publish_disabled": true,
+    "iframe_canvas_text": "Перетащите виджет",
+    "generated_roots": []
+  },
+  "public": {
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "css_viewport": [
+      1232,
+      923
+    ],
+    "roots": []
+  },
+  "final_root_set": [],
+  "operations": {
+    "team_editorial_rows": {
+      "operation": "wpae-1ba864a2453c984a",
+      "root": "faf156d",
+      "identity": "fc72f1a0-0e82-47d7-a185-5de99248d3b4",
+      "undo_revision": 7,
+      "status": "already_undone"
+    },
+    "testimonials_editorial_rows": {
+      "operation": "wpae-16f34da43f39dbde",
+      "root": "a1e7c85",
+      "identity": "8d6841e7-edd9-46ff-a545-b72b4d46048c",
+      "undo_revision": 6,
+      "status": "already_undone"
+    },
+    "testimonials_grid": {
+      "operation": "wpae-149a17d653e7409a",
+      "root": "40f2079",
+      "identity": "763c15d2-5843-4003-8201-796973eaa99c",
+      "generation_revision": 4,
+      "post_publish_reload_revision": 6,
+      "undo_revision": 7,
+      "status": "already_undone",
+      "post_undo_write_count": 0
+    }
+  }
+}

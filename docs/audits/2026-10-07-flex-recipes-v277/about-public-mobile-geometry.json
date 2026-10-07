@@ -1,0 +1,181 @@
+{
+  "clientWidth": 390,
+  "nodes": [
+    {
+      "id": "373d59b",
+      "images": [
+        {
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "rect": {
+            "height": 201.375,
+            "width": 358,
+            "x": 16,
+            "y": 341.1875
+          }
+        }
+      ],
+      "links": [],
+      "rect": {
+        "height": 201.375,
+        "width": 358,
+        "x": 16,
+        "y": 341.1875
+      },
+      "text": "",
+      "type": "container"
+    },
+    {
+      "id": "3c8d8b0",
+      "images": [
+        {
+          "alt": "Современный архитектурный интерьер.",
+          "loaded": true,
+          "rect": {
+            "height": 201.375,
+            "width": 358,
+            "x": 16,
+            "y": 341.1875
+          }
+        }
+      ],
+      "links": [],
+      "rect": {
+        "height": 201.375,
+        "width": 358,
+        "x": 16,
+        "y": 341.1875
+      },
+      "text": "",
+      "type": "widget",
+      "widget": "image.default"
+    },
+    {
+      "id": "697f25c",
+      "images": [],
+      "links": [
+        {
+          "href": "#about",
+          "text": "Обсудить задачу"
+        }
+      ],
+      "rect": {
+        "height": 241.1875,
+        "width": 358,
+        "x": 16,
+        "y": 86
+      },
+      "text": "О СТУДИИ\nСначала понимаем задачу\nСогласуем контекст, выберем решение и проверим результат вместе.\nОб",
+      "type": "container"
+    },
+    {
+      "id": "d5e934c",
+      "images": [],
+      "links": [
+        {
+          "href": "#about",
+          "text": "Обсудить задачу"
+        }
+      ],
+      "rect": {
+        "height": 241.1875,
+        "width": 358,
+        "x": 16,
+        "y": 86
+      },
+      "text": "О СТУДИИ\nСначала понимаем задачу\nСогласуем контекст, выберем решение и проверим результат вместе.\nОб",
+      "type": "container"
+    },
+    {
+      "id": "d4d9449",
+      "images": [],
+      "links": [],
+      "rect": {
+        "height": 32.984375,
+        "width": 96.5390625,
+        "x": 16,
+        "y": 86
+      },
+      "text": "О СТУДИИ",
+      "type": "container"
+    },
+    {
+      "id": "358bdfc",
+      "images": [],
+      "links": [],
+      "rect": {
+        "height": 19.796875,
+        "width": 70.5390625,
+        "x": 29,
+        "y": 92.59375
+      },
+      "text": "О СТУДИИ",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "id": "35cd891",
+      "images": [],
+      "links": [],
+      "rect": {
+        "height": 76.40625,
+        "width": 358,
+        "x": 16,
+        "y": 118.984375
+      },
+      "text": "Сначала понимаем задачу",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "id": "a9d2be3",
+      "images": [],
+      "links": [],
+      "rect": {
+        "height": 68.796875,
+        "width": 358,
+        "x": 16,
+        "y": 195.390625
+      },
+      "text": "Согласуем контекст, выберем решение и проверим результат вместе.",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "6e5e994",
+      "images": [],
+      "links": [
+        {
+          "href": "#about",
+          "text": "Обсудить задачу"
+        }
+      ],
+      "rect": {
+        "height": 63,
+        "width": 167.484375,
+        "x": 16,
+        "y": 264.1875
+      },
+      "text": "Обсудить задачу",
+      "type": "widget",
+      "widget": "button.default"
+    }
+  ],
+  "root": {
+    "direction": "column",
+    "id": "a0212e4",
+    "overflow": false,
+    "rect": {
+      "height": 536.5625,
+      "width": 390,
+      "x": 0,
+      "y": 46
+    }
+  },
+  "scrollWidth": 390,
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "height": 844,
+    "width": 390
+  }
+}

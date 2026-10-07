@@ -1,0 +1,540 @@
+{
+  "containers": [
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-781fd52 e-con-full e-flex e-con e-child",
+      "depth": 0,
+      "i": 0,
+      "rect": {
+        "height": 145.2,
+        "width": 1140,
+        "x": 38.5,
+        "y": 104
+      },
+      "style": {
+        "align": "flex-start",
+        "direction": "column",
+        "display": "flex",
+        "gap": "0px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "ТЕСТОВЫЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные примеры разной длины для проверки точности цитат и принадлежности авто"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-2f4fa4a e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 1,
+      "rect": {
+        "height": 145.2,
+        "width": 608,
+        "x": 38.5,
+        "y": 104
+      },
+      "style": {
+        "align": "flex-start",
+        "direction": "column",
+        "display": "flex",
+        "gap": "0px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "ТЕСТОВЫЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные примеры разной длины для проверки точности цитат и принадлежности авто"
+    },
+    {
+      "children": 0,
+      "classes": "wpae-generated-badge elementor-element elementor-element-47e8d3c e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 2,
+      "rect": {
+        "height": 27.6,
+        "width": 168.5,
+        "x": 38.5,
+        "y": 104
+      },
+      "style": {
+        "align": "center",
+        "direction": "row",
+        "display": "flex",
+        "gap": "24px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "wrap": "nowrap"
+      },
+      "text": "ТЕСТОВЫЕ ОТЗЫВЫ"
+    },
+    {
+      "children": 6,
+      "classes": "wpae-testimonial_cards elementor-element elementor-element-9d3d4ed e-con-full e-flex e-con e-child",
+      "depth": 0,
+      "i": 3,
+      "rect": {
+        "height": 724.2,
+        "width": 1140,
+        "x": 38.5,
+        "y": 281.2
+      },
+      "style": {
+        "align": "flex-start",
+        "direction": "row",
+        "display": "flex",
+        "gap": "24px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "text": "Все понятно.\nТестовый автор 1\nСинтетическая группа 1\nВ тестовом примере удалось проследить каждый этап работы, проверить"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-d002c61 e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 4,
+      "rect": {
+        "height": 148.6,
+        "width": 558,
+        "x": 38.5,
+        "y": 281.2
+      },
+      "style": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "Все понятно.\nТестовый автор 1\nСинтетическая группа 1"
+    },
+    {
+      "children": 0,
+      "classes": "elementor-element elementor-element-e6e9eeb e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 5,
+      "rect": {
+        "height": 98.6,
+        "width": 508,
+        "x": 63.5,
+        "y": 306.2
+      },
+      "style": {
+        "align": "normal",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Все понятно.\nТестовый автор 1\nСинтетическая группа 1"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-9ad296d e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 6,
+      "rect": {
+        "height": 225.4,
+        "width": 558,
+        "x": 620.5,
+        "y": 281.2
+      },
+      "style": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широко"
+    },
+    {
+      "children": 0,
+      "classes": "elementor-element elementor-element-7faf66b e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 7,
+      "rect": {
+        "height": 175.4,
+        "width": 508,
+        "x": 645.5,
+        "y": 306.2
+      },
+      "style": {
+        "align": "normal",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широко"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-6d414a0 e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 8,
+      "rect": {
+        "height": 148.6,
+        "width": 558,
+        "x": 38.5,
+        "y": 530.6
+      },
+      "style": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "Все понятно.\nТестовый автор 3\nСинтетическая группа 3"
+    },
+    {
+      "children": 0,
+      "classes": "elementor-element elementor-element-f858112 e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 9,
+      "rect": {
+        "height": 98.6,
+        "width": 508,
+        "x": 63.5,
+        "y": 555.6
+      },
+      "style": {
+        "align": "normal",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Все понятно.\nТестовый автор 3\nСинтетическая группа 3"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-47ebd45 e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 10,
+      "rect": {
+        "height": 225.4,
+        "width": 558,
+        "x": 620.5,
+        "y": 530.6
+      },
+      "style": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широко"
+    },
+    {
+      "children": 0,
+      "classes": "elementor-element elementor-element-11548ec e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 11,
+      "rect": {
+        "height": 175.4,
+        "width": 508,
+        "x": 645.5,
+        "y": 555.6
+      },
+      "style": {
+        "align": "normal",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широко"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-4b492f1 e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 12,
+      "rect": {
+        "height": 148.6,
+        "width": 558,
+        "x": 38.5,
+        "y": 780
+      },
+      "style": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "Все понятно.\nТестовый автор 5\nСинтетическая группа 5"
+    },
+    {
+      "children": 0,
+      "classes": "elementor-element elementor-element-902b333 e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 13,
+      "rect": {
+        "height": 98.6,
+        "width": 508,
+        "x": 63.5,
+        "y": 805
+      },
+      "style": {
+        "align": "normal",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "Все понятно.\nТестовый автор 5\nСинтетическая группа 5"
+    },
+    {
+      "children": 1,
+      "classes": "elementor-element elementor-element-70b3a2c e-con-full e-flex e-con e-child",
+      "depth": 1,
+      "i": 14,
+      "rect": {
+        "height": 225.4,
+        "width": 558,
+        "x": 620.5,
+        "y": 780
+      },
+      "style": {
+        "align": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "24px",
+        "wrap": "nowrap"
+      },
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широко"
+    },
+    {
+      "children": 0,
+      "classes": "elementor-element elementor-element-ec3fbba e-con-full e-flex e-con e-child",
+      "depth": 2,
+      "i": 15,
+      "rect": {
+        "height": 175.4,
+        "width": 508,
+        "x": 645.5,
+        "y": 805
+      },
+      "style": {
+        "align": "normal",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широко"
+    }
+  ],
+  "document": {
+    "scrollHeight": 1077,
+    "scrollWidth": 1217
+  },
+  "fullText": "ТЕСТОВЫЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные примеры разной длины для проверки точности цитат и принадлежности авторам\nВсе понятно.\nТестовый автор 1\nСинтетическая группа 1\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 2\nСинтетическая группа 2\nВсе понятно.\nТестовый автор 3\nСинтетическая группа 3\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 4\nСинтетическая группа 4\nВсе понятно.\nТестовый автор 5\nСинтетическая группа 5\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 6\nСинтетическая группа 6",
+  "headings": [
+    {
+      "align": "start",
+      "font": "12px",
+      "rect": {
+        "height": 14.4,
+        "width": 142.5,
+        "x": 51.5,
+        "y": 110.6
+      },
+      "tag": "H6",
+      "text": "ТЕСТОВЫЕ ОТЗЫВЫ",
+      "weight": "600"
+    },
+    {
+      "align": "start",
+      "font": "32px",
+      "rect": {
+        "height": 38.4,
+        "width": 373.8,
+        "x": 38.5,
+        "y": 143.6
+      },
+      "tag": "H2",
+      "text": "Опыт участников теста",
+      "weight": "700"
+    },
+    {
+      "align": "start",
+      "font": "18px",
+      "rect": {
+        "height": 23.4,
+        "width": 508,
+        "x": 63.5,
+        "y": 343.8
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 1",
+      "weight": "600"
+    },
+    {
+      "align": "start",
+      "font": "18px",
+      "rect": {
+        "height": 23.4,
+        "width": 508,
+        "x": 645.5,
+        "y": 420.6
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 2",
+      "weight": "600"
+    },
+    {
+      "align": "start",
+      "font": "18px",
+      "rect": {
+        "height": 23.4,
+        "width": 508,
+        "x": 63.5,
+        "y": 593.2
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 3",
+      "weight": "600"
+    },
+    {
+      "align": "start",
+      "font": "18px",
+      "rect": {
+        "height": 23.4,
+        "width": 508,
+        "x": 645.5,
+        "y": 670
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 4",
+      "weight": "600"
+    },
+    {
+      "align": "start",
+      "font": "18px",
+      "rect": {
+        "height": 23.4,
+        "width": 508,
+        "x": 63.5,
+        "y": 842.6
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 5",
+      "weight": "600"
+    },
+    {
+      "align": "start",
+      "font": "18px",
+      "rect": {
+        "height": 23.4,
+        "width": 508,
+        "x": 645.5,
+        "y": 919.4
+      },
+      "tag": "H3",
+      "text": "Тестовый автор 6",
+      "weight": "600"
+    }
+  ],
+  "images": [],
+  "links": [],
+  "root": {
+    "height": 1045.4,
+    "width": 1217,
+    "x": 0,
+    "y": 32
+  },
+  "rootStyle": {
+    "align": "normal",
+    "direction": "column",
+    "display": "flex",
+    "gap": "normal",
+    "justify": "normal",
+    "maxHeight": "none",
+    "minHeight": "0px",
+    "overflow": "visible",
+    "padding": "0px 32px",
+    "wrap": "nowrap"
+  },
+  "viewport": {
+    "dpr": 2,
+    "height": 923,
+    "width": 1232
+  }
+}
