@@ -1,0 +1,423 @@
+{
+  "cards": [
+    {
+      "actions": {
+        "button": "Обсудить стратегию",
+        "buttonRect": {
+          "bottom": 674.859375,
+          "height": 39,
+          "right": 253.484375,
+          "width": 192.484375,
+          "x": 61,
+          "y": 635.859375
+        },
+        "href": "#strategy",
+        "rect": {
+          "bottom": 674.859375,
+          "height": 39,
+          "right": 373.6640625,
+          "width": 312.6640625,
+          "x": 61,
+          "y": 635.859375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "20px",
+          "height": "39px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      "body": {
+        "rect": {
+          "bottom": 462.25,
+          "height": 150.8515625,
+          "right": 373.6640625,
+          "width": 312.6640625,
+          "x": 61,
+          "y": 311.3984375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "12px",
+          "height": "150.852px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ"
+      },
+      "id": "5d1d56c",
+      "rect": {
+        "bottom": 703.859375,
+        "height": 421.4609375,
+        "right": 402.6640625,
+        "width": 370.6640625,
+        "x": 32,
+        "y": 282.3984375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "421.461px",
+        "justifyContent": "space-between",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      }
+    },
+    {
+      "actions": {
+        "button": "Смотреть проекты",
+        "buttonRect": {
+          "bottom": 674.859375,
+          "height": 39,
+          "right": 641.6953125,
+          "width": 182.03125,
+          "x": 459.6640625,
+          "y": 635.859375
+        },
+        "href": "#projects",
+        "rect": {
+          "bottom": 674.859375,
+          "height": 39,
+          "right": 772.328125,
+          "width": 312.6640625,
+          "x": 459.6640625,
+          "y": 635.859375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "20px",
+          "height": "39px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      "body": {
+        "rect": {
+          "bottom": 615.859375,
+          "height": 304.4609375,
+          "right": 772.328125,
+          "width": 312.6640625,
+          "x": 459.6640625,
+          "y": 311.3984375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "12px",
+          "height": "304.461px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "text": "Архитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана"
+      },
+      "id": "4e40902",
+      "rect": {
+        "bottom": 703.859375,
+        "height": 421.4609375,
+        "right": 801.328125,
+        "width": 370.6640625,
+        "x": 430.6640625,
+        "y": 282.3984375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "421.461px",
+        "justifyContent": "space-between",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      }
+    },
+    {
+      "actions": {
+        "button": "Обсудить сопровождение",
+        "buttonRect": {
+          "bottom": 674.859375,
+          "height": 39,
+          "right": 1090.546875,
+          "width": 232.21875,
+          "x": 858.328125,
+          "y": 635.859375
+        },
+        "href": "#support",
+        "rect": {
+          "bottom": 674.859375,
+          "height": 39,
+          "right": 1170.9921875,
+          "width": 312.6640625,
+          "x": 858.328125,
+          "y": 635.859375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "20px",
+          "height": "39px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      "body": {
+        "rect": {
+          "bottom": 513.453125,
+          "height": 202.0546875,
+          "right": 1170.9921875,
+          "width": 312.6640625,
+          "x": 858.328125,
+          "y": 311.3984375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "12px",
+          "height": "202.055px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        },
+        "text": "Сопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла"
+      },
+      "id": "6b8c8e9",
+      "rect": {
+        "bottom": 703.859375,
+        "height": 421.4609375,
+        "right": 1199.9921875,
+        "width": 370.6640625,
+        "x": 829.328125,
+        "y": 282.3984375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "421.461px",
+        "justifyContent": "space-between",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      }
+    }
+  ],
+  "chatBubble": {
+    "rect": {
+      "bottom": 827,
+      "height": 48.3984375,
+      "right": 1208,
+      "width": 320,
+      "x": 888,
+      "y": 778.6015625
+    },
+    "text": "Добрый вечер!!"
+  },
+  "collection": {
+    "rect": {
+      "bottom": 703.859375,
+      "height": 421.4609375,
+      "right": 1200,
+      "width": 1168,
+      "x": 32,
+      "y": 282.3984375
+    },
+    "style": {
+      "alignItems": "stretch",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(51, 51, 51)",
+      "borderRadius": "0px",
+      "display": "flex",
+      "flexDirection": "row",
+      "fontSize": "16px",
+      "gap": "28px",
+      "height": "421.461px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "textAlign": "start"
+    }
+  },
+  "eyebrow": {
+    "rect": {
+      "bottom": 120.3984375,
+      "height": 14.3984375,
+      "right": 219.7421875,
+      "width": 157.7421875,
+      "x": 62,
+      "y": 106
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(15, 23, 42)",
+      "borderRadius": "0px",
+      "display": "block",
+      "flexDirection": "row",
+      "fontSize": "12px",
+      "gap": "normal",
+      "height": "14.3984px",
+      "justifyContent": "normal",
+      "lineHeight": "14.4px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px",
+      "textAlign": "start"
+    }
+  },
+  "intro": {
+    "rect": {
+      "bottom": 183.1953125,
+      "height": 40.796875,
+      "right": 462.6015625,
+      "width": 430.6015625,
+      "x": 32,
+      "y": 142.3984375
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(15, 23, 42)",
+      "borderRadius": "0px",
+      "display": "block",
+      "flexDirection": "row",
+      "fontSize": "34px",
+      "gap": "normal",
+      "height": "40.7969px",
+      "justifyContent": "normal",
+      "lineHeight": "40.8px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px",
+      "textAlign": "start"
+    }
+  },
+  "post": 5214,
+  "root": "8c1774b",
+  "rootRect": {
+    "bottom": 767.859375,
+    "height": 735.859375,
+    "right": 1232,
+    "width": 1232,
+    "x": 0,
+    "y": 32
+  },
+  "rootStyle": {
+    "alignItems": "normal",
+    "background": "rgb(241, 245, 249)",
+    "border": "0px none rgb(51, 51, 51)",
+    "borderRadius": "0px",
+    "display": "flex",
+    "flexDirection": "column",
+    "fontSize": "16px",
+    "gap": "normal",
+    "height": "735.859px",
+    "justifyContent": "normal",
+    "lineHeight": "24px",
+    "maxHeight": "none",
+    "minHeight": "0px",
+    "overflow": "visible",
+    "padding": "0px 32px",
+    "textAlign": "start"
+  },
+  "source": "public",
+  "viewport": {
+    "dpr": 2,
+    "height": 923,
+    "scrollHeight": 923,
+    "scrollWidth": 1232,
+    "width": 1232
+  }
+}

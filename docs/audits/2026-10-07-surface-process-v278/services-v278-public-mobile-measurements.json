@@ -1,0 +1,183 @@
+{
+  "bodyWidth": 390,
+  "cards": [
+    {
+      "headings": [
+        {
+          "fontSize": "18px",
+          "level": "H3",
+          "lineHeight": "23.4px",
+          "rect": {
+            "height": 23.3984375,
+            "width": 324,
+            "x": 33,
+            "y": 331.3984375
+          },
+          "text": "Стратегия проекта"
+        }
+      ],
+      "id": "4b91963",
+      "links": [
+        {
+          "href": "#strategy",
+          "rect": {
+            "height": 39,
+            "width": 192.484375,
+            "x": 33,
+            "y": 438
+          },
+          "text": "Обсудить стратегию"
+        }
+      ],
+      "rect": {
+        "height": 241.6015625,
+        "width": 358,
+        "x": 16,
+        "y": 252.3984375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "display": "flex",
+        "flexDirection": "column",
+        "gap": "20px",
+        "justifyContent": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px"
+      },
+      "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию"
+    },
+    {
+      "headings": [
+        {
+          "fontSize": "18px",
+          "level": "H3",
+          "lineHeight": "23.4px",
+          "rect": {
+            "height": 23.3984375,
+            "width": 324,
+            "x": 33,
+            "y": 589
+          },
+          "text": "Архитектура и дизайн"
+        }
+      ],
+      "id": "0bf5b4c",
+      "links": [
+        {
+          "href": "#projects",
+          "rect": {
+            "height": 39,
+            "width": 182.03125,
+            "x": 33,
+            "y": 823.609375
+          },
+          "text": "Смотреть проекты"
+        }
+      ],
+      "rect": {
+        "height": 369.609375,
+        "width": 358,
+        "x": 16,
+        "y": 510
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "display": "flex",
+        "flexDirection": "column",
+        "gap": "20px",
+        "justifyContent": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px"
+      },
+      "text": "Архитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты"
+    },
+    {
+      "headings": [
+        {
+          "fontSize": "18px",
+          "level": "H3",
+          "lineHeight": "23.4px",
+          "rect": {
+            "height": 23.3984375,
+            "width": 324,
+            "x": 33,
+            "y": 974.609375
+          },
+          "text": "Сопровождение"
+        }
+      ],
+      "id": "c61ab1c",
+      "links": [
+        {
+          "href": "#support",
+          "rect": {
+            "height": 39,
+            "width": 232.21875,
+            "x": 33,
+            "y": 1132.4140625
+          },
+          "text": "Обсудить сопровождение"
+        }
+      ],
+      "rect": {
+        "height": 292.8046875,
+        "width": 358,
+        "x": 16,
+        "y": 895.609375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "display": "flex",
+        "flexDirection": "column",
+        "gap": "20px",
+        "justifyContent": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px"
+      },
+      "text": "Сопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение"
+    }
+  ],
+  "document": {
+    "height": 1220,
+    "width": 390
+  },
+  "overflow": false,
+  "overlays": [
+    {
+      "rect": {
+        "height": 48.3984375,
+        "width": 320,
+        "x": 46,
+        "y": 699.6015625
+      },
+      "text": "Ассаламу алейкум!"
+    }
+  ],
+  "post_id": 5214,
+  "root": "8073233",
+  "rootRect": {
+    "height": 1174.4140625,
+    "width": 390,
+    "x": 0,
+    "y": 46
+  },
+  "source": "public",
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "dpr": 1,
+    "height": 844,
+    "width": 390
+  }
+}

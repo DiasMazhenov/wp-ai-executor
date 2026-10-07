@@ -1,0 +1,44 @@
+{
+  "cards": [
+    {
+      "direction": "column",
+      "id": "5d1d56c",
+      "rect": {
+        "bottom": 684.515625,
+        "height": 404.109375,
+        "width": 334.5,
+        "x": 32,
+        "y": 280.40625
+      }
+    },
+    {
+      "direction": "column",
+      "id": "4e40902",
+      "rect": {
+        "bottom": 684.515625,
+        "height": 404.109375,
+        "width": 334.5,
+        "x": 386.5,
+        "y": 280.40625
+      }
+    },
+    {
+      "direction": "column",
+      "id": "6b8c8e9",
+      "rect": {
+        "bottom": 1031.8203125,
+        "height": 327.3046875,
+        "width": 334.5,
+        "x": 32,
+        "y": 704.515625
+      }
+    }
+  ],
+  "collectionDirection": "row",
+  "horizontalOverflow": false,
+  "scrollWidth": 753,
+  "viewport": [
+    768,
+    1024
+  ]
+}

@@ -1,0 +1,681 @@
+{
+  "captured_at": "2026-10-07T17:17:29.517Z",
+  "post_id": 5214,
+  "source_version": "v02.11.278",
+  "route": "ordinary_plugin_chat_typed_pipeline",
+  "record": "services.icon_cards",
+  "profile": "soft_cards_light",
+  "operation_id": "wpae-386f04d56c4648bd",
+  "root": "8073233",
+  "css_viewport_editor": {
+    "width": 1232,
+    "height": 923
+  },
+  "prompt_sha256": "ed80c2af4627f0d3be421cc08fb751dbec8a41d117beead269652af2640caa9c",
+  "nodes": [
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-8073233 e-con e-parent e-flex e-con-boxed e-con--column elementor-element-editable ui-resizable",
+      "dataId": "8073233",
+      "hrefs": [
+        "#strategy",
+        "#projects",
+        "#support"
+      ],
+      "id": "",
+      "rect": {
+        "height": 765.4140625,
+        "width": 1010,
+        "x": 0,
+        "y": 0
+      },
+      "style": {
+        "background": "rgb(246, 240, 230)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px 32px"
+      },
+      "text": "УСЛУГИ ДЛЯ ПРОЕКТА\nТри направления работы\nТочный состав услуг с разной длиной описаний и отдельными действиями\nСтратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-2c59d1b e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "2c59d1b",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 127,
+        "width": 946,
+        "x": 32,
+        "y": 72
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "УСЛУГИ ДЛЯ ПРОЕКТА\nТри направления работы\nТочный состав услуг с разной длиной описаний и отдельными действиями",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-4e46d3e e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "4e46d3e",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 127,
+        "width": 608,
+        "x": 32,
+        "y": 72
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "УСЛУГИ ДЛЯ ПРОЕКТА\nТри направления работы\nТочный состав услуг с разной длиной описаний и отдельными действиями",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-057f2a5 e-con e-parent e-flex e-con-full e-con--row ui-resizable",
+      "dataId": "057f2a5",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 35,
+        "width": 217.7421875,
+        "x": 32,
+        "y": 72
+      },
+      "style": {
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "999px",
+        "display": "flex",
+        "flexDirection": "row",
+        "padding": "8px 28px"
+      },
+      "text": "УСЛУГИ ДЛЯ ПРОЕКТА",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-8350f31 elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading elementor-widget__width-initial wpae-generated-badge-label ui-resizable",
+      "dataId": "8350f31",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 15,
+        "width": 157.7421875,
+        "x": 62,
+        "y": 82
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "УСЛУГИ ДЛЯ ПРОЕКТА",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-f6563d5 elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading ui-resizable",
+      "dataId": "f6563d5",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 50.3984375,
+        "width": 405.265625,
+        "x": 32,
+        "y": 107
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Три направления работы",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-4a122c5 elementor-element--toggle-edit-tools elementor-widget elementor-widget-text-editor ui-resizable",
+      "dataId": "4a122c5",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 41.6015625,
+        "width": 568.5625,
+        "x": 32,
+        "y": 157.3984375
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Точный состав услуг с разной длиной описаний и отдельными действиями",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-3cdfce8 e-con e-parent e-flex e-con-full e-con--row ui-resizable",
+      "dataId": "3cdfce8",
+      "hrefs": [
+        "#strategy",
+        "#projects",
+        "#support"
+      ],
+      "id": "",
+      "rect": {
+        "height": 462.4140625,
+        "width": 946,
+        "x": 32,
+        "y": 231
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию\nАрхитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты\nСопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-4b91963 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "4b91963",
+      "hrefs": [
+        "#strategy"
+      ],
+      "id": "",
+      "rect": {
+        "height": 462.4140625,
+        "width": 299.328125,
+        "x": 32,
+        "y": 231
+      },
+      "style": {
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "24px"
+      },
+      "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ\nОбсудить стратегию",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-6527309 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "6527309",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 148.6015625,
+        "width": 249.328125,
+        "x": 57,
+        "y": 256
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "Стратегия проекта\nФормулируем задачу и согласуем план работ",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-7f85ab9 elementor-element--toggle-edit-tools elementor-widget elementor-widget-icon elementor-view-stacked elementor-shape-circle elementor-widget__width-initial ui-resizable",
+      "dataId": "7f85ab9",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 50,
+        "width": 44,
+        "x": 57,
+        "y": 256
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "",
+      "type": "widget",
+      "widget": "icon.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-590d982 elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading ui-resizable",
+      "dataId": "590d982",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 23.3984375,
+        "width": 249.328125,
+        "x": 57,
+        "y": 318
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Стратегия проекта",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-1519592 elementor-element--toggle-edit-tools elementor-widget elementor-widget-text-editor ui-resizable",
+      "dataId": "1519592",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 51.203125,
+        "width": 249.328125,
+        "x": 57,
+        "y": 353.3984375
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Формулируем задачу и согласуем план работ",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-f207a1b e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "f207a1b",
+      "hrefs": [
+        "#strategy"
+      ],
+      "id": "",
+      "rect": {
+        "height": 39,
+        "width": 249.328125,
+        "x": 57,
+        "y": 629.4140625
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "Обсудить стратегию",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-ad6711e elementor-element--toggle-edit-tools elementor-widget elementor-widget-button elementor-align-left elementor-tablet-align-left elementor-mobile-align-left ui-resizable",
+      "dataId": "ad6711e",
+      "hrefs": [
+        "#strategy"
+      ],
+      "id": "",
+      "rect": {
+        "height": 39,
+        "width": 249.328125,
+        "x": 57,
+        "y": 629.4140625
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Обсудить стратегию",
+      "type": "widget",
+      "widget": "button.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-0bf5b4c e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "0bf5b4c",
+      "hrefs": [
+        "#projects"
+      ],
+      "id": "",
+      "rect": {
+        "height": 462.4140625,
+        "width": 299.328125,
+        "x": 355.328125,
+        "y": 231
+      },
+      "style": {
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "24px"
+      },
+      "text": "Архитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана\nСмотреть проекты",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-b1ed3d0 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "b1ed3d0",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 353.4140625,
+        "width": 249.328125,
+        "x": 380.328125,
+        "y": 256
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "Архитектура и дизайн\nРазрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-26a5559 elementor-element--toggle-edit-tools elementor-widget elementor-widget-icon elementor-view-stacked elementor-shape-circle elementor-widget__width-initial ui-resizable",
+      "dataId": "26a5559",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 50,
+        "width": 44,
+        "x": 380.328125,
+        "y": 256
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "",
+      "type": "widget",
+      "widget": "icon.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-135fe37 elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading ui-resizable",
+      "dataId": "135fe37",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 23.3984375,
+        "width": 249.328125,
+        "x": 380.328125,
+        "y": 318
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Архитектура и дизайн",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-bc89bdc elementor-element--toggle-edit-tools elementor-widget elementor-widget-text-editor ui-resizable",
+      "dataId": "bc89bdc",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 256.015625,
+        "width": 249.328125,
+        "x": 380.328125,
+        "y": 353.3984375
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Разрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-64cec10 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "64cec10",
+      "hrefs": [
+        "#projects"
+      ],
+      "id": "",
+      "rect": {
+        "height": 39,
+        "width": 249.328125,
+        "x": 380.328125,
+        "y": 629.4140625
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "Смотреть проекты",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-f8aa42d elementor-element--toggle-edit-tools elementor-widget elementor-widget-button elementor-align-left elementor-tablet-align-left elementor-mobile-align-left ui-resizable",
+      "dataId": "f8aa42d",
+      "hrefs": [
+        "#projects"
+      ],
+      "id": "",
+      "rect": {
+        "height": 39,
+        "width": 249.328125,
+        "x": 380.328125,
+        "y": 629.4140625
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Смотреть проекты",
+      "type": "widget",
+      "widget": "button.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-c61ab1c e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "c61ab1c",
+      "hrefs": [
+        "#support"
+      ],
+      "id": "",
+      "rect": {
+        "height": 462.4140625,
+        "width": 299.328125,
+        "x": 678.65625,
+        "y": 231
+      },
+      "style": {
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "8px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "24px"
+      },
+      "text": "Сопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла\nОбсудить сопровождение",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-32a6505 e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "32a6505",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 225.40625,
+        "width": 249.328125,
+        "x": 703.65625,
+        "y": 256
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "Сопровождение\nПроверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-5a9a38c elementor-element--toggle-edit-tools elementor-widget elementor-widget-icon elementor-view-stacked elementor-shape-circle elementor-widget__width-initial ui-resizable",
+      "dataId": "5a9a38c",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 50,
+        "width": 44,
+        "x": 703.65625,
+        "y": 256
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "",
+      "type": "widget",
+      "widget": "icon.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-4542152 elementor-element--toggle-edit-tools elementor-widget elementor-widget-heading ui-resizable",
+      "dataId": "4542152",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 23.3984375,
+        "width": 249.328125,
+        "x": 703.65625,
+        "y": 318
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Сопровождение",
+      "type": "widget",
+      "widget": "heading.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-e3fb05f elementor-element--toggle-edit-tools elementor-widget elementor-widget-text-editor ui-resizable",
+      "dataId": "e3fb05f",
+      "hrefs": [],
+      "id": "",
+      "rect": {
+        "height": 128.0078125,
+        "width": 249.328125,
+        "x": 703.65625,
+        "y": 353.3984375
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Проверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла",
+      "type": "widget",
+      "widget": "text-editor.default"
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-05b3e1b e-con e-parent e-flex e-con-full e-con--column ui-resizable",
+      "dataId": "05b3e1b",
+      "hrefs": [
+        "#support"
+      ],
+      "id": "",
+      "rect": {
+        "height": 39,
+        "width": 249.328125,
+        "x": 703.65625,
+        "y": 629.4140625
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "padding": "0px"
+      },
+      "text": "Обсудить сопровождение",
+      "type": "container",
+      "widget": null
+    },
+    {
+      "className": "elementor-element elementor-element-edit-mode elementor-element-ee23ac2 elementor-element--toggle-edit-tools elementor-widget elementor-widget-button elementor-align-left elementor-tablet-align-left elementor-mobile-align-left ui-resizable",
+      "dataId": "ee23ac2",
+      "hrefs": [
+        "#support"
+      ],
+      "id": "",
+      "rect": {
+        "height": 39,
+        "width": 249.328125,
+        "x": 703.65625,
+        "y": 629.4140625
+      },
+      "style": {
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "padding": "0px"
+      },
+      "text": "Обсудить сопровождение",
+      "type": "widget",
+      "widget": "button.default"
+    }
+  ]
+}

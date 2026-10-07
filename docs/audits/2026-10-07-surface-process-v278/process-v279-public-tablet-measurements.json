@@ -1,0 +1,48 @@
+{
+  "collectionDirection": "row",
+  "gap": "20px",
+  "horizontalOverflow": false,
+  "scrollWidth": 768,
+  "steps": [
+    {
+      "id": "3c55b8e",
+      "rect": {
+        "height": 189.5,
+        "width": 342,
+        "x": 32,
+        "y": 206.390625
+      }
+    },
+    {
+      "id": "d0035da",
+      "rect": {
+        "height": 215.1015625,
+        "width": 342,
+        "x": 394,
+        "y": 206.390625
+      }
+    },
+    {
+      "id": "50469f7",
+      "rect": {
+        "height": 215.1015625,
+        "width": 342,
+        "x": 32,
+        "y": 441.4921875
+      }
+    },
+    {
+      "id": "36f6ff5",
+      "rect": {
+        "height": 189.5,
+        "width": 342,
+        "x": 394,
+        "y": 441.4921875
+      }
+    }
+  ],
+  "viewport": [
+    768,
+    1024
+  ]
+}

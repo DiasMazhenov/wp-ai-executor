@@ -1,0 +1,562 @@
+- heading "Редактировать \"Pricing Contract Live v123\" с помощью Elementor" [level=1]
+- banner:
+  - button "Логотип Elementor":
+    - img "Логотип Elementor"
+  - button "Добавить элемент" [pressed]:
+  - button "Angie":
+  - button "Настройки Страница":
+  - button "История":
+  - separator
+  - button "Pricing Contract Live v123":
+    - generic "Pricing Contract Live v123":
+      - generic: Pricing Contract Live v123
+  - separator
+  - tablist "Сменить устройство":
+    - tab "Компьютер" [selected]:
+    - tab "Планшет - книжная ориентация (до 1024px)":
+    - tab "Мобильный - книжная ориентация (до 767px)":
+  - separator
+  - button "Контрольный список":
+  - button "Что нового":
+  - button "Поиск":
+  - button "Структура" [pressed]:
+  - button "Просмотреть изменения":
+  - button "Опубликовать" [disabled]
+  - button "Сохранить настройки":
+- complementary "Элементы":
+  - text: 
+  - text: 
+  - heading "Элементы" [level=2]
+  - text:  
+  - main:
+    - button "Виджеты"
+    - button "Глобальные"
+    - search:
+      - generic: "Найти виджет:"
+      - searchbox "Найти виджет:"
+      - generic: 
+    - button "Избранные":
+      - generic: 
+      - generic: Избранные
+    - button "HTML-код":
+      - generic: 
+      - generic: HTML-код
+    - button "Template":
+      - generic: 
+      - generic: Template
+    - button "Якорь меню":
+      - generic: 
+      - generic: Якорь меню
+    - text: 
+    - button "Макет":
+      - generic: 
+      - generic: Макет
+    - button "Контейнер":
+      - generic: 
+      - generic: Контейнер
+    - button "Сетка":
+      - generic: 
+      - generic: Сетка
+    - button "Базовый":
+      - generic: 
+      - generic: Базовый
+    - button "Заголовок":
+      - generic: 
+      - generic: Заголовок
+    - button "Изображение":
+      - generic: 
+      - generic: Изображение
+    - button "Текстовый редактор":
+      - generic: 
+      - generic: Текстовый редактор
+    - button "Видео":
+      - generic: 
+      - generic: Видео
+    - button "Кнопка":
+      - generic: 
+      - generic: Кнопка
+    - button "Разделитель":
+      - generic: 
+      - generic: Разделитель
+    - button "Интервал":
+      - generic: 
+      - generic: Интервал
+    - button "Карты Google":
+      - generic: 
+      - generic: Карты Google
+    - button "Иконка":
+      - generic: 
+      - generic: Иконка
+    - button "Custom Widget Try for free":
+      - generic: 
+      - generic: Custom Widget
+      - button "Try for free"
+    - paragraph: Create custom widgets by describing what you need.
+    - button "Pro":
+      - generic: 
+      - generic: Pro
+    - button "Loop Grid":
+      - generic: 
+      - generic: Loop Grid
+    - button "Loop Carousel":
+      - generic: 
+      - generic: Loop Carousel
+    - button "Off-Canvas":
+      - generic: 
+      - generic: Off-Canvas
+    - button "Posts":
+      - generic: 
+      - generic: Posts
+    - button "Portfolio":
+      - generic: 
+      - generic: Portfolio
+    - button "Gallery":
+      - generic: 
+      - generic: Gallery
+    - button "Form":
+      - generic: 
+      - generic: Form
+    - button "Login":
+      - generic: 
+      - generic: Login
+    - button "Slides":
+      - generic: 
+      - generic: Slides
+    - button "WordPress Menu":
+      - generic: 
+      - generic: WordPress Menu
+    - button "Animated Headline":
+      - generic: 
+      - generic: Animated Headline
+    - button "Hotspot":
+      - generic: 
+      - generic: Hotspot
+    - button "Price List":
+      - generic: 
+      - generic: Price List
+    - button "Price Table":
+      - generic: 
+      - generic: Price Table
+    - button "Flip Box":
+      - generic: 
+      - generic: Flip Box
+    - button "Call to Action":
+      - generic: 
+      - generic: Call to Action
+    - button "Media Carousel":
+      - generic: 
+      - generic: Media Carousel
+    - button "Testimonial Carousel":
+      - generic: 
+      - generic: Testimonial Carousel
+    - button "Reviews":
+      - generic: 
+      - generic: Reviews
+    - button "Table of Contents":
+      - generic: 
+      - generic: Table of Contents
+    - button "Countdown":
+      - generic: 
+      - generic: Countdown
+    - button "Share Buttons":
+      - generic: 
+      - generic: Share Buttons
+    - button "Blockquote":
+      - generic: 
+      - generic: Blockquote
+    - button "Facebook Embed":
+      - generic: 
+      - generic: Facebook Embed
+    - button "Facebook Page":
+      - generic: 
+      - generic: Facebook Page
+    - button "Template":
+      - generic: 
+      - generic: Template
+    - button "Lottie":
+      - generic: 
+      - generic: Lottie
+    - button "Code Highlight":
+      - generic: 
+      - generic: Code Highlight
+    - button "Video Playlist":
+      - generic: 
+      - generic: Video Playlist
+    - button "PayPal Button":
+      - generic: 
+      - generic: PayPal Button
+    - button "Stripe Button":
+      - generic: 
+      - generic: Stripe Button
+    - button "Progress Tracker":
+      - generic: 
+      - generic: Progress Tracker
+    - button "Carousel":
+      - generic: 
+      - generic: Carousel
+    - button "Taxonomy Filter":
+      - generic: 
+      - generic: Taxonomy Filter
+    - button "Search":
+      - generic: 
+      - generic: Search
+    - text: 
+    - button "Общие":
+      - generic: 
+      - generic: Общие
+    - button "Вкладки":
+      - generic: 
+      - generic: Вкладки
+    - button "Аккордеон":
+      - generic: 
+      - generic: Аккордеон
+    - button "Блок с изображением":
+      - generic: 
+      - generic: Блок с изображением
+    - button "Блок с иконкой":
+      - generic: 
+      - generic: Блок с иконкой
+    - button "Карусель":
+      - generic: 
+      - generic: Карусель
+    - button "Основная галерея":
+      - generic: 
+      - generic: Основная галерея
+    - button "Список с иконками":
+      - generic: 
+      - generic: Список с иконками
+    - button "Счётчик":
+      - generic: 
+      - generic: Счётчик
+    - button "Прогресс":
+      - generic: 
+      - generic: Прогресс
+    - button "Отзыв":
+      - generic: 
+      - generic: Отзыв
+    - button "Иконки соцсетей":
+      - generic: 
+      - generic: Иконки соцсетей
+    - button "Предупреждение":
+      - generic: 
+      - generic: Предупреждение
+    - button "SoundCloud плеер":
+      - generic: 
+      - generic: SoundCloud плеер
+    - button "Шорткод":
+      - generic: 
+      - generic: Шорткод
+    - button "HTML-код":
+      - generic: 
+      - generic: HTML-код
+    - button "Якорь меню":
+      - generic: 
+      - generic: Якорь меню
+    - button "Сайдбар":
+      - generic: 
+      - generic: Сайдбар
+    - button "Читать далее":
+      - generic: 
+      - generic: Читать далее
+    - button "Рейтинг":
+      - generic: 
+      - generic: Рейтинг
+    - button "DS AI Chatbot v0.5.119":
+      - generic: 
+      - generic: DS AI Chatbot v0.5.119
+    - button "Текст по контуру":
+      - generic: 
+      - generic: Текст по контуру
+    - button "Ссылка в биографии":
+      - generic: 
+      - generic: Ссылка в биографии
+    - button "Минималистский":
+      - generic: 
+      - generic: Минималистский
+    - button "Classic":
+      - generic: 
+      - generic: Classic
+    - button "Showcase":
+      - generic: 
+      - generic: Showcase
+    - button "Links":
+      - generic: 
+      - generic: Links
+    - button "Services":
+      - generic: 
+      - generic: Services
+    - button "Portfolio":
+      - generic: 
+      - generic: Portfolio
+    - button "Business Card":
+      - generic: 
+      - generic: Business Card
+    - button "Сайт":
+      - generic: 
+      - generic: Сайт
+    - text:     
+    - button "Одиночная":
+      - generic: 
+      - generic: Одиночная
+    - text:         
+    - text: 
+    - button "VibeLMS":
+      - generic: 
+      - generic: VibeLMS
+    - button "Информация о курсе":
+      - generic: 
+      - generic: Информация о курсе
+    - button "Преподаватели курса":
+      - generic: 
+      - generic: Преподаватели курса
+    - button "Тарифы курса":
+      - generic: 
+      - generic: Тарифы курса
+    - button "Прогресс курса":
+      - generic: 
+      - generic: Прогресс курса
+    - button "Кнопка продолжения курса":
+      - generic: 
+      - generic: Кнопка продолжения курса
+    - button "Содержание курса":
+      - generic: 
+      - generic: Содержание курса
+    - button "Идентификация сотрудника":
+      - generic: 
+      - generic: Идентификация сотрудника
+    - button "Карточка курса":
+      - generic: 
+      - generic: Карточка курса
+    - button "Каталог курсов":
+      - generic: 
+      - generic: Каталог курсов
+    - button "Список уроков":
+      - generic: 
+      - generic: Список уроков
+    - button "Тест":
+      - generic: 
+      - generic: Тест
+    - button "Результаты тестов":
+      - generic: 
+      - generic: Результаты тестов
+    - button "Сертификаты пользователя":
+      - generic: 
+      - generic: Сертификаты пользователя
+    - button "Профиль сотрудника":
+      - generic: 
+      - generic: Профиль сотрудника
+    - button "Кабинет ученика":
+      - generic: 
+      - generic: Кабинет ученика
+    - button "Группы доступа":
+      - generic: 
+      - generic: Группы доступа
+    - button "Учебные материалы":
+      - generic: 
+      - generic: Учебные материалы
+    - button "Контент по языку":
+      - generic: 
+      - generic: Контент по языку
+    - button "Шапка VibeLMS":
+      - generic: 
+      - generic: Шапка VibeLMS
+    - button "Подвал VibeLMS":
+      - generic: 
+      - generic: Подвал VibeLMS
+    - button "WordPress":
+      - generic: 
+      - generic: WordPress
+    - text:                     
+  - text:          
+  - generic "Скрыть панель (⌘ + P)":
+    - generic: 
+    - generic: Скрыть панель (⌘ + P)
+- main "Смотреть":
+  - text: 
+  - iframe [id="elementor-preview-iframe"]:
+    - generic:   
+    - generic:   
+    - generic:   
+    - generic:   
+    - generic: 
+    - heading "УСЛУГИ ДЛЯ ПРОЕКТА" [level=6]
+    - generic: 
+    - heading "Три направления работы" [level=2]
+    - generic: 
+    - generic: Точный состав услуг с разной длиной описаний и отдельными действиями
+    - generic:   
+    - generic:   
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Стратегия проекта" [level=3]
+    - generic: 
+    - generic: Формулируем задачу и согласуем план работ
+    - generic:   
+    - generic: 
+    - link "Обсудить стратегию":
+      - /url: "#strategy"
+      - generic: Обсудить стратегию
+    - generic:   
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Архитектура и дизайн" [level=3]
+    - generic: 
+    - generic: Разрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана
+    - generic:   
+    - generic: 
+    - link "Смотреть проекты":
+      - /url: "#projects"
+      - generic: Смотреть проекты
+    - generic:   
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Сопровождение" [level=3]
+    - generic: 
+    - generic: Проверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла
+    - generic:   
+    - generic: 
+    - link "Обсудить сопровождение":
+      - /url: "#support"
+      - generic: Обсудить сопровождение
+    - region "Добавьте новый элемент макета":
+      - text:  
+      - button "Добавить новый контейнер":
+        - generic: 
+      - button "Добавить шаблон":
+        - generic: 
+      - button "Стройте с помощью ИИ":
+        - generic: 
+      - generic: Перетащите виджет
+    - generic: desktop
+- complementary "Структура":
+  - button "Развернуть все элементы":
+    - generic: 
+  - button "":
+    - generic: 
+  - heading "Структура" [level=2]
+  - button "Закрытая структура":
+    - generic: 
+  - generic: 
+  - generic: Показать/скрыть внутренние элементы
+  - generic: 
+  - generic: Контейнер
+  - text: 
+  - text:                                                                      
+  - generic: 
+  - generic: Изменить размер структуры
+- region "LLM-помощник Elementor":
+  - strong: LLM-помощник Elementor
+  - generic: Ответы проходят через настроенный proxy
+  - generic: "Модель: openrouter/free · Версия: v02.11.278"
+  - generic: "Выделение: нет"
+  - button "Копировать JSON":
+    - generic: 
+  - button "Копировать JSON выделенного":
+    - generic: 
+  - button "Копировать JSON для вставки в Elementor":
+    - generic: 
+  - button "Перегенерировать последний запрос":
+    - generic: 
+  - button "Проверить сохранённый результат":
+    - generic: 
+  - button "Свернуть чат": ×
+  - list "Фазы генерации дизайна":
+    - listitem: Разбор запроса
+    - listitem: Планирование дизайна
+    - listitem: Подбор компонентов
+    - listitem: Проверка responsive
+    - listitem: Сборка Elementor
+    - listitem: Запись
+    - listitem: Рендер
+    - listitem: Visual review
+  - generic: Опишите задачу по текущей странице или выбранному элементу.
+  - button "Отменить создание блока"
+  - button "Обновить серверный descriptor"
+  - button "Проверить owned модель перед Save"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - generic: Выделите элемент в Elementor и повторите.
+  - generic: "Выполняется: Обновляю preview и проверяю результат через AI Vision."
+  - generic: "Актуальный preview и Vision привязаны к существующей операции. Состояние журнала: written."
+  - button "Применить scoped repair отступов"
+  - generic: "AI Vision: score 82. confidence 95%. Требуется дополнительная визуальная проверка. The services section follows the soft cards light profile closely with three distinct content cards, icons, headings, and CTA buttons. Typography hierarchy and spacing are mostly solid, though the layout suffers from awkward word wrapping in the subtitle and headings due to narrow column widths. major: Awkward word wrapping and line breaking in the service card headings and description texts due to insufficient column padding or width constraints.; minor: The top intro text block has excessive horizontal dispersion between the small pill badge and the descriptive paragraph."
+  - generic: "Свежий read-only descriptor: operation wpae-386f04d56c4648bd, revision 5, status available. write_count=0."
+  - generic: "Owned модель соответствует принятому контракту: wpae-386f04d56c4648bd"
+  - button "Безопасно синхронизировать owned модель"
+  - generic: Композиция
+  - combobox "Композиция":
+    - option "Автоматически" [selected]
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Только текст"
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Сетка карточек"
+    - option "Список с иконками"
+    - option "Карточки тарифов"
+    - option "Аккордеон"
+    - option "Карточки участников"
+    - option "Редакционные строки"
+    - option "Карточки отзывов"
+    - option "Редакционные строки"
+    - option "Карточки с иконками"
+    - option "Карточки с фото"
+    - option "Текст и фото"
+    - option "Список услуг"
+    - option "Упорядоченные этапы"
+  - generic: Оформление
+  - combobox "Оформление" [disabled]:
+    - option "По умолчанию" [selected]
+  - textbox "Спросите, что угодно…"
+  - button "Отправить":
+    - generic: 

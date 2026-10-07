@@ -1,0 +1,392 @@
+{
+  "cards": [
+    {
+      "id": "4edf6e4",
+      "rect": {
+        "bottom": 429.234375,
+        "height": 220.8515625,
+        "right": 602,
+        "width": 556,
+        "x": 46,
+        "y": 208.3828125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "220.852px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      },
+      "text": "Понятный план\nСроки, приоритеты и критерии результата согласуем до начала работы.",
+      "widgets": [
+        {
+          "rect": {
+            "bottom": 299.3828125,
+            "height": 62,
+            "right": 573,
+            "width": 498,
+            "x": 75,
+            "y": 237.3828125
+          },
+          "text": "",
+          "type": "icon.default"
+        },
+        {
+          "rect": {
+            "bottom": 337.03125,
+            "height": 25.6484375,
+            "right": 573,
+            "width": 498,
+            "x": 75,
+            "y": 311.3828125
+          },
+          "text": "Понятный план",
+          "type": "heading.default"
+        },
+        {
+          "rect": {
+            "bottom": 400.234375,
+            "height": 51.203125,
+            "right": 573,
+            "width": 498,
+            "x": 75,
+            "y": 349.03125
+          },
+          "text": "Сроки, приоритеты и критерии результата согласуем до начала работы.",
+          "type": "text-editor.default"
+        }
+      ]
+    },
+    {
+      "id": "c341e68",
+      "rect": {
+        "bottom": 429.234375,
+        "height": 220.8515625,
+        "right": 1186,
+        "width": 556,
+        "x": 630,
+        "y": 208.3828125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "220.852px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      },
+      "text": "Общая команда\nКлиент и команда работают с единым планом и общими решениями.",
+      "widgets": [
+        {
+          "rect": {
+            "bottom": 299.3828125,
+            "height": 62,
+            "right": 1157,
+            "width": 498,
+            "x": 659,
+            "y": 237.3828125
+          },
+          "text": "",
+          "type": "icon.default"
+        },
+        {
+          "rect": {
+            "bottom": 337.03125,
+            "height": 25.6484375,
+            "right": 1157,
+            "width": 498,
+            "x": 659,
+            "y": 311.3828125
+          },
+          "text": "Общая команда",
+          "type": "heading.default"
+        },
+        {
+          "rect": {
+            "bottom": 400.234375,
+            "height": 51.203125,
+            "right": 1157,
+            "width": 498,
+            "x": 659,
+            "y": 349.03125
+          },
+          "text": "Клиент и команда работают с единым планом и общими решениями.",
+          "type": "text-editor.default"
+        }
+      ]
+    },
+    {
+      "id": "84bbb3f",
+      "rect": {
+        "bottom": 678.0859375,
+        "height": 220.8515625,
+        "right": 602,
+        "width": 556,
+        "x": 46,
+        "y": 457.234375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "220.852px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      },
+      "text": "Прозрачные этапы\nКаждый этап завершается проверяемым результатом и понятным следующим шагом.",
+      "widgets": [
+        {
+          "rect": {
+            "bottom": 548.234375,
+            "height": 62,
+            "right": 573,
+            "width": 498,
+            "x": 75,
+            "y": 486.234375
+          },
+          "text": "",
+          "type": "icon.default"
+        },
+        {
+          "rect": {
+            "bottom": 585.8828125,
+            "height": 25.6484375,
+            "right": 573,
+            "width": 498,
+            "x": 75,
+            "y": 560.234375
+          },
+          "text": "Прозрачные этапы",
+          "type": "heading.default"
+        },
+        {
+          "rect": {
+            "bottom": 649.0859375,
+            "height": 51.203125,
+            "right": 573,
+            "width": 498,
+            "x": 75,
+            "y": 597.8828125
+          },
+          "text": "Каждый этап завершается проверяемым результатом и понятным следующим шагом.",
+          "type": "text-editor.default"
+        }
+      ]
+    },
+    {
+      "id": "6bbb9d7",
+      "rect": {
+        "bottom": 678.0859375,
+        "height": 220.8515625,
+        "right": 1186,
+        "width": 556,
+        "x": 630,
+        "y": 457.234375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "220.852px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "textAlign": "start"
+      },
+      "text": "Аккуратная передача\nГотовые материалы и рекомендации остаются доступными после запуска.",
+      "widgets": [
+        {
+          "rect": {
+            "bottom": 548.234375,
+            "height": 62,
+            "right": 1157,
+            "width": 498,
+            "x": 659,
+            "y": 486.234375
+          },
+          "text": "",
+          "type": "icon.default"
+        },
+        {
+          "rect": {
+            "bottom": 585.8828125,
+            "height": 25.6484375,
+            "right": 1157,
+            "width": 498,
+            "x": 659,
+            "y": 560.234375
+          },
+          "text": "Аккуратная передача",
+          "type": "heading.default"
+        },
+        {
+          "rect": {
+            "bottom": 649.0859375,
+            "height": 51.203125,
+            "right": 1157,
+            "width": 498,
+            "x": 659,
+            "y": 597.8828125
+          },
+          "text": "Готовые материалы и рекомендации остаются доступными после запуска.",
+          "type": "text-editor.default"
+        }
+      ]
+    }
+  ],
+  "collection": {
+    "rect": {
+      "bottom": 678.0859375,
+      "height": 469.703125,
+      "right": 1186,
+      "width": 1140,
+      "x": 46,
+      "y": 208.3828125
+    },
+    "style": {
+      "alignItems": "flex-start",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(51, 51, 51)",
+      "borderRadius": "0px",
+      "display": "flex",
+      "flexDirection": "row",
+      "flexWrap": "wrap",
+      "fontSize": "16px",
+      "gap": "28px",
+      "height": "469.703px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "textAlign": "start"
+    }
+  },
+  "eyebrow": {
+    "rect": {
+      "bottom": 116.9921875,
+      "height": 14.3984375,
+      "right": 174.7109375,
+      "width": 115.7109375,
+      "x": 59,
+      "y": 102.59375
+    },
+    "text": "ПРЕИМУЩЕСТВА"
+  },
+  "horizontalOverflow": false,
+  "images": 0,
+  "links": 0,
+  "post": 5214,
+  "root": {
+    "cls": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-benefits elementor-element elementor-element-7921b1f e-flex e-con-boxed e-con e-parent e-lazyloaded",
+    "id": "7921b1f",
+    "rect": {
+      "bottom": 742.0859375,
+      "height": 710.0859375,
+      "right": 1232,
+      "width": 1232,
+      "x": 0,
+      "y": 32
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgb(241, 245, 249)",
+      "border": "0px none rgb(51, 51, 51)",
+      "borderRadius": "0px",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "normal",
+      "height": "710.086px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "textAlign": "start"
+    }
+  },
+  "source": "public",
+  "title": {
+    "rect": {
+      "bottom": 176.3828125,
+      "height": 40.796875,
+      "right": 359.65625,
+      "width": 313.65625,
+      "x": 46,
+      "y": 135.5859375
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(15, 23, 42)",
+      "borderRadius": "0px",
+      "display": "block",
+      "flexDirection": "row",
+      "flexWrap": "nowrap",
+      "fontSize": "34px",
+      "gap": "normal",
+      "height": "40.7969px",
+      "justifyContent": "normal",
+      "lineHeight": "40.8px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px",
+      "textAlign": "start"
+    }
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "height": 923,
+    "scrollHeight": 923,
+    "scrollWidth": 1232,
+    "width": 1232
+  }
+}

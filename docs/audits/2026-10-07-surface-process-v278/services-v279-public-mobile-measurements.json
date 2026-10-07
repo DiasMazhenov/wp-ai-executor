@@ -1,0 +1,367 @@
+{
+  "bubble": {
+    "rect": {
+      "bottom": 748,
+      "height": 48.3984375,
+      "right": 351,
+      "width": 320,
+      "x": 31,
+      "y": 699.6015625
+    },
+    "text": "Добрый вечер!!"
+  },
+  "cards": [
+    {
+      "actions": {
+        "button": "Обсудить стратегию",
+        "buttonRect": {
+          "bottom": 477.359375,
+          "height": 39,
+          "right": 225.484375,
+          "width": 192.484375,
+          "x": 33,
+          "y": 438.359375
+        },
+        "href": "#strategy",
+        "rect": {
+          "bottom": 477.359375,
+          "height": 39,
+          "right": 342,
+          "width": 309,
+          "x": 33,
+          "y": 438.359375
+        }
+      },
+      "body": {
+        "paragraph": {
+          "rect": {
+            "bottom": 418.359375,
+            "height": 48,
+            "right": 342,
+            "width": 309,
+            "x": 33,
+            "y": 370.359375
+          },
+          "style": {
+            "alignItems": "normal",
+            "background": "rgba(0, 0, 0, 0)",
+            "border": "0px none rgb(71, 85, 105)",
+            "borderRadius": "0px",
+            "display": "block",
+            "flexDirection": "row",
+            "fontSize": "15px",
+            "gap": "12px",
+            "height": "48px",
+            "justifyContent": "normal",
+            "lineHeight": "24px",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start"
+          },
+          "text": "Формулируем задачу и согласуем план работ"
+        },
+        "rect": {
+          "bottom": 418.359375,
+          "height": 144.953125,
+          "right": 342,
+          "width": 309,
+          "x": 33,
+          "y": 273.40625
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "12px",
+          "height": "144.953px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      "id": "5d1d56c",
+      "rect": {
+        "bottom": 494.359375,
+        "height": 237.953125,
+        "right": 359,
+        "width": 343,
+        "x": 16,
+        "y": 256.40625
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "237.953px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "textAlign": "start"
+      }
+    },
+    {
+      "actions": {
+        "button": "Смотреть проекты",
+        "buttonRect": {
+          "bottom": 851.3125,
+          "height": 39,
+          "right": 215.03125,
+          "width": 182.03125,
+          "x": 33,
+          "y": 812.3125
+        },
+        "href": "#projects",
+        "rect": {
+          "bottom": 851.3125,
+          "height": 39,
+          "right": 342,
+          "width": 309,
+          "x": 33,
+          "y": 812.3125
+        }
+      },
+      "body": {
+        "paragraph": {
+          "rect": {
+            "bottom": 792.3125,
+            "height": 168,
+            "right": 342,
+            "width": 309,
+            "x": 33,
+            "y": 624.3125
+          },
+          "style": {
+            "alignItems": "normal",
+            "background": "rgba(0, 0, 0, 0)",
+            "border": "0px none rgb(71, 85, 105)",
+            "borderRadius": "0px",
+            "display": "block",
+            "flexDirection": "row",
+            "fontSize": "15px",
+            "gap": "12px",
+            "height": "168px",
+            "justifyContent": "normal",
+            "lineHeight": "24px",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start"
+          },
+          "text": "Разрабатываем решение под заданный контекст, исследуем ограничения пространства, проверяем сценарии использования и согласуем проектные решения до начала реализации. Подробное описание должно сохраняться полностью на каждом размере экрана"
+        },
+        "rect": {
+          "bottom": 792.3125,
+          "height": 264.953125,
+          "right": 342,
+          "width": 309,
+          "x": 33,
+          "y": 527.359375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "12px",
+          "height": "264.953px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      "id": "4e40902",
+      "rect": {
+        "bottom": 868.3125,
+        "height": 357.953125,
+        "right": 359,
+        "width": 343,
+        "x": 16,
+        "y": 510.359375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "357.953px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "textAlign": "start"
+      }
+    },
+    {
+      "actions": {
+        "button": "Обсудить сопровождение",
+        "buttonRect": {
+          "bottom": 1153.265625,
+          "height": 39,
+          "right": 265.21875,
+          "width": 232.21875,
+          "x": 33,
+          "y": 1114.265625
+        },
+        "href": "#support",
+        "rect": {
+          "bottom": 1153.265625,
+          "height": 39,
+          "right": 342,
+          "width": 309,
+          "x": 33,
+          "y": 1114.265625
+        }
+      },
+      "body": {
+        "paragraph": {
+          "rect": {
+            "bottom": 1094.265625,
+            "height": 96,
+            "right": 342,
+            "width": 309,
+            "x": 33,
+            "y": 998.265625
+          },
+          "style": {
+            "alignItems": "normal",
+            "background": "rgba(0, 0, 0, 0)",
+            "border": "0px none rgb(71, 85, 105)",
+            "borderRadius": "0px",
+            "display": "block",
+            "flexDirection": "row",
+            "fontSize": "15px",
+            "gap": "12px",
+            "height": "96px",
+            "justifyContent": "normal",
+            "lineHeight": "24px",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start"
+          },
+          "text": "Проверяем соответствие согласованному проекту и помогаем команде учитывать новые требования без потери исходного замысла"
+        },
+        "rect": {
+          "bottom": 1094.265625,
+          "height": 192.953125,
+          "right": 342,
+          "width": 309,
+          "x": 33,
+          "y": 901.3125
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px none rgb(51, 51, 51)",
+          "borderRadius": "0px",
+          "display": "flex",
+          "flexDirection": "column",
+          "fontSize": "16px",
+          "gap": "12px",
+          "height": "192.953px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "textAlign": "start"
+        }
+      },
+      "id": "6b8c8e9",
+      "rect": {
+        "bottom": 1170.265625,
+        "height": 285.953125,
+        "right": 359,
+        "width": 343,
+        "x": 16,
+        "y": 884.3125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "285.953px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "textAlign": "start"
+      }
+    }
+  ],
+  "chatWidget": {
+    "bottom": 820,
+    "height": 60,
+    "right": 351,
+    "width": 60,
+    "x": 291,
+    "y": 760
+  },
+  "collection": {
+    "bottom": 1170.265625,
+    "height": 913.859375,
+    "right": 359,
+    "width": 343,
+    "x": 16,
+    "y": 256.40625
+  },
+  "post": 5214,
+  "root": "8c1774b",
+  "rootRect": {
+    "bottom": 1202.265625,
+    "height": 1156.265625,
+    "right": 375,
+    "width": 375,
+    "x": 0,
+    "y": 46
+  },
+  "source": "public",
+  "viewport": {
+    "dpr": 1,
+    "height": 844,
+    "scrollHeight": 1202,
+    "scrollWidth": 375,
+    "width": 390
+  }
+}

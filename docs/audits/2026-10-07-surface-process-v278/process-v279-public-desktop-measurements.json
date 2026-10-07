@@ -1,0 +1,405 @@
+{
+  "anchors": [],
+  "collection": {
+    "id": "93730fb",
+    "rect": {
+      "bottom": 492.0390625,
+      "height": 283.65625,
+      "right": 1186,
+      "width": 1140,
+      "x": 46,
+      "y": 208.3828125
+    },
+    "style": {
+      "alignItems": "flex-start",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(51, 51, 51)",
+      "borderRadius": "0px",
+      "display": "flex",
+      "flexDirection": "row",
+      "flexWrap": "wrap",
+      "fontSize": "16px",
+      "gap": "28px",
+      "height": "283.656px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "position": "relative",
+      "textAlign": "start"
+    }
+  },
+  "eyebrow": {
+    "rect": {
+      "bottom": 116.9921875,
+      "height": 14.3984375,
+      "right": 125.90625,
+      "width": 66.90625,
+      "x": 59,
+      "y": 102.59375
+    },
+    "text": "ПРОЦЕСС"
+  },
+  "heading": {
+    "rect": {
+      "bottom": 176.3828125,
+      "height": 40.796875,
+      "right": 341.625,
+      "width": 295.625,
+      "x": 46,
+      "y": 135.5859375
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "0px none rgb(15, 23, 42)",
+      "borderRadius": "0px",
+      "display": "block",
+      "flexDirection": "row",
+      "flexWrap": "nowrap",
+      "fontSize": "34px",
+      "gap": "normal",
+      "height": "40.7969px",
+      "justifyContent": "normal",
+      "lineHeight": "40.8px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px",
+      "position": "static",
+      "textAlign": "start"
+    }
+  },
+  "horizontalOverflow": false,
+  "images": 0,
+  "post": 5214,
+  "root": {
+    "cls": "wpae-process-timeline wpae-process-timeline-horizontal wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-process elementor-element elementor-element-ccf3999 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+    "id": "ccf3999",
+    "rect": {
+      "bottom": 556.0390625,
+      "height": 524.0390625,
+      "right": 1232,
+      "width": 1232,
+      "x": 0,
+      "y": 32
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgb(241, 245, 249)",
+      "border": "0px none rgb(51, 51, 51)",
+      "borderRadius": "0px",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "normal",
+      "height": "524.039px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "position": "relative",
+      "textAlign": "start"
+    }
+  },
+  "source": "public",
+  "steps": [
+    {
+      "bg": "rgb(255, 255, 255)",
+      "border": "1px solid rgb(184, 196, 210)",
+      "borderRadius": "20px",
+      "description": "Фиксируем цель страницы и приоритетное действие",
+      "descriptionRect": {
+        "bottom": 386.234375,
+        "height": 51.203125,
+        "right": 281,
+        "width": 206,
+        "x": 75,
+        "y": 335.03125
+      },
+      "headings": [
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 274.203125,
+            "height": 25.6484375,
+            "right": 109.5703125,
+            "width": 21.140625,
+            "x": 88.4296875,
+            "y": 248.5546875
+          },
+          "text": "01"
+        },
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 323.03125,
+            "height": 25.6484375,
+            "right": 281,
+            "width": 206,
+            "x": 75,
+            "y": 297.3828125
+          },
+          "text": "Бриф"
+        }
+      ],
+      "id": "3c55b8e",
+      "padding": "28px",
+      "rect": {
+        "bottom": 415.234375,
+        "height": 206.8515625,
+        "right": 310,
+        "width": 264,
+        "x": 46,
+        "y": 208.3828125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "206.852px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "position": "relative",
+        "textAlign": "start"
+      },
+      "text": "01\nБриф\nФиксируем цель страницы и приоритетное действие"
+    },
+    {
+      "bg": "rgb(255, 255, 255)",
+      "border": "1px solid rgb(184, 196, 210)",
+      "borderRadius": "20px",
+      "description": "Собираем смысловой маршрут, контент и необходимые доказательства для посетителя",
+      "descriptionRect": {
+        "bottom": 463.0390625,
+        "height": 128.0078125,
+        "right": 573,
+        "width": 206,
+        "x": 367,
+        "y": 335.03125
+      },
+      "headings": [
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 274.203125,
+            "height": 25.6484375,
+            "right": 401.5703125,
+            "width": 21.140625,
+            "x": 380.4296875,
+            "y": 248.5546875
+          },
+          "text": "02"
+        },
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 323.03125,
+            "height": 25.6484375,
+            "right": 573,
+            "width": 206,
+            "x": 367,
+            "y": 297.3828125
+          },
+          "text": "Структура"
+        }
+      ],
+      "id": "d0035da",
+      "padding": "28px",
+      "rect": {
+        "bottom": 492.0390625,
+        "height": 283.65625,
+        "right": 602,
+        "width": 264,
+        "x": 338,
+        "y": 208.3828125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "283.656px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "position": "relative",
+        "textAlign": "start"
+      },
+      "text": "02\nСтруктура\nСобираем смысловой маршрут, контент и необходимые доказательства для посетителя"
+    },
+    {
+      "bg": "rgb(255, 255, 255)",
+      "border": "1px solid rgb(184, 196, 210)",
+      "borderRadius": "20px",
+      "description": "Создаём нативный Elementor-блок, затем адаптируем его для узких экранов",
+      "descriptionRect": {
+        "bottom": 437.4375,
+        "height": 102.40625,
+        "right": 865,
+        "width": 206,
+        "x": 659,
+        "y": 335.03125
+      },
+      "headings": [
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 274.203125,
+            "height": 25.6484375,
+            "right": 693.5703125,
+            "width": 21.140625,
+            "x": 672.4296875,
+            "y": 248.5546875
+          },
+          "text": "03"
+        },
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 323.03125,
+            "height": 25.6484375,
+            "right": 865,
+            "width": 206,
+            "x": 659,
+            "y": 297.3828125
+          },
+          "text": "Сборка"
+        }
+      ],
+      "id": "50469f7",
+      "padding": "28px",
+      "rect": {
+        "bottom": 466.4375,
+        "height": 258.0546875,
+        "right": 894,
+        "width": 264,
+        "x": 630,
+        "y": 208.3828125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "258.055px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "position": "relative",
+        "textAlign": "start"
+      },
+      "text": "03\nСборка\nСоздаём нативный Elementor-блок, затем адаптируем его для узких экранов"
+    },
+    {
+      "bg": "rgb(255, 255, 255)",
+      "border": "1px solid rgb(184, 196, 210)",
+      "borderRadius": "20px",
+      "description": "Сверяем тексты, мобильный порядок и CTA перед публикацией",
+      "descriptionRect": {
+        "bottom": 411.8359375,
+        "height": 76.8046875,
+        "right": 1157,
+        "width": 206,
+        "x": 951,
+        "y": 335.03125
+      },
+      "headings": [
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 274.203125,
+            "height": 25.6484375,
+            "right": 985.5703125,
+            "width": 21.140625,
+            "x": 964.4296875,
+            "y": 248.5546875
+          },
+          "text": "04"
+        },
+        {
+          "level": "H3",
+          "rect": {
+            "bottom": 323.03125,
+            "height": 25.6484375,
+            "right": 1157,
+            "width": 206,
+            "x": 951,
+            "y": 297.3828125
+          },
+          "text": "Проверка"
+        }
+      ],
+      "id": "36f6ff5",
+      "padding": "28px",
+      "rect": {
+        "bottom": 440.8359375,
+        "height": 232.453125,
+        "right": 1186,
+        "width": 264,
+        "x": 922,
+        "y": 208.3828125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "border": "1px solid rgb(184, 196, 210)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "flexWrap": "nowrap",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "232.453px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "28px",
+        "position": "relative",
+        "textAlign": "start"
+      },
+      "text": "04\nПроверка\nСверяем тексты, мобильный порядок и CTA перед публикацией"
+    }
+  ],
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "dpr": 1,
+    "height": 923,
+    "scrollHeight": 923,
+    "scrollWidth": 1232,
+    "width": 1232
+  }
+}
