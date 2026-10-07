@@ -480,6 +480,11 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 			$section_layout['surface_override'] = $surface_override;
 		}
+		$section_surface_token = (string) ( $plan['visual_policy']['section_surface']['token'] ?? '' );
+		if ( $surface_override === '' && in_array( $section_surface_token, [ 'color.page_bg', 'color.surface', 'color.section_bg' ], true ) ) {
+			$section_layout['section_surface_token'] = $section_surface_token;
+			$section_layout['section_surface_source'] = (string) ( $plan['visual_policy']['section_surface']['source'] ?? 'accepted_visual_policy' );
+		}
 		$nodes[] = wpae_elementor_ir_node( sanitize_key( (string) ( $section['id'] ?? 'section-' . $section_index ) ), sanitize_key( (string) ( $section['role'] ?? 'section' ) ), 'container', [], [ (string) ( $section['surface_token'] ?? 'color.page_bg' ), (string) ( $section['spacing_token'] ?? 'space.section' ) ], $section_children, $section_layout, [ 'strategy' => $plan['responsive']['mobile'] ?? 'stack' ] );
 	}
 	if ( isset( $plan['visual_policy']['version'] ) ) {
@@ -1928,6 +1933,15 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			}
 		}
 		if ( $widget_type === 'heading' && $role === 'feature_title' ) { $settings = array_merge( $settings, wpae_elementor_ir_type_settings( $tokens['type.feature'] ) ); }
+	}
+	$section_surface_token = (string) ( $node['layout_constraints']['section_surface_token'] ?? '' );
+	if ( $widget_type === 'container' && $section_surface_token !== '' && empty( $node['layout_constraints']['surface_override'] ) && array_key_exists( $section_surface_token, $token_values ) ) {
+		$section_surface_value = $token_values[$section_surface_token];
+		if ( is_string( $section_surface_value ) && preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $section_surface_value ) ) {
+			$settings['background_background'] = 'classic';
+			$settings['background_color'] = strtolower( $section_surface_value );
+			$report['tokens']['resolved'][] = [ 'token' => $section_surface_token, 'value' => strtolower( $section_surface_value ), 'source' => sanitize_key( (string) ( $node['layout_constraints']['section_surface_source'] ?? 'accepted_visual_policy' ) ), 'role' => 'section_surface' ];
+		}
 	}
 	$compiled_children = [];
 	foreach ( (array) ( $node['children'] ?? [] ) as $child ) {

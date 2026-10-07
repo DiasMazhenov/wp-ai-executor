@@ -120,6 +120,9 @@ function wpae_design_palette_resolve_sources( array $stored, array $kit_settings
 	$values = [];
 	$sources = [];
 	$unconfirmed = [];
+	$system_accent_reference = null;
+	$custom_accent_reference = null;
+	$project_accent_reference = null;
 	$normalize = static function ( $value ): string {
 		$value = strtolower( trim( (string) $value ) );
 		return preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/', $value ) ? $value : '';
@@ -134,6 +137,10 @@ function wpae_design_palette_resolve_sources( array $stored, array $kit_settings
 		$id = sanitize_key( (string) ( $entry['_id'] ?? $entry['id'] ?? '' ) );
 		$title = strtolower( trim( preg_replace( '/[^a-z0-9]+/i', ' ', (string) ( $entry['title'] ?? '' ) ) ?? '' ) );
 		$color = $normalize( $entry['color'] ?? '' );
+		if ( $color !== '' && ( $id === 'accent' || $title === 'accent' ) ) {
+			$is_stock_accent = $id === 'accent' && $color === $elementor_seed_colors['accent'];
+			$system_accent_reference = [ 'value' => substr( $color, 0, 7 ), 'source' => $is_stock_accent ? 'elementor_system_color_stock_default:accent' : 'elementor_system_color:accent', 'confirmed' => ! $is_stock_accent ];
+		}
 		if ( isset( $elementor_seed_colors[$id] ) && $color === $elementor_seed_colors[$id] ) {
 			$unconfirmed['elementor_system_color.' . $id] = 'matches_elementor_stock_default';
 			continue;
@@ -148,6 +155,9 @@ function wpae_design_palette_resolve_sources( array $stored, array $kit_settings
 		$id = sanitize_key( (string) ( $entry['_id'] ?? $entry['id'] ?? '' ) );
 		$title = strtolower( trim( preg_replace( '/[^a-z0-9]+/i', ' ', (string) ( $entry['title'] ?? '' ) ) ?? '' ) );
 		$color = $normalize( $entry['color'] ?? '' );
+		if ( $color !== '' && ( $id === 'accent' || $title === 'accent' ) ) {
+			$custom_accent_reference = [ 'value' => substr( $color, 0, 7 ), 'source' => 'elementor_custom_global_color:accent', 'confirmed' => true ];
+		}
 		if ( $id !== '' && $color !== '' ) { $global_colors[$id] = $color; }
 		if ( $title !== '' && $color !== '' ) { $global_colors['title:' . $title] = $color; }
 	}
@@ -197,6 +207,11 @@ function wpae_design_palette_resolve_sources( array $stored, array $kit_settings
 		$values[$role] = $value;
 		$sources[$role] = 'confirmed_wpae_project_option:palette.' . $project_key;
 	}
+	$stored_accent = $normalize( $stored['palette']['accent'] ?? '' );
+	$default_accent = $normalize( $default_project['palette']['accent'] ?? '' );
+	if ( $stored_accent !== '' && ( $default_accent === '' || $stored_accent !== $default_accent ) ) {
+		$project_accent_reference = [ 'value' => substr( $stored_accent, 0, 7 ), 'source' => 'confirmed_wpae_project_option:palette.accent', 'confirmed' => true ];
+	}
 	foreach ( $kit_roles as $role => $value ) {
 		if ( ! isset( $values[$role] ) ) { $values[$role] = $value; $sources[$role] = 'elementor_global_color'; }
 	}
@@ -232,7 +247,8 @@ function wpae_design_palette_resolve_sources( array $stored, array $kit_settings
 	}
 	$required = [ 'color.page_bg', 'color.surface', 'color.text', 'color.muted', 'color.primary', 'color.focus', 'color.hover' ];
 	$missing = array_values( array_filter( $required, static fn( $role ): bool => ! isset( $values[$role] ) ) );
-	return [ 'values' => $values, 'sources' => $sources, 'missing' => $missing, 'unconfirmed' => $unconfirmed, 'global_color_ids' => array_values( array_filter( array_keys( $global_colors ), static fn( $key ): bool => ! str_starts_with( $key, 'title:' ) ) ) ];
+	$accent_reference = $project_accent_reference ?? $custom_accent_reference ?? $system_accent_reference;
+	return [ 'values' => $values, 'sources' => $sources, 'missing' => $missing, 'unconfirmed' => $unconfirmed, 'accent_reference' => $accent_reference, 'global_color_ids' => array_values( array_filter( array_keys( $global_colors ), static fn( $key ): bool => ! str_starts_with( $key, 'title:' ) ) ) ];
 }
 
 /** Read the active Elementor kit and raw WPAE option without treating UI-filled defaults as brand input. */
@@ -318,6 +334,11 @@ function wpae_design_token_validate_contrast( array $tokens = [], array $context
 		[ 'foreground' => 'color.surface', 'background' => 'color.hover', 'minimum' => 3.0, 'font_size_px' => 16, 'ui_object' => true ],
 		[ 'foreground' => 'color.focus', 'background' => 'color.page_bg', 'minimum' => 3.0, 'font_size_px' => 16, 'ui_object' => true ],
 	];
+	if ( isset( $tokens['color.section_bg'] ) ) {
+		$pairs[] = [ 'foreground' => 'color.text', 'background' => 'color.section_bg', 'minimum' => 4.5, 'font_size_px' => 16 ];
+		$pairs[] = [ 'foreground' => 'color.muted', 'background' => 'color.section_bg', 'minimum' => 4.5, 'font_size_px' => 16 ];
+		$pairs[] = [ 'foreground' => 'color.focus', 'background' => 'color.section_bg', 'minimum' => 3.0, 'font_size_px' => 16, 'ui_object' => true ];
+	}
 	foreach ( $pairs as $pair ) {
 		$font_size_px = is_numeric( $context[ $pair['foreground'] . '.font_size_px' ] ?? null ) ? (float) $context[ $pair['foreground'] . '.font_size_px' ] : (float) $pair['font_size_px'];
 		$font_weight = is_numeric( $context[ $pair['foreground'] . '.font_weight' ] ?? null ) ? (int) $context[ $pair['foreground'] . '.font_weight' ] : 400;

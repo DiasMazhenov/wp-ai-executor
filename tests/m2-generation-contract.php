@@ -160,7 +160,7 @@ $stale_palette_validation_plan['resolved_visual']['values']['color.muted'] = '#a
 $stale_palette_validation_plan['resolved_visual']['contrast'] = [ 'ok' => true, 'errors' => [] ];
 $stale_palette_validation_plan['resolved_visual']['errors'] = [];
 $stale_palette_validation = wpae_design_plan_validate( $stale_palette_validation_plan, $visual_brief );
-check( ! empty( $visual_plan_validation['ok'] ) && in_array( 'contrast:color.muted_on_color.page_bg', $stale_palette_validation['errors'], true ), 'M2.2 accepted Plan validates confirmed palette, and revalidation measures its frozen values instead of bundled token defaults' );
+check( ! empty( $visual_plan_validation['ok'] ) && (bool) array_filter( $stale_palette_validation['errors'], static fn( string $error ): bool => str_starts_with( $error, 'contrast:' ) && str_contains( $error, 'color.muted_on_color.page_bg' ) ), 'M2.2 accepted Plan validates confirmed palette, and revalidation measures its frozen values instead of bundled token defaults' );
 $legacy_definitions = wpae_elementor_recipe_definitions();
 check( count( $legacy_definitions ) === 8, 'M2 all eight legacy recipes audited' );
 $assert_recipe_flex = static function ( array $nodes ) use ( &$assert_recipe_flex ): bool {
