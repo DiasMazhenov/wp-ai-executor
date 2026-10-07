@@ -98,4 +98,4 @@ Mobile CSS 390×844; viewport PNG 375×812; full PNG 375×1735. This is real pub
 - Скриншоты сохранены из Browser Use bytes через Node `fs/promises.writeFile`; JPEG source распознан по подписи и преобразован в PNG. Все PNG проверены `file`/`sips`, открыты и осмотрены. Полные measurements и hashes — [evidence JSON](testimonials-grid-evidence-v277.json).
 - Успех генерации не равен полной визуальной приёмке: desktop evidence есть для семи сценариев, public mobile есть для пяти. Два public-mobile кадра отсутствуют, а chat overlay в некоторых результатах является внешним слоем страницы. Общее качество Flex-композиций подтверждено для inspected topology, но весь набор исторических record/profile combinations и все unsupported families здесь не объявляются принятыми.
 
-- GitHub remote HEAD не подтверждён: `git ls-remote origin refs/heads/main` завершился `Could not resolve host: github.com`; push этого отчетного пакета ещё не проверен.
+- Первый отчётный commit `8f91bbeb22a81ee0e4616c13819dfa751e89b31b` был отправлен; независимый `git ls-remote` подтвердил этот SHA. Эта последующая документационная правка исправляет историческую отметку о DNS и scope checkpoint.
