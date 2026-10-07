@@ -11087,8 +11087,8 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		&& ! wpae_llm_requires_verified_library_template( $message );
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype || $library_only_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	$canonical_retrieval_skip = $migrated_active_create && ( $canonical_brief['policy']['library']['source'] ?? '' ) !== 'required';
-	if ( $canonical_retrieval_skip ) { $library_retrieval['reason'] = 'ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed'; }
-	elseif ( $native_process_pipeline_request ) { $library_retrieval['reason'] = 'ordinary_process_uses_existing_native_design_pipeline_without_optional_library_selection'; }
+	if ( $native_process_pipeline_request ) { $library_retrieval['reason'] = 'ordinary_process_uses_existing_native_design_pipeline_without_optional_library_selection'; }
+	elseif ( $canonical_retrieval_skip ) { $library_retrieval['reason'] = 'ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed'; }
 	$library_retrieval_enabled = ! $canonical_retrieval_skip && ! $native_process_pipeline_request && $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
 	$library_preflight_enabled = $design_pipeline_mode === 'active'
 		&& ( $deterministic_archetype || $library_only_archetype )

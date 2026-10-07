@@ -377,11 +377,12 @@ $check( ( $compiled_copy[1]['settings']['title'] ?? '' ) === "Соберите �
 $process = wpae_brief_ir_parse( "process\n«Step one»\n«Step two»\n«Step three»" );
 $process_plan = wpae_design_plan_from_brief( $process );
 $process_ir = wpae_elementor_ir_from_design_plan( $process_plan, $process );
-$process_children = $process_ir['nodes'][0]['children'][0]['children'] ?? [];
+$process_steps_ir = array_values( array_filter( (array) ( $process_ir['nodes'][0]['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'process_steps' ) )[0] ?? [];
+$process_children = $process_steps_ir['children'] ?? [];
 $check( count( $process_children ) === 3 && array_reduce( $process_children, static fn( bool $valid, array $card ): bool => $valid && ( $card['role'] ?? '' ) === 'process_card', true ), 'unpaired process labels stay as separate reference cards without invented copy' );
 $process_compiled = wpae_elementor_ir_compile( $process_ir, $process, [], [ 'id_seed' => 'process-contract' ] );
 $process_root = $process_compiled['elementor_data'][0] ?? [];
-$process_group = $process_root['elements'][0] ?? [];
+$process_group = array_values( array_filter( (array) ( $process_root['elements'] ?? [] ), static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-process-items' ) )[0] ?? [];
 $process_card_nodes = (array) ( $process_group['elements'] ?? [] );
 $check( ! empty( $process_compiled['ok'] ) && ( $process_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $process_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $process_group['settings']['flex_direction_tablet'] ?? '' ) === 'column', 'active process compiler emits a horizontal desktop row and stacked tablet/mobile cards' );
 $check( count( $process_card_nodes ) === 3 && ( $process_card_nodes[0]['elements'][0]['elements'][0]['settings']['_css_classes'] ?? '' ) === 'wpae-process-marker' && ( $process_card_nodes[0]['elements'][0]['elements'][1]['widgetType'] ?? '' ) === 'divider', 'process reference divider remains inside the marker row after its marker' );
@@ -397,7 +398,8 @@ $check( empty( $empty_process_compiled['ok'] ) && in_array( 'process_steps_empty
 $plain_process_brief = wpae_brief_ir_parse( "Процесс:\nЗаявка — запрос поступил\nУточнение — детали проверены\nСтарт — следующий шаг согласован" );
 $plain_process_plan = wpae_design_plan_from_brief( $plain_process_brief );
 $plain_process_validation = wpae_design_plan_validate( $plain_process_plan, $plain_process_brief );
-$plain_process_steps = $plain_process_plan['sections'][0]['children'][0]['steps'] ?? [];
+$plain_process_steps_child = array_values( array_filter( (array) ( $plain_process_plan['sections'][0]['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'process_steps' ) )[0] ?? [];
+$plain_process_steps = $plain_process_steps_child['steps'] ?? [];
 $check( ! empty( $plain_process_validation['ok'] ) && count( $plain_process_steps ) === 3, 'plain line-based process pairs become source-backed DesignPlan steps' );
 $check( array_map( static fn( array $step ): array => [ $plain_process_brief['content'][ array_search( $step['label_ref'], array_column( $plain_process_brief['content'], 'id' ), true ) ]['exact_text'], $plain_process_brief['content'][ array_search( $step['text_ref'], array_column( $plain_process_brief['content'], 'id' ), true ) ]['exact_text'] ], $plain_process_steps ) === [ [ 'Заявка', 'запрос поступил' ], [ 'Уточнение', 'детали проверены' ], [ 'Старт', 'следующий шаг согласован' ] ], 'plain process parser preserves the exact ordered label/copy pairs' );
 
@@ -406,7 +408,8 @@ $qa_process_prompt = 'Добавь отдельным новым root блок �
 $qa_process_brief = wpae_brief_ir_parse( $qa_process_prompt );
 $qa_process_plan = wpae_design_plan_from_brief( $qa_process_brief );
 $qa_process_ir = wpae_elementor_ir_from_design_plan( $qa_process_plan, $qa_process_brief );
-$qa_steps = $qa_process_plan['sections'][0]['children'][0]['steps'] ?? [];
+$qa_steps_child = array_values( array_filter( (array) ( $qa_process_plan['sections'][0]['children'] ?? [] ), static fn( array $node ): bool => ( $node['role'] ?? '' ) === 'process_steps' ) )[0] ?? [];
+$qa_steps = $qa_steps_child['steps'] ?? [];
 $check( ( $qa_process_plan['sections'][0]['badge_content_ref'] ?? '' ) === 'text' && count( $qa_steps ) === 3, 'process brief preserves its explicit section label and pairs only source-linked step copy' );
 $check( array_map( static fn( array $step ): string => $qa_process_brief['content'][ array_search( $step['label_ref'], array_column( $qa_process_brief['content'], 'id' ), true ) ]['exact_text'], $qa_steps ) === [ '01. Заявка', '02. Уточнение', '03. Старт' ], 'process step headings remain exact source text' );
 $qa_process_compiled = wpae_elementor_ir_compile( $qa_process_ir, $qa_process_brief, [], [ 'id_seed' => 'process-reference-contract' ] );
@@ -546,6 +549,16 @@ $check( wpae_design_plan_validate( $two_benefits_plan, $two_benefits_brief )['ok
 $check( count( (array) ( $two_benefits_group['elements'] ?? [] ) ) === 2 && array_column( array_map( static fn( array $card ): array => [ 'title' => $card['elements'][1]['settings']['title'] ?? '', 'body' => trim( wp_strip_all_tags( (string) ( $card['elements'][2]['settings']['editor'] ?? '' ) ) ) ], (array) ( $two_benefits_group['elements'] ?? [] ) ), 'title' ) === [ 'Понятный план', 'Общая команда' ] && array_column( array_map( static fn( array $card ): array => [ 'body' => trim( wp_strip_all_tags( (string) ( $card['elements'][2]['settings']['editor'] ?? '' ) ) ) ], (array) ( $two_benefits_group['elements'] ?? [] ) ), 'body' ) === [ 'Сроки согласованы.', 'Работаем вместе.' ], 'automatic Benefits grid preserves the exact ordered short title/body pairs' );
 $check( ( $two_benefits_group['settings']['container_type'] ?? '' ) === 'flex' && ( $two_benefits_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $two_benefits_group['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $two_benefits_group['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $two_benefits_group['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $two_benefits_group['elements'][0]['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 1.5rem) / 2)' && ( $two_benefits_group['elements'][0]['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100 && ! isset( $two_benefits_group['settings']['grid_columns_grid'] ) && ( $two_benefits_plan['visual_policy']['collection']['item_count'] ?? 0 ) === 2, 'short Benefits preserve two gap-aware desktop Flex tracks and one native track at tablet/mobile' );
 $check( ( $two_benefits_group['elements'][0]['elements'][1]['settings']['header_size'] ?? '' ) === 'h3' && (float) ( $two_benefits_group['elements'][0]['elements'][1]['settings']['typography_font_size']['size'] ?? 0 ) === 1.125, 'benefit card title uses component typography rather than hero display type' );
+$benefits_surface = (array) ( $two_benefits_plan['visual_policy']['item_surface'] ?? [] );
+$benefits_card_padding = wpae_elementor_ir_dimension_control( $benefits_surface['padding'] ?? '0px', 'px', 0, false ); unset( $benefits_card_padding['size'], $benefits_card_padding['sizes'] );
+$benefits_card_radius = wpae_elementor_ir_dimension_control( $benefits_surface['radius'] ?? '0px', 'px', 0 ); unset( $benefits_card_radius['size'], $benefits_card_radius['sizes'] );
+$two_benefits_cards = array_values( (array) ( $two_benefits_group['elements'] ?? [] ) );
+$benefits_card_surface_ok = ( $benefits_surface['owner_role'] ?? '' ) === 'feature_card' && ( $benefits_surface['mode'] ?? '' ) === 'card' && count( $two_benefits_cards ) === 2;
+foreach ( $two_benefits_cards as $benefits_card ) {
+	$card_settings = (array) ( $benefits_card['settings'] ?? [] );
+	$benefits_card_surface_ok = $benefits_card_surface_ok && ( $card_settings['background_color'] ?? '' ) === ( $benefits_surface['background'] ?? '' ) && ( $card_settings['border_color'] ?? '' ) === ( $benefits_surface['border_color'] ?? '' ) && ( $card_settings['border_width']['top'] ?? '' ) === '1' && ( $card_settings['border_radius'] ?? [] ) === $benefits_card_radius && ( $card_settings['padding'] ?? [] ) === $benefits_card_padding;
+}
+$check( $benefits_card_surface_ok, 'Canonical Benefits grid applies the accepted box once to each whole feature_card wrapper, including its icon, title, and copy' );
 $long_benefits_brief = wpae_brief_ir_parse( "Features\nFeature 1: \"Clear scope\"\nFeature description 1: \"" . str_repeat( 'The written scope keeps each approval visible. ', 5 ) . "\"\nFeature 2: \"Native editing\"\nFeature description 2: \"Text stays editable in Elementor.\"");
 $long_benefits_plan = wpae_design_plan_from_brief( $long_benefits_brief, [ 'canonical_create' => true ] );
 $long_benefits_tree = wpae_native_elementor_compile( wpae_elementor_ir_from_design_plan( $long_benefits_plan, $long_benefits_brief ), $long_benefits_brief, [], [ 'id_seed' => 'two-benefits-long-copy' ] );
@@ -599,6 +612,14 @@ foreach ( $benefits_list_rows as $benefits_list_row ) {
 }
 $benefits_list_tracks_match = $benefits_list_tracks_match && ! in_array( false, $benefits_list_checks, true );
 $check( $benefits_list_tracks_match, 'Benefits icon/copy rows keep native 44px icon, remaining copy width, separate reading measure, and device gaps' );
+$benefits_list_surface = (array) ( $benefits_list_plan['visual_policy']['item_surface'] ?? [] );
+$benefits_list_surface_ok = ( $benefits_list_surface['owner_role'] ?? '' ) === 'feature_row' && ( $benefits_list_surface['mode'] ?? '' ) === 'transparent_divider' && count( $benefits_list_rows ) === 2;
+foreach ( $benefits_list_rows as $benefits_list_row ) {
+	$row_settings = (array) ( $benefits_list_row['settings'] ?? [] );
+	$copy_settings = (array) ( $benefits_list_row['elements'][1]['settings'] ?? [] );
+	$benefits_list_surface_ok = $benefits_list_surface_ok && ( $row_settings['background_color'] ?? '' ) === 'transparent' && ( $row_settings['border_border'] ?? '' ) === 'none' && ( $row_settings['border_radius']['top'] ?? '' ) === '0' && ( $row_settings['padding']['top'] ?? '' ) === '0' && ( $copy_settings['background_color'] ?? '' ) === 'transparent' && ( $copy_settings['padding']['left'] ?? '' ) === '0';
+}
+$check( $benefits_list_surface_ok, 'Benefits editorial list keeps one transparent feature_row owner and transparent copy wrappers instead of creating inset white panels' );
 $benefits_list_report = wpae_layout_report_for_plan( $benefits_list_plan );
 $benefits_list_report_samples = (array) ( $benefits_list_report['collections'][0]['samples'] ?? [] );
 $benefits_list_report_tracks = array_map( static fn( array $sample ): array => (array) ( $sample['list_row_tracks'] ?? [] ), $benefits_list_report_samples );
@@ -892,6 +913,69 @@ $compile_prompt = static function ( string $prompt, string $seed ) use ( $walk_e
 	$compiled = wpae_native_elementor_compile( $ir, $brief, [ 'palette' => [ 'paper' => '#f6f0e6', 'surface' => '#ffffff', 'ink' => '#111827', 'muted' => '#4b5563', 'accent' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => $seed ] );
 	return [ $brief, $plan, $validation, $compiled, $walk_elements( (array) ( $compiled['elementor_data'] ?? [] ) ) ];
 };
+$walk_ir_nodes_for_surface_test = static function ( array $nodes ) use ( &$walk_ir_nodes_for_surface_test ): array {
+	$all = [];
+	foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } $all[] = $node; $all = array_merge( $all, $walk_ir_nodes_for_surface_test( (array) ( $node['children'] ?? [] ) ) ); }
+	return $all;
+};
+
+// New typed Process records use the same accepted collection/surface contract
+// as the other repeated families; legacy process recipes remain covered above.
+$typed_process_prompt = (string) file_get_contents( __DIR__ . '/../docs/audits/2026-10-07-quality-followup-v276/process-exact-request.txt' );
+$typed_process_brief = wpae_brief_ir_parse( $typed_process_prompt );
+$typed_process_brief['canonical_create'] = true;
+$typed_process_context = [ 'canonical_create' => true, 'composition_record' => 'process.ordered_steps', 'visual_profile' => 'editorial_light' ];
+$typed_process_plan = wpae_design_plan_from_brief( $typed_process_brief, $typed_process_context );
+$typed_process_validation = wpae_design_plan_validate( $typed_process_plan, $typed_process_brief );
+$typed_process_ir = wpae_elementor_ir_from_design_plan( $typed_process_plan, $typed_process_brief, $typed_process_context );
+$typed_process_ir_validation = wpae_elementor_ir_validate( $typed_process_ir, $typed_process_brief );
+$typed_process_native = wpae_elementor_ir_compile( $typed_process_ir, $typed_process_brief, [], [ 'resolved_visual' => $typed_process_plan['resolved_visual'], 'id_seed' => 'typed-process-contract' ] );
+$typed_process_nodes = $walk_elements( (array) ( $typed_process_native['elementor_data'] ?? [] ) );
+$typed_process_flat_ir = $walk_ir_nodes_for_surface_test( (array) ( $typed_process_ir['nodes'] ?? [] ) );
+$typed_process_group = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-process-items' ) )[0] ?? [];
+$typed_process_cards = (array) ( $typed_process_group['elements'] ?? [] );
+$typed_process_owner = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-process-content' ) );
+$typed_process_surface = (array) ( $typed_process_plan['visual_policy']['item_surface'] ?? [] );
+$typed_process_exact_pairs = [];
+$typed_process_content = array_column( (array) ( $typed_process_brief['content'] ?? [] ), null, 'id' );
+foreach ( (array) ( $typed_process_plan['sections'][0]['children'] ?? [] ) as $typed_process_child ) {
+	if ( ( $typed_process_child['role'] ?? '' ) !== 'process_steps' ) { continue; }
+	foreach ( (array) ( $typed_process_child['steps'] ?? [] ) as $typed_process_step ) {
+		$typed_process_exact_pairs[] = [ $typed_process_content[ $typed_process_step['label_ref'] ]['exact_text'] ?? '', $typed_process_content[ $typed_process_step['text_ref'] ]['exact_text'] ?? '' ];
+	}
+}
+$check( ! empty( $typed_process_validation['ok'] ) && ! empty( $typed_process_ir_validation['ok'] ) && ! empty( $typed_process_native['ok'] ) && ( $typed_process_plan['composition_decision']['record_id'] ?? '' ) === 'process.ordered_steps' && ( $typed_process_plan['composition_decision']['record_hash'] ?? '' ) === ( wpae_composition_records()['process.ordered_steps']['hash'] ?? '' ) && ( $typed_process_plan['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light', 'canonical Process freezes its registered typed record and selected profile through Plan, IR validation, and native compilation' );
+$check( $typed_process_exact_pairs === [ [ 'Бриф', 'Фиксируем цель страницы и приоритетное действие' ], [ 'Структура', 'Собираем смысловой маршрут, контент и необходимые доказательства для посетителя' ], [ 'Сборка', 'Создаём нативный Elementor-блок, затем адаптируем его для узких экранов' ], [ 'Проверка', 'Сверяем тексты, мобильный порядок и CTA перед публикацией' ] ] && count( $typed_process_cards ) === 4 && empty( array_filter( $typed_process_nodes, static fn( array $node ): bool => in_array( $node['widgetType'] ?? '', [ 'image', 'button' ], true ) ) ), 'typed Process preserves the exact four ordered label/body pairs with no invented media or actions' );
+$typed_process_header = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['settings']['title'] ?? '' ) === 'Как мы работаем' ) )[0] ?? [];
+$typed_process_badge = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) )[0] ?? [];
+$typed_process_surface_padding = wpae_elementor_ir_dimension_control( $typed_process_surface['padding'], 'rem', 1.25, false ); unset( $typed_process_surface_padding['size'], $typed_process_surface_padding['sizes'] );
+$typed_process_surface_radius = wpae_elementor_ir_dimension_control( $typed_process_surface['radius'], 'rem', 0.25 ); unset( $typed_process_surface_radius['size'], $typed_process_surface_radius['sizes'] );
+$check( count( $typed_process_owner ) === 4 && ( $typed_process_header['settings']['header_size'] ?? '' ) === 'h2' && ( $typed_process_badge['elements'][0]['settings']['title'] ?? '' ) === 'ПРОЦЕСС' && ( $typed_process_group['settings']['flex_direction'] ?? '' ) === 'row' && ( $typed_process_group['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $typed_process_group['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'typed Process uses an H2, exact pill, and record-aligned native Flex collection at desktop/tablet/mobile' );
+$typed_process_surface_ok = count( $typed_process_owner ) === 4;
+foreach ( $typed_process_owner as $typed_process_card ) {
+	$typed_settings = (array) ( $typed_process_card['settings'] ?? [] );
+	$typed_process_surface_ok = $typed_process_surface_ok && ( $typed_settings['background_color'] ?? '' ) === $typed_process_surface['background'] && ( $typed_settings['border_color'] ?? '' ) === $typed_process_surface['border_color'] && ( $typed_settings['border_width']['top'] ?? '' ) === '1' && ( $typed_settings['border_radius'] ?? [] ) === $typed_process_surface_radius && ( $typed_settings['padding'] ?? [] ) === $typed_process_surface_padding && ! isset( $typed_settings['height'], $typed_settings['min_height'], $typed_settings['max_height'] );
+}
+$typed_process_interior = array_values( array_filter( $typed_process_flat_ir, static fn( array $node ): bool => ( $node['visual_policy']['item_surface_scope'] ?? '' ) === 'interior' && ( $node['role'] ?? '' ) === 'process_marker_row' ) );
+$typed_process_native_marker_rows = array_values( array_filter( $typed_process_nodes, static fn( array $node ): bool => ( $node['elType'] ?? '' ) === 'container' && isset( $node['settings']['flex_direction'] ) && ( $node['elements'][0]['settings']['_css_classes'] ?? '' ) === 'wpae-process-marker' ) );
+$typed_process_surface_ok = $typed_process_surface_ok && count( $typed_process_interior ) === 4 && count( $typed_process_native_marker_rows ) === 4 && array_reduce( $typed_process_native_marker_rows, static fn( bool $ok, array $node ): bool => $ok && ( $node['settings']['background_color'] ?? '' ) === 'transparent' && ( $node['settings']['padding']['top'] ?? '' ) === '0', true );
+$check( $typed_process_surface_ok, 'typed Process applies the accepted surface once to each complete step card and keeps marker wrappers out of that surface' );
+$typed_process_card_counts_ok = true;
+foreach ( [ 3, 4, 6 ] as $typed_step_count ) {
+	$typed_prompt = "Создай блок процесса. Заголовок: «Маршрут работы».\n";
+	for ( $step_index = 1; $step_index <= $typed_step_count; $step_index++ ) { $typed_prompt .= 'Этап «Этап ' . $step_index . '»: «Описание этапа ' . $step_index . ' с достаточно длинным текстом, который должен переноситься и сохраняться целиком.»' . "\n"; }
+	$typed_brief = wpae_brief_ir_parse( $typed_prompt ); $typed_brief['canonical_create'] = true;
+	$typed_plan = wpae_design_plan_from_brief( $typed_brief, [ 'canonical_create' => true, 'composition_record' => 'process.ordered_steps', 'visual_profile' => 'editorial_light' ] );
+	$typed_ir = wpae_elementor_ir_from_design_plan( $typed_plan, $typed_brief );
+	$typed_native = wpae_elementor_ir_compile( $typed_ir, $typed_brief, [], [ 'resolved_visual' => $typed_plan['resolved_visual'] ] );
+	$typed_flat = $walk_elements( (array) ( $typed_native['elementor_data'] ?? [] ) );
+	$typed_collection = array_values( array_filter( $typed_flat, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-process-items' ) )[0] ?? [];
+	$typed_process_card_counts_ok = $typed_process_card_counts_ok && ! empty( wpae_design_plan_validate( $typed_plan, $typed_brief )['ok'] ) && ! empty( wpae_elementor_ir_validate( $typed_ir, $typed_brief )['ok'] ) && ! empty( $typed_native['ok'] ) && count( (array) ( $typed_collection['elements'] ?? [] ) ) === $typed_step_count && ( $typed_collection['settings']['flex_direction'] ?? '' ) === 'row' && ( $typed_collection['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $typed_collection['settings']['flex_direction_mobile'] ?? '' ) === 'column';
+}
+$typed_bad_process_brief = wpae_brief_ir_parse( "Создай блок процесса. Заголовок: «Маршрут».\nЭтап «Первый»: «Первое описание».\nЭтап «Второй»: «Второе описание»." ); $typed_bad_process_brief['canonical_create'] = true;
+$typed_bad_process_plan = wpae_design_plan_from_brief( $typed_bad_process_brief, [ 'canonical_create' => true, 'composition_record' => 'process.ordered_steps' ] );
+$typed_process_card_counts_ok = $typed_process_card_counts_ok && in_array( 'composition_group_cardinality', wpae_design_plan_validate( $typed_bad_process_plan, $typed_bad_process_brief )['errors'], true );
+$check( $typed_process_card_counts_ok, 'typed Process accepts supported 3/4/6 counts with native responsive tracks and refuses unsupported 2-step cardinality' );
 $hero_image_url = 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85';
 $hero_image_prompt = "Hero\nEyebrow: «АРХИТЕКТУРА»\nЗаголовок: «Пространство для идей, длинный заголовок для проверки переноса»\nОписание: «Опишите задачу и получите понятный первый шаг.»\nКнопка: «Начать проект» ссылка #contact\nКнопка 2: «Смотреть проекты» ссылка #projects\nТекст 40%, визуальная часть 60%. Фото слева. Изображение: {$hero_image_url}\nAlt: «Современный интерьер студии с панорамным окном и видом на природу»\nLicense: «Unsplash License»\nPhoto by: «Neon Wang»";
 [ $hero_photo_brief, $hero_photo_plan, $hero_photo_validation, $hero_photo_compiled, $hero_photo_nodes ] = $compile_prompt( $hero_image_prompt, 'hero-unsplash-regression' );
@@ -1136,8 +1220,9 @@ for ( $asset_index = 1; $asset_index <= 6; $asset_index++ ) {
 	];
 }
 $services_recipe_tokens = [ 'palette' => [ 'paper' => '#f6f0e6', 'surface' => '#ffffff', 'ink' => '#111827', 'muted' => '#4b5563', 'accent' => '#4460ec', 'border' => '#d1d5db' ] ];
-$services_recipe_compile = static function ( array $brief, string $recipe_id, array $assets, string $seed, string $lead_ref = '' ) use ( $services_recipe_tokens ): array {
+$services_recipe_compile = static function ( array $brief, string $recipe_id, array $assets, string $seed, string $lead_ref = '', string $visual_profile = '' ) use ( $services_recipe_tokens ): array {
 	$context = [ 'services_recipe_id' => $recipe_id, 'media_references' => $assets, 'canonical_create' => true ];
+	if ( $visual_profile !== '' ) { $context['visual_profile'] = $visual_profile; }
 	if ( $lead_ref !== '' ) {
 		$context['services_lead_service_ref'] = $lead_ref;
 	}
@@ -1180,6 +1265,46 @@ foreach ( $services_recipe_ids as $recipe_index => $recipe_id ) {
 $photo_recipe_result = $services_recipe_results['services.photo_cards'];
 $split_recipe_result = $services_recipe_results['services.split_editorial'];
 $text_recipe_result = $services_recipe_results['services.text_icon_list'];
+$icon_card_recipe_result = $services_recipe_compile( $services_recipe_brief, 'services.icon_cards', [], 'services-icon-cards', '', 'editorial_light' );
+$check( ! empty( $icon_card_recipe_result['plan_validation']['ok'] ) && ! empty( $icon_card_recipe_result['ir_validation']['ok'] ) && ! empty( $icon_card_recipe_result['compiled']['ok'] ) && ( $icon_card_recipe_result['plan']['composition_decision']['record_id'] ?? '' ) === 'services.icon_cards' && ( $icon_card_recipe_result['plan']['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light' && empty( $icon_card_recipe_result['plan']['media_references'] ), 'Services icon cards are a selected typed record/profile and compile without requiring or inventing media' );
+$icon_card_nodes = $walk_elements( (array) ( $icon_card_recipe_result['compiled']['elementor_data'] ?? [] ) );
+$icon_card_collection = array_values( array_filter( $icon_card_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-icon-cards' ) )[0] ?? [];
+$icon_card_native_cards = array_values( array_filter( (array) ( $icon_card_collection['elements'] ?? [] ), static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-icon-card' ) );
+$icon_card_expected_text_and_links = [];
+$icon_card_content = array_column( (array) ( $services_recipe_brief['content'] ?? [] ), null, 'id' );
+foreach ( (array) ( $icon_card_recipe_result['plan']['slot_bindings']['services'] ?? [] ) as $icon_card_slot ) {
+	$icon_card_expected_text_and_links[] = [ 'title' => $icon_card_content[ $icon_card_slot['title_ref'] ]['exact_text'] ?? '', 'body' => $icon_card_content[ $icon_card_slot['body_ref'] ]['exact_text'] ?? '', 'cta' => $icon_card_content[ $icon_card_slot['cta_ref'] ]['exact_text'] ?? '', 'url' => $icon_card_content[ $icon_card_slot['cta_ref'] ]['url'] ?? '' ];
+}
+$icon_card_actual_text_and_links = [];
+foreach ( $icon_card_native_cards as $icon_card_native ) {
+	$icon_card_card_nodes = $walk_elements( [ $icon_card_native ] );
+	$icon_card_titles = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['title'] ?? '' ), array_filter( $icon_card_card_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'heading' ) ) );
+	$icon_card_bodies = array_values( array_map( static fn( array $node ): string => (string) ( $node['settings']['editor'] ?? '' ), array_filter( $icon_card_card_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) ) );
+	$icon_card_button = array_values( array_filter( $icon_card_card_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) )[0] ?? [];
+	$icon_card_actual_text_and_links[] = [ 'title' => $icon_card_titles[0] ?? '', 'body' => $icon_card_bodies[0] ?? '', 'cta' => $icon_card_button['settings']['text'] ?? '', 'url' => $icon_card_button['settings']['link']['url'] ?? '' ];
+}
+$icon_card_surface = (array) ( $icon_card_recipe_result['plan']['visual_policy']['item_surface'] ?? [] );
+$icon_card_surface_padding = wpae_elementor_ir_dimension_control( $icon_card_surface['padding'], 'px', 0, false ); unset( $icon_card_surface_padding['size'], $icon_card_surface_padding['sizes'] );
+$icon_card_surface_radius = wpae_elementor_ir_dimension_control( $icon_card_surface['radius'], 'px', 0 ); unset( $icon_card_surface_radius['size'], $icon_card_surface_radius['sizes'] );
+$icon_card_surface_ok = count( $icon_card_native_cards ) === 3 && $icon_card_actual_text_and_links === $icon_card_expected_text_and_links;
+foreach ( $icon_card_native_cards as $icon_card_native ) {
+	$settings = (array) ( $icon_card_native['settings'] ?? [] );
+	$inner_body = $icon_card_native['elements'][0] ?? []; $inner_actions = $icon_card_native['elements'][1] ?? [];
+	$inner_icon = array_values( array_filter( $walk_elements( [ $icon_card_native ] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'icon' ) )[0] ?? [];
+	$icon_card_surface_ok = $icon_card_surface_ok && ( $settings['background_color'] ?? '' ) === $icon_card_surface['background'] && ( $settings['border_color'] ?? '' ) === $icon_card_surface['border_color'] && ( $settings['border_width']['top'] ?? '' ) === '1' && ( $settings['border_radius'] ?? [] ) === $icon_card_surface_radius && ( $settings['padding'] ?? [] ) === $icon_card_surface_padding && ( $settings['flex_justify_content'] ?? '' ) === 'space-between' && ( $settings['flex_justify_content_mobile'] ?? '' ) === 'flex-start' && ! isset( $settings['height'], $settings['min_height'], $settings['max_height'] )
+		&& ( $inner_body['settings']['background_color'] ?? '' ) === 'transparent' && ( $inner_body['settings']['padding']['left'] ?? '' ) === '0' && ( $inner_actions['settings']['background_color'] ?? '' ) === 'transparent' && ( $inner_actions['settings']['padding']['left'] ?? '' ) === '0' && str_contains( (string) ( $inner_icon['settings']['selected_icon']['value'] ?? '' ), 'check' );
+}
+$icon_card_images = array_filter( $icon_card_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' );
+$check( $icon_card_surface_ok && count( $icon_card_images ) === 0 && count( $icon_card_recipe_result['plan']['slot_bindings']['services'] ?? [] ) === 3 && ( $icon_card_recipe_result['plan']['visual_policy']['collection']['columns'] ?? [] ) === [ 'desktop' => 3, 'tablet' => 2, 'mobile' => 1 ] && ( $icon_card_collection['settings']['flex_direction'] ?? '' ) === 'row' && ( $icon_card_collection['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $icon_card_collection['settings']['flex_direction_mobile'] ?? '' ) === 'column', 'Services icon-card native topology keeps each exact service and CTA inside one Plan-owned surface with bottom actions and responsive native Flex tracks' );
+$zero_radius_brief = wpae_brief_ir_parse( $services_recipe_prompt . "\nСкругление карточек: 0px" );
+$zero_radius_result = $services_recipe_compile( $zero_radius_brief, 'services.icon_cards', [], 'services-icon-cards-zero-radius', '', 'editorial_light' );
+$zero_radius_nodes = $walk_elements( (array) ( $zero_radius_result['compiled']['elementor_data'] ?? [] ) );
+$zero_radius_cards = array_values( array_filter( $zero_radius_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-icon-card' ) );
+$zero_radius_owner_ok = count( $zero_radius_cards ) === 3 && ( $zero_radius_result['plan']['visual_policy']['item_surface']['radius'] ?? '' ) === '0px' && ( $icon_card_collection['settings']['background_color'] ?? '' ) === 'transparent';
+foreach ( $zero_radius_cards as $zero_radius_card ) {
+	$zero_radius_owner_ok = $zero_radius_owner_ok && ( $zero_radius_card['settings']['border_radius']['top'] ?? '' ) === '0' && ( $zero_radius_card['settings']['padding']['top'] ?? '' ) !== '0';
+}
+$check( ! empty( $zero_radius_result['plan_validation']['ok'] ) && ! empty( $zero_radius_result['compiled']['ok'] ) && $zero_radius_owner_ok, 'explicit zero radius reaches each complete card owner while a color.surface token does not paint the collection wrapper' );
 $legacy_services_plan = wpae_design_plan_from_brief( $services_recipe_brief );
 $legacy_services_roles = array_column( (array) ( $legacy_services_plan['sections'][0]['children'] ?? [] ), 'role' );
 $check( empty( $legacy_services_plan['recipe_id'] ) && in_array( 'service_cards', $legacy_services_roles, true ), 'existing Services planning calls keep the legacy default when no explicit recipe is selected' );
@@ -1255,9 +1380,16 @@ foreach ( $photo_cards as $index => $card ) {
 $photo_id_values = array_column( $photo_nodes, 'id' );
 $check( $photo_item_fidelity && count( $photo_images ) === 3 && count( $photo_buttons ) === 3 && count( array_unique( $photo_id_values ) ) === count( $photo_id_values ), 'photo cards keep image first, exact matching title/body/CTA URLs, and unique native Elementor IDs per source service' );
 $photo_panel_settings = (array) ( $photo_cards[0]['elements'][0]['elements'][1]['settings'] ?? [] );
-$check( ( $photo_grid['settings']['container_type'] ?? '' ) === 'flex' && ( $photo_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $photo_grid['elements'][0]['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 1.5rem - 1.5rem) / 3)' && ( $photo_grid['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $photo_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ! isset( $photo_grid['settings']['grid_columns_grid'] ) && ( $photo_panel_settings['padding']['right'] ?? '' ) === '0' && ( $photo_panel_settings['padding']['left'] ?? '' ) === '0' && ( $photo_panel_settings['padding_mobile']['top'] ?? '' ) === '20', 'photo recipe compiles gap-aware native Flex tracks with tablet/mobile stack and reference copy padding' );
+$photo_surface = (array) ( $photo_recipe_result['plan']['visual_policy']['item_surface'] ?? [] );
+$photo_surface_padding = wpae_elementor_ir_dimension_control( $photo_surface['padding'] ?? '1.5rem', 'rem', 1.5, false );
+unset( $photo_surface_padding['size'], $photo_surface_padding['sizes'] );
+$photo_surface_radius = wpae_elementor_ir_dimension_control( $photo_surface['radius'] ?? '0.5rem', 'rem', 0.5 );
+unset( $photo_surface_radius['size'], $photo_surface_radius['sizes'] );
+$photo_owner_settings = (array) ( $photo_cards[0]['settings'] ?? [] );
+$check( ( $photo_grid['settings']['container_type'] ?? '' ) === 'flex' && ( $photo_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $photo_grid['elements'][0]['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 1.5rem - 1.5rem) / 3)' && ( $photo_grid['settings']['flex_direction_tablet'] ?? '' ) === 'row' && ( $photo_grid['settings']['flex_wrap_tablet'] ?? '' ) === 'wrap' && ( $photo_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ! isset( $photo_grid['settings']['grid_columns_grid'] ) && ( $photo_owner_settings['padding'] ?? [] ) === $photo_surface_padding && ( $photo_owner_settings['border_radius'] ?? [] ) === $photo_surface_radius && ( $photo_panel_settings['background_color'] ?? '' ) === 'transparent' && ( $photo_panel_settings['padding']['top'] ?? '' ) === '0', 'photo recipe compiles accepted desktop/tablet/mobile Flex tracks and puts the surface box on the full card owner' );
 $photo_panel = (array) ( $photo_cards[0]['elements'][0]['elements'][1] ?? [] );
-$check( ( $photo_grid['settings']['_element_custom_width_tablet']['unit'] ?? '' ) === '%' && (float) ( $photo_grid['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0 && (float) ( $photo_cards[0]['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0 && (float) ( $photo_panel['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0, 'photo recipe stacks the full-width collection, cards and copy panels on tablet' );
+$photo_tablet_card_track = wpae_elementor_ir_flex_equal_track_dimension( $photo_recipe_result['plan']['visual_policy']['collection']['gap']['tablet'], (int) $photo_recipe_result['plan']['visual_policy']['collection']['columns']['tablet'] );
+$check( ( $photo_grid['settings']['_element_custom_width_tablet']['unit'] ?? '' ) === '%' && (float) ( $photo_grid['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0 && ( $photo_cards[0]['settings']['_element_custom_width_tablet'] ?? [] ) === $photo_tablet_card_track && (float) ( $photo_panel['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100.0, 'photo recipe matches the record’s two-column tablet tracks and keeps each inner panel full width' );
 $check( ( $photo_images[0]['settings']['object-fit'] ?? '' ) === 'cover' && ( $photo_images[0]['settings']['height']['unit'] ?? '' ) === 'px' && (float) ( $photo_images[0]['settings']['height']['size'] ?? 0 ) > 0 && ( $photo_images[0]['settings']['height_mobile']['unit'] ?? '' ) === 'px' && (float) ( $photo_images[0]['settings']['height_mobile']['size'] ?? 0 ) > 0 && ( $photo_cards[0]['settings']['border_radius_mobile']['unit'] ?? '' ) === 'px' && (float) ( $photo_cards[0]['settings']['border_radius_mobile']['top'] ?? 0 ) === 16.0 && ( $photo_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_2', 'services_recipe_photo_3' ], 'photo recipe consumes explicit assets with native pixel crop heights and responsive rounded-card controls' );
 $repeat_compile_checks = [];
 foreach ( $services_recipe_results as $recipe_index => $recipe_result ) {
@@ -1322,10 +1454,13 @@ $first_text_title = array_values( array_filter( $first_text_row_nodes, static fn
 $first_text_body = array_values( array_filter( $first_text_row_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'text-editor' ) )[0] ?? [];
 $check( count( $text_icons ) === 3 && (float) ( $text_icons[0]['settings']['size']['size'] ?? 0 ) === 22.0 && (float) ( $text_icons[0]['settings']['_element_custom_width']['size'] ?? 0 ) === 44.0 && ! isset( $text_icons[0]['settings']['icon_padding'] ) && ( $first_text_row['settings']['flex_gap']['unit'] ?? '' ) === 'rem' && (float) ( $first_text_row['settings']['flex_gap']['size'] ?? 0 ) === 1.0, 'text/icon marker uses accepted native 22px glyph sizing with a 44px icon track and a separate 1rem copy gap' );
 $check( ( $first_text_title['settings']['header_size'] ?? '' ) === 'h3' && ( $first_text_title['settings']['typography_font_size']['unit'] ?? '' ) === 'rem' && (float) ( $first_text_title['settings']['typography_font_size']['size'] ?? 0 ) === 1.125 && ( $first_text_title['settings']['typography_font_weight'] ?? '' ) === '600' && (float) ( $first_text_body['settings']['typography_font_size']['size'] ?? 0 ) === 1.0 && ( $first_text_body['settings']['typography_font_weight'] ?? '' ) === '400' && (float) ( $first_text_body['settings']['typography_line_height']['size'] ?? 0 ) === 1.6, 'Services item title and body compile with readable heading hierarchy and untruncated natural-height copy' );
-$check( ( $first_text_row['settings']['background_background'] ?? '' ) === 'classic' && ( $first_text_row['settings']['background_color'] ?? '' ) === 'transparent' && ( $first_text_row['settings']['padding']['top'] ?? '' ) === '16' && ( $first_text_row['settings']['padding']['bottom'] ?? '' ) === '16' && ( $first_text_row['settings']['padding']['left'] ?? '' ) === '0' && ! isset( $first_text_row['settings']['height'] ) && ! isset( $first_text_row['settings']['min_height'] ), 'default text/icon rows use transparent editorial surfaces with vertical rhythm and no unpadded white bars' );
+$check( ( $first_text_row['settings']['background_background'] ?? '' ) === 'classic' && ( $first_text_row['settings']['background_color'] ?? '' ) === 'transparent' && ( $first_text_row['settings']['padding']['top'] ?? '' ) === '0' && ( $first_text_row['settings']['padding']['bottom'] ?? '' ) === '0' && ( $first_text_row['settings']['padding']['left'] ?? '' ) === '0' && ! isset( $first_text_row['settings']['height'] ) && ! isset( $first_text_row['settings']['min_height'] ) && ( $text_rows[0]['settings']['flex_gap']['size'] ?? 0 ) > 0, 'default text/icon rows use a transparent owner, no duplicated box padding and native inter-row rhythm' );
 $check( in_array( 'type.display', (array) ( $text_recipe_result['plan']['sections'][0]['children'][1]['token_refs'] ?? [] ), true ) && in_array( 'type.body', (array) ( $text_recipe_result['plan']['sections'][0]['children'][1]['token_refs'] ?? [] ), true ), 'Services recipe plan retains the selected design system display and body typography token references' );
 $split_secondary_row = $split_editorial_rows[0] ?? [];
-$check( ( $split_lead['settings']['background_background'] ?? '' ) === 'classic' && ( $split_lead['settings']['background_color'] ?? '' ) === '#ffffff' && ( $split_lead['settings']['padding']['top'] ?? '' ) === '24' && (float) ( $split_lead['settings']['border_radius']['size'] ?? 0 ) === 16.0 && ( $split_secondary_row['settings']['background_color'] ?? '' ) === 'transparent' && ( $split_secondary_row['settings']['padding']['top'] ?? '' ) === '16' && ( $split_secondary_row['settings']['padding']['bottom'] ?? '' ) === '16', 'split recipe emphasizes the lead surface and keeps secondary editorial rows transparent, padded and aligned' );
+$split_surface = (array) ( $split_recipe_result['plan']['visual_policy']['item_surface'] ?? [] );
+$split_surface_padding = wpae_elementor_ir_dimension_control( $split_surface['padding'] ?? '1.5rem', 'rem', 1.5, false ); unset( $split_surface_padding['size'], $split_surface_padding['sizes'] );
+$split_surface_radius = wpae_elementor_ir_dimension_control( $split_surface['radius'] ?? '0.5rem', 'rem', 0.5 ); unset( $split_surface_radius['size'], $split_surface_radius['sizes'] );
+$check( ( $split_lead['settings']['background_background'] ?? '' ) === 'classic' && ( $split_lead['settings']['background_color'] ?? '' ) === ( $split_surface['background'] ?? '' ) && ( $split_lead['settings']['padding'] ?? [] ) === $split_surface_padding && ( $split_lead['settings']['border_radius'] ?? [] ) === $split_surface_radius && ( $split_secondary_row['settings']['background_color'] ?? '' ) === 'transparent' && ( $split_secondary_row['settings']['padding']['top'] ?? '' ) === '16' && ( $split_secondary_row['settings']['padding']['bottom'] ?? '' ) === '16', 'split recipe compiles its accepted lead owner surface while keeping secondary editorial rows transparent and padded' );
 $override_services_ir = $split_recipe_result['ir'];
 $apply_services_surface_override = static function ( array &$nodes ) use ( &$apply_services_surface_override ): void {
 	foreach ( $nodes as &$node ) {
@@ -1346,7 +1481,7 @@ $override_services_compiled = wpae_native_elementor_compile( $override_services_
 $override_services_nodes = $walk_elements( (array) ( $override_services_compiled['elementor_data'] ?? [] ) );
 $override_lead = array_values( array_filter( $override_services_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-split-lead' ) )[0] ?? [];
 $override_editorial_row = array_values( array_filter( $override_services_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-services-editorial-row' ) )[0] ?? [];
-$check( ! empty( $override_services_compiled['ok'] ) && ( $override_lead['settings']['background_color'] ?? '' ) === '#123456' && ( $override_lead['settings']['padding']['top'] ?? '' ) === '24' && ( $override_editorial_row['settings']['background_color'] ?? '' ) === '#123456' && ( $override_editorial_row['settings']['padding']['left'] ?? '' ) === '20' && (float) ( $override_editorial_row['settings']['border_radius']['size'] ?? 0 ) === 12.0, 'explicit Services surface overrides remain intact and compile as full padded surfaces' );
+$check( ! empty( $override_services_compiled['ok'] ) && ( $override_lead['settings']['background_color'] ?? '' ) === '#123456' && ( $override_lead['settings']['padding'] ?? [] ) === $split_surface_padding && ( $override_editorial_row['settings']['background_color'] ?? '' ) === '#123456' && ( $override_editorial_row['settings']['padding']['left'] ?? '' ) === '20' && (float) ( $override_editorial_row['settings']['border_radius']['size'] ?? 0 ) === 12.0, 'explicit Services surface color overrides remain intact while accepted owner spacing and explicit editorial panels are preserved' );
 $forbidden_media_services = $services_recipe_brief;
 foreach ( $forbidden_media_services['layout_constraints'] as &$constraint ) {
 	if ( ( $constraint['kind'] ?? '' ) === 'media_intent' ) {
@@ -1361,7 +1496,7 @@ $forbidden_text_nodes = $walk_elements( (array) ( $forbidden_text_recipe['compil
 $check( ! empty( $forbidden_text_recipe['plan_validation']['ok'] ) && ! empty( $forbidden_text_recipe['ir_validation']['ok'] ) && ! empty( $forbidden_text_recipe['compiled']['ok'] ) && empty( $forbidden_text_recipe['plan']['media_compatibility']['consumed_asset_refs'] ) && count( array_filter( $forbidden_text_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'image', 'video', 'image-carousel' ], true ) ) ) === 0, 'explicitly forbidden media remains absent from the valid text/icon recipe with no media placeholders' );
 $check( ( $text_recipe_result['plan']['media_compatibility']['unconsumed_asset_refs'] ?? [] ) === [ 'services_recipe_photo_1', 'services_recipe_photo_2', 'services_recipe_photo_3' ] && empty( $text_recipe_result['plan']['media_compatibility']['consumed_asset_refs'] ), 'optional supplied assets are explicitly declared unconsumed by the text-only recipe' );
 $services_recipe_layout = wpae_layout_report_for_plan( $photo_recipe_result['plan'] );
-$check( ( $services_recipe_layout['evidence'] ?? '' ) === 'static_plan' && empty( $services_recipe_layout['visual_render_verified'] ) && ( $services_recipe_layout['recipe_layout']['collection_policy']['implementation'] ?? '' ) === 'native_flex_equal' && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 3 && ( $services_recipe_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 1 && ( $services_recipe_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1 && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'row_flex_calc_tracks', 'recipe LayoutReport follows gap-aware native Flex tracks and tablet/mobile stack without claiming a rendered visual result' );
+$check( ( $services_recipe_layout['evidence'] ?? '' ) === 'static_plan' && empty( $services_recipe_layout['visual_render_verified'] ) && ( $services_recipe_layout['recipe_layout']['collection_policy']['implementation'] ?? '' ) === 'native_flex_equal' && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === 3 && ( $services_recipe_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 2 && ( $services_recipe_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1 && ( $services_recipe_layout['recipe_layout']['breakpoints'][0]['axis'] ?? '' ) === 'row_flex_calc_tracks' && ( $services_recipe_layout['recipe_layout']['breakpoints'][2]['axis'] ?? '' ) === 'row_flex_calc_tracks', 'recipe LayoutReport follows accepted gap-aware Flex tracks and tablet/mobile columns without claiming a rendered visual result' );
 $intro_token_visual = [ 'profile' => 'section-test', 'values' => array_merge( wpae_design_token_defaults(), [ 'layout.intro_title_token' => 'type.section_title' ] ) ];
 $intro_token_record = [ 'id' => 'services.visual_title_test', 'policy' => [ 'intro_title_token' => 'type.display' ] ];
 $record_title_policy = wpae_design_plan_visual_policy( $services_recipe_brief, $intro_token_record, $intro_token_visual, 'linear', [ 'tablet' => 'stack' ], 3, 'services.photo_cards' );
@@ -1479,14 +1614,14 @@ foreach ( $count_recipe_results as $count => $result ) {
 			&& ( $count_grid['settings']['flex_wrap'] ?? '' ) === ( (int) $count >= 2 ? 'wrap' : 'nowrap' )
 			&& ( $count_cards[0]['settings']['_element_custom_width']['size'] ?? '' ) === wpae_elementor_ir_flex_equal_track_dimension( $result['plan']['visual_policy']['collection']['gap']['desktop'], (int) $result['plan']['visual_policy']['collection']['columns']['desktop'] )['size']
 			&& (float) ( $count_cards[0]['settings']['_element_custom_width_mobile']['size'] ?? 0 ) === 100.0
-			&& ( $result['plan']['visual_policy']['collection']['columns']['desktop'] ?? 0 ) === ( (int) $count >= 4 ? 2 : (int) $count )
-			&& ( $result['plan']['visual_policy']['collection']['columns']['tablet'] ?? 0 ) === 1
-			&& ( $count_grid['settings']['flex_direction_tablet'] ?? '' ) === 'column'
+			&& ( $result['plan']['visual_policy']['collection']['columns']['desktop'] ?? 0 ) === min( 3, (int) $count )
+			&& ( $result['plan']['visual_policy']['collection']['columns']['tablet'] ?? 0 ) === 2
+			&& ( $count_grid['settings']['flex_direction_tablet'] ?? '' ) === 'row'
 			&& ( $count_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column'
 			&& ! isset( $count_grid['settings']['grid_columns_grid'] );
 		$count_layout = wpae_layout_report_for_plan( $result['plan'] );
-		$count_ok = $count_ok && ( $count_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === ( (int) $count >= 4 ? 2 : (int) $count )
-			&& ( $count_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 1
+		$count_ok = $count_ok && ( $count_layout['recipe_layout']['breakpoints'][0]['columns'] ?? 0 ) === min( 3, (int) $count )
+			&& ( $count_layout['recipe_layout']['breakpoints'][2]['columns'] ?? 0 ) === 2
 			&& ( $count_layout['recipe_layout']['breakpoints'][3]['columns'] ?? 0 ) === 1
 			&& ( $count_layout['recipe_layout']['card_content_padding_px']['desktop']['left'] ?? -1 ) === 0
 			&& ( $count_layout['recipe_layout']['card_content_padding_px']['mobile']['top'] ?? 0 ) === 20;
@@ -1616,9 +1751,21 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
    $native=wpae_elementor_ir_compile($ir,$brief,[],['resolved_visual'=>$plan['resolved_visual']]);
    $check($native['ok'],'Entity native compiler '.$family.' '.$variant);
    $flat=$walk_elements($native['elementor_data']);
-   if($variant==='grid'){
     $entity_class=$family==='team'?'wpae-team_cards':'wpae-testimonial_cards';
     $entity_collection=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['_css_classes']??'')===$entity_class&&count((array)($n['elements']??[]))===$count))[0]??[];
+    $entity_card_nodes=array_values((array)($entity_collection['elements']??[]));
+    $entity_surface=(array)($plan['visual_policy']['item_surface']??[]);
+    $entity_surface_padding=wpae_elementor_ir_dimension_control($entity_surface['padding']??'0px','px',0,false); unset($entity_surface_padding['size'],$entity_surface_padding['sizes']);
+    $entity_surface_radius=wpae_elementor_ir_dimension_control($entity_surface['radius']??'0px','px',0); unset($entity_surface_radius['size'],$entity_surface_radius['sizes']);
+    $entity_surface_ok=($entity_surface['owner_role']??'')===($family==='team'?'team_card':'testimonial_card')&&($entity_surface['mode']??'')==='card'&&count($entity_card_nodes)===$count;
+    foreach($entity_card_nodes as $entity_card){
+     $entity_settings=(array)($entity_card['settings']??[]);$entity_body=(array)($entity_card['elements'][0]??[]);$entity_body_settings=(array)($entity_body['settings']??[]);
+     $entity_descendants=$walk_elements([$entity_card]);
+     $entity_has_action=(bool)array_filter($entity_descendants,static fn(array $n):bool=>($n['widgetType']??'')==='button');
+     $entity_surface_ok=$entity_surface_ok&&($entity_settings['background_color']??'')===($entity_surface['background']??'')&&($entity_settings['border_color']??'')===($entity_surface['border_color']??'')&&($entity_settings['border_width']['top']??'')==='1'&&($entity_settings['border_radius']??[])===$entity_surface_radius&&($entity_settings['padding']??[])===$entity_surface_padding&&($entity_body['elType']??'')==='container'&&($entity_body_settings['background_color']??'')==='transparent'&&($entity_body_settings['border_border']??'')==='none'&&($entity_body_settings['padding']['left']??'')==='0'&&count($entity_card['elements']??[])===1&&!$entity_has_action;
+    }
+    $check($entity_surface_ok,'Entity '.$family.' '.$variant.' puts one accepted surface around each whole item and keeps body transparent with no invented CTA/footer');
+    if($variant==='grid'){
     $check(($plan['visual_policy']['collection']['item_height']??'')==='content'&&($entity_collection['settings']['container_type']??'')==='flex'&&($entity_collection['settings']['flex_align_items']??'')==='flex-start'&&($entity_collection['settings']['flex_align_items_mobile']??'')==='flex-start'&&!isset($entity_collection['settings']['grid_align_items']),'No-action entity Flex collection uses accepted content height without cross-axis card stretch '.$family.' '.$count);
    }
    $titles=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['title']??'')==='Тестовая секция'));
@@ -1626,8 +1773,7 @@ foreach ( [ 'team', 'testimonials' ] as $family ) {
    if($variant==='editorial_rows'){
     $collection_policy=(array)($plan['visual_policy']['collection']??[]);
     $collection_class=$family==='team'?'wpae-team_cards':'wpae-testimonial_cards';
-    $collection_nodes=array_values(array_filter($flat,static fn(array $n):bool=>($n['settings']['_css_classes']??'')===$collection_class));
-    $collection_native=$collection_nodes[0]??[];
+    $collection_native=$entity_collection;
     $collection_width_matches=($collection_policy['width']??[])===['desktop'=>'100%','tablet'=>'100%','mobile'=>'100%'];
     foreach([''=>'','_tablet'=>'tablet','_mobile'=>'mobile'] as $suffix=>$device){
      $width=(array)($collection_native['settings']['width'.$suffix]??[]);
@@ -1735,6 +1881,20 @@ foreach ( [ ['A-B-team-exact-request.txt','team.grid'], ['C-D-testimonials-exact
   $check(count($brief['pricing_items'])===3 && array_map(static fn(array $g):int=>count($g['feature_refs']),$brief['pricing_items'])===[1,4,2],'Pricing unequal features retained');
   $flat=$walk_elements($native['elementor_data']);
   $check(count(array_filter($flat,static fn(array $n):bool=>($n['settings']['editor']??'')==='Три синтетических пакета для проверки точного содержания и разной длины списка возможностей'))===1,'Pricing full intro body retained');
+  $pricing_surface=(array)($plan['visual_policy']['item_surface']??[]);
+  $pricing_surface_padding=wpae_elementor_ir_dimension_control($pricing_surface['padding']??'0px','px',0,false);unset($pricing_surface_padding['size'],$pricing_surface_padding['sizes']);
+  $pricing_surface_radius=wpae_elementor_ir_dimension_control($pricing_surface['radius']??'0px','px',0);unset($pricing_surface_radius['size'],$pricing_surface_radius['sizes']);
+  $pricing_collection=array_values(array_filter($flat,static function(array $node)use($pricing_surface):bool{
+   $children=array_values((array)($node['elements']??[]));
+   return ($node['elType']??'')==='container'&&count($children)===3&&array_reduce($children,static fn(bool $ok,array $child):bool=>$ok&&($child['settings']['background_color']??'')===($pricing_surface['background']??'')&&($child['settings']['border_color']??'')===($pricing_surface['border_color']??''),true);
+  }))[0]??[];
+  $pricing_native_cards=array_values((array)($pricing_collection['elements']??[]));
+  $pricing_surface_ok=($pricing_surface['owner_role']??'')==='pricing_card'&&($pricing_surface['mode']??'')==='card'&&count($pricing_native_cards)===3;
+  foreach($pricing_native_cards as $pricing_native_card){
+   $settings=(array)($pricing_native_card['settings']??[]);$body=(array)($pricing_native_card['elements'][0]??[]);$details=(array)($body['elements'][0]??[]);$body_settings=(array)($body['settings']??[]);$details_settings=(array)($details['settings']??[]);
+   $pricing_surface_ok=$pricing_surface_ok&&($settings['background_color']??'')===($pricing_surface['background']??'')&&($settings['border_color']??'')===($pricing_surface['border_color']??'')&&($settings['border_width']['top']??'')==='1'&&($settings['border_radius']??[])===$pricing_surface_radius&&($settings['padding']??[])===$pricing_surface_padding&&($body_settings['background_color']??'')==='transparent'&&($body_settings['border_border']??'')==='none'&&($body_settings['padding']['left']??'')==='0'&&($details_settings['background_color']??'')==='transparent'&&($details_settings['padding']['left']??'')==='0';
+  }
+  $check($pricing_surface_ok,'Pricing tiers keep the accepted surface on each whole pricing_card while body/details remain transparent and unboxed');
  }
 }
 fwrite( STDOUT, "design pipeline contract: {$checks} checks OK\n" );

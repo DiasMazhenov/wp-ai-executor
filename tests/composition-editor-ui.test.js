@@ -23,7 +23,9 @@ function controls(mode='active') {
 const plain = x=>JSON.parse(JSON.stringify(x));
 test('safe PHP projection, grouped distinct records, profiles and Automatic',()=>{
  for (const id of ['team.grid','team.editorial_rows','testimonials.grid','testimonials.editorial_rows']) assert.ok(catalog.records.some(r=>r.id===id && r.profiles.includes('editorial_light') && r.profiles.includes('soft_cards_light')));
- assert.ok(!catalog.records.some(r=>r.id==='benefits.linear' || r.family==='services'));
+	assert.ok(!catalog.records.some(r=>r.id==='benefits.linear'));
+	assert.ok(catalog.records.some(r=>r.id==='services.icon_cards' && r.label==='Карточки с иконками'));
+	assert.ok(catalog.records.some(r=>r.id==='process.ordered_steps' && r.label==='Упорядоченные этапы'));
  assert.ok(catalog.records.every(r=>Object.keys(r).sort().join(',')==='family,family_label,id,label,profiles,version'));
  const e=controls();
  assert.deepEqual(plain(e.compositionSelectionSnapshot({},[])),{});

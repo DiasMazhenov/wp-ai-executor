@@ -632,6 +632,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 	$previous_testimonial_group = '';
 	$pair_group_index = 0;
 	$pair_group_id = '';
+	$process_pair_index = 0;
+	$process_pending_group = '';
+	$previous_process_role = '';
 	foreach ( $quote_matches[0] ?? [] as $match_index => $full_match ) {
 		$full = (string) ( $full_match[0] ?? '' );
 		$start = (int) ( $full_match[1] ?? 0 );
@@ -659,6 +662,32 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$prefix = function_exists( 'mb_substr' ) ? mb_substr( $before, -100 ) : $before;
 		if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?|license|licence|лицензи\w*|photo\s+by|автор\s+фото)\s*[:\-]\s*$/iu', $prefix ) ) { continue; }
 		$role = wpae_brief_ir_label_role( $prefix );
+		$process_role_group = '';
+		$process_id_override = '';
+		$process_gap_from_previous = $previous_quote_end !== null ? substr( $source_text, $previous_quote_end, max( 0, $start - $previous_quote_end ) ) : '';
+		$process_after_quote_end = $start + strlen( $full );
+		$process_next_quote_start = isset( $quote_matches[0][ $match_index + 1 ][1] ) ? (int) $quote_matches[0][ $match_index + 1 ][1] : strlen( $source_text );
+		$process_gap_to_next = substr( $source_text, $process_after_quote_end, max( 0, $process_next_quote_start - $process_after_quote_end ) );
+		if ( $archetype === 'process' ) {
+			if ( preg_match( '/(?:pill[\s-]*бейдж|бейдж|над\s+заголовком|надзаголов\w*)\s*$/iu', $prefix ) ) {
+				$role = 'eyebrow';
+			} elseif ( preg_match( '/(?:этап\w*|шаг\w*|step)\s*[:：\-]?\s*$/iu', $prefix ) ) {
+				$role = 'label';
+				$process_role_group = 'process_' . ++$process_pair_index;
+				$process_pending_group = $process_role_group;
+				$process_id_override = $process_role_group . '_label';
+			} elseif ( $previous_process_role === 'text' && preg_match( '/^\s*;\s*$/u', $process_gap_from_previous ) && preg_match( '/^\s*(?:[—–]|->|→)\s*$/u', $process_gap_to_next ) ) {
+				$role = 'label';
+				$process_role_group = 'process_' . ++$process_pair_index;
+				$process_pending_group = $process_role_group;
+				$process_id_override = $process_role_group . '_label';
+			} elseif ( $process_pending_group !== '' && $previous_process_role === 'label' && preg_match( '/^\s*(?::|[—–](?:\s*(?:описание|description))?|->|→)\s*$/iu', $process_gap_from_previous ) ) {
+				$role = 'text';
+				$process_role_group = $process_pending_group;
+				$process_id_override = $process_role_group . '_text';
+				$process_pending_group = '';
+			}
+		}
 		if ( $match_index === 0 && $role === 'text' && trim( $before ) === '' && in_array( $archetype, [ 'hero', 'about' ], true ) ) { $role = 'title'; }
 		// A leading "CTA:" names the section; it is not itself a button label.
 		if ( $archetype === 'cta' && $cta_index === 0 && $role === 'cta' && preg_match( '/^\s*(?:cta|call\s+to\s+action)\s*[:\-]?\s*$/iu', $prefix ) ) {
@@ -667,7 +696,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		if ( $archetype === 'cta' && $role === 'text' && $cta_index === 0 && preg_match( '/(?:\bcta\b|call\s+to\s+action|призыв\w*\s+к\s+действи\w*|cta[-\s]+секци\w*|секци\w*\s+cta)/iu', $prefix ) ) {
 			$role = 'title';
 		}
-		$gap_from_previous = $previous_quote_end !== null ? substr( $source_text, $previous_quote_end, max( 0, $start - $previous_quote_end ) ) : '';
+		$gap_from_previous = $process_gap_from_previous;
 		$after_quote_end = $start + strlen( $full );
 		$next_quote_start_for_role = isset( $quote_matches[0][ $match_index + 1 ][1] )
 			? (int) $quote_matches[0][ $match_index + 1 ][1]
@@ -689,6 +718,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$repeated = wpae_brief_ir_repeated_slot( $prefix );
 		$group_id = (string) ( $repeated['group_id'] ?? '' );
+		if ( $archetype === 'process' && $process_role_group !== '' ) {
+			$group_id = $process_role_group;
+		}
 		if ( in_array( $archetype, [ 'benefits', 'faq' ], true ) && in_array( $role, [ 'feature_title', 'feature_body', 'faq_question', 'faq_answer' ], true ) ) {
 			if ( in_array( $role, [ 'feature_title', 'faq_question' ], true ) ) { $pair_group_id = $archetype . '_' . ++$pair_group_index; }
 			$group_id = $pair_group_id;
@@ -699,7 +731,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$role = 'testimonial_author';
 			$group_id = $previous_testimonial_group;
 		}
-		$id_override = $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial)_/', '', $role ) : '';
+		$id_override = $process_id_override !== '' ? $process_id_override : ( $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial)_/', '', $role ) : '' );
 		$url = null;
 		$url_requested = false;
 		// Scope URL association to the structural segment between this quoted
@@ -729,7 +761,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$confidence = $role === 'text' ? 0.62 : 0.98;
 		$content_start = $start;
 		$content_length = strlen( $full );
-		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials' ], true ) ) {
+		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'process' ], true ) ) {
 			foreach ( [ 1, 2, 3 ] as $capture_index ) {
 				if ( isset( $quote_matches[ $capture_index ][ $match_index ][1] ) && (int) $quote_matches[ $capture_index ][ $match_index ][1] >= 0 && (string) $quote_matches[ $capture_index ][ $match_index ][0] === $inner ) {
 					$content_start = (int) $quote_matches[ $capture_index ][ $match_index ][1];
@@ -742,7 +774,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		if ( $archetype === 'testimonials' && $role === 'testimonial_quote' && $group_id !== '' ) {
 			$previous_testimonial_group = $group_id;
 		}
-		if ( $role === 'text' ) {
+		if ( $role === 'text' && ! ( $archetype === 'process' && $process_role_group !== '' ) ) {
 			$ambiguities[] = [
 				'kind' => 'unlabeled_quote',
 				'value' => trim( $inner ),
@@ -752,6 +784,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$previous_quote_inner = $inner;
 		$previous_quote_end = $start + strlen( $full );
+		$previous_process_role = $role;
 	}
 	foreach ( $simple_testimonial_groups as $simple_testimonial ) {
 		$group_id = (string) $simple_testimonial['group_id'];
@@ -943,6 +976,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$recipe_patterns = [
 			'services.photo_cards' => '/(?:services[._ -]photo[._ -]cards|photo[._ -]?cards|фото[ -]?карточк\w*|карточк\w*[^\n]{0,40}с\s+(?:фото|изображен\w*))/iu',
 			'services.split_editorial' => '/(?:services[._ -]split[._ -]editorial|split[._ -]?editorial|редакционн\w*\s+сплит|сплит\w*\s+редакционн\w*)/iu',
+			'services.icon_cards' => '/(?:services[._ -]icon[._ -]cards|icon[._ -]?cards|карточк\w*\s+с\s+иконк\w*|иконк\w*\s+карточк\w*)/iu',
 			'services.text_icon_list' => '/(?:services[._ -]text[._ -]icon[._ -]list|text[._ -]?icon[._ -]?list|текстов\w*\s+список(?:\s+с\s+иконк\w*)?|список\s+услуг\s+с\s+иконк\w*)/iu',
 		];
 		foreach ( $recipe_patterns as $recipe_id => $recipe_pattern ) {
