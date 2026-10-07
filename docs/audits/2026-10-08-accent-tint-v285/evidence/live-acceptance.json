@@ -1,0 +1,118 @@
+{
+  "schema": "wpae-accent-tint-live-evidence-v1",
+  "date": "2026-10-08",
+  "source": {
+    "version": "v02.11.285",
+    "commit": "3af67a5c71188cde11ee3377facfc7dcdaf81959",
+    "pushed_to_origin_main": true,
+    "remote_head_verified": "3af67a5c71188cde11ee3377facfc7dcdaf81959",
+    "wppusher_success_notice": true,
+    "plugins_plugin_version": "v02.11.285",
+    "wordpress_php_runtime_version": null,
+    "reloaded_editor_inline_version": "v02.11.285"
+  },
+  "page": {
+    "post_id": 5214,
+    "test_baseline_editor_roots": [],
+    "test_baseline_publish_disabled": true,
+    "final_editor_roots": [],
+    "final_public_roots": [],
+    "public_url": "https://mazhenov.kz/pricing-contract-live-v123/"
+  },
+  "generation": {
+    "route": "ordinary Elementor plugin chat",
+    "fixture": "fixtures/team-grid-accent-default-exact-request.txt",
+    "request_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
+    "operation_id": "wpae-ef8222c36df77831",
+    "root_id": "7936cba",
+    "operation_identity": null,
+    "generation_revision": null,
+    "post_publish_readonly_descriptor": {
+      "revision": 5,
+      "status": "available",
+      "write_count_field": 0,
+      "note": "This descriptor field was not used as the generation transaction count. Chat step 15 independently reported Elementor update HTTP 200."
+    },
+    "record": null,
+    "profile": null,
+    "brief_hash": null,
+    "plan_hash": null,
+    "provider_call_count": null,
+    "brief_plan_ir_ui_steps_observed": [
+      "BriefIR v1",
+      "typed DesignPlan v1",
+      "WidgetCapabilityRegistry",
+      "LayoutReport",
+      "ElementorIR v2",
+      "Elementor update HTTP 200"
+    ],
+    "native_widget_count": 15,
+    "top_level_insertions": 1,
+    "first_result_repair": "none"
+  },
+  "visual_result": {
+    "prompt_specified_background": false,
+    "public_css_viewport": {
+      "width": 1232,
+      "height": 923,
+      "device_pixel_ratio": 2
+    },
+    "root": {
+      "id": "7936cba",
+      "width_css_px": 1232,
+      "height_css_px": 885.0078,
+      "x_css_px": 0,
+      "y_css_px": 32,
+      "background_computed": "rgba(97, 206, 112, 0.2)",
+      "background_source_expected_from_plan": "Elementor Accent #61CE70 at 20% opacity / 80% transparency",
+      "layout_class_includes_flex": true,
+      "document_client_width": 1232,
+      "document_scroll_width": 1232
+    },
+    "heading": {
+      "tag": "H2",
+      "text": "Люди и роли",
+      "font_size": "40px",
+      "font_weight": "700",
+      "line_height": "46px",
+      "color": "rgb(51, 51, 51)"
+    },
+    "content": "Public DOM and reloaded editor showed the exact four synthetic member names, positions, biographies and section copy. No photo or CTA was requested or added.",
+    "composition_review": "Tint and text are readable. The screenshot shows four full-width horizontal member rows; the selected composition record/profile was not retained in the live trace, so this generation is not a Team grid acceptance. Site-owned AI-Dana avatar remains at the lower-right edge and does not cover authored text.",
+    "vision_advisory": "Vision score 68/confidence 95 alleged a dark background and low contrast. Public computed CSS and inspected PNG show a pale green tint with dark readable text; that particular finding is contradicted by DOM/pixels."
+  },
+  "screenshots": {
+    "source": "public page after Publish and fresh public reload",
+    "viewport_png": {
+      "path": "screenshots/team-grid-accent-default-v285-public-viewport.png",
+      "dimensions": "1232x923",
+      "bytes": 252403,
+      "format": "PNG",
+      "source_jpeg": "screenshots/team-grid-accent-default-v285-public-viewport.jpg"
+    },
+    "full_png": {
+      "path": "screenshots/team-grid-accent-default-v285-public-full.png",
+      "dimensions": "1232x923",
+      "bytes": 249975,
+      "format": "PNG",
+      "source_jpeg": "screenshots/team-grid-accent-default-v285-public-full.jpg"
+    },
+    "both_pngs_opened_and_visually_inspected": true
+  },
+  "undo": {
+    "method": "operation-scoped guarded Undo button for wpae-ef8222c36df77831",
+    "preconditions": "Fresh descriptor revision 5/status available, owned model matched accepted contract, Publish disabled, active Undo button title matched exact operation.",
+    "button_clicked_once": true,
+    "post_undo_editor_canvas_empty": true,
+    "post_undo_publish_disabled": true,
+    "post_undo_public_root_ids": [],
+    "post_undo_operation_revision": null,
+    "post_undo_descriptor_error": "A Browser Use locator check returned Playwright selector deadline exceeded after the single guarded Undo. Read-only editor and public DOM checks then confirmed the empty saved baseline; no retry or manual deletion was made."
+  },
+  "status": {
+    "accent_tint_live_render": "PASS",
+    "overall_team_composition": "PARTIAL",
+    "public_mobile": "NOT RUN",
+    "document_restoration": "PASS: editor and public roots are empty"
+  }
+}
