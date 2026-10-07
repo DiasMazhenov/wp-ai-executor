@@ -727,8 +727,9 @@ $check( ( $explicit_surface_compiled['elementor_data'][0]['settings']['backgroun
 $alpha_surface_brief = wpae_brief_ir_parse( 'pricing: white cards on background #61CE7033' );
 $alpha_surface_plan = wpae_design_plan_from_brief( $alpha_surface_brief );
 $alpha_surface_ir = wpae_elementor_ir_from_design_plan( $alpha_surface_plan, $alpha_surface_brief );
-$alpha_surface_compiled = wpae_elementor_ir_compile( $alpha_surface_ir, $alpha_surface_brief, [ 'palette' => [ 'page_bg' => '#f6f0e6', 'surface' => '#ffffff', 'text' => '#111827', 'muted' => '#4b5563', 'primary' => '#4460ec', 'border' => '#d1d5db' ] ], [ 'id_seed' => 'explicit-alpha-surface' ] );
-$check( ( $alpha_surface_plan['sections'][0]['surface_override'] ?? '' ) === '#61ce7033' && ( $alpha_surface_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#61ce7033', 'explicit CSS alpha color is preserved from Brief through DesignPlan and native Elementor background control' );
+$alpha_surface_compiled = wpae_native_elementor_compile( $alpha_surface_ir, $alpha_surface_brief, [], [ 'resolved_visual' => $tint_visual, 'id_seed' => 'explicit-alpha-surface' ] );
+$alpha_background_pair = array_values( array_filter( (array) ( $alpha_surface_compiled['report']['contrast']['pairs'] ?? [] ), static fn( array $pair ): bool => ( $pair['background'] ?? '' ) === 'color.page_bg' ) );
+$check( ( $alpha_surface_plan['sections'][0]['surface_override'] ?? '' ) === '#61ce7033' && ! empty( $alpha_surface_compiled['ok'] ) && ( $alpha_surface_compiled['elementor_data'][0]['settings']['background_color'] ?? '' ) === '#61ce7033' && ( $alpha_background_pair[0]['effective_background'] ?? '' ) === '#dff5e2', 'explicit CSS alpha background and its measured underlay contrast survive Brief, DesignPlan, and native compilation' );
 
 $unknown = wpae_widget_capability_resolve( 'imaginary-widget' );
 $check( empty( $unknown['ok'] ) && $unknown['reason'] === 'not_in_capability_registry', 'unknown widget is rejected instead of guessed into a fallback' );

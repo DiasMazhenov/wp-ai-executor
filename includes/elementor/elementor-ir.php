@@ -2202,7 +2202,8 @@ function wpae_elementor_ir_compile( array $ir, array $brief, array $tokens = [],
 		}
 	}
 	$report = [ 'schema' => 'wpae-elementor-compile-report-v1', 'downgrades' => [], 'errors' => [], 'warnings' => (array) ( $ir['warnings'] ?? [] ), 'tokens' => [ 'resolved' => [], 'missing' => [], 'fallbacks' => [], 'collisions' => [] ], 'node_count' => 0 ];
-	$report['contrast'] = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $tokens ) : [ 'ok' => true, 'errors' => [] ];
+	$contrast_context = is_array( $options['resolved_visual']['contrast_context'] ?? null ) ? $options['resolved_visual']['contrast_context'] : [];
+	$report['contrast'] = function_exists( 'wpae_design_token_validate_contrast' ) ? wpae_design_token_validate_contrast( $tokens, $contrast_context ) : [ 'ok' => true, 'errors' => [] ];
 	if ( empty( $options['resolved_visual'] ) && empty( $report['contrast']['ok'] ) && in_array( 'color.muted_on_color.page_bg', (array) ( $report['contrast']['errors'] ?? [] ), true ) ) {
 		// Preserve the site's palette globally, but keep generated small text
 		// readable when an inherited muted token is below the normal-text gate.
