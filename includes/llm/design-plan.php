@@ -1113,6 +1113,15 @@ function wpae_design_plan_apply_section_surface_policy( array &$plan ): void {
 	}
 }
 
+/** Carry the already accepted composition profile into visual resolution without selecting a new profile. */
+function wpae_design_plan_context_with_accepted_profile( array $context, array $composition_decision ): array {
+	$accepted_profile = sanitize_key( (string) ( $composition_decision['visual_profile'] ?? '' ) );
+	if ( $accepted_profile !== '' ) {
+		$context['visual_profile'] = $accepted_profile;
+	}
+	return $context;
+}
+
 function wpae_design_plan_from_brief( array $brief, array $context = [] ): array {
 	$archetype = sanitize_key( (string) ( $brief['intent']['archetype'] ?? 'unknown' ) );
 	if ( array_key_exists( 'services_recipe_id', $context ) ) {
@@ -1122,7 +1131,8 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			$recipe_plan['archetype'] = $archetype;
 		}
 		if ( ! empty( $context['canonical_create'] ) ) {
-			$recipe_plan['resolved_visual'] = wpae_design_plan_resolve_visual( $brief, $context );
+			$visual_context = wpae_design_plan_context_with_accepted_profile( $context, (array) ( $recipe_plan['composition_decision'] ?? [] ) );
+			$recipe_plan['resolved_visual'] = wpae_design_plan_resolve_visual( $brief, $visual_context );
 			$recipe_plan['visual_policy'] = wpae_design_plan_visual_policy( $brief, (array) ( $recipe_plan['composition_decision']['record_id'] ? ( wpae_composition_records()[ $recipe_plan['composition_decision']['record_id'] ] ?? [] ) : [] ), $recipe_plan['resolved_visual'], (string) ( $recipe_plan['sections'][0]['composition'] ?? 'linear' ), [ 'tablet' => $recipe_plan['responsive']['tablet'] ?? 'stack', 'mobile' => $recipe_plan['responsive']['mobile'] ?? 'stack' ], count( (array) ( $recipe_plan['slot_bindings']['services'] ?? [] ) ), (string) ( $recipe_plan['recipe_id'] ?? '' ) );
 			wpae_design_plan_apply_section_surface_policy( $recipe_plan );
 		}
@@ -1178,7 +1188,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		if ( empty( $record_selection['errors'] ) ) {
 			$composition = $record_selection['record']['composition'];
 			$media_side = $record_selection['record']['policy']['media_side'] ?? $media_side;
-			$context['visual_profile'] = (string) ( $record_selection['visual_profile'] ?? '' );
+			$context = wpae_design_plan_context_with_accepted_profile( $context, $record_selection );
 		}
 	}
 	$cta_refs = wpae_design_plan_content_refs( $brief, [ 'cta', 'cta_2', 'cta_3' ] );
