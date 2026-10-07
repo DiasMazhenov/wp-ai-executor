@@ -3026,6 +3026,64 @@ foreach ( $benefits_route_global_snapshot as $key => $snapshot ) {
 	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
 }
 
+// Process already has a deterministic native DesignPlan/ElementorIR route.
+// Optional library candidates must not preflight-refuse this ordinary request.
+$process_route_global_keys = [ 'page_data', 'http_calls', 'writes', 'responses', 'library', 'options', 'library_retrieval_calls', 'm1_write_attempts', 'typed_last_update_params' ];
+$process_route_global_snapshot = [];
+foreach ( $process_route_global_keys as $key ) {
+	$process_route_global_snapshot[ $key ] = [ 'set' => array_key_exists( $key, $GLOBALS ), 'value' => $GLOBALS[ $key ] ?? null ];
+}
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = [];
+$GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$GLOBALS['library'] = [
+	'status' => 'matched',
+	'available_count' => 6,
+	'candidate_count' => 6,
+	'candidates' => array_fill( 0, 6, [ 'choice_key' => 'candidate_1', 'title' => 'Optional Process template' ] ),
+	'selection_candidates' => array_fill( 0, 6, [ 'choice_key' => 'candidate_1', 'title' => 'Optional Process template', 'elementor_data' => [] ] ),
+];
+$GLOBALS['library_retrieval_calls'] = [];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
+$process_route_prompt = 'Создай отдельный блок процесса. Над заголовком добавь pill-бейдж «ПРОЦЕСС». Заголовок: «Как мы работаем». Сделай горизонтальный таймлайн на desktop, а на mobile расположи этапы вертикально. Сохрани четыре этапа в этом порядке и точно сохрани названия и описания: Этап «Бриф»: «Фиксируем цель страницы и приоритетное действие». Этап «Структура»: «Собираем смысловой маршрут, контент и необходимые доказательства для посетителя». Этап «Сборка»: «Создаём нативный Elementor-блок, затем адаптируем его для узких экранов». Этап «Проверка»: «Сверяем тексты, мобильный порядок и CTA перед публикацией». Фото и кнопки не добавляй. Добавь только этот блок в текущий документ; header, меню и другие настройки сайта не меняй.';
+$process_route_request = new WP_REST_Request();
+$process_route_request->set_param( 'message', $process_route_prompt );
+$process_route_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'process-native-route-regression' ] );
+$process_route_response = wpae_llm_chat_request( $process_route_request );
+$process_route_data = $process_route_response instanceof WP_REST_Response ? $process_route_response->get_data() : [];
+$process_route_diagnostics = (array) ( $process_route_data['diagnostics'] ?? [] );
+$process_route_pipeline = (array) ( $process_route_diagnostics['design_pipeline'] ?? [] );
+$process_route_ledger = (array) ( $process_route_diagnostics['operation_ledger'] ?? [] );
+$process_route_roots = array_slice( (array) ( $GLOBALS['page_data'] ?? [] ), count( $legacy_page ) );
+$process_route_content = wpae_llm_collect_action_content( $process_route_roots );
+$process_route_find_class = static function ( array $nodes, string $class ) use ( &$process_route_find_class ): array {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$classes = preg_split( '/\s+/', trim( (string) ( $node['settings']['_css_classes'] ?? '' ) ) ) ?: [];
+		if ( in_array( $class, $classes, true ) ) { return $node; }
+		$found = $process_route_find_class( (array) ( $node['elements'] ?? [] ), $class );
+		if ( $found ) { return $found; }
+	}
+	return [];
+};
+$process_route_items = $process_route_find_class( $process_route_roots, 'wpae-process-items' );
+$process_route_expected_copy = [ 'ПРОЦЕСС', 'Как мы работаем', 'Бриф', 'Фиксируем цель страницы и приоритетное действие', 'Структура', 'Собираем смысловой маршрут, контент и необходимые доказательства для посетителя', 'Сборка', 'Создаём нативный Elementor-блок, затем адаптируем его для узких экранов', 'Проверка', 'Сверяем тексты, мобильный порядок и CTA перед публикацией' ];
+$process_route_positions = array_map( static fn( string $text ): int|false => strpos( $process_route_content, $text ), $process_route_expected_copy );
+check( ! empty( $process_route_data['ok'] ) && ( $process_route_diagnostics['action_path'] ?? '' ) === 'pipeline' && ( $process_route_diagnostics['provider_calls'] ?? -1 ) === 0 && ( $process_route_diagnostics['write_count'] ?? 0 ) === 1 && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === 1, 'Ordinary Process chat remains on the native pipeline even when optional library candidates exist' );
+check( count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) === 0 && ( $process_route_pipeline['library_retrieval']['reason'] ?? '' ) === 'ordinary_process_uses_existing_native_design_pipeline_without_optional_library_selection', 'Ordinary Process generation skips optional library selection instead of being stolen by incompatible candidates' );
+check( ( $process_route_pipeline['brief']['hash'] ?? '' ) !== '' && ( $process_route_pipeline['brief']['archetype'] ?? '' ) === 'process' && ( $process_route_pipeline['plan']['validation']['ok'] ?? false ) && ( $process_route_pipeline['elementor_ir']['validation']['ok'] ?? false ) && ! empty( $process_route_pipeline['elementor_ir']['compiled'] ) && ( $process_route_ledger['current_state'] ?? '' ) === 'written' && count( (array) ( $process_route_ledger['root_ids'] ?? [] ) ) === 1, 'Process keeps one Brief/Plan/IR compilation and one operation-owned native root through the mock write' );
+$process_route_json = (string) wp_json_encode( $process_route_roots, JSON_UNESCAPED_UNICODE );
+check( count( $process_route_roots ) === 1 && ( $GLOBALS['page_data'][0]['id'] ?? '' ) === ( $legacy_page[0]['id'] ?? '' ) && str_contains( $process_route_content, 'Как мы работаем' ) && str_contains( $process_route_content, 'ПРОЦЕСС' ) && str_contains( $process_route_content, 'Фиксируем цель страницы и приоритетное действие' ) && str_contains( $process_route_content, 'Собираем смысловой маршрут, контент и необходимые доказательства для посетителя' ) && str_contains( $process_route_content, 'Создаём нативный Elementor-блок, затем адаптируем его для узких экранов' ) && str_contains( $process_route_content, 'Сверяем тексты, мобильный порядок и CTA перед публикацией' ), 'Process compilation preserves exact title, pill and all four step descriptions while keeping the existing neighboring root' );
+$process_route_sorted_positions = $process_route_positions;
+sort( $process_route_sorted_positions );
+check( ! in_array( false, $process_route_positions, true ) && $process_route_positions === $process_route_sorted_positions, 'Process compiler keeps the pill above title and labels with complete descriptions in the exact requested order' );
+check( ( $process_route_items['settings']['flex_direction'] ?? '' ) === 'row' && ( $process_route_items['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ! str_contains( $process_route_json, '"widgetType":"image"' ) && ! str_contains( $process_route_json, '"widgetType":"button"' ), 'Process native controls preserve desktop timeline/mobile stack and add no forbidden photo or CTA widgets' );
+foreach ( $process_route_global_snapshot as $key => $snapshot ) {
+	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
+}
+
 if ( getenv( 'WPAE_SERVICES_BRIEF_DEMO' ) === '1' ) {
 	$services_demo_brief = array_diff_key( $services_multiline_brief, [ 'source_text' => true ] );
 	$services_demo_brief['validation'] = wpae_brief_ir_validate( $services_multiline_brief );

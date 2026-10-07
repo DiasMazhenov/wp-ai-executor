@@ -11071,10 +11071,25 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		'selection_candidates' => [],
 		'selected' => null,
 	];
+	// Standard Process requests already have a deterministic native Brief/Plan/IR
+	// compiler route. Optional library candidates must not steal that route; an
+	// explicit library-template request still follows the guarded library path.
+	$native_process_pipeline_request = $action_request
+		&& $action_archetype === 'process'
+		&& $design_pipeline_mode === 'active'
+		&& $selected_post_id > 0
+		&& empty( $selected_element_ids )
+		&& ! $targeted_edit
+		&& ! $vision_repair
+		&& ! $vision_regenerate
+		&& ! $replacement_requested
+		&& ! wpae_llm_requires_library_template( $message, $services_brief )
+		&& ! wpae_llm_requires_verified_library_template( $message );
 	$design_generation_route = function_exists( 'wpae_design_generation_route' ) ? wpae_design_generation_route( $design_pipeline_mode, $edde_mode, $deterministic_archetype || $library_only_archetype, $action_archetype === 'hero' ) : [ 'action_path' => 'provider', 'provider_calls' => 1, 'writes' => 1 ];
 	$canonical_retrieval_skip = $migrated_active_create && ( $canonical_brief['policy']['library']['source'] ?? '' ) !== 'required';
 	if ( $canonical_retrieval_skip ) { $library_retrieval['reason'] = 'ordinary_canonical_create_uses_typed_records_no_library_selection_or_seed'; }
-	$library_retrieval_enabled = ! $canonical_retrieval_skip && $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
+	elseif ( $native_process_pipeline_request ) { $library_retrieval['reason'] = 'ordinary_process_uses_existing_native_design_pipeline_without_optional_library_selection'; }
+	$library_retrieval_enabled = ! $canonical_retrieval_skip && ! $native_process_pipeline_request && $action_request && ! $targeted_edit && ( ! $vision_repair || $vision_regenerate ) && function_exists( 'wpae_block_library_retrieve_for_prompt' );
 	$library_preflight_enabled = $design_pipeline_mode === 'active'
 		&& ( $deterministic_archetype || $library_only_archetype )
 		&& $selected_post_id > 0
@@ -11178,6 +11193,7 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 		$design_pipeline_trace['status'] = empty( $brief_validation['ok'] ) || empty( $plan_validation['ok'] ) ? 'invalid_plan' : 'planned';
 	}
 	$library_agent_eligible = ! $migrated_active_create && ! $services_route_request
+		&& ! $native_process_pipeline_request
 		&& $design_pipeline_mode === 'active'
 		&& ( $deterministic_archetype || $library_only_archetype )
 		&& $selected_post_id > 0
