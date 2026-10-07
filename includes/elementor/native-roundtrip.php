@@ -2,7 +2,59 @@
 /** Versioned, control-aware native serialization rules shared by compiler and verifier. */
 defined( 'ABSPATH' ) || exit;
 
-const WPAE_NATIVE_ROUNDTRIP_VERSION = 'wpae-native-roundtrip-v1';
+const WPAE_NATIVE_ROUNDTRIP_VERSION = 'wpae-native-roundtrip-v2';
+
+/** Existing v1 contracts remain readable while new freezes record v2. */
+function wpae_native_roundtrip_supported_version( $version ): bool {
+	return in_array( $version, [ null, 'wpae-native-roundtrip-v1', WPAE_NATIVE_ROUNDTRIP_VERSION ], true );
+}
+
+/** Resolve Elementor Global Color IDs from the active kit without guessing from labels. */
+function wpae_native_roundtrip_elementor_global_colors( ?array $kit_settings = null ): array {
+	if ( $kit_settings === null ) {
+		$kit_id = function_exists( 'get_option' ) ? absint( get_option( 'elementor_active_kit', 0 ) ) : 0;
+		$kit_settings = $kit_id > 0 && function_exists( 'get_post_meta' ) ? get_post_meta( $kit_id, '_elementor_page_settings', true ) : [];
+	}
+	$kit_settings = is_array( $kit_settings ) ? $kit_settings : [];
+	$colors = [];
+	foreach ( [ 'system_colors', 'custom_colors' ] as $group ) {
+		foreach ( (array) ( $kit_settings[$group] ?? [] ) as $entry ) {
+			if ( ! is_array( $entry ) ) { continue; }
+			$id = sanitize_key( (string) ( $entry['_id'] ?? $entry['id'] ?? '' ) );
+			$color = strtolower( trim( (string) ( $entry['color'] ?? '' ) ) );
+			if ( $id !== '' && preg_match( '/^#[0-9a-f]{6}$/', $color ) ) { $colors[$id] = $color; }
+		}
+	}
+	return $colors;
+}
+
+/**
+ * Elementor can serialize an inherited container background as a Global Color reference.
+ * Project only that exact, read-only serialization when it resolves to the frozen Plan
+ * page background. A changed global value or any other global control remains a conflict.
+ */
+function wpae_native_roundtrip_project_plan_background_global( array $expected_settings, array $actual_settings, array $roundtrip_context, ?array &$changes = null, string $node_type = '' ): bool {
+	if ( $changes === null ) { $changes = []; }
+	if ( $node_type !== 'container' || ! wpae_native_roundtrip_supported_version( $roundtrip_context['version'] ?? null ) || empty( $roundtrip_context['version'] ) ) { return false; }
+	if ( ! array_key_exists( 'background_color', $expected_settings ) || $expected_settings['background_color'] !== '' || ( $actual_settings['background_color'] ?? null ) !== '' ) { return false; }
+	$globals = $actual_settings['__globals__'] ?? null;
+	if ( ! is_array( $globals ) || array_keys( $globals ) !== [ 'background_color' ] ) { return false; }
+	$reference = $globals['background_color'];
+	if ( ! is_string( $reference ) || ! preg_match( '#^globals/colors\?id=([a-z0-9_-]+)$#i', $reference, $match ) ) { return false; }
+	$plan_background = strtolower( trim( (string) ( $roundtrip_context['page_background'] ?? '' ) ) );
+	if ( ! preg_match( '/^#[0-9a-f]{6}$/', $plan_background ) ) { return false; }
+	$colors = is_array( $roundtrip_context['global_colors'] ?? null ) ? $roundtrip_context['global_colors'] : [];
+	$resolved = strtolower( trim( (string) ( $colors[ sanitize_key( $match[1] ) ] ?? '' ) ) );
+	if ( ! preg_match( '/^#[0-9a-f]{6}$/', $resolved ) || ! hash_equals( $plan_background, $resolved ) ) { return false; }
+	$changes[] = [
+		'control' => '__globals__.background_color',
+		'kind' => 'plan_bound_elementor_global_color_reference',
+		'global_reference_sha256' => hash( 'sha256', $reference ),
+		'resolved_color_sha256' => hash( 'sha256', $resolved ),
+		'plan_role' => 'color.page_bg',
+	];
+	return true;
+}
 
 /** Elementor Accordion repeater IDs are technical identifiers, not authored content. */
 function wpae_native_roundtrip_is_elementor_repeater_id( $value ): bool {
@@ -56,7 +108,8 @@ function wpae_native_roundtrip_compile_tree( array $elements ): array {
 			'authored_copy' => 'BriefIR exact_text retained; native representation freezes before accepted signature',
 			'repeater_order_and_count' => 'authored and strictly compared',
 			'repeater_ids' => 'technical-only; seven-character Elementor IDs may be projected to the accepted IDs',
-			'allowed_legacy_serialization' => 'one exact <p> wrapper around single-line plain Accordion answer text',
+			'allowed_legacy_serialization' => 'one exact <p> wrapper around single-line plain Accordion answer text; a plan-bound Elementor global page-background reference',
+			'global_background_reference' => 'single background_color reference on an inherited container only when its active-kit value equals the frozen color.page_bg',
 			'registered_platform_defaults' => [],
 			'decisions' => $decisions,
 		],
@@ -69,8 +122,7 @@ function wpae_native_roundtrip_compile_tree( array $elements ): array {
  */
 function wpae_native_roundtrip_project_accordion_tabs( $expected, $actual, ?array &$mismatch = null, ?array &$changes = null, ?string $adapter_version = null ): ?array {
 	$changes = [];
-	$known_versions = [ null, WPAE_NATIVE_ROUNDTRIP_VERSION ];
-	if ( ! in_array( $adapter_version, $known_versions, true ) ) {
+	if ( ! wpae_native_roundtrip_supported_version( $adapter_version ) ) {
 		$mismatch = [ 'control' => 'tabs', 'reason' => 'unknown_native_roundtrip_version' ];
 		return null;
 	}

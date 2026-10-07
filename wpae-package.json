@@ -25,7 +25,7 @@
     "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
     "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
     "includes/design/token-resolution.php": "d954f2b4085ffbc34b8b4fe2c358c7c4ee1c3bd541ec76481b6bb742b898a3fc",
-    "includes/elementor/accepted-contract.php": "06507e4c363369f4bf4e48b84f4e8a5095dc5409754cbb51de6787b29d0f180c",
+    "includes/elementor/accepted-contract.php": "3b234cb4ca29cef19339f5ab6bb67005f5b616591ad0cc34ea952f0bb33e397c",
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
     "includes/elementor/capability-registry.php": "5c997dfe1c5be11f1b95ccd347c82b36b2d9f8a01d659302484328593179822b",
@@ -218,7 +218,7 @@
     "includes/elementor/imported-templates/venue.json": "3f91487de940fb3789237c85099da0918cf37ccdb488e79022d293d07cfa3c36",
     "includes/elementor/layout-report.php": "6e53012e32a5768ec0850c6b5e4ef3c165c9ad9dd6cf2f2109772d4f9a07a313",
     "includes/elementor/native-compiler.php": "819facedb8944c91c6be8020d11b4614a687fd943a790b6dcb6d092f263b5492",
-    "includes/elementor/native-roundtrip.php": "c79b742fa2f186b081a94687ce6888f46b5e6cc0a5e372bae831ea20ba4d01d1",
+    "includes/elementor/native-roundtrip.php": "9ddca86eaee8f19fe03acbc231b68b9b2546f2b60460a15b8045e46b0809e3e2",
     "includes/elementor/normalize.php": "f147d2fd8b5c0cbac34f510fa1470d835d34ebda92e8171c564443d71e6f8ee9",
     "includes/elementor/operation-ledger.php": "5ae2d93fc7ffc252ffb008772078c7b750fcefa465a4471d232bd283365cb7d1",
     "includes/elementor/page-update.php": "730de82233388b142b2ee901f93e6b2b39e8682a9aa923c90296a465e7d342b2",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "1dc6c9ddf9382934702884d0a349eb92627f32a1b40cdb3533e5d624a2e48181"
+    "wp-ai-executor.php": "044f8e9e52a6d4e7a0df6fb62190237b8873cda8ea799182dcffdde107b14de9"
   }
 }
