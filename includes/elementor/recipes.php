@@ -21,12 +21,37 @@ function wpae_el_gap( int $size ): array {
     ];
 }
 
+/** Native Flex child basis with all row gaps removed before division. */
+function wpae_el_flex_track_dimension( int $columns, int $gap_px ): array {
+    $columns = max( 1, $columns );
+    if ( $columns === 1 ) {
+        return [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+    }
+    $gap_total = max( 0, $columns - 1 ) * max( 0, $gap_px );
+    return [ 'unit' => 'custom', 'size' => 'calc((100% - ' . $gap_total . 'px) / ' . $columns . ')', 'sizes' => [] ];
+}
+
+/** Responsive equal-width Flex item controls for stored repeated recipe groups. */
+function wpae_el_flex_equal_item_settings( int $desktop_columns, int $tablet_columns, int $mobile_columns = 1, int $gap_px = 24 ): array {
+    $settings = [];
+    foreach ( [ '' => $desktop_columns, '_tablet' => $tablet_columns, '_mobile' => $mobile_columns ] as $suffix => $columns ) {
+        $dimension = wpae_el_flex_track_dimension( $columns, $gap_px );
+        $settings[ 'width' . $suffix ] = $settings[ '_element_custom_width' . $suffix ] = $dimension;
+        $settings[ '_element_width' . $suffix ] = 'initial';
+        $settings[ '_flex_size' . $suffix ] = 'custom';
+        $settings[ '_flex_grow' . $suffix ] = $settings[ 'flex_grow' . $suffix ] = 0;
+        $settings[ '_flex_shrink' . $suffix ] = $settings[ 'flex_shrink' . $suffix ] = $columns > 1 ? 0 : 1;
+    }
+    return $settings;
+}
+
 function wpae_el_container( string $id, array $settings = [], array $elements = [] ): array {
     return [
         'id' => $id,
         'elType' => 'container',
         'settings' => array_merge( [
             'content_width' => 'boxed',
+            'container_type' => 'flex',
             'flex_direction' => 'column',
             'background_background' => 'classic',
             'background_color' => '#ffffff',
@@ -128,10 +153,10 @@ function wpae_elementor_recipe_definitions(): array {
                 wpae_el_container( 'feat001', [ 'background_color' => '#ffffff' ], [
                     wpae_el_widget( 'feat002', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2', 'title_color' => '#111827' ] ),
                     wpae_el_widget( 'feat003', 'text-editor', [ 'editor' => '{{intro}}', 'text_color' => '#4b5563' ] ),
-                    wpae_el_container( 'feat004', [ 'flex_direction' => 'row', 'background_color' => '#ffffff', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
-                        wpae_el_container( 'feat005', [ 'background_color' => '#f3f4f6' ], [ wpae_el_widget( 'feat006', 'heading', [ 'title' => '{{item_1_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat007', 'text-editor', [ 'editor' => '{{item_1_text}}' ] ) ] ),
-                        wpae_el_container( 'feat008', [ 'background_color' => '#eef2ff' ], [ wpae_el_widget( 'feat009', 'heading', [ 'title' => '{{item_2_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat010', 'text-editor', [ 'editor' => '{{item_2_text}}' ] ) ] ),
-                        wpae_el_container( 'feat011', [ 'background_color' => '#ecfdf5' ], [ wpae_el_widget( 'feat012', 'heading', [ 'title' => '{{item_3_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat013', 'text-editor', [ 'editor' => '{{item_3_text}}' ] ) ] ),
+                    wpae_el_container( 'feat004', [ 'flex_direction' => 'row', 'flex_direction_tablet' => 'row', 'flex_direction_mobile' => 'column', 'flex_wrap' => 'wrap', 'flex_wrap_tablet' => 'wrap', 'flex_wrap_mobile' => 'nowrap', 'background_color' => '#ffffff', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
+                        wpae_el_container( 'feat005', array_merge( [ 'background_color' => '#f3f4f6' ], wpae_el_flex_equal_item_settings( 3, 2 ) ), [ wpae_el_widget( 'feat006', 'heading', [ 'title' => '{{item_1_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat007', 'text-editor', [ 'editor' => '{{item_1_text}}' ] ) ] ),
+                        wpae_el_container( 'feat008', array_merge( [ 'background_color' => '#eef2ff' ], wpae_el_flex_equal_item_settings( 3, 2 ) ), [ wpae_el_widget( 'feat009', 'heading', [ 'title' => '{{item_2_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat010', 'text-editor', [ 'editor' => '{{item_2_text}}' ] ) ] ),
+                        wpae_el_container( 'feat011', array_merge( [ 'background_color' => '#ecfdf5' ], wpae_el_flex_equal_item_settings( 3, 2 ) ), [ wpae_el_widget( 'feat012', 'heading', [ 'title' => '{{item_3_title}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'feat013', 'text-editor', [ 'editor' => '{{item_3_text}}' ] ) ] ),
                     ] ),
                 ] ),
             ],
@@ -183,9 +208,9 @@ function wpae_elementor_recipe_definitions(): array {
             'elementor_data' => [
                 wpae_el_container( 'price01', [ 'background_color' => '#f9fafb' ], [
                     wpae_el_widget( 'price02', 'heading', [ 'title' => '{{headline}}', 'header_size' => 'h2' ] ),
-                    wpae_el_container( 'price03', [ 'flex_direction' => 'row', 'background_color' => '#f9fafb', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
-                        wpae_el_container( 'price04', [ 'background_color' => '#ffffff' ], [ wpae_el_widget( 'price05', 'heading', [ 'title' => '{{package_1}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'price06', 'heading', [ 'title' => '{{package_1_price}}', 'header_size' => 'h2' ] ), wpae_el_widget( 'price07', 'button', [ 'text' => '{{cta}}' ] ) ] ),
-                        wpae_el_container( 'price08', [ 'background_color' => '#111827' ], [ wpae_el_widget( 'price09', 'heading', [ 'title' => '{{package_2}}', 'header_size' => 'h3', 'title_color' => '#ffffff' ] ), wpae_el_widget( 'price10', 'heading', [ 'title' => '{{package_2_price}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ), wpae_el_widget( 'price11', 'button', [ 'text' => '{{cta}}', 'background_color' => '#ffffff', 'text_color' => '#111827' ] ) ] ),
+                    wpae_el_container( 'price03', [ 'flex_direction' => 'row', 'flex_direction_tablet' => 'column', 'flex_direction_mobile' => 'column', 'flex_wrap' => 'wrap', 'flex_wrap_tablet' => 'nowrap', 'flex_wrap_mobile' => 'nowrap', 'background_color' => '#f9fafb', 'padding' => wpae_el_spacing( 0, 0, 0, 0 ) ], [
+                        wpae_el_container( 'price04', array_merge( [ 'background_color' => '#ffffff' ], wpae_el_flex_equal_item_settings( 2, 1 ) ), [ wpae_el_widget( 'price05', 'heading', [ 'title' => '{{package_1}}', 'header_size' => 'h3' ] ), wpae_el_widget( 'price06', 'heading', [ 'title' => '{{package_1_price}}', 'header_size' => 'h2' ] ), wpae_el_widget( 'price07', 'button', [ 'text' => '{{cta}}' ] ) ] ),
+                        wpae_el_container( 'price08', array_merge( [ 'background_color' => '#111827' ], wpae_el_flex_equal_item_settings( 2, 1 ) ), [ wpae_el_widget( 'price09', 'heading', [ 'title' => '{{package_2}}', 'header_size' => 'h3', 'title_color' => '#ffffff' ] ), wpae_el_widget( 'price10', 'heading', [ 'title' => '{{package_2_price}}', 'header_size' => 'h2', 'title_color' => '#ffffff' ] ), wpae_el_widget( 'price11', 'button', [ 'text' => '{{cta}}', 'background_color' => '#ffffff', 'text_color' => '#111827' ] ) ] ),
                     ] ),
                 ] ),
             ],

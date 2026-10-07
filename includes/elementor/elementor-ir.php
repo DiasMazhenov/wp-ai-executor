@@ -648,10 +648,11 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 				$settings[ 'flex_gap' . $suffix ] = $gap_control;
 			} elseif ( $implementation === 'native_flex_equal' ) {
 				$settings['container_type'] = 'flex';
-				$columns = max( 1, (int) ( $collection['columns'][ $device ] ?? 1 ) );
+				$item_count = max( 1, (int) ( $collection['item_count'] ?? 1 ) );
+				$columns = min( $item_count, max( 1, (int) ( $collection['columns'][ $device ] ?? 1 ) ) );
 				$settings[ 'flex_direction' . $suffix ] = $columns > 1 ? 'row' : 'column';
-				$settings[ 'flex_wrap' . $suffix ] = 'nowrap';
-				$settings[ 'flex_align_items' . $suffix ] = 'stretch';
+				$settings[ 'flex_wrap' . $suffix ] = $columns > 1 ? 'wrap' : 'nowrap';
+				$settings[ 'flex_align_items' . $suffix ] = ( $collection['item_height'] ?? 'equal_row' ) === 'content' ? 'flex-start' : 'stretch';
 				$settings[ 'flex_gap' . $suffix ] = $gap_control;
 			} else {
 				$settings['container_type'] = 'grid';
@@ -950,6 +951,19 @@ function wpae_elementor_ir_dimension_control( $value, string $fallback_unit, flo
 		'isLinked' => $linked,
 		'sizes' => [],
 	];
+}
+
+/** Return an Elementor custom width whose flex basis already accounts for every gap. */
+function wpae_elementor_ir_flex_equal_track_dimension( $gap_value, int $columns ): array {
+	$columns = max( 1, $columns );
+	if ( $columns === 1 ) {
+		return [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+	}
+	$gap = wpae_elementor_ir_dimension_control( $gap_value, 'rem', 1.5 );
+	$number = rtrim( rtrim( number_format( (float) $gap['size'], 4, '.', '' ), '0' ), '.' );
+	$term = ( $number === '' ? '0' : $number ) . (string) $gap['unit'];
+	$subtractions = implode( ' - ', array_fill( 0, $columns - 1, $term ) );
+	return [ 'unit' => 'custom', 'size' => 'calc((100% - ' . $subtractions . ') / ' . $columns . ')', 'sizes' => [] ];
 }
 
 function wpae_elementor_ir_service_image_radius( string $card_radius ): array {
@@ -1980,10 +1994,23 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$policy = $node['visual_policy'];
 		foreach ( $compiled_children as $index => &$compiled_child ) {
 			$ir_child = $node['children'][ $index ] ?? [];
-			if ( isset( $policy['collection'] ) && ( $compiled_child['elType'] ?? '' ) === 'container' ) {
-				foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) {
-					$compiled_child['settings'][ 'width' . $suffix ] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
-					$compiled_child['settings'][ '_element_custom_width' . $suffix ] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+			if ( isset( $policy['collection'] ) && is_array( $compiled_child['settings'] ?? null ) ) {
+				$collection = (array) $policy['collection'];
+				$axis = (string) ( $collection['axis'] ?? 'grid' );
+				$implementation = (string) ( $collection['implementation'] ?? 'native_grid' );
+				$item_count = max( 1, (int) ( $collection['item_count'] ?? count( $compiled_children ) ) );
+				foreach ( [ '' => 'desktop', '_tablet' => 'tablet', '_mobile' => 'mobile' ] as $suffix => $device ) {
+					$columns = $axis === 'list' ? 1 : min( $item_count, max( 1, (int) ( $collection['columns'][ $device ] ?? 1 ) ) );
+					$dimension = $implementation === 'native_flex_equal' && $axis !== 'list'
+						? wpae_elementor_ir_flex_equal_track_dimension( $collection['gap'][ $device ] ?? '1.5rem', $columns )
+						: [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+					$item_settings = &$compiled_child['settings'];
+					$item_settings[ 'width' . $suffix ] = $item_settings[ '_element_custom_width' . $suffix ] = $dimension;
+					$item_settings[ '_element_width' . $suffix ] = 'initial';
+					$item_settings[ '_flex_size' . $suffix ] = 'custom';
+					$item_settings[ '_flex_grow' . $suffix ] = $item_settings[ 'flex_grow' . $suffix ] = 0;
+					$item_settings[ '_flex_shrink' . $suffix ] = $item_settings[ 'flex_shrink' . $suffix ] = $implementation === 'native_flex_equal' && $axis !== 'list' && $columns > 1 ? 0 : 1;
+					unset( $item_settings );
 				}
 			}
 			if ( empty( $policy['intro'] ) && $role !== 'card_actions' && ( $ir_child['widget_type'] ?? '' ) === 'button' && $index > 0 ) {

@@ -66,7 +66,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			'item_count' => $item_count,
 			'collection_policy' => $collection_policy,
 			'card_content_padding_px' => $recipe_id === 'services.photo_cards' ? [ 'desktop' => [ 'top' => 24, 'right' => 0, 'bottom' => 24, 'left' => 0 ], 'tablet' => [ 'top' => 24, 'right' => 0, 'bottom' => 24, 'left' => 0 ], 'mobile' => [ 'top' => 20, 'right' => 0, 'bottom' => 20, 'left' => 0 ] ] : [],
-			'geometry_assumptions' => [ 'section_padding_px' => [ 'desktop' => 32, 'tablet' => 32, 'mobile' => 16 ], 'container_width_samples_px' => array_values( (array) ( $options['container_widths'] ?? [ 320, 390, 480, 768, 1024, 1200 ] ) ), 'basis_measurement' => $collection_implementation === 'native_flex_equal' ? 'native_Elementor_flex_equal_shrink_with_gap' : 'native_Elementor_grid_equal_fraction_tracks', 'elementor_thresholds_source' => 'static_desktop_tablet_mobile_labels; site runtime breakpoints are not queried by this source-only report' ],
+			'geometry_assumptions' => [ 'section_padding_px' => [ 'desktop' => 32, 'tablet' => 32, 'mobile' => 16 ], 'container_width_samples_px' => array_values( (array) ( $options['container_widths'] ?? [ 320, 390, 480, 768, 1024, 1200 ] ) ), 'basis_measurement' => $collection_implementation === 'native_flex_equal' ? 'native_Elementor_flex_calc_basis_including_all_gaps' : 'legacy_native_Elementor_grid_equal_fraction_tracks', 'elementor_thresholds_source' => 'static_desktop_tablet_mobile_labels; site runtime breakpoints are not queried by this source-only report' ],
 			'native_breakpoint_controls' => [],
 			'geometry_samples' => [],
 			'breakpoints' => [],
@@ -74,7 +74,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		$recipe_layout['native_breakpoint_controls'] = $recipe_id === 'services.photo_cards'
 			? [ 'implementation' => $collection_implementation, 'devices' => array_map( static function ( string $device ) use ( $collection_policy, $collection_implementation ): array {
 				$columns = max( 1, (int) ( $collection_policy['columns'][ $device ] ?? 1 ) );
-				return [ 'columns' => $columns, 'axis' => $columns > 1 ? ( $collection_implementation === 'native_flex_equal' ? 'row_flex_equal_shrink' : 'equal_grid_tracks' ) : 'vertical_stack', 'gap_px' => wpae_layout_report_length_px( $collection_policy['gap'][ $device ] ?? '1.5rem', 1200, 24 ) ];
+				return [ 'columns' => $columns, 'axis' => $columns > 1 ? ( $collection_implementation === 'native_flex_equal' ? 'row_flex_calc_tracks' : 'legacy_equal_grid_tracks' ) : 'vertical_stack', 'gap_px' => wpae_layout_report_length_px( $collection_policy['gap'][ $device ] ?? '1.5rem', 1200, 24 ) ];
 			}, [ 'desktop', 'tablet', 'mobile' ] ) ]
 			: ( $recipe_id === 'services.split_editorial'
 				? [ 'lead' => [ 'desktop' => [ 'flex_direction' => 'row', 'flex_wrap' => 'nowrap', 'copy_basis_percent' => 52, 'image_basis_percent' => 44, 'gap_px' => 32, 'flex_shrink' => 1 ], 'tablet' => [ 'flex_direction' => 'column', 'child_basis_percent' => 100, 'gap_px' => 24 ], 'mobile' => [ 'flex_direction' => 'column', 'child_basis_percent' => 100, 'gap_px' => 20 ] ] ]
@@ -145,7 +145,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 				'column_width_formula' => $recipe_id === 'services.photo_cards' ? '(container_width - (columns - 1) * gap) / columns' : null,
 				'estimated_column_width_px' => round( $column_width, 2 ),
 				'axis' => $recipe_id === 'services.photo_cards'
-					? ( $columns > 1 ? ( $collection_implementation === 'native_flex_equal' ? 'row_flex_equal_shrink' : 'equal_grid_tracks' ) : 'vertical_stack' )
+					? ( $columns > 1 ? ( $collection_implementation === 'native_flex_equal' ? 'row_flex_calc_tracks' : 'legacy_equal_grid_tracks' ) : 'vertical_stack' )
 					: ( $recipe_id === 'services.split_editorial'
 						? ( ! $tablet && ! $mobile ? 'lead_row_then_editorial_stack' : 'vertical_stack' )
 						: 'vertical_list_with_horizontal_item_rows' ),
@@ -291,7 +291,8 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 				}
 				$columns = max( 1, (int) ( $collection['columns'][$device] ?? 1 ) );
 				$cell = max( 0, ( $width - max( 0, $columns - 1 ) * $gap ) / $columns );
-				$samples[] = [ 'breakpoint' => $row['breakpoint'], 'device' => $device, 'axis' => 'grid', 'container_width' => $width, 'columns' => $columns, 'gap_px' => $gap, 'cell_width_px' => $cell, 'used_width' => $cell * $columns + max( 0, $columns - 1 ) * $gap, 'formula' => '(container_width - (columns - 1) * gap) / columns', 'item_height_mode' => $collection['item_height'] ?? 'legacy_unspecified', 'cross_axis_item_alignment' => ( $collection['item_height'] ?? '' ) === 'content' ? 'start' : 'stretch', 'inline_item_alignment' => 'stretch', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
+				$implementation = (string) ( $collection['implementation'] ?? 'native_grid' );
+				$samples[] = [ 'breakpoint' => $row['breakpoint'], 'device' => $device, 'axis' => $implementation === 'native_flex_equal' ? 'flex_wrapped_rows' : 'legacy_grid', 'implementation' => $implementation, 'container_width' => $width, 'columns' => $columns, 'gap_px' => $gap, 'cell_width_px' => $cell, 'used_width' => $cell * $columns + max( 0, $columns - 1 ) * $gap, 'formula' => '(container_width - (columns - 1) * gap) / columns', 'item_height_mode' => $collection['item_height'] ?? 'legacy_unspecified', 'cross_axis_item_alignment' => ( $collection['item_height'] ?? '' ) === 'content' ? 'start' : 'stretch', 'inline_item_alignment' => 'stretch', 'evidence' => 'static_plan', 'visual_render_verified' => false ];
 			}
 			$collections[] = [ 'role' => $child['role'], 'item_count' => count( (array) ( $child['items'] ?? [] ) ), 'native_controls' => $collection, 'samples' => $samples ];
 		}

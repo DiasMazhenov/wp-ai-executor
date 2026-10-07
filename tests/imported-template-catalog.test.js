@@ -23,6 +23,17 @@ test('bundled Elementor template imports are complete and hash verified', () => 
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), item.sha256, item.file);
     const source = JSON.parse(bytes.toString('utf8'));
     assert.equal(item.has_content, Array.isArray(source.content) && source.content.length > 0, item.file);
+    const assertNoGridControls = (nodes) => {
+      for (const node of nodes || []) {
+        const settings = node.settings || {};
+        assert.notEqual(settings.container_type, 'grid', `${item.file}:${node.id || 'node'} must use Flex`);
+        for (const key of Object.keys(settings)) {
+          assert.doesNotMatch(key, /^_?grid(?:_|$)/, `${item.file}:${node.id || 'node'} retained ${key}`);
+        }
+        assertNoGridControls(node.elements);
+      }
+    };
+    assertNoGridControls(source.content);
     if (item.has_content) treeCount++;
     if (item.elementor_pro_required) proCount++;
   }

@@ -90,6 +90,12 @@ foreach ( $records as $record ) {
             }
             imported_template_check( ! in_array( (string) ( $node['elType'] ?? '' ), [ 'section', 'column' ], true ), 'Legacy layout node remains after native normalization.' );
             imported_template_check( ! array_key_exists( 'widget_type', $node ), 'Legacy snake-case widget_type remains after normalization.' );
+            if ( ( $node['elType'] ?? '' ) === 'container' ) {
+                imported_template_check( ( $node['settings']['container_type'] ?? '' ) === 'flex', 'A saved library recipe must be exposed as a native Flex container after normalization.' );
+            }
+            foreach ( array_keys( (array) ( $node['settings'] ?? [] ) ) as $setting_key ) {
+                imported_template_check( ! preg_match( '/^_?grid(?:_|$)/', (string) $setting_key ), 'A saved library recipe retained a Grid-only control after normalization.' );
+            }
             $id = (string) ( $node['id'] ?? '' );
             imported_template_check( $id !== '' && ! isset( $element_ids[ $id ] ), 'A normalized template has a missing or duplicate Elementor ID.' );
             $element_ids[ $id ] = true;

@@ -392,7 +392,7 @@ function wpae_design_plan_services_photo_template_slot_map(): array {
 	$map = [
 		'template_id' => 'template-services-photo-cards-v1',
 		'file' => 'services-photo-cards.json',
-		'sha256' => '9f6d8e2a5cc3ddf0f865656a540f36de86ef3fb3f2d81be48b49ad60d11a52c4',
+		'sha256' => '52668f62027ad9b6085421b976a8bd1fb680e8718a1a502dacc3e7cf501a9405',
 		'recipe_id' => 'services.photo_cards',
 		'adaptation' => 'verified_reference_slots_recompiled_by_native_services_recipe',
 		'slots' => [ 'section.eyebrow', 'section.title', 'service[].image', 'service[].title', 'service[].body' ],
@@ -1008,11 +1008,11 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 			'mobile_order' => [ 'identity', 'copy' ],
 		];
 	}
-	// New accepted repeat groups use equal fraction tracks so native Grid owns
-	// (container width - all gaps) / columns without percentage compensation.
-	$collection_implementation_default = 'native_grid';
+	// New accepted repeat groups compile to native Flex containers. The historical
+	// native_grid compiler path remains available only to frozen older Plans.
+	$collection_implementation_default = 'native_flex_equal';
 	$collection_implementation = (string) $pick( 'collection_implementation', $collection_implementation_default );
-	if ( ! in_array( $collection_implementation, [ 'native_grid', 'native_flex_equal' ], true ) ) {
+	if ( $collection_implementation !== 'native_flex_equal' ) {
 		$collection_implementation = $collection_implementation_default;
 	}
 	$policy = [

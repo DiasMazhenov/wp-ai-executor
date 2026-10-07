@@ -149,7 +149,19 @@ $visual_plan = wpae_design_plan_from_brief( $visual_brief, $profile_ctx );
 check( $visual_plan['resolved_visual']['values']['color.primary'] === '#123456' && $visual_plan['resolved_visual']['sources']['color.primary'] === 'explicit_brief' && $visual_plan['resolved_visual']['values']['radius.card'] === '0.25rem' && $visual_plan['resolved_visual']['sources']['radius.card'] === 'visual_profile:editorial_light' && $visual_plan['resolved_visual']['sources']['space.section'] === 'visual_profile:editorial_light', 'M2 explicit > selected profile > inherited confirmed context provenance' );
 $legacy_definitions = wpae_elementor_recipe_definitions();
 check( count( $legacy_definitions ) === 8, 'M2 all eight legacy recipes audited' );
+$assert_recipe_flex = static function ( array $nodes ) use ( &$assert_recipe_flex ): bool {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		if ( ( $node['elType'] ?? '' ) === 'container' ) {
+			if ( ( $node['settings']['container_type'] ?? '' ) !== 'flex' ) { return false; }
+			foreach ( array_keys( (array) ( $node['settings'] ?? [] ) ) as $key ) { if ( preg_match( '/^_?grid(?:_|$)/', (string) $key ) ) { return false; } }
+		}
+		if ( ! $assert_recipe_flex( (array) ( $node['elements'] ?? [] ) ) ) { return false; }
+	}
+	return true;
+};
 foreach ( $legacy_definitions as $id => $recipe ) {
+ check( $assert_recipe_flex( (array) $recipe['elementor_data'] ), 'M2 saved recipe uses explicit native Flex containers only: ' . $id );
  $default = null;
  foreach ( $recipe['variants'] as $variant ) {
   $request = new WP_REST_Request(); $request->set_param( 'recipe_id', $id ); $request->set_param( 'variant', $variant ); $request->set_param( 'instance_id', 'same-instance' );
@@ -227,6 +239,12 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
   check( abs( $bp['boxed_copy_content_width_px']['copy_group'] - $expected ) < 0.01, 'Editor static boxed copy clamp matches native ' . $profile . ' ' . $bp['breakpoint'] );
  }
 }
+$feature_collection = (array) ( $legacy_definitions['feature.grid']['elementor_data'][0]['elements'][2] ?? [] );
+$feature_card = (array) ( $feature_collection['elements'][0] ?? [] );
+check( ( $feature_collection['settings']['container_type'] ?? '' ) === 'flex' && ( $feature_collection['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $feature_collection['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $feature_card['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 48px) / 3)' && ( $feature_card['settings']['_element_custom_width_tablet']['size'] ?? '' ) === 'calc((100% - 24px) / 2)' && ( $feature_card['settings']['_element_custom_width_mobile']['size'] ?? 0 ) === 100, 'Saved three-card recipe preserves equal Flex tracks and mobile stack while accounting for gaps' );
+$pricing_collection = (array) ( $legacy_definitions['pricing.comparison']['elementor_data'][0]['elements'][1] ?? [] );
+$pricing_card = (array) ( $pricing_collection['elements'][0] ?? [] );
+check( ( $pricing_collection['settings']['container_type'] ?? '' ) === 'flex' && ( $pricing_collection['settings']['flex_direction'] ?? '' ) === 'row' && ( $pricing_collection['settings']['flex_direction_tablet'] ?? '' ) === 'column' && ( $pricing_card['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 24px) / 2)' && ( $pricing_card['settings']['_element_custom_width_tablet']['size'] ?? 0 ) === 100, 'Saved two-tier recipe preserves equal desktop Flex tracks and tablet/mobile stack' );
 $editor_catalog = wpae_composition_editor_catalog();
 check( count( array_unique( array_column( $editor_catalog['records'], 'id' ) ) ) === count( $editor_catalog['records'] ) && ! in_array( 'benefits.linear', array_column( $editor_catalog['records'], 'id' ), true ), 'Editor projection has only distinct implemented records, no alias' );
 
@@ -298,7 +316,7 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
 // Pricing collection responsive controls translate the accepted stack policy.
 $m2_two_pricing = $m2_results['pricing.tiers']['result']['written']['elements'][0];
 $m2_two_tiers = $m2_two_pricing['elements'];
-check( $m2_two_pricing['settings']['container_type'] === 'grid' && $m2_two_pricing['settings']['grid_columns_grid']['size'] === 2 && $m2_two_pricing['settings']['grid_columns_grid_tablet']['size'] === 1 && $m2_two_pricing['settings']['grid_columns_grid_mobile']['size'] === 1, 'Pricing native Grid owns equal gap-aware columns and follows Plan tablet/mobile stack' );
+check( $m2_two_pricing['settings']['container_type'] === 'flex' && $m2_two_pricing['settings']['flex_direction'] === 'row' && $m2_two_pricing['settings']['flex_wrap'] === 'wrap' && $m2_two_pricing['settings']['flex_direction_tablet'] === 'column' && $m2_two_pricing['settings']['flex_direction_mobile'] === 'column' && $m2_two_pricing['elements'][0]['settings']['_element_custom_width']['size'] === 'calc((100% - 1.5rem) / 2)' && ! isset( $m2_two_pricing['settings']['grid_columns_grid'] ), 'Pricing native Flex owns equal gap-aware columns and follows Plan tablet/mobile stack' );
 check( $m2_two_tiers[0]['settings']['width_mobile']['size'] === 100 && $m2_two_tiers[1]['settings']['width_mobile']['size'] === 100, 'Two Pricing tiers retain full-width mobile stack' );
 
 $visual_policy_nodes = static function(array $nodes) use (&$visual_policy_nodes):array { $all=[]; foreach($nodes as $n){ $all[]=$n; $all=array_merge($all,$visual_policy_nodes((array)($n['elements']??[]))); } return $all; };
@@ -328,7 +346,7 @@ foreach ( [2,3,4,6] as $count ) {
  $case=$run_services_route($prompt,[],[],'visual-count-'.$count,false,'active','active',['composition_record'=>'benefits.grid','visual_profile'=>'editorial_light']);
  check(!empty($case['response']['ok']) && $case['writes']===1 && $case['calls']===0,'Equal collection count admitted without provider '.$count);
  $root=$case['written'];$grid=$root['elements'][1];
- check($grid['settings']['container_type']==='grid' && count($grid['elements'])===$count && $grid['settings']['grid_columns_grid_tablet']['size']===1 && $grid['settings']['grid_columns_grid_mobile']['size']===1,'Native repeat topology/count and Plan responsive '.$count);
+ check($grid['settings']['container_type']==='flex' && count($grid['elements'])===$count && $grid['settings']['flex_direction_tablet']==='column' && $grid['settings']['flex_direction_mobile']==='column' && $grid['settings']['flex_wrap']==='wrap' && !isset($grid['settings']['grid_columns_grid']),'Native repeat topology/count and Plan responsive '.$count);
  $brief=wpae_brief_ir_parse($prompt);$brief['canonical_create']=true;
  $plan=wpae_design_plan_from_brief($brief,['canonical_create'=>true,'composition_record'=>'benefits.grid','visual_profile'=>'editorial_light']);
  check($plan['visual_policy']['intro']['text_align']==='left' && $plan['visual_policy']['intro']['container_align']==='start' && $root['elements'][0]['elements'][0]['settings']['align_self']==='flex-start','Intro axis resolved before freeze '.$count);
