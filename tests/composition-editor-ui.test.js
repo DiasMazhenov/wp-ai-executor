@@ -75,6 +75,15 @@ test('real submit request payload and replay keep snapshot and operation identit
  }
 });
 
+test('read-only descriptor keeps exact contract hash and exposes frozen composition evidence',async()=>{
+ const evidence={schema:'wpae-composition-evidence-v1',status:'complete',request:{mode:'explicit_record',record_id:'team.grid',record_version:1,visual_profile:'editorial_light'},accepted:{record_id:'team.grid',record_version:1,record_hash:'record-hash',source:'explicit_record',visual_profile:'editorial_light',selection_reasons:['honored_explicit_record']},hashes:{brief_sha256:'brief-hash',plan_sha256:'plan-hash'},surface:{profile:'editorial_light'},generation:{provider_calls:0,transaction_write_count:1},operation:{post_id:5214,operation_id:'op-1',operation_identity:'identity-1',root_ids:['root-1'],revision:7,accepted_contract_id:'contract-1',accepted_contract_sha256:'contract-hash'},native:{saved_native_fingerprint:'native-fingerprint'}};
+ const descriptor={post_id:5214,operation_id:'op-1',operation_identity:'identity-1',accepted_contract_id:'contract-1',accepted_contract_hash:'contract-hash',root_ids:['root-1'],revision:7,eligibility:{status:'available'},composition_evidence:evidence};
+ const makeEnv=returned=>{const env={config:{postId:5214,endpoint:'/chat'},JSON,Number,String,Boolean,Array,fetch:async()=>({ok:true,json:async()=>({ok:true,write_count:0,operation:returned})})};vm.createContext(env);vm.runInContext(js.slice(js.indexOf('    function typedLifecyclePost('),js.indexOf('    function serializeTypedModel(')),env);return env;};
+ const env=makeEnv(descriptor);const expected={...descriptor,revision:6,eligibility:{status:'unknown'}};const fresh=await env.describeTypedOperation(expected);
+ assert.deepEqual(plain(fresh.composition_evidence),evidence);assert.equal(fresh.operation.revision,7);assert.equal(fresh.write_count,0);assert.match(env.formatCompositionEvidence(fresh.composition_evidence),/team\.grid/);assert.match(env.formatCompositionEvidence(fresh.composition_evidence),/contract-hash/);
+ const wrongHash=makeEnv({...descriptor,accepted_contract_hash:'other-hash'});await assert.rejects(wrongHash.describeTypedOperation(expected),/contract\/root scope/,'same operation and root with a different accepted-contract hash is rejected');
+});
+
 test('preview palette context accepts only opaque styles from the current same-origin post preview',()=>{
  const helper=js.slice(js.indexOf('    function previewOpaqueColorToHex('),js.indexOf('    function reloadPreviewIframe()'));
  const run=(src,bg,text,post=5214)=>{

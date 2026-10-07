@@ -1896,6 +1896,7 @@
             && String(current.operation_id || '') === String(expected.operation_id || '')
             && String(current.operation_identity || '') === String(expected.operation_identity || '')
             && String(current.accepted_contract_id || '') === String(expected.accepted_contract_id || '')
+            && String(current.accepted_contract_hash || '') === String(expected.accepted_contract_hash || '')
             && JSON.stringify((current.root_ids || []).map(String)) === JSON.stringify((expected.root_ids || []).map(String))
             && Number(current.revision) > 0);
     }
@@ -1909,7 +1910,22 @@
             operation.reason = String(eligibility.reason || '');
             operation.native_roundtrip_recovery = eligibility.native_roundtrip_recovery || null;
             operation.eligibility = eligibility;
-            return { operation: operation, eligibility: eligibility, write_count: Number(result.write_count || 0) };
+            operation.composition_evidence = result.operation.composition_evidence || null;
+            return { operation: operation, eligibility: eligibility, write_count: Number(result.write_count || 0), composition_evidence: operation.composition_evidence };
+        });
+    }
+    function formatCompositionEvidence(evidence) {
+        if (!evidence || evidence.schema !== 'wpae-composition-evidence-v1') return 'composition evidence unavailable';
+        return 'composition evidence: ' + JSON.stringify({
+            schema: evidence.schema,
+            status: evidence.status,
+            request: evidence.request || {},
+            accepted: evidence.accepted || {},
+            hashes: evidence.hashes || {},
+            surface: evidence.surface || {},
+            generation: evidence.generation || {},
+            operation: evidence.operation || {},
+            native: evidence.native || {}
         });
     }
     function refreshTypedOperationDescriptor(operation) {
@@ -1999,7 +2015,7 @@
             describeTypedOperation(descriptor).then(function (fresh) {
                 button.disabled = fresh.eligibility.status !== 'available';
                 button.title = String(fresh.eligibility.status || '') + ': ' + String(fresh.eligibility.reason || descriptor.operation_id || '');
-                addMessage('assistant', 'Свежий read-only descriptor: operation ' + descriptor.operation_id + ', revision ' + descriptor.revision + ', status ' + fresh.eligibility.status + (fresh.eligibility.reason ? '/' + fresh.eligibility.reason : '') + '. write_count=0.');
+                addMessage('assistant', 'Свежий read-only descriptor: operation ' + descriptor.operation_id + ', revision ' + descriptor.revision + ', status ' + fresh.eligibility.status + (fresh.eligibility.reason ? '/' + fresh.eligibility.reason : '') + '. write_count=0. ' + formatCompositionEvidence(fresh.composition_evidence));
             }).catch(function (error) { addMessage('assistant', 'Descriptor не обновлён: ' + error.message); }).finally(function () { describe.disabled = false; });
         });
         row.appendChild(describe);
