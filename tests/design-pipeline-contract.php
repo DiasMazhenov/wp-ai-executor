@@ -75,6 +75,11 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 		if ( (int) $post_id === 8 && $key === '_elementor_page_settings' ) {
 			return $single ? ( $wpae_test_elementor_kit_settings ?? [] ) : [ $wpae_test_elementor_kit_settings ?? [] ];
 		}
+		if ( $key === '_wp_attachment_image_alt' ) {
+			global $wpae_test_attachment_alt_meta;
+			$value = (string) ( $wpae_test_attachment_alt_meta[ (int) $post_id ] ?? '' );
+			return $single ? $value : [ $value ];
+		}
 		return $single ? '' : [];
 	}
 }
@@ -1324,6 +1329,23 @@ $portrait_compiled = wpae_elementor_ir_compile( $portrait_ir, $team_photo_brief,
 $portrait_native = (array) ( array_values( array_filter( $walk_elements( $portrait_compiled['elementor_data'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0]['settings'] ?? [] );
 $check( ( $portrait_render['width'] ?? [] ) === [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ] && ( $portrait_render['height'] ?? [] ) === [ 'desktop' => 'auto', 'tablet' => 'auto', 'mobile' => 'auto' ] && ( $portrait_render['object_fit'] ?? '' ) === 'contain', 'Portrait Plan preserves natural proportions at each breakpoint without a forced crop: ' . wp_json_encode( $portrait_render ) );
 $check( ( $portrait_native['object-fit'] ?? '' ) === 'contain' && ( $portrait_native['width']['unit'] ?? '' ) === '%' && (float) ( $portrait_native['width']['size'] ?? 0 ) === 100.0 && (float) ( $portrait_native['width_tablet']['size'] ?? 0 ) === 100.0 && (float) ( $portrait_native['width_mobile']['size'] ?? 0 ) === 100.0 && ! array_key_exists( 'height', $portrait_native ) && ! array_key_exists( 'height_tablet', $portrait_native ) && ! array_key_exists( 'height_mobile', $portrait_native ), 'Native portrait control keeps a responsive width ceiling and leaves height intrinsic' );
+$attachment_portrait = $team_photo_ref;
+$attachment_portrait['attachment_id'] = 2648;
+$attachment_portrait['source_url'] = 'https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg';
+$attachment_portrait['alt'] = 'Принятый alt для портрета';
+$attachment_portrait_plan = $team_photo_plan;
+$attachment_portrait_plan['media_references'] = [ wpae_design_plan_media_render_policy( $attachment_portrait, 'team', [] ) ];
+$attachment_portrait_brief = $team_photo_brief;
+$attachment_portrait_brief['media_references'] = [ $attachment_portrait ];
+$wpae_test_attachment_alt_meta[2648] = 'Другой текст в attachment metadata';
+$attachment_portrait_ir = wpae_elementor_ir_from_design_plan( $attachment_portrait_plan, $attachment_portrait_brief );
+$attachment_portrait_compiled = wpae_elementor_ir_compile( $attachment_portrait_ir, $attachment_portrait_brief, [], [ 'id_seed' => 'attachment-alt-contract' ] );
+$attachment_portrait_native = (array) ( array_values( array_filter( $walk_elements( $attachment_portrait_compiled['elementor_data'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0]['settings'] ?? [] );
+$check( ! empty( $attachment_portrait_compiled['ok'] ) && ( $attachment_portrait_native['image']['id'] ?? -1 ) === 0 && ( $attachment_portrait_native['image']['url'] ?? '' ) === 'https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg' && ( $attachment_portrait_native['image']['alt'] ?? '' ) === 'Принятый alt для портрета' && ( $attachment_portrait_ir['media_references'][0]['attachment_id'] ?? 0 ) === 2648, 'WordPress image lowering uses its source URL when attachment metadata would override the accepted alt, while IR provenance retains attachment identity' );
+$wpae_test_attachment_alt_meta[2648] = 'Принятый alt для портрета';
+$matching_attachment_compiled = wpae_elementor_ir_compile( $attachment_portrait_ir, $attachment_portrait_brief, [], [ 'id_seed' => 'attachment-matching-alt' ] );
+$matching_attachment_native = (array) ( array_values( array_filter( $walk_elements( $matching_attachment_compiled['elementor_data'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0]['settings'] ?? [] );
+$check( ! empty( $matching_attachment_compiled['ok'] ) && ( $matching_attachment_native['image']['id'] ?? 0 ) === 2648 && ( $matching_attachment_native['image']['alt'] ?? '' ) === 'Принятый alt для портрета', 'Matching attachment metadata keeps the ID-backed native renderer and its responsive WordPress source' );
 $focal_plan = $portrait_plan;
 $focal_plan['media_references'][0]['render']['focal_point'] = [ 'x' => 0.25, 'y' => 0.75 ];
 $focal_ir = wpae_elementor_ir_from_design_plan( $focal_plan, $team_photo_brief );

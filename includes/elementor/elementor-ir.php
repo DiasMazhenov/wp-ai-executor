@@ -1265,6 +1265,20 @@ function wpae_elementor_ir_media_dimension( $value ): array {
 	return [ 'unit' => strtolower( $match[2] ), 'size' => (float) $match[1], 'sizes' => [] ];
 }
 
+/**
+ * Keep WordPress's attachment renderer only when its stored alt is the accepted alt.
+ * Elementor's ID-backed renderer derives alt from attachment metadata and ignores
+ * the Image widget's custom alt field; a URL-backed widget honors that field.
+ */
+function wpae_elementor_ir_image_attachment_id_for_alt( array $media ): int {
+	$attachment_id = absint( $media['attachment_id'] ?? 0 );
+	$accepted_alt = trim( (string) ( $media['alt'] ?? '' ) );
+	if ( $attachment_id < 1 || $accepted_alt === '' ) { return $attachment_id; }
+	if ( ! function_exists( 'get_post_meta' ) ) { return 0; }
+	$attachment_alt = trim( (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) );
+	return $attachment_alt === $accepted_alt ? $attachment_id : 0;
+}
+
 function wpae_elementor_ir_focal_position( $focal ): string {
 	if ( ! is_array( $focal ) || ! is_numeric( $focal['x'] ?? null ) || ! is_numeric( $focal['y'] ?? null ) ) { return ''; }
 	$x = round( max( 0, min( 1, (float) $focal['x'] ) ) * 100, 2 );
@@ -2024,7 +2038,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$query['h'] = 900;
 			$source_url = ( (string) ( $source_parts['scheme'] ?? 'https' ) ) . '://' . (string) $source_parts['host'] . (string) ( $source_parts['path'] ?? '' ) . '?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 );
 		}
-		$settings['image'] = [ 'url' => $source_url, 'id' => absint( $media['attachment_id'] ?? 0 ), 'alt' => (string) ( $media['alt'] ?? '' ) ];
+		$settings['image'] = [ 'url' => $source_url, 'id' => wpae_elementor_ir_image_attachment_id_for_alt( $media ), 'alt' => (string) ( $media['alt'] ?? '' ) ];
 		$settings['image_size'] = 'full';
 		$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 		$settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
