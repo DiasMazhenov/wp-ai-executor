@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v12';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v13';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -130,6 +130,9 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	$repeated = wpae_brief_ir_repeated_slot( $prefix );
 	if ( $repeated['role'] !== '' ) {
 		return $repeated['role'];
+	}
+	if ( preg_match( '/(?:над\s+заголовк\w*\s+(?:(?:добавь|добавить|размести|помести)\s+)?(?:pill[\s-]*бейдж|бейдж\w*|badge)|(?:pill[\s-]*бейдж|бейдж\w*|badge)\s+над\s+заголовк\w*)\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'eyebrow';
 	}
 	if ( preg_match( '/(?:заголов\w*\s+(?:секци\w*|раздел\w*)|(?:section|block)\s+(?:heading|title))\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'title';
