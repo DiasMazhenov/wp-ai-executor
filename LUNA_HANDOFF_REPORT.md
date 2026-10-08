@@ -2234,7 +2234,7 @@ Exact requests and hashes, operation IDs/revisions, independent native exports, 
 
 ## v02.11.299 media/Portfolio live continuation — 2026-10-09
 
-This checkpoint supersedes the earlier incomplete v299 section in the current working tree. Source HEAD and installed WP AI Executor remain v02.11.299 at 26d4135df15987e9d13ef586ba7306bfe3ac0354. The earlier runtime push command reported success; independent remote HEAD verification remains unconfirmed because git ls-remote could not resolve github.com. No runtime code changed here, so the full v299 local suite was not repeated.
+This checkpoint supersedes the earlier incomplete v299 section in the current working tree. Source HEAD and installed WP AI Executor remain v02.11.299 at 26d4135df15987e9d13ef586ba7306bfe3ac0354. After pushing documentation/evidence commit aaee457f1b0431a2dd076bc147628250994fa557, an independent `git ls-remote origin refs/heads/main` returned the same SHA. This confirms runtime commit 26d4135df15987e9d13ef586ba7306bfe3ac0354 is present on origin/main. No runtime code changed here, so the full v299 local suite was not repeated.
 
 Five distinct families ran through normal plugin chat on existing post 5214: Hero, About, Team, Testimonials and Portfolio. Every current result completed Publish, editor reload, independent native readback, public desktop/mobile DOM measurements and guarded operation-scoped Undo. The final editor/native/public root set is [].
 

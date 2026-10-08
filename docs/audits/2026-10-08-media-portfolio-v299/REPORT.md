@@ -14,7 +14,7 @@
 
 - Runtime source: v02.11.299, commit 26d4135df15987e9d13ef586ba7306bfe3ac0354.
 - WP Pusher установил только WP AI Executor. Plugins PHP version и reloaded Elementor inline config ранее независимо подтверждены как v02.11.299. В каждом сценарии Publish был завершён до reload и публичной проверки.
-- Команда push runtime commit вернула успех. Независимая проверка remote HEAD не прошла: git ls-remote завершился ошибкой DNS при разрешении github.com. Поэтому remote HEAD не объявляется подтверждённым.
+- Documentation/evidence commit `aaee457f1b0431a2dd076bc147628250994fa557` отправлен; независимый `git ls-remote origin refs/heads/main` подтвердил тот же SHA. Он включает runtime commit `26d4135df15987e9d13ef586ba7306bfe3ac0354` в опубликованную историю. Push, install и live-статусы разделены.
 - В этом продолжении runtime-файлы не менялись; полные исходные проверки не повторялись. Последняя проверка исходного v299 релиза: Design Pipeline 971; Flex Runtime 1494; patch guard PASS; Node 20/20; PHP lint изменённых файлов PASS; catalog 158 manifest / 156 retrievable / 156 previews; package probe 253/253 hashes, 0 mismatch; git diff --check PASS.
 - Изменённые в этом продолжении PNG проверены по сигнатуре и размерам, открыты и визуально осмотрены. Сохранённые JPEG bytes удалены только после проверки соответствующего PNG.
 - Source/package/install/editor/generation/readback/visual/Undo — отдельные статусы; push не используется как доказательство установки.
@@ -123,7 +123,7 @@ Post-Undo editor bootstrap, saved native document, and public DOM all returned r
 ## Открытые ограничения
 
 1. Полный acceptance gate остаётся 4/5: About content remains temporarily obscured by the unchanged site launcher in public mobile. No hidden/covered text is declared fully accepted. The task's repeat restriction prevents a second generation without a confirmed code defect and source fix.
-2. The source push was reported successful, but remote HEAD remains unverified because the independent GitHub DNS lookup failed. The final documentation/evidence push must also be verified separately.
+2. Documentation/evidence commit `aaee457f1b0431a2dd076bc147628250994fa557` was pushed and independently verified as `origin/main` at that check; it contains runtime commit `26d4135df15987e9d13ef586ba7306bfe3ac0354`. The earlier DNS failure is superseded by this successful independent lookup.
 3. Team's requested synthetic portraits intentionally conflict visually with two fictional names; the file-to-entity binding is exact but the fixture imagery is not a realistic representation.
 4. Testimonials grid has notable empty area under short quotes due equal-height desktop cards. It is recorded, not hidden by manual control edits.
 5. WordPress site launcher can overlap images/long copy on these public page captures. It was not altered, injected over, or hidden by CSS.
