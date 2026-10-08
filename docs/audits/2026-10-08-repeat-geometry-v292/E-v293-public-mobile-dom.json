@@ -1,0 +1,426 @@
+{
+  "cards": [
+    {
+      "action": {
+        "href": "#tier-start",
+        "rect": {
+          "height": 39,
+          "width": 154.3203125,
+          "x": 33,
+          "y": 452.9140625
+        },
+        "text": "Выбрать Старт"
+      },
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "id": "9c2b78c",
+      "justify": "flex-start",
+      "overflow": "visible",
+      "rect": {
+        "height": 234.3203125,
+        "width": 343,
+        "x": 16,
+        "y": 274.59375
+      },
+      "text": "Старт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт",
+      "title": "Старт"
+    },
+    {
+      "action": {
+        "href": "#tier-project",
+        "rect": {
+          "height": 39,
+          "width": 165.0703125,
+          "x": 33,
+          "y": 867.2421875
+        },
+        "text": "Выбрать Проект"
+      },
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "id": "091f39c",
+      "justify": "flex-start",
+      "overflow": "visible",
+      "rect": {
+        "height": 398.328125,
+        "width": 343,
+        "x": 16,
+        "y": 524.9140625
+      },
+      "text": "Проект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект",
+      "title": "Проект"
+    },
+    {
+      "action": {
+        "href": "#tier-support",
+        "rect": {
+          "height": 39,
+          "width": 195.25,
+          "x": 33,
+          "y": 1155.1640625
+        },
+        "text": "Выбрать Поддержку"
+      },
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "id": "8113c53",
+      "justify": "flex-start",
+      "overflow": "visible",
+      "rect": {
+        "height": 271.921875,
+        "width": 343,
+        "x": 16,
+        "y": 939.2421875
+      },
+      "text": "Поддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку",
+      "title": "Поддержка"
+    }
+  ],
+  "chat": [
+    {
+      "class": "wpdsac-chat__quick-actions",
+      "display": "flex",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "DIV",
+      "text": "\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\tПозвонить!\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\tОставить заявку\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__quick-action",
+      "display": "flex",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "A",
+      "text": "\n\t\t\t\t\t\t\tПозвонить!\t\t\t\t\t\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__quick-action",
+      "display": "flex",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "BUTTON",
+      "text": "\n\t\t\t\t\t\tОставить заявку\t\t\t\t\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__quick-action",
+      "display": "flex",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "A",
+      "text": "\n\t\t\t\t\t\t\t\tПортфолио\t\t\t\t\t\t\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__context-actions",
+      "display": "none",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "DIV",
+      "text": "",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__form",
+      "display": "grid",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "FORM",
+      "text": "\n\t\t\t\n\t\t\t\tСообщение\t\t\t\n\t\t\t\n\t\t\t\n\t\t\t\t\n\t\t\t\n\t\t\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__lead-modal wpdsac-chat",
+      "display": "none",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "DIV",
+      "text": "\n\t\t\n\t\t\n\t\t\t\n\t\t\t\t\n\t\t\t\t\tОставить заявку\n\t\t\t\t\tВы хотите, чтобы мы с вами с",
+      "visibility": "visible",
+      "zIndex": "100000"
+    },
+    {
+      "class": "wpdsac-chat__modal-scrim",
+      "display": "block",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "BUTTON",
+      "text": "",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__lead-dialog",
+      "display": "block",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "DIV",
+      "text": "\n\t\t\t\n\t\t\t\t\n\t\t\t\t\tОставить заявку\n\t\t\t\t\tВы хотите, чтобы мы с вами связали",
+      "visibility": "visible",
+      "zIndex": "1"
+    },
+    {
+      "class": "wpdsac-chat__lead-header",
+      "display": "flex",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "HEADER",
+      "text": "\n\t\t\t\t\n\t\t\t\t\tОставить заявку\n\t\t\t\t\tВы хотите, чтобы мы с вами связались?\n",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__modal-close",
+      "display": "grid",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "BUTTON",
+      "text": "\n\t\t\t\t\t\n\t\t\t\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__consent",
+      "display": "grid",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "LABEL",
+      "text": "\n\t\t\t\t\t\n\t\t\t\t\tЯ согласен на хранение и использование моих контактных дан",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__honeypot",
+      "display": "block",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "LABEL",
+      "text": "\n\t\t\t\t\tСайт\n\t\t\t\t\t\n\t\t\t\t",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__lead-submit",
+      "display": "block",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "BUTTON",
+      "text": "Отправить заявку",
+      "visibility": "visible",
+      "zIndex": "auto"
+    },
+    {
+      "class": "wpdsac-chat__status",
+      "display": "none",
+      "rect": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "tag": "P",
+      "text": "",
+      "visibility": "visible",
+      "zIndex": "auto"
+    }
+  ],
+  "collection": {
+    "children": 3,
+    "direction": "column",
+    "display": "flex",
+    "gap": "16px",
+    "rect": {
+      "height": 936.5703125,
+      "width": 343,
+      "x": 16,
+      "y": 274.59375
+    }
+  },
+  "documentOverflow": false,
+  "headings": [
+    {
+      "fontSize": "12px",
+      "rect": {
+        "height": 14.3984375,
+        "width": 140.4296875,
+        "x": 29,
+        "y": 84.59375
+      },
+      "tag": "H6",
+      "text": "ТЕСТОВЫЕ ТАРИФЫ",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "28px",
+      "rect": {
+        "height": 32.203125,
+        "width": 324.3515625,
+        "x": 16,
+        "y": 117.5859375
+      },
+      "tag": "H2",
+      "text": "Выберите объём работ",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "18px",
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 291.59375
+      },
+      "tag": "H3",
+      "text": "Старт",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "25.6px",
+      "rect": {
+        "height": 30.71875,
+        "width": 99.65625,
+        "x": 33,
+        "y": 326.9921875
+      },
+      "tag": "H3",
+      "text": "25 000 ₸",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "18px",
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 541.9140625
+      },
+      "tag": "H3",
+      "text": "Проект",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "25.6px",
+      "rect": {
+        "height": 30.71875,
+        "width": 113.890625,
+        "x": 33,
+        "y": 577.3125
+      },
+      "tag": "H3",
+      "text": "125 000 ₸",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "18px",
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 956.2421875
+      },
+      "tag": "H3",
+      "text": "Поддержка",
+      "textAlign": "start"
+    },
+    {
+      "fontSize": "25.6px",
+      "rect": {
+        "height": 30.71875,
+        "width": 99.65625,
+        "x": 33,
+        "y": 991.640625
+      },
+      "tag": "H3",
+      "text": "60 000 ₸",
+      "textAlign": "start"
+    }
+  ],
+  "images": 0,
+  "post": 5214,
+  "root": "44acb9c",
+  "rootRect": {
+    "height": 1197.1640625,
+    "width": 375,
+    "x": 0,
+    "y": 46
+  },
+  "rootScroll": {
+    "bodyScrollWidth": 375,
+    "clientWidth": 375,
+    "scrollWidth": 375
+  },
+  "source": "public",
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "documentClientWidth": 375,
+    "visualViewportHeight": 844,
+    "visualViewportWidth": 375
+  }
+}

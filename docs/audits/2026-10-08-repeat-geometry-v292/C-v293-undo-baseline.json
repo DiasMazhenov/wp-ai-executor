@@ -1,0 +1,32 @@
+{
+  "post_id": 5214,
+  "after_operation": "wpae-17d930cd89457555",
+  "operation_identity": "2cdedd6b-99e8-4ff5-ae9d-c77687ad469d",
+  "expected_root_set": [],
+  "editor": {
+    "testRootPresent": false,
+    "canvasEmpty": true,
+    "publishDisabled": true,
+    "inlineVersion": "v02.11.293"
+  },
+  "public": {
+    "rootSections": [],
+    "testIds": [],
+    "text": "Mazhenov Design\nНастроить\nДобавить\nРедактировать страницу\nПривет, diasmazhenov\nAI-Dana",
+    "viewport": {
+      "clientWidth": 390,
+      "innerHeight": 844,
+      "innerWidth": 390,
+      "visualWidth": 390
+    }
+  },
+  "undo": {
+    "status": "already_undone",
+    "revision": 7,
+    "write_count": 0,
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "editor_canvas_empty": true,
+    "publish_disabled": true
+  }
+}

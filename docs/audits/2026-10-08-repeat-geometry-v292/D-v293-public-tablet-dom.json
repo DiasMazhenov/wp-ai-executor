@@ -1,0 +1,192 @@
+{
+  "cards": [
+    {
+      "clientHeight": 168,
+      "id": "546ce9e",
+      "rect": {
+        "bottom": 414.328125,
+        "height": 170.1484375,
+        "right": 442,
+        "width": 410,
+        "x": 32,
+        "y": 244.1796875
+      },
+      "scrollHeight": 168,
+      "style": {
+        "align": "stretch",
+        "dir": "column",
+        "display": "flex",
+        "gap": "12px",
+        "overflow": "visible",
+        "wrap": "nowrap"
+      },
+      "text": "Ясный план"
+    },
+    {
+      "clientHeight": 168,
+      "id": "71f8cbe",
+      "rect": {
+        "bottom": 414.328125,
+        "height": 170.1484375,
+        "right": 868,
+        "width": 410,
+        "x": 458,
+        "y": 244.1796875
+      },
+      "scrollHeight": 168,
+      "style": {
+        "align": "stretch",
+        "dir": "column",
+        "display": "flex",
+        "gap": "12px",
+        "overflow": "visible",
+        "wrap": "nowrap"
+      },
+      "text": "Общая команда"
+    },
+    {
+      "clientHeight": 168,
+      "id": "e70799b",
+      "rect": {
+        "bottom": 600.4765625,
+        "height": 170.1484375,
+        "right": 442,
+        "width": 410,
+        "x": 32,
+        "y": 430.328125
+      },
+      "scrollHeight": 168,
+      "style": {
+        "align": "stretch",
+        "dir": "column",
+        "display": "flex",
+        "gap": "12px",
+        "overflow": "visible",
+        "wrap": "nowrap"
+      },
+      "text": "Понятные сроки"
+    },
+    {
+      "clientHeight": 168,
+      "id": "939469c",
+      "rect": {
+        "bottom": 600.4765625,
+        "height": 170.1484375,
+        "right": 868,
+        "width": 410,
+        "x": 458,
+        "y": 430.328125
+      },
+      "scrollHeight": 168,
+      "style": {
+        "align": "stretch",
+        "dir": "column",
+        "display": "flex",
+        "gap": "12px",
+        "overflow": "visible",
+        "wrap": "nowrap"
+      },
+      "text": "Чёткие решения"
+    },
+    {
+      "clientHeight": 168,
+      "id": "0bf2322",
+      "rect": {
+        "bottom": 786.625,
+        "height": 170.1484375,
+        "right": 442,
+        "width": 410,
+        "x": 32,
+        "y": 616.4765625
+      },
+      "scrollHeight": 168,
+      "style": {
+        "align": "stretch",
+        "dir": "column",
+        "display": "flex",
+        "gap": "12px",
+        "overflow": "visible",
+        "wrap": "nowrap"
+      },
+      "text": "Проверка этапов"
+    },
+    {
+      "clientHeight": 168,
+      "id": "e6e4b73",
+      "rect": {
+        "bottom": 786.625,
+        "height": 170.1484375,
+        "right": 868,
+        "width": 410,
+        "x": 458,
+        "y": 616.4765625
+      },
+      "scrollHeight": 168,
+      "style": {
+        "align": "stretch",
+        "dir": "column",
+        "display": "flex",
+        "gap": "12px",
+        "overflow": "visible",
+        "wrap": "nowrap"
+      },
+      "text": "Полная передача"
+    }
+  ],
+  "collection": {
+    "id": "71f1328",
+    "rect": {
+      "bottom": 786.625,
+      "height": 542.4453125,
+      "right": 868,
+      "width": 836,
+      "x": 32,
+      "y": 244.1796875
+    },
+    "style": {
+      "align": "stretch",
+      "dir": "row",
+      "display": "flex",
+      "gap": "16px",
+      "overflow": "visible",
+      "wrap": "wrap"
+    }
+  },
+  "distinctRowTops": [
+    244.1796875,
+    430.328125,
+    616.4765625
+  ],
+  "overflow": false,
+  "root": {
+    "clientHeight": 811,
+    "rect": {
+      "bottom": 842.625,
+      "height": 810.625,
+      "right": 900,
+      "width": 900,
+      "x": 0,
+      "y": 32
+    },
+    "scrollHeight": 811,
+    "style": {
+      "align": "normal",
+      "dir": "column",
+      "display": "flex",
+      "gap": "normal",
+      "overflow": "visible",
+      "wrap": "nowrap"
+    }
+  },
+  "rootId": "bf5992e",
+  "source": "public",
+  "viewport": {
+    "clientWidth": 900,
+    "devicePixelRatio": 1,
+    "innerHeight": 900,
+    "innerWidth": 900,
+    "scrollWidth": 900,
+    "visualViewportHeight": 900,
+    "visualViewportWidth": 900
+  }
+}

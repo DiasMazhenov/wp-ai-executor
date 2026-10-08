@@ -1,0 +1,640 @@
+{
+  "buttons": 0,
+  "cardCount": 6,
+  "cardWidgetIntersections": [
+    {
+      "chatIntersects": false,
+      "id": "546ce9e"
+    },
+    {
+      "chatIntersects": false,
+      "id": "71f8cbe"
+    },
+    {
+      "chatIntersects": false,
+      "id": "e70799b"
+    },
+    {
+      "chatIntersects": false,
+      "id": "939469c"
+    },
+    {
+      "chatIntersects": false,
+      "id": "0bf2322"
+    },
+    {
+      "chatIntersects": false,
+      "id": "e6e4b73"
+    }
+  ],
+  "chat": {
+    "class": "wpdsac-chat wpdsac-position--bottom-right",
+    "expanded": false,
+    "intro": {
+      "display": "none",
+      "rect": {
+        "bottom": 0,
+        "height": 0,
+        "right": 0,
+        "top": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "text": "Добрый день!!"
+    },
+    "rect": {
+      "bottom": 876,
+      "height": 60,
+      "right": 1256,
+      "top": 816,
+      "width": 60,
+      "x": 1196,
+      "y": 816
+    }
+  },
+  "collection": {
+    "cards": [
+      {
+        "clientHeight": 179,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 393.6328125,
+              "height": 25,
+              "right": 415.6640625,
+              "top": 368.6328125,
+              "width": 324.6640625,
+              "x": 91,
+              "y": 368.6328125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "20px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "25px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Ясный план"
+          }
+        ],
+        "id": "546ce9e",
+        "overflowContent": false,
+        "rect": {
+          "bottom": 454.6796875,
+          "height": 181.046875,
+          "right": 436.6640625,
+          "top": 273.6328125,
+          "width": 366.6640625,
+          "x": 70,
+          "y": 273.6328125
+        },
+        "scrollHeight": 179,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Ясный план\nЦели и этапы согласованы.",
+        "texts": [
+          {
+            "clientHeight": 28,
+            "clipped": false,
+            "rect": {
+              "bottom": 433.6796875,
+              "height": 28.046875,
+              "right": 415.6640625,
+              "top": 405.6328125,
+              "width": 324.6640625,
+              "x": 91,
+              "y": 405.6328125
+            },
+            "scrollHeight": 28,
+            "text": "Цели и этапы согласованы."
+          }
+        ]
+      },
+      {
+        "clientHeight": 179,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 393.6328125,
+              "height": 25,
+              "right": 802.328125,
+              "top": 368.6328125,
+              "width": 324.6640625,
+              "x": 477.6640625,
+              "y": 368.6328125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "20px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "25px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Общая команда"
+          }
+        ],
+        "id": "71f8cbe",
+        "overflowContent": false,
+        "rect": {
+          "bottom": 454.6796875,
+          "height": 181.046875,
+          "right": 823.328125,
+          "top": 273.6328125,
+          "width": 366.6640625,
+          "x": 456.6640625,
+          "y": 273.6328125
+        },
+        "scrollHeight": 179,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Общая команда\nВсе работают по одному плану.",
+        "texts": [
+          {
+            "clientHeight": 28,
+            "clipped": false,
+            "rect": {
+              "bottom": 433.6796875,
+              "height": 28.046875,
+              "right": 802.328125,
+              "top": 405.6328125,
+              "width": 324.6640625,
+              "x": 477.6640625,
+              "y": 405.6328125
+            },
+            "scrollHeight": 28,
+            "text": "Все работают по одному плану."
+          }
+        ]
+      },
+      {
+        "clientHeight": 179,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 393.6328125,
+              "height": 25,
+              "right": 1188.9921875,
+              "top": 368.6328125,
+              "width": 324.6640625,
+              "x": 864.328125,
+              "y": 368.6328125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "20px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "25px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Понятные сроки"
+          }
+        ],
+        "id": "e70799b",
+        "overflowContent": false,
+        "rect": {
+          "bottom": 454.6796875,
+          "height": 181.046875,
+          "right": 1209.9921875,
+          "top": 273.6328125,
+          "width": 366.6640625,
+          "x": 843.328125,
+          "y": 273.6328125
+        },
+        "scrollHeight": 179,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Понятные сроки\nДаты видны заранее.",
+        "texts": [
+          {
+            "clientHeight": 28,
+            "clipped": false,
+            "rect": {
+              "bottom": 433.6796875,
+              "height": 28.046875,
+              "right": 1188.9921875,
+              "top": 405.6328125,
+              "width": 324.6640625,
+              "x": 864.328125,
+              "y": 405.6328125
+            },
+            "scrollHeight": 28,
+            "text": "Даты видны заранее."
+          }
+        ]
+      },
+      {
+        "clientHeight": 179,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 594.6796875,
+              "height": 25,
+              "right": 415.6640625,
+              "top": 569.6796875,
+              "width": 324.6640625,
+              "x": 91,
+              "y": 569.6796875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "20px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "25px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Чёткие решения"
+          }
+        ],
+        "id": "939469c",
+        "overflowContent": false,
+        "rect": {
+          "bottom": 655.7265625,
+          "height": 181.046875,
+          "right": 436.6640625,
+          "top": 474.6796875,
+          "width": 366.6640625,
+          "x": 70,
+          "y": 474.6796875
+        },
+        "scrollHeight": 179,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Чёткие решения\nКритерии результата известны.",
+        "texts": [
+          {
+            "clientHeight": 28,
+            "clipped": false,
+            "rect": {
+              "bottom": 634.7265625,
+              "height": 28.046875,
+              "right": 415.6640625,
+              "top": 606.6796875,
+              "width": 324.6640625,
+              "x": 91,
+              "y": 606.6796875
+            },
+            "scrollHeight": 28,
+            "text": "Критерии результата известны."
+          }
+        ]
+      },
+      {
+        "clientHeight": 179,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 594.6796875,
+              "height": 25,
+              "right": 802.328125,
+              "top": 569.6796875,
+              "width": 324.6640625,
+              "x": 477.6640625,
+              "y": 569.6796875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "20px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "25px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Проверка этапов"
+          }
+        ],
+        "id": "0bf2322",
+        "overflowContent": false,
+        "rect": {
+          "bottom": 655.7265625,
+          "height": 181.046875,
+          "right": 823.328125,
+          "top": 474.6796875,
+          "width": 366.6640625,
+          "x": 456.6640625,
+          "y": 474.6796875
+        },
+        "scrollHeight": 179,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Проверка этапов\nКаждый этап завершается проверкой.",
+        "texts": [
+          {
+            "clientHeight": 28,
+            "clipped": false,
+            "rect": {
+              "bottom": 634.7265625,
+              "height": 28.046875,
+              "right": 802.328125,
+              "top": 606.6796875,
+              "width": 324.6640625,
+              "x": 477.6640625,
+              "y": 606.6796875
+            },
+            "scrollHeight": 28,
+            "text": "Каждый этап завершается проверкой."
+          }
+        ]
+      },
+      {
+        "clientHeight": 179,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 594.6796875,
+              "height": 25,
+              "right": 1188.9921875,
+              "top": 569.6796875,
+              "width": 324.6640625,
+              "x": 864.328125,
+              "y": 569.6796875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "20px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "25px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Полная передача"
+          }
+        ],
+        "id": "e6e4b73",
+        "overflowContent": false,
+        "rect": {
+          "bottom": 655.7265625,
+          "height": 181.046875,
+          "right": 1209.9921875,
+          "top": 474.6796875,
+          "width": 366.6640625,
+          "x": 843.328125,
+          "y": 474.6796875
+        },
+        "scrollHeight": 179,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Полная передача\nМатериалы остаются доступными.",
+        "texts": [
+          {
+            "clientHeight": 28,
+            "clipped": false,
+            "rect": {
+              "bottom": 634.7265625,
+              "height": 28.046875,
+              "right": 1188.9921875,
+              "top": 606.6796875,
+              "width": 324.6640625,
+              "x": 864.328125,
+              "y": 606.6796875
+            },
+            "scrollHeight": 28,
+            "text": "Материалы остаются доступными."
+          }
+        ]
+      }
+    ],
+    "id": "71f1328",
+    "rect": {
+      "bottom": 655.7265625,
+      "height": 382.09375,
+      "right": 1210,
+      "top": 273.6328125,
+      "width": 1140,
+      "x": 70,
+      "y": 273.6328125
+    },
+    "style": {
+      "alignItems": "stretch",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "columnGap": "20px",
+      "display": "flex",
+      "flexDirection": "row",
+      "flexWrap": "wrap",
+      "fontSize": "16px",
+      "gap": "20px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "20px",
+      "textAlign": "start"
+    }
+  },
+  "images": 0,
+  "links": 0,
+  "post_id": 5214,
+  "root": {
+    "clientHeight": 704,
+    "rect": {
+      "bottom": 735.7265625,
+      "height": 703.7265625,
+      "right": 1280,
+      "top": 32,
+      "width": 1280,
+      "x": 0,
+      "y": 32
+    },
+    "scrollHeight": 704,
+    "style": {
+      "alignItems": "normal",
+      "backgroundColor": "rgba(97, 206, 112, 0.2)",
+      "columnGap": "normal",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "normal",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "rowGap": "normal",
+      "textAlign": "start"
+    },
+    "text": "ПРЕИМУЩЕСТВА\nПонятная работа\nШесть коротких синтетических пунктов для проверки responsive-сетки\nЯсный план\nЦели и этапы согласованы.\nОбщая команда\nВсе работают по одному плану.\nПонятные сроки\nДаты видны заранее.\nЧёткие решения\nКритерии результата известны.\nПроверка этапов\nКаждый этап завершается проверкой.\nПолная передача\nМатериалы остаются доступными."
+  },
+  "root_id": "bf5992e",
+  "source": "public",
+  "viewport": {
+    "clientHeight": 900,
+    "clientWidth": 1280,
+    "devicePixelRatio": 1,
+    "innerHeight": 900,
+    "innerWidth": 1280,
+    "scrollHeight": 900,
+    "scrollWidth": 1280,
+    "visualViewportHeight": 900,
+    "visualViewportWidth": 1280
+  }
+}

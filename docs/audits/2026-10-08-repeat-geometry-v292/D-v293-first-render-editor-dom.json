@@ -1,0 +1,529 @@
+{
+  "root": {
+    "buttons": 0,
+    "containers": [
+      {
+        "id": "7775a03",
+        "rect": {
+          "height": 130.234375,
+          "width": 946,
+          "x": 32,
+          "y": 80
+        },
+        "style": {
+          "alignItems": "flex-start",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "0px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "0px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "0px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "ПРЕИМУЩЕСТВА\nПонятная работа\nШесть коротких синтетических пунктов для проверки responsive-сетки"
+      },
+      {
+        "id": "bbb0861",
+        "rect": {
+          "height": 130.234375,
+          "width": 608,
+          "x": 32,
+          "y": 80
+        },
+        "style": {
+          "alignItems": "flex-start",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "0px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "0px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "0px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "ПРЕИМУЩЕСТВА\nПонятная работа\nШесть коротких синтетических пунктов для проверки responsive-сетки"
+      },
+      {
+        "id": "43e13b1",
+        "rect": {
+          "height": 28.1875,
+          "width": 141.7109375,
+          "x": 32,
+          "y": 80
+        },
+        "style": {
+          "alignItems": "center",
+          "background": "rgb(0, 0, 0)",
+          "columnGap": "24px",
+          "direction": "row",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "24px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "5.6px 12px",
+          "rowGap": "24px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "ПРЕИМУЩЕСТВА"
+      },
+      {
+        "id": "71f1328",
+        "rect": {
+          "height": 410.140625,
+          "width": 946,
+          "x": 32,
+          "y": 242.234375
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "20px",
+          "direction": "row",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "20px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "20px",
+          "textAlign": "start",
+          "wrap": "wrap"
+        },
+        "text": "Ясный план\nЦели и этапы согласованы.\nОбщая команда\nВсе работают по одному плану.\nПонятные сроки\nДаты"
+      },
+      {
+        "id": "546ce9e",
+        "rect": {
+          "height": 181.046875,
+          "width": 301.9921875,
+          "x": 32,
+          "y": 242.234375
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "12px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Ясный план\nЦели и этапы согласованы."
+      },
+      {
+        "id": "71f8cbe",
+        "rect": {
+          "height": 181.046875,
+          "width": 301.9921875,
+          "x": 353.9921875,
+          "y": 242.234375
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "12px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Общая команда\nВсе работают по одному плану."
+      },
+      {
+        "id": "e70799b",
+        "rect": {
+          "height": 181.046875,
+          "width": 301.9921875,
+          "x": 675.984375,
+          "y": 242.234375
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "12px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Понятные сроки\nДаты видны заранее."
+      },
+      {
+        "id": "939469c",
+        "rect": {
+          "height": 209.09375,
+          "width": 301.9921875,
+          "x": 32,
+          "y": 443.28125
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "12px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Чёткие решения\nКритерии результата известны."
+      },
+      {
+        "id": "0bf2322",
+        "rect": {
+          "height": 209.09375,
+          "width": 301.9921875,
+          "x": 353.9921875,
+          "y": 443.28125
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "12px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Проверка этапов\nКаждый этап завершается проверкой."
+      },
+      {
+        "id": "e6e4b73",
+        "rect": {
+          "height": 209.09375,
+          "width": 301.9921875,
+          "x": 675.984375,
+          "y": 443.28125
+        },
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "columnGap": "12px",
+          "direction": "column",
+          "display": "flex",
+          "fontSize": "16px",
+          "gap": "12px",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "20px",
+          "rowGap": "12px",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "text": "Полная передача\nМатериалы остаются доступными."
+      }
+    ],
+    "headings": [
+      {
+        "rect": {
+          "height": 15,
+          "width": 115.7109375,
+          "x": 45,
+          "y": 86.59375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "12px",
+          "gap": "normal",
+          "lineHeight": "14.4px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H6",
+        "text": "ПРЕИМУЩЕСТВА"
+      },
+      {
+        "rect": {
+          "height": 46,
+          "width": 342.2890625,
+          "x": 32,
+          "y": 120.1875
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "40px",
+          "gap": "normal",
+          "lineHeight": "46px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H2",
+        "text": "Понятная работа"
+      },
+      {
+        "rect": {
+          "height": 25,
+          "width": 259.9921875,
+          "x": 53,
+          "y": 337.234375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "20px",
+          "gap": "normal",
+          "lineHeight": "25px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H3",
+        "text": "Ясный план"
+      },
+      {
+        "rect": {
+          "height": 25,
+          "width": 259.9921875,
+          "x": 374.9921875,
+          "y": 337.234375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "20px",
+          "gap": "normal",
+          "lineHeight": "25px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H3",
+        "text": "Общая команда"
+      },
+      {
+        "rect": {
+          "height": 25,
+          "width": 259.9921875,
+          "x": 696.984375,
+          "y": 337.234375
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "20px",
+          "gap": "normal",
+          "lineHeight": "25px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H3",
+        "text": "Понятные сроки"
+      },
+      {
+        "rect": {
+          "height": 25,
+          "width": 259.9921875,
+          "x": 53,
+          "y": 538.28125
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "20px",
+          "gap": "normal",
+          "lineHeight": "25px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H3",
+        "text": "Чёткие решения"
+      },
+      {
+        "rect": {
+          "height": 25,
+          "width": 259.9921875,
+          "x": 374.9921875,
+          "y": 538.28125
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "20px",
+          "gap": "normal",
+          "lineHeight": "25px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H3",
+        "text": "Проверка этапов"
+      },
+      {
+        "rect": {
+          "height": 25,
+          "width": 259.9921875,
+          "x": 696.984375,
+          "y": 538.28125
+        },
+        "style": {
+          "alignItems": "normal",
+          "background": "rgba(0, 0, 0, 0)",
+          "columnGap": "normal",
+          "direction": "row",
+          "display": "block",
+          "fontSize": "20px",
+          "gap": "normal",
+          "lineHeight": "25px",
+          "maxHeight": "none",
+          "minHeight": "15px",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "normal",
+          "textAlign": "start",
+          "wrap": "nowrap"
+        },
+        "tag": "H3",
+        "text": "Полная передача"
+      }
+    ],
+    "id": "bf5992e",
+    "images": 0,
+    "links": 0,
+    "rect": {
+      "height": 732.375,
+      "width": 1010,
+      "x": 0,
+      "y": 0
+    },
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(97, 206, 112, 0.2)",
+      "columnGap": "normal",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "gap": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "rowGap": "normal",
+      "textAlign": "start",
+      "wrap": "nowrap"
+    },
+    "text": "ПРЕИМУЩЕСТВА\nПонятная работа\nШесть коротких синтетических пунктов для проверки responsive-сетки\nЯсный план\nЦели и этапы согласованы.\nОбщая команда\nВсе работают по одному плану.\nПонятные сроки\nДаты видны заранее.\nЧёткие решения\nКритерии результата известны.\nПроверка этапов\nКаждый этап завершается проверкой.\nПолная передача\nМатериалы остаются доступными."
+  },
+  "viewport": {
+    "clientWidth": 1010,
+    "innerHeight": 860,
+    "innerWidth": 1025,
+    "scrollWidth": 1010,
+    "visualWidth": 1010
+  }
+}

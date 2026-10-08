@@ -1,0 +1,3349 @@
+{
+  "scenario": "E",
+  "family": "pricing",
+  "fixture": "fixtures/E-pricing-three-tiers.txt",
+  "exact_request": "Создай блок тарифов, ровно три синтетических тарифа. Выбери pricing.tiers. Без фотографий.\nНадзаголовок «ТЕСТОВЫЕ ТАРИФЫ» в pill-бейдже. Заголовок «Выберите объём работ». Описание «Три фиксированных синтетических предложения проверяют цену, состав и ссылки».\n«Старт» — «25 000 ₸/мес» — «Для одной небольшой задачи».\nВозможности: «Одна консультация».\nКнопка «Выбрать Старт», ссылка #tier-start.\n«Проект» — «125 000 ₸/мес» — «Для проработки и реализации нескольких связанных задач с согласованными этапами».\nВозможности: «Исследование контекста», «Согласование прототипа», «Проверка результата», «Документация для команды».\nКнопка «Выбрать Проект», ссылка #tier-project.\n«Поддержка» — «60 000 ₸/мес» — «Для регулярных задач».\nВозможности: «Проверка изменений», «Ежемесячная консультация».\nКнопка «Выбрать Поддержку», ссылка #tier-support.\nСохрани раздел, точную цену и период, полный список возможностей, CTA и ссылки для каждого тарифа. Не добавляй четвёртый тариф или дополнительные условия.\n",
+  "source": {
+    "commit": "fd12c9b5fcab2112c58b3e19223c736ea698a63e",
+    "version": "v02.11.293",
+    "installed_editor_version": "v02.11.293",
+    "installed_plugins_version": "v02.11.293 (confirmed during current stage before generation)"
+  },
+  "post_id": 5214,
+  "initial_baseline": {
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "publish_disabled_means_saved": true,
+    "user_cleared_canvas": true
+  },
+  "selected": {
+    "record_id": "pricing.tiers",
+    "record_version": 1,
+    "selection_source": "explicit_record",
+    "record_sha256": "4ac6ff61078721ec658f1fd38bb0ac1155ec9b519747c06095b874fbcd1967ce",
+    "visual_profile": null,
+    "visual_profile_note": "The record exposes no visual profile selector; family default retained.",
+    "brief_sha256": "6f7cf9d8aea193cb3b2c62c8781a34fec39a06ae7a244d08a8b74636b4641f31",
+    "plan_sha256": "95296729bbd3342cbf26bbe35a1b8ccaad1103f5341449ecd6c0a26a6c321729",
+    "section_surface": {
+      "profile": "",
+      "section_surface": {
+        "token": "color.section_bg",
+        "source": "documented_default",
+        "palette_role": "accent",
+        "opacity": 0.2,
+        "transparency": 0.8,
+        "accent_source": "elementor_system_color_stock_default:accent",
+        "accent_confirmed": false
+      },
+      "resolved_value": "#61ce7033",
+      "value_source": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent",
+      "accent_reference": {
+        "value": "#61ce70",
+        "source": "elementor_system_color_stock_default:accent",
+        "confirmed": false
+      },
+      "opaque_underlay": "#ffffff"
+    }
+  },
+  "generation": {
+    "route": "local_deterministic",
+    "provider_calls": 0,
+    "transaction_write_count": 1,
+    "phases": [
+      "BriefIR",
+      "typed DesignPlan",
+      "WidgetCapabilityRegistry",
+      "responsive LayoutReport",
+      "native compiler",
+      "scope/warnings/route",
+      "insert_elements",
+      "Flexbox normalization",
+      "save/readback"
+    ],
+    "root_container_count": 1,
+    "native_widgets": 25,
+    "first_result_captured_before_publish": true
+  },
+  "operation": {
+    "id": "wpae-ec604346c0a45b9b",
+    "identity": "49b162cd-e999-485d-b629-906e718916e4",
+    "root_id": "44acb9c",
+    "generation_revision": 4,
+    "publish_reload_revision": 5,
+    "post_publish_status": "available",
+    "post_publish_read_only_write_count": 0,
+    "undo_revision": 6,
+    "undo_status": "already_undone",
+    "accepted_contract_id": "contract-24cda8cbc0bf78d98bc69e17",
+    "accepted_contract_sha256": "24cda8cbc0bf78d98bc69e1732267b39ec4c97b0b55785f0bf3bc369eafe5855",
+    "saved_document_sha256": "f4be1dc01d796c5406531425cf4d6678a5fc4392792f83665911bfa05769dfde",
+    "native_fingerprint": "af18435497d7f99b49f36800ada9d0e187e29a182670ae2568c1641e5731b1f8"
+  },
+  "native_readback": {
+    "file": "E-v293-native-after-reload.json",
+    "format": "wpae-elementor-selection-v1",
+    "captured_at": "2026-10-08T11:12:58.165Z",
+    "root_ids": [
+      "44acb9c"
+    ],
+    "node_counts": {
+      "total": 45,
+      "containers": 20,
+      "widgets": 25,
+      "images": 0,
+      "root_ids": [
+        "44acb9c"
+      ],
+      "collection": {
+        "background_background": "classic",
+        "content_width": "full",
+        "padding": {
+          "unit": "rem",
+          "top": "0",
+          "right": "0",
+          "bottom": "0",
+          "left": "0",
+          "isLinked": true
+        },
+        "background_color": "transparent",
+        "_wpae_visual_policy_version": 1,
+        "_element_custom_width": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "width": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "align_self": "flex-start",
+        "_element_width": "initial",
+        "_flex_size": "custom",
+        "flex_grow": 0,
+        "_flex_grow": 0,
+        "flex_shrink": 1,
+        "_element_custom_width_tablet": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "width_tablet": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "align_self_tablet": "flex-start",
+        "_element_width_tablet": "initial",
+        "_flex_size_tablet": "custom",
+        "flex_grow_tablet": 0,
+        "_flex_grow_tablet": 0,
+        "flex_shrink_tablet": 1,
+        "_flex_shrink_tablet": 1,
+        "_element_custom_width_mobile": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "width_mobile": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "align_self_mobile": "flex-start",
+        "_element_width_mobile": "initial",
+        "_flex_size_mobile": "custom",
+        "flex_grow_mobile": 0,
+        "_flex_grow_mobile": 0,
+        "flex_shrink_mobile": 1,
+        "_flex_shrink_mobile": 1,
+        "flex_direction": "row",
+        "flex_wrap": "wrap",
+        "flex_align_items": "stretch",
+        "flex_gap": {
+          "unit": "rem",
+          "size": 1.5,
+          "column": "1.5",
+          "row": "1.5",
+          "isLinked": true
+        },
+        "flex_direction_tablet": "column",
+        "flex_wrap_tablet": "nowrap",
+        "flex_align_items_tablet": "stretch",
+        "flex_gap_tablet": {
+          "unit": "rem",
+          "size": 1.5,
+          "column": "1.5",
+          "row": "1.5",
+          "isLinked": true
+        },
+        "flex_direction_mobile": "column",
+        "flex_wrap_mobile": "nowrap",
+        "flex_align_items_mobile": "stretch",
+        "flex_gap_mobile": {
+          "unit": "rem",
+          "size": 1,
+          "column": "1",
+          "row": "1",
+          "isLinked": true
+        },
+        "container_type": "flex",
+        "boxed_width": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "boxed_width_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "boxed_width_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "min_height": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "min_height_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "min_height_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "flex__is_row": "row",
+        "flex__is_column": "column",
+        "flex_justify_content": "",
+        "flex_justify_content_tablet": "",
+        "flex_justify_content_mobile": "",
+        "flex_align_content": "",
+        "flex_align_content_tablet": "",
+        "flex_align_content_mobile": "",
+        "grid_outline": "yes",
+        "grid_columns_grid": {
+          "unit": "fr",
+          "size": 3,
+          "sizes": []
+        },
+        "grid_columns_grid_tablet": {
+          "unit": "fr",
+          "size": "",
+          "sizes": []
+        },
+        "grid_columns_grid_mobile": {
+          "unit": "fr",
+          "size": 1,
+          "sizes": []
+        },
+        "grid_rows_grid": {
+          "unit": "fr",
+          "size": 2,
+          "sizes": []
+        },
+        "grid_rows_grid_tablet": {
+          "unit": "fr",
+          "size": "",
+          "sizes": []
+        },
+        "grid_rows_grid_mobile": {
+          "unit": "fr",
+          "size": "",
+          "sizes": []
+        },
+        "grid_gaps": {
+          "column": "",
+          "row": "",
+          "isLinked": true,
+          "unit": "px"
+        },
+        "grid_gaps_tablet": {
+          "column": "",
+          "row": "",
+          "isLinked": true,
+          "unit": "px"
+        },
+        "grid_gaps_mobile": {
+          "column": "",
+          "row": "",
+          "isLinked": true,
+          "unit": "px"
+        },
+        "grid_auto_flow": "row",
+        "grid_auto_flow_tablet": "row",
+        "grid_auto_flow_mobile": "row",
+        "grid_justify_items": "",
+        "grid_justify_items_tablet": "",
+        "grid_justify_items_mobile": "",
+        "grid_align_items": "",
+        "grid_align_items_tablet": "",
+        "grid_align_items_mobile": "",
+        "grid_justify_content": "",
+        "grid_justify_content_tablet": "",
+        "grid_justify_content_mobile": "",
+        "grid_align_content": "",
+        "grid_align_content_tablet": "",
+        "grid_align_content_mobile": "",
+        "grid__is_row": "row",
+        "grid__is_column": "column",
+        "overflow": "",
+        "html_tag": "",
+        "link": {
+          "url": "",
+          "is_external": "",
+          "nofollow": "",
+          "custom_attributes": ""
+        },
+        "background_color_stop": {
+          "unit": "%",
+          "size": 0,
+          "sizes": []
+        },
+        "background_color_stop_tablet": {
+          "unit": "%"
+        },
+        "background_color_stop_mobile": {
+          "unit": "%"
+        },
+        "background_color_b": "#f2295b",
+        "background_color_b_stop": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_color_b_stop_tablet": {
+          "unit": "%"
+        },
+        "background_color_b_stop_mobile": {
+          "unit": "%"
+        },
+        "background_gradient_type": "linear",
+        "background_gradient_angle": {
+          "unit": "deg",
+          "size": 180,
+          "sizes": []
+        },
+        "background_gradient_angle_tablet": {
+          "unit": "deg"
+        },
+        "background_gradient_angle_mobile": {
+          "unit": "deg"
+        },
+        "background_gradient_position": "center center",
+        "background_gradient_position_tablet": "",
+        "background_gradient_position_mobile": "",
+        "background_image": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_image_tablet": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_image_mobile": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_position": "",
+        "background_position_tablet": "",
+        "background_position_mobile": "",
+        "background_xpos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_xpos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_xpos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_ypos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_ypos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_ypos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_attachment": "",
+        "background_repeat": "",
+        "background_repeat_tablet": "",
+        "background_repeat_mobile": "",
+        "background_size": "",
+        "background_size_tablet": "",
+        "background_size_mobile": "",
+        "background_bg_width": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_bg_width_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_bg_width_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_video_link": "",
+        "background_video_start": "",
+        "background_video_end": "",
+        "background_play_once": "",
+        "background_play_on_mobile": "",
+        "background_privacy_mode": "",
+        "background_video_fallback": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_slideshow_gallery": [],
+        "background_slideshow_loop": "yes",
+        "background_slideshow_slide_duration": 5000,
+        "background_slideshow_slide_transition": "fade",
+        "background_slideshow_transition_duration": 500,
+        "background_slideshow_background_size": "",
+        "background_slideshow_background_size_tablet": "",
+        "background_slideshow_background_size_mobile": "",
+        "background_slideshow_background_position": "",
+        "background_slideshow_background_position_tablet": "",
+        "background_slideshow_background_position_mobile": "",
+        "background_slideshow_lazyload": "",
+        "background_slideshow_ken_burns": "",
+        "background_slideshow_ken_burns_zoom_direction": "in",
+        "handle_slideshow_asset_loading": "",
+        "background_hover_background": "",
+        "background_hover_color": "",
+        "background_hover_color_stop": {
+          "unit": "%",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_color_stop_tablet": {
+          "unit": "%"
+        },
+        "background_hover_color_stop_mobile": {
+          "unit": "%"
+        },
+        "background_hover_color_b": "#f2295b",
+        "background_hover_color_b_stop": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_hover_color_b_stop_tablet": {
+          "unit": "%"
+        },
+        "background_hover_color_b_stop_mobile": {
+          "unit": "%"
+        },
+        "background_hover_gradient_type": "linear",
+        "background_hover_gradient_angle": {
+          "unit": "deg",
+          "size": 180,
+          "sizes": []
+        },
+        "background_hover_gradient_angle_tablet": {
+          "unit": "deg"
+        },
+        "background_hover_gradient_angle_mobile": {
+          "unit": "deg"
+        },
+        "background_hover_gradient_position": "center center",
+        "background_hover_gradient_position_tablet": "",
+        "background_hover_gradient_position_mobile": "",
+        "background_hover_image": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_hover_image_tablet": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_hover_image_mobile": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_hover_position": "",
+        "background_hover_position_tablet": "",
+        "background_hover_position_mobile": "",
+        "background_hover_xpos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_xpos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_xpos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_ypos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_ypos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_ypos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_hover_attachment": "",
+        "background_hover_repeat": "",
+        "background_hover_repeat_tablet": "",
+        "background_hover_repeat_mobile": "",
+        "background_hover_size": "",
+        "background_hover_size_tablet": "",
+        "background_hover_size_mobile": "",
+        "background_hover_bg_width": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_hover_bg_width_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_hover_bg_width_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_hover_video_link": "",
+        "background_hover_video_start": "",
+        "background_hover_video_end": "",
+        "background_hover_play_once": "",
+        "background_hover_play_on_mobile": "",
+        "background_hover_privacy_mode": "",
+        "background_hover_video_fallback": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_hover_slideshow_gallery": [],
+        "background_hover_slideshow_loop": "yes",
+        "background_hover_slideshow_slide_duration": 5000,
+        "background_hover_slideshow_slide_transition": "fade",
+        "background_hover_slideshow_transition_duration": 500,
+        "background_hover_slideshow_background_size": "",
+        "background_hover_slideshow_background_size_tablet": "",
+        "background_hover_slideshow_background_size_mobile": "",
+        "background_hover_slideshow_background_position": "",
+        "background_hover_slideshow_background_position_tablet": "",
+        "background_hover_slideshow_background_position_mobile": "",
+        "background_hover_slideshow_lazyload": "",
+        "background_hover_slideshow_ken_burns": "",
+        "background_hover_slideshow_ken_burns_zoom_direction": "in",
+        "background_hover_transition": {
+          "unit": "px",
+          "size": 0.3,
+          "sizes": []
+        },
+        "background_motion_fx_motion_fx_scrolling": "",
+        "background_motion_fx_translateY_effect": "",
+        "background_motion_fx_translateY_direction": "",
+        "background_motion_fx_translateY_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "background_motion_fx_translateY_affectedRange": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 0,
+            "end": 100
+          }
+        },
+        "background_motion_fx_translateX_effect": "",
+        "background_motion_fx_translateX_direction": "",
+        "background_motion_fx_translateX_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "background_motion_fx_translateX_affectedRange": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 0,
+            "end": 100
+          }
+        },
+        "background_motion_fx_opacity_effect": "",
+        "background_motion_fx_opacity_direction": "out-in",
+        "background_motion_fx_opacity_level": {
+          "unit": "px",
+          "size": 10,
+          "sizes": []
+        },
+        "background_motion_fx_opacity_range": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 20,
+            "end": 80
+          }
+        },
+        "background_motion_fx_blur_effect": "",
+        "background_motion_fx_blur_direction": "out-in",
+        "background_motion_fx_blur_level": {
+          "unit": "px",
+          "size": 7,
+          "sizes": []
+        },
+        "background_motion_fx_blur_range": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 20,
+            "end": 80
+          }
+        },
+        "background_motion_fx_rotateZ_direction": "",
+        "background_motion_fx_rotateZ_speed": {
+          "unit": "px",
+          "size": 1,
+          "sizes": []
+        },
+        "background_motion_fx_rotateZ_affectedRange": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 0,
+            "end": 100
+          }
+        },
+        "background_motion_fx_scale_effect": "",
+        "background_motion_fx_scale_direction": "out-in",
+        "background_motion_fx_scale_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "background_motion_fx_scale_range": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 20,
+            "end": 80
+          }
+        },
+        "background_motion_fx_devices": [
+          "desktop",
+          "tablet",
+          "mobile"
+        ],
+        "background_motion_fx_range": "",
+        "background_motion_fx_motion_fx_mouse": "",
+        "background_motion_fx_mouseTrack_effect": "",
+        "background_motion_fx_mouseTrack_direction": "",
+        "background_motion_fx_mouseTrack_speed": {
+          "unit": "px",
+          "size": 1,
+          "sizes": []
+        },
+        "background_motion_fx_tilt_direction": "",
+        "background_motion_fx_tilt_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "background_handle_motion_fx_asset_loading": "",
+        "background_overlay_background": "",
+        "background_overlay_color": "",
+        "background_overlay_color_stop": {
+          "unit": "%",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_color_stop_tablet": {
+          "unit": "%"
+        },
+        "background_overlay_color_stop_mobile": {
+          "unit": "%"
+        },
+        "background_overlay_color_b": "#f2295b",
+        "background_overlay_color_b_stop": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_overlay_color_b_stop_tablet": {
+          "unit": "%"
+        },
+        "background_overlay_color_b_stop_mobile": {
+          "unit": "%"
+        },
+        "background_overlay_gradient_type": "linear",
+        "background_overlay_gradient_angle": {
+          "unit": "deg",
+          "size": 180,
+          "sizes": []
+        },
+        "background_overlay_gradient_angle_tablet": {
+          "unit": "deg"
+        },
+        "background_overlay_gradient_angle_mobile": {
+          "unit": "deg"
+        },
+        "background_overlay_gradient_position": "center center",
+        "background_overlay_gradient_position_tablet": "",
+        "background_overlay_gradient_position_mobile": "",
+        "background_overlay_image": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_image_tablet": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_image_mobile": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_position": "",
+        "background_overlay_position_tablet": "",
+        "background_overlay_position_mobile": "",
+        "background_overlay_xpos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_xpos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_xpos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_ypos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_ypos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_ypos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_attachment": "",
+        "background_overlay_repeat": "",
+        "background_overlay_repeat_tablet": "",
+        "background_overlay_repeat_mobile": "",
+        "background_overlay_size": "",
+        "background_overlay_size_tablet": "",
+        "background_overlay_size_mobile": "",
+        "background_overlay_bg_width": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_overlay_bg_width_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_bg_width_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_video_link": "",
+        "background_overlay_video_start": "",
+        "background_overlay_video_end": "",
+        "background_overlay_play_once": "",
+        "background_overlay_play_on_mobile": "",
+        "background_overlay_privacy_mode": "",
+        "background_overlay_video_fallback": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_slideshow_gallery": [],
+        "background_overlay_slideshow_loop": "yes",
+        "background_overlay_slideshow_slide_duration": 5000,
+        "background_overlay_slideshow_slide_transition": "fade",
+        "background_overlay_slideshow_transition_duration": 500,
+        "background_overlay_slideshow_background_size": "",
+        "background_overlay_slideshow_background_size_tablet": "",
+        "background_overlay_slideshow_background_size_mobile": "",
+        "background_overlay_slideshow_background_position": "",
+        "background_overlay_slideshow_background_position_tablet": "",
+        "background_overlay_slideshow_background_position_mobile": "",
+        "background_overlay_slideshow_lazyload": "",
+        "background_overlay_slideshow_ken_burns": "",
+        "background_overlay_slideshow_ken_burns_zoom_direction": "in",
+        "background_overlay_opacity": {
+          "unit": "px",
+          "size": 0.5,
+          "sizes": []
+        },
+        "background_overlay_opacity_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_opacity_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "css_filters_css_filter": "",
+        "css_filters_blur": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "css_filters_brightness": {
+          "unit": "px",
+          "size": 100,
+          "sizes": []
+        },
+        "css_filters_contrast": {
+          "unit": "px",
+          "size": 100,
+          "sizes": []
+        },
+        "css_filters_saturate": {
+          "unit": "px",
+          "size": 100,
+          "sizes": []
+        },
+        "css_filters_hue": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "overlay_blend_mode": "",
+        "background_overlay_hover_background": "",
+        "background_overlay_hover_color": "",
+        "background_overlay_hover_color_stop": {
+          "unit": "%",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_color_stop_tablet": {
+          "unit": "%"
+        },
+        "background_overlay_hover_color_stop_mobile": {
+          "unit": "%"
+        },
+        "background_overlay_hover_color_b": "#f2295b",
+        "background_overlay_hover_color_b_stop": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_overlay_hover_color_b_stop_tablet": {
+          "unit": "%"
+        },
+        "background_overlay_hover_color_b_stop_mobile": {
+          "unit": "%"
+        },
+        "background_overlay_hover_gradient_type": "linear",
+        "background_overlay_hover_gradient_angle": {
+          "unit": "deg",
+          "size": 180,
+          "sizes": []
+        },
+        "background_overlay_hover_gradient_angle_tablet": {
+          "unit": "deg"
+        },
+        "background_overlay_hover_gradient_angle_mobile": {
+          "unit": "deg"
+        },
+        "background_overlay_hover_gradient_position": "center center",
+        "background_overlay_hover_gradient_position_tablet": "",
+        "background_overlay_hover_gradient_position_mobile": "",
+        "background_overlay_hover_image": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_hover_image_tablet": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_hover_image_mobile": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_hover_position": "",
+        "background_overlay_hover_position_tablet": "",
+        "background_overlay_hover_position_mobile": "",
+        "background_overlay_hover_xpos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_xpos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_xpos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_ypos": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_ypos_tablet": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_ypos_mobile": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_overlay_hover_attachment": "",
+        "background_overlay_hover_repeat": "",
+        "background_overlay_hover_repeat_tablet": "",
+        "background_overlay_hover_repeat_mobile": "",
+        "background_overlay_hover_size": "",
+        "background_overlay_hover_size_tablet": "",
+        "background_overlay_hover_size_mobile": "",
+        "background_overlay_hover_bg_width": {
+          "unit": "%",
+          "size": 100,
+          "sizes": []
+        },
+        "background_overlay_hover_bg_width_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_hover_bg_width_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_hover_video_link": "",
+        "background_overlay_hover_video_start": "",
+        "background_overlay_hover_video_end": "",
+        "background_overlay_hover_play_once": "",
+        "background_overlay_hover_play_on_mobile": "",
+        "background_overlay_hover_privacy_mode": "",
+        "background_overlay_hover_video_fallback": {
+          "url": "",
+          "id": "",
+          "size": ""
+        },
+        "background_overlay_hover_slideshow_gallery": [],
+        "background_overlay_hover_slideshow_loop": "yes",
+        "background_overlay_hover_slideshow_slide_duration": 5000,
+        "background_overlay_hover_slideshow_slide_transition": "fade",
+        "background_overlay_hover_slideshow_transition_duration": 500,
+        "background_overlay_hover_slideshow_background_size": "",
+        "background_overlay_hover_slideshow_background_size_tablet": "",
+        "background_overlay_hover_slideshow_background_size_mobile": "",
+        "background_overlay_hover_slideshow_background_position": "",
+        "background_overlay_hover_slideshow_background_position_tablet": "",
+        "background_overlay_hover_slideshow_background_position_mobile": "",
+        "background_overlay_hover_slideshow_lazyload": "",
+        "background_overlay_hover_slideshow_ken_burns": "",
+        "background_overlay_hover_slideshow_ken_burns_zoom_direction": "in",
+        "background_overlay_hover_opacity": {
+          "unit": "px",
+          "size": 0.5,
+          "sizes": []
+        },
+        "background_overlay_hover_opacity_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_hover_opacity_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "background_overlay_hover_transition": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "css_filters_hover_css_filter": "",
+        "css_filters_hover_blur": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "css_filters_hover_brightness": {
+          "unit": "px",
+          "size": 100,
+          "sizes": []
+        },
+        "css_filters_hover_contrast": {
+          "unit": "px",
+          "size": 100,
+          "sizes": []
+        },
+        "css_filters_hover_saturate": {
+          "unit": "px",
+          "size": 100,
+          "sizes": []
+        },
+        "css_filters_hover_hue": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "border_border": "",
+        "border_width": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_width_tablet": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_width_mobile": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_color": "",
+        "border_radius": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_radius_tablet": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_radius_mobile": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "box_shadow_box_shadow_type": "",
+        "box_shadow_box_shadow": {
+          "horizontal": 0,
+          "vertical": 0,
+          "blur": 10,
+          "spread": 0,
+          "color": "rgba(0,0,0,0.5)"
+        },
+        "box_shadow_box_shadow_position": " ",
+        "border_hover_border": "",
+        "border_hover_width": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_hover_width_tablet": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_hover_width_mobile": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_hover_color": "",
+        "border_radius_hover": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_radius_hover_tablet": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "border_radius_hover_mobile": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "box_shadow_hover_box_shadow_type": "",
+        "box_shadow_hover_box_shadow": {
+          "horizontal": 0,
+          "vertical": 0,
+          "blur": 10,
+          "spread": 0,
+          "color": "rgba(0,0,0,0.5)"
+        },
+        "box_shadow_hover_box_shadow_position": " ",
+        "border_hover_transition": {
+          "unit": "px",
+          "size": 0.3,
+          "sizes": []
+        },
+        "shape_divider_top": "",
+        "shape_divider_top_color": "",
+        "shape_divider_top_width": {
+          "unit": "%",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_top_width_tablet": {
+          "unit": "%",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_top_width_mobile": {
+          "unit": "%",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_top_height": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_top_height_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_top_height_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_top_flip": "",
+        "shape_divider_top_negative": "",
+        "shape_divider_top_above_content": "",
+        "shape_divider_bottom": "",
+        "shape_divider_bottom_color": "",
+        "shape_divider_bottom_width": {
+          "unit": "%",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_bottom_width_tablet": {
+          "unit": "%",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_bottom_width_mobile": {
+          "unit": "%",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_bottom_height": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_bottom_height_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_bottom_height_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "shape_divider_bottom_flip": "",
+        "shape_divider_bottom_negative": "",
+        "shape_divider_bottom_above_content": "",
+        "margin": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "margin_tablet": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "margin_mobile": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "padding_tablet": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "padding_mobile": {
+          "unit": "px",
+          "top": "",
+          "right": "",
+          "bottom": "",
+          "left": "",
+          "isLinked": true
+        },
+        "grid_column": "",
+        "grid_column_tablet": "",
+        "grid_column_mobile": "",
+        "grid_column_custom": "",
+        "grid_column_custom_tablet": "",
+        "grid_column_custom_mobile": "",
+        "grid_row": "",
+        "grid_row_tablet": "",
+        "grid_row_mobile": "",
+        "grid_row_custom": "",
+        "grid_row_custom_tablet": "",
+        "grid_row_custom_mobile": "",
+        "_flex_align_self": "",
+        "_flex_align_self_tablet": "",
+        "_flex_align_self_mobile": "",
+        "_flex_order": "",
+        "_flex_order_tablet": "",
+        "_flex_order_mobile": "",
+        "_flex_order_custom": "",
+        "_flex_order_custom_tablet": "",
+        "_flex_order_custom_mobile": "",
+        "_flex_shrink": 1,
+        "position": "",
+        "_offset_orientation_h": "start",
+        "_offset_x": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "_offset_x_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_x_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_x_end": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "_offset_x_end_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_x_end_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_orientation_v": "start",
+        "_offset_y": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "_offset_y_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_y_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_y_end": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "_offset_y_end_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_offset_y_end_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "z_index": "",
+        "z_index_tablet": "",
+        "z_index_mobile": "",
+        "_element_id": "",
+        "css_classes": "",
+        "e_display_conditions": "",
+        "motion_fx_motion_fx_scrolling": "",
+        "motion_fx_translateY_effect": "",
+        "motion_fx_translateY_direction": "",
+        "motion_fx_translateY_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "motion_fx_translateY_affectedRange": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 0,
+            "end": 100
+          }
+        },
+        "motion_fx_translateX_effect": "",
+        "motion_fx_translateX_direction": "",
+        "motion_fx_translateX_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "motion_fx_translateX_affectedRange": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 0,
+            "end": 100
+          }
+        },
+        "motion_fx_opacity_effect": "",
+        "motion_fx_opacity_direction": "out-in",
+        "motion_fx_opacity_level": {
+          "unit": "px",
+          "size": 10,
+          "sizes": []
+        },
+        "motion_fx_opacity_range": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 20,
+            "end": 80
+          }
+        },
+        "motion_fx_blur_effect": "",
+        "motion_fx_blur_direction": "out-in",
+        "motion_fx_blur_level": {
+          "unit": "px",
+          "size": 7,
+          "sizes": []
+        },
+        "motion_fx_blur_range": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 20,
+            "end": 80
+          }
+        },
+        "motion_fx_rotateZ_effect": "",
+        "motion_fx_rotateZ_direction": "",
+        "motion_fx_rotateZ_speed": {
+          "unit": "px",
+          "size": 1,
+          "sizes": []
+        },
+        "motion_fx_rotateZ_affectedRange": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 0,
+            "end": 100
+          }
+        },
+        "motion_fx_scale_effect": "",
+        "motion_fx_scale_direction": "out-in",
+        "motion_fx_scale_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "motion_fx_scale_range": {
+          "unit": "%",
+          "size": "",
+          "sizes": {
+            "start": 20,
+            "end": 80
+          }
+        },
+        "motion_fx_transform_origin_x": "center",
+        "motion_fx_transform_origin_y": "center",
+        "motion_fx_devices": [
+          "desktop",
+          "tablet",
+          "mobile"
+        ],
+        "motion_fx_range": "",
+        "motion_fx_motion_fx_mouse": "",
+        "motion_fx_mouseTrack_effect": "",
+        "motion_fx_mouseTrack_direction": "",
+        "motion_fx_mouseTrack_speed": {
+          "unit": "px",
+          "size": 1,
+          "sizes": []
+        },
+        "motion_fx_tilt_effect": "",
+        "motion_fx_tilt_direction": "",
+        "motion_fx_tilt_speed": {
+          "unit": "px",
+          "size": 4,
+          "sizes": []
+        },
+        "handle_motion_fx_asset_loading": "",
+        "sticky": "",
+        "sticky_on": [
+          "desktop",
+          "tablet",
+          "mobile"
+        ],
+        "sticky_offset": 0,
+        "sticky_offset_tablet": "",
+        "sticky_offset_mobile": "",
+        "sticky_effects_offset": 0,
+        "sticky_effects_offset_tablet": "",
+        "sticky_effects_offset_mobile": "",
+        "sticky_anchor_link_offset": 0,
+        "sticky_anchor_link_offset_tablet": "",
+        "sticky_anchor_link_offset_mobile": "",
+        "sticky_parent": "",
+        "animation": "",
+        "animation_tablet": "",
+        "animation_mobile": "",
+        "animation_duration": "",
+        "animation_delay": "",
+        "_transform_rotate_popover": "",
+        "_transform_rotateZ_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateZ_effect_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateZ_effect_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotate_3d": "",
+        "_transform_rotateX_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateX_effect_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateX_effect_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateY_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateY_effect_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateY_effect_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_perspective_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_perspective_effect_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_perspective_effect_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translate_popover": "",
+        "_transform_translateX_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateX_effect_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateX_effect_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateY_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateY_effect_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateY_effect_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scale_popover": "",
+        "_transform_keep_proportions": "yes",
+        "_transform_scale_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scale_effect_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scale_effect_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleX_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleX_effect_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleX_effect_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleY_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleY_effect_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleY_effect_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skew_popover": "",
+        "_transform_skewX_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewX_effect_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewX_effect_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewY_effect": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewY_effect_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewY_effect_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_flipX_effect": "",
+        "_transform_flipY_effect": "",
+        "_transform_rotate_popover_hover": "",
+        "_transform_rotateZ_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateZ_effect_hover_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateZ_effect_hover_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotate_3d_hover": "",
+        "_transform_rotateX_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateX_effect_hover_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateX_effect_hover_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateY_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateY_effect_hover_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_rotateY_effect_hover_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_perspective_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_perspective_effect_hover_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_perspective_effect_hover_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translate_popover_hover": "",
+        "_transform_translateX_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateX_effect_hover_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateX_effect_hover_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateY_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateY_effect_hover_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_translateY_effect_hover_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scale_popover_hover": "",
+        "_transform_keep_proportions_hover": "yes",
+        "_transform_scale_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scale_effect_hover_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scale_effect_hover_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleX_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleX_effect_hover_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleX_effect_hover_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleY_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleY_effect_hover_tablet": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_scaleY_effect_hover_mobile": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skew_popover_hover": "",
+        "_transform_skewX_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewX_effect_hover_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewX_effect_hover_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewY_effect_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewY_effect_hover_tablet": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_skewY_effect_hover_mobile": {
+          "unit": "deg",
+          "size": "",
+          "sizes": []
+        },
+        "_transform_flipX_effect_hover": "",
+        "_transform_flipY_effect_hover": "",
+        "_transform_transition_hover": {
+          "unit": "px",
+          "size": "",
+          "sizes": []
+        },
+        "motion_fx_transform_x_anchor_point": "",
+        "motion_fx_transform_x_anchor_point_tablet": "",
+        "motion_fx_transform_x_anchor_point_mobile": "",
+        "motion_fx_transform_y_anchor_point": "",
+        "motion_fx_transform_y_anchor_point_tablet": "",
+        "motion_fx_transform_y_anchor_point_mobile": "",
+        "hide_desktop": "",
+        "hide_tablet": "",
+        "hide_mobile": "",
+        "_attributes": "",
+        "custom_css": ""
+      }
+    },
+    "collection": {
+      "direction": "row",
+      "direction_tablet": "column",
+      "direction_mobile": "column",
+      "align_items": "stretch",
+      "gap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      }
+    },
+    "desktop_item_width": "calc((100% - 1.5rem - 1.5rem) / 3)",
+    "tablet_mobile_item_width": "100%",
+    "per_card_justify_content": "space-between",
+    "per_card_gap": "1.25rem",
+    "native_format": "Elementor Flex containers/widgets; no Grid layout widgets/controls active"
+  },
+  "content_fidelity": {
+    "intro": {
+      "eyebrow": "ТЕСТОВЫЕ ТАРИФЫ",
+      "title": "Выберите объём работ",
+      "body": "Три фиксированных синтетических предложения проверяют цену, состав и ссылки"
+    },
+    "tiers": [
+      {
+        "name": "Старт",
+        "price": "25 000 ₸/мес",
+        "description": "Для одной небольшой задачи",
+        "features": [
+          "Одна консультация"
+        ],
+        "cta": "Выбрать Старт",
+        "href": "#tier-start"
+      },
+      {
+        "name": "Проект",
+        "price": "125 000 ₸/мес",
+        "description": "Для проработки и реализации нескольких связанных задач с согласованными этапами",
+        "features": [
+          "Исследование контекста",
+          "Согласование прототипа",
+          "Проверка результата",
+          "Документация для команды"
+        ],
+        "cta": "Выбрать Проект",
+        "href": "#tier-project"
+      },
+      {
+        "name": "Поддержка",
+        "price": "60 000 ₸/мес",
+        "description": "Для регулярных задач",
+        "features": [
+          "Проверка изменений",
+          "Ежемесячная консультация"
+        ],
+        "cta": "Выбрать Поддержку",
+        "href": "#tier-support"
+      }
+    ],
+    "fourth_tier": false,
+    "images": 0
+  },
+  "first_render": {
+    "editor_dom_file": "E-v293-first-render-editor-dom.json",
+    "layout_at_first_render": "3 equal-width desktop card surfaces with CTA bottom aligned; no photo widgets"
+  },
+  "publish_reload": {
+    "editor_inline_version": "v02.11.293",
+    "publish_button_disabled_after_publish": true,
+    "native_independent_export": "E-v293-native-after-reload.json",
+    "public_dom_desktop": "E-v293-public-desktop-dom.json",
+    "public_dom_tablet": "E-v293-public-tablet-dom.json",
+    "public_dom_mobile": "E-v293-public-mobile-dom.json",
+    "public_dom_mobile_collapsed": "E-v293-public-mobile-collapsed-dom.json"
+  },
+  "geometry": {
+    "desktop": {
+      "cardCount": 3,
+      "chat": {
+        "class": "wpdsac-chat wpdsac-position--bottom-right",
+        "expanded": false,
+        "greeting": {
+          "display": "none",
+          "rect": {
+            "bottom": 0,
+            "height": 0,
+            "right": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "text": "Ассаламу алейкум!"
+        },
+        "rect": {
+          "bottom": 876,
+          "height": 60,
+          "right": 1256,
+          "width": 60,
+          "x": 1196,
+          "y": 816
+        }
+      },
+      "chatIntersectsCards": [
+        {
+          "card": "9c2b78c",
+          "intersects": false
+        },
+        {
+          "card": "091f39c",
+          "intersects": false
+        },
+        {
+          "card": "8113c53",
+          "intersects": false
+        }
+      ],
+      "collection": {
+        "cards": [
+          {
+            "clientHeight": 420,
+            "headings": [
+              {
+                "rect": {
+                  "bottom": 337.1875,
+                  "height": 23.3984375,
+                  "right": 408.9921875,
+                  "width": 313.9921875,
+                  "x": 95,
+                  "y": 313.7890625
+                },
+                "style": {
+                  "alignItems": "normal",
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "columnGap": "normal",
+                  "display": "block",
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "fontSize": "18px",
+                  "gap": "normal",
+                  "justifyContent": "normal",
+                  "lineHeight": "23.4px",
+                  "maxHeight": "none",
+                  "minHeight": "0px",
+                  "overflow": "visible",
+                  "padding": "0px",
+                  "rowGap": "normal",
+                  "textAlign": "start"
+                },
+                "tag": "H3",
+                "text": "Старт"
+              },
+              {
+                "rect": {
+                  "bottom": 387.5859375,
+                  "height": 38.3984375,
+                  "right": 219.5625,
+                  "width": 124.5625,
+                  "x": 95,
+                  "y": 349.1875
+                },
+                "style": {
+                  "alignItems": "normal",
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "columnGap": "normal",
+                  "display": "block",
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "fontSize": "32px",
+                  "gap": "normal",
+                  "justifyContent": "normal",
+                  "lineHeight": "38.4px",
+                  "maxHeight": "none",
+                  "minHeight": "0px",
+                  "overflow": "visible",
+                  "padding": "0px",
+                  "rowGap": "normal",
+                  "textAlign": "start"
+                },
+                "tag": "H3",
+                "text": "25 000 ₸"
+              }
+            ],
+            "id": "9c2b78c",
+            "links": [
+              {
+                "href": "#tier-start",
+                "rect": {
+                  "bottom": 685.796875,
+                  "height": 39,
+                  "right": 249.3203125,
+                  "width": 154.3203125,
+                  "x": 95,
+                  "y": 646.796875
+                },
+                "text": "Выбрать Старт"
+              }
+            ],
+            "overflowContent": false,
+            "rect": {
+              "bottom": 710.796875,
+              "height": 422.0078125,
+              "right": 433.9921875,
+              "width": 363.9921875,
+              "x": 70,
+              "y": 288.7890625
+            },
+            "scrollHeight": 420,
+            "style": {
+              "alignItems": "stretch",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "columnGap": "20px",
+              "display": "flex",
+              "flexDirection": "column",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "20px",
+              "justifyContent": "space-between",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "24px",
+              "rowGap": "20px",
+              "textAlign": "start"
+            },
+            "text": "Старт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт",
+            "texts": [
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 381.1875,
+                  "height": 25.6015625,
+                  "right": 255.5625,
+                  "width": 32,
+                  "x": 223.5625,
+                  "y": 355.5859375
+                },
+                "text": "/мес"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 425.1875,
+                  "height": 25.6015625,
+                  "right": 408.9921875,
+                  "width": 313.9921875,
+                  "x": 95,
+                  "y": 399.5859375
+                },
+                "text": "Для одной небольшой задачи"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 462.7890625,
+                  "height": 25.6015625,
+                  "right": 408.9921875,
+                  "width": 313.9921875,
+                  "x": 95,
+                  "y": 437.1875
+                },
+                "text": "Одна консультация"
+              }
+            ]
+          },
+          {
+            "clientHeight": 420,
+            "headings": [
+              {
+                "rect": {
+                  "bottom": 337.1875,
+                  "height": 23.3984375,
+                  "right": 796.984375,
+                  "width": 313.9921875,
+                  "x": 482.9921875,
+                  "y": 313.7890625
+                },
+                "style": {
+                  "alignItems": "normal",
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "columnGap": "normal",
+                  "display": "block",
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "fontSize": "18px",
+                  "gap": "normal",
+                  "justifyContent": "normal",
+                  "lineHeight": "23.4px",
+                  "maxHeight": "none",
+                  "minHeight": "0px",
+                  "overflow": "visible",
+                  "padding": "0px",
+                  "rowGap": "normal",
+                  "textAlign": "start"
+                },
+                "tag": "H3",
+                "text": "Проект"
+              },
+              {
+                "rect": {
+                  "bottom": 387.5859375,
+                  "height": 38.3984375,
+                  "right": 625.3515625,
+                  "width": 142.359375,
+                  "x": 482.9921875,
+                  "y": 349.1875
+                },
+                "style": {
+                  "alignItems": "normal",
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "columnGap": "normal",
+                  "display": "block",
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "fontSize": "32px",
+                  "gap": "normal",
+                  "justifyContent": "normal",
+                  "lineHeight": "38.4px",
+                  "maxHeight": "none",
+                  "minHeight": "0px",
+                  "overflow": "visible",
+                  "padding": "0px",
+                  "rowGap": "normal",
+                  "textAlign": "start"
+                },
+                "tag": "H3",
+                "text": "125 000 ₸"
+              }
+            ],
+            "id": "091f39c",
+            "links": [
+              {
+                "href": "#tier-project",
+                "rect": {
+                  "bottom": 685.796875,
+                  "height": 39,
+                  "right": 648.0625,
+                  "width": 165.0703125,
+                  "x": 482.9921875,
+                  "y": 646.796875
+                },
+                "text": "Выбрать Проект"
+              }
+            ],
+            "overflowContent": false,
+            "rect": {
+              "bottom": 710.796875,
+              "height": 422.0078125,
+              "right": 821.984375,
+              "width": 363.9921875,
+              "x": 457.9921875,
+              "y": 288.7890625
+            },
+            "scrollHeight": 420,
+            "style": {
+              "alignItems": "stretch",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "columnGap": "20px",
+              "display": "flex",
+              "flexDirection": "column",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "20px",
+              "justifyContent": "space-between",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "24px",
+              "rowGap": "20px",
+              "textAlign": "start"
+            },
+            "text": "Проект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект",
+            "texts": [
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 381.1875,
+                  "height": 25.6015625,
+                  "right": 661.3515625,
+                  "width": 32,
+                  "x": 629.3515625,
+                  "y": 355.5859375
+                },
+                "text": "/мес"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 476.390625,
+                  "height": 76.8046875,
+                  "right": 796.984375,
+                  "width": 313.9921875,
+                  "x": 482.9921875,
+                  "y": 399.5859375
+                },
+                "text": "Для проработки и реализации нескольких связанных задач с согласованными этапами"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 513.9921875,
+                  "height": 25.6015625,
+                  "right": 796.984375,
+                  "width": 313.9921875,
+                  "x": 482.9921875,
+                  "y": 488.390625
+                },
+                "text": "Исследование контекста"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 551.59375,
+                  "height": 25.6015625,
+                  "right": 796.984375,
+                  "width": 313.9921875,
+                  "x": 482.9921875,
+                  "y": 525.9921875
+                },
+                "text": "Согласование прототипа"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 589.1953125,
+                  "height": 25.6015625,
+                  "right": 796.984375,
+                  "width": 313.9921875,
+                  "x": 482.9921875,
+                  "y": 563.59375
+                },
+                "text": "Проверка результата"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 626.796875,
+                  "height": 25.6015625,
+                  "right": 796.984375,
+                  "width": 313.9921875,
+                  "x": 482.9921875,
+                  "y": 601.1953125
+                },
+                "text": "Документация для команды"
+              }
+            ]
+          },
+          {
+            "clientHeight": 420,
+            "headings": [
+              {
+                "rect": {
+                  "bottom": 337.1875,
+                  "height": 23.3984375,
+                  "right": 1184.9765625,
+                  "width": 313.9921875,
+                  "x": 870.984375,
+                  "y": 313.7890625
+                },
+                "style": {
+                  "alignItems": "normal",
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "columnGap": "normal",
+                  "display": "block",
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "fontSize": "18px",
+                  "gap": "normal",
+                  "justifyContent": "normal",
+                  "lineHeight": "23.4px",
+                  "maxHeight": "none",
+                  "minHeight": "0px",
+                  "overflow": "visible",
+                  "padding": "0px",
+                  "rowGap": "normal",
+                  "textAlign": "start"
+                },
+                "tag": "H3",
+                "text": "Поддержка"
+              },
+              {
+                "rect": {
+                  "bottom": 387.5859375,
+                  "height": 38.3984375,
+                  "right": 995.546875,
+                  "width": 124.5625,
+                  "x": 870.984375,
+                  "y": 349.1875
+                },
+                "style": {
+                  "alignItems": "normal",
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "columnGap": "normal",
+                  "display": "block",
+                  "flexDirection": "row",
+                  "flexWrap": "nowrap",
+                  "fontSize": "32px",
+                  "gap": "normal",
+                  "justifyContent": "normal",
+                  "lineHeight": "38.4px",
+                  "maxHeight": "none",
+                  "minHeight": "0px",
+                  "overflow": "visible",
+                  "padding": "0px",
+                  "rowGap": "normal",
+                  "textAlign": "start"
+                },
+                "tag": "H3",
+                "text": "60 000 ₸"
+              }
+            ],
+            "id": "8113c53",
+            "links": [
+              {
+                "href": "#tier-support",
+                "rect": {
+                  "bottom": 685.796875,
+                  "height": 39,
+                  "right": 1066.234375,
+                  "width": 195.25,
+                  "x": 870.984375,
+                  "y": 646.796875
+                },
+                "text": "Выбрать Поддержку"
+              }
+            ],
+            "overflowContent": false,
+            "rect": {
+              "bottom": 710.796875,
+              "height": 422.0078125,
+              "right": 1209.9765625,
+              "width": 363.9921875,
+              "x": 845.984375,
+              "y": 288.7890625
+            },
+            "scrollHeight": 420,
+            "style": {
+              "alignItems": "stretch",
+              "backgroundColor": "rgb(255, 255, 255)",
+              "columnGap": "20px",
+              "display": "flex",
+              "flexDirection": "column",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "20px",
+              "justifyContent": "space-between",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "24px",
+              "rowGap": "20px",
+              "textAlign": "start"
+            },
+            "text": "Поддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку",
+            "texts": [
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 381.1875,
+                  "height": 25.6015625,
+                  "right": 1031.546875,
+                  "width": 32,
+                  "x": 999.546875,
+                  "y": 355.5859375
+                },
+                "text": "/мес"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 425.1875,
+                  "height": 25.6015625,
+                  "right": 1184.9765625,
+                  "width": 313.9921875,
+                  "x": 870.984375,
+                  "y": 399.5859375
+                },
+                "text": "Для регулярных задач"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 462.7890625,
+                  "height": 25.6015625,
+                  "right": 1184.9765625,
+                  "width": 313.9921875,
+                  "x": 870.984375,
+                  "y": 437.1875
+                },
+                "text": "Проверка изменений"
+              },
+              {
+                "clipped": false,
+                "rect": {
+                  "bottom": 500.390625,
+                  "height": 25.6015625,
+                  "right": 1184.9765625,
+                  "width": 313.9921875,
+                  "x": 870.984375,
+                  "y": 474.7890625
+                },
+                "text": "Ежемесячная консультация"
+              }
+            ]
+          }
+        ],
+        "id": "c6e19bd",
+        "rect": {
+          "bottom": 710.796875,
+          "height": 422.0078125,
+          "right": 1210,
+          "width": 1140,
+          "x": 70,
+          "y": 288.7890625
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "columnGap": "24px",
+          "display": "flex",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+          "fontSize": "16px",
+          "gap": "24px",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "0px",
+          "rowGap": "24px",
+          "textAlign": "start"
+        }
+      },
+      "images": 0,
+      "post_id": 5214,
+      "root": {
+        "clientHeight": 751,
+        "rect": {
+          "bottom": 782.796875,
+          "height": 750.796875,
+          "right": 1280,
+          "width": 1280,
+          "x": 0,
+          "y": 32
+        },
+        "scrollHeight": 751,
+        "style": {
+          "alignItems": "normal",
+          "backgroundColor": "rgba(97, 206, 112, 0.2)",
+          "columnGap": "normal",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "normal",
+          "justifyContent": "normal",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "0px",
+          "overflow": "visible",
+          "padding": "0px 32px",
+          "rowGap": "normal",
+          "textAlign": "start"
+        },
+        "text": "ТЕСТОВЫЕ ТАРИФЫ\nВыберите объём работ\nТри фиксированных синтетических предложения проверяют цену, состав и ссылки\nСтарт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт\nПроект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект\nПоддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку"
+      },
+      "rootLinks": [
+        {
+          "href": "#tier-start",
+          "text": "Выбрать Старт"
+        },
+        {
+          "href": "#tier-project",
+          "text": "Выбрать Проект"
+        },
+        {
+          "href": "#tier-support",
+          "text": "Выбрать Поддержку"
+        }
+      ],
+      "root_id": "44acb9c",
+      "source": "public",
+      "viewport": {
+        "clientHeight": 900,
+        "clientWidth": 1280,
+        "devicePixelRatio": 1,
+        "innerHeight": 900,
+        "innerWidth": 1280,
+        "scrollHeight": 900,
+        "scrollWidth": 1280,
+        "visualViewportHeight": 900,
+        "visualViewportWidth": 1280
+      }
+    },
+    "tablet": {
+      "cards": [
+        {
+          "action": {
+            "href": "#tier-start",
+            "rect": {
+              "height": 39,
+              "width": 154.3203125,
+              "x": 53,
+              "y": 465.75
+            },
+            "text": "Выбрать Старт"
+          },
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "9c2b78c",
+          "justify": "space-between",
+          "overflow": "visible",
+          "rect": {
+            "height": 246.1640625,
+            "width": 821,
+            "x": 32,
+            "y": 279.5859375
+          },
+          "text": "Старт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт",
+          "title": "Старт"
+        },
+        {
+          "action": {
+            "href": "#tier-project",
+            "rect": {
+              "height": 39,
+              "width": 165.0703125,
+              "x": 53,
+              "y": 848.71875
+            },
+            "text": "Выбрать Проект"
+          },
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "091f39c",
+          "justify": "space-between",
+          "overflow": "visible",
+          "rect": {
+            "height": 358.96875,
+            "width": 821,
+            "x": 32,
+            "y": 549.75
+          },
+          "text": "Проект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект",
+          "title": "Проект"
+        },
+        {
+          "action": {
+            "href": "#tier-support",
+            "rect": {
+              "height": 39,
+              "width": 195.25,
+              "x": 53,
+              "y": 1156.484375
+            },
+            "text": "Выбрать Поддержку"
+          },
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "8113c53",
+          "justify": "space-between",
+          "overflow": "visible",
+          "rect": {
+            "height": 283.765625,
+            "width": 821,
+            "x": 32,
+            "y": 932.71875
+          },
+          "text": "Поддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку",
+          "title": "Поддержка"
+        }
+      ],
+      "collection": {
+        "children": 3,
+        "direction": "column",
+        "display": "flex",
+        "gap": "24px",
+        "rect": {
+          "height": 936.8984375,
+          "width": 821,
+          "x": 32,
+          "y": 279.5859375
+        }
+      },
+      "documentOverflow": false,
+      "headings": [
+        {
+          "fontSize": "12px",
+          "rect": {
+            "height": 14.3984375,
+            "width": 140.4296875,
+            "x": 45,
+            "y": 110.59375
+          },
+          "tag": "H6",
+          "text": "ТЕСТОВЫЕ ТАРИФЫ",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "32px",
+          "rect": {
+            "height": 36.796875,
+            "width": 370.6875,
+            "x": 32,
+            "y": 143.5859375
+          },
+          "tag": "H2",
+          "text": "Выберите объём работ",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "18px",
+          "rect": {
+            "height": 23.3984375,
+            "width": 779,
+            "x": 53,
+            "y": 300.5859375
+          },
+          "tag": "H3",
+          "text": "Старт",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "28.8px",
+          "rect": {
+            "height": 34.5625,
+            "width": 112.109375,
+            "x": 53,
+            "y": 335.984375
+          },
+          "tag": "H3",
+          "text": "25 000 ₸",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "18px",
+          "rect": {
+            "height": 23.3984375,
+            "width": 779,
+            "x": 53,
+            "y": 570.75
+          },
+          "tag": "H3",
+          "text": "Проект",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "28.8px",
+          "rect": {
+            "height": 34.5625,
+            "width": 128.125,
+            "x": 53,
+            "y": 606.1484375
+          },
+          "tag": "H3",
+          "text": "125 000 ₸",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "18px",
+          "rect": {
+            "height": 23.3984375,
+            "width": 779,
+            "x": 53,
+            "y": 953.71875
+          },
+          "tag": "H3",
+          "text": "Поддержка",
+          "textAlign": "start"
+        },
+        {
+          "fontSize": "28.8px",
+          "rect": {
+            "height": 34.5625,
+            "width": 112.109375,
+            "x": 53,
+            "y": 989.1171875
+          },
+          "tag": "H3",
+          "text": "60 000 ₸",
+          "textAlign": "start"
+        }
+      ],
+      "images": 0,
+      "post": 5214,
+      "root": "44acb9c",
+      "rootRect": {
+        "height": 1256.484375,
+        "width": 885,
+        "x": 0,
+        "y": 32
+      },
+      "rootScroll": {
+        "bodyScrollWidth": 885,
+        "clientWidth": 885,
+        "scrollWidth": 885
+      },
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "viewport": {
+        "documentClientWidth": 885,
+        "visualViewportHeight": 900,
+        "visualViewportWidth": 885
+      }
+    },
+    "mobile": {
+      "cards": [
+        {
+          "action": {
+            "chatIntersection": false,
+            "href": "#tier-start",
+            "rect": {
+              "height": 39,
+              "width": 154.3203125,
+              "x": 33,
+              "y": 452.9140625
+            },
+            "text": "Выбрать Старт"
+          },
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "9c2b78c",
+          "justify": "flex-start",
+          "overflow": "visible",
+          "rect": {
+            "height": 234.3203125,
+            "width": 343,
+            "x": 16,
+            "y": 274.59375
+          },
+          "text": "Старт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт",
+          "title": "Старт"
+        },
+        {
+          "action": {
+            "chatIntersection": false,
+            "href": "#tier-project",
+            "rect": {
+              "height": 39,
+              "width": 165.0703125,
+              "x": 33,
+              "y": 867.2421875
+            },
+            "text": "Выбрать Проект"
+          },
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "091f39c",
+          "justify": "flex-start",
+          "overflow": "visible",
+          "rect": {
+            "height": 398.328125,
+            "width": 343,
+            "x": 16,
+            "y": 524.9140625
+          },
+          "text": "Проект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект",
+          "title": "Проект"
+        },
+        {
+          "action": {
+            "chatIntersection": false,
+            "href": "#tier-support",
+            "rect": {
+              "height": 39,
+              "width": 195.25,
+              "x": 33,
+              "y": 1155.1640625
+            },
+            "text": "Выбрать Поддержку"
+          },
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "8113c53",
+          "justify": "flex-start",
+          "overflow": "visible",
+          "rect": {
+            "height": 271.921875,
+            "width": 343,
+            "x": 16,
+            "y": 939.2421875
+          },
+          "text": "Поддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку",
+          "title": "Поддержка"
+        }
+      ],
+      "chatToggle": {
+        "height": 60,
+        "intersectsCards": [
+          {
+            "id": "9c2b78c",
+            "intersects": false
+          },
+          {
+            "id": "091f39c",
+            "intersects": true
+          },
+          {
+            "id": "8113c53",
+            "intersects": false
+          }
+        ],
+        "width": 60,
+        "x": 291,
+        "y": 760
+      },
+      "collection": {
+        "children": 3,
+        "direction": "column",
+        "display": "flex",
+        "gap": "16px",
+        "rect": {
+          "height": 936.5703125,
+          "width": 343,
+          "x": 16,
+          "y": 274.59375
+        }
+      },
+      "documentOverflow": false,
+      "images": 0,
+      "post": 5214,
+      "root": "44acb9c",
+      "rootRect": {
+        "height": 1197.1640625,
+        "width": 375,
+        "x": 0,
+        "y": 46
+      },
+      "rootScroll": {
+        "bodyScrollWidth": 375,
+        "clientWidth": 375,
+        "scrollWidth": 375
+      },
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "source": "public",
+      "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+      "viewport": {
+        "documentClientWidth": 375,
+        "visualViewportHeight": 844,
+        "visualViewportWidth": 375,
+        "windowInnerHeight": 844,
+        "windowInnerWidth": 390
+      },
+      "widgets": [
+        {
+          "chatIntersection": false,
+          "id": "42272be",
+          "rect": {
+            "height": 14.3984375,
+            "width": 140.4296875,
+            "x": 29,
+            "y": 84.59375
+          },
+          "text": "ТЕСТОВЫЕ ТАРИФЫ"
+        },
+        {
+          "chatIntersection": false,
+          "id": "a1a7416",
+          "rect": {
+            "height": 44.203125,
+            "width": 324.3515625,
+            "x": 16,
+            "y": 105.5859375
+          },
+          "text": "Выберите объём работ"
+        },
+        {
+          "chatIntersection": false,
+          "id": "620ea08",
+          "rect": {
+            "height": 92.8046875,
+            "width": 343,
+            "x": 16,
+            "y": 149.7890625
+          },
+          "text": "Три фиксированных синтетических предложения проверяют цену, состав и ссылки"
+        },
+        {
+          "chatIntersection": false,
+          "id": "ff014f8",
+          "rect": {
+            "height": 23.3984375,
+            "width": 309,
+            "x": 33,
+            "y": 291.59375
+          },
+          "text": "Старт"
+        },
+        {
+          "chatIntersection": false,
+          "id": "98247f5",
+          "rect": {
+            "height": 30.71875,
+            "width": 99.65625,
+            "x": 33,
+            "y": 326.9921875
+          },
+          "text": "25 000 ₸"
+        },
+        {
+          "chatIntersection": false,
+          "id": "fa6026c",
+          "rect": {
+            "height": 25.6015625,
+            "width": 32,
+            "x": 136.65625,
+            "y": 329.546875
+          },
+          "text": "/мес"
+        },
+        {
+          "chatIntersection": false,
+          "id": "2b6f415",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 369.7109375
+          },
+          "text": "Для одной небольшой задачи"
+        },
+        {
+          "chatIntersection": false,
+          "id": "32e525e",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 407.3125
+          },
+          "text": "Одна консультация"
+        },
+        {
+          "chatIntersection": false,
+          "id": "75790a9",
+          "rect": {
+            "height": 39,
+            "width": 309,
+            "x": 33,
+            "y": 452.9140625
+          },
+          "text": "Выбрать Старт"
+        },
+        {
+          "chatIntersection": false,
+          "id": "c4599b2",
+          "rect": {
+            "height": 23.3984375,
+            "width": 309,
+            "x": 33,
+            "y": 541.9140625
+          },
+          "text": "Проект"
+        },
+        {
+          "chatIntersection": false,
+          "id": "49e10ac",
+          "rect": {
+            "height": 30.71875,
+            "width": 113.890625,
+            "x": 33,
+            "y": 577.3125
+          },
+          "text": "125 000 ₸"
+        },
+        {
+          "chatIntersection": false,
+          "id": "2bb67a3",
+          "rect": {
+            "height": 25.6015625,
+            "width": 32,
+            "x": 150.890625,
+            "y": 579.8671875
+          },
+          "text": "/мес"
+        },
+        {
+          "chatIntersection": false,
+          "id": "ff2db1e",
+          "rect": {
+            "height": 76.8046875,
+            "width": 309,
+            "x": 33,
+            "y": 620.03125
+          },
+          "text": "Для проработки и реализации нескольких связанных задач с согласованными этапами"
+        },
+        {
+          "chatIntersection": false,
+          "id": "44f712e",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 708.8359375
+          },
+          "text": "Исследование контекста"
+        },
+        {
+          "chatIntersection": true,
+          "id": "7c15f42",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 746.4375
+          },
+          "text": "Согласование прототипа"
+        },
+        {
+          "chatIntersection": true,
+          "id": "630f37b",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 784.0390625
+          },
+          "text": "Проверка результата"
+        },
+        {
+          "chatIntersection": false,
+          "id": "9ed33a5",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 821.640625
+          },
+          "text": "Документация для команды"
+        },
+        {
+          "chatIntersection": false,
+          "id": "6098f0f",
+          "rect": {
+            "height": 39,
+            "width": 309,
+            "x": 33,
+            "y": 867.2421875
+          },
+          "text": "Выбрать Проект"
+        },
+        {
+          "chatIntersection": false,
+          "id": "90096a1",
+          "rect": {
+            "height": 23.3984375,
+            "width": 309,
+            "x": 33,
+            "y": 956.2421875
+          },
+          "text": "Поддержка"
+        },
+        {
+          "chatIntersection": false,
+          "id": "e6718ae",
+          "rect": {
+            "height": 30.71875,
+            "width": 99.65625,
+            "x": 33,
+            "y": 991.640625
+          },
+          "text": "60 000 ₸"
+        },
+        {
+          "chatIntersection": false,
+          "id": "410992d",
+          "rect": {
+            "height": 25.6015625,
+            "width": 32,
+            "x": 136.65625,
+            "y": 994.1953125
+          },
+          "text": "/мес"
+        },
+        {
+          "chatIntersection": false,
+          "id": "e25ce62",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 1034.359375
+          },
+          "text": "Для регулярных задач"
+        },
+        {
+          "chatIntersection": false,
+          "id": "d1f1323",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 1071.9609375
+          },
+          "text": "Проверка изменений"
+        },
+        {
+          "chatIntersection": false,
+          "id": "6104385",
+          "rect": {
+            "height": 25.6015625,
+            "width": 309,
+            "x": 33,
+            "y": 1109.5625
+          },
+          "text": "Ежемесячная консультация"
+        },
+        {
+          "chatIntersection": false,
+          "id": "d666c8f",
+          "rect": {
+            "height": 39,
+            "width": 309,
+            "x": 33,
+            "y": 1155.1640625
+          },
+          "text": "Выбрать Поддержку"
+        }
+      ]
+    },
+    "interpretation": {
+      "desktop": "One row; equal 363.992px card widths and 422.008px heights; all CTA share the bottom axis; collection gap 24px.",
+      "tablet": "At requested viewport 900x900, window.innerWidth 900, visualViewport/document.clientWidth 885 due scrollbar; one card per row with 24px row gap, no horizontal overflow.",
+      "mobile": "Requested 390x844, window.innerWidth 390, visualViewport/document.clientWidth 375; one column, card widths 343px, natural card heights 234.32/398.33/271.92px; Flex justify-content:flex-start, no overflow."
+    }
+  },
+  "visual_review": {
+    "status": "ACCEPTED_WITH_SITE_OVERLAY_NOTE",
+    "findings": [
+      "Accent tint #61ce7033 (20% opacity) with white cards reads as a coherent pricing surface.",
+      "Eyebrow pill, H2 section title, intro body, price hierarchy and separate CTA are legible; exact full long text retained.",
+      "Desktop CTA share a common lower axis; mobile cards expand naturally with content.",
+      "The site-owned AI-Dana greeting was preserved in the first mobile screenshot. Clicking it opened chat, then the native chat toggle collapsed it; no message was sent. The remaining floating launcher geometrically overlaps the right side of two long full-width widget boxes in the second tier, but reviewed pixels do not cover glyphs or CTA; note as a site-owned overlay, not generated content.",
+      "No media is expected or present. Black/white button appearance follows current public/theme output; not overridden in this test."
+    ],
+    "site_chat_modified": false
+  },
+  "undo": {
+    "guarded": true,
+    "preconditions": [
+      "fresh descriptor matched operation/identity/contract/root/page",
+      "Owned model check matched accepted contract",
+      "only one Undo action enabled"
+    ],
+    "result": "already_undone revision 6; editor Publish disabled; reloaded editor canvas only shows “Перетащите виджет”; reloaded public root set []; no manual root deletion",
+    "baseline_after_undo": []
+  },
+  "screenshots": [
+    {
+      "file": "screenshots/E-v293-public-desktop-1280x900.png",
+      "bytes": 240201,
+      "format": "PNG",
+      "width": 1280,
+      "height": 900,
+      "sha256": "1486326b7166f7a4dd1f74ca29c24525975ddc5fb4e59db06d3fedec51acd768"
+    },
+    {
+      "file": "screenshots/E-v293-public-desktop-fullpage.png",
+      "bytes": 236630,
+      "format": "PNG",
+      "width": 1280,
+      "height": 900,
+      "sha256": "105b8be15fdeada1a53db5f47ddedf297c5f0fe4b67ec9177d9b63031069b4e4"
+    },
+    {
+      "file": "screenshots/E-v293-public-tablet-900x900.png",
+      "bytes": 190399,
+      "format": "PNG",
+      "width": 885,
+      "height": 885,
+      "sha256": "5501823731760d65752146d9b3de9e59c41ee1a9f443f5afbc5f9986fdfb5ab8"
+    },
+    {
+      "file": "screenshots/E-v293-public-tablet-fullpage.png",
+      "bytes": 236175,
+      "format": "PNG",
+      "width": 885,
+      "height": 1288,
+      "sha256": "d5864e3fada4361821cd900d5db86f69a1b55894a00222b3923812bb08d6f354"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-390x844.png",
+      "bytes": 141654,
+      "format": "PNG",
+      "width": 375,
+      "height": 812,
+      "sha256": "23634752a29b3e64ece03f8c8e923a765c5c416ab86188d11624d8038ef491a1"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-fullpage.png",
+      "bytes": 181621,
+      "format": "PNG",
+      "width": 375,
+      "height": 1243,
+      "sha256": "facdabee27ce79b81c79a68ba1255d2783286fa4301c73052a333351fa79206f"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-collapsed-390x844.png",
+      "bytes": 141627,
+      "format": "PNG",
+      "width": 375,
+      "height": 812,
+      "sha256": "b2987a12def5e399dd4d2787d71cbaded4237feafbcafb466a54e0d4507e6027"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-collapsed-fullpage.png",
+      "bytes": 181640,
+      "format": "PNG",
+      "width": 375,
+      "height": 1243,
+      "sha256": "659053cc58776fc2e81b7b37b58f7b4a426986d33e04de9fb9272eefdc139385"
+    }
+  ],
+  "original_browser_jpeg_bytes": [
+    {
+      "file": "screenshots/E-v293-public-desktop-1280x900.jpg",
+      "bytes": 72583,
+      "format": "JPEG",
+      "sha256": "44d21b2be3970c5fd628ca762c453aa14ad61d226f0c0be231d513f335bcfead"
+    },
+    {
+      "file": "screenshots/E-v293-public-desktop-fullpage.jpg",
+      "bytes": 72829,
+      "format": "JPEG",
+      "sha256": "eefa95d77f75d990dd6019dfc6d9fb6fc857b6449ba7b0ffbb180a504820b89d"
+    },
+    {
+      "file": "screenshots/E-v293-public-tablet-900x900.jpg",
+      "bytes": 52810,
+      "format": "JPEG",
+      "sha256": "227b6381723cea52706c8d587f62ebac2272348298762d519941af5ff2fd2bf5"
+    },
+    {
+      "file": "screenshots/E-v293-public-tablet-fullpage.jpg",
+      "bytes": 70192,
+      "format": "JPEG",
+      "sha256": "dfc1fe30e0dcc44772978b8db4823e012c2471624018aa3ee8ea11e505eb4ee4"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-390x844.jpg",
+      "bytes": 36428,
+      "format": "JPEG",
+      "sha256": "8ce0d7de85b86826b1b35cccca16ad35c49e0fbc06d7b6ba0c7a80d90779b046"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-fullpage.jpg",
+      "bytes": 52930,
+      "format": "JPEG",
+      "sha256": "7806a99471700d6809b18f9122f300b9f2ee44c99d7aa438956487fe1539ec92"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-collapsed-390x844.jpg",
+      "bytes": 36436,
+      "format": "JPEG",
+      "sha256": "32c8e78bc1b54dffeceb49156501294ea300a8ac0289fe3b5511893284df8c84"
+    },
+    {
+      "file": "screenshots/E-v293-public-mobile-collapsed-fullpage.jpg",
+      "bytes": 53002,
+      "format": "JPEG",
+      "sha256": "810147f8db59db5d7b6f720cb83b063867fc52e7de708f207d438c981528ca2c"
+    }
+  ]
+}

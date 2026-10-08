@@ -1,0 +1,78 @@
+{
+  "observed_text": "Свежий read-only descriptor: operation wpae-68abefd3c3529628, revision 6, status available. write_count=0. composition evidence: {\"schema\":\"wpae-composition-evidence-v1\",\"status\":\"complete\",\"request\":{\"mode\":\"explicit_record\",\"record_id\":\"benefits.grid\",\"record_version\":1,\"visual_profile\":\"editorial_light\",\"visual_profile_source\":\"ui_selector\",\"brief_composition\":\"three_cards\",\"brief_media_side\":null},\"accepted\":{\"record_id\":\"benefits.grid\",\"record_version\":1,\"record_hash\":\"6b3f121c7e7902b143e254507fb809c3c186b17e79c4aa551951197fd9fa0389\",\"source\":\"explicit_record\",\"visual_profile\":\"editorial_light\",\"selection_reasons\":[\"honored_explicit_record\"],\"selection_policy\":\"wpae-composition-selection-v2\",\"catalog_id\":\"wpae-compositions-v1\",\"catalog_identity\":\"8f8ab15c9e1e844274b3959bf3bbffe930f1b7cb7170bfd9931db66fbc1cea2d\"},\"hashes\":{\"brief_sha256\":\"f6edeb6e5ba40173dffed662b4dca6fa45a0cee35f6edefaa50ddd5615139313\",\"plan_sha256\":\"2a1a8c4dfc30730419a34c346dbdf5aac70b40d0b7bc1e1f3a3d369586e57e75\"},\"surface\":{\"profile\":\"editorial_light\",\"section_surface\":{\"token\":\"color.section_bg\",\"source\":\"documented_default\",\"palette_role\":\"accent\",\"opacity\":0.2,\"transparency\":0.8,\"accent_source\":\"elementor_system_color_stock_default:accent\",\"accent_confirmed\":false},\"resolved_value\":\"#61ce7033\",\"value_source\":\"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent\",\"accent_reference\":{\"value\":\"#61ce70\",\"source\":\"elementor_system_color_stock_default:accent\",\"confirmed\":false},\"opaque_underlay\":\"#ffffff\"},\"generation\":{\"route\":\"local_deterministic\",\"provider_calls\":0,\"provider_call_count_source\":\"design_pipeline_preflight\",\"transaction_write_count\":1,\"transaction_write_count_source\":\"successful_transaction_and_readback\"},\"operation\":{\"post_id\":5214,\"operation_id\":\"wpae-68abefd3c3529628\",\"operation_identity\":\"a90f1ace-fc7d-4f50-a1c2-7f6e35ba94a5\",\"root_ids\":[\"bf5992e\"],\"revision\":6,\"accepted_contract_id\":\"contract-5f3a88d70bc8988655ccd47f\",\"accepted_contract_sha256\":\"5f3a88d70bc8988655ccd47fdcb41f8b2dd652773962cd6ca1ed1e7599689636\",\"saved_document_sha256\":\"5c102213294a49d341419e13fb4b353ee59ba31f277c2bcbcba667857b71bb9b\"},\"native\":{\"saved_native_fingerprint\":\"4b8808f0cb6c5700cb006e34738add95b4046889dfad3acdb92d58d3332d8bcc\",\"saved_root_ids\":[\"bf5992e\"]}}",
+  "composition_evidence": {
+    "schema": "wpae-composition-evidence-v1",
+    "status": "complete",
+    "request": {
+      "mode": "explicit_record",
+      "record_id": "benefits.grid",
+      "record_version": 1,
+      "visual_profile": "editorial_light",
+      "visual_profile_source": "ui_selector",
+      "brief_composition": "three_cards",
+      "brief_media_side": null
+    },
+    "accepted": {
+      "record_id": "benefits.grid",
+      "record_version": 1,
+      "record_hash": "6b3f121c7e7902b143e254507fb809c3c186b17e79c4aa551951197fd9fa0389",
+      "source": "explicit_record",
+      "visual_profile": "editorial_light",
+      "selection_reasons": [
+        "honored_explicit_record"
+      ],
+      "selection_policy": "wpae-composition-selection-v2",
+      "catalog_id": "wpae-compositions-v1",
+      "catalog_identity": "8f8ab15c9e1e844274b3959bf3bbffe930f1b7cb7170bfd9931db66fbc1cea2d"
+    },
+    "hashes": {
+      "brief_sha256": "f6edeb6e5ba40173dffed662b4dca6fa45a0cee35f6edefaa50ddd5615139313",
+      "plan_sha256": "2a1a8c4dfc30730419a34c346dbdf5aac70b40d0b7bc1e1f3a3d369586e57e75"
+    },
+    "surface": {
+      "profile": "editorial_light",
+      "section_surface": {
+        "token": "color.section_bg",
+        "source": "documented_default",
+        "palette_role": "accent",
+        "opacity": 0.2,
+        "transparency": 0.8,
+        "accent_source": "elementor_system_color_stock_default:accent",
+        "accent_confirmed": false
+      },
+      "resolved_value": "#61ce7033",
+      "value_source": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent",
+      "accent_reference": {
+        "value": "#61ce70",
+        "source": "elementor_system_color_stock_default:accent",
+        "confirmed": false
+      },
+      "opaque_underlay": "#ffffff"
+    },
+    "generation": {
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "provider_call_count_source": "design_pipeline_preflight",
+      "transaction_write_count": 1,
+      "transaction_write_count_source": "successful_transaction_and_readback"
+    },
+    "operation": {
+      "post_id": 5214,
+      "operation_id": "wpae-68abefd3c3529628",
+      "operation_identity": "a90f1ace-fc7d-4f50-a1c2-7f6e35ba94a5",
+      "root_ids": [
+        "bf5992e"
+      ],
+      "revision": 6,
+      "accepted_contract_id": "contract-5f3a88d70bc8988655ccd47f",
+      "accepted_contract_sha256": "5f3a88d70bc8988655ccd47fdcb41f8b2dd652773962cd6ca1ed1e7599689636",
+      "saved_document_sha256": "5c102213294a49d341419e13fb4b353ee59ba31f277c2bcbcba667857b71bb9b"
+    },
+    "native": {
+      "saved_native_fingerprint": "4b8808f0cb6c5700cb006e34738add95b4046889dfad3acdb92d58d3332d8bcc",
+      "saved_root_ids": [
+        "bf5992e"
+      ]
+    }
+  }
+}

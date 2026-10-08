@@ -1,0 +1,32 @@
+{
+  "operation": {
+    "post_id": 5214,
+    "operation_id": "wpae-2809fae7a68d52c9",
+    "operation_identity": "f5f0b4b2-a258-42de-a2c7-c6a7a88c1d37",
+    "root_ids": [
+      "94ea563"
+    ],
+    "revision": 7,
+    "accepted_contract_id": "contract-c2080a9961e67d3a7b8e8381",
+    "accepted_contract_sha256": "c2080a9961e67d3a7b8e838140973e91026196de9ea8d0cee6a683e274790580",
+    "saved_document_sha256": "7c488b3a56e3737a30216e767b8ae22ed299296cc4d85508bc72c614dce05225"
+  },
+  "operationStatus": "complete",
+  "writeCount": 0,
+  "descriptorRevision": 7,
+  "editor": {
+    "rootIds": [],
+    "text": "Перетащите виджет",
+    "publishDisabled": true
+  },
+  "public": {
+    "cssViewport": {
+      "innerHeight": 844,
+      "innerWidth": 390,
+      "visualViewportHeight": 844,
+      "visualViewportWidth": 390
+    },
+    "rootIds": [],
+    "width": 390
+  }
+}

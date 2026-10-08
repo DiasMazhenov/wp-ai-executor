@@ -1,0 +1,168 @@
+{
+  "scenario": "C",
+  "family": "testimonials",
+  "fixture": "fixtures/C-testimonials-grid.txt",
+  "exact_request": "Создай блок отзывов. Все четыре отзыва синтетические, не реальные рекомендации. Выбери testimonials.grid. Без фотографий, рейтингов, звёзд, логотипов и CTA.\nНадзаголовок «СИНТЕТИЧЕСКИЕ ОТЗЫВЫ» в pill-бейдже. Заголовок «Опыт участников теста». Описание «Вымышленные цитаты разной длины проверяют текст и связь с авторами».\nОтзыв 1 текст «Всё ясно.». Отзыв 1 автор «Автор Альфа». Отзыв 1 компания «Тестовая группа Альфа».\nОтзыв 2 текст «В синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.». Отзыв 2 автор «Автор Бета». Отзыв 2 компания «Тестовая группа Бета».\nОтзыв 3 текст «Хороший темп.». Отзыв 3 автор «Автор Гамма». Отзыв 3 компания «Тестовая группа Гамма».\nОтзыв 4 текст «Длинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.». Отзыв 4 автор «Автор Дельта». Отзыв 4 компания «Тестовая группа Дельта».\nСохрани все пары цитата/автор/подпись и исходный порядок.\n",
+  "post_id": 5214,
+  "source_version": "v02.11.293",
+  "selected": {
+    "route": "local_deterministic",
+    "record_id": "testimonials.grid",
+    "record_version": 1,
+    "record_hash": "77a8235bead676e5cb9d2ec3ffe16d299d7e43cf7e711a7e841b0d2c5c0f6382",
+    "profile": "editorial_light",
+    "brief_sha256": "f11d27e2f1f6acd93c8d8f30829c5a61031445c99ae54835dfbd463cd9ada3a8",
+    "plan_sha256": "eb5e057008e5cb9f25db99d019800231f459c39bec84abf7072c03147045af7c",
+    "accepted_contract_id": "contract-9b2a7b14239de200f8cc79e3",
+    "accepted_contract_sha256": "9b2a7b14239de200f8cc79e364c3366a695a2c525ee0e17312057eee8365c9b6",
+    "provider_calls": 0,
+    "transaction_write_count": 1
+  },
+  "operation": {
+    "id": "wpae-17d930cd89457555",
+    "identity": "2cdedd6b-99e8-4ff5-ae9d-c77687ad469d",
+    "root_id": "f395bb8",
+    "publish_revision": 6,
+    "saved_document_sha256": "4e4c17753f9edc47b54a06c1bb5147d1b267eb324441d8a88ff745a5c26b450a",
+    "native_fingerprint": "36e0b91e1327537b9b6f46836dc086fa636d9f906136c2f64b38a7c835d94715"
+  },
+  "publish_reload": {
+    "published": true,
+    "publish_disabled_after_reload": true,
+    "inline_editor_version": "v02.11.293",
+    "native_readback": "PASS",
+    "native_readback_path": "C-v293-native-after-reload.json",
+    "native_readback_sha256": "88d7cd04e7ec509d898f0fa6d560a44c7f3a3b2185dc06f1d8cb4afa1ebf752c"
+  },
+  "content_fidelity": {
+    "status": "PASS",
+    "items": 4,
+    "exact_order": true,
+    "quote_author_company_pairs": true,
+    "all_text_visible_and_preserved": true,
+    "images": 0,
+    "links": 0,
+    "buttons": 0
+  },
+  "desktop": {
+    "source": "public",
+    "viewport_css": {
+      "innerWidth": 1280,
+      "innerHeight": 900,
+      "visualViewportWidth": 1280,
+      "clientWidth": 1280
+    },
+    "root_id": "f395bb8",
+    "topology": "2-column Flex row/wrap; two aligned rows; 20px gap",
+    "row1_card_heights_px": [
+      259.281,
+      259.281
+    ],
+    "row2_card_heights_px": [
+      231.234,
+      231.234
+    ],
+    "overflow": "none",
+    "chat_overlap": "none",
+    "dom_path": "C-v293-public-desktop-dom.json",
+    "screenshot_path": "screenshots/C-v293-public-desktop-1280x900.png"
+  },
+  "mobile": {
+    "source": "public",
+    "requested_viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "measured_css_viewport": {
+      "windowInnerWidth": 390,
+      "windowInnerHeight": 844,
+      "visualViewportWidth": 375,
+      "visualViewportHeight": 844,
+      "documentClientWidth": 375,
+      "scrollWidth": 375
+    },
+    "png_dimensions": {
+      "viewport": "375x812",
+      "fullpage": "375x1180"
+    },
+    "topology": "single-column Flex; natural content height; 14px collection gap; cards 343px wide",
+    "card_heights_px": [
+      129.297,
+      287.688,
+      129.297,
+      287.688
+    ],
+    "overflow": "none",
+    "site_overlay": {
+      "status": "SITE_OVERLAY on initial greeting screenshot",
+      "greeting_rect": {
+        "x": 46,
+        "y": 699.6,
+        "width": 320,
+        "height": 48.4
+      },
+      "overlap": "covers Gamma short quote; persisted original evidence; greeting collapsed by clicking greeting then native AI-Dana toggle; collapsed launcher overlaps blank right portion of Gamma card without covering its text"
+    },
+    "dom_path": "C-v293-public-mobile-dom.json",
+    "collapsed_dom_path": "C-v293-public-mobile-dom.json",
+    "initial_screenshot": "screenshots/C-v293-public-mobile-390x844.png",
+    "collapsed_screenshot": "screenshots/C-v293-public-mobile-collapsed-390x844.png",
+    "collapsed_fullpage": "screenshots/C-v293-public-mobile-collapsed-fullpage.png"
+  },
+  "visual_review": {
+    "content_fidelity": "PASS",
+    "responsive_geometry": "PASS at measured 375px layout width",
+    "visual_composition": "PASS with SITE_OVERLAY separately recorded; after native collapse no authored text obscured",
+    "quality_notes": "Cards preserve text and grow naturally. Short cards remain compact; long quote cards grow to 287.7px. Intro and collection share left axis; hierarchy is clear. Site-owned chat greeting initially obscured the Gamma quote on mobile."
+  },
+  "undo": {
+    "status": "PASS",
+    "descriptor_revision_after_undo": 7,
+    "descriptor_status": "already_undone",
+    "write_count": 0,
+    "exact_baseline_root_set": [],
+    "editor_canvas_empty": true,
+    "public_root_set": [],
+    "evidence_path": "C-v293-undo-baseline.json"
+  },
+  "artifact_hashes": {
+    "native": {
+      "bytes": 1684899,
+      "sha256": "88d7cd04e7ec509d898f0fa6d560a44c7f3a3b2185dc06f1d8cb4afa1ebf752c"
+    },
+    "descriptor": {
+      "bytes": 2582,
+      "sha256": "572dcaa18bb1bfe95617753ca9b4b7e4220e98a18991dfa1d060d9341d56cb8a"
+    },
+    "desktopDom": {
+      "bytes": 17778,
+      "sha256": "ea0e6874aae8fcb17b192995bc9b7a40a6a7c539b6ff196a8a2e1feb18b654a8"
+    },
+    "mobileDom": {
+      "bytes": 23425,
+      "sha256": "ab3e8292c58c8a56be423abe1cdf0dd268fe17279858c8304e3390888785f09b"
+    },
+    "screenshots": {
+      "desktop": {
+        "bytes": 266618,
+        "sha256": "e624e18871192a9296c06a4ac18525ce6685893da4df991471a47e602e587691"
+      },
+      "mobileGreeting": {
+        "bytes": 153214,
+        "sha256": "411d18f29cca61463e346613ae62215f12132d964a0a8257a35420f5d610f8f7"
+      },
+      "mobileGreetingFull": {
+        "bytes": 205602,
+        "sha256": "92088ff00982bd96504a508f8297bcf5a889f5b52fd85f3617ed6767eb441331"
+      },
+      "mobileCollapsed": {
+        "bytes": 147250,
+        "sha256": "a14dcc7678e3b640c48c8b8072e4bd22aacba2fc83589dff77aa8d05c0ed7916"
+      },
+      "mobileCollapsedFull": {
+        "bytes": 198764,
+        "sha256": "a2d0c2264dce4c19f61a7cbc9f501d9357e0c42f679501c464936497dc4b78ef"
+      }
+    }
+  }
+}

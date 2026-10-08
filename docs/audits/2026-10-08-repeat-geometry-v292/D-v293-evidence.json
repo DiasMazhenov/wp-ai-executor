@@ -1,0 +1,292 @@
+{
+  "scenario": "D",
+  "family": "benefits",
+  "fixture": "fixtures/D-benefits-grid.txt",
+  "exact_request": "Создай блок преимуществ без фото и CTA. Выбери benefits.grid.\nНадзаголовок «ПРЕИМУЩЕСТВА». Заголовок «Понятная работа». Описание «Шесть коротких синтетических пунктов для проверки responsive-сетки».\nПреимущество 1: «Ясный план». Описание преимущества 1: «Цели и этапы согласованы.»\nПреимущество 2: «Общая команда». Описание преимущества 2: «Все работают по одному плану.»\nПреимущество 3: «Понятные сроки». Описание преимущества 3: «Даты видны заранее.»\nПреимущество 4: «Чёткие решения». Описание преимущества 4: «Критерии результата известны.»\nПреимущество 5: «Проверка этапов». Описание преимущества 5: «Каждый этап завершается проверкой.»\nПреимущество 6: «Полная передача». Описание преимущества 6: «Материалы остаются доступными.»\nНа desktop — 3 колонки, на tablet — 2 колонки, на mobile — 1 колонка. Сохрани шесть пар и порядок точно. Не добавляй фото, кнопки, CTA или дополнительные утверждения.\n",
+  "post_id": 5214,
+  "source_version": "v02.11.293",
+  "baseline_before": {
+    "editor_root_ids": [],
+    "public_root_ids": []
+  },
+  "selected": {
+    "route": "local_deterministic",
+    "provider_calls": 0,
+    "transaction_write_count": 1,
+    "record_id": "benefits.grid",
+    "record_version": 1,
+    "record_hash": "6b3f121c7e7902b143e254507fb809c3c186b17e79c4aa551951197fd9fa0389",
+    "selection_source": "explicit_record",
+    "profile": "editorial_light",
+    "brief_composition": "three_cards",
+    "brief_sha256": "f6edeb6e5ba40173dffed662b4dca6fa45a0cee35f6edefaa50ddd5615139313",
+    "plan_sha256": "2a1a8c4dfc30730419a34c346dbdf5aac70b40d0b7bc1e1f3a3d369586e57e75",
+    "accepted_contract_id": "contract-5f3a88d70bc8988655ccd47f",
+    "accepted_contract_sha256": "5f3a88d70bc8988655ccd47fdcb41f8b2dd652773962cd6ca1ed1e7599689636"
+  },
+  "operation": {
+    "id": "wpae-68abefd3c3529628",
+    "identity": "a90f1ace-fc7d-4f50-a1c2-7f6e35ba94a5",
+    "root_id": "bf5992e",
+    "publish_revision": 6,
+    "saved_document_sha256": "5c102213294a49d341419e13fb4b353ee59ba31f277c2bcbcba667857b71bb9b",
+    "native_fingerprint": "4b8808f0cb6c5700cb006e34738add95b4046889dfad3acdb92d58d3332d8bcc"
+  },
+  "publish_reload": {
+    "publish_clicked": true,
+    "publish_disabled_after_publish": true,
+    "reloaded": true,
+    "inline_editor_version": "v02.11.293",
+    "native_readback": "PASS",
+    "native_export_path": "D-v293-native-after-reload.json",
+    "native_sha256": "6f26510d00a64a13da4bffe65b29f82332c829c5f425325331406b50481a9ccc",
+    "first_render_repair_count": 0
+  },
+  "native": {
+    "node_count": 32,
+    "container_count": 11,
+    "widget_count": 21,
+    "root_topology": "Flex column with intro and collection",
+    "collection_id": "71f1328",
+    "collection_topology": "Flex row/wrap, align-items stretch, 20px desktop gap",
+    "desktop_track": "calc((100% - 1.25rem - 1.25rem) / 3)",
+    "tablet_track": "calc((100% - 1rem) / 2)",
+    "mobile_track": "100%",
+    "items": [
+      {
+        "id": "546ce9e",
+        "title": "Ясный план",
+        "body": "Цели и этапы согласованы.",
+        "icon": true
+      },
+      {
+        "id": "71f8cbe",
+        "title": "Общая команда",
+        "body": "Все работают по одному плану.",
+        "icon": true
+      },
+      {
+        "id": "e70799b",
+        "title": "Понятные сроки",
+        "body": "Даты видны заранее.",
+        "icon": true
+      },
+      {
+        "id": "939469c",
+        "title": "Чёткие решения",
+        "body": "Критерии результата известны.",
+        "icon": true
+      },
+      {
+        "id": "0bf2322",
+        "title": "Проверка этапов",
+        "body": "Каждый этап завершается проверкой.",
+        "icon": true
+      },
+      {
+        "id": "e6e4b73",
+        "title": "Полная передача",
+        "body": "Материалы остаются доступными.",
+        "icon": true
+      }
+    ],
+    "photos": 0,
+    "images": 0,
+    "buttons": 0,
+    "cta": 0
+  },
+  "desktop": {
+    "source": "public",
+    "viewport_css": {
+      "innerWidth": 1280,
+      "innerHeight": 900,
+      "visualViewportWidth": 1280,
+      "documentClientWidth": 1280
+    },
+    "root_id": "bf5992e",
+    "columns": 3,
+    "card_width_px": 366.664,
+    "card_height_px": 181.047,
+    "gap_px": 20,
+    "row_count": 2,
+    "overflow": false,
+    "chat_overlay": "none",
+    "dom_path": "D-v293-public-desktop-dom.json",
+    "screenshot_path": "screenshots/D-v293-public-desktop-1280x900.png",
+    "fullpage_path": "screenshots/D-v293-public-desktop-fullpage.png"
+  },
+  "tablet": {
+    "source": "public",
+    "viewport_css": {
+      "innerWidth": 900,
+      "innerHeight": 900,
+      "visualViewportWidth": 900,
+      "documentClientWidth": 900
+    },
+    "root_id": "bf5992e",
+    "columns": 2,
+    "card_width_px": 410,
+    "gap_px": 16,
+    "row_count": 3,
+    "overflow": false,
+    "dom_path": "D-v293-public-tablet-dom.json"
+  },
+  "mobile": {
+    "source": "public",
+    "requested_viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "measured_css_viewport": {
+      "innerWidth": 390,
+      "innerHeight": 844,
+      "visualViewportWidth": 375,
+      "visualViewportHeight": 844,
+      "documentClientWidth": 375,
+      "scrollWidth": 375
+    },
+    "png_dimensions": {
+      "viewport": "375x812",
+      "fullpage": "375x1363"
+    },
+    "root_id": "bf5992e",
+    "columns": 1,
+    "card_width_px": 343,
+    "card_height_px": 164.898,
+    "gap_px": 14,
+    "all_content_visible": true,
+    "horizontal_overflow": false,
+    "site_overlay": {
+      "status": "SITE_OVERLAY",
+      "greeting_text": "Добрый день!!",
+      "greeting_rect": {
+        "h": 48.3984375,
+        "w": 320,
+        "x": 46,
+        "y": 699.6015625
+      },
+      "overlap": "Greeting covered benefit 3 heading and description in full-page capture; native toggle collapsed it; remaining launcher overlays blank right edge of benefit 3."
+    },
+    "dom_path": "D-v293-public-mobile-dom.json",
+    "initial_fullpage": "screenshots/D-v293-public-mobile-fullpage.png",
+    "collapsed_viewport": "screenshots/D-v293-public-mobile-collapsed-390x844.png",
+    "collapsed_fullpage": "screenshots/D-v293-public-mobile-collapsed-fullpage.png"
+  },
+  "content_fidelity": {
+    "status": "PASS",
+    "ordered_six_title_body_pairs_exact": true,
+    "actual_entries": [
+      {
+        "id": "546ce9e",
+        "title": "Ясный план",
+        "body": "Цели и этапы согласованы.",
+        "icon": true
+      },
+      {
+        "id": "71f8cbe",
+        "title": "Общая команда",
+        "body": "Все работают по одному плану.",
+        "icon": true
+      },
+      {
+        "id": "e70799b",
+        "title": "Понятные сроки",
+        "body": "Даты видны заранее.",
+        "icon": true
+      },
+      {
+        "id": "939469c",
+        "title": "Чёткие решения",
+        "body": "Критерии результата известны.",
+        "icon": true
+      },
+      {
+        "id": "0bf2322",
+        "title": "Проверка этапов",
+        "body": "Каждый этап завершается проверкой.",
+        "icon": true
+      },
+      {
+        "id": "e6e4b73",
+        "title": "Полная передача",
+        "body": "Материалы остаются доступными.",
+        "icon": true
+      }
+    ],
+    "extra_claims": false
+  },
+  "visual_review": {
+    "technical_lifecycle": "PASS",
+    "content_fidelity": "PASS",
+    "responsive_geometry": "PASS at public 1280/900/375 CSS widths",
+    "visual_composition": "PASS after collapsing site greeting; initial SITE_OVERLAY recorded",
+    "structural_variation": "PASS Flex 3/2/1 columns",
+    "document_restoration": "PASS root set [] after guarded Undo",
+    "quality": "Black check icons give repeated rhythm; intro and cards share a left axis; short content cards remain compact; mobile cards flow as one column with full text."
+  },
+  "undo": {
+    "status": "PASS",
+    "revision_after_undo": 7,
+    "descriptor_status": "already_undone",
+    "write_count": 0,
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "baseline_path": "D-v293-undo-baseline.json"
+  },
+  "artifacts": {
+    "native": {
+      "bytes": 1746744,
+      "sha256": "6f26510d00a64a13da4bffe65b29f82332c829c5f425325331406b50481a9ccc"
+    },
+    "descriptor": {
+      "bytes": 5274,
+      "sha256": "33e0df5a0bd5a7ed30d7e44f6dbf7326c912d90306ac03c64a376eddc8d39fc3"
+    },
+    "editorFirstRender": {
+      "bytes": 15255,
+      "sha256": "c7976be5b57cd2487604d735dc024d6a9ce0e59cb10b23dddbb78191a31657bd"
+    },
+    "generationTrace": {
+      "bytes": 23812,
+      "sha256": "526e3e725ded42565676570fac1ecfd0031b5d97dd6392bdac6da8e977ec0e7c"
+    },
+    "desktopDom": {
+      "bytes": 18734,
+      "sha256": "c6e6db0ff2ba5132c82d87e0c53ff3138ba54cec822a5bee70c1eeb3f1f8a9f6"
+    },
+    "tabletDom": {
+      "bytes": 4041,
+      "sha256": "2ef2b7a015af04c3da51001bd704d3608f54914486e850299396e368cd8ad4f3"
+    },
+    "mobileDom": {
+      "bytes": 18983,
+      "sha256": "3b5fb64c9ed16d359865a78758a0542679a5efe9ec3e7abc8aea49a7ccb3ce20"
+    },
+    "screenshots": {
+      "desktop": {
+        "bytes": 215359,
+        "sha256": "f8699619ebc79ad5b4153e405455ff10678d3f188e9ef30f58a606fa0c89489a"
+      },
+      "desktopFull": {
+        "bytes": 210456,
+        "sha256": "bed95fc99f62ebc6007f50accfb45f1d2ce81e444133974ed89e7085ce404749"
+      },
+      "mobileOriginal": {
+        "bytes": 112120,
+        "sha256": "d92f3522fdeee3fe66c432fcfe0981592e10aa155232af61090f90b6f079109f"
+      },
+      "mobileFullOverlay": {
+        "bytes": 168370,
+        "sha256": "059ef73034cddb8a35326bb095a8011c45517b55f41f848804819be5178f1aab"
+      },
+      "mobileCollapsed": {
+        "bytes": 112276,
+        "sha256": "a6de309aaea708e01d2806db3243e9794c340356485cd93ca04dbd50c2766ad6"
+      },
+      "mobileCollapsedFull": {
+        "bytes": 163384,
+        "sha256": "073fbd8050ac1d4c5f6f2d1a3d2abd5b7ae24113dd9f975d40c5f0fc1370ad4f"
+      }
+    }
+  }
+}

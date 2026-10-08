@@ -1,0 +1,422 @@
+{
+  "cards": [
+    {
+      "action": {
+        "chatIntersection": false,
+        "href": "#tier-start",
+        "rect": {
+          "height": 39,
+          "width": 154.3203125,
+          "x": 33,
+          "y": 452.9140625
+        },
+        "text": "Выбрать Старт"
+      },
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "id": "9c2b78c",
+      "justify": "flex-start",
+      "overflow": "visible",
+      "rect": {
+        "height": 234.3203125,
+        "width": 343,
+        "x": 16,
+        "y": 274.59375
+      },
+      "text": "Старт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт",
+      "title": "Старт"
+    },
+    {
+      "action": {
+        "chatIntersection": false,
+        "href": "#tier-project",
+        "rect": {
+          "height": 39,
+          "width": 165.0703125,
+          "x": 33,
+          "y": 867.2421875
+        },
+        "text": "Выбрать Проект"
+      },
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "id": "091f39c",
+      "justify": "flex-start",
+      "overflow": "visible",
+      "rect": {
+        "height": 398.328125,
+        "width": 343,
+        "x": 16,
+        "y": 524.9140625
+      },
+      "text": "Проект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект",
+      "title": "Проект"
+    },
+    {
+      "action": {
+        "chatIntersection": false,
+        "href": "#tier-support",
+        "rect": {
+          "height": 39,
+          "width": 195.25,
+          "x": 33,
+          "y": 1155.1640625
+        },
+        "text": "Выбрать Поддержку"
+      },
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "id": "8113c53",
+      "justify": "flex-start",
+      "overflow": "visible",
+      "rect": {
+        "height": 271.921875,
+        "width": 343,
+        "x": 16,
+        "y": 939.2421875
+      },
+      "text": "Поддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку",
+      "title": "Поддержка"
+    }
+  ],
+  "chatToggle": {
+    "height": 60,
+    "intersectsCards": [
+      {
+        "id": "9c2b78c",
+        "intersects": false
+      },
+      {
+        "id": "091f39c",
+        "intersects": true
+      },
+      {
+        "id": "8113c53",
+        "intersects": false
+      }
+    ],
+    "width": 60,
+    "x": 291,
+    "y": 760
+  },
+  "collection": {
+    "children": 3,
+    "direction": "column",
+    "display": "flex",
+    "gap": "16px",
+    "rect": {
+      "height": 936.5703125,
+      "width": 343,
+      "x": 16,
+      "y": 274.59375
+    }
+  },
+  "documentOverflow": false,
+  "images": 0,
+  "post": 5214,
+  "root": "44acb9c",
+  "rootRect": {
+    "height": 1197.1640625,
+    "width": 375,
+    "x": 0,
+    "y": 46
+  },
+  "rootScroll": {
+    "bodyScrollWidth": 375,
+    "clientWidth": 375,
+    "scrollWidth": 375
+  },
+  "scroll": {
+    "x": 0,
+    "y": 0
+  },
+  "source": "public",
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "documentClientWidth": 375,
+    "visualViewportHeight": 844,
+    "visualViewportWidth": 375,
+    "windowInnerHeight": 844,
+    "windowInnerWidth": 390
+  },
+  "widgets": [
+    {
+      "chatIntersection": false,
+      "id": "42272be",
+      "rect": {
+        "height": 14.3984375,
+        "width": 140.4296875,
+        "x": 29,
+        "y": 84.59375
+      },
+      "text": "ТЕСТОВЫЕ ТАРИФЫ"
+    },
+    {
+      "chatIntersection": false,
+      "id": "a1a7416",
+      "rect": {
+        "height": 44.203125,
+        "width": 324.3515625,
+        "x": 16,
+        "y": 105.5859375
+      },
+      "text": "Выберите объём работ"
+    },
+    {
+      "chatIntersection": false,
+      "id": "620ea08",
+      "rect": {
+        "height": 92.8046875,
+        "width": 343,
+        "x": 16,
+        "y": 149.7890625
+      },
+      "text": "Три фиксированных синтетических предложения проверяют цену, состав и ссылки"
+    },
+    {
+      "chatIntersection": false,
+      "id": "ff014f8",
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 291.59375
+      },
+      "text": "Старт"
+    },
+    {
+      "chatIntersection": false,
+      "id": "98247f5",
+      "rect": {
+        "height": 30.71875,
+        "width": 99.65625,
+        "x": 33,
+        "y": 326.9921875
+      },
+      "text": "25 000 ₸"
+    },
+    {
+      "chatIntersection": false,
+      "id": "fa6026c",
+      "rect": {
+        "height": 25.6015625,
+        "width": 32,
+        "x": 136.65625,
+        "y": 329.546875
+      },
+      "text": "/мес"
+    },
+    {
+      "chatIntersection": false,
+      "id": "2b6f415",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 369.7109375
+      },
+      "text": "Для одной небольшой задачи"
+    },
+    {
+      "chatIntersection": false,
+      "id": "32e525e",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 407.3125
+      },
+      "text": "Одна консультация"
+    },
+    {
+      "chatIntersection": false,
+      "id": "75790a9",
+      "rect": {
+        "height": 39,
+        "width": 309,
+        "x": 33,
+        "y": 452.9140625
+      },
+      "text": "Выбрать Старт"
+    },
+    {
+      "chatIntersection": false,
+      "id": "c4599b2",
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 541.9140625
+      },
+      "text": "Проект"
+    },
+    {
+      "chatIntersection": false,
+      "id": "49e10ac",
+      "rect": {
+        "height": 30.71875,
+        "width": 113.890625,
+        "x": 33,
+        "y": 577.3125
+      },
+      "text": "125 000 ₸"
+    },
+    {
+      "chatIntersection": false,
+      "id": "2bb67a3",
+      "rect": {
+        "height": 25.6015625,
+        "width": 32,
+        "x": 150.890625,
+        "y": 579.8671875
+      },
+      "text": "/мес"
+    },
+    {
+      "chatIntersection": false,
+      "id": "ff2db1e",
+      "rect": {
+        "height": 76.8046875,
+        "width": 309,
+        "x": 33,
+        "y": 620.03125
+      },
+      "text": "Для проработки и реализации нескольких связанных задач с согласованными этапами"
+    },
+    {
+      "chatIntersection": false,
+      "id": "44f712e",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 708.8359375
+      },
+      "text": "Исследование контекста"
+    },
+    {
+      "chatIntersection": true,
+      "id": "7c15f42",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 746.4375
+      },
+      "text": "Согласование прототипа"
+    },
+    {
+      "chatIntersection": true,
+      "id": "630f37b",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 784.0390625
+      },
+      "text": "Проверка результата"
+    },
+    {
+      "chatIntersection": false,
+      "id": "9ed33a5",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 821.640625
+      },
+      "text": "Документация для команды"
+    },
+    {
+      "chatIntersection": false,
+      "id": "6098f0f",
+      "rect": {
+        "height": 39,
+        "width": 309,
+        "x": 33,
+        "y": 867.2421875
+      },
+      "text": "Выбрать Проект"
+    },
+    {
+      "chatIntersection": false,
+      "id": "90096a1",
+      "rect": {
+        "height": 23.3984375,
+        "width": 309,
+        "x": 33,
+        "y": 956.2421875
+      },
+      "text": "Поддержка"
+    },
+    {
+      "chatIntersection": false,
+      "id": "e6718ae",
+      "rect": {
+        "height": 30.71875,
+        "width": 99.65625,
+        "x": 33,
+        "y": 991.640625
+      },
+      "text": "60 000 ₸"
+    },
+    {
+      "chatIntersection": false,
+      "id": "410992d",
+      "rect": {
+        "height": 25.6015625,
+        "width": 32,
+        "x": 136.65625,
+        "y": 994.1953125
+      },
+      "text": "/мес"
+    },
+    {
+      "chatIntersection": false,
+      "id": "e25ce62",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 1034.359375
+      },
+      "text": "Для регулярных задач"
+    },
+    {
+      "chatIntersection": false,
+      "id": "d1f1323",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 1071.9609375
+      },
+      "text": "Проверка изменений"
+    },
+    {
+      "chatIntersection": false,
+      "id": "6104385",
+      "rect": {
+        "height": 25.6015625,
+        "width": 309,
+        "x": 33,
+        "y": 1109.5625
+      },
+      "text": "Ежемесячная консультация"
+    },
+    {
+      "chatIntersection": false,
+      "id": "d666c8f",
+      "rect": {
+        "height": 39,
+        "width": 309,
+        "x": 33,
+        "y": 1155.1640625
+      },
+      "text": "Выбрать Поддержку"
+    }
+  ]
+}

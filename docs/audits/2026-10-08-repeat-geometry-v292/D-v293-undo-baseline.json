@@ -1,0 +1,27 @@
+{
+  "post_id": 5214,
+  "after_operation": "wpae-68abefd3c3529628",
+  "operation_identity": "a90f1ace-fc7d-4f50-a1c2-7f6e35ba94a5",
+  "expected_root_set": [],
+  "undo": {
+    "status": "already_undone",
+    "revision": 7,
+    "write_count": 0
+  },
+  "editor": {
+    "root_present": false,
+    "canvas_empty": true,
+    "publish_disabled": true
+  },
+  "public": {
+    "root_present": false,
+    "root_ids": [],
+    "viewport": {
+      "clientWidth": 390,
+      "innerHeight": 844,
+      "innerWidth": 390,
+      "visualWidth": 390
+    }
+  },
+  "confirmed_at": "2026-10-08T11:06:45.909Z"
+}

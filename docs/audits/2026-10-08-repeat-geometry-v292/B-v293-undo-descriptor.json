@@ -1,0 +1,75 @@
+{
+  "schema": "wpae-composition-evidence-v1",
+  "status": "complete",
+  "request": {
+    "mode": "explicit_record",
+    "record_id": "team.grid",
+    "record_version": 1,
+    "visual_profile": "editorial_light",
+    "visual_profile_source": "ui_selector",
+    "brief_composition": null,
+    "brief_media_side": null
+  },
+  "accepted": {
+    "record_id": "team.grid",
+    "record_version": 1,
+    "record_hash": "cd48749f8ef014ab115f0c8341ce7ef82e88af013ea34c2477f703556e54a535",
+    "source": "explicit_record",
+    "visual_profile": "editorial_light",
+    "selection_reasons": [
+      "honored_explicit_record"
+    ],
+    "selection_policy": "wpae-composition-selection-v2",
+    "catalog_id": "wpae-compositions-v1",
+    "catalog_identity": "8f8ab15c9e1e844274b3959bf3bbffe930f1b7cb7170bfd9931db66fbc1cea2d"
+  },
+  "hashes": {
+    "brief_sha256": "475645a2b1e37cd5f54245d54f9e380e32c82259ea6612f94809040f222c729e",
+    "plan_sha256": "4316fc716fa0b7a3e6cb51147d016d6864a39b18d1bcb7afeb167990ddd85d9e"
+  },
+  "surface": {
+    "profile": "editorial_light",
+    "section_surface": {
+      "token": "color.section_bg",
+      "source": "documented_default",
+      "palette_role": "accent",
+      "opacity": 0.2,
+      "transparency": 0.8,
+      "accent_source": "elementor_system_color_stock_default:accent",
+      "accent_confirmed": false
+    },
+    "resolved_value": "#61ce7033",
+    "value_source": "derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent",
+    "accent_reference": {
+      "value": "#61ce70",
+      "source": "elementor_system_color_stock_default:accent",
+      "confirmed": false
+    },
+    "opaque_underlay": "#ffffff"
+  },
+  "generation": {
+    "route": "local_deterministic",
+    "provider_calls": 0,
+    "provider_call_count_source": "design_pipeline_preflight",
+    "transaction_write_count": 1,
+    "transaction_write_count_source": "successful_transaction_and_readback"
+  },
+  "operation": {
+    "post_id": 5214,
+    "operation_id": "wpae-2809fae7a68d52c9",
+    "operation_identity": "f5f0b4b2-a258-42de-a2c7-c6a7a88c1d37",
+    "root_ids": [
+      "94ea563"
+    ],
+    "revision": 7,
+    "accepted_contract_id": "contract-c2080a9961e67d3a7b8e8381",
+    "accepted_contract_sha256": "c2080a9961e67d3a7b8e838140973e91026196de9ea8d0cee6a683e274790580",
+    "saved_document_sha256": "7c488b3a56e3737a30216e767b8ae22ed299296cc4d85508bc72c614dce05225"
+  },
+  "native": {
+    "saved_native_fingerprint": "58c841478527e137516e83fa309c8dc2744ba3415a8c4fae3caf56e8159ab286",
+    "saved_root_ids": [
+      "94ea563"
+    ]
+  }
+}

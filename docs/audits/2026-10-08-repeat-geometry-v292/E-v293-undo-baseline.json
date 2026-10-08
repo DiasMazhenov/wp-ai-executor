@@ -1,0 +1,34 @@
+{
+  "source": "editor+public readback after reload",
+  "post_id": 5214,
+  "editor": {
+    "url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor",
+    "inlineVersion": "v02.11.293",
+    "publishDisabled": true,
+    "canvasText": "Перетащите виджет",
+    "rootIds": []
+  },
+  "public": {
+    "overflow": false,
+    "pageText": "Mazhenov Design\nНастроить\nДобавить\nРедактировать страницу\nПривет, diasmazhenov\nAI-Dana",
+    "post": 5214,
+    "roots": [],
+    "source": "public",
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": {
+      "clientWidth": 390,
+      "visualViewportHeight": 844,
+      "visualViewportWidth": 390,
+      "windowInnerHeight": 844,
+      "windowInnerWidth": 390
+    }
+  },
+  "editor_root_ids": [],
+  "public_root_ids": [],
+  "expected_empty": true,
+  "operation_id": "wpae-ec604346c0a45b9b",
+  "identity": "49b162cd-e999-485d-b629-906e718916e4",
+  "root_id": "44acb9c",
+  "undo_revision": 6,
+  "undo_status": "already_undone"
+}

@@ -1,0 +1,16 @@
+{
+  "operation_id": "wpae-17d930cd89457555",
+  "operation_identity": "2cdedd6b-99e8-4ff5-ae9d-c77687ad469d",
+  "post_id": 5214,
+  "revision": 7,
+  "status": "already_undone",
+  "write_count": 0,
+  "composition_evidence": {
+    "record_id": "testimonials.grid",
+    "record_version": 1,
+    "record_hash": "77a8235bead676e5cb9d2ec3ffe16d299d7e43cf7e711a7e841b0d2c5c0f6382",
+    "visual_profile": "editorial_light"
+  },
+  "read_only_refresh_control_order": 0,
+  "source_text": "Свежий read-only descriptor: operation wpae-17d930cd89457555, revision 7, status already_undone. write_count=0. composition evidence: {\"schema\":\"wpae-composition-evidence-v1\",\"status\":\"complete\",\"request\":{\"mode\":\"explicit_record\",\"record_id\":\"testimonials.grid\",\"record_version\":1,\"visual_profile\":\"editorial_light\",\"visual_profile_source\":\"ui_selector\",\"brief_composition\":null,\"brief_media_side\":null},\"accepted\":{\"record_id\":\"testimonials.grid\",\"record_version\":1,\"record_hash\":\"77a8235bead676e5c"
+}

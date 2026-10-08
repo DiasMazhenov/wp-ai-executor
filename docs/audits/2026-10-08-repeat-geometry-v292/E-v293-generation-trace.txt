@@ -1,0 +1,8 @@
+Observed through the standard production plugin chat path on post 5214.
+Route: local_deterministic; provider calls: 0; successful transaction writes: 1.
+Visible phases: BriefIR -> typed DesignPlan -> WidgetCapabilityRegistry -> responsive LayoutReport -> native compiler -> scope/warnings/route -> insert_elements -> Flexbox normalization -> save/readback.
+Observed insert: new elements=1 (root container), native widgets=25; document had zero current elements immediately before insertion.
+Operation wpae-ec604346c0a45b9b; identity 49b162cd-e999-485d-b629-906e718916e4; root 44acb9c.
+Record pricing.tiers v1 explicitly honored; visual profile selector unavailable/not requested; family default retained.
+Publish and reload completed; refreshed descriptor revision 5, status available, write_count=0 for the read-only refresh.
+Native JSON after reload contains 45 nodes (20 Flex containers, 25 widgets).

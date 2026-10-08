@@ -1,0 +1,731 @@
+{
+  "buttons": 0,
+  "chat": {
+    "expanded": false,
+    "introDisplay": "none",
+    "rect": {
+      "bottom": 820,
+      "height": 60,
+      "right": 351,
+      "top": 760,
+      "width": 60,
+      "x": 291,
+      "y": 760
+    }
+  },
+  "chatIntersections": [
+    {
+      "id": "77c9396",
+      "intersectsWidget": false,
+      "textBounds": [
+        {
+          "rect": {
+            "bottom": 305.3828125,
+            "height": 26.3984375,
+            "right": 344,
+            "top": 278.984375,
+            "width": 313,
+            "x": 31,
+            "y": 278.984375
+          },
+          "text": "Всё ясно."
+        },
+        {
+          "rect": {
+            "bottom": 339.8828125,
+            "height": 22.5,
+            "right": 344,
+            "top": 317.3828125,
+            "width": 313,
+            "x": 31,
+            "y": 317.3828125
+          },
+          "text": "Автор Альфа"
+        },
+        {
+          "rect": {
+            "bottom": 378.28125,
+            "height": 26.3984375,
+            "right": 344,
+            "top": 351.8828125,
+            "width": 313,
+            "x": 31,
+            "y": 351.8828125
+          },
+          "text": "Тестовая группа Альфа"
+        }
+      ]
+    },
+    {
+      "id": "d69a606",
+      "intersectsWidget": false,
+      "textBounds": [
+        {
+          "rect": {
+            "bottom": 607.0703125,
+            "height": 184.7890625,
+            "right": 344,
+            "top": 422.28125,
+            "width": 313,
+            "x": 31,
+            "y": 422.28125
+          },
+          "text": "В синтетическом примере можно проверить длинную цитату, сохр"
+        },
+        {
+          "rect": {
+            "bottom": 641.5703125,
+            "height": 22.5,
+            "right": 344,
+            "top": 619.0703125,
+            "width": 313,
+            "x": 31,
+            "y": 619.0703125
+          },
+          "text": "Автор Бета"
+        },
+        {
+          "rect": {
+            "bottom": 679.96875,
+            "height": 26.3984375,
+            "right": 344,
+            "top": 653.5703125,
+            "width": 313,
+            "x": 31,
+            "y": 653.5703125
+          },
+          "text": "Тестовая группа Бета"
+        }
+      ]
+    },
+    {
+      "id": "845f494",
+      "intersectsWidget": true,
+      "textBounds": [
+        {
+          "rect": {
+            "bottom": 750.3671875,
+            "height": 26.3984375,
+            "right": 344,
+            "top": 723.96875,
+            "width": 313,
+            "x": 31,
+            "y": 723.96875
+          },
+          "text": "Хороший темп."
+        },
+        {
+          "rect": {
+            "bottom": 784.8671875,
+            "height": 22.5,
+            "right": 344,
+            "top": 762.3671875,
+            "width": 313,
+            "x": 31,
+            "y": 762.3671875
+          },
+          "text": "Автор Гамма"
+        },
+        {
+          "rect": {
+            "bottom": 823.265625,
+            "height": 26.3984375,
+            "right": 344,
+            "top": 796.8671875,
+            "width": 313,
+            "x": 31,
+            "y": 796.8671875
+          },
+          "text": "Тестовая группа Гамма"
+        }
+      ]
+    },
+    {
+      "id": "1de45c1",
+      "intersectsWidget": false,
+      "textBounds": [
+        {
+          "rect": {
+            "bottom": 1052.0546875,
+            "height": 184.7890625,
+            "right": 344,
+            "top": 867.265625,
+            "width": 313,
+            "x": 31,
+            "y": 867.265625
+          },
+          "text": "Длинная синтетическая цитата проверяет естественный рост кар"
+        },
+        {
+          "rect": {
+            "bottom": 1086.5546875,
+            "height": 22.5,
+            "right": 344,
+            "top": 1064.0546875,
+            "width": 313,
+            "x": 31,
+            "y": 1064.0546875
+          },
+          "text": "Автор Дельта"
+        },
+        {
+          "rect": {
+            "bottom": 1124.953125,
+            "height": 26.3984375,
+            "right": 344,
+            "top": 1098.5546875,
+            "width": 313,
+            "x": 31,
+            "y": 1098.5546875
+          },
+          "text": "Тестовая группа Дельта"
+        }
+      ]
+    }
+  ],
+  "collection": {
+    "cards": [
+      {
+        "id": "77c9396",
+        "nodes": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 305.3828125,
+              "height": 26.3984375,
+              "right": 344,
+              "top": 278.984375,
+              "width": 313,
+              "x": 31,
+              "y": 278.984375
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Всё ясно."
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 339.8828125,
+              "height": 22.5,
+              "right": 344,
+              "top": 317.3828125,
+              "width": 313,
+              "x": 31,
+              "y": 317.3828125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Автор Альфа"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 378.28125,
+              "height": 26.3984375,
+              "right": 344,
+              "top": 351.8828125,
+              "width": 313,
+              "x": 31,
+              "y": 351.8828125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Тестовая группа Альфа"
+          }
+        ],
+        "rect": {
+          "bottom": 393.28125,
+          "height": 129.296875,
+          "right": 359,
+          "top": 263.984375,
+          "width": 343,
+          "x": 16,
+          "y": 263.984375
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "14px",
+          "textAlign": "start"
+        },
+        "text": "Всё ясно.\nАвтор Альфа\nТестовая группа Альфа"
+      },
+      {
+        "id": "d69a606",
+        "nodes": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 607.0703125,
+              "height": 184.7890625,
+              "right": 344,
+              "top": 422.28125,
+              "width": 313,
+              "x": 31,
+              "y": 422.28125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "В синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента."
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 641.5703125,
+              "height": 22.5,
+              "right": 344,
+              "top": 619.0703125,
+              "width": 313,
+              "x": 31,
+              "y": 619.0703125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Автор Бета"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 679.96875,
+              "height": 26.3984375,
+              "right": 344,
+              "top": 653.5703125,
+              "width": 313,
+              "x": 31,
+              "y": 653.5703125
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Тестовая группа Бета"
+          }
+        ],
+        "rect": {
+          "bottom": 694.96875,
+          "height": 287.6875,
+          "right": 359,
+          "top": 407.28125,
+          "width": 343,
+          "x": 16,
+          "y": 407.28125
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "14px",
+          "textAlign": "start"
+        },
+        "text": "В синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.\nАвтор Бета\nТестовая группа Бета"
+      },
+      {
+        "id": "845f494",
+        "nodes": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 750.3671875,
+              "height": 26.3984375,
+              "right": 344,
+              "top": 723.96875,
+              "width": 313,
+              "x": 31,
+              "y": 723.96875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Хороший темп."
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 784.8671875,
+              "height": 22.5,
+              "right": 344,
+              "top": 762.3671875,
+              "width": 313,
+              "x": 31,
+              "y": 762.3671875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Автор Гамма"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 823.265625,
+              "height": 26.3984375,
+              "right": 344,
+              "top": 796.8671875,
+              "width": 313,
+              "x": 31,
+              "y": 796.8671875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Тестовая группа Гамма"
+          }
+        ],
+        "rect": {
+          "bottom": 838.265625,
+          "height": 129.296875,
+          "right": 359,
+          "top": 708.96875,
+          "width": 343,
+          "x": 16,
+          "y": 708.96875
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "14px",
+          "textAlign": "start"
+        },
+        "text": "Хороший темп.\nАвтор Гамма\nТестовая группа Гамма"
+      },
+      {
+        "id": "1de45c1",
+        "nodes": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 1052.0546875,
+              "height": 184.7890625,
+              "right": 344,
+              "top": 867.265625,
+              "width": 313,
+              "x": 31,
+              "y": 867.265625
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Длинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании."
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 1086.5546875,
+              "height": 22.5,
+              "right": 344,
+              "top": 1064.0546875,
+              "width": 313,
+              "x": 31,
+              "y": 1064.0546875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "24px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Автор Дельта"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 1124.953125,
+              "height": 26.3984375,
+              "right": 344,
+              "top": 1098.5546875,
+              "width": 313,
+              "x": 31,
+              "y": 1098.5546875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "16px",
+              "gap": "12px",
+              "justifyContent": "normal",
+              "lineHeight": "26.4px",
+              "maxHeight": "none",
+              "minHeight": "auto",
+              "overflow": "visible",
+              "padding": "0px",
+              "textAlign": "start"
+            },
+            "text": "Тестовая группа Дельта"
+          }
+        ],
+        "rect": {
+          "bottom": 1139.953125,
+          "height": 287.6875,
+          "right": 359,
+          "top": 852.265625,
+          "width": 343,
+          "x": 16,
+          "y": 852.265625
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "14px",
+          "textAlign": "start"
+        },
+        "text": "Длинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.\nАвтор Дельта\nТестовая группа Дельта"
+      }
+    ],
+    "rect": {
+      "bottom": 1139.953125,
+      "height": 875.96875,
+      "right": 359,
+      "top": 263.984375,
+      "width": 343,
+      "x": 16,
+      "y": 263.984375
+    },
+    "style": {
+      "alignItems": "stretch",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "14px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "textAlign": "start"
+    }
+  },
+  "images": 0,
+  "links": 0,
+  "post": 5214,
+  "root": {
+    "rect": {
+      "bottom": 1179.953125,
+      "height": 1133.953125,
+      "right": 375,
+      "top": 46,
+      "width": 375,
+      "x": 0,
+      "y": 46
+    },
+    "style": {
+      "alignItems": "normal",
+      "backgroundColor": "rgba(97, 206, 112, 0.2)",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "normal",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "textAlign": "start"
+    },
+    "text": "СИНТЕТИЧЕСКИЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные цитаты разной длины проверяют текст и связь с авторами\nВсё ясно.\nАвтор Альфа\nТестовая группа Альфа\nВ синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.\nАвтор Бета\nТестовая группа Бета\nХороший темп.\nАвтор Гамма\nТестовая группа Гамма\nДлинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.\nАвтор Дельта\nТестовая группа Дельта"
+  },
+  "rootId": "f395bb8",
+  "source": "public",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "devicePixelRatio": 1,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scrollHeight": 1180,
+    "scrollWidth": 375,
+    "visualViewportHeight": 844,
+    "visualViewportWidth": 375
+  }
+}

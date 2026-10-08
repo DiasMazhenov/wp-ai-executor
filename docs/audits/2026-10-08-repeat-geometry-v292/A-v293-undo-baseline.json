@@ -1,0 +1,21 @@
+{
+  "editor": {
+    "publish_disabled": true,
+    "canvas_text": "Перетащите виджет"
+  },
+  "public": {
+    "bodyText": "О WordPress\nMazhenov Design\nНастроить\n15\n15 комментариев ждут одобрения\nДобавить\nAI Executor\nРедактировать страницу\nРедактировать в Elementor\nОбновления\nMaintenance is Off\nLLAR\nWP Rocket\nПривет, diasmazhenov\nПоиск\nAI-Dana",
+    "cssViewport": {
+      "height": 900,
+      "width": 1280
+    },
+    "document": {
+      "bodyWidth": 1280,
+      "width": 1280
+    },
+    "matchingIds": [],
+    "roots": []
+  },
+  "operation_id": "wpae-ee04b47bac4e2cfa",
+  "root_id": "438f8e7"
+}

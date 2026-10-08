@@ -1,0 +1,10 @@
+{
+  "operation_id": "wpae-68abefd3c3529628",
+  "operation_identity": "a90f1ace-fc7d-4f50-a1c2-7f6e35ba94a5",
+  "post_id": 5214,
+  "revision": 7,
+  "status": "already_undone",
+  "write_count": 0,
+  "source_text": "Свежий read-only descriptor: operation wpae-68abefd3c3529628, revision 7, status already_undone. write_count=0. composition evidence: {\"schema\":\"wpae-composition-evidence-v1\",\"status\":\"complete\",\"request\":{\"mode\":\"explicit_record\",\"record_id\":\"benefits.grid\",\"record_version\":1,\"visual_profile\":\"editorial_light\",\"visual_profile_source\":\"ui_selector\",\"brief_composition\":\"three_cards\",\"brief_media_side\":null},\"accepted\":{\"record_id\":\"benefits.grid\",\"record_version\":1,\"record_hash\":\"6b3f121c7e7902b143e254507fb809c3c186b17e79c4aa551951197fd9fa0389\",\"source\":\"explicit_record\",\"visual_profile\":\"editorial_light\",\"selection_reasons\":[\"honored_explicit_record\"],\"selection_policy\":\"wpae-composition-selection-v2\",\"catalog_id\":\"wpae-compositions-v1\",\"catalog_identity\":\"8f8ab15c9e1e844274b3959bf3bbffe930f1b7cb7170bfd9931db66fbc1cea2d\"},\"hashes\":{\"brief_sha256\":\"f6edeb6e5ba40173dffed662b4dca6fa45a0cee35f6edefaa50ddd5615139313\",\"plan_sha256\":\"2a1a8c4dfc30730419a34c346dbdf5aac70b40d0b7bc1e1f3a3d369586e57e75\"},\"surface\":{\"profile\":\"editorial_light\",\"section_surface\":{\"token\":\"color.section_bg\",\"source\":\"documented_default\",\"palette_role\":\"accent\",\"opacity\":0.2,\"transparency\":0.8,\"accent_source\":\"elementor_system_color_stock_default:accent\",\"accent_confirmed\":false},\"resolved_value\":\"#61ce7033\",\"va",
+  "ownership_check": "Owned model matches accepted contract wpae-68abefd3c3529628 before Undo"
+}

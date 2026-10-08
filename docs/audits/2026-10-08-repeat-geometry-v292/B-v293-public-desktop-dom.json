@@ -1,0 +1,272 @@
+{
+  "cssViewport": {
+    "dpr": 1,
+    "height": 900,
+    "width": 1280
+  },
+  "document": {
+    "bodyWidth": 1280,
+    "width": 1280
+  },
+  "nodes": [
+    {
+      "class": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team elementor-element elementor-element-94ea563 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "94ea563",
+      "rect": {
+        "height": 804.1015625,
+        "width": 1280,
+        "x": 0,
+        "y": 32
+      },
+      "style": {
+        "align": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(97, 206, 112, 0.2)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "normal",
+        "height": "804.102px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 32px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины\nУчастник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСи"
+    },
+    {
+      "class": "elementor-element elementor-element-6c954a3 e-con-full e-flex e-con e-child",
+      "id": "6c954a3",
+      "rect": {
+        "height": 129.6328125,
+        "width": 1140,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "align": "flex-start",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "0px",
+        "height": "129.633px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины"
+    },
+    {
+      "class": "elementor-element elementor-element-748321c e-con-full e-flex e-con e-child",
+      "id": "748321c",
+      "rect": {
+        "height": 129.6328125,
+        "width": 608,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "align": "flex-start",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "0px",
+        "height": "129.633px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины"
+    },
+    {
+      "class": "wpae-generated-badge elementor-element elementor-element-f1d920f e-con-full e-flex e-con e-child",
+      "id": "f1d920f",
+      "rect": {
+        "height": 27.5859375,
+        "width": 220.3828125,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "align": "center",
+        "alignSelf": "flex-start",
+        "background": "rgb(0, 0, 0)",
+        "borderRadius": "999px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "24px",
+        "height": "27.5859px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА"
+    },
+    {
+      "class": "wpae-team_cards elementor-element elementor-element-5424224 e-con-full e-flex e-con e-child",
+      "id": "5424224",
+      "rect": {
+        "height": 482.46875,
+        "width": 1140,
+        "x": 70,
+        "y": 273.6328125
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "gap": "20px",
+        "height": "482.469px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "wrap"
+      },
+      "text": "Участник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точн"
+    },
+    {
+      "class": "elementor-element elementor-element-5d4950d e-con-full e-flex e-con e-child",
+      "id": "5d4950d",
+      "rect": {
+        "height": 231.234375,
+        "width": 560,
+        "x": 70,
+        "y": 273.6328125
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "231.234px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Альфа\nДизайнер\nПроверяет макеты."
+    },
+    {
+      "class": "elementor-element elementor-element-9b4dedc e-con-full e-flex e-con e-child",
+      "id": "9b4dedc",
+      "rect": {
+        "height": 231.234375,
+        "width": 560,
+        "x": 650,
+        "y": 273.6328125
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "231.234px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведени"
+    },
+    {
+      "class": "elementor-element elementor-element-bc1d93b e-con-full e-flex e-con e-child",
+      "id": "bc1d93b",
+      "rect": {
+        "height": 231.234375,
+        "width": 560,
+        "x": 70,
+        "y": 524.8671875
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "231.234px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Гамма\nРазработчик\nСобирает интерфейс."
+    },
+    {
+      "class": "elementor-element elementor-element-1f8ae05 e-con-full e-flex e-con e-child",
+      "id": "1f8ae05",
+      "rect": {
+        "height": 231.234375,
+        "width": 560,
+        "x": 650,
+        "y": 524.8671875
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "231.234px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей резул"
+    }
+  ],
+  "roots": [
+    {
+      "class": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team elementor-element elementor-element-94ea563 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "94ea563",
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины\nУчастник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.\nУчастник Гамма\nРазработчик\nСобирает интерфейс.\nУчастник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку."
+    }
+  ]
+}

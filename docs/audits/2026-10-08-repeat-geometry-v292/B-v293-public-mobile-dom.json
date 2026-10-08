@@ -1,0 +1,184 @@
+{
+  "chat": [],
+  "cssViewport": {
+    "dpr": 1,
+    "height": 844,
+    "width": 390
+  },
+  "document": {
+    "bodyWidth": 375,
+    "width": 375
+  },
+  "nodes": [
+    {
+      "class": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team elementor-element elementor-element-94ea563 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "id": "94ea563",
+      "rect": {
+        "bottom": 1127.15625,
+        "height": 1081.15625,
+        "top": 46,
+        "width": 375,
+        "x": 0,
+        "y": 46
+      },
+      "style": {
+        "align": "normal",
+        "alignSelf": "auto",
+        "direction": "column",
+        "display": "flex",
+        "gap": "normal",
+        "height": "1081.16px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 16px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины\nУчастник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя пров"
+    },
+    {
+      "class": "wpae-team_cards elementor-element elementor-element-5424224 e-con-full e-flex e-con e-child",
+      "id": "5424224",
+      "rect": {
+        "bottom": 1087.15625,
+        "height": 823.171875,
+        "top": 263.984375,
+        "width": 343,
+        "x": 16,
+        "y": 263.984375
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "direction": "column",
+        "display": "flex",
+        "gap": "14px",
+        "height": "823.172px",
+        "justify": "normal",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведе"
+    },
+    {
+      "class": "elementor-element elementor-element-5d4950d e-con-full e-flex e-con e-child",
+      "id": "5d4950d",
+      "rect": {
+        "bottom": 393.28125,
+        "height": 129.296875,
+        "top": 263.984375,
+        "width": 343,
+        "x": 16,
+        "y": 263.984375
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "129.297px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Альфа\nДизайнер\nПроверяет макеты."
+    },
+    {
+      "class": "elementor-element elementor-element-9b4dedc e-con-full e-flex e-con e-child",
+      "id": "9b4dedc",
+      "rect": {
+        "bottom": 668.5703125,
+        "height": 261.2890625,
+        "top": 407.28125,
+        "width": 343,
+        "x": 16,
+        "y": 407.28125
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "261.289px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному ч"
+    },
+    {
+      "class": "elementor-element elementor-element-bc1d93b e-con-full e-flex e-con e-child",
+      "id": "bc1d93b",
+      "rect": {
+        "bottom": 811.8671875,
+        "height": 129.296875,
+        "top": 682.5703125,
+        "width": 343,
+        "x": 16,
+        "y": 682.5703125
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "129.297px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Гамма\nРазработчик\nСобирает интерфейс."
+    },
+    {
+      "class": "elementor-element elementor-element-1f8ae05 e-con-full e-flex e-con e-child",
+      "id": "1f8ae05",
+      "rect": {
+        "bottom": 1087.15625,
+        "height": 261.2890625,
+        "top": 825.8671875,
+        "width": 343,
+        "x": 16,
+        "y": 825.8671875
+      },
+      "style": {
+        "align": "stretch",
+        "alignSelf": "auto",
+        "direction": "column",
+        "display": "flex",
+        "gap": "12px",
+        "height": "261.289px",
+        "justify": "flex-start",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относ"
+    }
+  ],
+  "rootCount": 1,
+  "rootText": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины\nУчастник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.\nУчастник Гамма\nРазработчик\nСобирает интерфейс.\nУчастник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку."
+}

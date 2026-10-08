@@ -1,0 +1,62 @@
+{
+  "scenario": "A",
+  "family": "cta",
+  "record_id": "cta.centered",
+  "visual_profile": "editorial_light",
+  "post_id": 5214,
+  "operation_id": "wpae-1e6934eba28c89d7",
+  "operation_identity": "255961f8-2d7a-4c79-8cf1-e356bea06e8b",
+  "root_ids": [
+    "9da0cbc"
+  ],
+  "revision": 5,
+  "accepted_contract_id": "contract-5ab0e93727075643ae823123",
+  "accepted_contract_sha256": "5ab0e93727075643ae82312329412a2625589ec6a7521279e8bf8c576978aba5",
+  "brief_sha256": "26107ef18b35182559fa1102ca96d7b6305e39daebf2ef156cca109463499ce8",
+  "plan_sha256": "78d0183459162c57fc7327e87a4e6d66b9c8dd5c1f3f2583c36c0abd65171b0d",
+  "native_fingerprint": "80706dd8d62219263d433bb6dcd60e43c576e25feaaf193cfc01b795e42f4f6e",
+  "route": "local_deterministic",
+  "provider_calls": 0,
+  "transaction_write_count": 1,
+  "source_commit": "e5d7facc78beeb21ceedef6f5faf2338c3bc9491",
+  "saved_document_sha256": "e8ab4c1e645f7be16a399bf1e5a045718f3a97cc25e62e7103029538b4725fc5",
+  "initial_baseline_roots": [],
+  "native_json": "A-cta-native-after-reload.json",
+  "desktop": {
+    "css_viewport": [
+      1280,
+      900
+    ],
+    "png": "screenshots/A-public-desktop-1280x900.png",
+    "png_dimensions": [
+      1280,
+      900
+    ],
+    "button_x": 304,
+    "button_y": 237.6,
+    "button_width": 168.1,
+    "section_background": "rgba(97, 206, 112, 0.2)",
+    "h2": "Обсудим ваш следующий проект",
+    "href": "#contact"
+  },
+  "mobile": {
+    "css_viewport": [
+      390,
+      844
+    ],
+    "png": "screenshots/A-public-mobile-390x844.png",
+    "png_dimensions": [
+      390,
+      844
+    ],
+    "button_x": 111,
+    "button_y": 260.2,
+    "button_width": 168.1,
+    "section_height": 293.2,
+    "document_width": 390
+  },
+  "visual_status": "PARTIAL: Desktop action remains at left edge of centered copy column; pill is left aligned on mobile while heading/body and button are centered.",
+  "content_status": "PASS exact eyebrow/title/body/action href observed in public and editor.",
+  "lifecycle_status": "PASS: guarded Undo restored exact empty baseline; operation wpae-1e6934eba28c89d7 was a v292 failed first attempt; not counted as accepted",
+  "first_render_status": "FAIL: pre-fix centered CTA actions/pill alignment defect; source correction fd12c9b5 and same-fixture rerun v293 recorded separately"
+}

@@ -1,0 +1,15 @@
+{
+  "text": "Свежий read-only descriptor: operation wpae-ec604346c0a45b9b, revision 6, status already_undone. write_count=0. composition evidence: {\"schema\":\"wpae-composition-evidence-v1\",\"status\":\"complete\",\"request\":{\"mode\":\"explicit_record\",\"record_id\":\"pricing.tiers\",\"record_version\":1,\"visual_profile\":null,\"visual_profile_source\":\"not_requested\",\"brief_composition\":null,\"brief_media_side\":null},\"accepted\":{\"record_id\":\"pricing.tiers\",\"record_version\":1,\"record_hash\":\"4ac6ff61078721ec658f1fd38bb0ac1155ec9b519747c06095b874fbcd1967ce\",\"source\":\"explicit_record\",\"visual_profile\":\"\",\"selection_reasons\":[\"honored_explicit_record\"],\"selection_policy\":\"wpae-composition-selection-v2\",\"catalog_id\":\"wpae-compositions-v1\",\"catalog_identity\":\"8f8ab15c9e1e844274b3959bf3bbffe930f1b7cb7170bfd9931db66fbc1cea2d\"},\"hashes\":{\"brief_sha256\":\"6f7cf9d8aea193cb3b2c62c8781a34fec39a06ae7a244d08a8b74636b4641f31\",\"plan_sha256\":\"95296729bbd3342cbf26bbe35a1b8ccaad1103f5341449ecd6c0a26a6c321729\"},\"surface\":{\"profile\":\"\",\"section_surface\":{\"token\":\"color.section_bg\",\"source\":\"documented_default\",\"palette_role\":\"accent\",\"opacity\":0.2,\"transparency\":0.8,\"accent_source\":\"elementor_system_color_stock_default:accent\",\"accent_confirmed\":false},\"resolved_value\":\"#61ce7033\",\"value_source\":\"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent\",\"accent_reference\":{\"value\":\"#61ce70\",\"source\":\"elementor_system_color_stock_default:accent\",\"confirmed\":false},\"opaque_underlay\":\"#ffffff\"},\"generation\":{\"route\":\"local_deterministic\",\"provider_calls\":0,\"provider_call_count_source\":\"design_pipeline_preflight\",\"transaction_write_count\":1,\"transaction_write_count_source\":\"successful_transaction_and_readback\"},\"operation\":{\"post_id\":5214,\"operation_id\":\"wpae-ec604346c0a45b9b\",\"operation_identity\":\"49b162cd-e999-485d-b629-906e718916e4\",\"root_ids\":[\"44acb9c\"],\"revision\":6,\"accepted_contract_id\":\"contract-24cda8cbc0bf78d98bc69e17\",\"accepted_contract_sha256\":\"24cda8cbc0bf78d98bc69e1732267b39ec4c97b0b55785f0bf3bc369eafe5855\",\"saved_document_sha256\":\"f4be1dc01d796c5406531425cf4d6678a5fc4392792f83665911bfa05769dfde\"},\"native\":{\"saved_native_fingerprint\":\"af18435497d7f99b49f36800ada9d0e187e29a182670ae2568c1641e5731b1f8\",\"saved_root_ids\":[\"44acb9c\"]}}",
+  "operation_id": "wpae-ec604346c0a45b9b",
+  "operation_identity": "49b162cd-e999-485d-b629-906e718916e4",
+  "root_ids": [
+    "44acb9c"
+  ],
+  "revision": 6,
+  "status": "complete",
+  "saved_root_ids": [
+    "44acb9c"
+  ],
+  "native_fingerprint": "af18435497d7f99b49f36800ada9d0e187e29a182670ae2568c1641e5731b1f8",
+  "transaction_write_count": 1
+}

@@ -1,0 +1,621 @@
+{
+  "cardCount": 3,
+  "chat": {
+    "class": "wpdsac-chat wpdsac-position--bottom-right",
+    "expanded": false,
+    "greeting": {
+      "display": "none",
+      "rect": {
+        "bottom": 0,
+        "height": 0,
+        "right": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "text": "Ассаламу алейкум!"
+    },
+    "rect": {
+      "bottom": 876,
+      "height": 60,
+      "right": 1256,
+      "width": 60,
+      "x": 1196,
+      "y": 816
+    }
+  },
+  "chatIntersectsCards": [
+    {
+      "card": "9c2b78c",
+      "intersects": false
+    },
+    {
+      "card": "091f39c",
+      "intersects": false
+    },
+    {
+      "card": "8113c53",
+      "intersects": false
+    }
+  ],
+  "collection": {
+    "cards": [
+      {
+        "clientHeight": 420,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 337.1875,
+              "height": 23.3984375,
+              "right": 408.9921875,
+              "width": 313.9921875,
+              "x": 95,
+              "y": 313.7890625
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "23.4px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Старт"
+          },
+          {
+            "rect": {
+              "bottom": 387.5859375,
+              "height": 38.3984375,
+              "right": 219.5625,
+              "width": 124.5625,
+              "x": 95,
+              "y": 349.1875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "32px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "38.4px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "25 000 ₸"
+          }
+        ],
+        "id": "9c2b78c",
+        "links": [
+          {
+            "href": "#tier-start",
+            "rect": {
+              "bottom": 685.796875,
+              "height": 39,
+              "right": 249.3203125,
+              "width": 154.3203125,
+              "x": 95,
+              "y": 646.796875
+            },
+            "text": "Выбрать Старт"
+          }
+        ],
+        "overflowContent": false,
+        "rect": {
+          "bottom": 710.796875,
+          "height": 422.0078125,
+          "right": 433.9921875,
+          "width": 363.9921875,
+          "x": 70,
+          "y": 288.7890625
+        },
+        "scrollHeight": 420,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "20px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "20px",
+          "justifyContent": "space-between",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "24px",
+          "rowGap": "20px",
+          "textAlign": "start"
+        },
+        "text": "Старт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт",
+        "texts": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 381.1875,
+              "height": 25.6015625,
+              "right": 255.5625,
+              "width": 32,
+              "x": 223.5625,
+              "y": 355.5859375
+            },
+            "text": "/мес"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 425.1875,
+              "height": 25.6015625,
+              "right": 408.9921875,
+              "width": 313.9921875,
+              "x": 95,
+              "y": 399.5859375
+            },
+            "text": "Для одной небольшой задачи"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 462.7890625,
+              "height": 25.6015625,
+              "right": 408.9921875,
+              "width": 313.9921875,
+              "x": 95,
+              "y": 437.1875
+            },
+            "text": "Одна консультация"
+          }
+        ]
+      },
+      {
+        "clientHeight": 420,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 337.1875,
+              "height": 23.3984375,
+              "right": 796.984375,
+              "width": 313.9921875,
+              "x": 482.9921875,
+              "y": 313.7890625
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "23.4px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Проект"
+          },
+          {
+            "rect": {
+              "bottom": 387.5859375,
+              "height": 38.3984375,
+              "right": 625.3515625,
+              "width": 142.359375,
+              "x": 482.9921875,
+              "y": 349.1875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "32px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "38.4px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "125 000 ₸"
+          }
+        ],
+        "id": "091f39c",
+        "links": [
+          {
+            "href": "#tier-project",
+            "rect": {
+              "bottom": 685.796875,
+              "height": 39,
+              "right": 648.0625,
+              "width": 165.0703125,
+              "x": 482.9921875,
+              "y": 646.796875
+            },
+            "text": "Выбрать Проект"
+          }
+        ],
+        "overflowContent": false,
+        "rect": {
+          "bottom": 710.796875,
+          "height": 422.0078125,
+          "right": 821.984375,
+          "width": 363.9921875,
+          "x": 457.9921875,
+          "y": 288.7890625
+        },
+        "scrollHeight": 420,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "20px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "20px",
+          "justifyContent": "space-between",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "24px",
+          "rowGap": "20px",
+          "textAlign": "start"
+        },
+        "text": "Проект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект",
+        "texts": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 381.1875,
+              "height": 25.6015625,
+              "right": 661.3515625,
+              "width": 32,
+              "x": 629.3515625,
+              "y": 355.5859375
+            },
+            "text": "/мес"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 476.390625,
+              "height": 76.8046875,
+              "right": 796.984375,
+              "width": 313.9921875,
+              "x": 482.9921875,
+              "y": 399.5859375
+            },
+            "text": "Для проработки и реализации нескольких связанных задач с согласованными этапами"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 513.9921875,
+              "height": 25.6015625,
+              "right": 796.984375,
+              "width": 313.9921875,
+              "x": 482.9921875,
+              "y": 488.390625
+            },
+            "text": "Исследование контекста"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 551.59375,
+              "height": 25.6015625,
+              "right": 796.984375,
+              "width": 313.9921875,
+              "x": 482.9921875,
+              "y": 525.9921875
+            },
+            "text": "Согласование прототипа"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 589.1953125,
+              "height": 25.6015625,
+              "right": 796.984375,
+              "width": 313.9921875,
+              "x": 482.9921875,
+              "y": 563.59375
+            },
+            "text": "Проверка результата"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 626.796875,
+              "height": 25.6015625,
+              "right": 796.984375,
+              "width": 313.9921875,
+              "x": 482.9921875,
+              "y": 601.1953125
+            },
+            "text": "Документация для команды"
+          }
+        ]
+      },
+      {
+        "clientHeight": 420,
+        "headings": [
+          {
+            "rect": {
+              "bottom": 337.1875,
+              "height": 23.3984375,
+              "right": 1184.9765625,
+              "width": 313.9921875,
+              "x": 870.984375,
+              "y": 313.7890625
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "23.4px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Поддержка"
+          },
+          {
+            "rect": {
+              "bottom": 387.5859375,
+              "height": 38.3984375,
+              "right": 995.546875,
+              "width": 124.5625,
+              "x": 870.984375,
+              "y": 349.1875
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "32px",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "38.4px",
+              "maxHeight": "none",
+              "minHeight": "0px",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "60 000 ₸"
+          }
+        ],
+        "id": "8113c53",
+        "links": [
+          {
+            "href": "#tier-support",
+            "rect": {
+              "bottom": 685.796875,
+              "height": 39,
+              "right": 1066.234375,
+              "width": 195.25,
+              "x": 870.984375,
+              "y": 646.796875
+            },
+            "text": "Выбрать Поддержку"
+          }
+        ],
+        "overflowContent": false,
+        "rect": {
+          "bottom": 710.796875,
+          "height": 422.0078125,
+          "right": 1209.9765625,
+          "width": 363.9921875,
+          "x": 845.984375,
+          "y": 288.7890625
+        },
+        "scrollHeight": 420,
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "columnGap": "20px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "gap": "20px",
+          "justifyContent": "space-between",
+          "lineHeight": "24px",
+          "maxHeight": "none",
+          "minHeight": "auto",
+          "overflow": "visible",
+          "padding": "24px",
+          "rowGap": "20px",
+          "textAlign": "start"
+        },
+        "text": "Поддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку",
+        "texts": [
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 381.1875,
+              "height": 25.6015625,
+              "right": 1031.546875,
+              "width": 32,
+              "x": 999.546875,
+              "y": 355.5859375
+            },
+            "text": "/мес"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 425.1875,
+              "height": 25.6015625,
+              "right": 1184.9765625,
+              "width": 313.9921875,
+              "x": 870.984375,
+              "y": 399.5859375
+            },
+            "text": "Для регулярных задач"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 462.7890625,
+              "height": 25.6015625,
+              "right": 1184.9765625,
+              "width": 313.9921875,
+              "x": 870.984375,
+              "y": 437.1875
+            },
+            "text": "Проверка изменений"
+          },
+          {
+            "clipped": false,
+            "rect": {
+              "bottom": 500.390625,
+              "height": 25.6015625,
+              "right": 1184.9765625,
+              "width": 313.9921875,
+              "x": 870.984375,
+              "y": 474.7890625
+            },
+            "text": "Ежемесячная консультация"
+          }
+        ]
+      }
+    ],
+    "id": "c6e19bd",
+    "rect": {
+      "bottom": 710.796875,
+      "height": 422.0078125,
+      "right": 1210,
+      "width": 1140,
+      "x": 70,
+      "y": 288.7890625
+    },
+    "style": {
+      "alignItems": "stretch",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "columnGap": "24px",
+      "display": "flex",
+      "flexDirection": "row",
+      "flexWrap": "wrap",
+      "fontSize": "16px",
+      "gap": "24px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "auto",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "24px",
+      "textAlign": "start"
+    }
+  },
+  "images": 0,
+  "post_id": 5214,
+  "root": {
+    "clientHeight": 751,
+    "rect": {
+      "bottom": 782.796875,
+      "height": 750.796875,
+      "right": 1280,
+      "width": 1280,
+      "x": 0,
+      "y": 32
+    },
+    "scrollHeight": 751,
+    "style": {
+      "alignItems": "normal",
+      "backgroundColor": "rgba(97, 206, 112, 0.2)",
+      "columnGap": "normal",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "gap": "normal",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "rowGap": "normal",
+      "textAlign": "start"
+    },
+    "text": "ТЕСТОВЫЕ ТАРИФЫ\nВыберите объём работ\nТри фиксированных синтетических предложения проверяют цену, состав и ссылки\nСтарт\n25 000 ₸\n/мес\nДля одной небольшой задачи\nОдна консультация\nВыбрать Старт\nПроект\n125 000 ₸\n/мес\nДля проработки и реализации нескольких связанных задач с согласованными этапами\nИсследование контекста\nСогласование прототипа\nПроверка результата\nДокументация для команды\nВыбрать Проект\nПоддержка\n60 000 ₸\n/мес\nДля регулярных задач\nПроверка изменений\nЕжемесячная консультация\nВыбрать Поддержку"
+  },
+  "rootLinks": [
+    {
+      "href": "#tier-start",
+      "text": "Выбрать Старт"
+    },
+    {
+      "href": "#tier-project",
+      "text": "Выбрать Проект"
+    },
+    {
+      "href": "#tier-support",
+      "text": "Выбрать Поддержку"
+    }
+  ],
+  "root_id": "44acb9c",
+  "source": "public",
+  "viewport": {
+    "clientHeight": 900,
+    "clientWidth": 1280,
+    "devicePixelRatio": 1,
+    "innerHeight": 900,
+    "innerWidth": 1280,
+    "scrollHeight": 900,
+    "scrollWidth": 1280,
+    "visualViewportHeight": 900,
+    "visualViewportWidth": 1280
+  }
+}

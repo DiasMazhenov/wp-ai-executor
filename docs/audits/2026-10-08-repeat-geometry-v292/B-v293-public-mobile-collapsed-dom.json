@@ -1,0 +1,984 @@
+{
+  "chat": {
+    "class": "wpdsac-chat wpdsac-position--bottom-right",
+    "gammaCardRect": {
+      "height": 129.296875,
+      "width": 358,
+      "x": 16,
+      "y": 656.171875
+    },
+    "rect": {
+      "height": 60,
+      "width": 60,
+      "x": 306,
+      "y": 760
+    }
+  },
+  "cssViewport": {
+    "documentClientHeight": 844,
+    "documentClientWidth": 390,
+    "dpr": 1,
+    "visualViewportHeight": 844,
+    "visualViewportWidth": 390,
+    "windowInnerHeight": 844,
+    "windowInnerWidth": 390
+  },
+  "document": {
+    "bodyScrollWidth": 390,
+    "scrollWidth": 390
+  },
+  "nativeCounts": {
+    "anchors": [],
+    "buttons": 0,
+    "images": 0
+  },
+  "nodes": [
+    {
+      "classes": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-team elementor-element elementor-element-94ea563 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "content": {
+        "clientHeight": 1055,
+        "clientWidth": 390,
+        "scrollHeight": 1055,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 390
+      },
+      "elType": "container",
+      "id": "94ea563",
+      "rect": {
+        "height": 1054.7578125,
+        "width": 390,
+        "x": 0,
+        "y": 46
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(97, 206, 112, 0.2)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "normal",
+        "height": "1054.76px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 16px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины\nУчастник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.\nУчастник Гамма\nРазработчик\nСобирает интерфейс.\nУчастник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку.",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-6c954a3 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 146,
+        "clientWidth": 358,
+        "scrollHeight": 146,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 358
+      },
+      "elType": "container",
+      "id": "6c954a3",
+      "rect": {
+        "height": 145.984375,
+        "width": 358,
+        "x": 16,
+        "y": 86
+      },
+      "style": {
+        "alignItems": "flex-start",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "145.984px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "wrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-748321c e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 146,
+        "clientWidth": 358,
+        "scrollHeight": 146,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 358
+      },
+      "elType": "container",
+      "id": "748321c",
+      "rect": {
+        "height": 145.984375,
+        "width": 358,
+        "x": 16,
+        "y": 86
+      },
+      "style": {
+        "alignItems": "flex-start",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "145.984px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "wrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА\nЛюди и роли\nВымышленные данные для проверки карточек разной длины",
+      "widget": null
+    },
+    {
+      "classes": "wpae-generated-badge elementor-element elementor-element-f1d920f e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 31,
+        "clientWidth": 218,
+        "scrollHeight": 31,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 218
+      },
+      "elType": "container",
+      "id": "f1d920f",
+      "rect": {
+        "height": 32.984375,
+        "width": 220.3828125,
+        "x": 16,
+        "y": 86
+      },
+      "style": {
+        "alignItems": "center",
+        "alignSelf": "flex-start",
+        "background": "rgb(0, 0, 0)",
+        "borderRadius": "999px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "height": "32.9844px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКАЯ КОМАНДА",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-616a95a elementor-widget elementor-widget-heading",
+      "content": {
+        "clientHeight": 44,
+        "clientWidth": 181,
+        "scrollHeight": 44,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 181
+      },
+      "elType": "widget",
+      "id": "616a95a",
+      "rect": {
+        "height": 44.203125,
+        "width": 180.7734375,
+        "x": 16,
+        "y": 118.984375
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "44.2031px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Люди и роли",
+      "widget": "heading.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-fdd2a40 elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 69,
+        "clientWidth": 358,
+        "scrollHeight": 69,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 358
+      },
+      "elType": "widget",
+      "id": "fdd2a40",
+      "rect": {
+        "height": 68.796875,
+        "width": 358,
+        "x": 16,
+        "y": 163.1875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "68.7969px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Вымышленные данные для проверки карточек разной длины",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "wpae-team_cards elementor-element elementor-element-5424224 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 797,
+        "clientWidth": 358,
+        "scrollHeight": 797,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 358
+      },
+      "elType": "container",
+      "id": "5424224",
+      "rect": {
+        "height": 796.7734375,
+        "width": 358,
+        "x": 16,
+        "y": 263.984375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "14px",
+        "height": "796.773px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Альфа\nДизайнер\nПроверяет макеты.\nУчастник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.\nУчастник Гамма\nРазработчик\nСобирает интерфейс.\nУчастник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку.",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-5d4950d e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 127,
+        "clientWidth": 356,
+        "scrollHeight": 127,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 356
+      },
+      "elType": "container",
+      "id": "5d4950d",
+      "rect": {
+        "height": 129.296875,
+        "width": 358,
+        "x": 16,
+        "y": 263.984375
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "129.297px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Альфа\nДизайнер\nПроверяет макеты.",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-a450ccc elementor-widget elementor-widget-heading",
+      "content": {
+        "clientHeight": 23,
+        "clientWidth": 328,
+        "scrollHeight": 23,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "a450ccc",
+      "rect": {
+        "height": 22.5,
+        "width": 328,
+        "x": 31,
+        "y": 278.984375
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Альфа",
+      "widget": "heading.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-0ad0930 elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 328,
+        "scrollHeight": 26,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "0ad0930",
+      "rect": {
+        "height": 26.3984375,
+        "width": 328,
+        "x": 31,
+        "y": 313.484375
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "26.3984px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Дизайнер",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-f38551d elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 328,
+        "scrollHeight": 26,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "f38551d",
+      "rect": {
+        "height": 26.3984375,
+        "width": 328,
+        "x": 31,
+        "y": 351.8828125
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "26.3984px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Проверяет макеты.",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-9b4dedc e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 233,
+        "clientWidth": 356,
+        "scrollHeight": 233,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 356
+      },
+      "elType": "container",
+      "id": "9b4dedc",
+      "rect": {
+        "height": 234.890625,
+        "width": 358,
+        "x": 16,
+        "y": 407.28125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "234.891px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Бета\nИсследователь\nСинтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-7d942ce elementor-widget elementor-widget-heading",
+      "content": {
+        "clientHeight": 23,
+        "clientWidth": 328,
+        "scrollHeight": 23,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "7d942ce",
+      "rect": {
+        "height": 22.5,
+        "width": 328,
+        "x": 31,
+        "y": 422.28125
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Бета",
+      "widget": "heading.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-fb8aa6c elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 328,
+        "scrollHeight": 26,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "fb8aa6c",
+      "rect": {
+        "height": 26.3984375,
+        "width": 328,
+        "x": 31,
+        "y": 456.78125
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "26.3984px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Исследователь",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-55e5fbb elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 132,
+        "clientWidth": 328,
+        "scrollHeight": 132,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "55e5fbb",
+      "rect": {
+        "height": 131.9921875,
+        "width": 328,
+        "x": 31,
+        "y": 495.1796875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "131.992px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Синтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-bc1d93b e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 127,
+        "clientWidth": 356,
+        "scrollHeight": 127,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 356
+      },
+      "elType": "container",
+      "id": "bc1d93b",
+      "rect": {
+        "height": 129.296875,
+        "width": 358,
+        "x": 16,
+        "y": 656.171875
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "129.297px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Гамма\nРазработчик\nСобирает интерфейс.",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-5105fd5 elementor-widget elementor-widget-heading",
+      "content": {
+        "clientHeight": 23,
+        "clientWidth": 328,
+        "scrollHeight": 23,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "5105fd5",
+      "rect": {
+        "height": 22.5,
+        "width": 328,
+        "x": 31,
+        "y": 671.171875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Гамма",
+      "widget": "heading.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-1b40869 elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 328,
+        "scrollHeight": 26,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "1b40869",
+      "rect": {
+        "height": 26.3984375,
+        "width": 328,
+        "x": 31,
+        "y": 705.671875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "26.3984px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Разработчик",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-9ac551b elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 328,
+        "scrollHeight": 26,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "9ac551b",
+      "rect": {
+        "height": 26.3984375,
+        "width": 328,
+        "x": 31,
+        "y": 744.0703125
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "26.3984px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Собирает интерфейс.",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-1f8ae05 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 259,
+        "clientWidth": 356,
+        "scrollHeight": 259,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 356
+      },
+      "elType": "container",
+      "id": "1f8ae05",
+      "rect": {
+        "height": 261.2890625,
+        "width": 358,
+        "x": 16,
+        "y": 799.46875
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "261.289px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Дельта\nРедактор\nСинтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку.",
+      "widget": null
+    },
+    {
+      "classes": "elementor-element elementor-element-0f824cf elementor-widget elementor-widget-heading",
+      "content": {
+        "clientHeight": 23,
+        "clientWidth": 328,
+        "scrollHeight": 23,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "0f824cf",
+      "rect": {
+        "height": 22.5,
+        "width": 328,
+        "x": 31,
+        "y": 814.46875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Участник Дельта",
+      "widget": "heading.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-7bc9eb8 elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 328,
+        "scrollHeight": 26,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "7bc9eb8",
+      "rect": {
+        "height": 26.3984375,
+        "width": 328,
+        "x": 31,
+        "y": 848.96875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "26.3984px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Редактор",
+      "widget": "text-editor.default"
+    },
+    {
+      "classes": "elementor-element elementor-element-ba8bb3b elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 158,
+        "clientWidth": 328,
+        "scrollHeight": 158,
+        "scrollOverflowX": false,
+        "scrollOverflowY": false,
+        "scrollWidth": 328
+      },
+      "elType": "widget",
+      "id": "ba8bb3b",
+      "rect": {
+        "height": 158.390625,
+        "width": 328,
+        "x": 31,
+        "y": 887.3671875
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "158.391px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Синтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку.",
+      "widget": "text-editor.default"
+    }
+  ],
+  "rootIds": [
+    "94ea563"
+  ],
+  "source": "public"
+}

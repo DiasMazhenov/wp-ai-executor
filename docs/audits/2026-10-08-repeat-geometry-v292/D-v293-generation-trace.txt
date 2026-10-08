@@ -1,0 +1,385 @@
+- heading "Редактировать \"Pricing Contract Live v123\" с помощью Elementor" [level=1]
+- banner:
+  - button "Логотип Elementor":
+    - img "Логотип Elementor"
+  - button "Добавить элемент":
+  - button "Angie":
+  - button "Настройки Страница":
+  - button "История":
+  - separator
+  - button "Pricing Contract Live v123":
+    - generic "Pricing Contract Live v123":
+      - generic: Pricing Contract Live v123
+  - separator
+  - tablist "Сменить устройство":
+    - tab "Компьютер" [selected]:
+    - tab "Планшет - книжная ориентация (до 1024px)":
+    - tab "Мобильный - книжная ориентация (до 767px)":
+  - separator
+  - button "Контрольный список":
+  - button "Что нового":
+  - button "Поиск":
+  - button "Структура" [pressed]:
+  - button "Просмотреть изменения":
+  - button "Опубликовать"
+  - button "Сохранить настройки":
+- complementary "Редактировать Контейнер":
+  - text: 
+  - text:  
+  - heading "Редактировать Контейнер" [level=2]
+  - text:  
+  - main:
+    - button " Макет":
+      - generic:  Макет
+    - button " Стиль":
+      - generic:  Стиль
+    - button " Расширенные":
+      - generic:  Расширенные
+    - button "Контейнер":
+      - generic: 
+      - generic: Контейнер
+    - generic: Макет контейнера
+    - combobox "Макет контейнера":
+      - option "Flexbox" [selected]
+      - option "Сетка"
+    - text: 
+    - generic: Ширина макета
+    - combobox "Ширина макета":
+      - option "Ограниченная" [selected]
+      - option "Во всю ширину"
+    - text: 
+    - text:                  
+    - generic: Ширина
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - text: px 
+    - generic: 
+    - generic: px
+    - text: 
+    - slider
+    - spinbutton "Ширина"
+    - text:            
+    - generic: Мин. высота
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - text: px 
+    - generic: 
+    - generic: px
+    - text: 
+    - slider
+    - spinbutton "Мин. высота"
+    - generic: Чтобы получить контейнер полной высоты, используйте 100vh.
+    - text:            
+    - heading "Элементы" [level=3]
+    - generic: Направление
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Ряд - горизонтальный
+    - generic: 
+    - generic: Столбец - вертикальный
+    - generic: 
+    - generic: Ряд - перевернутый
+    - generic: 
+    - generic: Столбец - реверсивный
+    - text:              
+    - generic: Распределение содержимого
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Начало
+    - generic: 
+    - generic: Центр
+    - generic: 
+    - generic: Конец
+    - generic: 
+    - generic: Расстояние между
+    - generic: 
+    - generic: Расстояние около
+    - generic: 
+    - generic: Равное расстояние
+    - text:                  
+    - generic: Выровнять элементы
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Начало
+    - generic: 
+    - generic: Центр
+    - generic: 
+    - generic: Конец
+    - generic: 
+    - generic: Растянуть
+    - text:              
+    - generic: Пробелы
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - text: rem 
+    - generic: 
+    - generic: rem
+    - text: 
+    - list:
+      - spinbutton "Колонка": "2"
+      - generic: Колонка
+      - spinbutton "Строка": "2"
+      - generic: Строка
+      - button "Связать значения":
+        - generic: 
+        - generic: Связать значения
+        - text: 
+    - text:                
+    - generic: Оболочка
+    - button "Компьютер":
+      - generic: 
+    - button "Планшет - книжная ориентация": 
+    - button "Мобильный - книжная ориентация": 
+    - generic: 
+    - generic: Без упаковки
+    - generic: 
+    - generic: Оболочка
+    - generic: Элементы внутри контейнера могут располагаться в одной строке (без переноса) или разбиваться на несколько строк (перенос).
+    - text:                                      Скр Показ                                                                                                                                                                        
+    - button "Дополнительные опции":
+      - generic: 
+      - generic: Дополнительные опции
+    - link "Нужна помощь":
+      - /url: https://go.elementor.com/widget-container
+      - text: Нужна помощь
+      - generic: 
+  - text:          
+  - generic "Скрыть панель (⌘ + P)":
+    - generic: 
+    - generic: Скрыть панель (⌘ + P)
+- main "Смотреть":
+  - text: 
+  - iframe [id="elementor-preview-iframe"]:
+    - list:
+      - listitem "Добавить Контейнер":
+        - generic: 
+      - listitem "Редактировать Контейнер":
+        - generic: 
+      - listitem "Удалить Контейнер":
+        - generic: 
+    - generic:   
+    - generic:   
+    - generic:   
+    - generic: 
+    - heading "ПРЕИМУЩЕСТВА" [level=6]
+    - generic: 
+    - heading "Понятная работа" [level=2]
+    - generic: 
+    - generic: Шесть коротких синтетических пунктов для проверки responsive-сетки
+    - generic:   
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Ясный план" [level=3]
+    - generic: 
+    - generic: Цели и этапы согласованы.
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Общая команда" [level=3]
+    - generic: 
+    - generic: Все работают по одному плану.
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Понятные сроки" [level=3]
+    - generic: 
+    - generic: Даты видны заранее.
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Чёткие решения" [level=3]
+    - generic: 
+    - generic: Критерии результата известны.
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Проверка этапов" [level=3]
+    - generic: 
+    - generic: Каждый этап завершается проверкой.
+    - generic:   
+    - generic: 
+    - generic: 
+    - generic: 
+    - heading "Полная передача" [level=3]
+    - generic: 
+    - generic: Материалы остаются доступными.
+    - region "Добавьте новый элемент макета":
+      - text:  
+      - button "Добавить новый контейнер":
+        - generic: 
+      - button "Добавить шаблон":
+        - generic: 
+      - button "Стройте с помощью ИИ":
+        - generic: 
+      - generic: Перетащите виджет
+    - generic: desktop
+- complementary "Структура":
+  - button "Развернуть все элементы":
+    - generic: 
+  - button "":
+    - generic: 
+  - heading "Структура" [level=2]
+  - button "Закрытая структура":
+    - generic: 
+  - generic: 
+  - generic: Показать/скрыть внутренние элементы
+  - generic: 
+  - generic: Контейнер
+  - text: 
+  - text:                                                                         
+  - generic: 
+  - generic: Изменить размер структуры
+- region "LLM-помощник Elementor":
+  - strong: LLM-помощник Elementor
+  - generic: Ответы проходят через настроенный proxy
+  - generic: "Модель: openrouter/free · Версия: v02.11.293"
+  - generic: "Выделение: нет"
+  - button "Копировать JSON":
+    - generic: 
+  - button "Копировать JSON выделенного":
+    - generic: 
+  - button "Копировать JSON для вставки в Elementor":
+    - generic: 
+  - button "Перегенерировать последний запрос":
+    - generic: 
+  - button "Свернуть чат": ×
+  - list "Фазы генерации дизайна":
+    - listitem: Разбор запроса
+    - listitem: Планирование дизайна
+    - listitem: Подбор компонентов
+    - listitem: Проверка responsive
+    - listitem: Сборка Elementor
+    - listitem: Запись
+    - listitem: Рендер
+    - listitem: Visual review
+  - generic: Опишите задачу по текущей странице или выбранному элементу.
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - button "Отменить создание блока" [disabled]
+  - button "Обновить серверный descriptor"
+  - generic: "Свежий read-only descriptor: operation wpae-bf1d39a2187e5491, revision 7, status already_undone. write_count=0. composition evidence: {\"schema\":\"wpae-composition-evidence-v1\",\"status\":\"unavailable\",\"request\":{},\"accepted\":{},\"hashes\":{},\"surface\":{},\"generation\":{},\"operation\":{},\"native\":{}}"
+  - generic: "Свежий read-only descriptor: operation wpae-17d930cd89457555, revision 7, status already_undone. write_count=0. composition evidence: {\"schema\":\"wpae-composition-evidence-v1\",\"status\":\"complete\",\"request\":{\"mode\":\"explicit_record\",\"record_id\":\"testimonials.grid\",\"record_version\":1,\"visual_profile\":\"editorial_light\",\"visual_profile_source\":\"ui_selector\",\"brief_composition\":null,\"brief_media_side\":null},\"accepted\":{\"record_id\":\"testimonials.grid\",\"record_version\":1,\"record_hash\":\"77a8235bead676e5cb9d2ec3ffe16d299d7e43cf7e711a7e841b0d2c5c0f6382\",\"source\":\"explicit_record\",\"visual_profile\":\"editorial_light\",\"selection_reasons\":[\"honored_explicit_record\"],\"selection_policy\":\"wpae-composition-selection-v2\",\"catalog_id\":\"wpae-compositions-v1\",\"catalog_identity\":\"8f8ab15c9e1e844274b3959bf3bbffe930f1b7cb7170bfd9931db66fbc1cea2d\"},\"hashes\":{\"brief_sha256\":\"f11d27e2f1f6acd93c8d8f30829c5a61031445c99ae54835dfbd463cd9ada3a8\",\"plan_sha256\":\"eb5e057008e5cb9f25db99d019800231f459c39bec84abf7072c03147045af7c\"},\"surface\":{\"profile\":\"editorial_light\",\"section_surface\":{\"token\":\"color.section_bg\",\"source\":\"documented_default\",\"palette_role\":\"accent\",\"opacity\":0.2,\"transparency\":0.8,\"accent_source\":\"elementor_system_color_stock_default:accent\",\"accent_confirmed\":false},\"resolved_value\":\"#61ce7033\",\"value_source\":\"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent\",\"accent_reference\":{\"value\":\"#61ce70\",\"source\":\"elementor_system_color_stock_default:accent\",\"confirmed\":false},\"opaque_underlay\":\"#ffffff\"},\"generation\":{\"route\":\"local_deterministic\",\"provider_calls\":0,\"provider_call_count_source\":\"design_pipeline_preflight\",\"transaction_write_count\":1,\"transaction_write_count_source\":\"successful_transaction_and_readback\"},\"operation\":{\"post_id\":5214,\"operation_id\":\"wpae-17d930cd89457555\",\"operation_identity\":\"2cdedd6b-99e8-4ff5-ae9d-c77687ad469d\",\"root_ids\":[\"f395bb8\"],\"revision\":7,\"accepted_contract_id\":\"contract-9b2a7b14239de200f8cc79e3\",\"accepted_contract_sha256\":\"9b2a7b14239de200f8cc79e364c3366a695a2c525ee0e17312057eee8365c9b6\",\"saved_document_sha256\":\"4e4c17753f9edc47b54a06c1bb5147d1b267eb324441d8a88ff745a5c26b450a\"},\"native\":{\"saved_native_fingerprint\":\"36e0b91e1327537b9b6f46836dc086fa636d9f906136c2f64b38a7c835d94715\",\"saved_root_ids\":[\"f395bb8\"]}}"
+  - generic: "Создай блок преимуществ без фото и CTA. Выбери benefits.grid. Надзаголовок «ПРЕИМУЩЕСТВА». Заголовок «Понятная работа». Описание «Шесть коротких синтетических пунктов для проверки responsive-сетки». Преимущество 1: «Ясный план». Описание преимущества 1: «Цели и этапы согласованы.» Преимущество 2: «Общая команда». Описание преимущества 2: «Все работают по одному плану.» Преимущество 3: «Понятные сроки». Описание преимущества 3: «Даты видны заранее.» Преимущество 4: «Чёткие решения». Описание преимущества 4: «Критерии результата известны.» Преимущество 5: «Проверка этапов». Описание преимущества 5: «Каждый этап завершается проверкой.» Преимущество 6: «Полная передача». Описание преимущества 6: «Материалы остаются доступными.» На desktop — 3 колонки, на tablet — 2 колонки, на mobile — 1 колонка. Сохрани шесть пар и порядок точно. Не добавляй фото, кнопки, CTA или дополнительные утверждения."
+  - button "Копировать промт":
+    - generic: 
+  - generic: "Выполняется: Запрос принят. Проверяю текущий контекст Elementor."
+  - generic: "Выполняется: Отправляю задачу настроенному LLM-провайдеру."
+  - generic: "Выполняется: Ожидаю структурированный Elementor JSON и результат проверки."
+  - generic: "Шаг 1: Запрос разобран в BriefIR v1 без потери exact_text и URL."
+  - generic: "Шаг 2: Собран typed DesignPlan v1; модель не формировала Elementor tree."
+  - generic: "Шаг 3: WidgetCapabilityRegistry проверил native widgets и downgrade policy."
+  - generic: "Шаг 4: LayoutReport проверил desktop/tablet/mobile width invariants."
+  - generic: "Шаг 5: ElementorIR v2 скомпилирован локальным native compiler."
+  - generic: "Шаг 6: Перед записью показаны scope, nodes, widgets, warnings и route metadata."
+  - generic: "Шаг 7: Команда insert_elements и целевая страница подтверждены."
+  - generic: "Шаг 8: Количество новых элементов прошло проверку. (элементов: 1)"
+  - generic: "Шаг 9: В команде найден хотя бы один native Elementor widget. (native widgets: 21)"
+  - generic: "Шаг 10: Структура виджетов нормализована под native Elementor и Flexbox. (элементов: 1)"
+  - generic: "Шаг 11: Сохранены явные цвета и типографика авторской композиции. [пропущено] (элементов: 1)"
+  - generic: "Шаг 12: Текущая структура страницы прочитана. (элементов на странице: 0)"
+  - generic: "Шаг 13: Для новых элементов созданы уникальные Elementor ID. (элементов: 1)"
+  - generic: "Шаг 14: Предпросмотр команды и preflight прошли до записи. (HTTP: 200)"
+  - generic: "Шаг 15: Изменения сохранены через Elementor update. (HTTP: 200; operation ID: wpae-68abefd3c3529628; diff: [object Object])"
+  - generic: "Шаг 16: Задача выполнена, Elementor подтвердил запись."
+  - generic "JSON диагностики LLM"
+  - text: 
+  - generic "JSON сгенерированного дизайна"
+  - text:  
+  - generic: Новые элементы добавлены в открытом Elementor без перезагрузки редактора.
+  - generic: "Выполняется: Обновляю preview и проверяю результат через AI Vision."
+  - generic: Композиция
+  - combobox "Композиция":
+    - option "Автоматически"
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Только текст"
+    - option "Фото справа · текст/фото 60/40"
+    - option "Фото слева · текст/фото 60/40"
+    - option "Фото справа · текст/фото 50/50"
+    - option "Фото слева · текст/фото 50/50"
+    - option "Фото справа · текст/фото 40/60"
+    - option "Фото слева · текст/фото 40/60"
+    - option "Сетка карточек" [selected]
+    - option "Список с иконками"
+    - option "Карточки тарифов"
+    - option "Аккордеон"
+    - option "Карточки участников"
+    - option "Редакционные строки"
+    - option "Карточки отзывов"
+    - option "Редакционные строки"
+    - option "Центрированный блок"
+    - option "Текст и отдельные действия"
+    - option "Карточки с иконками"
+    - option "Карточки с фото"
+    - option "Текст и фото"
+    - option "Список услуг"
+    - option "Упорядоченные этапы"
+  - generic: Оформление
+  - combobox "Оформление":
+    - option "По умолчанию"
+    - option "Светлое редакционное" [selected]
+    - option "Светлое с мягкими карточками"
+  - textbox "Спросите, что угодно…"
+  - button "Отправить" [disabled]:
+    - generic: 

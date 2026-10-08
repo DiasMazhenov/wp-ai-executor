@@ -1,0 +1,472 @@
+{
+  "chat": {
+    "bubbleRect": {
+      "height": 0,
+      "width": 0,
+      "x": 0,
+      "y": 0
+    },
+    "bubbleText": "Здравствуйте!",
+    "class": "wpdsac-chat wpdsac-position--bottom-right",
+    "rect": {
+      "height": 60,
+      "width": 60,
+      "x": 1196,
+      "y": 816
+    }
+  },
+  "cssViewport": {
+    "documentClientHeight": 900,
+    "documentClientWidth": 1280,
+    "dpr": 1,
+    "visualViewportHeight": 900,
+    "visualViewportWidth": 1280,
+    "windowInnerHeight": 900,
+    "windowInnerWidth": 1280
+  },
+  "document": {
+    "bodyScrollWidth": 1280,
+    "scrollWidth": 1280
+  },
+  "nativeCounts": {
+    "buttons": 0,
+    "images": 0,
+    "links": 0
+  },
+  "nodes": [
+    {
+      "class": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-testimonials elementor-element elementor-element-f395bb8 e-flex e-con-boxed e-con e-parent e-lazyloaded",
+      "content": {
+        "clientHeight": 832,
+        "clientWidth": 1280,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 832,
+        "scrollWidth": 1280
+      },
+      "id": "f395bb8",
+      "rect": {
+        "height": 832.1484375,
+        "width": 1280,
+        "x": 0,
+        "y": 32
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(97, 206, 112, 0.2)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "normal",
+        "height": "832.148px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 32px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКИЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные цитаты разной длины проверяют текст и связь с авторами\nВсё ясно.\nАвтор Альфа\nТестовая группа Альфа\nВ синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.\nАвтор Бета\nТестовая группа Бета\nХороший темп.\nАвтор Гамма\nТестовая группа Гамма\nДлинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.\nАвтор Дельта\nТестовая группа Дельта"
+    },
+    {
+      "class": "elementor-element elementor-element-f23e034 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 130,
+        "clientWidth": 1140,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 130,
+        "scrollWidth": 1140
+      },
+      "id": "f23e034",
+      "rect": {
+        "height": 129.6328125,
+        "width": 1140,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "alignItems": "flex-start",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "129.633px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКИЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные цитаты разной длины проверяют текст и связь с авторами"
+    },
+    {
+      "class": "elementor-element elementor-element-38c7455 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 130,
+        "clientWidth": 608,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 130,
+        "scrollWidth": 608
+      },
+      "id": "38c7455",
+      "rect": {
+        "height": 129.6328125,
+        "width": 608,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "alignItems": "flex-start",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "129.633px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКИЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные цитаты разной длины проверяют текст и связь с авторами"
+    },
+    {
+      "class": "wpae-generated-badge elementor-element elementor-element-b89398f e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 26,
+        "clientWidth": 210,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 26,
+        "scrollWidth": 210
+      },
+      "id": "b89398f",
+      "rect": {
+        "height": 27.5859375,
+        "width": 211.9765625,
+        "x": 70,
+        "y": 112
+      },
+      "style": {
+        "alignItems": "center",
+        "alignSelf": "flex-start",
+        "background": "rgb(0, 0, 0)",
+        "borderRadius": "999px",
+        "direction": "row",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "height": "27.5859px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "СИНТЕТИЧЕСКИЕ ОТЗЫВЫ"
+    },
+    {
+      "class": "elementor-element elementor-element-ed3fc2f elementor-widget elementor-widget-heading",
+      "content": {
+        "clientHeight": 58,
+        "clientWidth": 467,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 58,
+        "scrollWidth": 467
+      },
+      "id": "ed3fc2f",
+      "rect": {
+        "height": 58,
+        "width": 467.265625,
+        "x": 70,
+        "y": 139.5859375
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "58px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Опыт участников теста"
+    },
+    {
+      "class": "elementor-element elementor-element-b23af3b elementor-widget elementor-widget-text-editor",
+      "content": {
+        "clientHeight": 44,
+        "clientWidth": 601,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 44,
+        "scrollWidth": 601
+      },
+      "id": "b23af3b",
+      "rect": {
+        "height": 44.046875,
+        "width": 600.765625,
+        "x": 70,
+        "y": 197.5859375
+      },
+      "style": {
+        "alignItems": "normal",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "17px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "44.0469px",
+        "justifyContent": "normal",
+        "lineHeight": "28.05px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Вымышленные цитаты разной длины проверяют текст и связь с авторами"
+    },
+    {
+      "class": "wpae-testimonial_cards elementor-element elementor-element-e6fb24c e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 511,
+        "clientWidth": 1140,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 511,
+        "scrollWidth": 1140
+      },
+      "id": "e6fb24c",
+      "rect": {
+        "height": 510.515625,
+        "width": 1140,
+        "x": 70,
+        "y": 273.6328125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "direction": "row",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "510.516px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "wrap"
+      },
+      "text": "Всё ясно.\nАвтор Альфа\nТестовая группа Альфа\nВ синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.\nАвтор Бета\nТестовая группа Бета\nХороший темп.\nАвтор Гамма\nТестовая группа Гамма\nДлинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.\nАвтор Дельта\nТестовая группа Дельта"
+    },
+    {
+      "class": "elementor-element elementor-element-77c9396 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 257,
+        "clientWidth": 558,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 257,
+        "scrollWidth": 558
+      },
+      "id": "77c9396",
+      "rect": {
+        "height": 259.28125,
+        "width": 560,
+        "x": 70,
+        "y": 273.6328125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "259.281px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Всё ясно.\nАвтор Альфа\nТестовая группа Альфа"
+    },
+    {
+      "class": "elementor-element elementor-element-d69a606 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 257,
+        "clientWidth": 558,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 257,
+        "scrollWidth": 558
+      },
+      "id": "d69a606",
+      "rect": {
+        "height": 259.28125,
+        "width": 560,
+        "x": 650,
+        "y": 273.6328125
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "259.281px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "В синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.\nАвтор Бета\nТестовая группа Бета"
+    },
+    {
+      "class": "elementor-element elementor-element-845f494 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 229,
+        "clientWidth": 558,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 229,
+        "scrollWidth": 558
+      },
+      "id": "845f494",
+      "rect": {
+        "height": 231.234375,
+        "width": 560,
+        "x": 70,
+        "y": 552.9140625
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "231.234px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Хороший темп.\nАвтор Гамма\nТестовая группа Гамма"
+    },
+    {
+      "class": "elementor-element elementor-element-1de45c1 e-con-full e-flex e-con e-child",
+      "content": {
+        "clientHeight": 229,
+        "clientWidth": 558,
+        "overflowX": false,
+        "overflowY": false,
+        "scrollHeight": 229,
+        "scrollWidth": 558
+      },
+      "id": "1de45c1",
+      "rect": {
+        "height": 231.234375,
+        "width": 560,
+        "x": 650,
+        "y": 552.9140625
+      },
+      "style": {
+        "alignItems": "stretch",
+        "alignSelf": "auto",
+        "background": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "231.234px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "20px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Длинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.\nАвтор Дельта\nТестовая группа Дельта"
+    }
+  ],
+  "rootIds": [
+    "f395bb8"
+  ],
+  "source": "public",
+  "text": "СИНТЕТИЧЕСКИЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные цитаты разной длины проверяют текст и связь с авторами\nВсё ясно.\nАвтор Альфа\nТестовая группа Альфа\nВ синтетическом примере можно проверить длинную цитату, сохранить её целиком, увидеть переносы в карточке и убедиться, что она остаётся связана с правильным автором. Это вымышленный текст для проверки макета, а не рекомендация клиента.\nАвтор Бета\nТестовая группа Бета\nХороший темп.\nАвтор Гамма\nТестовая группа Гамма\nДлинная синтетическая цитата проверяет естественный рост карточки, типографическую иерархию и сохранение содержимого после публикации. Вымышленные сведения не относятся к реальному клиенту или компании.\nАвтор Дельта\nТестовая группа Дельта"
+}

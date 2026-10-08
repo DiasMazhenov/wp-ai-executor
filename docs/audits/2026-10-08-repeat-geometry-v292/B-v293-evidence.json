@@ -1,0 +1,271 @@
+{
+  "format": "wpae-live-case-v1",
+  "scenario": "B",
+  "family": "team",
+  "fixture": "fixtures/B-team-grid.txt",
+  "exact_request": "Создай блок команды. Это четыре синтетических участника, не реальные сотрудники. Выбери team.grid и не добавляй фотографии, кнопки, рейтинг или CTA.\nНадзаголовок «СИНТЕТИЧЕСКАЯ КОМАНДА» в pill-бейдже. Заголовок «Люди и роли». Описание «Вымышленные данные для проверки карточек разной длины».\nУчастник 1 имя «Участник Альфа». Участник 1 должность «Дизайнер». Участник 1 биография «Проверяет макеты.».\nУчастник 2 имя «Участник Бета». Участник 2 должность «Исследователь». Участник 2 биография «Синтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.».\nУчастник 3 имя «Участник Гамма». Участник 3 должность «Разработчик». Участник 3 биография «Собирает интерфейс.».\nУчастник 4 имя «Участник Дельта». Участник 4 должность «Редактор». Участник 4 биография «Синтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку.».\nСохрани четыре сущности, все поля и их принадлежность точно. Две биографии короткие, две длинные. Не добавляй пустую область действий.\n",
+  "source": {
+    "version": "v02.11.293",
+    "commit": "fd12c9b5fcab2112c58b3e19223c736ea698a63e",
+    "installed_plugins_version": "v02.11.293",
+    "installed_editor_inline_version": "v02.11.293"
+  },
+  "post_id": 5214,
+  "route": "ordinary_plugin_chat_local_deterministic",
+  "initial_baseline": {
+    "editor_roots": [],
+    "public_roots": []
+  },
+  "selection": {
+    "requested_record": "team.grid",
+    "accepted_record": "team.grid",
+    "record_version": 1,
+    "record_hash": "cd48749f8ef014ab115f0c8341ce7ef82e88af013ea34c2477f703556e54a535",
+    "profile": "editorial_light",
+    "profile_source": "ui_selector",
+    "brief_sha256": "475645a2b1e37cd5f54245d54f9e380e32c82259ea6612f94809040f222c729e",
+    "plan_sha256": "4316fc716fa0b7a3e6cb51147d016d6864a39b18d1bcb7afeb167990ddd85d9e",
+    "accepted_contract_id": "contract-c2080a9961e67d3a7b8e8381",
+    "accepted_contract_sha256": "c2080a9961e67d3a7b8e838140973e91026196de9ea8d0cee6a683e274790580"
+  },
+  "generation": {
+    "provider_calls": 0,
+    "transaction_write_count": 1,
+    "write_route": "local_deterministic",
+    "first_result_captured_before_publish": true,
+    "repairs": 0
+  },
+  "operation": {
+    "id": "wpae-2809fae7a68d52c9",
+    "identity": "f5f0b4b2-a258-42de-a2c7-c6a7a88c1d37",
+    "root_id": "94ea563",
+    "revision_after_publish_and_reload": 6,
+    "revision_after_guarded_undo": 7,
+    "undo_status": "complete",
+    "undo_write_count": 0,
+    "saved_document_sha256": "7c488b3a56e3737a30216e767b8ae22ed299296cc4d85508bc72c614dce05225"
+  },
+  "native_readback": {
+    "file": "B-v293-native-after-reload.json",
+    "tree_node_count": 28,
+    "containers": 13,
+    "widgets": 15,
+    "images": 0,
+    "buttons": 0,
+    "all_expected_exact_strings_present": true,
+    "expected_exact_strings": [
+      "СИНТЕТИЧЕСКАЯ КОМАНДА",
+      "Люди и роли",
+      "Вымышленные данные для проверки карточек разной длины",
+      "Участник Альфа",
+      "Дизайнер",
+      "Проверяет макеты.",
+      "Участник Бета",
+      "Исследователь",
+      "Синтетическая биография исследователя проверяет переносы длинного текста и сохранение точных деталей в карточке команды. Все сведения вымышлены и не относятся к реальному человеку.",
+      "Участник Гамма",
+      "Разработчик",
+      "Собирает интерфейс.",
+      "Участник Дельта",
+      "Редактор",
+      "Синтетическая биография редактора описывает проверку структуры текста, ясность терминов и согласование материалов перед передачей результата. Все сведения вымышлены и не относятся к реальному человеку."
+    ],
+    "composition": "2-column native Flex row/wrap; equal height inside each desktop row; mobile stacks naturally"
+  },
+  "public_geometry": {
+    "desktop": {
+      "file": "B-v293-public-desktop-dom.json",
+      "css_viewport": {
+        "dpr": 1,
+        "height": 900,
+        "width": 1280
+      },
+      "document_width": 1280,
+      "collection": {
+        "id": "5424224",
+        "rect": {
+          "height": 482.46875,
+          "width": 1140,
+          "x": 70,
+          "y": 273.6328125
+        }
+      },
+      "cards": [
+        {
+          "id": "5d4950d",
+          "rect": {
+            "height": 231.234375,
+            "width": 560,
+            "x": 70,
+            "y": 273.6328125
+          },
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "id": "9b4dedc",
+          "rect": {
+            "height": 231.234375,
+            "width": 560,
+            "x": 650,
+            "y": 273.6328125
+          },
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "id": "bc1d93b",
+          "rect": {
+            "height": 231.234375,
+            "width": 560,
+            "x": 70,
+            "y": 524.8671875
+          },
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "id": "1f8ae05",
+          "rect": {
+            "height": 231.234375,
+            "width": 560,
+            "x": 650,
+            "y": 524.8671875
+          },
+          "background": "rgb(255, 255, 255)"
+        }
+      ],
+      "overflow": false
+    },
+    "mobile": {
+      "file": "B-v293-public-mobile-collapsed-dom.json",
+      "window_inner_width": 390,
+      "window_inner_height": 844,
+      "visual_viewport_width": 390,
+      "document_client_width": 390,
+      "root_id": "94ea563",
+      "cards": [
+        {
+          "id": "5d4950d",
+          "rect": {
+            "height": 129.296875,
+            "width": 358,
+            "x": 16,
+            "y": 263.984375
+          },
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "id": "9b4dedc",
+          "rect": {
+            "height": 234.890625,
+            "width": 358,
+            "x": 16,
+            "y": 407.28125
+          },
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "id": "bc1d93b",
+          "rect": {
+            "height": 129.296875,
+            "width": 358,
+            "x": 16,
+            "y": 656.171875
+          },
+          "background": "rgb(255, 255, 255)"
+        },
+        {
+          "id": "1f8ae05",
+          "rect": {
+            "height": 261.2890625,
+            "width": 358,
+            "x": 16,
+            "y": 799.46875
+          },
+          "background": "rgb(255, 255, 255)"
+        }
+      ],
+      "document_width": 390,
+      "horizontal_overflow": false
+    }
+  },
+  "visual_review": {
+    "desktop": "PASS: both desktop rows have equal white surface bounds, 560px card widths, two columns; exact heading/eyebrow and typography hierarchy are legible.",
+    "mobile": "PASS_WITH_SITE_OVERLAY_NOTE: natural card heights preserve all four bios and entity associations; no horizontal overflow. Initial site greeting obscured part of Gamma content in the initial frame; native collapse preserved the initial screenshot, then exposed content. Persistent launcher overlaps only blank card surface in reviewed collapsed full-page pixels. Site settings unchanged.",
+    "surface": "Pale Accent tint and white card surfaces are consistent; content hierarchy remains readable."
+  },
+  "screenshots": [
+    {
+      "file": "screenshots/B-v293-public-desktop-1280x900.png",
+      "bytes": 250753,
+      "format": "PNG",
+      "width": 1280,
+      "height": 900,
+      "sha256": "ec436a2c13d9c6828b033f925a1997b6e636a7d8655ffab4fdbd3dbfb0640ea8",
+      "source": "public",
+      "css_viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "purpose": "desktop viewport",
+      "opened_and_visually_reviewed": true
+    },
+    {
+      "file": "screenshots/B-v293-public-mobile-390x844.png",
+      "bytes": 134840,
+      "format": "PNG",
+      "width": 375,
+      "height": 812,
+      "sha256": "7c7f9887c0d2f41552954f5bee569cfa731b122d72ee87af630de9a1fb23b2e0",
+      "source": "public",
+      "css_viewport": {
+        "windowInnerWidth": 390,
+        "windowInnerHeight": 844
+      },
+      "purpose": "initial mobile viewport with greeting overlay",
+      "opened_and_visually_reviewed": true
+    },
+    {
+      "file": "screenshots/B-v293-public-mobile-collapsed-viewport.png",
+      "bytes": 130623,
+      "format": "PNG",
+      "width": 375,
+      "height": 812,
+      "sha256": "0b9d2b6f6f9b00e64816b13a91b0e931171ee2c17e34f6ff3aa644fcb6d3765a",
+      "source": "public",
+      "css_viewport": {
+        "windowInnerWidth": 390,
+        "windowInnerHeight": 844
+      },
+      "purpose": "mobile viewport after native chat collapse",
+      "opened_and_visually_reviewed": true
+    },
+    {
+      "file": "screenshots/B-v293-public-mobile-fullpage-collapsed.png",
+      "bytes": 174425,
+      "format": "PNG",
+      "width": 375,
+      "height": 1127,
+      "sha256": "da67e2e80f54dc41b8f3c9a8294448ff85bc59a954abc137199ec46beece0cba",
+      "source": "public",
+      "css_viewport": {
+        "windowInnerWidth": 390,
+        "windowInnerHeight": 844
+      },
+      "purpose": "mobile full-page after native chat collapse",
+      "opened_and_visually_reviewed": true
+    }
+  ],
+  "baseline_after_undo": {
+    "rootIds": [],
+    "text": "Перетащите виджет",
+    "publishDisabled": true,
+    "public_roots": [],
+    "public_css_viewport": {
+      "innerHeight": 844,
+      "innerWidth": 390,
+      "visualViewportHeight": 844,
+      "visualViewportWidth": 390
+    },
+    "operation_status": "complete",
+    "write_count": 0
+  }
+}
