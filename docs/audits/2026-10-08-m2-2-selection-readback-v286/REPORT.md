@@ -95,7 +95,7 @@ Ran against the unchanged v290 source at HEAD 7a5c3947bd94df6be334a3fe932900eba7
 
 ## Commits, push, and remaining limitation
 
-Runtime source commit is 7a5c3947bd94df6be334a3fe932900eba70897fb. This closeout only updates documentation, the acceptance matrix and the selected PNG/evidence artifacts; it does not create a new runtime version. Push and post-push remote HEAD are recorded in the final status after the scoped documentation commit.
+Runtime source commit is 7a5c3947bd94df6be334a3fe932900eba70897fb. Documentation/evidence commit d7ed1327157f6d65f5c1aac89936fdccbd685fd0 was pushed; the immediate post-push `git ls-remote origin refs/heads/main` returned the same SHA. This closeout did not create a new runtime version. The later status-record commit and its remote verification are given in the final status.
 
 Overall lifecycle, native readback, content fidelity, desktop geometry, and document restoration passed for all five target slots. Four are full visual acceptances. E remains partial because the site's own floating chat launcher occludes a small part of one mobile paragraph. The 5/5 full-acceptance gate therefore remains open.
 
