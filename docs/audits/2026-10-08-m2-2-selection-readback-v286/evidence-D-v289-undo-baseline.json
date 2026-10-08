@@ -1,0 +1,25 @@
+{
+  "capturedAt": "2026-10-08T00:05:57.073Z",
+  "post": 5214,
+  "operation": "wpae-03dd3c9f473cbbf0",
+  "identity": "0d60814f-d52d-4b8b-aa2e-d39685e1ed7c",
+  "undo": "guarded operation-scoped UI action after fresh read-only descriptor and owned-model match",
+  "editor": {
+    "root": "6dfd971",
+    "present": false,
+    "publishDisabled": true
+  },
+  "public": {
+    "elementorIds": [],
+    "generated": [],
+    "servicesCount": 0,
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": {
+      "cw": 390,
+      "ih": 844,
+      "iw": 390,
+      "sw": 390
+    }
+  },
+  "baselineBeforeGeneration": []
+}

@@ -1,0 +1,131 @@
+{
+  "buttons": [
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-750bb7bf15a7f863"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-bf1d39a2187e5491"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-386f04d56c4648bd"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-d703ca87007f9393"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-0f910ad893de64a6"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-6ec007474100025d"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-149a17d653e7409a"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-1ba864a2453c984a"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": null,
+      "disabled": true,
+      "text": "Отменить создание блока",
+      "title": "already_undone: wpae-16f34da43f39dbde"
+    },
+    {
+      "aria": null,
+      "disabled": false,
+      "text": "Обновить серверный descriptor",
+      "title": "Read-only: проверяет operation, revision, contract, roots и owned native model"
+    },
+    {
+      "aria": "Отправить",
+      "disabled": false,
+      "text": "",
+      "title": "Отправить"
+    }
+  ],
+  "composition": "",
+  "cssViewport": {
+    "clientWidth": 1232,
+    "height": 923,
+    "width": 1232
+  },
+  "profile": ""
+}

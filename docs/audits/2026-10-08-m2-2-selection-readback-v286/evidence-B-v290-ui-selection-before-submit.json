@@ -1,0 +1,20 @@
+{
+  "brief_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b",
+  "captured_at": "2026-10-08T00:32:38.105Z",
+  "editor_url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor&wpae_release=290&fresh=1791418735151",
+  "family": "team",
+  "post_id": 5214,
+  "publish_disabled": true,
+  "requested_composition": {
+    "id": "team.grid",
+    "mode": "explicit"
+  },
+  "requested_profile": {
+    "id": "editorial_light",
+    "mode": "explicit"
+  },
+  "viewport": {
+    "height": 923,
+    "width": 1232
+  }
+}

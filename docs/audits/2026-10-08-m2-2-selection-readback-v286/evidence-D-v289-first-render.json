@@ -1,0 +1,189 @@
+{
+  "schema": "wpae-m2.2-first-render-v1",
+  "scenario": "D-services-automatic",
+  "runtime": "v02.11.289",
+  "fixture": "fixtures/D-services-automatic.txt",
+  "fixture_sha256": "9f2feaeb760e8d253da96bc6fc9f431f9401dde7b29436b60a6aac9c98060cac",
+  "page_id": 5214,
+  "editor_url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor&wpae_release=289&fresh=1791417261027",
+  "editor_css_viewport": {
+    "width": 1232,
+    "height": 923,
+    "dpr": 2
+  },
+  "ui_selection": {
+    "composition_label": "Автоматически",
+    "profile_label": "По умолчанию",
+    "selected_elements": 0,
+    "repair_flags": false
+  },
+  "trace": {
+    "IR": {
+      "compiled": true,
+      "node_count": 27,
+      "validation_errors": [],
+      "widgets": [
+        "container",
+        "heading",
+        "text-editor",
+        "icon",
+        "button"
+      ]
+    },
+    "action_path": "pipeline",
+    "brief": {
+      "ambiguity_count": 1,
+      "archetype": "services",
+      "content_count": 12,
+      "hash": "78b7ce951fc91164fe728d4dbc366be9659df3dd3da224eec89fa128d854d2ca",
+      "intake_source": "deterministic_parser",
+      "locale": "ru",
+      "schema": "wpae-brief-v1",
+      "validation": {
+        "errors": [],
+        "ok": true,
+        "services": {
+          "errors": [],
+          "item_count": 3,
+          "ok": true
+        }
+      },
+      "warnings": []
+    },
+    "layout": {
+      "breakpoints": [
+        {
+          "breakpoint": "desktop",
+          "container_width": 1376,
+          "mobile_stack_result": "stack",
+          "used_width": 1376
+        },
+        {
+          "breakpoint": "laptop",
+          "container_width": 960,
+          "mobile_stack_result": "stack",
+          "used_width": 960
+        },
+        {
+          "breakpoint": "tablet",
+          "container_width": 704,
+          "mobile_stack_result": "stack",
+          "used_width": 704
+        },
+        {
+          "breakpoint": "mobile",
+          "container_width": 358,
+          "mobile_stack_result": "stack",
+          "used_width": 358
+        }
+      ],
+      "ok": true,
+      "schema": "wpae-layout-report-v1",
+      "violations": []
+    },
+    "op": {
+      "accepted_contract_hash": "24d5eff4a90c0c4907b108e11377f54eb383a8e52ead31c7db73c0baaa64e90b",
+      "accepted_contract_id": "contract-24d5eff4a90c0c4907b108e1",
+      "compiled_hash": "bd9b9b27512ecf8e89db3ef179a64edc92c195f13bc3926d3a699d1d58cc1f92",
+      "operation_id": "wpae-03dd3c9f473cbbf0",
+      "operation_identity": "0d60814f-d52d-4b8b-aa2e-d39685e1ed7c",
+      "plan_hash": "ee54f8ee2baf53ebeedff43fecb757c2b206375580aa642bc95b8068bf958734",
+      "post_id": 5214,
+      "revision": 4,
+      "root_ids": [
+        "6dfd971"
+      ],
+      "saved_hash": "e029cf078fc78df2a1af6eeaee5ef94ed85c70e2cbd3f86279496cf151bf1567",
+      "target_fingerprint": "34a0cb97e9c67e294c7f10490b141bd24bafb96ca94021768746f70b4610b158"
+    },
+    "plan": {
+      "brief_hash": "78b7ce951fc91164fe728d4dbc366be9659df3dd3da224eec89fa128d854d2ca",
+      "composition_decision": {
+        "eyebrow_intro": "pill",
+        "identity": "services.icon_cards",
+        "provenance": {
+          "collection_alignment": "documented_default",
+          "collection_gap_desktop": "documented_default",
+          "collection_gap_mobile": "documented_default",
+          "collection_gap_tablet": "documented_default",
+          "collection_implementation": "documented_default",
+          "collection_item_height": "documented_default",
+          "collection_width_desktop": "documented_default",
+          "collection_width_mobile": "documented_default",
+          "collection_width_tablet": "documented_default",
+          "columns": "documented_default",
+          "description_cta_gap": "documented_default",
+          "eyebrow_presentation": "explicit_brief",
+          "eyebrow_title_gap": "documented_default",
+          "inline_value": "documented_default",
+          "intro_collection_gap": "documented_default",
+          "intro_container_align": "documented_default",
+          "intro_placement": "documented_default",
+          "intro_text_align": "documented_default",
+          "intro_title_token": "documented_default",
+          "item_copy_gap": "documented_default",
+          "item_cta_gap": "documented_default",
+          "item_media_gap": "documented_default",
+          "reading_measure": "documented_default",
+          "section_surface_token": "documented_default",
+          "title_description_gap": "documented_default"
+        },
+        "record_hash": "abe677b31da25949378f4bcec02308152078e1e0ca78b6cbc809b9b1a028efc4",
+        "record_id": "services.icon_cards",
+        "record_version": 1,
+        "request_selection": {
+          "brief_composition": null,
+          "brief_media_side": null,
+          "mode": "automatic",
+          "record_id": null,
+          "record_version": null,
+          "visual_profile": null,
+          "visual_profile_source": "not_requested"
+        },
+        "selection_reasons": [
+          "balanced_copy_favors_icon_cards"
+        ],
+        "source": "content_ranked_catalog",
+        "visual_profile": "editorial_light"
+      },
+      "hash": "ee54f8ee2baf53ebeedff43fecb757c2b206375580aa642bc95b8068bf958734"
+    },
+    "provider_calls": 0,
+    "render_review_pending": true,
+    "services": {
+      "brief_hash": "78b7ce951fc91164fe728d4dbc366be9659df3dd3da224eec89fa128d854d2ca",
+      "effective_route": "services_typed_recipe_pipeline",
+      "fallback_policy": "unspecified",
+      "library_adaptation": "",
+      "library_applied": false,
+      "library_mapping": [],
+      "library_required": false,
+      "library_template_id": "",
+      "media_resolved": true,
+      "media_status": "none",
+      "media_unresolved_service_ids": [],
+      "provider_calls": 0,
+      "recipe_id": "services.icon_cards",
+      "recipe_source": "content_ranked_catalog",
+      "refusal_reason": "",
+      "write_count": 1
+    },
+    "write_count": 1
+  },
+  "first_render": {
+    "pill_missing": true,
+    "exact_title_and_description_visible": true,
+    "three_items": true,
+    "ctas_and_hrefs_visible_in_editor": true,
+    "visual_summary": "Two cards visible in the editor viewport; third card falls outside captured area. Pill eyebrow absent despite accepted Plan visual_policy pill. AI Vision independently flagged missing pill; score is advisory only."
+  },
+  "screenshot": {
+    "path": "/Users/diasmazhenov/vibecode/wp-ai-executor/docs/audits/2026-10-08-m2-2-selection-readback-v286/screenshots/D-v289-first-editor-before-publish.png",
+    "raw_bytes": 118717,
+    "raw_signature": "FFD8FFE0",
+    "png_dimensions": [
+      1232,
+      923
+    ]
+  }
+}

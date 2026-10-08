@@ -1,0 +1,53 @@
+{
+  "chat": {
+    "buttons": [
+      {
+        "aria": null,
+        "expanded": null,
+        "text": "Здравствуйте!",
+        "title": ""
+      },
+      {
+        "aria": null,
+        "expanded": null,
+        "text": "\n\t\t\t\t\t\tОставить заявку\t\t\t\t\t",
+        "title": ""
+      },
+      {
+        "aria": "Отправить сообщение",
+        "expanded": null,
+        "text": "\n\t\t\t\t\n\t\t\t",
+        "title": ""
+      }
+    ],
+    "text": "Здравствуйте!\nAI-Dana"
+  },
+  "root": [
+    {
+      "background": "rgba(97, 206, 112, 0.2)",
+      "direction": "column",
+      "display": "flex",
+      "gap": "normal",
+      "id": "21cbb2d",
+      "padding": "0px 16px",
+      "rect": {
+        "h": 954.890625,
+        "w": 375,
+        "x": 0,
+        "y": 46
+      },
+      "text": "УСЛУГИ\nУслуги для проекта\nТри коротких направления работы с точными действиями\nСтратегия проекта\nОпределяем цель и план работ\nОбсудить стратегию\nАрхитектура и дизайн\nПроектируем решение с учетом пространства\nСмотреть проекты\nСопровождение\nСопровождаем реализацию до приемки\nОбсудить сопровождение"
+    }
+  ],
+  "scroll": {
+    "height": 1001,
+    "width": 375
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "height": 844,
+    "width": 390
+  }
+}

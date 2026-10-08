@@ -1,0 +1,502 @@
+{
+  "format": "wpae-elementor-selection-v1",
+  "post_id": 5214,
+  "captured_at": "2026-10-08T00:56:17.696Z",
+  "top": [
+    {
+      "id": "b553009",
+      "type": "container",
+      "children": 2
+    }
+  ],
+  "count": 34,
+  "types": {
+    "container:": 17,
+    "widget:heading": 10,
+    "widget:divider": 3,
+    "widget:text-editor": 4
+  },
+  "nodes": [
+    {
+      "id": "b553009",
+      "type": "container",
+      "depth": 0,
+      "childCount": 2,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "column",
+      "flexGap": {
+        "unit": "rem",
+        "size": 2,
+        "column": "2",
+        "row": "2",
+        "isLinked": true
+      },
+      "background": "#61ce7033",
+      "link": ""
+    },
+    {
+      "id": "83a3496",
+      "type": "container",
+      "depth": 1,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "px",
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "9cc29b6",
+      "type": "container",
+      "depth": 2,
+      "childCount": 2,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "px",
+        "size": 0,
+        "column": "0",
+        "row": "0",
+        "isLinked": true
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "8620963",
+      "type": "container",
+      "depth": 3,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "background": "#000000",
+      "link": ""
+    },
+    {
+      "id": "db994b6",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 4,
+      "childCount": 0,
+      "heading": "ПРОЦЕСС",
+      "headerSize": "h6",
+      "link": ""
+    },
+    {
+      "id": "a202300",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 3,
+      "childCount": 0,
+      "heading": "Как мы работаем",
+      "headerSize": "h2",
+      "link": ""
+    },
+    {
+      "id": "fcf51c9",
+      "type": "container",
+      "depth": 1,
+      "childCount": 4,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "row",
+      "flexGap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "e0f9c39",
+      "type": "container",
+      "depth": 2,
+      "childCount": 3,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "column",
+      "flexGap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "background": "#ffffff",
+      "link": ""
+    },
+    {
+      "id": "862f62b",
+      "type": "container",
+      "depth": 3,
+      "childCount": 2,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "column": "0.5",
+        "row": "0.5",
+        "isLinked": true,
+        "unit": "rem",
+        "size": "0.5"
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "b8025c2",
+      "type": "container",
+      "depth": 4,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "background": "#000000",
+      "link": ""
+    },
+    {
+      "id": "32dbe45",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 5,
+      "childCount": 0,
+      "heading": "01",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "9632ae6",
+      "type": "widget",
+      "widget": "divider",
+      "depth": 4,
+      "childCount": 0,
+      "text": "Разделитель",
+      "tag": "span"
+    },
+    {
+      "id": "09ef96d",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 3,
+      "childCount": 0,
+      "heading": "Бриф",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "735eb19",
+      "type": "widget",
+      "widget": "text-editor",
+      "depth": 3,
+      "childCount": 0,
+      "editor": "Фиксируем цель страницы и приоритетное действие"
+    },
+    {
+      "id": "d8043a3",
+      "type": "container",
+      "depth": 2,
+      "childCount": 3,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "column",
+      "flexGap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "background": "#ffffff",
+      "link": ""
+    },
+    {
+      "id": "84529c1",
+      "type": "container",
+      "depth": 3,
+      "childCount": 2,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "column": "0.5",
+        "row": "0.5",
+        "isLinked": true,
+        "unit": "rem",
+        "size": "0.5"
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "ca2a3f6",
+      "type": "container",
+      "depth": 4,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "background": "#000000",
+      "link": ""
+    },
+    {
+      "id": "03bc65d",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 5,
+      "childCount": 0,
+      "heading": "02",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "daf0442",
+      "type": "widget",
+      "widget": "divider",
+      "depth": 4,
+      "childCount": 0,
+      "text": "Разделитель",
+      "tag": "span"
+    },
+    {
+      "id": "1dfa706",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 3,
+      "childCount": 0,
+      "heading": "Структура",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "98bc67a",
+      "type": "widget",
+      "widget": "text-editor",
+      "depth": 3,
+      "childCount": 0,
+      "editor": "Собираем смысловой маршрут, контент и необходимые доказательства для посетителя"
+    },
+    {
+      "id": "e126db6",
+      "type": "container",
+      "depth": 2,
+      "childCount": 3,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "column",
+      "flexGap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "background": "#ffffff",
+      "link": ""
+    },
+    {
+      "id": "000ca6e",
+      "type": "container",
+      "depth": 3,
+      "childCount": 2,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "column": "0.5",
+        "row": "0.5",
+        "isLinked": true,
+        "unit": "rem",
+        "size": "0.5"
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "18a2f01",
+      "type": "container",
+      "depth": 4,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "background": "#000000",
+      "link": ""
+    },
+    {
+      "id": "9038241",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 5,
+      "childCount": 0,
+      "heading": "03",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "1941a6f",
+      "type": "widget",
+      "widget": "divider",
+      "depth": 4,
+      "childCount": 0,
+      "text": "Разделитель",
+      "tag": "span"
+    },
+    {
+      "id": "d25ebf6",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 3,
+      "childCount": 0,
+      "heading": "Сборка",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "58bd9d9",
+      "type": "widget",
+      "widget": "text-editor",
+      "depth": 3,
+      "childCount": 0,
+      "editor": "Создаём нативный Elementor-блок, затем адаптируем его для узких экранов"
+    },
+    {
+      "id": "a3d0e37",
+      "type": "container",
+      "depth": 2,
+      "childCount": 3,
+      "tag": "",
+      "flexDirection": "column",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "column",
+      "flexGap": {
+        "unit": "rem",
+        "size": 0.75,
+        "column": "0.75",
+        "row": "0.75",
+        "isLinked": true
+      },
+      "background": "#ffffff",
+      "link": ""
+    },
+    {
+      "id": "72a1e5f",
+      "type": "container",
+      "depth": 3,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "column": "0.5",
+        "row": "0.5",
+        "isLinked": true,
+        "unit": "rem",
+        "size": "0.5"
+      },
+      "background": "transparent",
+      "link": ""
+    },
+    {
+      "id": "c3b159f",
+      "type": "container",
+      "depth": 4,
+      "childCount": 1,
+      "tag": "",
+      "flexDirection": "row",
+      "flexDirectionMobile": "column",
+      "flexDirectionTablet": "",
+      "flexGap": {
+        "unit": "rem",
+        "size": 1.5,
+        "column": "1.5",
+        "row": "1.5",
+        "isLinked": true
+      },
+      "background": "#000000",
+      "link": ""
+    },
+    {
+      "id": "61baa75",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 5,
+      "childCount": 0,
+      "heading": "04",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "7bf79e6",
+      "type": "widget",
+      "widget": "heading",
+      "depth": 3,
+      "childCount": 0,
+      "heading": "Проверка",
+      "headerSize": "h3",
+      "link": ""
+    },
+    {
+      "id": "0d95013",
+      "type": "widget",
+      "widget": "text-editor",
+      "depth": 3,
+      "childCount": 0,
+      "editor": "Сверяем тексты, мобильный порядок и CTA перед публикацией"
+    }
+  ]
+}

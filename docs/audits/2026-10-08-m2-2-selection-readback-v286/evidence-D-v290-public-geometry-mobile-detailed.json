@@ -1,0 +1,302 @@
+{
+  "cssViewport": {
+    "clientWidth": 390,
+    "height": 844,
+    "width": 390
+  },
+  "headings": [
+    {
+      "rect": {
+        "h": 19.8,
+        "w": 54.69,
+        "x": 46,
+        "y": 96
+      },
+      "style": {
+        "alignItems": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "12px",
+        "gap": "normal",
+        "height": "19.7969px",
+        "justifyContent": "normal",
+        "lineHeight": "19.8px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "tag": "H6",
+      "text": "УСЛУГИ"
+    },
+    {
+      "rect": {
+        "h": 32.2,
+        "w": 280.03,
+        "x": 16,
+        "y": 137.8
+      },
+      "style": {
+        "alignItems": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "28px",
+        "gap": "normal",
+        "height": "32.2031px",
+        "justifyContent": "normal",
+        "lineHeight": "32.2px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "tag": "H2",
+      "text": "Услуги для проекта"
+    },
+    {
+      "rect": {
+        "h": 22.5,
+        "w": 328,
+        "x": 31,
+        "y": 347.8
+      },
+      "style": {
+        "alignItems": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "22.5px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "tag": "H3",
+      "text": "Стратегия проекта"
+    },
+    {
+      "rect": {
+        "h": 22.5,
+        "w": 328,
+        "x": 31,
+        "y": 573.7
+      },
+      "style": {
+        "alignItems": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "22.5px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "tag": "H3",
+      "text": "Архитектура и дизайн"
+    },
+    {
+      "rect": {
+        "h": 22.5,
+        "w": 328,
+        "x": 31,
+        "y": 825.99
+      },
+      "style": {
+        "alignItems": "normal",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "22.5px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "tag": "H3",
+      "text": "Сопровождение"
+    }
+  ],
+  "items": [
+    {
+      "clientHeight": 210,
+      "id": "650f377",
+      "rect": {
+        "h": 211.9,
+        "w": 358,
+        "x": 16,
+        "y": 270.8
+      },
+      "scrollHeight": 210,
+      "style": {
+        "alignItems": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "211.898px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Стратегия проекта\nОпределяем цель и план работ\nОбсудить стратегию"
+    },
+    {
+      "clientHeight": 236,
+      "id": "cfcb1f5",
+      "rect": {
+        "h": 238.3,
+        "w": 358,
+        "x": 16,
+        "y": 496.7
+      },
+      "scrollHeight": 236,
+      "style": {
+        "alignItems": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "238.297px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Архитектура и дизайн\nПроектируем решение с учетом пространства\nСмотреть проекты"
+    },
+    {
+      "clientHeight": 210,
+      "id": "a87163a",
+      "rect": {
+        "h": 211.9,
+        "w": 358,
+        "x": 16,
+        "y": 748.99
+      },
+      "scrollHeight": 210,
+      "style": {
+        "alignItems": "stretch",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "20px",
+        "height": "211.898px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "wrap": "nowrap"
+      },
+      "text": "Сопровождение\nСопровождаем реализацию до приемки\nОбсудить сопровождение"
+    }
+  ],
+  "links": [
+    {
+      "href": "#strategy",
+      "rect": {
+        "h": 39,
+        "w": 192.48,
+        "x": 31,
+        "y": 428.7
+      },
+      "text": "Обсудить стратегию"
+    },
+    {
+      "href": "#projects",
+      "rect": {
+        "h": 39,
+        "w": 182.03,
+        "x": 31,
+        "y": 680.99
+      },
+      "text": "Смотреть проекты"
+    },
+    {
+      "href": "#support",
+      "rect": {
+        "h": 39,
+        "w": 232.22,
+        "x": 31,
+        "y": 906.89
+      },
+      "text": "Обсудить сопровождение"
+    }
+  ],
+  "overflow": {
+    "items": [
+      false,
+      false,
+      false
+    ],
+    "page": false,
+    "root": false
+  },
+  "root": {
+    "clientWidth": 390,
+    "rect": {
+      "h": 954.89,
+      "w": 390,
+      "x": 0,
+      "y": 46
+    },
+    "scrollWidth": 390,
+    "style": {
+      "alignItems": "normal",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "gap": "normal",
+      "height": "954.891px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "margin": "0px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "textAlign": "start",
+      "wrap": "nowrap"
+    },
+    "text": "УСЛУГИ\nУслуги для проекта\nТри коротких направления работы с точными действиями\nСтратегия проекта\nОпределяем цель и план работ\nОбсудить стратегию\nАрхитектура и дизайн\nПроектируем решение с учетом пространства\nСмотреть проекты\nСопровождение\nСопровождаем реализацию до приемки\nОбсудить сопровождение"
+  }
+}

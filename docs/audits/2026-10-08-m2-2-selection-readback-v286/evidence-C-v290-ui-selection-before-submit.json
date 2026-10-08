@@ -1,0 +1,25 @@
+{
+  "captured_at": "2026-10-08T00:40:19.077Z",
+  "post_id": 5214,
+  "publishDisabled": true,
+  "selection": [
+    {
+      "text": "Редакционные строки",
+      "value": "team.editorial_rows"
+    },
+    {
+      "text": "Светлое редакционное",
+      "value": "editorial_light"
+    }
+  ],
+  "source_version": "v02.11.290",
+  "viewport": [
+    1232,
+    923
+  ],
+  "baseline": {
+    "editor_roots": [],
+    "public_roots": []
+  },
+  "fixture_sha256": "13ed2c29b3c7e83b18a90413fa418d1dc0fc489ba491fc8c10c85fba2f82239b"
+}

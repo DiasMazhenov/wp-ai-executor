@@ -1,0 +1,333 @@
+{
+  "capturedAt": "2026-10-08T00:04:06.380Z",
+  "source": "public",
+  "post": 5214,
+  "root": {
+    "background": "rgba(97, 206, 112, 0.2)",
+    "direction": "column",
+    "gap": "normal",
+    "h": 903.09,
+    "overflow": "visible",
+    "padding": "0px 16px",
+    "text": "Услуги для проекта\nТри коротких направления работы с точными действиями\nСтратегия проекта\nОпределяем цель и план работ\nОбсудить стратегию\nАрхитектура и дизайн\nПроектируем решение с учетом пространства\nСмотреть проекты\nСопровождение\nСопровождаем реализацию до приемки\nОбсудить сопровождение",
+    "w": 390,
+    "x": 0,
+    "y": 46
+  },
+  "operation": "wpae-03dd3c9f473cbbf0",
+  "identity": "0d60814f-d52d-4b8b-aa2e-d39685e1ed7c",
+  "cssViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "viewport": {
+    "cw": 390,
+    "dpr": 1,
+    "ih": 844,
+    "iw": 390,
+    "sh": 949,
+    "sw": 390
+  },
+  "cards": [
+    {
+      "chain": [
+        {
+          "align": "normal",
+          "cls": "elementor-heading-title elementor-size-default",
+          "direction": "row",
+          "display": "block",
+          "gap": "normal",
+          "id": null,
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 296
+          },
+          "text": "Стратегия проекта"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-widget-container",
+          "direction": "row",
+          "display": "block",
+          "gap": "normal",
+          "id": null,
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 296
+          },
+          "text": "Стратегия проекта"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-element elementor-element-2cf6c00 elementor-widget elementor-widget-heading",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "id": "2cf6c00",
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 296
+          },
+          "text": "Стратегия проекта"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-element elementor-element-79481d5 e-con-full e-flex e-con e-child",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "id": "79481d5",
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 122.9,
+            "w": 328,
+            "x": 31,
+            "y": 234
+          },
+          "text": "Стратегия проекта\nОпределяем цель и план работ"
+        },
+        {
+          "align": "stretch",
+          "cls": "wpae-services-icon-card elementor-element elementor-element-bc3c326 e-con-full e-flex e-con e-child",
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "bc3c326",
+          "justify": "flex-start",
+          "padding": "14px",
+          "rect": {
+            "h": 211.9,
+            "w": 358,
+            "x": 16,
+            "y": 219
+          },
+          "text": "Стратегия проекта\nОпределяем цель и план работ\nОбсудить стратегию"
+        }
+      ],
+      "cta": {
+        "href": "#strategy",
+        "rect": {
+          "h": 39,
+          "w": 192.5,
+          "x": 31,
+          "y": 376.9
+        },
+        "text": "Обсудить стратегию"
+      },
+      "name": "Стратегия проекта"
+    },
+    {
+      "chain": [
+        {
+          "align": "normal",
+          "cls": "elementor-heading-title elementor-size-default",
+          "direction": "row",
+          "display": "block",
+          "gap": "normal",
+          "id": null,
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 521.9
+          },
+          "text": "Архитектура и дизайн"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-widget-container",
+          "direction": "row",
+          "display": "block",
+          "gap": "normal",
+          "id": null,
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 521.9
+          },
+          "text": "Архитектура и дизайн"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-element elementor-element-f3567e1 elementor-widget elementor-widget-heading",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "id": "f3567e1",
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 521.9
+          },
+          "text": "Архитектура и дизайн"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-element elementor-element-63c7bf4 e-con-full e-flex e-con e-child",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "id": "63c7bf4",
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 149.3,
+            "w": 328,
+            "x": 31,
+            "y": 459.9
+          },
+          "text": "Архитектура и дизайн\nПроектируем решение с учетом пространства"
+        },
+        {
+          "align": "stretch",
+          "cls": "wpae-services-icon-card elementor-element elementor-element-12b1b30 e-con-full e-flex e-con e-child",
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "12b1b30",
+          "justify": "flex-start",
+          "padding": "14px",
+          "rect": {
+            "h": 238.3,
+            "w": 358,
+            "x": 16,
+            "y": 444.9
+          },
+          "text": "Архитектура и дизайн\nПроектируем решение с учетом пространства\nСмотреть проекты"
+        }
+      ],
+      "cta": {
+        "href": "#projects",
+        "rect": {
+          "h": 39,
+          "w": 182,
+          "x": 31,
+          "y": 629.2
+        },
+        "text": "Смотреть проекты"
+      },
+      "name": "Архитектура и дизайн"
+    },
+    {
+      "chain": [
+        {
+          "align": "normal",
+          "cls": "elementor-heading-title elementor-size-default",
+          "direction": "row",
+          "display": "block",
+          "gap": "normal",
+          "id": null,
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 774.2
+          },
+          "text": "Сопровождение"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-widget-container",
+          "direction": "row",
+          "display": "block",
+          "gap": "normal",
+          "id": null,
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 774.2
+          },
+          "text": "Сопровождение"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-element elementor-element-461ffa5 elementor-widget elementor-widget-heading",
+          "direction": "row",
+          "display": "block",
+          "gap": "12px",
+          "id": "461ffa5",
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 22.5,
+            "w": 328,
+            "x": 31,
+            "y": 774.2
+          },
+          "text": "Сопровождение"
+        },
+        {
+          "align": "normal",
+          "cls": "elementor-element elementor-element-fcb6376 e-con-full e-flex e-con e-child",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "id": "fcb6376",
+          "justify": "normal",
+          "padding": "0px",
+          "rect": {
+            "h": 122.9,
+            "w": 328,
+            "x": 31,
+            "y": 712.2
+          },
+          "text": "Сопровождение\nСопровождаем реализацию до приемки"
+        },
+        {
+          "align": "stretch",
+          "cls": "wpae-services-icon-card elementor-element elementor-element-83cb974 e-con-full e-flex e-con e-child",
+          "direction": "column",
+          "display": "flex",
+          "gap": "20px",
+          "id": "83cb974",
+          "justify": "flex-start",
+          "padding": "14px",
+          "rect": {
+            "h": 211.9,
+            "w": 358,
+            "x": 16,
+            "y": 697.2
+          },
+          "text": "Сопровождение\nСопровождаем реализацию до приемки\nОбсудить сопровождение"
+        }
+      ],
+      "cta": {
+        "href": "#support",
+        "rect": {
+          "h": 39,
+          "w": 232.2,
+          "x": 31,
+          "y": 855.1
+        },
+        "text": "Обсудить сопровождение"
+      },
+      "name": "Сопровождение"
+    }
+  ]
+}

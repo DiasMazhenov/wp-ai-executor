@@ -1,0 +1,30 @@
+{
+  "post": 5214,
+  "operation_id": "wpae-13fec7681cbd488f",
+  "operation_identity": "4b07291e-f6f1-41d6-984c-f4306525f466",
+  "root_id": "bf61768",
+  "revision_before_undo": 5,
+  "guarded_undo_status": "already_undone: wpae-13fec7681cbd488f",
+  "editor": {
+    "css_viewport": {
+      "dpr": 1,
+      "height": 923,
+      "width": 1232
+    },
+    "editor_url": "https://mazhenov.kz/wp-admin/post.php?post=5214&action=elementor&wpae_release=290&fresh=1791418735151",
+    "navigator_empty": true,
+    "navigator_rows": 1,
+    "operation_status": "already_undone: wpae-13fec7681cbd488f",
+    "publish_disabled": true
+  },
+  "public": {
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "css_viewport": {
+      "width": 1232,
+      "height": 923
+    },
+    "root_ids": [],
+    "expected_texts_absent": true
+  },
+  "baseline_root_ids": []
+}

@@ -1,0 +1,481 @@
+{
+  "collection": {
+    "box": {
+      "height": 799.5625,
+      "width": 1140,
+      "x": 38.5,
+      "y": 301.6796875
+    },
+    "cards": [
+      {
+        "box": {
+          "height": 107.046875,
+          "width": 1140,
+          "x": 38.5,
+          "y": 301.6796875
+        },
+        "parts": [
+          {
+            "box": {
+              "height": 65.046875,
+              "width": 1098,
+              "x": 59.5,
+              "y": 322.6796875
+            },
+            "style": {
+              "alignItems": "flex-start",
+              "background": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "direction": "row",
+              "display": "flex",
+              "gap": "32px",
+              "justify": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "padding": "0px",
+              "wrap": "nowrap"
+            },
+            "text": "Тестовый автор 1\nСинтетическая группа 1\nВсе понятно."
+          }
+        ],
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "20px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 1\nСинтетическая группа 1\nВсе понятно."
+      },
+      {
+        "box": {
+          "height": 126.140625,
+          "width": 1140,
+          "x": 38.5,
+          "y": 428.7265625
+        },
+        "parts": [
+          {
+            "box": {
+              "height": 84.140625,
+              "width": 1098,
+              "x": 59.5,
+              "y": 449.7265625
+            },
+            "style": {
+              "alignItems": "flex-start",
+              "background": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "direction": "row",
+              "display": "flex",
+              "gap": "32px",
+              "justify": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "padding": "0px",
+              "wrap": "nowrap"
+            },
+            "text": "Тестовый автор 2\nСинтетическая группа 2\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+          }
+        ],
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "20px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 2\nСинтетическая группа 2\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+      },
+      {
+        "box": {
+          "height": 107.046875,
+          "width": 1140,
+          "x": 38.5,
+          "y": 574.8671875
+        },
+        "parts": [
+          {
+            "box": {
+              "height": 65.046875,
+              "width": 1098,
+              "x": 59.5,
+              "y": 595.8671875
+            },
+            "style": {
+              "alignItems": "flex-start",
+              "background": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "direction": "row",
+              "display": "flex",
+              "gap": "32px",
+              "justify": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "padding": "0px",
+              "wrap": "nowrap"
+            },
+            "text": "Тестовый автор 3\nСинтетическая группа 3\nВсе понятно."
+          }
+        ],
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "20px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 3\nСинтетическая группа 3\nВсе понятно."
+      },
+      {
+        "box": {
+          "height": 126.140625,
+          "width": 1140,
+          "x": 38.5,
+          "y": 701.9140625
+        },
+        "parts": [
+          {
+            "box": {
+              "height": 84.140625,
+              "width": 1098,
+              "x": 59.5,
+              "y": 722.9140625
+            },
+            "style": {
+              "alignItems": "flex-start",
+              "background": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "direction": "row",
+              "display": "flex",
+              "gap": "32px",
+              "justify": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "padding": "0px",
+              "wrap": "nowrap"
+            },
+            "text": "Тестовый автор 4\nСинтетическая группа 4\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+          }
+        ],
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "20px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 4\nСинтетическая группа 4\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+      },
+      {
+        "box": {
+          "height": 107.046875,
+          "width": 1140,
+          "x": 38.5,
+          "y": 848.0546875
+        },
+        "parts": [
+          {
+            "box": {
+              "height": 65.046875,
+              "width": 1098,
+              "x": 59.5,
+              "y": 869.0546875
+            },
+            "style": {
+              "alignItems": "flex-start",
+              "background": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "direction": "row",
+              "display": "flex",
+              "gap": "32px",
+              "justify": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "padding": "0px",
+              "wrap": "nowrap"
+            },
+            "text": "Тестовый автор 5\nСинтетическая группа 5\nВсе понятно."
+          }
+        ],
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "20px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 5\nСинтетическая группа 5\nВсе понятно."
+      },
+      {
+        "box": {
+          "height": 126.140625,
+          "width": 1140,
+          "x": 38.5,
+          "y": 975.1015625
+        },
+        "parts": [
+          {
+            "box": {
+              "height": 84.140625,
+              "width": 1098,
+              "x": 59.5,
+              "y": 996.1015625
+            },
+            "style": {
+              "alignItems": "flex-start",
+              "background": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "direction": "row",
+              "display": "flex",
+              "gap": "32px",
+              "justify": "normal",
+              "overflowX": "visible",
+              "overflowY": "visible",
+              "padding": "0px",
+              "wrap": "nowrap"
+            },
+            "text": "Тестовый автор 6\nСинтетическая группа 6\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+          }
+        ],
+        "style": {
+          "alignItems": "stretch",
+          "background": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "20px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 6\nСинтетическая группа 6\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+      }
+    ],
+    "count": 6,
+    "style": {
+      "alignItems": "stretch",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "direction": "column",
+      "display": "flex",
+      "gap": "20px",
+      "justify": "normal",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px",
+      "wrap": "nowrap"
+    }
+  },
+  "document": {
+    "clientWidth": 1217,
+    "scrollHeight": 1181,
+    "scrollWidth": 1217
+  },
+  "intro": {
+    "box": {
+      "height": 157.6796875,
+      "width": 1140,
+      "x": 38.5,
+      "y": 112
+    },
+    "style": {
+      "alignItems": "flex-start",
+      "background": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "direction": "column",
+      "display": "flex",
+      "gap": "0px",
+      "justify": "normal",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px",
+      "wrap": "nowrap"
+    }
+  },
+  "post": 5214,
+  "root": {
+    "box": {
+      "height": 1149.2421875,
+      "width": 1217,
+      "x": 0,
+      "y": 32
+    },
+    "headings": [
+      {
+        "box": {
+          "height": 14.3984375,
+          "width": 142.5,
+          "x": 51.5,
+          "y": 118.59375
+        },
+        "font": "600 12px / 14.4px \"inherit\", sans-serif",
+        "tag": "H6",
+        "text": "ТЕСТОВЫЕ ОТЗЫВЫ",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 46,
+          "width": 467.265625,
+          "x": 38.5,
+          "y": 151.5859375
+        },
+        "font": "700 40px / 46px \"inherit\", sans-serif",
+        "tag": "H2",
+        "text": "Опыт участников теста",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 25,
+          "width": 255.8359375,
+          "x": 59.5,
+          "y": 322.6796875
+        },
+        "font": "600 20px / 25px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 1",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 25,
+          "width": 255.8359375,
+          "x": 59.5,
+          "y": 449.7265625
+        },
+        "font": "600 20px / 25px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 2",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 25,
+          "width": 255.8359375,
+          "x": 59.5,
+          "y": 595.8671875
+        },
+        "font": "600 20px / 25px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 3",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 25,
+          "width": 255.8359375,
+          "x": 59.5,
+          "y": 722.9140625
+        },
+        "font": "600 20px / 25px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 4",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 25,
+          "width": 255.8359375,
+          "x": 59.5,
+          "y": 869.0546875
+        },
+        "font": "600 20px / 25px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 5",
+        "textAlign": "start"
+      },
+      {
+        "box": {
+          "height": 25,
+          "width": 255.8359375,
+          "x": 59.5,
+          "y": 996.1015625
+        },
+        "font": "600 20px / 25px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 6",
+        "textAlign": "start"
+      }
+    ],
+    "style": {
+      "alignItems": "normal",
+      "background": "rgba(97, 206, 112, 0.2)",
+      "borderRadius": "0px",
+      "direction": "column",
+      "display": "flex",
+      "gap": "normal",
+      "justify": "normal",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px 32px",
+      "wrap": "nowrap"
+    }
+  },
+  "rootText": "ТЕСТОВЫЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные примеры разной длины для проверки точности цитат и принадлежности авторам\nТестовый автор 1\nСинтетическая группа 1\nВсе понятно.\nТестовый автор 2\nСинтетическая группа 2\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 3\nСинтетическая группа 3\nВсе понятно.\nТестовый автор 4\nСинтетическая группа 4\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 5\nСинтетическая группа 5\nВсе понятно.\nТестовый автор 6\nСинтетическая группа 6\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+  "siteChat": [
+    {
+      "box": {
+        "height": 48.3984375,
+        "width": 320,
+        "x": 873,
+        "y": 778.6015625
+      },
+      "cls": "wpdsac-chat__intro-bubble",
+      "display": "block",
+      "text": "Доброе утро!!",
+      "visibility": "visible"
+    },
+    {
+      "box": {
+        "height": 60,
+        "width": 60,
+        "x": 1133,
+        "y": 839
+      },
+      "cls": "wpdsac-chat__toggle",
+      "display": "flex",
+      "text": "AI-Dana",
+      "visibility": "visible"
+    }
+  ],
+  "source": "public",
+  "viewport": {
+    "dpr": 1,
+    "h": 923,
+    "w": 1232
+  }
+}

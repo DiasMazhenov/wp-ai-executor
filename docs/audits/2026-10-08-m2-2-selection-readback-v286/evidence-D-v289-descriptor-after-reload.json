@@ -1,0 +1,52 @@
+{
+  "schema": "wpae-composition-evidence-v1",
+  "status": "complete",
+  "post_id": 5214,
+  "operation_id": "wpae-03dd3c9f473cbbf0",
+  "operation_identity": "0d60814f-d52d-4b8b-aa2e-d39685e1ed7c",
+  "root_ids": [
+    "6dfd971"
+  ],
+  "generation_revision": 4,
+  "after_publish_reload_revision": 6,
+  "descriptor_status": "available",
+  "descriptor_write_count": 0,
+  "descriptor_write_count_meaning": "read-only descriptor request only",
+  "transaction_write_count": 1,
+  "requested": {
+    "mode": "automatic",
+    "record_id": null,
+    "record_version": null,
+    "visual_profile": null
+  },
+  "accepted": {
+    "record_id": "services.icon_cards",
+    "record_version": 1,
+    "record_hash": "abe677b31da25949378f4bcec02308152078e1e0ca78b6cbc809b9b1a028efc4",
+    "source": "content_ranked_catalog",
+    "visual_profile": "editorial_light",
+    "selection_reasons": [
+      "balanced_copy_favors_icon_cards"
+    ],
+    "selection_policy": "wpae-composition-selection-v2",
+    "catalog_identity": "256e939a7dc75c0e8bdd5c8c8259a9aa34cdfd1f76b71144a8e2bdd6672933b1"
+  },
+  "hashes": {
+    "brief_sha256": "78b7ce951fc91164fe728d4dbc366be9659df3dd3da224eec89fa128d854d2ca",
+    "plan_sha256": "ee54f8ee2baf53ebeedff43fecb757c2b206375580aa642bc95b8068bf958734",
+    "accepted_contract_sha256": "24d5eff4a90c0c4907b108e11377f54eb383a8e52ead31c7db73c0baaa64e90b",
+    "saved_native_fingerprint": "03c5e602500289fc6c14f1d4be3d7d9f9b2126dd10203c06691b40cb06095dad"
+  },
+  "surface": {
+    "section_surface": "#61ce7033",
+    "opacity": 0.2,
+    "transparency": 0.8,
+    "underlay": "#ffffff"
+  },
+  "native_export": {
+    "path": "D-v289-native-after-reload.json",
+    "root_id": "6dfd971",
+    "node_count": 27,
+    "pill_eyebrow_absent": true
+  }
+}

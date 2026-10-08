@@ -1,0 +1,378 @@
+{
+  "buttons": 0,
+  "captured_at": "2026-10-08T00:44:47.718Z",
+  "chatGreeting": "block",
+  "collection": {
+    "cards": [
+      {
+        "headings": [
+          {
+            "rect": {
+              "height": 22.5,
+              "width": 313,
+              "x": 31,
+              "y": 305.38
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "fontWeight": "600",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "22.5px",
+              "maxWidth": "none",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Тестовый участник 1"
+          }
+        ],
+        "paragraphs": [],
+        "rect": {
+          "height": 133.3,
+          "width": 343,
+          "x": 16,
+          "y": 290.38
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxWidth": "none",
+          "overflow": "visible",
+          "padding": "14px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Тестовый участник 1\nДизайнер\nПроверяет результат."
+      },
+      {
+        "headings": [
+          {
+            "rect": {
+              "height": 22.5,
+              "width": 313,
+              "x": 31,
+              "y": 454.68
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "fontWeight": "600",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "22.5px",
+              "maxWidth": "none",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Тестовый участник 2"
+          }
+        ],
+        "paragraphs": [],
+        "rect": {
+          "height": 291.69,
+          "width": 343,
+          "x": 16,
+          "y": 439.68
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxWidth": "none",
+          "overflow": "visible",
+          "padding": "14px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Тестовый участник 2\nРуководитель исследований и проектирования цифровых сервисов\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+      },
+      {
+        "headings": [
+          {
+            "rect": {
+              "height": 22.5,
+              "width": 313,
+              "x": 31,
+              "y": 762.37
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "fontWeight": "600",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "22.5px",
+              "maxWidth": "none",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Тестовый участник 3"
+          }
+        ],
+        "paragraphs": [],
+        "rect": {
+          "height": 133.3,
+          "width": 343,
+          "x": 16,
+          "y": 747.37
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxWidth": "none",
+          "overflow": "visible",
+          "padding": "14px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Тестовый участник 3\nРазработчик\nПроверяет результат."
+      },
+      {
+        "headings": [
+          {
+            "rect": {
+              "height": 22.5,
+              "width": 313,
+              "x": 31,
+              "y": 911.66
+            },
+            "style": {
+              "alignItems": "normal",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderRadius": "0px",
+              "columnGap": "normal",
+              "display": "block",
+              "flexDirection": "row",
+              "flexWrap": "nowrap",
+              "fontSize": "18px",
+              "fontWeight": "600",
+              "gap": "normal",
+              "justifyContent": "normal",
+              "lineHeight": "22.5px",
+              "maxWidth": "none",
+              "overflow": "visible",
+              "padding": "0px",
+              "rowGap": "normal",
+              "textAlign": "start"
+            },
+            "tag": "H3",
+            "text": "Тестовый участник 4"
+          }
+        ],
+        "paragraphs": [],
+        "rect": {
+          "height": 265.29,
+          "width": 343,
+          "x": 16,
+          "y": 896.66
+        },
+        "style": {
+          "alignItems": "stretch",
+          "backgroundColor": "rgb(255, 255, 255)",
+          "borderRadius": "4px",
+          "columnGap": "12px",
+          "display": "flex",
+          "flexDirection": "column",
+          "flexWrap": "nowrap",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "gap": "12px",
+          "justifyContent": "flex-start",
+          "lineHeight": "24px",
+          "maxWidth": "none",
+          "overflow": "visible",
+          "padding": "14px",
+          "rowGap": "12px",
+          "textAlign": "start"
+        },
+        "text": "Тестовый участник 4\nРедактор\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+      }
+    ],
+    "count": 4,
+    "rect": {
+      "height": 871.57,
+      "width": 343,
+      "x": 16,
+      "y": 290.38
+    },
+    "style": {
+      "alignItems": "stretch",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "columnGap": "16px",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "16px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxWidth": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "16px",
+      "textAlign": "start"
+    }
+  },
+  "contentExact": true,
+  "document": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "horizontalOverflow": false,
+    "scrollHeight": 1202,
+    "scrollWidth": 375
+  },
+  "images": 0,
+  "intro": {
+    "body": null,
+    "eyebrow": "ТЕСТОВАЯ КОМАНДА",
+    "heading": {
+      "rect": {
+        "height": 32.2,
+        "width": 180.77,
+        "x": 16,
+        "y": 130.98
+      },
+      "style": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "columnGap": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "flexWrap": "nowrap",
+        "fontSize": "28px",
+        "fontWeight": "700",
+        "gap": "normal",
+        "justifyContent": "normal",
+        "lineHeight": "32.2px",
+        "maxWidth": "none",
+        "overflow": "visible",
+        "padding": "0px",
+        "rowGap": "normal",
+        "textAlign": "start"
+      },
+      "tag": "H2",
+      "text": "Люди и роли"
+    },
+    "rect": {
+      "height": 172.38,
+      "width": 343,
+      "x": 16,
+      "y": 86
+    },
+    "style": {
+      "alignItems": "flex-start",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderRadius": "0px",
+      "columnGap": "0px",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "wrap",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "0px",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxWidth": "none",
+      "overflow": "visible",
+      "padding": "0px",
+      "rowGap": "0px",
+      "textAlign": "start"
+    }
+  },
+  "post_id": 5214,
+  "root": {
+    "elementorId": "e98cca1",
+    "rect": {
+      "height": 1155.95,
+      "width": 375,
+      "x": 0,
+      "y": 46
+    },
+    "style": {
+      "alignItems": "normal",
+      "backgroundColor": "rgba(97, 206, 112, 0.2)",
+      "borderRadius": "0px",
+      "columnGap": "normal",
+      "display": "flex",
+      "flexDirection": "column",
+      "flexWrap": "nowrap",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "gap": "normal",
+      "justifyContent": "normal",
+      "lineHeight": "24px",
+      "maxWidth": "100%",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "rowGap": "normal",
+      "textAlign": "start"
+    },
+    "text": "ТЕСТОВАЯ КОМАНДА\nЛюди и роли\nСинтетические данные для проверки состава команды и сохранения точного текста\nТестовый участник 1\nДизайнер\nПроверяет результат.\nТестовый участник 2\nРуководитель исследований и проектирования цифровых сервисов\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки.\nТестовый участник 3\nРазработчик\nПроверяет результат.\nТестовый участник 4\nРедактор\nОтвечает за согласование задач, проверку прототипов и последовательную передачу решений команде. Все сведения в этом примере вымышлены и используются только для проверки верстки."
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "dpr": 1,
+    "height": 844,
+    "innerWidth": 390
+  }
+}

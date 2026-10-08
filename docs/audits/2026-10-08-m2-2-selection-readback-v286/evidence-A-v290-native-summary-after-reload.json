@@ -1,0 +1,194 @@
+{
+  "format": "wpae-elementor-selection-v1",
+  "post_id": 5214,
+  "captured_at": "2026-10-08T00:24:22.803Z",
+  "root_id": "bf61768",
+  "element_type": "container",
+  "root_settings": {
+    "flex_direction": "column",
+    "content_width": "boxed",
+    "background_color": "#61ce7033",
+    "padding": {
+      "unit": "rem",
+      "top": "5",
+      "right": "2",
+      "bottom": "5",
+      "left": "2",
+      "isLinked": false,
+      "sizes": []
+    }
+  },
+  "element_counts": {
+    "containers": 35,
+    "widgets": 21,
+    "all_flex_containers": 35,
+    "container_grid_control_keys": [
+      "grid_outline",
+      "grid_columns_grid",
+      "grid_columns_grid_tablet",
+      "grid_columns_grid_mobile",
+      "grid_rows_grid",
+      "grid_rows_grid_tablet",
+      "grid_rows_grid_mobile",
+      "grid_gaps",
+      "grid_gaps_tablet",
+      "grid_gaps_mobile",
+      "grid_auto_flow",
+      "grid_auto_flow_tablet",
+      "grid_auto_flow_mobile",
+      "grid_justify_items",
+      "grid_justify_items_tablet",
+      "grid_justify_items_mobile",
+      "grid_align_items",
+      "grid_align_items_tablet",
+      "grid_align_items_mobile",
+      "grid_justify_content",
+      "grid_justify_content_tablet",
+      "grid_justify_content_mobile",
+      "grid_align_content",
+      "grid_align_content_tablet",
+      "grid_align_content_mobile",
+      "grid__is_row",
+      "grid__is_column",
+      "grid_column",
+      "grid_column_tablet",
+      "grid_column_mobile",
+      "grid_column_custom",
+      "grid_column_custom_tablet",
+      "grid_column_custom_mobile",
+      "grid_row",
+      "grid_row_tablet",
+      "grid_row_mobile",
+      "grid_row_custom",
+      "grid_row_custom_tablet",
+      "grid_row_custom_mobile"
+    ],
+    "widget_types": {
+      "heading": 8,
+      "text-editor": 13
+    }
+  },
+  "collection": {
+    "class": "wpae-testimonial_cards",
+    "layout": {
+      "flex_direction": "column",
+      "flex_wrap": "nowrap",
+      "flex_gap": {
+        "unit": "rem",
+        "size": 1.25,
+        "column": "1.25",
+        "row": "1.25",
+        "isLinked": true
+      }
+    },
+    "count": 6,
+    "card_ids": [
+      "3cdebf3",
+      "6a57418",
+      "9822448",
+      "1c80b34",
+      "1af3656",
+      "ba56ddd"
+    ]
+  },
+  "intro": [
+    {
+      "widget": "heading",
+      "title": "ТЕСТОВЫЕ ОТЗЫВЫ",
+      "editor": ""
+    },
+    {
+      "widget": "heading",
+      "title": "Опыт участников теста",
+      "editor": ""
+    },
+    {
+      "widget": "text-editor",
+      "title": "",
+      "editor": "Вымышленные примеры разной длины для проверки точности цитат и принадлежности авторам"
+    }
+  ],
+  "content_groups": [
+    {
+      "number": 1,
+      "quote": "Все понятно.",
+      "author": "Тестовый автор 1",
+      "company": "Синтетическая группа 1",
+      "expected": {
+        "number": 1,
+        "quote": "Все понятно.",
+        "author": "Тестовый автор 1",
+        "company": "Синтетическая группа 1"
+      },
+      "exact": true
+    },
+    {
+      "number": 2,
+      "quote": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+      "author": "Тестовый автор 2",
+      "company": "Синтетическая группа 2",
+      "expected": {
+        "number": 2,
+        "quote": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+        "author": "Тестовый автор 2",
+        "company": "Синтетическая группа 2"
+      },
+      "exact": true
+    },
+    {
+      "number": 3,
+      "quote": "Все понятно.",
+      "author": "Тестовый автор 3",
+      "company": "Синтетическая группа 3",
+      "expected": {
+        "number": 3,
+        "quote": "Все понятно.",
+        "author": "Тестовый автор 3",
+        "company": "Синтетическая группа 3"
+      },
+      "exact": true
+    },
+    {
+      "number": 4,
+      "quote": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+      "author": "Тестовый автор 4",
+      "company": "Синтетическая группа 4",
+      "expected": {
+        "number": 4,
+        "quote": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+        "author": "Тестовый автор 4",
+        "company": "Синтетическая группа 4"
+      },
+      "exact": true
+    },
+    {
+      "number": 5,
+      "quote": "Все понятно.",
+      "author": "Тестовый автор 5",
+      "company": "Синтетическая группа 5",
+      "expected": {
+        "number": 5,
+        "quote": "Все понятно.",
+        "author": "Тестовый автор 5",
+        "company": "Синтетическая группа 5"
+      },
+      "exact": true
+    },
+    {
+      "number": 6,
+      "quote": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+      "author": "Тестовый автор 6",
+      "company": "Синтетическая группа 6",
+      "expected": {
+        "number": 6,
+        "quote": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+        "author": "Тестовый автор 6",
+        "company": "Синтетическая группа 6"
+      },
+      "exact": true
+    }
+  ],
+  "content_fidelity": true,
+  "media_widgets": 0,
+  "button_widgets": 0
+}

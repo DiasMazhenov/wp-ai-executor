@@ -1,0 +1,723 @@
+{
+  "collection": {
+    "box": {
+      "height": 1275.7578125,
+      "width": 358,
+      "x": 16,
+      "y": 290.3828125
+    },
+    "cards": [
+      {
+        "box": {
+          "height": 133.296875,
+          "width": 358,
+          "x": 16,
+          "y": 290.3828125
+        },
+        "inner": {
+          "box": {
+            "height": 103.296875,
+            "width": 328,
+            "x": 31,
+            "y": 305.3828125
+          },
+          "parts": [
+            {
+              "box": {
+                "height": 60.8984375,
+                "width": 328,
+                "x": 31,
+                "y": 305.3828125
+              },
+              "style": {
+                "alignItems": "normal",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Тестовый автор 1\nСинтетическая группа 1"
+            },
+            {
+              "box": {
+                "height": 26.3984375,
+                "width": 328,
+                "x": 31,
+                "y": 382.28125
+              },
+              "style": {
+                "alignItems": "flex-start",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Все понятно."
+            }
+          ],
+          "style": {
+            "alignItems": "flex-start",
+            "bg": "rgba(0, 0, 0, 0)",
+            "direction": "column",
+            "display": "flex",
+            "gap": "16px",
+            "justify": "normal",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "0px",
+            "radius": "0px",
+            "wrap": "nowrap"
+          }
+        },
+        "style": {
+          "alignItems": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "14px",
+          "radius": "4px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 1\nСинтетическая группа 1\nВсе понятно."
+      },
+      {
+        "box": {
+          "height": 265.2890625,
+          "width": 358,
+          "x": 16,
+          "y": 439.6796875
+        },
+        "inner": {
+          "box": {
+            "height": 235.2890625,
+            "width": 328,
+            "x": 31,
+            "y": 454.6796875
+          },
+          "parts": [
+            {
+              "box": {
+                "height": 60.8984375,
+                "width": 328,
+                "x": 31,
+                "y": 454.6796875
+              },
+              "style": {
+                "alignItems": "normal",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Тестовый автор 2\nСинтетическая группа 2"
+            },
+            {
+              "box": {
+                "height": 158.390625,
+                "width": 328,
+                "x": 31,
+                "y": 531.578125
+              },
+              "style": {
+                "alignItems": "flex-start",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+            }
+          ],
+          "style": {
+            "alignItems": "flex-start",
+            "bg": "rgba(0, 0, 0, 0)",
+            "direction": "column",
+            "display": "flex",
+            "gap": "16px",
+            "justify": "normal",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "0px",
+            "radius": "0px",
+            "wrap": "nowrap"
+          }
+        },
+        "style": {
+          "alignItems": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "14px",
+          "radius": "4px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 2\nСинтетическая группа 2\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+      },
+      {
+        "box": {
+          "height": 133.296875,
+          "width": 358,
+          "x": 16,
+          "y": 720.96875
+        },
+        "inner": {
+          "box": {
+            "height": 103.296875,
+            "width": 328,
+            "x": 31,
+            "y": 735.96875
+          },
+          "parts": [
+            {
+              "box": {
+                "height": 60.8984375,
+                "width": 328,
+                "x": 31,
+                "y": 735.96875
+              },
+              "style": {
+                "alignItems": "normal",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Тестовый автор 3\nСинтетическая группа 3"
+            },
+            {
+              "box": {
+                "height": 26.3984375,
+                "width": 328,
+                "x": 31,
+                "y": 812.8671875
+              },
+              "style": {
+                "alignItems": "flex-start",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Все понятно."
+            }
+          ],
+          "style": {
+            "alignItems": "flex-start",
+            "bg": "rgba(0, 0, 0, 0)",
+            "direction": "column",
+            "display": "flex",
+            "gap": "16px",
+            "justify": "normal",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "0px",
+            "radius": "0px",
+            "wrap": "nowrap"
+          }
+        },
+        "style": {
+          "alignItems": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "14px",
+          "radius": "4px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 3\nСинтетическая группа 3\nВсе понятно."
+      },
+      {
+        "box": {
+          "height": 265.2890625,
+          "width": 358,
+          "x": 16,
+          "y": 870.265625
+        },
+        "inner": {
+          "box": {
+            "height": 235.2890625,
+            "width": 328,
+            "x": 31,
+            "y": 885.265625
+          },
+          "parts": [
+            {
+              "box": {
+                "height": 60.8984375,
+                "width": 328,
+                "x": 31,
+                "y": 885.265625
+              },
+              "style": {
+                "alignItems": "normal",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Тестовый автор 4\nСинтетическая группа 4"
+            },
+            {
+              "box": {
+                "height": 158.390625,
+                "width": 328,
+                "x": 31,
+                "y": 962.1640625
+              },
+              "style": {
+                "alignItems": "flex-start",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+            }
+          ],
+          "style": {
+            "alignItems": "flex-start",
+            "bg": "rgba(0, 0, 0, 0)",
+            "direction": "column",
+            "display": "flex",
+            "gap": "16px",
+            "justify": "normal",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "0px",
+            "radius": "0px",
+            "wrap": "nowrap"
+          }
+        },
+        "style": {
+          "alignItems": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "14px",
+          "radius": "4px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 4\nСинтетическая группа 4\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+      },
+      {
+        "box": {
+          "height": 133.296875,
+          "width": 358,
+          "x": 16,
+          "y": 1151.5546875
+        },
+        "inner": {
+          "box": {
+            "height": 103.296875,
+            "width": 328,
+            "x": 31,
+            "y": 1166.5546875
+          },
+          "parts": [
+            {
+              "box": {
+                "height": 60.8984375,
+                "width": 328,
+                "x": 31,
+                "y": 1166.5546875
+              },
+              "style": {
+                "alignItems": "normal",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Тестовый автор 5\nСинтетическая группа 5"
+            },
+            {
+              "box": {
+                "height": 26.3984375,
+                "width": 328,
+                "x": 31,
+                "y": 1243.453125
+              },
+              "style": {
+                "alignItems": "flex-start",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Все понятно."
+            }
+          ],
+          "style": {
+            "alignItems": "flex-start",
+            "bg": "rgba(0, 0, 0, 0)",
+            "direction": "column",
+            "display": "flex",
+            "gap": "16px",
+            "justify": "normal",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "0px",
+            "radius": "0px",
+            "wrap": "nowrap"
+          }
+        },
+        "style": {
+          "alignItems": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "14px",
+          "radius": "4px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 5\nСинтетическая группа 5\nВсе понятно."
+      },
+      {
+        "box": {
+          "height": 265.2890625,
+          "width": 358,
+          "x": 16,
+          "y": 1300.8515625
+        },
+        "inner": {
+          "box": {
+            "height": 235.2890625,
+            "width": 328,
+            "x": 31,
+            "y": 1315.8515625
+          },
+          "parts": [
+            {
+              "box": {
+                "height": 60.8984375,
+                "width": 328,
+                "x": 31,
+                "y": 1315.8515625
+              },
+              "style": {
+                "alignItems": "normal",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "Тестовый автор 6\nСинтетическая группа 6"
+            },
+            {
+              "box": {
+                "height": 158.390625,
+                "width": 328,
+                "x": 31,
+                "y": 1392.75
+              },
+              "style": {
+                "alignItems": "flex-start",
+                "bg": "rgba(0, 0, 0, 0)",
+                "direction": "column",
+                "display": "flex",
+                "gap": "12px",
+                "justify": "normal",
+                "overflowX": "visible",
+                "overflowY": "visible",
+                "padding": "0px",
+                "radius": "0px",
+                "wrap": "wrap"
+              },
+              "text": "В тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+            }
+          ],
+          "style": {
+            "alignItems": "flex-start",
+            "bg": "rgba(0, 0, 0, 0)",
+            "direction": "column",
+            "display": "flex",
+            "gap": "16px",
+            "justify": "normal",
+            "overflowX": "visible",
+            "overflowY": "visible",
+            "padding": "0px",
+            "radius": "0px",
+            "wrap": "nowrap"
+          }
+        },
+        "style": {
+          "alignItems": "stretch",
+          "bg": "rgb(255, 255, 255)",
+          "direction": "column",
+          "display": "flex",
+          "gap": "12px",
+          "justify": "flex-start",
+          "overflowX": "visible",
+          "overflowY": "visible",
+          "padding": "14px",
+          "radius": "4px",
+          "wrap": "nowrap"
+        },
+        "text": "Тестовый автор 6\nСинтетическая группа 6\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт."
+      }
+    ],
+    "count": 6,
+    "style": {
+      "alignItems": "stretch",
+      "bg": "rgba(0, 0, 0, 0)",
+      "direction": "column",
+      "display": "flex",
+      "gap": "16px",
+      "justify": "normal",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px",
+      "radius": "0px",
+      "wrap": "nowrap"
+    }
+  },
+  "document": {
+    "clientWidth": 390,
+    "horizontalOverflow": false,
+    "scrollHeight": 1606,
+    "scrollWidth": 390
+  },
+  "post": 5214,
+  "root": {
+    "box": {
+      "height": 1560.140625,
+      "width": 390,
+      "x": 0,
+      "y": 46
+    },
+    "headings": [
+      {
+        "align": "start",
+        "box": {
+          "height": 19.796875,
+          "width": 142.5,
+          "x": 29,
+          "y": 92.59375
+        },
+        "font": "600 12px / 19.8px \"inherit\", sans-serif",
+        "tag": "H6",
+        "text": "ТЕСТОВЫЕ ОТЗЫВЫ"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 32.203125,
+          "width": 327.0859375,
+          "x": 16,
+          "y": 130.984375
+        },
+        "font": "700 28px / 32.2px \"inherit\", sans-serif",
+        "tag": "H2",
+        "text": "Опыт участников теста"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 22.5,
+          "width": 328,
+          "x": 31,
+          "y": 305.3828125
+        },
+        "font": "600 18px / 22.5px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 1"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 22.5,
+          "width": 328,
+          "x": 31,
+          "y": 454.6796875
+        },
+        "font": "600 18px / 22.5px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 2"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 22.5,
+          "width": 328,
+          "x": 31,
+          "y": 735.96875
+        },
+        "font": "600 18px / 22.5px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 3"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 22.5,
+          "width": 328,
+          "x": 31,
+          "y": 885.265625
+        },
+        "font": "600 18px / 22.5px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 4"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 22.5,
+          "width": 328,
+          "x": 31,
+          "y": 1166.5546875
+        },
+        "font": "600 18px / 22.5px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 5"
+      },
+      {
+        "align": "start",
+        "box": {
+          "height": 22.5,
+          "width": 328,
+          "x": 31,
+          "y": 1315.8515625
+        },
+        "font": "600 18px / 22.5px \"inherit\", sans-serif",
+        "tag": "H3",
+        "text": "Тестовый автор 6"
+      }
+    ],
+    "style": {
+      "alignItems": "normal",
+      "bg": "rgba(97, 206, 112, 0.2)",
+      "direction": "column",
+      "display": "flex",
+      "gap": "normal",
+      "justify": "normal",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "padding": "0px 16px",
+      "radius": "0px",
+      "wrap": "nowrap"
+    }
+  },
+  "rootSet": [
+    {
+      "class": "elementor-element-bf61768",
+      "text": "ТЕСТОВЫЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные примеры разной длины для прове"
+    }
+  ],
+  "rootText": "ТЕСТОВЫЕ ОТЗЫВЫ\nОпыт участников теста\nВымышленные примеры разной длины для проверки точности цитат и принадлежности авторам\nТестовый автор 1\nСинтетическая группа 1\nВсе понятно.\nТестовый автор 2\nСинтетическая группа 2\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 3\nСинтетическая группа 3\nВсе понятно.\nТестовый автор 4\nСинтетическая группа 4\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.\nТестовый автор 5\nСинтетическая группа 5\nВсе понятно.\nТестовый автор 6\nСинтетическая группа 6\nВ тестовом примере удалось проследить каждый этап работы, проверить сохранение содержания и сравнить результат на широком и узком экране. Эта цитата вымышлена и не описывает реальный клиентский опыт.",
+  "siteWidget": [
+    {
+      "box": {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0
+      },
+      "class": "wpdsac-chat__intro-bubble",
+      "display": "none",
+      "text": "Доброе утро!!"
+    },
+    {
+      "box": {
+        "height": 60,
+        "width": 60,
+        "x": 306,
+        "y": 760
+      },
+      "class": "wpdsac-chat__toggle",
+      "display": "flex",
+      "text": "AI-Dana"
+    }
+  ],
+  "source": "public",
+  "viewport": {
+    "css_height": 844,
+    "css_width": 390,
+    "dpr": 1
+  }
+}

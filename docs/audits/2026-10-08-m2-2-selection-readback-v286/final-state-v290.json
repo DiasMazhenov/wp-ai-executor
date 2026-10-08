@@ -1,0 +1,18 @@
+{
+  "post_id": 5214,
+  "plugin_php_version": "v02.11.290",
+  "editor_inline_version": "v02.11.290",
+  "editor_roots": [],
+  "publish_disabled": true,
+  "public": {
+    "pageOverflow": false,
+    "roots": [],
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": {
+      "clientHeight": 923,
+      "clientWidth": 1232,
+      "height": 923,
+      "width": 1232
+    }
+  }
+}

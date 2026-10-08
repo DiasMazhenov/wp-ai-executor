@@ -1,0 +1,11 @@
+{
+  "format": "wpae-llm-chat-log-v1",
+  "post_id": 5214,
+  "captured_at": "2026-10-08T00:23:27.294Z",
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Опишите задачу по текущей странице или выбранному элементу."
+    }
+  ]
+}

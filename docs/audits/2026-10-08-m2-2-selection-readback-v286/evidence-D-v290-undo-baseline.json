@@ -1,0 +1,20 @@
+{
+  "operation_id": "wpae-550f6a8b5bde630d",
+  "operation_identity": "3b0f3b59-a8ea-42c3-b399-1d44cbae8df3",
+  "root_id": "21cbb2d",
+  "revision": 6,
+  "undo_title": "already_undone: wpae-550f6a8b5bde630d",
+  "editor_publish_disabled": true,
+  "editor_navigator_empty": true,
+  "public": {
+    "hasServiceCopy": false,
+    "roots": [],
+    "scrollWidth": 1232,
+    "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+    "viewport": {
+      "clientWidth": 1232,
+      "height": 923,
+      "width": 1232
+    }
+  }
+}

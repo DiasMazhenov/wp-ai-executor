@@ -1,0 +1,24 @@
+{
+  "chat": {
+    "expanded": "false",
+    "introHidden": true,
+    "text": "AI-Dana"
+  },
+  "root": [
+    {
+      "id": "b553009",
+      "rect": {
+        "h": 1046.96875,
+        "w": 375,
+        "x": 0,
+        "y": 46
+      }
+    }
+  ],
+  "scrollWidth": 375,
+  "viewport": {
+    "clientWidth": 375,
+    "height": 844,
+    "width": 390
+  }
+}

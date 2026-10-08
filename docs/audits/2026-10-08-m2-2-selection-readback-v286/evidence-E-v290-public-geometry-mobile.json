@@ -1,0 +1,774 @@
+{
+  "chat": {
+    "expanded": "false",
+    "introHidden": false,
+    "text": "Доброе утро!!\nAI-Dana"
+  },
+  "containers": [
+    {
+      "clientWidth": 343,
+      "cls": "elementor-element elementor-element-83a3496 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "0px",
+        "height": "77.1875px",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "id": "83a3496",
+      "rect": {
+        "h": 77.19,
+        "w": 343,
+        "x": 16,
+        "y": 86
+      },
+      "scrollWidth": 343,
+      "text": "ПРОЦЕСС\nКак мы работаем"
+    },
+    {
+      "clientWidth": 343,
+      "cls": "elementor-element elementor-element-9cc29b6 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "0px",
+        "height": "77.1875px",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "wrap"
+      },
+      "id": "9cc29b6",
+      "rect": {
+        "h": 77.19,
+        "w": 343,
+        "x": 16,
+        "y": 86
+      },
+      "scrollWidth": 343,
+      "text": "ПРОЦЕСС\nКак мы работаем"
+    },
+    {
+      "clientWidth": 91,
+      "cls": "wpae-generated-badge elementor-element elementor-element-8620963 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgb(0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": "32.9844px",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "wrap": "nowrap"
+      },
+      "id": "8620963",
+      "rect": {
+        "h": 32.98,
+        "w": 92.91,
+        "x": 16,
+        "y": 86
+      },
+      "scrollWidth": 91,
+      "text": "ПРОЦЕСС"
+    },
+    {
+      "clientWidth": 343,
+      "cls": "wpae-process-items elementor-element elementor-element-fcf51c9 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "flex-start",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "14px",
+        "height": "857.781px",
+        "justify": "normal",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "fcf51c9",
+      "rect": {
+        "h": 857.78,
+        "w": 343,
+        "x": 16,
+        "y": 195.19
+      },
+      "scrollWidth": 343,
+      "text": "01\nБриф\nФиксируем цель страницы и приоритетное действие\n02\nСтруктура\nСобираем смысловой маршрут, контент и необходимые доказательства для посетителя\n03\nСборка\nСоздаём нативный Elementor-блок, затем адаптируем е"
+    },
+    {
+      "clientWidth": 341,
+      "cls": "wpae-process-content elementor-element elementor-element-e0f9c39 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "206.695px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "wrap": "nowrap"
+      },
+      "id": "e0f9c39",
+      "rect": {
+        "h": 206.7,
+        "w": 343,
+        "x": 16,
+        "y": 195.19
+      },
+      "scrollWidth": 341,
+      "text": "01\nБриф\nФиксируем цель страницы и приоритетное действие"
+    },
+    {
+      "clientWidth": 313,
+      "cls": "elementor-element elementor-element-862f62b e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "6.4px",
+        "height": "77.3984px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "862f62b",
+      "rect": {
+        "h": 77.4,
+        "w": 313,
+        "x": 31,
+        "y": 210.19
+      },
+      "scrollWidth": 313,
+      "text": "01"
+    },
+    {
+      "clientWidth": 40,
+      "cls": "wpae-process-marker elementor-element elementor-element-b8025c2 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgb(0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": "40px",
+        "justify": "center",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "40px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "b8025c2",
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 167.5,
+        "y": 210.19
+      },
+      "scrollWidth": 40,
+      "text": "01"
+    },
+    {
+      "clientWidth": 341,
+      "cls": "wpae-process-content elementor-element elementor-element-d8043a3 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "233.094px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "wrap": "nowrap"
+      },
+      "id": "d8043a3",
+      "rect": {
+        "h": 233.09,
+        "w": 343,
+        "x": 16,
+        "y": 415.88
+      },
+      "scrollWidth": 341,
+      "text": "02\nСтруктура\nСобираем смысловой маршрут, контент и необходимые доказательства для посетителя"
+    },
+    {
+      "clientWidth": 313,
+      "cls": "elementor-element elementor-element-84529c1 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "6.4px",
+        "height": "77.3984px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "84529c1",
+      "rect": {
+        "h": 77.4,
+        "w": 313,
+        "x": 31,
+        "y": 430.88
+      },
+      "scrollWidth": 313,
+      "text": "02"
+    },
+    {
+      "clientWidth": 40,
+      "cls": "wpae-process-marker elementor-element elementor-element-ca2a3f6 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgb(0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": "40px",
+        "justify": "center",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "40px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "ca2a3f6",
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 167.5,
+        "y": 430.88
+      },
+      "scrollWidth": 40,
+      "text": "02"
+    },
+    {
+      "clientWidth": 341,
+      "cls": "wpae-process-content elementor-element elementor-element-e126db6 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "206.695px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "wrap": "nowrap"
+      },
+      "id": "e126db6",
+      "rect": {
+        "h": 206.7,
+        "w": 343,
+        "x": 16,
+        "y": 662.98
+      },
+      "scrollWidth": 341,
+      "text": "03\nСборка\nСоздаём нативный Elementor-блок, затем адаптируем его для узких экранов"
+    },
+    {
+      "clientWidth": 313,
+      "cls": "elementor-element elementor-element-000ca6e e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "6.4px",
+        "height": "77.3984px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "000ca6e",
+      "rect": {
+        "h": 77.4,
+        "w": 313,
+        "x": 31,
+        "y": 677.98
+      },
+      "scrollWidth": 313,
+      "text": "03"
+    },
+    {
+      "clientWidth": 40,
+      "cls": "wpae-process-marker elementor-element elementor-element-18a2f01 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgb(0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": "40px",
+        "justify": "center",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "40px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "18a2f01",
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 167.5,
+        "y": 677.98
+      },
+      "scrollWidth": 40,
+      "text": "03"
+    },
+    {
+      "clientWidth": 341,
+      "cls": "wpae-process-content elementor-element elementor-element-a3d0e37 e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "stretch",
+        "background": "rgb(255, 255, 255)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "12px",
+        "height": "169.297px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "wrap": "nowrap"
+      },
+      "id": "a3d0e37",
+      "rect": {
+        "h": 169.3,
+        "w": 343,
+        "x": 16,
+        "y": 883.67
+      },
+      "scrollWidth": 341,
+      "text": "04\nПроверка\nСверяем тексты, мобильный порядок и CTA перед публикацией"
+    },
+    {
+      "clientWidth": 313,
+      "cls": "elementor-element elementor-element-72a1e5f e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "6.4px",
+        "height": "40px",
+        "justify": "flex-start",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "72a1e5f",
+      "rect": {
+        "h": 40,
+        "w": 313,
+        "x": 31,
+        "y": 898.67
+      },
+      "scrollWidth": 313,
+      "text": "04"
+    },
+    {
+      "clientWidth": 40,
+      "cls": "wpae-process-marker elementor-element elementor-element-c3b159f e-con-full e-flex e-con e-child",
+      "css": {
+        "align": "center",
+        "background": "rgb(0, 0, 0)",
+        "direction": "column",
+        "display": "flex",
+        "fontSize": "16px",
+        "gap": "24px",
+        "height": "40px",
+        "justify": "center",
+        "lineHeight": "24px",
+        "maxHeight": "none",
+        "minHeight": "40px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "id": "c3b159f",
+      "rect": {
+        "h": 40,
+        "w": 40,
+        "x": 167.5,
+        "y": 898.67
+      },
+      "scrollWidth": 40,
+      "text": "04"
+    }
+  ],
+  "headings": [
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "12px",
+        "gap": "normal",
+        "height": "19.7969px",
+        "justify": "normal",
+        "lineHeight": "19.8px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 19.8,
+        "w": 66.91,
+        "x": 29,
+        "y": 92.59
+      },
+      "tag": "H6",
+      "text": "ПРОЦЕСС"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "28px",
+        "gap": "normal",
+        "height": "32.2031px",
+        "justify": "normal",
+        "lineHeight": "32.2px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 32.2,
+        "w": 243.46,
+        "x": 16,
+        "y": 130.98
+      },
+      "tag": "H2",
+      "text": "Как мы работаем"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 20.02,
+        "x": 177.48,
+        "y": 218.94
+      },
+      "tag": "H3",
+      "text": "01"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 313,
+        "x": 31,
+        "y": 299.59
+      },
+      "tag": "H3",
+      "text": "Бриф"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 20.02,
+        "x": 177.48,
+        "y": 439.63
+      },
+      "tag": "H3",
+      "text": "02"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 313,
+        "x": 31,
+        "y": 520.28
+      },
+      "tag": "H3",
+      "text": "Структура"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 20.02,
+        "x": 177.48,
+        "y": 686.73
+      },
+      "tag": "H3",
+      "text": "03"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 313,
+        "x": 31,
+        "y": 767.38
+      },
+      "tag": "H3",
+      "text": "Сборка"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 20.02,
+        "x": 177.48,
+        "y": 907.42
+      },
+      "tag": "H3",
+      "text": "04"
+    },
+    {
+      "css": {
+        "align": "normal",
+        "background": "rgba(0, 0, 0, 0)",
+        "direction": "row",
+        "display": "block",
+        "fontSize": "18px",
+        "gap": "normal",
+        "height": "22.5px",
+        "justify": "normal",
+        "lineHeight": "22.5px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "wrap": "nowrap"
+      },
+      "rect": {
+        "h": 22.5,
+        "w": 313,
+        "x": 31,
+        "y": 950.67
+      },
+      "tag": "H3",
+      "text": "Проверка"
+    }
+  ],
+  "root": {
+    "clientWidth": 375,
+    "css": {
+      "align": "normal",
+      "background": "rgba(97, 206, 112, 0.2)",
+      "direction": "column",
+      "display": "flex",
+      "fontSize": "16px",
+      "gap": "normal",
+      "height": "1046.97px",
+      "justify": "normal",
+      "lineHeight": "24px",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 16px",
+      "wrap": "nowrap"
+    },
+    "id": "b553009",
+    "rect": {
+      "h": 1046.97,
+      "w": 375,
+      "x": 0,
+      "y": 46
+    },
+    "scrollWidth": 375,
+    "text": "ПРОЦЕСС\nКак мы работаем\n01\nБриф\nФиксируем цель страницы и приоритетное действие\n02\nСтруктура\nСобираем смысловой маршрут, контент и необходимые доказательства для посетителя\n03\nСборка\nСоздаём нативный Elementor-блок, затем адаптируем его для узких экранов\n04\nПроверка\nСверяем тексты, мобильный порядок и CTA перед публикацией"
+  },
+  "scroll": {
+    "height": 1093,
+    "width": 375
+  },
+  "url": "https://mazhenov.kz/pricing-contract-live-v123/",
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "height": 844,
+    "width": 390
+  }
+}
