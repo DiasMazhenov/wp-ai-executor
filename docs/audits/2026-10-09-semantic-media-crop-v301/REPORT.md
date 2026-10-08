@@ -65,6 +65,17 @@ At this checkpoint, public root IDs are `[620e60e]`; editor canvas root IDs are 
 
 The next state transition required by the acceptance contract is unresolved; until the dirty editor state is safely cleared through an authorized editor workflow and the D operation can be guarded-Undone, the five-acceptance gate remains open. A–C are three full acceptances; D is not counted; E has no write. Two full acceptances remain.
 
+## `ui-ux-pro-max` review
+
+The review used the skill's `--design-system` query for an architecture portfolio, plus targeted UX and typography searches. Its generic Portfolio Grid / motion-led suggestion, stock palette and font pairings were not applied: this is an existing branded WordPress page with accepted composition/profile decisions, and the skill's stack examples are not Elementor Flex rules. The applicable review criteria were image scaling and focal visibility, readable hierarchy and text measure, responsive ordering, and unobstructed controls. The saved viewport and full-mobile PNGs above were opened and inspected.
+
+- A Testimonials: measured 48×48 top-center avatar renders keep all three faces visible; the longer quote grows naturally. Equal-height grid rows leave substantial blank space beneath shorter quotes. On full mobile the site launcher touches only blank card-edge space.
+- B Team: the three entries remain editorial rows rather than a repeated grid, with complete biographies and each synthetic participant's image/title/position kept in the same row. The short first row has visible negative space set by its large image; no filler copy was added. The site-owned launcher overlaps a peripheral image edge on mobile but not the face or text.
+- C Portfolio: all three project images remain attached to their own copy and action; images scale across the mobile stack and the exact CTAs remain visible. The launcher covers a small corner of the second image on mobile, away from its main subject and authored text.
+- D Hero: the subject remains visible with the accepted Elementor left-center crop, the 60/40 desktop split is balanced, and both CTAs precede the image on mobile. The fixed launcher touches the lower-right photo edge without obscuring the subject or CTAs.
+
+These overlay notes describe page integration and do not attribute the launcher to generated layout. E About has no render or visual finding because it was not run.
+
 ## Screenshots
 
 ### A — Testimonials, post 5214, root `3cf7a71`, operation `wpae-5819cfe552194230`, revision 6, public
