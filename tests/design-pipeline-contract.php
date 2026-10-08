@@ -80,6 +80,11 @@ if ( ! function_exists( 'get_post_meta' ) ) {
 			$value = (string) ( $wpae_test_attachment_alt_meta[ (int) $post_id ] ?? '' );
 			return $single ? $value : [ $value ];
 		}
+		if ( $key === '_wpae_focal_point' ) {
+			global $wpae_test_attachment_focal_meta;
+			$value = $wpae_test_attachment_focal_meta[ (int) $post_id ] ?? '';
+			return $single ? $value : ( $value === '' ? [] : [ $value ] );
+		}
 		return $single ? '' : [];
 	}
 }
@@ -1351,7 +1356,17 @@ $focal_plan['media_references'][0]['render']['focal_point'] = [ 'x' => 0.25, 'y'
 $focal_ir = wpae_elementor_ir_from_design_plan( $focal_plan, $team_photo_brief );
 $focal_compiled = wpae_elementor_ir_compile( $focal_ir, $team_photo_brief, [], [ 'id_seed' => 'portrait-focal-point' ] );
 $focal_image = array_values( array_filter( $walk_elements( $focal_compiled['elementor_data'] ?? [] ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
-$check( ! empty( $focal_compiled['ok'] ) && ( $focal_image['settings']['object-position'] ?? '' ) === 'bottom left' && ! str_contains( wp_json_encode( $focal_image['settings'] ), 'Array' ) && in_array( wpae_elementor_ir_focal_position( [ 'x' => 0.5, 'y' => 0.5 ] ), [ 'center center' ], true ) && wpae_elementor_ir_focal_position( [ 'x' => 1, 'y' => 0 ] ) === 'top right', 'Normalized focal points lower to supported Elementor 3x3 object-position keywords without array serialization' );
+$focal_native_matrix = [];
+$focal_native_expected = [];
+foreach ( [
+	[ 0.1, 0.1, 'top left' ], [ 0.5, 0.1, 'top center' ], [ 0.9, 0.1, 'top right' ],
+	[ 0.1, 0.5, 'center left' ], [ 0.5, 0.5, 'center center' ], [ 0.9, 0.5, 'center right' ],
+	[ 0.1, 0.9, 'bottom left' ], [ 0.5, 0.9, 'bottom center' ], [ 0.9, 0.9, 'bottom right' ],
+] as $focal_case ) {
+	$focal_native_matrix[] = wpae_elementor_ir_focal_position( [ 'x' => $focal_case[0], 'y' => $focal_case[1] ] );
+	$focal_native_expected[] = $focal_case[2];
+}
+$check( ! empty( $focal_compiled['ok'] ) && ( $focal_image['settings']['object-position'] ?? '' ) === 'bottom left' && ! str_contains( wp_json_encode( $focal_image['settings'] ), 'Array' ) && $focal_native_matrix === $focal_native_expected, 'Normalized focal points lower only to Elementor’s nine supported 3x3 object-position values' );
 $testimonial_avatar_url = 'https://images.unsplash.com/photo-1638727295415-286409421143?auto=format&fit=crop&w=800&q=80';
 $testimonial_avatar_prompt = "Блок отзывов\nОтзыв 1 — цитата: «Синтетический отзыв для проверки компактного аватара.»\nОтзыв 1 — автор: «Вымышленная Алия»\nОтзыв 1 — должность: «Синтетический профиль»\nОтзыв 1 — фото-аватар: {$testimonial_avatar_url}\nAlt: «Иллюстративный стоковый портрет; автор отзыва не подтверждён этим изображением»\nLicense: «Unsplash License»\nPhoto by: «Brianna Geoghegan»";
 [ $testimonial_avatar_brief, $testimonial_avatar_plan, $testimonial_avatar_validation, $testimonial_avatar_compiled, $testimonial_avatar_nodes ] = $compile_prompt( $testimonial_avatar_prompt, 'testimonial-avatar-render-regression' );
@@ -1368,6 +1383,56 @@ $check( ( $testimonial_avatar_ref['role'] ?? '' ) === 'avatar' && ( $testimonial
 $check( ( $testimonial_avatar_ref['attribution'] ?? '' ) === 'Brianna Geoghegan', 'Image attribution is read only from an explicit metadata label, never inferred from alt prose mentioning an author' );
 $check( ( $testimonial_avatar_render['width'] ?? [] ) === [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ] && ( $testimonial_avatar_render['height'] ?? [] ) === $testimonial_avatar_render['width'] && ( $testimonial_avatar_render['object_fit'] ?? '' ) === 'cover' && ( $testimonial_avatar_render['shape'] ?? '' ) === 'circle', 'Avatar Plan caps the portrait to a small responsive square rather than a cover image' );
 $check( ( $testimonial_avatar_native['width']['unit'] ?? '' ) === 'rem' && (float) ( $testimonial_avatar_native['width']['size'] ?? 0 ) === 3.5 && ( $testimonial_avatar_native['height']['unit'] ?? '' ) === 'rem' && (float) ( $testimonial_avatar_native['height']['size'] ?? 0 ) === 3.5 && (float) ( $testimonial_avatar_native['width_mobile']['size'] ?? 0 ) === 3.0 && ( $testimonial_avatar_native['object-fit'] ?? '' ) === 'cover' && ( $testimonial_avatar_native['image_border_radius']['unit'] ?? '' ) === '%' && ( $testimonial_avatar_native['image_border_radius']['top'] ?? '' ) === '50', 'Avatar native controls preserve small square crop, responsive size and circle shape: ' . wp_json_encode( $testimonial_avatar_native ) );
+$check( ( $testimonial_avatar_render['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.25 ] && ( $testimonial_avatar_render['focal_point_provenance']['source'] ?? '' ) === 'role_default' && ( $testimonial_avatar_render['focal_point_provenance']['role'] ?? '' ) === 'avatar' && ( $testimonial_avatar_native['object-position'] ?? '' ) === 'top center', 'Avatar focal default is a frozen, provenance-marked upper-center role default lowered to a supported native position' );
+$testimonial_avatar_roundtrip_media = wpae_reference_set_normalize( $testimonial_avatar_rendered_ref );
+$testimonial_avatar_roundtrip = wpae_design_plan_media_render_policy( $testimonial_avatar_roundtrip_media, 'testimonials', [] );
+$check( ( $testimonial_avatar_roundtrip['render']['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.25 ] && ( $testimonial_avatar_roundtrip['render']['focal_point_provenance']['source'] ?? '' ) === 'role_default' && ( $testimonial_avatar_roundtrip['render']['explicit_fields'] ?? null ) === [], 'Accepted role-default crop survives ReferenceSet and Plan normalization without becoming an explicit Brief choice' );
+
+if ( ! function_exists( 'attachment_url_to_postid' ) ) { function attachment_url_to_postid( $url ): int { global $wpae_test_attachment_url_to_postid; return (int) ( $wpae_test_attachment_url_to_postid[ (string) $url ] ?? 0 ); } }
+if ( ! function_exists( 'get_post_type' ) ) { function get_post_type( $post_id ): string { global $wpae_test_attachment_types; return (string) ( $wpae_test_attachment_types[ (int) $post_id ] ?? '' ); } }
+if ( ! function_exists( 'wp_attachment_is_image' ) ) { function wp_attachment_is_image( $post_id ): bool { global $wpae_test_attachment_image_ids; return in_array( (int) $post_id, (array) ( $wpae_test_attachment_image_ids ?? [] ), true ); } }
+if ( ! function_exists( 'wp_get_attachment_metadata' ) ) { function wp_get_attachment_metadata( $post_id ): array { global $wpae_test_attachment_metadata; return (array) ( $wpae_test_attachment_metadata[ (int) $post_id ] ?? [] ); } }
+if ( ! function_exists( 'wp_get_attachment_url' ) ) { function wp_get_attachment_url( $post_id ): string { global $wpae_test_attachment_urls; return (string) ( $wpae_test_attachment_urls[ (int) $post_id ] ?? '' ); } }
+if ( ! function_exists( 'get_post_mime_type' ) ) { function get_post_mime_type( $post_id ): string { global $wpae_test_attachment_mimes; return (string) ( $wpae_test_attachment_mimes[ (int) $post_id ] ?? '' ); } }
+if ( ! function_exists( 'home_url' ) ) { function home_url( $path = '/' ): string { return 'https://mazhenov.kz' . (string) $path; } }
+if ( ! function_exists( 'wp_http_validate_url' ) ) { function wp_http_validate_url( $url ): bool { return filter_var( $url, FILTER_VALIDATE_URL ) !== false; } }
+$metadata_avatar_url = 'https://mazhenov.kz/wp-content/uploads/2023/09/focal-metadata-test.webp';
+$wpae_test_attachment_url_to_postid[ $metadata_avatar_url ] = 9901;
+$wpae_test_attachment_types[9901] = 'attachment';
+$wpae_test_attachment_image_ids[] = 9901;
+$wpae_test_attachment_metadata[9901] = [ 'width' => 238, 'height' => 400 ];
+$wpae_test_attachment_urls[9901] = $metadata_avatar_url;
+$wpae_test_attachment_mimes[9901] = 'image/webp';
+$wpae_test_attachment_alt_meta[9901] = 'Проверенный alt для тестового изображения';
+$wpae_test_attachment_focal_meta[9901] = [ 'x' => 0.5, 'y' => 0.2 ];
+$wpae_test_can_edit_post = true;
+$metadata_avatar_reference = [ 'asset_id' => 'avatar-metadata-test', 'group_id' => 'testimonial_1', 'source_url' => $metadata_avatar_url, 'role' => 'avatar', 'alt' => 'Проверенный alt для тестового изображения', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'prompt', 'source_span' => [ 12, 89 ] ] ];
+$metadata_avatar_resolved = wpae_reference_set_resolve_wordpress_asset( $metadata_avatar_reference );
+$metadata_avatar_plan_media = wpae_design_plan_media_render_policy( $metadata_avatar_resolved, 'testimonials', [] );
+$check( ( $metadata_avatar_resolved['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.2 ] && ( $metadata_avatar_resolved['focal_point_provenance']['source'] ?? '' ) === 'asset_metadata' && ( $metadata_avatar_resolved['focal_point_provenance']['metadata_key'] ?? '' ) === '_wpae_focal_point' && ( $metadata_avatar_resolved['focal_point_provenance']['attachment_id'] ?? 0 ) === 9901, 'Verified editable attachment focal metadata is resolved before Plan freeze with attachment/key provenance' );
+$check( ( $metadata_avatar_plan_media['render']['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.2 ] && ( $metadata_avatar_plan_media['render']['focal_point_provenance']['source'] ?? '' ) === 'asset_metadata' && ( $metadata_avatar_plan_media['render']['object_fit'] ?? '' ) === 'cover', 'Asset-specific focal metadata outranks role default without changing identity or avatar fit' );
+$wide_asset_url = 'https://mazhenov.kz/wp-content/uploads/2023/09/wide-media-policy-test.webp';
+$wpae_test_attachment_url_to_postid[ $wide_asset_url ] = 9902;
+$wpae_test_attachment_types[9902] = 'attachment';
+$wpae_test_attachment_image_ids[] = 9902;
+$wpae_test_attachment_metadata[9902] = [ 'width' => 1200, 'height' => 500 ];
+$wpae_test_attachment_urls[9902] = $wide_asset_url;
+$wpae_test_attachment_mimes[9902] = 'image/webp';
+$wpae_test_attachment_alt_meta[9902] = 'Тестовое широкое изображение';
+$wide_section_reference = wpae_reference_set_resolve_wordpress_asset( [ 'asset_id' => 'wide-section-test', 'source_url' => $wide_asset_url, 'role' => 'about', 'alt' => 'Тестовое широкое изображение', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'prompt', 'source_span' => [ 0, 20 ] ] ] );
+$wide_section_plan_media = wpae_design_plan_media_render_policy( $wide_section_reference, 'about', [] );
+$portrait_role_plan_media = wpae_design_plan_media_render_policy( [ 'asset_id' => 'whole-person-portrait-test', 'role' => 'portrait', 'purpose' => 'portrait', 'asset_facts' => [ 'width' => 238, 'height' => 400 ], 'source_url' => 'https://example.test/full-person.webp', 'alt' => 'Тестовый кадр человека в полный рост' ], 'team', [] );
+$check( ( $wide_section_reference['asset_facts']['width'] ?? 0 ) === 1200 && ( $wide_section_reference['asset_facts']['height'] ?? 0 ) === 500 && ( $wide_section_plan_media['render']['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.5 ] && ( $wide_section_plan_media['render']['focal_point_provenance']['role'] ?? '' ) === 'section_image' && ( $portrait_role_plan_media['render']['object_fit'] ?? '' ) === 'contain' && ( $portrait_role_plan_media['render']['focal_point_provenance']['role'] ?? '' ) === 'portrait', 'Wide section images keep their own centered role default while whole-person portrait roles use contain instead of avatar cropping' );
+$explicit_avatar_reference = $metadata_avatar_reference;
+$explicit_avatar_reference['render'] = [ 'object_fit' => 'contain', 'focal_point' => [ 'x' => 0.5, 'y' => 0.8 ] ];
+$explicit_avatar_reference['provenance']['source_spans']['focal_point'] = [ 45, 62 ];
+$explicit_avatar_resolved = wpae_reference_set_resolve_wordpress_asset( $explicit_avatar_reference );
+$explicit_avatar_policy = wpae_design_plan_media_render_policy( $explicit_avatar_resolved, 'testimonials', [] );
+$check( ( $explicit_avatar_resolved['focal_point_provenance']['source'] ?? '' ) === 'brief_explicit' && ( $explicit_avatar_policy['render']['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.8 ] && ( $explicit_avatar_policy['render']['focal_point_provenance']['source'] ?? '' ) === 'brief_explicit' && ( $explicit_avatar_policy['render']['focal_point_provenance']['source_span'] ?? [] ) === [ 45, 62 ] && ( $explicit_avatar_policy['render']['object_fit'] ?? '' ) === 'contain', 'Explicit focal point and contain override attachment metadata and retain source span through Plan freeze' );
+$wpae_test_attachment_focal_meta[9901] = [ 'x' => 0.5, 'y' => 1.2 ];
+$invalid_metadata_avatar = wpae_reference_set_resolve_wordpress_asset( $metadata_avatar_reference );
+$invalid_metadata_avatar_plan = wpae_design_plan_media_render_policy( $invalid_metadata_avatar, 'testimonials', [] );
+$check( ( $invalid_metadata_avatar['focal_point'] ?? null ) === null && ( $invalid_metadata_avatar_plan['render']['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.25 ] && ( $invalid_metadata_avatar_plan['render']['focal_point_provenance']['source'] ?? '' ) === 'role_default', 'Out-of-range attachment focal metadata is rejected and the documented avatar default is used instead' );
 $unlicensed_team_brief = wpae_brief_ir_parse( "Блок команды\nУчастник 1 — имя: «Тестовый персонаж»\nУчастник 1 — должность: «Не реальный сотрудник»\nУчастник 1 — фото: {$team_portrait_url}\nAlt: «Тестовый портрет»" );
 $unlicensed_team_plan = wpae_design_plan_from_brief( $unlicensed_team_brief );
 $unlicensed_team_validation = wpae_design_plan_validate( $unlicensed_team_plan, $unlicensed_team_brief );

@@ -27,6 +27,27 @@ function wpae_reference_set_responsive_dimensions( $value ): array {
 	return $dimensions;
 }
 
+/** Keep only documented focal-point provenance on the frozen media contract. */
+function wpae_reference_set_focal_point_provenance( $value ): array {
+	if ( ! is_array( $value ) ) { return []; }
+	$source = sanitize_key( (string) ( $value['source'] ?? '' ) );
+	if ( ! in_array( $source, [ 'brief_explicit', 'asset_metadata', 'role_default' ], true ) ) { return []; }
+	$provenance = [ 'source' => $source ];
+	if ( $source === 'brief_explicit' && is_array( $value['source_span'] ?? null ) ) {
+		$provenance['source_span'] = $value['source_span'];
+	}
+	if ( $source === 'asset_metadata' && ( $value['metadata_key'] ?? '' ) === '_wpae_focal_point' ) {
+		$provenance['metadata_key'] = '_wpae_focal_point';
+		if ( isset( $value['attachment_id'] ) && is_numeric( $value['attachment_id'] ) ) { $provenance['attachment_id'] = absint( $value['attachment_id'] ); }
+	}
+	if ( $source === 'role_default' ) {
+		$role = sanitize_key( (string) ( $value['role'] ?? '' ) );
+		if ( in_array( $role, wpae_reference_set_roles(), true ) ) { $provenance['role'] = $role; }
+		$provenance['policy_version'] = sanitize_key( (string) ( $value['policy_version'] ?? 'media-crop-v1' ) );
+	}
+	return $provenance;
+}
+
 function wpae_reference_set_normalize( array $input ): array {
 	$role = sanitize_key( (string) ( $input['role'] ?? 'decorative' ) );
 	if ( ! in_array( $role, wpae_reference_set_roles(), true ) ) {
@@ -60,6 +81,13 @@ function wpae_reference_set_normalize( array $input ): array {
 		// top-level object_fit default as an explicit override of role policy.
 		if ( is_array( $input['focal_point'] ?? null ) && ! in_array( 'focal_point', $explicit_render_fields, true ) ) { $explicit_render_fields[] = 'focal_point'; }
 	}
+	$focal_provenance = wpae_reference_set_focal_point_provenance( $input['focal_point_provenance'] ?? null );
+	if ( $focal_provenance === [] && ( in_array( 'focal_point', $explicit_render_fields, true ) || $focal !== null ) ) {
+		$input_provenance = is_array( $input['provenance'] ?? null ) ? $input['provenance'] : [];
+		$source_span = $input_provenance['source_spans']['focal_point'] ?? $input_provenance['source_span'] ?? null;
+		$focal_provenance = [ 'source' => 'brief_explicit' ];
+		if ( is_array( $source_span ) ) { $focal_provenance['source_span'] = $source_span; }
+	}
 	return [
 		'asset_id' => sanitize_key( (string) ( $input['asset_id'] ?? '' ) ),
 		'group_id' => sanitize_key( (string) ( $input['group_id'] ?? '' ) ),
@@ -72,6 +100,7 @@ function wpae_reference_set_normalize( array $input ): array {
 			'x' => max( 0, min( 1, (float) ( $focal['x'] ?? 0.5 ) ) ),
 			'y' => max( 0, min( 1, (float) ( $focal['y'] ?? 0.5 ) ) ),
 		],
+		'focal_point_provenance' => $focal_provenance,
 		'crop' => sanitize_key( (string) ( $input['crop'] ?? '' ) ) ?: null,
 		'object_fit' => in_array( sanitize_key( (string) ( $input['object_fit'] ?? 'cover' ) ), [ 'cover', 'contain', 'fill' ], true ) ? sanitize_key( (string) ( $input['object_fit'] ?? 'cover' ) ) : 'cover',
 		'license' => sanitize_text_field( (string) ( $input['license'] ?? '' ) ),
@@ -85,6 +114,7 @@ function wpae_reference_set_normalize( array $input ): array {
 			'explicit_fields' => $explicit_render_fields,
 			'object_fit' => in_array( sanitize_key( (string) ( $render['object_fit'] ?? '' ) ), [ 'cover', 'contain' ], true ) ? sanitize_key( (string) $render['object_fit'] ) : null,
 			'focal_point' => is_array( $render['focal_point'] ?? null ) ? [ 'x' => max( 0, min( 1, (float) ( $render['focal_point']['x'] ?? 0.5 ) ) ), 'y' => max( 0, min( 1, (float) ( $render['focal_point']['y'] ?? 0.5 ) ) ) ] : null,
+			'focal_point_provenance' => wpae_reference_set_focal_point_provenance( $render['focal_point_provenance'] ?? $focal_provenance ),
 			'width' => wpae_reference_set_responsive_dimensions( $render['width'] ?? [] ),
 			'height' => wpae_reference_set_responsive_dimensions( $render['height'] ?? [] ),
 			'shape' => in_array( sanitize_key( (string) ( $render['shape'] ?? '' ) ), [ 'natural', 'rounded', 'circle' ], true ) ? sanitize_key( (string) $render['shape'] ) : 'natural',
@@ -122,9 +152,15 @@ function wpae_reference_set_resolve_wordpress_asset( array $reference ): array {
 	$height = absint( $metadata['height'] ?? 0 );
 	$attached_url = wp_get_attachment_url( $attachment_id );
 	$attachment_alt = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+	$stored_focal = get_post_meta( $attachment_id, '_wpae_focal_point', true );
 	$reference['attachment_id'] = $attachment_id;
 	$reference['source_url'] = esc_url_raw( (string) ( $attached_url ?: $reference['source_url'] ) );
 	$reference['asset_facts'] = [ 'width' => $width, 'height' => $height, 'mime' => get_post_mime_type( $attachment_id ) ];
+	$has_explicit_focal = ( $reference['focal_point_provenance']['source'] ?? '' ) === 'brief_explicit';
+	if ( ! $has_explicit_focal && is_array( $stored_focal ) && is_numeric( $stored_focal['x'] ?? null ) && is_numeric( $stored_focal['y'] ?? null ) && (float) $stored_focal['x'] >= 0 && (float) $stored_focal['x'] <= 1 && (float) $stored_focal['y'] >= 0 && (float) $stored_focal['y'] <= 1 ) {
+		$reference['focal_point'] = [ 'x' => (float) $stored_focal['x'], 'y' => (float) $stored_focal['y'] ];
+		$reference['focal_point_provenance'] = [ 'source' => 'asset_metadata', 'metadata_key' => '_wpae_focal_point', 'attachment_id' => $attachment_id ];
+	}
 	if ( trim( (string) $reference['alt'] ) === '' ) { $reference['alt'] = sanitize_text_field( (string) $attachment_alt ); }
 	$reference['allowed_reuse'] = $width > 0 && $height > 0 && trim( (string) $reference['alt'] ) !== '';
 	$reference['license'] = trim( (string) $reference['license'] ) ?: 'WordPress site-owned media';

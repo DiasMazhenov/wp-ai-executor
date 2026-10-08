@@ -44,7 +44,7 @@ function wp_get_nav_menu_object( $menu ) {
 }
 function wp_parse_url( $url ) { return parse_url( $url ); }
 function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
-function home_url( $path = '' ) { return 'https://example.test' . $path; }
+function home_url( $path = '' ) { return rtrim( (string) ( $GLOBALS['test_home_url'] ?? 'https://example.test' ), '/' ) . $path; }
 function get_bloginfo( $key ) { return 'Test site'; }
 function get_option( $key, $default = false ) {
     if ( $key === 'elementor_active_kit' ) { return 8; }
@@ -206,6 +206,10 @@ function get_post_meta( $id, $key = '', $single = false ) {
     if ( (int) $id === 8 && $key === '_elementor_page_settings' ) {
         $kit = $GLOBALS['test_elementor_kit_settings'] ?? [];
         return $single ? $kit : [ $kit ];
+    }
+    if ( in_array( $key, [ '_wp_attachment_image_alt', '_wpae_focal_point' ], true ) ) {
+        $value = $GLOBALS['test_attachment_meta'][ (int) $id ][ $key ] ?? '';
+        return $single ? $value : ( $value === '' ? [] : [ $value ] );
     }
     $meta = [ '_elementor_data' => [ $GLOBALS['m1_raw_saved'] ?? wp_json_encode( $GLOBALS['page_data'] ) ], '_elementor_css' => [ $GLOBALS['css_cache'] ?? '' ] ];
     return $key === '' ? $meta : ( $single ? ( $meta[ $key ][0] ?? '' ) : ( $meta[ $key ] ?? [] ) );

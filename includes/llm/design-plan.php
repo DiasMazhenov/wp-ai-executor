@@ -272,7 +272,7 @@ function wpae_design_plan_media_reference_valid( array $media ): bool {
 function wpae_design_plan_media_render_policy( array $media, string $family, array $record ): array {
 	$policy = (array) ( $record['policy'] ?? [] );
 	$purpose = sanitize_key( (string) ( $media['purpose'] ?? '' ) );
-	$render = [ 'object_fit' => 'cover', 'focal_point' => is_array( $media['focal_point'] ?? null ) ? $media['focal_point'] : null, 'shape' => 'rounded', 'radius_token' => 'radius.card' ];
+	$render = [ 'object_fit' => 'cover', 'focal_point' => null, 'focal_point_provenance' => [], 'shape' => 'rounded', 'radius_token' => 'radius.card' ];
 	if ( $purpose === 'avatar' ) {
 		$render['height'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
 		$render['width'] = [ 'desktop' => '3.5rem', 'tablet' => '3.5rem', 'mobile' => '3rem' ];
@@ -303,14 +303,44 @@ function wpae_design_plan_media_render_policy( array $media, string $family, arr
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
 	}
 	$explicit_fields = array_fill_keys( array_map( 'sanitize_key', (array) ( $media['render']['explicit_fields'] ?? [] ) ), true );
+	$asset_focal = is_array( $media['focal_point'] ?? null ) ? $media['focal_point'] : null;
+	$render_focal = is_array( $media['render']['focal_point'] ?? null ) ? $media['render']['focal_point'] : null;
+	$asset_focal_source = sanitize_key( (string) ( $media['focal_point_provenance']['source'] ?? '' ) );
+	$prior_render_focal_provenance = function_exists( 'wpae_reference_set_focal_point_provenance' )
+		? wpae_reference_set_focal_point_provenance( $media['render']['focal_point_provenance'] ?? null )
+		: (array) ( $media['render']['focal_point_provenance'] ?? [] );
+	if ( isset( $explicit_fields['focal_point'] ) && ( $render_focal !== null || $asset_focal !== null ) ) {
+		$render['focal_point'] = $render_focal ?? $asset_focal;
+		$render['focal_point_provenance'] = [ 'source' => 'brief_explicit' ];
+		$source_span = $media['provenance']['source_spans']['focal_point'] ?? $media['provenance']['source_span'] ?? null;
+		if ( is_array( $source_span ) ) { $render['focal_point_provenance']['source_span'] = $source_span; }
+	} elseif ( $asset_focal !== null && $asset_focal_source === 'asset_metadata' ) {
+		$render['focal_point'] = $asset_focal;
+		$render['focal_point_provenance'] = wpae_reference_set_focal_point_provenance( $media['focal_point_provenance'] ?? [] );
+	} elseif ( $asset_focal !== null && $asset_focal_source === 'brief_explicit' ) {
+		$render['focal_point'] = $asset_focal;
+		$render['focal_point_provenance'] = wpae_reference_set_focal_point_provenance( $media['focal_point_provenance'] ?? [] );
+	} elseif ( $asset_focal !== null && $asset_focal_source === '' ) {
+		// Legacy raw ReferenceSet callers supplied the top-level point explicitly.
+		$render['focal_point'] = $asset_focal;
+		$render['focal_point_provenance'] = [ 'source' => 'brief_explicit' ];
+	} elseif ( $prior_render_focal_provenance !== [] && $render_focal !== null ) {
+		// Preserve a role default or metadata decision when an accepted Plan is normalized again.
+		$render['focal_point'] = $render_focal;
+		$render['focal_point_provenance'] = $prior_render_focal_provenance;
+	} else {
+		// A person-focused square defaults upward to protect the usual head area.
+		// This is a role default, not face detection; each real render still needs visual review.
+		$default_focal = in_array( $purpose, [ 'avatar', 'portrait' ], true ) ? [ 'x' => 0.5, 'y' => 0.25 ] : [ 'x' => 0.5, 'y' => 0.5 ];
+		$render['focal_point'] = $default_focal;
+		$render['focal_point_provenance'] = [ 'source' => 'role_default', 'role' => $purpose !== '' ? $purpose : 'decorative', 'policy_version' => 'media-crop-v1' ];
+	}
 	if ( isset( $explicit_fields['object_fit'] ) ) {
 		$explicit_fit = sanitize_key( (string) ( $media['render']['object_fit'] ?? '' ) );
 		if ( ! in_array( $explicit_fit, [ 'cover', 'contain' ], true ) ) { $explicit_fit = sanitize_key( (string) ( $media['object_fit'] ?? '' ) ); }
 		if ( in_array( $explicit_fit, [ 'cover', 'contain' ], true ) ) { $render['object_fit'] = $explicit_fit; }
 	}
-	$explicit_focal = $media['render']['focal_point'] ?? null;
-	if ( isset( $explicit_fields['focal_point'] ) && is_array( $explicit_focal ) ) { $render['focal_point'] = $explicit_focal; }
-	elseif ( is_array( $media['focal_point'] ?? null ) ) { $render['focal_point'] = $media['focal_point']; }
+	$render['explicit_fields'] = array_values( array_keys( $explicit_fields ) );
 	foreach ( [ 'width', 'height' ] as $dimension ) {
 		if ( isset( $explicit_fields[$dimension] ) ) {
 			$explicit_dimensions = function_exists( 'wpae_reference_set_responsive_dimensions' ) ? wpae_reference_set_responsive_dimensions( $media['render'][$dimension] ?? [] ) : (array) ( $media['render'][$dimension] ?? [] );
