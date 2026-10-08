@@ -1,0 +1,416 @@
+{
+  "chat": {
+    "greetingVisible": false,
+    "overlapsThirdCard": true,
+    "panelVisible": false,
+    "toggleRect": {
+      "bottom": 820,
+      "height": 60,
+      "right": 366,
+      "top": 760,
+      "width": 60,
+      "x": 306,
+      "y": 760
+    },
+    "toggleVisible": true
+  },
+  "elements": [
+    {
+      "id": "265cc25",
+      "rect": {
+        "bottom": 1151.65625,
+        "height": 1105.65625,
+        "right": 390,
+        "top": 46,
+        "width": 390,
+        "x": 0,
+        "y": 46
+      },
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(97, 206, 112, 0.2)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "normal",
+        "height": "1105.66px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 16px",
+        "textAlign": "start",
+        "width": "390px"
+      },
+      "text": "ДЕМО-ЦИТАТЫ\nПримеры коротких отзывов\nВсе персонажи и цитаты вымышлены и не относятся к реальным клиентам.\nМакет помогает быстро понять структуру обсуждения.\nИрина Лескова\nВымышленный участник теста\nСтало проще увидеть, какие решения уже приняты, где ещё нужны вопросы и как перейти от общего впечатле"
+    },
+    {
+      "id": "a708b1e",
+      "rect": {
+        "bottom": 248.796875,
+        "height": 170.796875,
+        "right": 374,
+        "top": 78,
+        "width": 358,
+        "x": 16,
+        "y": 78
+      },
+      "styles": {
+        "alignItems": "flex-start",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "170.797px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "ДЕМО-ЦИТАТЫ\nПримеры коротких отзывов\nВсе персонажи и цитаты вымышлены и не относятся к реальным клиентам."
+    },
+    {
+      "id": "d77b888",
+      "rect": {
+        "bottom": 248.796875,
+        "height": 170.796875,
+        "right": 374,
+        "top": 78,
+        "width": 358,
+        "x": 16,
+        "y": 78
+      },
+      "styles": {
+        "alignItems": "flex-start",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "170.797px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "ДЕМО-ЦИТАТЫ\nПримеры коротких отзывов\nВсе персонажи и цитаты вымышлены и не относятся к реальным клиентам."
+    },
+    {
+      "id": "003a611",
+      "rect": {
+        "bottom": 110.390625,
+        "height": 32.390625,
+        "right": 144.921875,
+        "top": 78,
+        "width": 128.921875,
+        "x": 16,
+        "y": 78
+      },
+      "styles": {
+        "alignItems": "center",
+        "backgroundColor": "rgb(0, 0, 0)",
+        "borderRadius": "999px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "height": "32.3906px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start",
+        "width": "128.922px"
+      },
+      "text": "ДЕМО-ЦИТАТЫ"
+    },
+    {
+      "id": "b4351aa",
+      "rect": {
+        "bottom": 184.796875,
+        "height": 74.40625,
+        "right": 374,
+        "top": 110.390625,
+        "width": 358,
+        "x": 16,
+        "y": 110.390625
+      },
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "74.4062px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "Примеры коротких отзывов"
+    },
+    {
+      "id": "73b9c78",
+      "rect": {
+        "bottom": 248.796875,
+        "height": 64,
+        "right": 374,
+        "top": 184.796875,
+        "width": 358,
+        "x": 16,
+        "y": 184.796875
+      },
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "15px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "64px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "Все персонажи и цитаты вымышлены и не относятся к реальным клиентам."
+    },
+    {
+      "id": "4c57742",
+      "rect": {
+        "bottom": 1119.65625,
+        "height": 838.859375,
+        "right": 374,
+        "top": 280.796875,
+        "width": 358,
+        "x": 16,
+        "y": 280.796875
+      },
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "16px",
+        "height": "838.859px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "Макет помогает быстро понять структуру обсуждения.\nИрина Лескова\nВымышленный участник теста\nСтало проще увидеть, какие решения уже приняты, где ещё нужны вопросы и как перейти от общего впечатления к конкретным деталям.\nМарат Кенжебаев\nВымышленный участник теста\nВ демонстрационной версии хорошо чита"
+    },
+    {
+      "id": "f3b6409",
+      "rect": {
+        "bottom": 493.75,
+        "height": 212.953125,
+        "right": 374,
+        "top": 280.796875,
+        "width": 358,
+        "x": 16,
+        "y": 280.796875
+      },
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "28px",
+        "height": "212.953px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "Макет помогает быстро понять структуру обсуждения.\nИрина Лескова\nВымышленный участник теста"
+    },
+    {
+      "id": "ed21649",
+      "rect": {
+        "bottom": 770.703125,
+        "height": 260.953125,
+        "right": 374,
+        "top": 509.75,
+        "width": 358,
+        "x": 16,
+        "y": 509.75
+      },
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "28px",
+        "height": "260.953px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "Стало проще увидеть, какие решения уже приняты, где ещё нужны вопросы и как перейти от общего впечатления к конкретным деталям.\nМарат Кенжебаев\nВымышленный участник теста"
+    },
+    {
+      "id": "64bfe5a",
+      "rect": {
+        "bottom": 1119.65625,
+        "height": 332.953125,
+        "right": 374,
+        "top": 786.703125,
+        "width": 358,
+        "x": 16,
+        "y": 786.703125
+      },
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "20px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "28px",
+        "height": "332.953px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "16px",
+        "textAlign": "start",
+        "width": "358px"
+      },
+      "text": "В демонстрационной версии хорошо читается связь между пояснением и следующим действием. При длинном тексте проверяется, что карточка продолжает расти по содержимому: без обрезания цитаты, искусственного растяжения строки и потери связи с вымышленным автором.\nСофия Мухина\nВымышленный участник теста"
+    }
+  ],
+  "horizontalOverflow": false,
+  "images": [
+    {
+      "alt": "Иллюстративный стоковый портрет мужчины в кепке и наушниках; изображение не подтверждает достоверность цитаты.",
+      "complete": true,
+      "naturalHeight": 1046,
+      "naturalWidth": 1100,
+      "objectFit": "cover",
+      "objectPosition": "50% 50%",
+      "rect": {
+        "bottom": 345.796875,
+        "height": 48,
+        "right": 219,
+        "top": 297.796875,
+        "width": 48,
+        "x": 171,
+        "y": 297.796875
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg"
+    },
+    {
+      "alt": "Иллюстративный стоковый образ женщины в наушниках; изображение не подтверждает достоверность цитаты.",
+      "complete": true,
+      "naturalHeight": 1000,
+      "naturalWidth": 1500,
+      "objectFit": "cover",
+      "objectPosition": "50% 50%",
+      "rect": {
+        "bottom": 574.75,
+        "height": 48,
+        "right": 219,
+        "top": 526.75,
+        "width": 48,
+        "x": 171,
+        "y": 526.75
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg"
+    },
+    {
+      "alt": "Иллюстративный стоковый портрет женщины в жёлтом свитере; изображение не подтверждает достоверность цитаты.",
+      "complete": true,
+      "naturalHeight": 400,
+      "naturalWidth": 238,
+      "objectFit": "cover",
+      "objectPosition": "50% 50%",
+      "rect": {
+        "bottom": 851.703125,
+        "height": 48,
+        "right": 219,
+        "top": 803.703125,
+        "width": 48,
+        "x": 171,
+        "y": 803.703125
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp"
+    }
+  ],
+  "post": 5214,
+  "rootId": "265cc25",
+  "rootText": "ДЕМО-ЦИТАТЫ\nПримеры коротких отзывов\nВсе персонажи и цитаты вымышлены и не относятся к реальным клиентам.\nМакет помогает быстро понять структуру обсуждения.\nИрина Лескова\nВымышленный участник теста\nСтало проще увидеть, какие решения уже приняты, где ещё нужны вопросы и как перейти от общего впечатления к конкретным деталям.\nМарат Кенжебаев\nВымышленный участник теста\nВ демонстрационной версии хорошо читается связь между пояснением и следующим действием. При длинном тексте проверяется, что карточка продолжает расти по содержимому: без обрезания цитаты, искусственного растяжения строки и потери связи с вымышленным автором.\nСофия Мухина\nВымышленный участник теста",
+  "source": "public after publish/reload; greeting collapsed through native intro button + toggle",
+  "viewport": {
+    "clientWidth": 390,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scale": 1
+  }
+}

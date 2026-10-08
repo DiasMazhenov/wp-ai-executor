@@ -1,0 +1,34 @@
+{
+  "overlay": [
+    {
+      "class": "wpdsac-chat__intro-bubble",
+      "h": 0,
+      "visible": false,
+      "w": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "class": "wpdsac-chat__toggle",
+      "h": 60,
+      "visible": true,
+      "w": 60,
+      "x": 306,
+      "y": 760
+    }
+  ],
+  "root": {
+    "flexDirection": "column",
+    "h": 1126.1640625,
+    "w": 390,
+    "x": 0,
+    "y": 46
+  },
+  "viewport": {
+    "clientWidth": 390,
+    "h": 844,
+    "scrollHeight": 1172,
+    "scrollWidth": 390,
+    "w": 390
+  }
+}

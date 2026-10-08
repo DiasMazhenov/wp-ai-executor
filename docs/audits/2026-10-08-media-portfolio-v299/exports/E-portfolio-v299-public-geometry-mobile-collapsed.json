@@ -1,0 +1,1082 @@
+{
+  "cards": [
+    {
+      "alt": "Архитектор изучает чертежи у современного здания; демонстрационное изображение концепции двора.",
+      "button": "Открыть концепцию",
+      "id": "a6a2d8f",
+      "image": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "link": "#concept-courtyard",
+      "rect": {
+        "bottom": 810.078125,
+        "height": 487.4921875,
+        "right": 359,
+        "top": 322.5859375,
+        "width": 343,
+        "x": 16,
+        "y": 322.5859375
+      },
+      "text": "Тихий двор\nКонцепция жилого пространства\nДемонстрационная концепция двора с местом для отдыха и спокойным маршрутом между входом и общей зоной.\nОткрыть концепцию"
+    },
+    {
+      "alt": "Современный архитектурный интерьер; демонстрационное изображение галереи.",
+      "button": "Открыть концепцию",
+      "id": "d3bdcac",
+      "image": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "link": "#concept-gallery",
+      "rect": {
+        "bottom": 1311.5703125,
+        "height": 487.4921875,
+        "right": 359,
+        "top": 824.078125,
+        "width": 343,
+        "x": 16,
+        "y": 824.078125
+      },
+      "text": "Светлая галерея\nИнтерьерная концепция\nВымышленная интерьерная концепция, в которой проход, естественный свет и места для остановки образуют ясную последовательность.\nОткрыть концепцию"
+    },
+    {
+      "alt": "Два специалиста обсуждают чертежи на строительной площадке; демонстрационное изображение мастерской.",
+      "button": "Открыть концепцию",
+      "id": "8cef578",
+      "image": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "link": "#concept-workshop",
+      "rect": {
+        "bottom": 1839.4609375,
+        "height": 513.890625,
+        "right": 359,
+        "top": 1325.5703125,
+        "width": 343,
+        "x": 16,
+        "y": 1325.5703125
+      },
+      "text": "Рабочая мастерская\nКонцепция общественного пространства\nДемонстрационная идея мастерской с гибкими рабочими местами и общей зоной для обсуждения макетов; это пример содержания, а не описание реализованного объекта.\nОткрыть концепцию"
+    }
+  ],
+  "chat": {
+    "greetingVisible": false,
+    "launcher": {
+      "bottom": 820,
+      "height": 60,
+      "right": 351,
+      "top": 760,
+      "width": 60,
+      "x": 291,
+      "y": 760
+    },
+    "overlapsButtons": [
+      false,
+      false,
+      false
+    ],
+    "overlapsImages": [
+      false,
+      false,
+      false
+    ],
+    "toggleVisible": true
+  },
+  "elements": [
+    {
+      "id": "dd3b654",
+      "rect": {
+        "bottom": 1879.4609375,
+        "height": 1833.4609375,
+        "right": 375,
+        "top": 46,
+        "width": 375,
+        "x": 0,
+        "y": 46
+      },
+      "semantic": [
+        {
+          "tag": "H6",
+          "text": "ДЕМО-ПОРТФОЛИО"
+        },
+        {
+          "tag": "H2",
+          "text": "Три концепции для проверки карточек"
+        },
+        {
+          "tag": "H3",
+          "text": "Тихий двор"
+        },
+        {
+          "tag": "H3",
+          "text": "Светлая галерея"
+        },
+        {
+          "tag": "H3",
+          "text": "Рабочая мастерская"
+        }
+      ],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(97, 206, 112, 0.2)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "normal",
+        "height": "1833.46px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px 16px",
+        "textAlign": "start",
+        "width": "375px"
+      },
+      "tag": "DIV",
+      "text": "ДЕМО-ПОРТФОЛИО\nТри концепции для проверки карточек\nИзображения и описания подобраны как демонстрационный материал; проекты и результаты вымышлены.\nТихий двор\nКонцепция жилого пространства\nДемонстрационная концепция двора",
+      "widget": null
+    },
+    {
+      "id": "c47d36f",
+      "rect": {
+        "bottom": 290.5859375,
+        "height": 204.5859375,
+        "right": 359,
+        "top": 86,
+        "width": 343,
+        "x": 16,
+        "y": 86
+      },
+      "semantic": [
+        {
+          "tag": "H6",
+          "text": "ДЕМО-ПОРТФОЛИО"
+        },
+        {
+          "tag": "H2",
+          "text": "Три концепции для проверки карточек"
+        }
+      ],
+      "styles": {
+        "alignItems": "flex-start",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "204.586px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "ДЕМО-ПОРТФОЛИО\nТри концепции для проверки карточек\nИзображения и описания подобраны как демонстрационный материал; проекты и результаты вымышлены.",
+      "widget": null
+    },
+    {
+      "id": "1f28777",
+      "rect": {
+        "bottom": 290.5859375,
+        "height": 204.5859375,
+        "right": 359,
+        "top": 86,
+        "width": 343,
+        "x": 16,
+        "y": 86
+      },
+      "semantic": [
+        {
+          "tag": "H6",
+          "text": "ДЕМО-ПОРТФОЛИО"
+        },
+        {
+          "tag": "H2",
+          "text": "Три концепции для проверки карточек"
+        }
+      ],
+      "styles": {
+        "alignItems": "flex-start",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "204.586px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "ДЕМО-ПОРТФОЛИО\nТри концепции для проверки карточек\nИзображения и описания подобраны как демонстрационный материал; проекты и результаты вымышлены.",
+      "widget": null
+    },
+    {
+      "id": "2f59001",
+      "rect": {
+        "bottom": 118.984375,
+        "height": 32.984375,
+        "right": 174.953125,
+        "top": 86,
+        "width": 158.953125,
+        "x": 16,
+        "y": 86
+      },
+      "semantic": [
+        {
+          "tag": "H6",
+          "text": "ДЕМО-ПОРТФОЛИО"
+        }
+      ],
+      "styles": {
+        "alignItems": "center",
+        "backgroundColor": "rgb(0, 0, 0)",
+        "borderRadius": "999px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "height": "32.9844px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "5.6px 12px",
+        "textAlign": "start",
+        "width": "158.953px"
+      },
+      "tag": "DIV",
+      "text": "ДЕМО-ПОРТФОЛИО",
+      "widget": null
+    },
+    {
+      "id": "2d39e59",
+      "rect": {
+        "bottom": 112.390625,
+        "height": 19.796875,
+        "right": 161.953125,
+        "top": 92.59375,
+        "width": 132.953125,
+        "x": 29,
+        "y": 92.59375
+      },
+      "semantic": [
+        {
+          "tag": "H6",
+          "text": "ДЕМО-ПОРТФОЛИО"
+        }
+      ],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "24px",
+        "height": "19.7969px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "132.953px"
+      },
+      "tag": "DIV",
+      "text": "ДЕМО-ПОРТФОЛИО",
+      "widget": "heading.default"
+    },
+    {
+      "id": "0abc748",
+      "rect": {
+        "bottom": 195.390625,
+        "height": 76.40625,
+        "right": 359,
+        "top": 118.984375,
+        "width": 343,
+        "x": 16,
+        "y": 118.984375
+      },
+      "semantic": [
+        {
+          "tag": "H2",
+          "text": "Три концепции для проверки карточек"
+        }
+      ],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "76.4062px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "Три концепции для проверки карточек",
+      "widget": "heading.default"
+    },
+    {
+      "id": "8d7c17e",
+      "rect": {
+        "bottom": 290.5859375,
+        "height": 95.1953125,
+        "right": 359,
+        "top": 195.390625,
+        "width": 343,
+        "x": 16,
+        "y": 195.390625
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "0px",
+        "height": "95.1953px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "Изображения и описания подобраны как демонстрационный материал; проекты и результаты вымышлены.",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "6b335fc",
+      "rect": {
+        "bottom": 1839.4609375,
+        "height": 1516.875,
+        "right": 359,
+        "top": 322.5859375,
+        "width": 343,
+        "x": 16,
+        "y": 322.5859375
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Тихий двор"
+        },
+        {
+          "tag": "H3",
+          "text": "Светлая галерея"
+        },
+        {
+          "tag": "H3",
+          "text": "Рабочая мастерская"
+        }
+      ],
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "14px",
+        "height": "1516.88px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "Тихий двор\nКонцепция жилого пространства\nДемонстрационная концепция двора с местом для отдыха и спокойным маршрутом между входом и общей зоной.\nОткрыть концепцию\nСветлая галерея\nИнтерьерная концепция\nВымышленная интерьер",
+      "widget": null
+    },
+    {
+      "id": "a6a2d8f",
+      "rect": {
+        "bottom": 810.078125,
+        "height": 487.4921875,
+        "right": 359,
+        "top": 322.5859375,
+        "width": 343,
+        "x": 16,
+        "y": 322.5859375
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Тихий двор"
+        }
+      ],
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "487.492px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "Тихий двор\nКонцепция жилого пространства\nДемонстрационная концепция двора с местом для отдыха и спокойным маршрутом между входом и общей зоной.\nОткрыть концепцию",
+      "widget": null
+    },
+    {
+      "id": "d3bdcac",
+      "rect": {
+        "bottom": 1311.5703125,
+        "height": 487.4921875,
+        "right": 359,
+        "top": 824.078125,
+        "width": 343,
+        "x": 16,
+        "y": 824.078125
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Светлая галерея"
+        }
+      ],
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "487.492px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "Светлая галерея\nИнтерьерная концепция\nВымышленная интерьерная концепция, в которой проход, естественный свет и места для остановки образуют ясную последовательность.\nОткрыть концепцию",
+      "widget": null
+    },
+    {
+      "id": "8cef578",
+      "rect": {
+        "bottom": 1839.4609375,
+        "height": 513.890625,
+        "right": 359,
+        "top": 1325.5703125,
+        "width": 343,
+        "x": 16,
+        "y": 1325.5703125
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Рабочая мастерская"
+        }
+      ],
+      "styles": {
+        "alignItems": "stretch",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "borderRadius": "4px",
+        "display": "flex",
+        "flexDirection": "column",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "513.891px",
+        "justifyContent": "flex-start",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "14px",
+        "textAlign": "start",
+        "width": "343px"
+      },
+      "tag": "DIV",
+      "text": "Рабочая мастерская\nКонцепция общественного пространства\nДемонстрационная идея мастерской с гибкими рабочими местами и общей зоной для обсуждения макетов; это пример содержания, а не описание реализованного объекта.\nОткры",
+      "widget": null
+    },
+    {
+      "id": "94b6243",
+      "rect": {
+        "bottom": 545.5859375,
+        "height": 208,
+        "right": 344,
+        "top": 337.5859375,
+        "width": 313,
+        "x": 31,
+        "y": 337.5859375
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "208px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "center",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "",
+      "widget": "image.default"
+    },
+    {
+      "id": "fe73630",
+      "rect": {
+        "bottom": 1047.078125,
+        "height": 208,
+        "right": 344,
+        "top": 839.078125,
+        "width": 313,
+        "x": 31,
+        "y": 839.078125
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "208px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "center",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "",
+      "widget": "image.default"
+    },
+    {
+      "id": "7676db7",
+      "rect": {
+        "bottom": 1548.5703125,
+        "height": 208,
+        "right": 344,
+        "top": 1340.5703125,
+        "width": 313,
+        "x": 31,
+        "y": 1340.5703125
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "208px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "center",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "",
+      "widget": "image.default"
+    },
+    {
+      "id": "87c1a80",
+      "rect": {
+        "bottom": 580.0859375,
+        "height": 22.5,
+        "right": 344,
+        "top": 557.5859375,
+        "width": 313,
+        "x": 31,
+        "y": 557.5859375
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Тихий двор"
+        }
+      ],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Тихий двор",
+      "widget": "heading.default"
+    },
+    {
+      "id": "838f695",
+      "rect": {
+        "bottom": 1081.578125,
+        "height": 22.5,
+        "right": 344,
+        "top": 1059.078125,
+        "width": 313,
+        "x": 31,
+        "y": 1059.078125
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Светлая галерея"
+        }
+      ],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Светлая галерея",
+      "widget": "heading.default"
+    },
+    {
+      "id": "f7c3f13",
+      "rect": {
+        "bottom": 1583.0703125,
+        "height": 22.5,
+        "right": 344,
+        "top": 1560.5703125,
+        "width": 313,
+        "x": 31,
+        "y": 1560.5703125
+      },
+      "semantic": [
+        {
+          "tag": "H3",
+          "text": "Рабочая мастерская"
+        }
+      ],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "22.5px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Рабочая мастерская",
+      "widget": "heading.default"
+    },
+    {
+      "id": "d8654e1",
+      "rect": {
+        "bottom": 736.078125,
+        "height": 105.59375,
+        "right": 344,
+        "top": 630.484375,
+        "width": 313,
+        "x": 31,
+        "y": 630.484375
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "105.594px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Демонстрационная концепция двора с местом для отдыха и спокойным маршрутом между входом и общей зоной.",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "2a8c821",
+      "rect": {
+        "bottom": 1237.5703125,
+        "height": 105.59375,
+        "right": 344,
+        "top": 1131.9765625,
+        "width": 313,
+        "x": 31,
+        "y": 1131.9765625
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "105.594px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Вымышленная интерьерная концепция, в которой проход, естественный свет и места для остановки образуют ясную последовательность.",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "a764dc7",
+      "rect": {
+        "bottom": 1765.4609375,
+        "height": 131.9921875,
+        "right": 344,
+        "top": 1633.46875,
+        "width": 313,
+        "x": 31,
+        "y": 1633.46875
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "12px",
+        "height": "131.992px",
+        "justifyContent": "normal",
+        "lineHeight": "26.4px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Демонстрационная идея мастерской с гибкими рабочими местами и общей зоной для обсуждения макетов; это пример содержания, а не описание реализованного объекта.",
+      "widget": "text-editor.default"
+    },
+    {
+      "id": "d13e2b1",
+      "rect": {
+        "bottom": 795.078125,
+        "height": 39,
+        "right": 344,
+        "top": 756.078125,
+        "width": 313,
+        "x": 31,
+        "y": 756.078125
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "39px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "left",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Открыть концепцию",
+      "widget": "button.default"
+    },
+    {
+      "id": "dbb2371",
+      "rect": {
+        "bottom": 1296.5703125,
+        "height": 39,
+        "right": 344,
+        "top": 1257.5703125,
+        "width": 313,
+        "x": 31,
+        "y": 1257.5703125
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "39px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "left",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Открыть концепцию",
+      "widget": "button.default"
+    },
+    {
+      "id": "1561ac1",
+      "rect": {
+        "bottom": 1824.4609375,
+        "height": 39,
+        "right": 344,
+        "top": 1785.4609375,
+        "width": 313,
+        "x": 31,
+        "y": 1785.4609375
+      },
+      "semantic": [],
+      "styles": {
+        "alignItems": "normal",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderRadius": "0px",
+        "display": "block",
+        "flexDirection": "row",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "gap": "20px",
+        "height": "39px",
+        "justifyContent": "normal",
+        "lineHeight": "24px",
+        "margin": "0px",
+        "maxHeight": "none",
+        "minHeight": "auto",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "left",
+        "width": "313px"
+      },
+      "tag": "DIV",
+      "text": "Открыть концепцию",
+      "widget": "button.default"
+    }
+  ],
+  "horizontalOverflow": false,
+  "images": [
+    {
+      "alt": "Архитектор изучает чертежи у современного здания; демонстрационное изображение концепции двора.",
+      "complete": true,
+      "naturalHeight": 675,
+      "naturalWidth": 1200,
+      "objectFit": "cover",
+      "objectPosition": "50% 50%",
+      "rect": {
+        "bottom": 545.5859375,
+        "height": 208,
+        "right": 344,
+        "top": 337.5859375,
+        "width": 313,
+        "x": 31,
+        "y": 337.5859375
+      },
+      "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+    },
+    {
+      "alt": "Современный архитектурный интерьер; демонстрационное изображение галереи.",
+      "complete": true,
+      "naturalHeight": 675,
+      "naturalWidth": 1200,
+      "objectFit": "cover",
+      "objectPosition": "50% 50%",
+      "rect": {
+        "bottom": 1047.078125,
+        "height": 208,
+        "right": 344,
+        "top": 839.078125,
+        "width": 313,
+        "x": 31,
+        "y": 839.078125
+      },
+      "src": "https://images.unsplash.com/photo-1766230976347-c5badd3f76c9?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+    },
+    {
+      "alt": "Два специалиста обсуждают чертежи на строительной площадке; демонстрационное изображение мастерской.",
+      "complete": true,
+      "naturalHeight": 675,
+      "naturalWidth": 1200,
+      "objectFit": "cover",
+      "objectPosition": "50% 50%",
+      "rect": {
+        "bottom": 1548.5703125,
+        "height": 208,
+        "right": 344,
+        "top": 1340.5703125,
+        "width": 313,
+        "x": 31,
+        "y": 1340.5703125
+      },
+      "src": "https://images.unsplash.com/photo-1778074762022-c33cc42f79ae?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200"
+    }
+  ],
+  "post": 5214,
+  "rootId": "dd3b654",
+  "rootRect": {
+    "bottom": 1879.4609375,
+    "height": 1833.4609375,
+    "right": 375,
+    "top": 46,
+    "width": 375,
+    "x": 0,
+    "y": 46
+  },
+  "rootText": "ДЕМО-ПОРТФОЛИО\nТри концепции для проверки карточек\nИзображения и описания подобраны как демонстрационный материал; проекты и результаты вымышлены.\nТихий двор\nКонцепция жилого пространства\nДемонстрационная концепция двора с местом для отдыха и спокойным маршрутом между входом и общей зоной.\nОткрыть концепцию\nСветлая галерея\nИнтерьерная концепция\nВымышленная интерьерная концепция, в которой проход, естественный свет и места для остановки образуют ясную последовательность.\nОткрыть концепцию\nРабочая мастерская\nКонцепция общественного пространства\nДемонстрационная идея мастерской с гибкими рабочими местами и общей зоной для обсуждения макетов; это пример содержания, а не описание реализованного объекта.\nОткрыть концепцию",
+  "scrollY": 0,
+  "source": "public after Publish/reload; greeting collapsed with native controls",
+  "viewport": {
+    "clientWidth": 375,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scale": 1
+  }
+}

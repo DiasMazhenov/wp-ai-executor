@@ -1,0 +1,43 @@
+Опишите задачу по текущей странице или выбранному элементу.
+Отменить создание блока
+Обновить серверный descriptor
+Проверить owned модель перед Save
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Свежий read-only descriptor: operation wpae-c5edcec4f2ebcb88, revision 6, status available. write_count=0. composition evidence: {"schema":"wpae-composition-evidence-v1","status":"complete","request":{"mode":"explicit_record","record_id":"team.grid","record_version":1,"visual_profile":"soft_cards_light","visual_profile_source":"ui_selector","brief_composition":null,"brief_media_side":null},"accepted":{"record_id":"team.grid","record_version":1,"record_hash":"cd48749f8ef014ab115f0c8341ce7ef82e88af013ea34c2477f703556e54a535","source":"explicit_record","visual_profile":"soft_cards_light","selection_reasons":["honored_explicit_record"],"selection_policy":"wpae-composition-selection-v2","catalog_id":"wpae-compositions-v1","catalog_identity":"078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18"},"hashes":{"brief_sha256":"4ac67f572e46a4a3b37209ac19b69befbbe1db9aaa00758c71e0d8ce83b9743e","plan_sha256":"37344b0be23cf0f94f0644b7e1993b075a76aed2867c59844bd81fe179944a7e"},"surface":{"profile":"soft_cards_light","section_surface":{"token":"color.section_bg","source":"documented_default","palette_role":"accent","opacity":0.2,"transparency":0.8,"accent_source":"elementor_system_color_stock_default:accent","accent_confirmed":false},"resolved_value":"#61ce7033","value_source":"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent","accent_reference":{"value":"#61ce70","source":"elementor_system_color_stock_default:accent","confirmed":false},"opaque_underlay":"#ffffff"},"generation":{"route":"local_deterministic","provider_calls":0,"provider_call_count_source":"design_pipeline_preflight","transaction_write_count":1,"transaction_write_count_source":"successful_transaction_and_readback"},"operation":{"post_id":5214,"operation_id":"wpae-c5edcec4f2ebcb88","operation_identity":"80938e72-01e9-4d89-b7f4-752180c917e2","root_ids":["71090d6"],"revision":6,"accepted_contract_id":"contract-ef68cf0c8b4e3a87b3092e5b","accepted_contract_sha256":"ef68cf0c8b4e3a87b3092e5bea0f5bc7bd217eaf6f3a5abd286ebf5f5510147e","saved_document_sha256":"e8e9aa8cfd6c87eee653f8cbc37711fe3a61947bf543d255fd06fbcced825dcf"},"native":{"saved_native_fingerprint":"0e5053c0a51264124a9337d0ef3059249ced8cc4975b6e8018670c2102957257","saved_root_ids":["71090d6"]}}

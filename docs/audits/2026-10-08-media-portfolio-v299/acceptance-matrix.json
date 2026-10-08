@@ -1,0 +1,422 @@
+{
+  "schema": "wpae-media-portfolio-live-matrix-v2",
+  "post_id": 5214,
+  "source_version": "v02.11.299",
+  "source_commit": "26d4135df15987e9d13ef586ba7306bfe3ac0354",
+  "updated_at": "2026-10-09",
+  "baseline_before_live_retest": [],
+  "required_new_accepted_generations": 5,
+  "attempted_distinct_families": 5,
+  "counted_acceptances": [
+    "A",
+    "C",
+    "D",
+    "E"
+  ],
+  "remaining_full_acceptances": 1,
+  "status": "PARTIAL: five distinct live families were generated; four satisfy all acceptance axes. About has exact save/content/native/responsive evidence but remains uncounted because the external fixed launcher covers authored mobile text.",
+  "scenarios": [
+    {
+      "id": "A",
+      "fixture": "fixtures/A-hero-split.txt",
+      "fixture_sha256": "f705717db859ce9de1aa2ca9a4a90b1e38a9e14025b8e3bc749e9ea7f3813212",
+      "family": "hero",
+      "record": "hero.split_50_50.right",
+      "profile": "editorial_light",
+      "status": "ACCEPTED_WITH_NOTE",
+      "counted_as_fully_accepted": true,
+      "operation_id": "wpae-de28e618a3eec665",
+      "identity": "1bc724ea-aa00-4f36-8f3a-b6860861fec3",
+      "post_id": 5214,
+      "root_id": "a5834dd",
+      "revision": {
+        "generation_trace": 4,
+        "post_publish": 6,
+        "undo": "already_undone"
+      },
+      "brief_sha256": "15e8d21d34605a026073dde89e4d0b4416aff5071c3386697d367e4c1b459f15",
+      "plan_sha256": "bc2ee1d32239f133acb0eeec7e5d8ec3a71bfdb8dbf9a4f25958478e1ea0688c",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "transaction_writes": 1,
+      "native_readback": "exports/A-v299-native-after-reload.json",
+      "descriptor": "exports/A-v299-descriptor-after-publish.txt",
+      "public_desktop_png": "screenshots/A-v299-public-desktop-full-chat-collapsed.png",
+      "public_mobile_png": "screenshots/A-v299-public-mobile-full-chat-collapsed.png",
+      "measurement_files": [
+        "measurements/A-v299-public-desktop-chat-collapsed.json",
+        "measurements/A-v299-public-mobile-chat-collapsed.json"
+      ],
+      "statuses": {
+        "lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "responsive_geometry": "PASS",
+        "visual_composition": "PASS; profile surface #61ce7033 comes from unconfirmed stock Accent decorative default; site launcher sits below authored Hero text/actions.",
+        "document_restoration": "PASS; editor/public baseline []"
+      },
+      "notes": "Current v299 retest because common focal mapper changed to supported Elementor 3x3 controls after historical v297 acceptance; exact fixture and selected right-image record preserved. Historical v297 run is not counted for this gate."
+    },
+    {
+      "id": "B",
+      "fixture": "fixtures/B-about-split.txt",
+      "fixture_sha256": "399d25ab10b36ad2c8468eab6b11d81e02ee55dc7ccaf1d683801c11edd6a06a",
+      "family": "about",
+      "record": "about.split_40_60.left",
+      "profile": "editorial_light",
+      "status": "PARTIAL_SITE_OVERLAP",
+      "counted_as_fully_accepted": false,
+      "operation_id": "wpae-050a9340c56587cd",
+      "identity": "c2734d13-57dc-49cc-ab97-08c852740e7c",
+      "post_id": 5214,
+      "root_id": "f22e5c9",
+      "revision": {
+        "generation_trace": 4,
+        "post_publish": 6,
+        "undo": "already_undone"
+      },
+      "brief_sha256": "3b1c69581d952c1113b692fa806f61e42ae1a3736522b08dd39f0f375e6a251e",
+      "plan_sha256": "47943f2d7813e0b3ac44cc006cca94bd0507725e2561f198c687444916f81e47",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "transaction_writes": 1,
+      "native_readback": "exports/B-v299-native-after-reload.json",
+      "descriptor": "exports/B-v299-descriptor-after-publish.txt",
+      "public_desktop_png": "screenshots/B-v299-public-desktop-full-chat-collapsed.png",
+      "public_mobile_png": "screenshots/B-v299-public-mobile-full-chat-collapsed.png",
+      "measurement_files": [
+        "measurements/B-v299-public-desktop.json",
+        "measurements/B-v299-public-mobile-collapsed.json",
+        "measurements/B-v299-public-mobile-greeting.json"
+      ],
+      "statuses": {
+        "lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "responsive_geometry": "PASS",
+        "visual_composition": "PARTIAL: site-owned fixed launcher overlaps several lines of the long About body in the actual 390x844 viewport after greeting collapse. Full copy remains in native/public DOM and full-page screenshot, but a covered-text mobile frame is not full visual acceptance. No site settings or CSS were changed.",
+        "document_restoration": "PASS; editor/public baseline []"
+      },
+      "notes": "Current v299 result is technically/content/media complete but not counted because the visible fixed launcher covers authored copy. No repeat: task permits a replay only after a confirmed source defect and fix."
+    },
+    {
+      "id": "C",
+      "fixture": "fixtures/C-team-grid.txt",
+      "fixture_sha256": "994f1f1fef1372eece1300cd14849031c02f3af1248b34a24a4b0fba81c9a2f1",
+      "family": "team",
+      "record": "team.grid",
+      "profile": "soft_cards_light",
+      "status": "ACCEPTED_WITH_NOTE",
+      "counted_as_fully_accepted": true,
+      "operation_id": "wpae-c5edcec4f2ebcb88",
+      "identity": "80938e72-01e9-4d89-b7f4-752180c917e2",
+      "post_id": 5214,
+      "root_id": "71090d6",
+      "revision": {
+        "generation_trace": 4,
+        "post_publish": 6,
+        "undo": "already_undone"
+      },
+      "brief_sha256": "4ac67f572e46a4a3b37209ac19b69befbbe1db9aaa00758c71e0d8ce83b9743e",
+      "plan_sha256": "37344b0be23cf0f94f0644b7e1993b075a76aed2867c59844bd81fe179944a7e",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "transaction_writes": 1,
+      "native_readback": "exports/C-v299-replay-native-after-reload.json",
+      "descriptor": "exports/C-v299-replay-descriptor-after-publish.txt",
+      "public_desktop_png": "screenshots/C-v299-replay-public-desktop-full-chat-collapsed.png",
+      "public_mobile_png": "screenshots/C-v299-replay-public-mobile-full-chat-collapsed.png",
+      "measurement_files": [
+        "measurements/C-v299-replay-public-desktop.json",
+        "measurements/C-v299-replay-public-mobile.json",
+        "measurements/C-v299-replay-chat-collapsed-desktop.json"
+      ],
+      "statuses": {
+        "lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "responsive_geometry": "PASS",
+        "visual_composition": "PASS WITH NOTES: 3 flex cards, fixed responsive portrait frames, exact ownership/alts, natural mobile stack. Stock portraits are visibly gender-mismatched to fictional names because the fixture binds those exact illustrative images; launcher overlaps a portrait edge but not bios.",
+        "document_restoration": "PASS; editor/public baseline []"
+      },
+      "notes": "First v299 after the v298 media-frame fix used root 29bfafa, operation wpae-36559754502cc8f6, actual identity 69e262c2-c93f-494d-9e99-1e5c938baf34; it was guarded-Undone. A later replay recovered the missing collapsed mobile screenshot after the old root was gone. This evidence-only replay had no code change; it is documented as a deviation from the stricter source-fix-only repeat rule."
+    },
+    {
+      "id": "D",
+      "fixture": "fixtures/D-testimonials-grid.txt",
+      "fixture_sha256": "a64825f23e316ac775bacd1815e4cfccae3097120002b8ff25317d6a3569bbe9",
+      "family": "testimonials",
+      "record": "testimonials.grid",
+      "profile": "soft_cards_light",
+      "status": "ACCEPTED_WITH_NOTE",
+      "counted_as_fully_accepted": true,
+      "operation_id": "wpae-82aeaf35f0c57206",
+      "identity": "63ede380-7e5e-4867-aab9-2439c50a1791",
+      "post_id": 5214,
+      "root_id": "265cc25",
+      "revision": {
+        "generation_trace": 4,
+        "post_publish": 6,
+        "undo": "already_undone"
+      },
+      "brief_sha256": "984ae40883dd594f75d6d03fb64701bd800cfc172417add85fb481c39c8e5907",
+      "plan_sha256": "6e2fc2fc636aa8bc5cec515f465892d7a37da0e917f27b4da236a19452e97ebb",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "transaction_writes": 1,
+      "native_readback": "exports/D-testimonials-v299-native-after-reload.json",
+      "descriptor": "exports/D-testimonials-v299-descriptor-after-publish.txt",
+      "public_desktop_png": "screenshots/D-v299-public-desktop-1280-full.png",
+      "public_mobile_png": "screenshots/D-v299-public-mobile-390-chat-collapsed-full.png",
+      "measurement_files": [
+        "exports/D-testimonials-v299-public-geometry-desktop.json",
+        "exports/D-testimonials-v299-public-geometry-mobile-collapsed.json"
+      ],
+      "statuses": {
+        "lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "responsive_geometry": "PASS",
+        "visual_composition": "PASS WITH NOTES: avatar frames remain small at 56x56 desktop/48x48 mobile; content and ownership exact; no buttons/ratings. Equal desktop card heights leave substantial blank area under shorter quotes. Site launcher reaches the edge of the third mobile card but does not cover quote/author text.",
+        "document_restoration": "PASS; editor/public baseline []"
+      },
+      "notes": ""
+    },
+    {
+      "id": "E",
+      "fixture": "fixtures/E-portfolio-project-cards.txt",
+      "fixture_sha256": "22108bcc33f0574c1f282c7072f693d49dd029b5841f339f7fa9f7aa7f58a05a",
+      "family": "portfolio",
+      "record": "portfolio.project_cards",
+      "profile": "editorial_light",
+      "status": "ACCEPTED_WITH_NOTE",
+      "counted_as_fully_accepted": true,
+      "operation_id": "wpae-661f3838497cce63",
+      "identity": "87a940c5-8619-44ca-b4a8-7b86c80cc1a8",
+      "post_id": 5214,
+      "root_id": "dd3b654",
+      "revision": {
+        "generation_trace": 4,
+        "post_publish": 6,
+        "undo": "already_undone"
+      },
+      "brief_sha256": "3422163800bdba7ba3d553cead5de1c059a89887604dcd131a7c0816b3a3d930",
+      "plan_sha256": "20269f5f723452ad1e7c8a37b52e7eecf1edfd735600b1f6ae042d44d3daa6c4",
+      "route": "local_deterministic",
+      "provider_calls": 0,
+      "transaction_writes": 1,
+      "native_readback": "exports/E-portfolio-v299-native-after-reload.json",
+      "descriptor": "exports/E-portfolio-v299-descriptor-after-publish.txt",
+      "public_desktop_png": "screenshots/E-portfolio-v299-public-desktop-1280-full.png",
+      "public_mobile_png": "screenshots/E-portfolio-v299-public-mobile-390-chat-collapsed-full.png",
+      "measurement_files": [
+        "exports/E-portfolio-v299-public-geometry-desktop.json",
+        "exports/E-portfolio-v299-public-geometry-mobile-collapsed.json"
+      ],
+      "statuses": {
+        "lifecycle": "PASS",
+        "content_fidelity": "PASS",
+        "asset_ownership": "PASS",
+        "native_readback": "PASS",
+        "responsive_geometry": "PASS",
+        "visual_composition": "PASS WITH NOTES: 3 distinct project images, exact fields and links, lower CTA axis on desktop, natural single-column mobile. Fixed site launcher overlaps the corner of the second image, not text/buttons. Accent surface is documented stock default, not a confirmed semantic brand color.",
+        "document_restoration": "PASS; editor/public baseline []"
+      },
+      "notes": ""
+    }
+  ],
+  "generation_counts": {
+    "current_v299_stage": {
+      "A_primary": 1,
+      "B_primary": 1,
+      "C_primary_after_v299_source_fix": 1,
+      "C_evidence_replay_without_source_change": 1,
+      "D_primary": 1,
+      "E_primary": 1,
+      "writes": 6
+    },
+    "historical_context_not_counted": {
+      "A_v297": 1,
+      "B_v297": 1,
+      "C_v298_first_failure": 1,
+      "writes": 3
+    },
+    "total_recorded_writes_all_checkpoints": 9,
+    "source_fix_retests_current_stage": {
+      "A_shared_focal_mapper": 1,
+      "B_shared_focal_mapper": 1
+    },
+    "repeat_deviation": "One C v299 replay solely recovered a collapsed mobile screenshot after the first v299 root had already been undone. This did not follow the task’s narrower source-fix-only repeat condition; both results and the reason are retained."
+  },
+  "final_baseline": {
+    "editor_root_ids": [],
+    "saved_native_root_ids": [],
+    "public_root_ids": [],
+    "status": "PASS; latest B operation guarded Undo returned already_undone; editor bootstrap and public DOM show no generated roots. Each A/C/D/E operation also restored [] before the next test."
+  },
+  "release": {
+    "runtime_source": "v02.11.299",
+    "runtime_commit": "26d4135df15987e9d13ef586ba7306bfe3ac0354",
+    "installed_plugin_php_version": "v02.11.299 (previous independent Plugins verification)",
+    "reloaded_editor_inline_version": "v02.11.299 (previous independent check; editor reload/readback performed per scenario)",
+    "push_command": "reported success for runtime commit",
+    "remote_head": "NOT INDEPENDENTLY VERIFIED: git ls-remote DNS failure resolving github.com; documentation push check pending."
+  },
+  "local_checks_for_unchanged_runtime": {
+    "status": "PASS per v299 release record; not rerun because no runtime source changed in this continuation. Design Pipeline 971; Flex Runtime 1494; patch guard PASS; Node 20/20; PHP lint changed files PASS; catalog 158/156/156; package probe 253/253 hashes; git diff --check PASS."
+  },
+  "previous_checkpoint_before_continuation": {
+    "schema": "wpae-media-portfolio-live-matrix-v1",
+    "post_id": 5214,
+    "source_version": "v02.11.299",
+    "source_commit": "26d4135",
+    "baseline_before_live_retest": [],
+    "required_new_accepted_generations": 5,
+    "counted_acceptances": [
+      "A",
+      "B"
+    ],
+    "remaining": 3,
+    "scenarios": [
+      {
+        "id": "A",
+        "fixture": "fixtures/A-hero-split.txt",
+        "family": "hero",
+        "record": "hero.split_60_40.right",
+        "profile": "editorial_light",
+        "status": "ACCEPTED_HISTORICAL",
+        "operation_id": "wpae-4f52b5e0a122cc12",
+        "identity": "6b736e89-e432-4949-9bfd-420e983e3997",
+        "root_id": "9de5280",
+        "revision": {
+          "publish": 6,
+          "undo": 7
+        },
+        "brief_sha256": "15e8d21d34605a026073dde89e4d0b4416aff5071c3386697d367e4c1b459f15",
+        "plan_sha256": "bc2ee1d32239f133acb0eeec7e5d8ec3a71bfdb8dbf9a4f25958478e1ea0688c",
+        "native_readback": "../2026-10-08-media-portfolio-v297/exports/A-native-after-reload.json",
+        "public_desktop_png": "../2026-10-08-media-portfolio-v297/screenshots/A-public-desktop-viewport.png",
+        "public_mobile_png": "../2026-10-08-media-portfolio-v297/screenshots/A-public-mobile-390-chat-minimized.png",
+        "guarded_undo": "PASS; descriptor available revision 6, already_undone revision 7; baseline []",
+        "notes": "Previously accepted v297 Hero evidence; exact operation metadata recovered from retained exports."
+      },
+      {
+        "id": "B",
+        "fixture": "fixtures/B-about-split.txt",
+        "family": "about",
+        "record": "about.split_40_60.left",
+        "profile": "editorial_light",
+        "status": "ACCEPTED_HISTORICAL",
+        "operation_id": "wpae-b1aa61e396ea7f7e",
+        "identity": "ebabaae1-ea3c-4b84-8ea0-9f4ce786cd18",
+        "root_id": "761d4c1",
+        "revision": {
+          "publish": 6,
+          "undo": 7
+        },
+        "brief_sha256": "3b1c69581d952c1113b692fa806f61e42ae1a3736522b08dd39f0f375e6a251e",
+        "plan_sha256": "47943f2d7813e0b3ac44cc006cca94bd0507725e2561f198c687444916f81e47",
+        "native_readback": "../2026-10-08-media-portfolio-v297/exports/B-native-after-reload.json",
+        "public_desktop_png": "../2026-10-08-media-portfolio-v297/screenshots/B-public-desktop-viewport.png",
+        "public_mobile_png": "../2026-10-08-media-portfolio-v297/screenshots/B-public-mobile-390-greeting-collapsed.png",
+        "guarded_undo": "PASS; descriptor available revision 6, already_undone revision 7; baseline []",
+        "notes": "Previously accepted v297 About evidence; exact operation metadata recovered from retained exports."
+      },
+      {
+        "id": "C",
+        "fixture": "fixtures/C-team-grid.txt",
+        "family": "team",
+        "record": "team.grid",
+        "profile": "soft_cards_light",
+        "status": "PARTIAL_NOT_COUNTED_UNDO_PENDING",
+        "operation_id": "wpae-36559754502cc8f6",
+        "identity": "69e262c2-c93f-494d-9e99-1e5c938baf34",
+        "root_id": "29bfafa",
+        "revision": {
+          "generation_trace": 4,
+          "post_publish": "NOT_READ"
+        },
+        "brief_sha256": "4ac67f572e46a4a3b37209ac19b69befbbe1db9aaa00758c71e0d8ce83b9743e",
+        "plan_sha256": "37344b0be23cf0f94f0644b7e1993b075a76aed2867c59844bd81fe179944a7e",
+        "native_readback": "exports/C-v299-native-after-reload.json",
+        "public_desktop_png": "screenshots/C-v299-public-desktop-full.png",
+        "public_mobile_png": "screenshots/C-v299-public-mobile-full.png",
+        "guarded_undo": "NOT RUN: Browser Use runtime has no listed browser; must not bypass guard or delete root manually.",
+        "notes": "Same-fixture source-fix replay after v298 missing explicit portrait frame height. Publish/reload and public/mobile DOM confirmed. Greeting obscures authored text in captures; no post-collapse screenshot, refreshed post-Publish descriptor, or Undo yet. Current root set [29bfafa].",
+        "correction": "Corrected from earlier checkpoint transcription using C-v299-first-diagnostics.json."
+      },
+      {
+        "id": "D",
+        "fixture": "fixtures/D-testimonials-grid.txt",
+        "family": "testimonials",
+        "record": "testimonials.grid",
+        "profile": null,
+        "status": "BLOCKED_PREWRITE",
+        "operation_id": null,
+        "identity": null,
+        "root_id": null,
+        "revision": null,
+        "brief_sha256": null,
+        "plan_sha256": null,
+        "native_readback": null,
+        "public_desktop_png": null,
+        "public_mobile_png": null,
+        "guarded_undo": null,
+        "notes": "NOT RUN: C operation is live and browser baseline cannot yet be restored."
+      },
+      {
+        "id": "E",
+        "fixture": "fixtures/E-portfolio-project-cards.txt",
+        "family": "portfolio",
+        "record": "portfolio.project_cards",
+        "profile": null,
+        "status": "BLOCKED_PREWRITE",
+        "operation_id": null,
+        "identity": null,
+        "root_id": null,
+        "revision": null,
+        "brief_sha256": null,
+        "plan_sha256": null,
+        "native_readback": null,
+        "public_desktop_png": null,
+        "public_mobile_png": null,
+        "guarded_undo": null,
+        "notes": "NOT RUN: C operation is live and browser baseline cannot yet be restored."
+      }
+    ],
+    "generation_counts": {
+      "A": 1,
+      "B": 1,
+      "C_v298_partial": 1,
+      "C_v299_after_source_fix": 1,
+      "D": 0,
+      "E": 0,
+      "total_writes": 4,
+      "same_fixture_source_fix_replays": 1
+    },
+    "current_baseline": {
+      "editor_root_ids": [
+        "29bfafa"
+      ],
+      "public_root_ids": [
+        "29bfafa"
+      ],
+      "expected_pretest_baseline": [],
+      "status": "C-v299 was published and read back. Operation-scoped Undo has not run because Browser Use/CUA currently expose no browser. Do not proceed with D/E until exact guarded Undo restores []."
+    },
+    "live_statuses": {
+      "lifecycle": "A/B PASS; C publish/readback succeeded but refreshed descriptor and guarded Undo pending; D/E NOT RUN.",
+      "content_fidelity": "A/B PASS. C Team authored text, image URL/alt ownership and no-CTA constraint match fixture in editor bootstrap and public DOM.",
+      "native_readback": "A/B PASS. C independent Elementor initial_document after reload saved and root/content checked.",
+      "responsive_geometry": "A/B PASS per v297 evidence. C public desktop 1280x900 (client 1265), mobile 390x844 (client 375), no horizontal overflow; mobile card natural heights measured.",
+      "visual_composition": "A/B accepted with documented site overlays. C PARTIAL: greeting covers desktop long bio and mobile photo/content; post-collapse evidence unavailable.",
+      "document_restoration": "A/B PASS; C NOT RUN, root 29bfafa remains. D/E not started.",
+      "browser_control": "BLOCKED: bundled Browser Use setup listed []; CUA getState browsers []; getBrowser by public URL -> No browser is available; getTab by URL -> getTab({ url }) requires an explicit browser."
+    },
+    "remote_head_verification": "NOT CONFIRMED: git push reported success for 26d4135; independent git ls-remote failed DNS resolution for github.com."
+  }
+}

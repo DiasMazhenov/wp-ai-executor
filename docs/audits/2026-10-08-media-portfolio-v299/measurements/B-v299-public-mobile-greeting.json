@@ -1,0 +1,140 @@
+{
+  "children": [
+    {
+      "align": "normal",
+      "cls": "e-con-inner",
+      "display": "flex",
+      "flexDirection": "column-reverse",
+      "font": "16px",
+      "gap": "14px",
+      "h": 1126.1640625,
+      "justify": "normal",
+      "line": "24px",
+      "overflow": "visible",
+      "padding": "40px 0px",
+      "tag": "DIV",
+      "text": "О БЮРО\nПроектирование начинается с внимательного разговора\nМы — небольшое архите",
+      "textAlign": "start",
+      "w": 358,
+      "x": 16,
+      "y": 46
+    }
+  ],
+  "headings": [
+    {
+      "align": "normal",
+      "cls": "elementor-heading-title elementor-size-default",
+      "display": "block",
+      "flexDirection": "row",
+      "font": "28px",
+      "gap": "normal",
+      "h": 128.8125,
+      "justify": "normal",
+      "line": "32.2px",
+      "overflow": "visible",
+      "padding": "0px",
+      "tag": "H2",
+      "text": "Проектирование начинается с внимательного разговора",
+      "textAlign": "start",
+      "w": 358,
+      "x": 16,
+      "y": 130.984375
+    }
+  ],
+  "images": [
+    {
+      "align": "normal",
+      "alt": "Архитектор изучает чертежи у современного здания.",
+      "cls": "",
+      "display": "inline-block",
+      "fit": "cover",
+      "flexDirection": "row",
+      "font": "16px",
+      "gap": "normal",
+      "h": 288,
+      "justify": "normal",
+      "line": "24px",
+      "loaded": true,
+      "natural": [
+        1200,
+        675
+      ],
+      "overflow": "clip",
+      "padding": "0px",
+      "position": "50% 50%",
+      "src": "https://images.unsplash.com/photo-1772442198689-af331f8f9617?auto=format&fit=crop&fm=jpg&h=675&ixlib=rb-4.1.0&q=80&w=1200",
+      "tag": "IMG",
+      "text": "",
+      "textAlign": "center",
+      "w": 358,
+      "x": 16,
+      "y": 844.1640625
+    }
+  ],
+  "overlay": [
+    {
+      "align": "normal",
+      "cls": "wpdsac-chat__intro-bubble",
+      "display": "block",
+      "flexDirection": "row",
+      "font": "16px",
+      "gap": "normal",
+      "h": 48.3984375,
+      "justify": "normal",
+      "line": "22.4px",
+      "overflow": "hidden",
+      "padding": "12px 16px",
+      "tag": "BUTTON",
+      "text": "Здравствуйте!",
+      "textAlign": "left",
+      "w": 320,
+      "x": 46,
+      "y": 699.6015625
+    },
+    {
+      "align": "center",
+      "cls": "wpdsac-chat__toggle",
+      "display": "flex",
+      "flexDirection": "row",
+      "font": "16px",
+      "gap": "20px",
+      "h": 60,
+      "justify": "center",
+      "line": "24px",
+      "overflow": "visible",
+      "padding": "0px",
+      "tag": "DIV",
+      "text": "AI-Dana",
+      "textAlign": "start",
+      "w": 60,
+      "x": 306,
+      "y": 760
+    }
+  ],
+  "root": {
+    "align": "normal",
+    "cls": "wpae-ds wpae-system-ds-18cdb263 wpae-block wpae-generated-root wpae-generated-ab",
+    "display": "flex",
+    "flexDirection": "column",
+    "font": "16px",
+    "gap": "normal",
+    "h": 1126.1640625,
+    "justify": "normal",
+    "line": "24px",
+    "overflow": "visible",
+    "padding": "0px 16px",
+    "tag": "DIV",
+    "text": "О БЮРО\nПроектирование начинается с внимательного разговора\nМы — небольшое архите",
+    "textAlign": "start",
+    "w": 390,
+    "x": 0,
+    "y": 46
+  },
+  "viewport": {
+    "clientWidth": 390,
+    "h": 844,
+    "scrollHeight": 1172,
+    "scrollWidth": 390,
+    "w": 390
+  }
+}

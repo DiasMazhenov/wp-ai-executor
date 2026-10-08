@@ -1,0 +1,682 @@
+{
+  "cards": [
+    {
+      "chain": [
+        {
+          "css": {
+            "alignItems": "normal",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "12px",
+            "height": "426.453px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start",
+            "width": "303.328px"
+          },
+          "id": "6de969f",
+          "rect": {
+            "bottom": 771.8359375,
+            "height": 426.453125,
+            "left": 99,
+            "right": 402.328125,
+            "top": 345.3828125,
+            "width": 303.328125,
+            "x": 99,
+            "y": 345.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "28px",
+            "height": "663.664px",
+            "justifyContent": "flex-start",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "28px",
+            "textAlign": "start",
+            "width": "361.328px"
+          },
+          "id": "47c3518",
+          "rect": {
+            "bottom": 980.046875,
+            "height": 663.6640625,
+            "left": 70,
+            "right": 431.328125,
+            "top": 316.3828125,
+            "width": 361.328125,
+            "x": 70,
+            "y": 316.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "display": "flex",
+            "flexDirection": "row",
+            "gap": "28px",
+            "height": "663.664px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start",
+            "width": "1140px"
+          },
+          "id": "7772abd",
+          "rect": {
+            "bottom": 980.046875,
+            "height": 663.6640625,
+            "left": 70,
+            "right": 1210,
+            "top": 316.3828125,
+            "width": 1140,
+            "x": 70,
+            "y": 316.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "normal",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "normal",
+            "height": "1012.05px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "0px",
+            "overflow": "visible",
+            "padding": "0px 32px",
+            "textAlign": "start",
+            "width": "1280px"
+          },
+          "id": "71090d6",
+          "rect": {
+            "bottom": 1044.046875,
+            "height": 1012.046875,
+            "left": 0,
+            "right": 1280,
+            "top": 32,
+            "width": 1280,
+            "x": 0,
+            "y": 32
+          }
+        }
+      ],
+      "heading": {
+        "bottom": 671.03125,
+        "height": 25.6484375,
+        "left": 99,
+        "right": 402.328125,
+        "top": 645.3828125,
+        "width": 303.328125,
+        "x": 99,
+        "y": 645.3828125
+      },
+      "headingCss": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "25.6484px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "303.328px"
+      },
+      "name": "Алина Ветрова"
+    },
+    {
+      "chain": [
+        {
+          "css": {
+            "alignItems": "normal",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "12px",
+            "height": "528.859px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start",
+            "width": "303.328px"
+          },
+          "id": "76b52ea",
+          "rect": {
+            "bottom": 874.2421875,
+            "height": 528.859375,
+            "left": 488.328125,
+            "right": 791.65625,
+            "top": 345.3828125,
+            "width": 303.328125,
+            "x": 488.328125,
+            "y": 345.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "28px",
+            "height": "663.664px",
+            "justifyContent": "flex-start",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "28px",
+            "textAlign": "start",
+            "width": "361.328px"
+          },
+          "id": "beb2a1c",
+          "rect": {
+            "bottom": 980.046875,
+            "height": 663.6640625,
+            "left": 459.328125,
+            "right": 820.65625,
+            "top": 316.3828125,
+            "width": 361.328125,
+            "x": 459.328125,
+            "y": 316.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "display": "flex",
+            "flexDirection": "row",
+            "gap": "28px",
+            "height": "663.664px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start",
+            "width": "1140px"
+          },
+          "id": "7772abd",
+          "rect": {
+            "bottom": 980.046875,
+            "height": 663.6640625,
+            "left": 70,
+            "right": 1210,
+            "top": 316.3828125,
+            "width": 1140,
+            "x": 70,
+            "y": 316.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "normal",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "normal",
+            "height": "1012.05px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "0px",
+            "overflow": "visible",
+            "padding": "0px 32px",
+            "textAlign": "start",
+            "width": "1280px"
+          },
+          "id": "71090d6",
+          "rect": {
+            "bottom": 1044.046875,
+            "height": 1012.046875,
+            "left": 0,
+            "right": 1280,
+            "top": 32,
+            "width": 1280,
+            "x": 0,
+            "y": 32
+          }
+        }
+      ],
+      "heading": {
+        "bottom": 671.03125,
+        "height": 25.6484375,
+        "left": 488.328125,
+        "right": 791.65625,
+        "top": 645.3828125,
+        "width": 303.328125,
+        "x": 488.328125,
+        "y": 645.3828125
+      },
+      "headingCss": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "25.6484px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "303.328px"
+      },
+      "name": "Мира Савельева"
+    },
+    {
+      "chain": [
+        {
+          "css": {
+            "alignItems": "normal",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "12px",
+            "height": "605.664px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start",
+            "width": "303.328px"
+          },
+          "id": "b7ed00b",
+          "rect": {
+            "bottom": 951.046875,
+            "height": 605.6640625,
+            "left": 877.65625,
+            "right": 1180.984375,
+            "top": 345.3828125,
+            "width": 303.328125,
+            "x": 877.65625,
+            "y": 345.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "28px",
+            "height": "663.664px",
+            "justifyContent": "flex-start",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "28px",
+            "textAlign": "start",
+            "width": "361.328px"
+          },
+          "id": "10e04e5",
+          "rect": {
+            "bottom": 980.046875,
+            "height": 663.6640625,
+            "left": 848.65625,
+            "right": 1209.984375,
+            "top": 316.3828125,
+            "width": 361.328125,
+            "x": 848.65625,
+            "y": 316.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "stretch",
+            "display": "flex",
+            "flexDirection": "row",
+            "gap": "28px",
+            "height": "663.664px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "auto",
+            "overflow": "visible",
+            "padding": "0px",
+            "textAlign": "start",
+            "width": "1140px"
+          },
+          "id": "7772abd",
+          "rect": {
+            "bottom": 980.046875,
+            "height": 663.6640625,
+            "left": 70,
+            "right": 1210,
+            "top": 316.3828125,
+            "width": 1140,
+            "x": 70,
+            "y": 316.3828125
+          }
+        },
+        {
+          "css": {
+            "alignItems": "normal",
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": "normal",
+            "height": "1012.05px",
+            "justifyContent": "normal",
+            "maxHeight": "none",
+            "minHeight": "0px",
+            "overflow": "visible",
+            "padding": "0px 32px",
+            "textAlign": "start",
+            "width": "1280px"
+          },
+          "id": "71090d6",
+          "rect": {
+            "bottom": 1044.046875,
+            "height": 1012.046875,
+            "left": 0,
+            "right": 1280,
+            "top": 32,
+            "width": 1280,
+            "x": 0,
+            "y": 32
+          }
+        }
+      ],
+      "heading": {
+        "bottom": 671.03125,
+        "height": 25.6484375,
+        "left": 877.65625,
+        "right": 1180.984375,
+        "top": 645.3828125,
+        "width": 303.328125,
+        "x": 877.65625,
+        "y": 645.3828125
+      },
+      "headingCss": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "25.6484px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "303.328px"
+      },
+      "name": "Тимур Аскаров"
+    }
+  ],
+  "chat": {
+    "greeting": {
+      "bottom": 804,
+      "height": 48.3984375,
+      "left": 936,
+      "right": 1256,
+      "top": 755.6015625,
+      "width": 320,
+      "x": 936,
+      "y": 755.6015625
+    },
+    "greetingVisible": true,
+    "launcher": {
+      "bottom": 876,
+      "height": 60,
+      "left": 1196,
+      "right": 1256,
+      "top": 816,
+      "width": 60,
+      "x": 1196,
+      "y": 816
+    }
+  },
+  "ctaCount": 0,
+  "headings": [
+    {
+      "css": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "14.3984px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "102.078px"
+      },
+      "rect": {
+        "bottom": 116.9921875,
+        "height": 14.3984375,
+        "left": 83,
+        "right": 185.078125,
+        "top": 102.59375,
+        "width": 102.078125,
+        "x": 83,
+        "y": 102.59375
+      },
+      "tag": "H6",
+      "text": "ДЕМО-СОСТАВ"
+    },
+    {
+      "css": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "81.5938px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "512px"
+      },
+      "rect": {
+        "bottom": 217.1796875,
+        "height": 81.59375,
+        "left": 70,
+        "right": 582,
+        "top": 135.5859375,
+        "width": 512,
+        "x": 70,
+        "y": 135.5859375
+      },
+      "tag": "H2",
+      "text": "Команда для демонстрации макета"
+    },
+    {
+      "css": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "25.6484px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "303.328px"
+      },
+      "rect": {
+        "bottom": 671.03125,
+        "height": 25.6484375,
+        "left": 99,
+        "right": 402.328125,
+        "top": 645.3828125,
+        "width": 303.328125,
+        "x": 99,
+        "y": 645.3828125
+      },
+      "tag": "H3",
+      "text": "Алина Ветрова"
+    },
+    {
+      "css": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "25.6484px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "303.328px"
+      },
+      "rect": {
+        "bottom": 671.03125,
+        "height": 25.6484375,
+        "left": 488.328125,
+        "right": 791.65625,
+        "top": 645.3828125,
+        "width": 303.328125,
+        "x": 488.328125,
+        "y": 645.3828125
+      },
+      "tag": "H3",
+      "text": "Мира Савельева"
+    },
+    {
+      "css": {
+        "alignItems": "normal",
+        "display": "block",
+        "flexDirection": "row",
+        "gap": "normal",
+        "height": "25.6484px",
+        "justifyContent": "normal",
+        "maxHeight": "none",
+        "minHeight": "0px",
+        "overflow": "visible",
+        "padding": "0px",
+        "textAlign": "start",
+        "width": "303.328px"
+      },
+      "rect": {
+        "bottom": 671.03125,
+        "height": 25.6484375,
+        "left": 877.65625,
+        "right": 1180.984375,
+        "top": 645.3828125,
+        "width": 303.328125,
+        "x": 877.65625,
+        "y": 645.3828125
+      },
+      "tag": "H3",
+      "text": "Тимур Аскаров"
+    }
+  ],
+  "images": [
+    {
+      "alt": "Постановочный портрет мужчины в тёмной кепке и наушниках.",
+      "complete": true,
+      "css": {
+        "objectFit": "contain",
+        "objectPosition": "50% 50%"
+      },
+      "naturalHeight": 1046,
+      "naturalWidth": 1100,
+      "rect": {
+        "bottom": 633.3828125,
+        "height": 288,
+        "left": 99,
+        "right": 402.328125,
+        "top": 345.3828125,
+        "width": 303.328125,
+        "x": 99,
+        "y": 345.3828125
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg"
+    },
+    {
+      "alt": "Постановочный образ женщины в светлой кепке и наушниках за музыкальным оборудованием.",
+      "complete": true,
+      "css": {
+        "objectFit": "contain",
+        "objectPosition": "50% 50%"
+      },
+      "naturalHeight": 1000,
+      "naturalWidth": 1500,
+      "rect": {
+        "bottom": 633.3828125,
+        "height": 288,
+        "left": 488.328125,
+        "right": 791.65625,
+        "top": 345.3828125,
+        "width": 303.328125,
+        "x": 488.328125,
+        "y": 345.3828125
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg"
+    },
+    {
+      "alt": "Постановочный портрет женщины в жёлтом свитере.",
+      "complete": true,
+      "css": {
+        "objectFit": "contain",
+        "objectPosition": "50% 50%"
+      },
+      "naturalHeight": 400,
+      "naturalWidth": 238,
+      "rect": {
+        "bottom": 633.3828125,
+        "height": 288,
+        "left": 877.65625,
+        "right": 1180.984375,
+        "top": 345.3828125,
+        "width": 303.328125,
+        "x": 877.65625,
+        "y": 345.3828125
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp"
+    }
+  ],
+  "post": 5214,
+  "root": {
+    "css": {
+      "alignItems": "normal",
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "normal",
+      "height": "1012.05px",
+      "justifyContent": "normal",
+      "maxHeight": "none",
+      "minHeight": "0px",
+      "overflow": "visible",
+      "padding": "0px 32px",
+      "textAlign": "start",
+      "width": "1280px"
+    },
+    "rect": {
+      "bottom": 1044.046875,
+      "height": 1012.046875,
+      "left": 0,
+      "right": 1280,
+      "top": 32,
+      "width": 1280,
+      "x": 0,
+      "y": 32
+    },
+    "text": "ДЕМО-СОСТАВ\nКоманда для демонстрации макета\nИмена, роли и биографии вымышлены; фотографии — стоковые иллюстрации.\nАлина Ветрова\nАрхитектор\nПродумывает планировки и сценарии света.\nМира Савельева\nДизайнер среды\nРаботает с материалами, навигацией и тем, как человек чувствует себя внутри пространства. В демонстрационных проектах она собирает палитру и проверяет её при разном освещении.\nТимур Аскаров\nКоординатор проекта\nСводит решения команды в единый план, фиксирует согласованные детали и помогает участникам понимать, что уже решено, что требует обсуждения и какой следующий шаг зависит от заказчика. Эта длинная биография нужна, чтобы проверить переносы и естественную высоту карточки."
+  },
+  "rootId": "71090d6",
+  "source": "public",
+  "viewport": {
+    "clientWidth": 1280,
+    "innerHeight": 900,
+    "innerWidth": 1280,
+    "scrollWidth": 1280
+  }
+}

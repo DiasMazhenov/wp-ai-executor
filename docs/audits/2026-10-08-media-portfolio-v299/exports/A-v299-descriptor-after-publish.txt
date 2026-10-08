@@ -1,0 +1,43 @@
+Опишите задачу по текущей странице или выбранному элементу.
+Отменить создание блока
+Обновить серверный descriptor
+Проверить owned модель перед Save
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Свежий read-only descriptor: operation wpae-de28e618a3eec665, revision 6, status available. write_count=0. composition evidence: {"schema":"wpae-composition-evidence-v1","status":"complete","request":{"mode":"explicit_record","record_id":"hero.split_50_50.right","record_version":1,"visual_profile":null,"visual_profile_source":"not_requested","brief_composition":null,"brief_media_side":"right"},"accepted":{"record_id":"hero.split_50_50.right","record_version":1,"record_hash":"62fc83ce592f875b6eb425ae7d76a4f547a03367b15fec2491254faea4e7d330","source":"explicit_record","visual_profile":"editorial_light","selection_reasons":["honored_explicit_record"],"selection_policy":"wpae-composition-selection-v2","catalog_id":"wpae-compositions-v1","catalog_identity":"078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18"},"hashes":{"brief_sha256":"15e8d21d34605a026073dde89e4d0b4416aff5071c3386697d367e4c1b459f15","plan_sha256":"bc2ee1d32239f133acb0eeec7e5d8ec3a71bfdb8dbf9a4f25958478e1ea0688c"},"surface":{"profile":"editorial_light","section_surface":{"token":"color.section_bg","source":"documented_default","palette_role":"accent","opacity":0.2,"transparency":0.8,"accent_source":"elementor_system_color_stock_default:accent","accent_confirmed":false},"resolved_value":"#61ce7033","value_source":"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent","accent_reference":{"value":"#61ce70","source":"elementor_system_color_stock_default:accent","confirmed":false},"opaque_underlay":"#ffffff"},"generation":{"route":"local_deterministic","provider_calls":0,"provider_call_count_source":"design_pipeline_preflight","transaction_write_count":1,"transaction_write_count_source":"successful_transaction_and_readback"},"operation":{"post_id":5214,"operation_id":"wpae-de28e618a3eec665","operation_identity":"1bc724ea-aa00-4f36-8f3a-b6860861fec3","root_ids":["a5834dd"],"revision":6,"accepted_contract_id":"contract-863bf588cfa0444b6d32e101","accepted_contract_sha256":"863bf588cfa0444b6d32e1010f2983277c78a98abe0eb5c539cbacaa5bea18af","saved_document_sha256":"e4fd2fd1c95f83a81d9e924dfb1fe69c65199d0bfdcd3c67e8871f77d5334378"},"native":{"saved_native_fingerprint":"8e3b0fa4412cc7054bd4a802d0e05813831df568729c270da9c6df8e1514a084","saved_root_ids":["a5834dd"]}}

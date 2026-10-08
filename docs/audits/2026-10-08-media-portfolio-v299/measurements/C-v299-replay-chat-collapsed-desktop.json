@@ -1,0 +1,27 @@
+{
+  "greetingDisplay": "none",
+  "greetingRect": {
+    "bottom": 0,
+    "height": 0,
+    "left": 0,
+    "right": 0,
+    "top": 0,
+    "width": 0,
+    "x": 0,
+    "y": 0
+  },
+  "launcher": {
+    "bottom": 876,
+    "height": 60,
+    "left": 1196,
+    "right": 1256,
+    "top": 816,
+    "width": 60,
+    "x": 1196,
+    "y": 816
+  },
+  "viewport": [
+    1280,
+    900
+  ]
+}

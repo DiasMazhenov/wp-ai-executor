@@ -2231,3 +2231,30 @@ Runtime v292 commit e5d7facc78beeb21ceedef6f5faf2338c3bc9491 and v293 commit fd1
 Five new final scenarios A–E completed through ordinary plugin chat, Publish/reload, native readback, public desktop/mobile review and guarded Undo: centered CTA (438f8e7), Team grid (94ea563), Testimonials grid (f395bb8), Benefits grid (bf5992e), and three-tier Pricing (44acb9c). The first CTA render on v292 failed alignment and was preserved/guarded-undone; after the common v293 correction the exact same fixture passed. Counts: five accepted scenarios; six transaction writes including the one justified retry; zero repair writes. Every Undo returned the page to [] and the final editor/public root set is [].
 
 Exact requests and hashes, operation IDs/revisions, independent native exports, DOM geometry, overlays, local checks and 25 checked/visually reviewed PNGs: [stage report](docs/audits/2026-10-08-repeat-geometry-v292/REPORT.md), [acceptance matrix](docs/audits/2026-10-08-repeat-geometry-v292/acceptance-matrix.json), [screenshot manifest](docs/audits/2026-10-08-repeat-geometry-v292/screenshot-manifest.json). Site-owned chat greeting overlaps content in some initial frames; original and native-collapse frames are preserved and no site settings were modified.
+
+## v02.11.299 media/Portfolio live continuation — 2026-10-09
+
+This checkpoint supersedes the earlier incomplete v299 section in the current working tree. Source HEAD and installed WP AI Executor remain v02.11.299 at 26d4135df15987e9d13ef586ba7306bfe3ac0354. The earlier runtime push command reported success; independent remote HEAD verification remains unconfirmed because git ls-remote could not resolve github.com. No runtime code changed here, so the full v299 local suite was not repeated.
+
+Five distinct families ran through normal plugin chat on existing post 5214: Hero, About, Team, Testimonials and Portfolio. Every current result completed Publish, editor reload, independent native readback, public desktop/mobile DOM measurements and guarded operation-scoped Undo. The final editor/native/public root set is [].
+
+| Family | Current result | Current operation / root / identity | Publish revision | Status |
+|---|---|---|---:|---|
+| Hero | hero.split_50_50.right / editorial_light | wpae-de28e618a3eec665 / a5834dd / 1bc724ea-aa00-4f36-8f3a-b6860861fec3 | 6 | Accepted; exact copy/assets/CTA and responsive image verified |
+| About | about.split_40_60.left / editorial_light | wpae-050a9340c56587cd / f22e5c9 / c2734d13-57dc-49cc-ab97-08c852740e7c | 6 | Partial; fixed site launcher covers long mobile copy |
+| Team | team.grid / soft_cards_light | wpae-c5edcec4f2ebcb88 / 71090d6 / 80938e72-01e9-4d89-b7f4-752180c917e2 | 6 | Accepted with exact fixture portrait/name mismatch note |
+| Testimonials | testimonials.grid / soft_cards_light | wpae-82aeaf35f0c57206 / 265cc25 / 63ede380-7e5e-4867-aab9-2439c50a1791 | 6 | Accepted with large blank-space note for short equal-height cards |
+| Portfolio | portfolio.project_cards / editorial_light | wpae-661f3838497cce63 / dd3b654 / 87a940c5-8619-44ca-b4a8-7b86c80cc1a8 | 6 | Accepted; three distinct project assets and exact entity-bound links |
+
+Four of five satisfy the complete acceptance gate. About's Brief, Plan, native JSON, 782-character public copy, H2, asset URL/alt, image load/crop and mobile stack are exact. Its public CSS viewport was 390×844; after the site greeting was collapsed, the fixed launcher still visually covered a portion of copy. The DOM contains the full text, but the visual status remains partial and is not counted. The task forbids repeating without a confirmed code defect and source fix, so no second About generation or external site configuration change was made.
+
+All five first current results were deterministic local runs with 0 provider calls and one transaction write. A and B were justified v299 retests because the shared focal mapper had changed from arbitrary percentages to supported Elementor 3×3 positions after v297. C's first v299 Team root 29bfafa (operation wpae-36559754502cc8f6, corrected identity 69e262c2-c93f-494d-9e99-1e5c938baf34) was guarded-Undone. C was replayed once as an evidence-only run because the collapsed mobile capture was missing after the first root had been Undone; the replay had no code change and is disclosed as a deviation from the stricter source-fix-only repeat condition. First and replay evidence remain available.
+
+Fresh Browser Use screenshots were captured from the public page after Publish/reload, saved as bytes, converted from JPEG to PNG when needed, signature/dimensions checked, opened and visually reviewed. The public page was viewed while authenticated, so the WordPress admin bar appears in screenshots. CSS viewport and PNG dimensions are separate in the matrix. Duplicate JPEG intermediates and unused early-width D PNGs were removed only after current PNG verification.
+
+- Audit report: docs/audits/2026-10-08-media-portfolio-v299/REPORT.md
+- Acceptance matrix: docs/audits/2026-10-08-media-portfolio-v299/acceptance-matrix.json
+- A-E fixtures, asset registry, native exports, measurements and screenshots are in the same audit directory.
+- Source-release checks already passed: Design Pipeline 971; Flex Runtime 1494; patch guard; Node 20/20; PHP lint; catalog 158/156/156; package probe 253 hashes / 0 mismatches; git diff --check. Not rerun because runtime source was unchanged.
+
+Separate statuses: lifecycle PASS for all five; content/ownership/native readback PASS for all five; responsive geometry PASS for all five; visual composition PASS with noted fixture/layout/overlay issues for A/C/D/E and PARTIAL for B; document restoration PASS for all five. Overall full live acceptance is 4/5, one result short. Broader migration still excludes Stats, free-form intake/generated copy and behavior adapters.

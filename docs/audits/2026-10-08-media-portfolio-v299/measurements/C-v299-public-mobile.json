@@ -1,0 +1,112 @@
+{
+  "cards": [
+    {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "28px",
+      "height": 388.953125,
+      "overflow": "visible",
+      "padding": "16px",
+      "width": 343,
+      "x": 16,
+      "y": 280.796875
+    },
+    {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "28px",
+      "height": 460.953125,
+      "overflow": "visible",
+      "padding": "16px",
+      "width": 343,
+      "x": 16,
+      "y": 685.75
+    },
+    {
+      "display": "flex",
+      "flexDirection": "column",
+      "gap": "28px",
+      "height": 532.953125,
+      "overflow": "visible",
+      "padding": "16px",
+      "width": 343,
+      "x": 16,
+      "y": 1162.703125
+    }
+  ],
+  "copy": "ДЕМО-СОСТАВ\nКоманда для демонстрации макета\nИмена, роли и биографии вымышлены; фотографии — стоковые иллюстрации.\nАлина Ветрова\nАрхитектор\nПродумывает планировки и сценарии света.\nМира Савельева\nДизайнер среды\nРаботает с материалами, навигацией и тем, как человек чувствует себя внутри пространства. В демонстрационных проектах она собирает палитру и проверяет её при разном освещении.\nТимур Аскаров\nКоординатор проекта\nСводит решения команды в единый план, фиксирует согласованные детали и помогает участникам понимать, что уже решено, что требует обсуждения и какой следующий шаг зависит от заказчика. Эта длинная биография нужна, чтобы проверить переносы и естественную высоту карточки.",
+  "images": [
+    {
+      "complete": true,
+      "display": "inline-block",
+      "fit": "contain",
+      "flexDirection": "row",
+      "gap": "normal",
+      "height": 224,
+      "naturalHeight": 1046,
+      "naturalWidth": 1100,
+      "overflow": "clip",
+      "padding": "0px",
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg",
+      "width": 309,
+      "x": 33,
+      "y": 297.796875
+    },
+    {
+      "complete": true,
+      "display": "inline-block",
+      "fit": "contain",
+      "flexDirection": "row",
+      "gap": "normal",
+      "height": 224,
+      "naturalHeight": 1000,
+      "naturalWidth": 1500,
+      "overflow": "clip",
+      "padding": "0px",
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg",
+      "width": 309,
+      "x": 33,
+      "y": 702.75
+    },
+    {
+      "complete": true,
+      "display": "inline-block",
+      "fit": "contain",
+      "flexDirection": "row",
+      "gap": "normal",
+      "height": 224,
+      "naturalHeight": 400,
+      "naturalWidth": 238,
+      "overflow": "clip",
+      "padding": "0px",
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp",
+      "width": 309,
+      "x": 33,
+      "y": 1179.703125
+    }
+  ],
+  "root": {
+    "display": "flex",
+    "flexDirection": "column",
+    "gap": "normal",
+    "height": 1681.65625,
+    "overflow": "visible",
+    "padding": "0px 16px",
+    "width": 375,
+    "x": 0,
+    "y": 46
+  },
+  "viewport": {
+    "clientHeight": 844,
+    "clientWidth": 375,
+    "dpr": 1,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scrollHeight": 1727,
+    "scrollWidth": 375,
+    "visualViewport": {
+      "height": 844,
+      "width": 375
+    }
+  }
+}

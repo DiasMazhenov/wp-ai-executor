@@ -1,0 +1,78 @@
+{
+  "post_id": 5214,
+  "root_id": "f22e5c9",
+  "operation_id": "wpae-050a9340c56587cd",
+  "operation_identity": "c2734d13-57dc-49cc-ab97-08c852740e7c",
+  "publish_revision": 6,
+  "fixture_sha256": "399d25ab10b36ad2c8468eab6b11d81e02ee55dc7ccaf1d683801c11edd6a06a",
+  "exact": {
+    "eyebrow": "О БЮРО",
+    "title": "Проектирование начинается с внимательного разговора",
+    "body_length": 782,
+    "native_body_exact": true,
+    "public_desktop_body_exact": true,
+    "public_mobile_body_exact": true,
+    "public_heading_level": "H2",
+    "pill_native_tag": "h6",
+    "asset_url_exact": true,
+    "asset_alt_exact": true,
+    "image_loaded_desktop": true,
+    "image_loaded_mobile": true,
+    "cta_expected": "none",
+    "cta_actual": []
+  },
+  "desktop": {
+    "css_viewport": [
+      1280,
+      900
+    ],
+    "viewport_png_dimensions": [
+      1265,
+      889
+    ],
+    "container_width": 1140,
+    "image_frame": [
+      672,
+      716.3828125
+    ],
+    "image_source_dimensions": [
+      1200,
+      675
+    ],
+    "image_fit": "cover",
+    "image_position": "50% 50%",
+    "copy_width": 448,
+    "copy_height": 492.796875,
+    "horizontal_overflow": false
+  },
+  "mobile": {
+    "css_viewport": [
+      390,
+      844
+    ],
+    "viewport_png_dimensions": [
+      375,
+      812
+    ],
+    "section_height": 1126.1640625,
+    "image_frame": [
+      358,
+      288
+    ],
+    "image_fit": "cover",
+    "image_position": "50% 50%",
+    "flow": "copy_first_then_image",
+    "horizontal_overflow": false,
+    "site_launcher_overlap": "fixed launcher overlaps a small part of the long copy in the initial mobile viewport; content remains in DOM and full-page PNG; no site settings/styles changed"
+  },
+  "first_render": {
+    "write_count": 1,
+    "provider_calls": 0,
+    "manual_patch": false
+  },
+  "undo": {
+    "guarded": "already_undone",
+    "editor_roots_after_reload": [],
+    "public_root_absent": true
+  }
+}

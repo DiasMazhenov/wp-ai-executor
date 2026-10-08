@@ -1,0 +1,126 @@
+ий
+Classic
+Showcase
+Links
+Services
+Portfolio
+Business Card
+Сайт
+Одиночная
+VibeLMS
+Информация о курсе
+Преподаватели курса
+Тарифы курса
+Прогресс курса
+Кнопка продолжения курса
+Содержание курса
+Идентификация сотрудника
+Карточка курса
+Каталог курсов
+Список уроков
+Тест
+Результаты тестов
+Сертификаты пользователя
+Профиль сотрудника
+Кабинет ученика
+Группы доступа
+Учебные материалы
+Контент по языку
+Шапка VibeLMS
+Подвал VibeLMS
+WordPress
+Скрыть панель (⌘ + P)
+Структура
+Показать/скрыть внутренние элементы
+Контейнер
+Изменить размер структуры
+LLM-помощник Elementor
+Ответы проходят через настроенный proxy
+Модель: openrouter/free · Версия: v02.11.299
+Выделение: нет
+×
+Разбор запроса
+Планирование дизайна
+Подбор компонентов
+Проверка responsive
+Сборка Elementor
+Запись
+Рендер
+Visual review
+Опишите задачу по текущей странице или выбранному элементу.
+Отменить создание блока
+Обновить серверный descriptor
+Проверить owned модель перед Save
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Отменить создание блока
+Обновить серверный descriptor
+Свежий read-only descriptor: operation wpae-050a9340c56587cd, revision 6, status available. write_count=0. composition evidence: {"schema":"wpae-composition-evidence-v1","status":"complete","request":{"mode":"explicit_record","record_id":"about.split_40_60.left","record_version":1,"visual_profile":"editorial_light","visual_profile_source":"ui_selector","brief_composition":null,"brief_media_side":"left"},"accepted":{"record_id":"about.split_40_60.left","record_version":1,"record_hash":"e8d8a4dcb4e553f2eb97c93e41dd00ff988742cfef9033257ede61632ee0d958","source":"explicit_record","visual_profile":"editorial_light","selection_reasons":["honored_explicit_record"],"selection_policy":"wpae-composition-selection-v2","catalog_id":"wpae-compositions-v1","catalog_identity":"078dc252cd73a28652954f9a5a148887ee06a0ccca66b4bdbe09301be6020b18"},"hashes":{"brief_sha256":"3b1c69581d952c1113b692fa806f61e42ae1a3736522b08dd39f0f375e6a251e","plan_sha256":"47943f2d7813e0b3ac44cc006cca94bd0507725e2561f198c687444916f81e47"},"surface":{"profile":"editorial_light","section_surface":{"token":"color.section_bg","source":"documented_default","palette_role":"accent","opacity":0.2,"transparency":0.8,"accent_source":"elementor_system_color_stock_default:accent","accent_confirmed":false},"resolved_value":"#61ce7033","value_source":"derived_palette_accent_20pct_opacity:elementor_system_color_stock_default:accent","accent_reference":{"value":"#61ce70","source":"elementor_system_color_stock_default:accent","confirmed":false},"opaque_underlay":"#ffffff"},"generation":{"route":"local_deterministic","provider_calls":0,"provider_call_count_source":"design_pipeline_preflight","transaction_write_count":1,"transaction_write_count_source":"successful_transaction_and_readback"},"operation":{"post_id":5214,"operation_id":"wpae-050a9340c56587cd","operation_identity":"c2734d13-57dc-49cc-ab97-08c852740e7c","root_ids":["f22e5c9"],"revision":6,"accepted_contract_id":"contract-93841076bd76653724ca67b4","accepted_contract_sha256":"93841076bd76653724ca67b4fe4fbbfdd1aa01df7ccc66c42b86414f13571eaf","saved_document_sha256":"f5ea237fa9f65a3a34be91acc39a41980bc02a1174c275186170eea29fbd51dc"},"native":{"saved_native_fingerprint":"1e51a87f4a9d5cc7e49360f57ee189e4938cd5720831fa78f78b650917364a83","saved_root_ids":["f22e5c9"]}}
+Композиция
+Автоматически
+Фото справа · текст/фото 60/40
+Фото слева · текст/фото 60/40
+Фото справа · текст/фото 50/50
+Фото слева · текст/фото 50/50
+Фото справа · текст/фото 40/60
+Фото слева · текст/фото 40/60
+Только текст
+Фото справа · текст/фото 60/40
+Фото слева · текст/фото 60/40
+Фото справа · текст/фото 50/50
+Фото слева · текст/фото 50/50
+Фото справа · текст/фото 40/60
+Фото слева · текст/фото 40/60
+Сетка карточек
+Список с иконками
+Карточки тарифов
+Аккордеон
+Карточки участников
+Редакционные строки
+Карточки отзывов
+Редакционные строки
+Карточки проектов
+Редакционные строки проектов
+Центрированный блок
+Текст и отдельные действия
+Карточки с иконками
+Карточки с фото
+Текст и фото
+Список услуг
+Упорядоченные этапы
+Оформление
+По умолчанию

@@ -1,0 +1,219 @@
+{
+  "schema": "wpae-browser-use-screenshot-manifest-v1",
+  "post_id": 5214,
+  "capture_source": "existing in-app Browser Use public tab after Publish/reload",
+  "format": "PNG after verified byte capture / JPEG conversion where needed",
+  "authenticated_public_page": true,
+  "screenshots": [
+    {
+      "scenario": "A",
+      "root_id": "a5834dd",
+      "operation_id": "wpae-de28e618a3eec665",
+      "identity": "1bc724ea-aa00-4f36-8f3a-b6860861fec3",
+      "revision": 6,
+      "source": "public",
+      "view": "desktop",
+      "css_viewport": [
+        1280,
+        900
+      ],
+      "png_path": "screenshots/A-v299-public-desktop-full-chat-collapsed.png",
+      "png_dimensions": [
+        1280,
+        900
+      ],
+      "bytes": 353090,
+      "visually_opened": true,
+      "status": "PASS; profile surface #61ce7033 comes from unconfirmed stock Accent decorative default; site launcher sits below authored Hero text/actions."
+    },
+    {
+      "scenario": "A",
+      "root_id": "a5834dd",
+      "operation_id": "wpae-de28e618a3eec665",
+      "identity": "1bc724ea-aa00-4f36-8f3a-b6860861fec3",
+      "revision": 6,
+      "source": "public",
+      "view": "mobile",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_path": "screenshots/A-v299-public-mobile-full-chat-collapsed.png",
+      "png_dimensions": [
+        390,
+        844
+      ],
+      "bytes": 192702,
+      "visually_opened": true,
+      "status": "PASS; profile surface #61ce7033 comes from unconfirmed stock Accent decorative default; site launcher sits below authored Hero text/actions."
+    },
+    {
+      "scenario": "B",
+      "root_id": "f22e5c9",
+      "operation_id": "wpae-050a9340c56587cd",
+      "identity": "c2734d13-57dc-49cc-ab97-08c852740e7c",
+      "revision": 6,
+      "source": "public",
+      "view": "desktop",
+      "css_viewport": [
+        1280,
+        900
+      ],
+      "png_path": "screenshots/B-v299-public-desktop-full-chat-collapsed.png",
+      "png_dimensions": [
+        1265,
+        908
+      ],
+      "bytes": 977169,
+      "visually_opened": true,
+      "status": "PARTIAL: site-owned fixed launcher overlaps several lines of the long About body in the actual 390x844 viewport after greeting collapse. Full copy remains in native/public DOM and full-page screenshot, but a covered-text mobile frame is not full visual acceptance. No site settings or CSS were changed."
+    },
+    {
+      "scenario": "B",
+      "root_id": "f22e5c9",
+      "operation_id": "wpae-050a9340c56587cd",
+      "identity": "c2734d13-57dc-49cc-ab97-08c852740e7c",
+      "revision": 6,
+      "source": "public",
+      "view": "mobile",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_path": "screenshots/B-v299-public-mobile-full-chat-collapsed.png",
+      "png_dimensions": [
+        375,
+        1172
+      ],
+      "bytes": 450710,
+      "visually_opened": true,
+      "status": "PARTIAL: site-owned fixed launcher overlaps several lines of the long About body in the actual 390x844 viewport after greeting collapse. Full copy remains in native/public DOM and full-page screenshot, but a covered-text mobile frame is not full visual acceptance. No site settings or CSS were changed."
+    },
+    {
+      "scenario": "C",
+      "root_id": "71090d6",
+      "operation_id": "wpae-c5edcec4f2ebcb88",
+      "identity": "80938e72-01e9-4d89-b7f4-752180c917e2",
+      "revision": 6,
+      "source": "public",
+      "view": "desktop",
+      "css_viewport": [
+        1280,
+        900
+      ],
+      "png_path": "screenshots/C-v299-replay-public-desktop-full-chat-collapsed.png",
+      "png_dimensions": [
+        1265,
+        1044
+      ],
+      "bytes": 574420,
+      "visually_opened": true,
+      "status": "PASS WITH NOTES: 3 flex cards, fixed responsive portrait frames, exact ownership/alts, natural mobile stack. Stock portraits are visibly gender-mismatched to fictional names because the fixture binds those exact illustrative images; launcher overlaps a portrait edge but not bios."
+    },
+    {
+      "scenario": "C",
+      "root_id": "71090d6",
+      "operation_id": "wpae-c5edcec4f2ebcb88",
+      "identity": "80938e72-01e9-4d89-b7f4-752180c917e2",
+      "revision": 6,
+      "source": "public",
+      "view": "mobile",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_path": "screenshots/C-v299-replay-public-mobile-full-chat-collapsed.png",
+      "png_dimensions": [
+        375,
+        1727
+      ],
+      "bytes": 424729,
+      "visually_opened": true,
+      "status": "PASS WITH NOTES: 3 flex cards, fixed responsive portrait frames, exact ownership/alts, natural mobile stack. Stock portraits are visibly gender-mismatched to fictional names because the fixture binds those exact illustrative images; launcher overlaps a portrait edge but not bios."
+    },
+    {
+      "scenario": "D",
+      "root_id": "265cc25",
+      "operation_id": "wpae-82aeaf35f0c57206",
+      "identity": "63ede380-7e5e-4867-aab9-2439c50a1791",
+      "revision": 6,
+      "source": "public",
+      "view": "desktop",
+      "css_viewport": [
+        1280,
+        900
+      ],
+      "png_path": "screenshots/D-v299-public-desktop-1280.png",
+      "png_dimensions": [
+        1280,
+        900
+      ],
+      "bytes": 288051,
+      "visually_opened": true,
+      "status": "PASS WITH NOTES: avatar frames remain small at 56x56 desktop/48x48 mobile; content and ownership exact; no buttons/ratings. Equal desktop card heights leave substantial blank area under shorter quotes. Site launcher reaches the edge of the third mobile card but does not cover quote/author text."
+    },
+    {
+      "scenario": "D",
+      "root_id": "265cc25",
+      "operation_id": "wpae-82aeaf35f0c57206",
+      "identity": "63ede380-7e5e-4867-aab9-2439c50a1791",
+      "revision": 6,
+      "source": "public",
+      "view": "mobile",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_path": "screenshots/D-v299-public-mobile-390-chat-collapsed-full.png",
+      "png_dimensions": [
+        375,
+        1175
+      ],
+      "bytes": 201682,
+      "visually_opened": true,
+      "status": "PASS WITH NOTES: avatar frames remain small at 56x56 desktop/48x48 mobile; content and ownership exact; no buttons/ratings. Equal desktop card heights leave substantial blank area under shorter quotes. Site launcher reaches the edge of the third mobile card but does not cover quote/author text."
+    },
+    {
+      "scenario": "E",
+      "root_id": "dd3b654",
+      "operation_id": "wpae-661f3838497cce63",
+      "identity": "87a940c5-8619-44ca-b4a8-7b86c80cc1a8",
+      "revision": 6,
+      "source": "public",
+      "view": "desktop",
+      "css_viewport": [
+        1280,
+        900
+      ],
+      "png_path": "screenshots/E-portfolio-v299-public-desktop-1280-full.png",
+      "png_dimensions": [
+        1265,
+        1042
+      ],
+      "bytes": 697656,
+      "visually_opened": true,
+      "status": "PASS WITH NOTES: 3 distinct project images, exact fields and links, lower CTA axis on desktop, natural single-column mobile. Fixed site launcher overlaps the corner of the second image, not text/buttons. Accent surface is documented stock default, not a confirmed semantic brand color."
+    },
+    {
+      "scenario": "E",
+      "root_id": "dd3b654",
+      "operation_id": "wpae-661f3838497cce63",
+      "identity": "87a940c5-8619-44ca-b4a8-7b86c80cc1a8",
+      "revision": 6,
+      "source": "public",
+      "view": "mobile",
+      "css_viewport": [
+        390,
+        844
+      ],
+      "png_path": "screenshots/E-portfolio-v299-public-mobile-390-chat-collapsed-full.png",
+      "png_dimensions": [
+        375,
+        1879
+      ],
+      "bytes": 561021,
+      "visually_opened": true,
+      "status": "PASS WITH NOTES: 3 distinct project images, exact fields and links, lower CTA axis on desktop, natural single-column mobile. Fixed site launcher overlaps the corner of the second image, not text/buttons. Accent surface is documented stock default, not a confirmed semantic brand color."
+    }
+  ]
+}

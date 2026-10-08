@@ -1,0 +1,108 @@
+{
+  "cards": [
+    {
+      "alignItems": "stretch",
+      "flexDirection": "column",
+      "id": "f3b6409",
+      "overflow": "visible",
+      "rect": {
+        "bottom": 493.75,
+        "height": 212.953125,
+        "top": 280.796875,
+        "width": 343,
+        "x": 16,
+        "y": 280.796875
+      }
+    },
+    {
+      "alignItems": "stretch",
+      "flexDirection": "column",
+      "id": "ed21649",
+      "overflow": "visible",
+      "rect": {
+        "bottom": 770.703125,
+        "height": 260.953125,
+        "top": 509.75,
+        "width": 343,
+        "x": 16,
+        "y": 509.75
+      }
+    },
+    {
+      "alignItems": "stretch",
+      "flexDirection": "column",
+      "id": "64bfe5a",
+      "overflow": "visible",
+      "rect": {
+        "bottom": 1143.65625,
+        "height": 356.953125,
+        "top": 786.703125,
+        "width": 343,
+        "x": 16,
+        "y": 786.703125
+      }
+    }
+  ],
+  "horizontalOverflow": false,
+  "images": [
+    {
+      "alt": "Иллюстративный стоковый портрет мужчины в кепке и наушниках; изображение не подтверждает достоверность цитаты.",
+      "complete": true,
+      "naturalHeight": 1046,
+      "naturalWidth": 1100,
+      "objectFit": "cover",
+      "rect": {
+        "height": 48,
+        "width": 48,
+        "x": 163.5,
+        "y": 297.796875
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/man.jpg"
+    },
+    {
+      "alt": "Иллюстративный стоковый образ женщины в наушниках; изображение не подтверждает достоверность цитаты.",
+      "complete": true,
+      "naturalHeight": 1000,
+      "naturalWidth": 1500,
+      "objectFit": "cover",
+      "rect": {
+        "height": 48,
+        "width": 48,
+        "x": 163.5,
+        "y": 526.75
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl.jpg"
+    },
+    {
+      "alt": "Иллюстративный стоковый портрет женщины в жёлтом свитере; изображение не подтверждает достоверность цитаты.",
+      "complete": true,
+      "naturalHeight": 400,
+      "naturalWidth": 238,
+      "objectFit": "cover",
+      "rect": {
+        "height": 48,
+        "width": 48,
+        "x": 163.5,
+        "y": 803.703125
+      },
+      "src": "https://mazhenov.kz/wp-content/uploads/2023/09/girl-yellow.webp"
+    }
+  ],
+  "root": {
+    "bottom": 1175.65625,
+    "height": 1129.65625,
+    "left": 0,
+    "right": 375,
+    "top": 46,
+    "width": 375,
+    "x": 0,
+    "y": 46
+  },
+  "scrollY": 0,
+  "viewport": {
+    "clientWidth": 375,
+    "innerHeight": 844,
+    "innerWidth": 390,
+    "scale": 1
+  }
+}
