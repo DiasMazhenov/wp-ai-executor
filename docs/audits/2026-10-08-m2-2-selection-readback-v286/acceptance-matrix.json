@@ -8,6 +8,13 @@
     "editor_inline_version_after_reload": "v02.11.290",
     "site_php_runtime": "not rechecked in this acceptance run"
   },
+  "scope_update": {
+    "as_of": "2026-10-08",
+    "user_excluded_families_from_future_tests": ["Services", "Process"],
+    "historical_scenario_ids": ["D", "E"],
+    "new_generations_after_scope_update": 0,
+    "historical_statuses_preserved": true
+  },
   "completion": {
     "target_full_acceptances": 5,
     "full_acceptances": 4,

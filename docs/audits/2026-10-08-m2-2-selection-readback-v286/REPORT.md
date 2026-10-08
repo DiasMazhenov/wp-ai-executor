@@ -1,5 +1,9 @@
 # M2.2 composition readback and live acceptance — 2026-10-08
 
+## Scope update — 2026-10-08
+
+The user has explicitly excluded **Services** and **Process** from any further testing. The D and E results below remain historical evidence; they are not authorization to generate those families again. This update adds no live generations and does not change their recorded statuses: corrected Services is historically accepted with the earlier v289 pill failure retained, while Process remains mobile visual/accessibility PARTIAL because of `SITE_OVERLAP`.
+
 ## Decision and count
 
 Five target slots A–E were exercised through the ordinary plugin chat on existing post 5214. There were six generation writes total: A, B, C, E, the initial Services D on v289, and its one allowed rerun after the v290 source fix. D-v289 was a real first-render failure because the accepted pill eyebrow was missing. D-v290 passed the corresponding correction check. No cosmetic repair or manual Elementor control edits were made.
