@@ -144,6 +144,24 @@ function wpae_reference_set_resolve_remote_image( array $reference, ?callable $r
 	return [ 'ok' => true, 'reference' => wpae_reference_set_normalize( $reference ) ];
 }
 
+/**
+ * Resolve exact URLs from the plugin's reviewed image catalog without relying
+ * on outbound HTTP from the WordPress host. The catalog stores intrinsic facts
+ * that were checked against the CDN response; this never substitutes a URL.
+ */
+function wpae_reference_set_reviewed_catalog_facts( string $url ): array {
+	if ( ! function_exists( 'wpae_design_plan_default_service_media' ) ) { return []; }
+	foreach ( wpae_design_plan_default_service_media() as $asset ) {
+		if ( ! is_array( $asset ) || ! hash_equals( trim( (string) ( $asset['source_url'] ?? '' ) ), trim( $url ) ) ) { continue; }
+		return [
+			'asset_facts' => [ 'width' => 1200, 'height' => 675, 'mime' => 'image/jpeg' ],
+			'license' => 'Unsplash License',
+			'catalog_id' => 'wpae-reviewed-unsplash-16x9-v1',
+		];
+	}
+	return [];
+}
+
 function wpae_reference_set_asset_identity( array $reference ): string {
 	$attachment_id = absint( $reference['attachment_id'] ?? 0 );
 	if ( $attachment_id > 0 ) { return 'wp:' . $attachment_id; }
@@ -169,9 +187,18 @@ function wpae_reference_set_resolve_explicit_assets( array $references, ?callabl
 			&& preg_match( '/^unsplash license$/i', trim( (string) ( $reference['license'] ?? '' ) ) )
 			&& ( ( $reference['provenance']['source'] ?? '' ) === 'prompt' || ! empty( $reference['provenance']['approved_catalog'] ) );
 		if ( $external_license_ok ) {
-			$remote = wpae_reference_set_resolve_remote_image( $reference, $remote_resolver );
-			if ( ! empty( $remote['ok'] ) ) { $reference = $remote['reference']; }
-			else { $reference['allowed_reuse'] = false; $reference['provenance']['resolution_error'] = sanitize_key( (string) ( $remote['reason'] ?? 'remote_resolution_failed' ) ); }
+			$catalog = wpae_reference_set_reviewed_catalog_facts( $source );
+			if ( $catalog ) {
+				$reference['asset_facts'] = $catalog['asset_facts'];
+				$reference['license'] = $catalog['license'];
+				$reference['allowed_reuse'] = trim( (string) ( $reference['alt'] ?? '' ) ) !== '';
+				$reference['provenance'] = array_merge( (array) $reference['provenance'], [ 'resolution' => 'verified_reviewed_catalog', 'approved_catalog' => true, 'catalog' => $catalog['catalog_id'], 'reuse_permission' => 'explicit_prompt_license_and_exact_reviewed_catalog_match', 'resolved_dimensions' => [ 1200, 675 ] ] );
+				$reference = wpae_reference_set_normalize( $reference );
+			} else {
+				$remote = wpae_reference_set_resolve_remote_image( $reference, $remote_resolver );
+				if ( ! empty( $remote['ok'] ) ) { $reference = $remote['reference']; }
+				else { $reference['allowed_reuse'] = false; $reference['provenance']['resolution_error'] = sanitize_key( (string) ( $remote['reason'] ?? 'remote_resolution_failed' ) ); }
+			}
 		}
 		$resolved_site_asset = ( $reference['provenance']['reuse_permission'] ?? '' ) === 'explicit_prompt_reference_and_current_user_can_edit';
 		$facts = (array) ( $reference['asset_facts'] ?? [] );

@@ -33,6 +33,11 @@ if ( ! function_exists( 'absint' ) ) {
 		return abs( (int) $value );
 	}
 }
+if ( ! function_exists( 'sanitize_mime_type' ) ) {
+	function sanitize_mime_type( $value ): string {
+		return preg_replace( '/[^a-zA-Z0-9!#$&^_.+-]/', '', (string) $value ) ?? '';
+	}
+}
 if ( ! function_exists( 'wp_json_encode' ) ) {
 	function wp_json_encode( $value, $flags = 0 ): string {
 		return (string) json_encode( $value, $flags );
@@ -863,6 +868,18 @@ $check( ( $blocked_button_compile['validation']['capabilities']['failures'][0]['
 \Elementor\Plugin::$types = [ 'heading', 'text-editor', 'button', 'image', 'icon', 'icon-list', 'divider', 'accordion' ];
 $reference = wpae_reference_set_normalize( [ 'asset_id' => 'hero-image', 'source_url' => 'https://example.com/hero.jpg', 'role' => 'hero', 'focal_point' => [ 'x' => 2, 'y' => -1 ], 'alt' => 'Hero' ] );
 $check( wpae_reference_set_validate( [ $reference ] )['ok'] && (float) $reference['focal_point']['x'] === 1.0 && (float) $reference['focal_point']['y'] === 0.0, 'ReferenceSet metadata validates and clamps focal point' );
+$reviewed_media = wpae_design_plan_default_service_media()[1];
+$reviewed_prompt_reference = [ 'asset_id' => 'prompt_media_0', 'group_id' => 'hero_visual', 'source_url' => $reviewed_media['source_url'], 'role' => 'hero', 'alt' => 'Современный архитектурный интерьер.', 'license' => 'Unsplash License', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'prompt', 'source_span' => [ 50, 180 ] ] ];
+$reviewed_remote_calls = 0;
+$reviewed_resolution = wpae_reference_set_resolve_explicit_assets( [ $reviewed_prompt_reference ], static function () use ( &$reviewed_remote_calls ) { $reviewed_remote_calls++; return null; } );
+$resolved_reviewed = (array) ( $reviewed_resolution['references'][0] ?? [] );
+$check( empty( $reviewed_resolution['errors'] ) && $reviewed_remote_calls === 0 && ( $resolved_reviewed['asset_facts']['width'] ?? 0 ) === 1200 && ( $resolved_reviewed['asset_facts']['height'] ?? 0 ) === 675 && ( $resolved_reviewed['provenance']['catalog'] ?? '' ) === 'wpae-reviewed-unsplash-16x9-v1', 'Exact reviewed catalog image resolves its checked facts without WordPress-host outbound fetch' );
+$check( ( $resolved_reviewed['asset_id'] ?? '' ) === 'prompt_media_0' && ( $resolved_reviewed['group_id'] ?? '' ) === 'hero_visual' && ( $resolved_reviewed['source_url'] ?? '' ) === $reviewed_media['source_url'] && ( $resolved_reviewed['provenance']['source_span'] ?? [] ) === [ 50, 180 ], 'Reviewed catalog resolution preserves prompt asset identity, entity owner, exact URL and source provenance' );
+$unlisted_prompt_reference = $reviewed_prompt_reference;
+$unlisted_prompt_reference['source_url'] .= '&wpae-review-test=1';
+$unlisted_remote_calls = 0;
+$unlisted_resolution = wpae_reference_set_resolve_explicit_assets( [ $unlisted_prompt_reference ], static function () use ( &$unlisted_remote_calls ) { $unlisted_remote_calls++; return null; } );
+$check( $unlisted_remote_calls === 1 && ! empty( $unlisted_resolution['errors'] ) && empty( $unlisted_resolution['references'][0]['allowed_reuse'] ), 'Non-catalog URL cannot inherit reviewed facts and remains gated on remote verification' );
 
 $operation_a = wpae_design_operation_create( [ 'operation_id' => 'op-contract', 'idempotency_key' => 'same-key', 'post_id' => 5214, 'current_state' => 'planned' ] );
 $operation_b = wpae_design_operation_create( [ 'operation_id' => 'op-other', 'idempotency_key' => 'same-key', 'post_id' => 5214, 'current_state' => 'planned' ] );
