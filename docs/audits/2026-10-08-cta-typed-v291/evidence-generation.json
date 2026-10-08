@@ -6,7 +6,9 @@
     "version": "v02.11.291",
     "commit": "261b74e519151257472fb95cba7fd74516ace331",
     "push_command": "reported_success",
-    "independent_remote_head": "not_confirmed_dns_failure"
+    "documentation_commit": "a68114c08140002abe981e5119e00d2df80b66fe",
+    "documentation_push_command": "reported_success",
+    "independent_remote_head_after_push": "a68114c08140002abe981e5119e00d2df80b66fe"
   },
   "installation": {
     "mechanism": "WP Pusher",

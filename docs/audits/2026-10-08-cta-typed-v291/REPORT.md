@@ -11,7 +11,7 @@ There was one live generation, one transaction write, zero repeats and zero manu
 | Status | Evidence |
 |---|---|
 | Source | v02.11.291, runtime commit `261b74e519151257472fb95cba7fd74516ace331`. |
-| Push | `git push` reported success for the runtime commit. Independent remote HEAD was not confirmed: `git ls-remote origin refs/heads/main` returned `Could not resolve host: github.com`. |
+| Push | Runtime `git push` reported success. The scoped documentation/evidence commit `a68114c08140002abe981e5119e00d2df80b66fe` was also pushed; the subsequent independent `git ls-remote origin refs/heads/main` matched that SHA. |
 | Install | WP Pusher reported “Plugin was successfully updated” for WP AI Executor only. |
 | Plugins version | v02.11.291. |
 | Editor version | v02.11.291 in the reloaded existing Elementor editor. |
@@ -102,4 +102,4 @@ The existing v290 public B/C PNGs were reopened without rerunning either generat
 | Cumulative full live generations | Five: historical A–D plus new F; E remains partial. |
 | Other live coverage | `cta.centered` not live-tested. No Services/Process rerun. |
 
-The screenshot/evidence and machine matrix are part of this audit. The source runtime commit and documentation/evidence commit are separate; the latter and independent remote HEAD check are recorded in the handoff status after commit.
+The screenshot/evidence and machine matrix are part of this audit. Runtime source and documentation/evidence are separate commits. The first documentation/evidence push was independently verified at `a68114c08140002abe981e5119e00d2df80b66fe`; the brief follow-up recording that verification is a separate documentation-only commit.
