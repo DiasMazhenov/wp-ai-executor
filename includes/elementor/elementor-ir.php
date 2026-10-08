@@ -2031,8 +2031,19 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		if ( $has_render_policy ) {
 			foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
 				foreach ( [ 'width', 'height' ] as $dimension_name ) {
-					$dimension = wpae_elementor_ir_media_dimension( $render[$dimension_name][$device] ?? '' );
+					$dimension_value = trim( (string) ( $render[$dimension_name][$device] ?? '' ) );
+					$dimension = wpae_elementor_ir_media_dimension( $dimension_value );
 					if ( $dimension ) { $settings[ $dimension_name . $suffix ] = $dimension; }
+				}
+				// Elementor applies Image widget height to the <img>, but a 100%
+				// height cannot resolve while the widget remains an auto-sized flex
+				// item. When the accepted Plan says the image fills its stretched
+				// media track, make that native widget grow on the column axis so the
+				// image's existing height/object-fit controls have a definite frame.
+				if ( ( $render['height'][$device] ?? '' ) === '100%' ) {
+					$settings[ '_flex_size' . $suffix ] = 'grow';
+					$settings[ '_flex_grow' . $suffix ] = 1;
+					$settings[ '_flex_shrink' . $suffix ] = 1;
 				}
 			}
 			if ( in_array( $render['object_fit'] ?? '', [ 'cover', 'contain' ], true ) ) { $settings['object-fit'] = (string) $render['object_fit']; }
