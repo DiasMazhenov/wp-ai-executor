@@ -414,7 +414,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 				}
 				$media_type = in_array( 'image', $allowed, true ) ? 'image' : ( $allowed[0] ?? 'image' );
 				$image = wpae_elementor_ir_node( $child_id . '-asset', 'media_image', $media_type, [], $token_refs, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'media_refs' => $media_refs, 'editable_fields' => [ 'media', 'alt' ] ] );
-				$section_children[] = wpae_elementor_ir_node( $child_id, 'media_group', 'container', [], $token_refs, [ $image ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'media', 'alt' ] ] );
+				$section_children[] = wpae_elementor_ir_node( $child_id, 'media_group', 'container', [], $token_refs, [ $image ], (array) ( $child['layout_constraints'] ?? [ 'min_width' => 0, 'max_width' => 100 ] ), [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'media', 'alt' ] ] );
 			} elseif ( $role === 'process_steps' ) {
 				$step_children = [];
 				$steps = array_values( array_filter( (array) ( $child['steps'] ?? [] ), static fn( $step ): bool => is_array( $step ) && sanitize_key( (string) ( $step['label_ref'] ?? '' ) ) !== '' ) );
@@ -1365,6 +1365,10 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['background_color'] = $token_values['color.surface'];
 		}
 		$surface_override = strtolower( trim( (string) ( $node['layout_constraints']['surface_override'] ?? '' ) ) );
+		if ( $role === 'media_group' && ( $node['layout_constraints']['media_surface_mode'] ?? '' ) === 'transparent' ) {
+			$settings['background_color'] = 'transparent';
+			$settings['background_background'] = 'classic';
+		}
 		if ( preg_match( '/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/i', $surface_override ) ) {
 			$settings['background_color'] = $surface_override;
 			$report['tokens']['resolved'][] = [ 'token' => 'explicit.surface', 'value' => $surface_override, 'source' => 'prompt' ];
@@ -2039,7 +2043,7 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 				$settings['image_border_radius'] = [ 'unit' => '%', 'top' => '50', 'right' => '50', 'bottom' => '50', 'left' => '50', 'isLinked' => true ];
 				$settings['image_border_radius_mobile'] = $settings['image_border_radius'];
 			} elseif ( $shape === 'rounded' ) {
-				$radius_token = sanitize_key( (string) ( $render['radius_token'] ?? '' ) );
+				$radius_token = function_exists( 'wpae_design_token_ref' ) ? wpae_design_token_ref( (string) ( $render['radius_token'] ?? '' ) ) : strtolower( trim( (string) ( $render['radius_token'] ?? '' ) ) );
 				$radius_value = $radius_token !== '' ? (string) ( $token_values[$radius_token] ?? '' ) : '';
 				if ( $radius_value !== '' ) {
 					$settings['image_border_radius'] = wpae_elementor_ir_dimension_control( $radius_value, 'rem', 0.75 );

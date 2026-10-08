@@ -290,18 +290,38 @@ function wpae_design_plan_media_render_policy( array $media, string $family, arr
 		$render['height'] = (array) ( $project['height'] ?? [ 'desktop' => '16rem', 'tablet' => '14rem', 'mobile' => '13rem' ] );
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
 		$render['object_fit'] = in_array( $project['fit'] ?? '', [ 'cover', 'contain' ], true ) ? $project['fit'] : 'cover';
-		$render['radius_token'] = sanitize_key( (string) ( $project['radius_token'] ?? 'radius.card' ) );
+		$project_radius_token = strtolower( trim( (string) ( $project['radius_token'] ?? 'radius.card' ) ) );
+		$render['radius_token'] = in_array( $project_radius_token, [ 'radius.card', 'radius.pill' ], true ) ? $project_radius_token : 'radius.card';
 	} elseif ( in_array( $family, [ 'hero', 'about' ], true ) ) {
-		$render['height'] = (array) ( $policy['section_media']['height'] ?? [ 'desktop' => '30rem', 'tablet' => '24rem', 'mobile' => '18rem' ] );
+		// A split media fills the height owned by its stretched flex track. An
+		// explicit size can still narrow that per-use contract below.
+		$render['height'] = (array) ( $policy['section_media']['height'] ?? [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '18rem' ] );
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
 	} else {
 		$render['height'] = [ 'desktop' => '16rem', 'tablet' => '14rem', 'mobile' => '12rem' ];
 		$render['width'] = [ 'desktop' => '100%', 'tablet' => '100%', 'mobile' => '100%' ];
 	}
-	$explicit_fit = sanitize_key( (string) ( $media['render']['object_fit'] ?? '' ) );
-	if ( in_array( $explicit_fit, [ 'cover', 'contain' ], true ) ) { $render['object_fit'] = $explicit_fit; }
+	$explicit_fields = array_fill_keys( array_map( 'sanitize_key', (array) ( $media['render']['explicit_fields'] ?? [] ) ), true );
+	if ( isset( $explicit_fields['object_fit'] ) ) {
+		$explicit_fit = sanitize_key( (string) ( $media['render']['object_fit'] ?? '' ) );
+		if ( ! in_array( $explicit_fit, [ 'cover', 'contain' ], true ) ) { $explicit_fit = sanitize_key( (string) ( $media['object_fit'] ?? '' ) ); }
+		if ( in_array( $explicit_fit, [ 'cover', 'contain' ], true ) ) { $render['object_fit'] = $explicit_fit; }
+	}
 	$explicit_focal = $media['render']['focal_point'] ?? null;
-	if ( is_array( $explicit_focal ) ) { $render['focal_point'] = $explicit_focal; }
+	if ( isset( $explicit_fields['focal_point'] ) && is_array( $explicit_focal ) ) { $render['focal_point'] = $explicit_focal; }
+	elseif ( is_array( $media['focal_point'] ?? null ) ) { $render['focal_point'] = $media['focal_point']; }
+	foreach ( [ 'width', 'height' ] as $dimension ) {
+		if ( isset( $explicit_fields[$dimension] ) ) {
+			$explicit_dimensions = function_exists( 'wpae_reference_set_responsive_dimensions' ) ? wpae_reference_set_responsive_dimensions( $media['render'][$dimension] ?? [] ) : (array) ( $media['render'][$dimension] ?? [] );
+			$render[$dimension] = array_merge( (array) $render[$dimension], $explicit_dimensions );
+		}
+	}
+	if ( isset( $explicit_fields['shape'] ) && in_array( $media['render']['shape'] ?? '', [ 'natural', 'rounded', 'circle' ], true ) ) {
+		$render['shape'] = $media['render']['shape'];
+	}
+	if ( isset( $explicit_fields['radius_token'] ) && in_array( $media['render']['radius_token'] ?? '', [ 'radius.card', 'radius.pill' ], true ) ) {
+		$render['radius_token'] = $media['render']['radius_token'];
+	}
 	$media['render'] = $render;
 	return $media;
 }
@@ -1287,6 +1307,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		'space.section' => 'space.section',
 		'space.component' => 'space.component',
 		'radius.card' => 'radius.card',
+		'radius.pill' => 'radius.pill',
 	];
 	$section = [
 		'id' => $archetype,
@@ -1327,12 +1348,17 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		][0];
 		$section['children'] = [ $copy_group ];
 		if ( $hero_has_media ) {
+			$media_ref_for_policy = (array) ( $media_references[0] ?? [] );
+			$media_render_for_policy = (array) ( $media_ref_for_policy['render'] ?? [] );
+			$media_render_fields = array_fill_keys( array_map( 'sanitize_key', (array) ( $media_render_for_policy['explicit_fields'] ?? [] ) ), true );
+			$media_shape = isset( $media_render_fields['shape'] ) && in_array( $media_render_for_policy['shape'] ?? '', [ 'natural', 'rounded', 'circle' ], true ) ? (string) $media_render_for_policy['shape'] : 'rounded';
+			$media_radius_token = $media_shape === 'rounded' ? ( isset( $media_render_fields['radius_token'] ) && in_array( $media_render_for_policy['radius_token'] ?? '', [ 'radius.card', 'radius.pill' ], true ) ? (string) $media_render_for_policy['radius_token'] : 'radius.card' ) : '';
 			$media_child = [
 				'role' => 'media',
 				'allowed_widgets' => [ 'image' ],
 				'content_refs' => [],
-				'token_refs' => [ 'color.surface', 'color.border' ],
-				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100 ],
+				'token_refs' => $media_radius_token !== '' ? [ $media_radius_token ] : [],
+				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'media_surface_mode' => 'transparent' ],
 				'responsive_policy' => 'copy_first_stack',
 				'media_refs' => array_values( array_map( static fn( $item ): string => sanitize_key( (string) ( $item['asset_id'] ?? '' ) ), $media_references ) ),
 				'editable_fields' => [ 'media', 'alt' ],

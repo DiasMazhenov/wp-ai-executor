@@ -24,7 +24,7 @@
     "assets/previews/vocario-upcoming-event.jpg": "9303a6e4575b2a0a1d1b3680609e5d9e552c0565ea8a225312558fb908716265",
     "includes/admin/dashboard.php": "b681bc396fb0d317a597271ef2d8e3f5233f723c94fc1d3f0a53fcef071f5014",
     "includes/design/system.php": "c86cf71e30e3f4566e958cfb48dae5afdc1e66b817c8b0e87b85ea76fb6c9331",
-    "includes/design/token-resolution.php": "5753e8863672532550c4ee63bd6ed7c46c72bcd07c82dbb000cbb8bbcd0ec829",
+    "includes/design/token-resolution.php": "4c94ce0153dd4d79193ff20f55da0cbe180c9b55144d06c6fb9ade8d2bd17e6d",
     "includes/elementor/accepted-contract.php": "53f3228990fcb930bfd43aee220f439361ae7b5681051109adaaffbcce34fb33",
     "includes/elementor/block-library.php": "2918200ff37129618d86b002ba74a36013dd3839760ad5963ea85c8c1674267e",
     "includes/elementor/blueprint.php": "913d42c50862889a5664495b4c0615a5e10fbc923fb09ce0a515cc7f32c98e7a",
@@ -56,7 +56,7 @@
     "includes/elementor/design-review.php": "1045943e2c09762b5d80d1e841b6ac0ee82a8f3fc8325958ea1db2ddce63dcc5",
     "includes/elementor/editability.php": "3dbde10a4577f7e4eb6892925aaf3fc0e6b91cb7c69162eb01ba8d769f103599",
     "includes/elementor/editor-chat.php": "3020071626a0fd8314c71a4f0e58fb874585fe2d60f2e9fc795272d0898477f3",
-    "includes/elementor/elementor-ir.php": "807c5e971c7714b305830f94bb215c29577d8e1cfc64be004e010bb32f8260b9",
+    "includes/elementor/elementor-ir.php": "301d93d26ac5d1f105b57fdcde9305c3d89c43942f21bfce49c72b7807dfa95e",
     "includes/elementor/imported-templates/01-homepage.json": "09aa805b6e6f4ae35c44cf8f2c891c9898880d9703dd0d49f9f130b4ce4ac311",
     "includes/elementor/imported-templates/02-services.json": "ffcd7d482aebb6b2d41842e19586ca8b41e0a78ad13400745c554795f2faaadb",
     "includes/elementor/imported-templates/03-pricing.json": "c20dd439cdca41577418bda1251de715d5605ef4c61401f7654bab373190efd4",
@@ -223,7 +223,7 @@
     "includes/elementor/operation-ledger.php": "5ae2d93fc7ffc252ffb008772078c7b750fcefa465a4471d232bd283365cb7d1",
     "includes/elementor/page-update.php": "730de82233388b142b2ee901f93e6b2b39e8682a9aa923c90296a465e7d342b2",
     "includes/elementor/recipes.php": "52d221efb62bc7f3913d2af01f0b8c812a38d87982bd057bc803bba3bea08de8",
-    "includes/elementor/reference-set.php": "9ba8cea81755ebbfb8e722373f5ebd604160c8f9d9a6226b8e400fb0cbc6e9d3",
+    "includes/elementor/reference-set.php": "bd538c8e31d5cc39bf6e52a35dd61ac4bf250b5ff5244425ed9439a634eb3a14",
     "includes/elementor/templates.php": "81d54937d106e0cb542e00b1e1a91e708076d5ac64792c0012e15970035ed3a2",
     "includes/elementor/token-map.php": "75b5ee2f6d18b79d66df911db4b32e9aaf2009a30ad77b6e7db17b63c4323e37",
     "includes/elementor/transactions.php": "f21c64da63b6b29514efc8d8e0098ff5367a5aa7bbda65c0523a33369a4ad347",
@@ -239,7 +239,7 @@
     "includes/llm/brief-ir-structured.php": "22d7fdce547dc6aec956713ea754ee174adde60fd7606f3053a0b7fa592f07de",
     "includes/llm/brief-ir.php": "740989842323be124fae4a3a55a05bf85bc3a36c37bc89f8e99fe8c617cd2e9a",
     "includes/llm/decision-engine.php": "884177728a9d4150a749524fa53877609231a8b0fbab818843ac197778c3162f",
-    "includes/llm/design-plan.php": "0e45a5e269ce2806b95f66231c2e2f8a2e62729659c8220d1431acb0e714d092",
+    "includes/llm/design-plan.php": "542379c7005b2aa7ab5a4e36a8533b952950b8b4a7615f29279684d529df0d6b",
     "includes/llm/design.php": "1db68af1e79436692a8ae8139354a291aea5b3eb84f6deecb5f1822918a2b884",
     "includes/llm/llm.php": "e64676943928e1c8d6142645d51ebac3c935b3502e6d609e102099ae0bc06436",
     "includes/llm/routing.php": "235c283964a969cfdfe8166cdc676aab8ed2e9152d61b28781d30f5031fea230",
@@ -255,6 +255,6 @@
     "includes/updates/self-update.php": "21413e941da08b62c15dd0d51ecb5ed2efc48cdc61ede9e219dd509b82b6e78a",
     "includes/vision/report-store.php": "d1cffd4b25317c9c0af8643bbf0e5bdde5185b21034a47a0df26bda5ed01ce4e",
     "includes/vision/vision.php": "2e1c6ace8c35ad7ff2eee24793fe7a65b620052d0386546a4b183b35197735a6",
-    "wp-ai-executor.php": "8b8ac39db80a2e43601738e8b4f1b8a2998bd29dce46b1ff87ebbfbcaac364f7"
+    "wp-ai-executor.php": "01b68188e34aa44dad269b33cbf9b6173e4d081dd65762396c866a1d0e5c5305"
   }
 }

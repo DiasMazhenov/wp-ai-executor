@@ -37,6 +37,29 @@ function wpae_reference_set_normalize( array $input ): array {
 	$width = isset( $facts['width'] ) && is_numeric( $facts['width'] ) ? absint( $facts['width'] ) : 0;
 	$height = isset( $facts['height'] ) && is_numeric( $facts['height'] ) ? absint( $facts['height'] ) : 0;
 	$render = is_array( $input['render'] ?? null ) ? $input['render'] : [];
+	$radius_token = strtolower( trim( (string) ( $render['radius_token'] ?? '' ) ) );
+	$render_fields = [ 'object_fit', 'focal_point', 'width', 'height', 'shape', 'radius_token' ];
+	$explicit_render_fields = [];
+	if ( is_array( $render['explicit_fields'] ?? null ) ) {
+		$explicit_render_fields = array_values( array_intersect( $render_fields, array_map( 'sanitize_key', $render['explicit_fields'] ) ) );
+	} else {
+		// Record which per-use display choices were actually supplied before
+		// normalization fills default/null fields. This makes repeated normalization
+		// idempotent without mistaking normalized defaults for user decisions.
+		$explicit_render = [
+			'object_fit' => in_array( sanitize_key( (string) ( $render['object_fit'] ?? '' ) ), [ 'cover', 'contain' ], true ),
+			'focal_point' => is_array( $render['focal_point'] ?? null ),
+			'width' => ! empty( wpae_reference_set_responsive_dimensions( $render['width'] ?? [] ) ),
+			'height' => ! empty( wpae_reference_set_responsive_dimensions( $render['height'] ?? [] ) ),
+			'shape' => in_array( sanitize_key( (string) ( $render['shape'] ?? '' ) ), [ 'natural', 'rounded', 'circle' ], true ),
+			'radius_token' => in_array( $radius_token, [ 'radius.card', 'radius.pill' ], true ),
+		];
+		foreach ( $explicit_render as $field => $provided ) { if ( $provided ) { $explicit_render_fields[] = $field; } }
+		// Older callers may provide focal position directly on ReferenceSet. Keep
+		// that data available as a fallback, but do not treat the historical
+		// top-level object_fit default as an explicit override of role policy.
+		if ( is_array( $input['focal_point'] ?? null ) && ! in_array( 'focal_point', $explicit_render_fields, true ) ) { $explicit_render_fields[] = 'focal_point'; }
+	}
 	return [
 		'asset_id' => sanitize_key( (string) ( $input['asset_id'] ?? '' ) ),
 		'group_id' => sanitize_key( (string) ( $input['group_id'] ?? '' ) ),
@@ -59,12 +82,13 @@ function wpae_reference_set_normalize( array $input ): array {
 		// Intrinsic file facts are separate from the per-composition render policy.
 		'asset_facts' => $width > 0 && $height > 0 ? [ 'width' => $width, 'height' => $height, 'aspect_ratio' => round( $width / $height, 5 ), 'mime' => sanitize_mime_type( (string) ( $facts['mime'] ?? '' ) ) ] : [],
 		'render' => [
+			'explicit_fields' => $explicit_render_fields,
 			'object_fit' => in_array( sanitize_key( (string) ( $render['object_fit'] ?? '' ) ), [ 'cover', 'contain' ], true ) ? sanitize_key( (string) $render['object_fit'] ) : null,
 			'focal_point' => is_array( $render['focal_point'] ?? null ) ? [ 'x' => max( 0, min( 1, (float) ( $render['focal_point']['x'] ?? 0.5 ) ) ), 'y' => max( 0, min( 1, (float) ( $render['focal_point']['y'] ?? 0.5 ) ) ) ] : null,
 			'width' => wpae_reference_set_responsive_dimensions( $render['width'] ?? [] ),
 			'height' => wpae_reference_set_responsive_dimensions( $render['height'] ?? [] ),
 			'shape' => in_array( sanitize_key( (string) ( $render['shape'] ?? '' ) ), [ 'natural', 'rounded', 'circle' ], true ) ? sanitize_key( (string) $render['shape'] ) : 'natural',
-			'radius_token' => in_array( sanitize_key( (string) ( $render['radius_token'] ?? '' ) ), [ 'radius.card', 'radius.pill' ], true ) ? sanitize_key( (string) $render['radius_token'] ) : null,
+			'radius_token' => in_array( $radius_token, [ 'radius.card', 'radius.pill' ], true ) ? $radius_token : null,
 		],
 	];
 }

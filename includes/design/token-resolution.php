@@ -22,6 +22,7 @@ function wpae_design_token_defaults(): array {
 		'space.section' => '4.5rem',
 		'space.component' => '1.5rem',
 		'radius.card' => '0.5rem',
+		'radius.pill' => '999px',
 	];
 }
 
