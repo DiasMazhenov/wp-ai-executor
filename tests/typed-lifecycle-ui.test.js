@@ -77,6 +77,15 @@ test('refreshed but ineligible descriptor exposes server revision and stops befo
  assert.equal(posts.length,1);assert.equal(posts[0].context.lifecycle_action,'describe_operation');assert.ok(errors[0].includes('revision 11'));assert.ok(errors[0].includes('changed_target/owned_fingerprint_changed'));assert.ok(!env.reload);
 });
 
+test('read-only descriptor shows only the server-approved native mismatch fields',async()=>{
+ const {env,posts,errors}=harness();
+ env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);return {ok:true,json:async()=>({ok:true,write_count:0,operation:{post_id:5214,operation_id:'child',operation_identity:'identity',accepted_contract_id:'contract',accepted_contract_hash:'contract-hash',root_ids:['owned'],revision:9,eligibility:{status:'changed_target',reason:'owned_fingerprint_changed',mismatch:{node_id:'owned',control:'padding',reason:'extra_nondefault_control',value:'must-not-be-exposed'}}}})};};
+ const op={status:'changed_target',operation_id:'child',operation_identity:'identity',revision:9,accepted_contract_id:'contract',accepted_contract_hash:'contract-hash',root_ids:['owned']};
+ env.addTypedUndoControl(op);env.messages.children[0].children[1].listeners.click();await new Promise(r=>setImmediate(r));
+ assert.equal(posts.length,1);assert.equal(posts[0].context.lifecycle_action,'describe_operation');
+ assert.ok(errors[0].includes('node_id'));assert.ok(errors[0].includes('padding'));assert.ok(errors[0].includes('extra_nondefault_control'));assert.ok(!errors[0].includes('must-not-be-exposed'));assert.ok(errors[0].includes('write_count=0'));
+});
+
 test('descriptor scope mismatch stops before owned check and mutation',async()=>{
  const {env,posts,errors}=harness();
  env.fetch=async(url,o)=>{const p=JSON.parse(o.body);posts.push(p);return {ok:true,json:async()=>({ok:true,operation:{post_id:5214,operation_id:'child',operation_identity:'foreign-identity',accepted_contract_id:'contract',root_ids:['owned'],revision:5,eligibility:{status:'available'}}})};};

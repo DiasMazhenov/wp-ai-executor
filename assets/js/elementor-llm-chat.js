@@ -1914,6 +1914,15 @@
             return { operation: operation, eligibility: eligibility, write_count: Number(result.write_count || 0), composition_evidence: operation.composition_evidence };
         });
     }
+    function formatTypedEligibilityMismatch(eligibility) {
+        var mismatch = eligibility && eligibility.mismatch;
+        if (!mismatch || typeof mismatch !== 'object') return '';
+        var safe = {};
+        ['node_id', 'control', 'reason'].forEach(function (key) {
+            if (typeof mismatch[key] === 'string' && mismatch[key] !== '') safe[key] = mismatch[key];
+        });
+        return Object.keys(safe).length ? ' mismatch=' + JSON.stringify(safe) : '';
+    }
     function formatCompositionEvidence(evidence) {
         if (!evidence || evidence.schema !== 'wpae-composition-evidence-v1') return 'composition evidence unavailable';
         return 'composition evidence: ' + JSON.stringify({
@@ -1931,7 +1940,7 @@
     function refreshTypedOperationDescriptor(operation) {
         return describeTypedOperation(operation).then(function (fresh) {
             if (fresh.eligibility.status !== 'available') {
-                throw new Error('Серверный descriptor revision ' + Number(operation.revision || 0) + ': owned-модель не разрешает lifecycle (' + String(fresh.eligibility.status || 'unknown') + (fresh.eligibility.reason ? '/' + String(fresh.eligibility.reason) : '') + '). Запись не выполнялась.');
+                throw new Error('Серверный descriptor revision ' + Number(operation.revision || 0) + ': owned-модель не разрешает lifecycle (' + String(fresh.eligibility.status || 'unknown') + (fresh.eligibility.reason ? '/' + String(fresh.eligibility.reason) : '') + ').' + formatTypedEligibilityMismatch(fresh.eligibility) + ' Запись не выполнялась.');
             }
             return operation;
         });
@@ -2015,7 +2024,7 @@
             describeTypedOperation(descriptor).then(function (fresh) {
                 button.disabled = fresh.eligibility.status !== 'available';
                 button.title = String(fresh.eligibility.status || '') + ': ' + String(fresh.eligibility.reason || descriptor.operation_id || '');
-                addMessage('assistant', 'Свежий read-only descriptor: operation ' + descriptor.operation_id + ', revision ' + descriptor.revision + ', status ' + fresh.eligibility.status + (fresh.eligibility.reason ? '/' + fresh.eligibility.reason : '') + '. write_count=0. ' + formatCompositionEvidence(fresh.composition_evidence));
+                addMessage('assistant', 'Свежий read-only descriptor: operation ' + descriptor.operation_id + ', revision ' + descriptor.revision + ', status ' + fresh.eligibility.status + (fresh.eligibility.reason ? '/' + fresh.eligibility.reason : '') + '.' + formatTypedEligibilityMismatch(fresh.eligibility) + ' write_count=0. ' + formatCompositionEvidence(fresh.composition_evidence));
             }).catch(function (error) { addMessage('assistant', 'Descriptor не обновлён: ' + error.message); }).finally(function () { describe.disabled = false; });
         });
         row.appendChild(describe);
