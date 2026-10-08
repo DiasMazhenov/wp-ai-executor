@@ -602,7 +602,24 @@ $faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
 $faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
-$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v16', 'BriefIR provenance version tracks the current prompt parser contract' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v17', 'BriefIR provenance version tracks the current prompt parser contract' );
+$focus_test_url = 'https://images.unsplash.com/photo-1774516534068-77422d9226e6?auto=format&fit=crop&w=1800&q=85';
+$focus_test_prompt = "Hero\nЗаголовок: «Изображение с явной точкой фокуса»\nКонтекст: «" . str_repeat( 'Ж', 120 ) . "»\nИзображение: {$focus_test_url}\nФокус кадра: центр слева\nAlt: «Архитектурное пространство для теста кадрирования»\nLicense: «Unsplash License»";
+$focus_test_brief = wpae_brief_ir_parse( $focus_test_prompt );
+$focus_test_ref = (array) ( $focus_test_brief['media_references'][0] ?? [] );
+$focus_test_expected_span_start = strpos( $focus_test_prompt, 'центр слева' );
+$focus_test_expected_span = [ $focus_test_expected_span_start, $focus_test_expected_span_start + strlen( 'центр слева' ) ];
+$check( ( $focus_test_ref['focal_point'] ?? [] ) === [ 'x' => 0.1, 'y' => 0.5 ] && ( $focus_test_ref['focal_point_provenance']['source'] ?? '' ) === 'brief_explicit' && ( $focus_test_ref['focal_point_provenance']['source_span'] ?? [] ) === $focus_test_expected_span && substr( $focus_test_prompt, $focus_test_expected_span[0], $focus_test_expected_span[1] - $focus_test_expected_span[0] ) === 'центр слева', 'BriefIR extracts explicit Russian focal intent with exact UTF-8 source span after a multibyte prefix' );
+$focus_group_url = 'https://images.unsplash.com/photo-1638727295415-286409421143?auto=format&fit=crop&w=800&q=80';
+$focus_group_prompt = "Блок отзывов\nОтзыв 1 — автор: «Синтетический участник»\nОтзыв 1 — фото-аватар, фокус кадра: нижний центр: {$focus_group_url}\nAlt: «Синтетический портрет для проверки»\nLicense: «Unsplash License»\nОтзыв 2 — автор: «Другой участник»\nОтзыв 2 — фото-аватар: {$focus_group_url}\nФокус кадра: верхний правый\nAlt: «Другой синтетический портрет»\nLicense: «Unsplash License»";
+$focus_group_brief = wpae_brief_ir_parse( $focus_group_prompt );
+$focus_group_refs = (array) ( $focus_group_brief['media_references'] ?? [] );
+$focus_group_first_expected = [ strpos( $focus_group_prompt, 'нижний центр' ), strpos( $focus_group_prompt, 'нижний центр' ) + strlen( 'нижний центр' ) ];
+$focus_group_second_expected = [ strpos( $focus_group_prompt, 'верхний правый' ), strpos( $focus_group_prompt, 'верхний правый' ) + strlen( 'верхний правый' ) ];
+$check( count( $focus_group_refs ) === 2 && ( $focus_group_refs[0]['focal_point'] ?? [] ) === [ 'x' => 0.5, 'y' => 0.9 ] && ( $focus_group_refs[0]['focal_point_provenance']['source_span'] ?? [] ) === $focus_group_first_expected && ( $focus_group_refs[1]['focal_point'] ?? [] ) === [ 'x' => 0.9, 'y' => 0.1 ] && ( $focus_group_refs[1]['focal_point_provenance']['source_span'] ?? [] ) === $focus_group_second_expected && ( $focus_group_refs[0]['group_id'] ?? '' ) === 'testimonial_1' && ( $focus_group_refs[1]['group_id'] ?? '' ) === 'testimonial_2', 'Focal declarations before and after grouped image URLs stay bound to the correct entity and exact source spans' );
+$focus_unknown_brief = wpae_brief_ir_parse( "Hero\nИзображение: {$focus_test_url}\nФокус кадра: чуть левее, примерно у лица\nAlt: «Изображение без нормализуемого направления»" );
+$focus_english_brief = wpae_brief_ir_parse( "Hero\nImage: {$focus_test_url}\nFocal point: bottom right\nAlt: «Synthetic test image»\nLicense: «Unsplash License»" );
+$check( ( $focus_unknown_brief['media_references'][0]['focal_point'] ?? null ) === null && empty( $focus_unknown_brief['media_references'][0]['focal_point_provenance'] ) && ( $focus_english_brief['media_references'][0]['focal_point'] ?? [] ) === [ 'x' => 0.9, 'y' => 0.9 ] && substr( $focus_english_brief['source_text'], (int) ( $focus_english_brief['media_references'][0]['focal_point_provenance']['source_span'][0] ?? 0 ), strlen( 'bottom right' ) ) === 'bottom right', 'Unsupported focal prose stays unresolved while an explicit English native direction maps to the supported grid' );
 $check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['ok'] ) && ( $faq_widget['widgetType'] ?? '' ) === 'accordion', 'FAQ uses the existing typed pipeline and compiles to Elementor Accordion' );
 $check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
 $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ '<p>Сначала согласуем задачу, затем соберём страницу.</p>', '<p>Да, каждый текст остаётся редактируемым.</p>' ], 'Accordion freezes exact plain answers in the Elementor WYSIWYG native paragraph representation' );
@@ -1069,6 +1086,11 @@ $walk_elements = static function ( array $nodes ) use ( &$walk_elements ): array
 	}
 	return $all;
 };
+$focus_test_plan = wpae_design_plan_from_brief( $focus_test_brief, [ 'canonical_create' => true, 'composition_record' => 'hero.split_60_40.right', 'visual_profile' => 'editorial_light' ] );
+$focus_test_ir = wpae_elementor_ir_from_design_plan( $focus_test_plan, $focus_test_brief );
+$focus_test_native = wpae_native_elementor_compile( $focus_test_ir, $focus_test_brief, [], [ 'resolved_visual' => $focus_test_plan['resolved_visual'] ?? [], 'id_seed' => 'explicit-media-focus-intake' ] );
+$focus_test_native_image = array_values( array_filter( $walk_elements( (array) ( $focus_test_native['elementor_data'] ?? [] ) ), static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) )[0] ?? [];
+$check( ! empty( $focus_test_native['ok'] ) && ( $focus_test_plan['media_references'][0]['render']['focal_point'] ?? [] ) === [ 'x' => 0.1, 'y' => 0.5 ] && ( $focus_test_plan['media_references'][0]['render']['focal_point_provenance']['source'] ?? '' ) === 'brief_explicit' && ( $focus_test_plan['media_references'][0]['render']['focal_point_provenance']['source_span'] ?? [] ) === $focus_test_expected_span && ( $focus_test_native_image['settings']['object-position'] ?? '' ) === 'center left', 'Explicit Brief crop freezes into DesignPlan and lowers unchanged to Elementor native object-position' );
 $compile_prompt = static function ( string $prompt, string $seed ) use ( $walk_elements ): array {
 	$brief = wpae_brief_ir_parse( $prompt );
 	$plan = wpae_design_plan_from_brief( $brief );

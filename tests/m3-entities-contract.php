@@ -74,6 +74,20 @@ check( ! empty( $m3_avatar_result['response']['ok'] ) && ( $m3_avatar_result['re
 $m3_avatar_composition = (array) ( $m3_avatar_trace['plan']['composition_decision'] ?? [] );
 $m3_avatar_item_slots = array_values( array_filter( (array) ( $m3_avatar_composition['slot_bindings'] ?? [] ), static fn( array $slot ): bool => ( $slot['role'] ?? '' ) === 'testimonial_cards' ) )[0]['items'] ?? [];
 check( count( $m3_avatar_native_order ) === 3 && array_column( $m3_avatar_native_order, 'url' ) === array_keys( $m3_avatar_urls ) && array_column( $m3_avatar_native_order, 'fit' ) === [ 'cover', 'cover', 'cover' ] && array_column( $m3_avatar_native_order, 'position' ) === [ 'top center', 'top center', 'top center' ] && array_column( $m3_avatar_native_order, 'alt' ) === array_values( $m3_avatar_urls ) && array_column( $m3_avatar_item_slots, 'group_id' ) === [ 'testimonial_1', 'testimonial_2', 'testimonial_3' ] && array_column( $m3_avatar_item_slots, 'media_ref' ) === [ 'prompt_media_0', 'prompt_media_1', 'prompt_media_2' ] && ( $m3_avatar_composition['record_id'] ?? '' ) === 'testimonials.grid' && ( $m3_avatar_composition['visual_profile'] ?? '' ) === 'soft_cards_light' && ( $m3_avatar_composition['source'] ?? '' ) === 'explicit_record', 'Production chat preserves image/alt/entity ownership, the selected grid/profile and supported top-center native crop' );
+$m3_first_avatar_url = (string) array_key_first( $m3_avatar_urls );
+$m3_explicit_focus_prompt = str_replace( $m3_first_avatar_url . "\nAlt:", $m3_first_avatar_url . "\nФокус кадра: нижний центр\nAlt:", $m3_avatar_prompt, $m3_explicit_focus_replacements );
+$m3_explicit_focus_result = $run_services_route( $m3_explicit_focus_prompt, [], $incompatible_pricing_fixture, 'm3-avatar-explicit-focus-chat-route', false, 'active', 'active', [ 'composition_record' => 'testimonials.grid', 'composition_version' => 1, 'visual_profile' => 'soft_cards_light' ] );
+$m3_explicit_focus_images = [];
+$m3_collect_explicit_focus_images = static function ( array $nodes ) use ( &$m3_collect_explicit_focus_images, &$m3_explicit_focus_images ): void {
+ foreach ( $nodes as $node ) {
+  if ( ! is_array( $node ) ) { continue; }
+  if ( ( $node['elType'] ?? '' ) === 'widget' && ( $node['widgetType'] ?? '' ) === 'image' ) { $m3_explicit_focus_images[] = (array) ( $node['settings'] ?? [] ); }
+  $m3_collect_explicit_focus_images( (array) ( $node['elements'] ?? [] ) );
+ }
+};
+$m3_collect_explicit_focus_images( (array) ( $m3_explicit_focus_result['written']['elements'] ?? [] ) );
+$m3_explicit_focus_trace = (array) ( $m3_explicit_focus_result['response']['diagnostics']['design_pipeline'] ?? [] );
+check( $m3_explicit_focus_replacements === 1 && ! empty( $m3_explicit_focus_result['response']['ok'] ) && $m3_explicit_focus_result['provider_call_count'] === 0 && $m3_explicit_focus_result['writes'] === 1 && ( $m3_explicit_focus_trace['brief']['hash'] ?? '' ) !== '' && ( $m3_explicit_focus_trace['plan']['brief_hash'] ?? '' ) === $m3_explicit_focus_trace['brief']['hash'] && count( $m3_explicit_focus_images ) === 3 && ( $m3_explicit_focus_images[0]['object-position'] ?? '' ) === 'bottom center' && array_column( $m3_explicit_focus_images, 'object-position' ) === [ 'bottom center', 'top center', 'top center' ], 'Ordinary plugin-chat path honors the explicit first-avatar focal point, defaults the other assets, and performs one transaction write' );
 foreach ( [ 'test_home_url' => $m3_prior_home_url, 'm3_attachment_ids_by_url' => $m3_prior_attachment_ids_by_url, 'm3_attachment_ids_by_id' => $m3_prior_attachment_ids_by_id, 'm3_attachment_metadata' => $m3_prior_attachment_metadata, 'test_attachment_meta' => $m3_prior_attachment_meta ] as $m3_global => $m3_value ) {
  if ( $m3_value === null ) { unset( $GLOBALS[ $m3_global ] ); } else { $GLOBALS[ $m3_global ] = $m3_value; }
 }

@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v16';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v17';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -35,6 +35,35 @@ function wpae_brief_ir_utf8_slice( string $text, int $offset, int $length ): str
 function wpae_brief_ir_normalize_text( string $text ): string {
 	$text = trim( preg_replace( '/\s+/u', ' ', $text ) ?? $text );
 	return trim( $text, " \t\n\r\0\x0B.,;:" );
+}
+
+/** Parse only explicit, native-representable 3x3 image focal directions from the image's own prompt segment. */
+function wpae_brief_ir_parse_media_focal_point( string $media_text ): array {
+	if ( ! preg_match( '/(?<![\p{L}\p{N}_])(?:фокус(?:\s+(?:кадра|изображения|фото))?|focal(?:\s+point)?)[ \t]*[:=][ \t]*(?<position>[^\r\n;.!?]{1,80})/iu', $media_text, $match, PREG_OFFSET_CAPTURE ) ) {
+		return [];
+	}
+	$raw_position = (string) $match['position'][0];
+	$leading_trim = strlen( $raw_position ) - strlen( ltrim( $raw_position ) );
+	$position = trim( preg_replace( '/\s*\([^)]*\)\s*$/u', '', $raw_position ) ?? $raw_position );
+	$position = trim( $position, " \t\r\n.,:;()" );
+	$aliases = [
+		'/^(?:top|upper)\s+left$|^верхн(?:ий|яя|ее)\s+лев(?:ый|ая|ое)$|^слева\s+сверху$/iu' => [ 'x' => 0.1, 'y' => 0.1 ],
+		'/^(?:top|upper)\s+cent(?:er|re)$|^верхн(?:ий|яя|ее)\s+центр(?:\w*)?$|^сверху\s+(?:по\s+)?центру$|^центр\s+сверху$/iu' => [ 'x' => 0.5, 'y' => 0.1 ],
+		'/^(?:top|upper)\s+right$|^верхн(?:ий|яя|ее)\s+прав(?:ый|ая|ое)$|^справа\s+сверху$/iu' => [ 'x' => 0.9, 'y' => 0.1 ],
+		'/^(?:middle|center|centre)\s+left$|^центр(?:\w*)?\s+слева$|^слева\s+(?:по\s+)?центру$/iu' => [ 'x' => 0.1, 'y' => 0.5 ],
+		'/^(?:(?:middle|center|centre)\s+(?:middle|center|centre)|center)$|^центр(?:\w*)?(?:\s+по\s+центру)?$/iu' => [ 'x' => 0.5, 'y' => 0.5 ],
+		'/^(?:middle|center|centre)\s+right$|^центр(?:\w*)?\s+справа$|^справа\s+(?:по\s+)?центру$/iu' => [ 'x' => 0.9, 'y' => 0.5 ],
+		'/^bottom\s+left$|^нижн(?:ий|яя|ее)\s+лев(?:ый|ая|ое)$|^слева\s+снизу$/iu' => [ 'x' => 0.1, 'y' => 0.9 ],
+		'/^bottom\s+(?:cent(?:er|re)|middle)$|^нижн(?:ий|яя|ее)\s+центр(?:\w*)?$|^снизу\s+(?:по\s+)?центру$|^центр\s+снизу$/iu' => [ 'x' => 0.5, 'y' => 0.9 ],
+		'/^bottom\s+right$|^нижн(?:ий|яя|ее)\s+прав(?:ый|ая|ое)$|^справа\s+снизу$/iu' => [ 'x' => 0.9, 'y' => 0.9 ],
+	];
+	foreach ( $aliases as $pattern => $point ) {
+		if ( preg_match( $pattern, $position ) ) {
+			$span_start = (int) $match['position'][1] + $leading_trim;
+			return [ 'point' => $point, 'source_span' => [ $span_start, $span_start + strlen( $position ) ] ];
+		}
+	}
+	return [];
 }
 
 function wpae_brief_ir_normalize_url( $value ): string {
@@ -1217,12 +1246,31 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					$role = 'hero';
 				}
 				$alt = '';
-				$local_media_text = wpae_brief_ir_utf8_slice( $source_text, max( 0, (int) $url_match[1] - 180 ), 700 );
+				$local_media_start = max( 0, (int) $url_match[1] - 180 );
+				// Keep byte-based PCRE offsets aligned with the valid UTF-8 slice below.
+				while ( $local_media_start > 0 && preg_match( '//u', substr( $source_text, 0, $local_media_start ) ) !== 1 ) {
+					$local_media_start++;
+				}
+				$local_media_text = wpae_brief_ir_utf8_slice( $source_text, $local_media_start, 700 );
 				if ( $group_id !== '' ) {
 					// Metadata is owned by this image segment, never borrowed from a previous entity.
-					$local_media_text = substr( $source_text, (int) $url_match[1] + strlen( $url ) );
+					$local_media_start = (int) $url_match[1] + strlen( $url );
+					$local_media_text = substr( $source_text, $local_media_start );
 					if ( preg_match( '/\n\s*(?:участник\w*|сотрудник\w*|услуг\w*|отзыв\w*|проект|работа|кейс|team\s+member|service|testimonial|review|project|case)\s*#?\d+/iu', $local_media_text, $next_owner, PREG_OFFSET_CAPTURE ) ) { $local_media_text = substr( $local_media_text, 0, (int) $next_owner[0][1] ); }
 				}
+				$focal = wpae_brief_ir_parse_media_focal_point( $local_media_text );
+				$focal_source_base = $local_media_start;
+				if ( $group_id !== '' && empty( $focal['source_span'] ) ) {
+					// A focal declaration may share the owning image line before its URL.
+					// Limit this fallback to that line so it cannot borrow prior entity metadata.
+					$line_start = strrpos( substr( $source_text, 0, (int) $url_match[1] ), "\n" );
+					$line_start = $line_start === false ? 0 : $line_start + 1;
+					$focal = wpae_brief_ir_parse_media_focal_point( substr( $source_text, $line_start, (int) $url_match[1] - $line_start ) );
+					$focal_source_base = $line_start;
+				}
+				$focal_source_span = ! empty( $focal['source_span'] )
+					? [ $focal_source_base + (int) $focal['source_span'][0], $focal_source_base + (int) $focal['source_span'][1] ]
+					: null;
 
 				if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)\s*[:\-]?\s*(?:«([^»]{1,300})»|"([^"]{1,300})"|“([^”]{1,300})”)/iu', $local_media_text, $alt_match ) ) {
 					$alt = trim( (string) ( $alt_match[1] ?: ( $alt_match[2] ?: $alt_match[3] ) ) );
@@ -1246,14 +1294,15 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					'purpose' => $role === 'avatar' ? 'avatar' : ( $role === 'portrait' ? 'portrait' : ( $role === 'project_image' ? 'project_image' : ( in_array( $role, [ 'hero', 'about' ], true ) ? 'section_image' : null ) ) ),
 					'group_id' => $group_id,
 					'alt' => $alt,
-					'focal_point' => null,
+					'focal_point' => $focal['point'] ?? null,
+					'focal_point_provenance' => $focal_source_span !== null ? [ 'source' => 'brief_explicit', 'source_span' => $focal_source_span ] : [],
 					'crop' => null,
 					'object_fit' => 'cover',
 					'license' => $license,
 					'attribution' => $attribution,
 					'allowed_reuse' => (bool) $allowed_reuse,
 					'allow_shared_asset' => $reuse_authorization_span !== null,
-					'provenance' => array_filter( [ 'source' => 'prompt', 'source_span' => [ (int) $url_match[1], (int) $url_match[1] + strlen( $url ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION, 'reuse_authorization_source_span' => $reuse_authorization_span ], static fn( $value ): bool => $value !== null ),
+					'provenance' => array_filter( [ 'source' => 'prompt', 'source_span' => [ (int) $url_match[1], (int) $url_match[1] + strlen( $url ) ], 'source_spans' => $focal_source_span !== null ? [ 'focal_point' => $focal_source_span ] : null, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION, 'reuse_authorization_source_span' => $reuse_authorization_span ], static fn( $value ): bool => $value !== null ),
 				];
 			}
 		}
