@@ -122,3 +122,7 @@ CSS viewport: desktop 1280×900, raster 1280×900; mobile 390×844, raster 390×
 - Live generation: four writes across A–D, all through the typed plugin-chat pipeline. A is the single justified exact-fixture replay after the v301 focal-intake source fix; B–D are one first generation each. There was no evidence-only replay.
 - Full acceptance: 3/5. A–C count; D is partial due blocked guarded Undo; E not run.
 - Page restoration: incomplete; public D root and dirty editor-only empty root remain as above.
+
+## Publication verification after checkpoint commit
+
+The scoped evidence/documentation commit `d3f55168c9cbd41cbf874202cbeb85b5fd6cdcc8` was pushed (`8662a40..d3f5516 main -> main`). `git ls-remote` could not resolve `github.com`, but the connected GitHub API compare of `main` against this SHA returned `identical`, `ahead_by=0`, `behind_by=0`; remote `main` is independently confirmed as `d3f55168c9cbd41cbf874202cbeb85b5fd6cdcc8`. This verifies the evidence commit and its runtime ancestor; it does not change the live acceptance status (3/5).

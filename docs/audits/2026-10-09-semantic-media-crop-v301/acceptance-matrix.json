@@ -4,7 +4,7 @@
   "post_id": 5214,
   "runtime_version": "v02.11.301",
   "source_commit": "8662a40564fe6cb5556e9e36e5ef2d6711d3e622",
-  "source_push": "git push reported success; independent ls-remote retry failed with DNS resolution for github.com",
+  "source_push": "Runtime push had reported success. Evidence commit d3f55168c9cbd41cbf874202cbeb85b5fd6cdcc8 was pushed. git ls-remote failed DNS resolution, then the connected GitHub API compare returned remote main identical to d3f55168c9cbd41cbf874202cbeb85b5fd6cdcc8 (ahead_by=0, behind_by=0); runtime commit is its ancestor.",
   "install": {
     "method": "WP Pusher UI, existing tab",
     "status": "Plugin updated; independent version checks were completed before live scenarios",
