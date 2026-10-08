@@ -533,6 +533,9 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	}
 	if ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
 	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && ( $policy['collection']['axis'] ?? '' ) === 'grid' && isset( $policy['collection']['surface_alignment'] ) ) {
+		$node['visual_policy']['collection_item_alignment'] = $policy['collection']['surface_alignment'];
+	}
 	if ( $role === 'pricing_price_group' && isset( $policy['inline_value'] ) ) { $node['visual_policy']['inline_value'] = $policy['inline_value']; }
 	if ( $intro && $node['widget_type'] === 'container' && in_array( $role, [ 'copy_group', 'cta_copy_group', 'pricing_intro' ], true ) ) { $node['visual_policy']['reading_measure'] = $policy['intro']['reading_measure']; }
 	if ( in_array( $role, [ 'feature_cards', 'feature_list', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid', 'services_text_icon_list', 'services_icon_cards', 'process_steps' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
@@ -614,6 +617,10 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		$settings['border_radius'] = $radius;
 		$settings['background_color'] = $policy['item_surface']['background'];
 	}
+	if ( isset( $policy['collection_item_alignment'] ) ) {
+		$align_self = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end', 'stretch' => 'stretch' ][ (string) $policy['collection_item_alignment'] ] ?? 'flex-start';
+		$settings['align_self'] = $settings['align_self_tablet'] = $settings['align_self_mobile'] = $align_self;
+	}
 	if ( ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'testimonial_card', 'entity_identity', 'entity_copy', 'services_photo_content', 'services_text_icon_copy', 'card_body', 'services_photo_panel' ], true ) && ! ( $role === 'card_body' && isset( $policy['entity_layout']['tracks'] ) ) ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
 		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
 		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
@@ -673,7 +680,8 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 				? [ 'unit' => '%', 'size' => (float) rtrim( $width, '%' ), 'sizes' => [] ]
 				: [ 'unit' => 'custom', 'size' => 'min(100%, ' . $width . ')', 'sizes' => [] ];
 			$settings[ 'width' . $suffix ] = $settings[ '_element_custom_width' . $suffix ] = $dimension;
-			$settings[ 'align_self' . $suffix ] = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $collection['alignment'] ?? 'start' ];
+			$collection_alignment = (string) ( $collection['alignment'] ?? 'start' );
+			$settings[ 'align_self' . $suffix ] = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $collection_alignment ] ?? 'flex-start';
 			$settings[ '_element_width' . $suffix ] = 'initial';
 			$settings[ '_flex_size' . $suffix ] = 'custom';
 			$settings[ '_flex_grow' . $suffix ] = $settings[ 'flex_grow' . $suffix ] = 0;

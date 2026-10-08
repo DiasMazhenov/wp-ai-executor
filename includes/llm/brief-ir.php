@@ -1114,6 +1114,16 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$radius_span = [ (int) $radius_match[0][1], (int) $radius_match[0][1] + strlen( (string) $radius_match[0][0] ) ];
 		$constraints[] = [ 'id' => 'border_radius', 'kind' => 'border_radius', 'value' => $radius . $unit, 'source_span' => $radius_span, 'provenance' => [ 'source' => 'prompt', 'source_span' => $radius_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];
 	}
+	if ( preg_match( '/(?:desktop|десктоп)[^\d]{0,24}([1-6])\s*(?:колон\w*|columns?)[^\d]{0,80}(?:tablet|планшет\w*)[^\d]{0,24}([1-6])\s*(?:колон\w*|columns?)[^\d]{0,80}(?:mobile|мобильн\w*)[^\d]{0,24}([1-6])\s*(?:колон\w*|columns?)/iu', $source_text, $column_match, PREG_OFFSET_CAPTURE ) ) {
+		$column_span = [ (int) $column_match[0][1], (int) $column_match[0][1] + strlen( (string) $column_match[0][0] ) ];
+		$constraints[] = [
+			'id' => 'collection_columns_' . (int) $column_match[1][0] . '_' . (int) $column_match[2][0] . '_' . (int) $column_match[3][0],
+			'kind' => 'collection_columns',
+			'value' => [ 'desktop' => (int) $column_match[1][0], 'tablet' => (int) $column_match[2][0], 'mobile' => (int) $column_match[3][0] ],
+			'source_span' => $column_span,
+			'provenance' => [ 'source' => 'prompt', 'source_span' => $column_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+		];
+	}
 	if ( preg_match( '/(?:тонк\w*\s+)?(?:светло[-\s]?сер\w*\s+)?(?:обводк\w*|границ\w*)|(?:light[-\s]?gr[ae]y\s+border)/iu', $source_text, $border_match, PREG_OFFSET_CAPTURE ) ) {
 		$border_span = [ (int) $border_match[0][1], (int) $border_match[0][1] + strlen( (string) $border_match[0][0] ) ];
 		$constraints[] = [ 'id' => 'border_color_token', 'kind' => 'border_color_token', 'value' => 'color.border', 'source_span' => $border_span, 'provenance' => [ 'source' => 'prompt', 'source_span' => $border_span, 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ] ];

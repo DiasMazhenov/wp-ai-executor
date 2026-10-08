@@ -38,6 +38,20 @@ function wpae_design_plan_constraint_value( array $brief, string $kind, $default
 	return $default;
 }
 
+/** Pick a balanced default track count without family-specific item-count branches. */
+function wpae_design_plan_default_collection_columns( int $item_count, int $max_columns = 3 ): int {
+	$item_count = max( 1, $item_count );
+	$max_columns = max( 1, min( 6, $max_columns ) );
+	$best = 1;
+	$best_score = null;
+	for ( $columns = 1; $columns <= min( $item_count, $max_columns ); $columns++ ) {
+		$last_row = $item_count % $columns ?: $columns;
+		$score = [ $last_row === 1 && $item_count > $columns ? 1 : 0, (int) ceil( $item_count / $columns ), -$columns ];
+		if ( $best_score === null || $score < $best_score ) { $best = $columns; $best_score = $score; }
+	}
+	return $best;
+}
+
 /** Restrict frozen geometry to simple, bounded native lengths. */
 function wpae_design_plan_layout_measure_valid( $value, bool $allow_percent = false ): bool {
 	if ( ! is_string( $value ) && ! is_numeric( $value ) ) { return false; }
@@ -987,16 +1001,41 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 	$item_count = $item_count ?: ( $family === 'process'
 		? count( (array) ( wpae_design_plan_process_content( $brief )['steps'] ?? [] ) )
 		: count( (array) ( $brief['groups'] ?? [] ) ) );
-	$columns = min( 3, max( 1, $item_count ) );
-	if ( in_array( $item_count, [ 4, 6 ], true ) ) { $columns = 2; }
 	$record_columns = (array) ( $record_policy['collection_columns'] ?? [] );
-	$desktop_column_limit = max( 1, (int) ( $record_columns['desktop_max'] ?? $columns ) );
-	$tablet_column_default = max( 1, (int) ( $record_columns['tablet'] ?? min( 2, $columns ) ) );
-	$collection_columns = [
-		'desktop' => min( max( 1, $item_count ), max( 1, (int) $pick( 'columns', min( $desktop_column_limit, max( 1, $item_count ) ) ) ) ),
-		'tablet' => $is_list || ( $responsive['tablet'] ?? 'stack' ) === 'stack' ? 1 : min( max( 1, $item_count ), $tablet_column_default ),
-		'mobile' => 1,
-	];
+	$explicit_collection_columns = (array) wpae_design_plan_constraint_value( $brief, 'collection_columns', [] );
+	$profile_collection_columns = (array) ( $values['layout.collection_columns'] ?? [] );
+	$legacy_desktop_columns = wpae_design_plan_constraint_value( $brief, 'columns' );
+	$generic_desktop_columns = wpae_design_plan_default_collection_columns( $item_count );
+	$desktop_column_limit = max( 1, min( 6, (int) ( $record_columns['desktop_max'] ?? 3 ) ) );
+	$collection_columns = [ 'desktop' => 1, 'tablet' => 1, 'mobile' => 1 ];
+	$column_sources = [];
+	foreach ( [ 'desktop', 'tablet', 'mobile' ] as $device ) {
+		$record_tablet_mode = sanitize_key( (string) ( $record_policy['tablet'] ?? '' ) );
+		$default_columns = $device === 'desktop'
+			? min( $generic_desktop_columns, $desktop_column_limit )
+			: ( $device === 'tablet'
+				? ( isset( $record_columns['tablet'] ) && is_numeric( $record_columns['tablet'] )
+					? (int) $record_columns['tablet']
+					: ( in_array( $record_tablet_mode, [ 'stack', 'column', 'one_column' ], true ) ? 1 : min( 2, $collection_columns['desktop'] ) ) )
+				: 1 );
+		if ( $device === 'desktop' && array_key_exists( 'desktop', $explicit_collection_columns ) ) {
+			$resolved_columns = (int) $explicit_collection_columns['desktop']; $column_sources[$device] = 'explicit_brief';
+		} elseif ( $device === 'desktop' && $legacy_desktop_columns !== null ) {
+			$resolved_columns = (int) $legacy_desktop_columns; $column_sources[$device] = 'explicit_brief';
+		} elseif ( array_key_exists( $device, $explicit_collection_columns ) ) {
+			$resolved_columns = (int) $explicit_collection_columns[$device]; $column_sources[$device] = 'explicit_brief';
+		} elseif ( array_key_exists( $device, $record_columns ) && is_numeric( $record_columns[$device] ) ) {
+			$resolved_columns = (int) $record_columns[$device]; $column_sources[$device] = 'composition_record';
+		} elseif ( $device === 'tablet' && $record_tablet_mode !== '' ) {
+			$resolved_columns = $default_columns; $column_sources[$device] = 'composition_record';
+		} elseif ( array_key_exists( $device, $profile_collection_columns ) && is_numeric( $profile_collection_columns[$device] ) ) {
+			$resolved_columns = (int) $profile_collection_columns[$device]; $column_sources[$device] = 'visual_profile';
+		} else {
+			$resolved_columns = $default_columns; $column_sources[$device] = 'documented_default';
+		}
+		$collection_columns[$device] = max( 1, min( 6, $resolved_columns ) );
+	}
+	if ( $is_list && ! $explicit_collection_columns && $legacy_desktop_columns === null ) { $collection_columns = [ 'desktop' => 1, 'tablet' => 1, 'mobile' => 1 ]; $column_sources = [ 'desktop' => 'composition_record', 'tablet' => 'composition_record', 'mobile' => 'composition_record' ]; }
 	$collection_width = [
 		// Collection width describes the available native track. Keep text measure
 		// in list_row/entity_layout instead of turning a semantic list alias into
@@ -1011,22 +1050,10 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		'tablet' => $pick( 'collection_gap_tablet', $is_list ? '1.125rem' : ( $values['space.component_tablet'] ?? $values['space.component'] ) ),
 		'mobile' => $pick( 'collection_gap_mobile', $is_list ? '1rem' : ( $values['space.component_mobile'] ?? '1rem' ) ),
 	];
-	$has_authored_actions = false;
-	foreach ( (array) ( $brief['groups'] ?? [] ) as $group ) {
-		if ( is_array( $group ) && ( ! empty( $group['action_ref'] ) || ! empty( $group['cta_ref'] ) ) ) { $has_authored_actions = true; break; }
-	}
-	if ( ! $has_authored_actions ) {
-		foreach ( (array) ( $brief['content'] ?? [] ) as $content_slot ) {
-			if ( is_array( $content_slot ) && preg_match( '/(?:action|cta)/i', (string) ( $content_slot['role'] ?? '' ) ) && trim( (string) ( $content_slot['id'] ?? $content_slot['exact_text'] ?? '' ) ) !== '' ) { $has_authored_actions = true; break; }
-		}
-	}
-	if ( ! $has_authored_actions ) {
-		foreach ( (array) ( $brief['recipe_items'] ?? [] ) as $recipe_item ) {
-			if ( is_array( $recipe_item ) && ( ! empty( $recipe_item['action_ref'] ) || ! empty( $recipe_item['cta_ref'] ) ) ) { $has_authored_actions = true; break; }
-		}
-	}
-	$item_height_mode = (string) $pick( 'collection_item_height', $has_authored_actions ? 'equal_row' : 'content' );
+	$item_height_mode = (string) $pick( 'collection_item_height', $is_list ? 'content' : 'equal_row' );
 	$collection_alignment = (string) $pick( 'collection_alignment', 'start' );
+	$surface_alignment_default = $item_height_mode === 'equal_row' && ! $is_list ? 'stretch' : $collection_alignment;
+	$collection_surface_alignment = (string) $pick( 'collection_surface_alignment', $surface_alignment_default );
 	$entity_tracks = null;
 	if ( $entity_variant === 'editorial_rows' ) {
 		$identity_default = $family === 'team' ? 34 : 24;
@@ -1102,7 +1129,7 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		// Inline values (price + period) keep their shared start axis when space narrows.
 		'entity_layout' => array_filter( [ 'variant' => $record_policy['entity_layout'] ?? 'grid', 'columns' => [ 'desktop' => $entity_variant === 'editorial_rows' ? 2 : 1, 'tablet' => 1, 'mobile' => 1 ], 'gap' => $pick( 'item_copy_gap', '0.75rem' ), 'tracks' => $entity_tracks ], static fn( $value ): bool => $value !== null ),
 		'inline_value' => [ 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ], 'wrap' => 'wrap', 'main_align' => 'flex-start', 'cross_align' => 'center', 'gap' => '0.25rem' ],
-		'collection' => [ 'implementation' => $collection_implementation, 'axis' => $is_list ? 'list' : 'grid', 'alignment' => $collection_alignment, 'width' => $collection_width, 'item_height' => $item_height_mode, 'item_count' => $item_count, 'columns' => $is_list ? [ 'desktop' => 1, 'tablet' => 1, 'mobile' => 1 ] : $collection_columns, 'gap' => $collection_gap ],
+		'collection' => [ 'implementation' => $collection_implementation, 'axis' => $is_list ? 'list' : 'grid', 'alignment' => $collection_alignment, 'surface_alignment' => $collection_surface_alignment, 'column_sources' => $column_sources, 'width' => $collection_width, 'item_height' => $item_height_mode, 'item_count' => $item_count, 'columns' => $collection_columns, 'gap' => $collection_gap ],
 		'list_row' => $is_list && ( $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list' ) ? [ 'icon_width' => $pick( 'list_icon_width', '44px' ), 'gap' => [ 'desktop' => $pick( 'list_item_gap_desktop', '1rem' ), 'tablet' => $pick( 'list_item_gap_tablet', '1rem' ), 'mobile' => $pick( 'list_item_gap_mobile', '0.75rem' ) ], 'copy_measure' => $pick( 'list_copy_measure', '48rem' ), 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ] ] : null,
 		'cards' => [ 'direction' => 'column', 'row_alignment' => 'stretch', 'body_actions_distribution' => 'space_between', 'body_copy_gap' => $pick( 'item_copy_gap', '0.75rem' ), 'media_copy_gap' => $pick( 'item_media_gap', $values['space.component'] ), 'body_actions_gap' => $pick( 'item_cta_gap', '1.25rem' ), 'mobile_height' => 'content', 'footer' => 'when_actions_exist' ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
@@ -2094,11 +2121,17 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		$placement = in_array( $plan['sections'][0]['composition'] ?? '', [ 'split_60_40', 'split_50_50', 'split_40_60', 'cta_split_actions' ], true ) ? 'split_copy' : 'above_collection';
 		$placement = (string) ( $plan['composition_decision']['policy']['intro_placement'] ?? $placement );
 		if ( ( $visual_policy['intro']['placement'] ?? '' ) !== $placement ) { $errors[] = 'visual_policy_placement_composition_conflict'; }
-		if ( ( $plan['responsive']['tablet'] ?? 'stack' ) === 'stack' && ( $visual_policy['collection']['columns']['tablet'] ?? 0 ) !== 1 ) { $errors[] = 'visual_policy_responsive_conflict'; }
 		foreach ( (array) ( $visual_policy['collection']['columns'] ?? [] ) as $columns ) { if ( ! is_int( $columns ) || $columns < 1 || $columns > 6 ) { $errors[] = 'visual_policy_columns_invalid'; } }
 		if ( isset( $visual_policy['collection']['item_count'] ) && ( ! is_int( $visual_policy['collection']['item_count'] ) || $visual_policy['collection']['item_count'] < 0 || $visual_policy['collection']['item_count'] > 8 ) ) { $errors[] = 'visual_policy_item_count_invalid'; }
 		$actual_collection_count = max( array_merge( [ 0 ], array_map( static fn( $child ): int => is_array( $child ) ? count( (array) ( $child['items'] ?? [] ) ) : 0, (array) ( $plan['sections'][0]['children'] ?? [] ) ) ) );
 		if ( $actual_collection_count > 0 && isset( $visual_policy['collection']['item_count'] ) && $visual_policy['collection']['item_count'] !== $actual_collection_count ) { $errors[] = 'visual_policy_item_count_mismatch'; }
+		$collection_record = wpae_composition_records()[ (string) ( $plan['composition_decision']['record_id'] ?? '' ) ] ?? [];
+		$record_column_limit = (int) ( $collection_record['policy']['collection_columns']['desktop_max'] ?? 3 );
+		foreach ( (array) ( $visual_policy['collection']['columns'] ?? [] ) as $device => $columns ) {
+			if ( $actual_collection_count > 0 && is_numeric( $columns ) && (int) $columns > $actual_collection_count ) { $errors[] = 'visual_policy_columns_exceed_item_count:' . sanitize_key( (string) $device ); }
+			if ( $record_column_limit > 0 && is_numeric( $columns ) && (int) $columns > $record_column_limit ) { $errors[] = 'visual_policy_columns_exceed_record_capacity:' . sanitize_key( (string) $device ); }
+		}
+		foreach ( (array) ( $visual_policy['collection']['column_sources'] ?? [] ) as $source ) { if ( ! in_array( $source, [ 'explicit_brief', 'composition_record', 'visual_profile', 'documented_default' ], true ) ) { $errors[] = 'visual_policy_column_source_invalid'; } }
 		if ( isset( $visual_policy['cards'] ) ) {
 			$cards = $visual_policy['cards'];
 			if ( ! is_array( $cards ) || ( $cards['direction'] ?? '' ) !== 'column' || ( $cards['row_alignment'] ?? '' ) !== 'stretch' || ( $cards['body_actions_distribution'] ?? '' ) !== 'space_between' || ( $cards['mobile_height'] ?? '' ) !== 'content' || ( $cards['footer'] ?? '' ) !== 'when_actions_exist' ) { $errors[] = 'visual_policy_cards_invalid'; }
@@ -2115,15 +2148,12 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 			}
 			if ( ! in_array( $collection['item_height'] ?? '', [ 'equal_row', 'content' ], true ) ) { $errors[] = 'visual_policy_collection_item_height_invalid'; }
 			if ( $collection['axis'] === 'list' && array_filter( (array) ( $collection['columns'] ?? [] ), static fn( $count ): bool => $count !== 1 ) ) { $errors[] = 'visual_policy_list_columns_invalid'; }
-			$contains_action = static function ( $value ) use ( &$contains_action ): bool {
-				if ( ! is_array( $value ) ) { return false; }
-				foreach ( $value as $key => $child ) {
-					if ( is_string( $key ) && preg_match( '/(?:action|cta)_ref$/', $key ) && is_scalar( $child ) && trim( (string) $child ) !== '' ) { return true; }
-					if ( $contains_action( $child ) ) { return true; }
-				}
-				return false;
-			};
-			if ( ( $collection['item_height'] ?? '' ) === 'content' && $contains_action( [ $brief['groups'] ?? [], $brief['content'] ?? [], $plan['sections'] ?? [], $plan['slot_bindings'] ?? [] ] ) ) { $errors[] = 'visual_policy_content_height_with_actions'; }
+			if ( isset( $collection['surface_alignment'] ) ) {
+				if ( ! in_array( $collection['surface_alignment'], [ 'start', 'center', 'end', 'stretch' ], true ) ) { $errors[] = 'visual_policy_collection_surface_alignment_invalid'; }
+				if ( $collection['axis'] === 'grid' && ( $collection['item_height'] ?? '' ) === 'equal_row' && $collection['surface_alignment'] !== 'stretch' ) { $errors[] = 'visual_policy_collection_stretch_conflict'; }
+				if ( $collection['axis'] === 'grid' && ( $collection['item_height'] ?? '' ) === 'content' && $collection['surface_alignment'] === 'stretch' ) { $errors[] = 'visual_policy_collection_content_stretch_conflict'; }
+				if ( $collection['axis'] === 'list' && ( $collection['item_height'] ?? '' ) !== 'content' ) { $errors[] = 'visual_policy_list_height_not_content'; }
+			}
 		}
 		if ( isset( $visual_policy['list_row'] ) ) {
 			$row = (array) $visual_policy['list_row'];

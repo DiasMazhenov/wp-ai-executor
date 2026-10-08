@@ -3082,6 +3082,44 @@ check( ! empty( $benefits_route_data['ok'] ) && ( $benefits_route_diagnostics['a
 check( ( $benefits_route_pipeline['brief']['hash'] ?? '' ) !== '' && ( $benefits_route_pipeline['brief']['hash'] ?? '' ) === ( $benefits_route_pipeline['plan']['brief_hash'] ?? '' ) && ( $benefits_route_pipeline['plan']['validation']['ok'] ?? false ) && ( $benefits_route_pipeline['elementor_ir']['validation']['ok'] ?? false ) && ( $benefits_route_pipeline['frozen_decisions']['readback_matches'] ?? false ) && ( $benefits_route_ledger['current_state'] ?? '' ) === 'written' && count( (array) ( $benefits_route_ledger['root_ids'] ?? [] ) ) === 1, 'Benefits chat Plan hash, one accepted operation/root and compiler readback signature are retained through mock transaction' );
 check( ( $benefits_route_decision['record_id'] ?? '' ) === 'benefits.grid' && ( $benefits_route_decision['source'] ?? '' ) === 'content_ranked_catalog' && ( $benefits_route_decision['selection_policy'] ?? '' ) === 'wpae-composition-selection-v2' && ( $benefits_route_grid['settings']['container_type'] ?? '' ) === 'flex' && ( $benefits_route_grid['settings']['flex_direction'] ?? '' ) === 'row' && ( $benefits_route_grid['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $benefits_route_grid['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $benefits_route_grid['elements'][0]['settings']['_element_custom_width'] ?? [] ) === $benefits_route_expected_track && ( $benefits_route_grid['settings']['flex_gap']['size'] ?? '' ) === (float) ( $benefits_route_collection['gap']['desktop'] ?? 0 ) && count( (array) ( $benefits_route_grid['elements'] ?? [] ) ) === 2 && wp_json_encode( $benefits_route_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ), 'Mock readback contains the shared-selector Benefits Flex topology and Plan-derived gap-aware tracks' );
 check( ( $benefits_route_decision['request_selection']['mode'] ?? '' ) === 'automatic' && array_key_exists( 'record_id', $benefits_route_decision['request_selection'] ?? [] ) && $benefits_route_decision['request_selection']['record_id'] === null && ( $benefits_route_evidence['status'] ?? '' ) === 'complete' && ( $benefits_route_evidence['accepted']['record_id'] ?? '' ) === 'benefits.grid' && ( $benefits_route_evidence['accepted']['source'] ?? '' ) === 'content_ranked_catalog' && ( $benefits_route_evidence['accepted']['visual_profile'] ?? '' ) === 'editorial_light' && ( $benefits_route_evidence['generation']['provider_calls'] ?? -1 ) === 0 && ( $benefits_route_evidence['generation']['transaction_write_count'] ?? 0 ) === 1 && ( $benefits_route_evidence['native']['saved_native_fingerprint'] ?? '' ) !== '' && ! empty( $benefits_route_contract['ok'] ), 'Real plugin chat automatic decision is frozen into the existing accepted contract with separate actual provider/write counts and native fingerprint' );
+
+// Explicit responsive column intent must survive the ordinary chat route into
+// the accepted Plan, native Flex tracks, and transaction readback.
+$benefits_columns_prompt = "Создай блок преимуществ без фото и CTA. Надзаголовок «ПРЕИМУЩЕСТВА». Заголовок «Понятная работа». Описание «Шесть коротких синтетических пунктов для проверки responsive-сетки».";
+for ( $index = 1; $index <= 6; $index++ ) { $benefits_columns_prompt .= "\nПреимущество {$index}: «Преимущество {$index}». Описание преимущества {$index}: «Точный текст преимущества {$index}.»"; }
+$benefits_columns_prompt .= "\nНа desktop — 3 колонки, на tablet — 2 колонки, на mobile — 1 колонка.";
+$GLOBALS['page_data'] = $GLOBALS['http_calls'] = $GLOBALS['writes'] = $GLOBALS['responses'] = [];
+$GLOBALS['library'] = [ 'status' => 'none', 'available_count' => 0, 'candidate_count' => 0, 'candidates' => [], 'selection_candidates' => [] ];
+$benefits_columns_request = new WP_REST_Request();
+$benefits_columns_request->set_param( 'message', $benefits_columns_prompt );
+$benefits_columns_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'benefits-explicit-3-2-1-chat-contract', 'composition_record' => 'benefits.grid', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$benefits_columns_response = wpae_llm_chat_request( $benefits_columns_request );
+$benefits_columns_data = $benefits_columns_response instanceof WP_REST_Response ? $benefits_columns_response->get_data() : [];
+$benefits_columns_diagnostics = (array) ( $benefits_columns_data['diagnostics'] ?? [] );
+$benefits_columns_pipeline = (array) ( $benefits_columns_diagnostics['design_pipeline'] ?? [] );
+$benefits_columns_plan = (array) ( $benefits_columns_pipeline['plan'] ?? [] );
+$benefits_columns_policy = (array) ( $benefits_columns_plan['visual_policy']['collection'] ?? [] );
+$benefits_columns_readback = wpae_get_elementor_data_for_post( 42 );
+$benefits_columns_find_grid = static function ( array $nodes ) use ( &$benefits_columns_find_grid ): array {
+	foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } if ( ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-feature-cards' ) { return $node; } $found = $benefits_columns_find_grid( (array) ( $node['elements'] ?? [] ) ); if ( $found ) { return $found; } }
+	return [];
+};
+$benefits_columns_grid = $benefits_columns_find_grid( $benefits_columns_readback );
+$benefits_columns_tracks_ok = ( $benefits_columns_policy['columns'] ?? [] ) === [ 'desktop' => 3, 'tablet' => 2, 'mobile' => 1 ] && ( $benefits_columns_policy['column_sources'] ?? [] ) === [ 'desktop' => 'explicit_brief', 'tablet' => 'explicit_brief', 'mobile' => 'explicit_brief' ];
+foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+	$count = (int) ( $benefits_columns_policy['columns'][$device] ?? 1 );
+	$expected = wpae_elementor_ir_flex_equal_track_dimension( (string) ( $benefits_columns_policy['gap'][$device] ?? '1rem' ), $count );
+	$actual = (array) ( $benefits_columns_grid['elements'][0]['settings'][ '_element_custom_width' . $suffix ] ?? [] );
+	$benefits_columns_tracks_ok = $benefits_columns_tracks_ok && $actual === $expected && ( $benefits_columns_grid['settings'][ 'flex_direction' . $suffix ] ?? '' ) === ( $count > 1 ? 'row' : 'column' );
+}
+$benefits_columns_flatten = static function ( array $nodes ) use ( &$benefits_columns_flatten ): array {
+	$all = [];
+	foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } $all[] = $node; $all = array_merge( $all, $benefits_columns_flatten( (array) ( $node['elements'] ?? [] ) ) ); }
+	return $all;
+};
+$benefits_columns_no_forbidden_widgets = ! array_filter( $benefits_columns_flatten( (array) $benefits_columns_readback ), static fn( array $node ): bool => in_array( (string) ( $node['widgetType'] ?? '' ), [ 'image', 'button' ], true ) );
+check( ! empty( $benefits_columns_data['ok'] ) && ( $benefits_columns_diagnostics['action_path'] ?? '' ) === 'pipeline' && ( $benefits_columns_diagnostics['provider_calls'] ?? -1 ) === 0 && ( $benefits_columns_diagnostics['write_count'] ?? 0 ) === 1 && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === 1, 'Explicit Benefits 3/2/1 ordinary chat follows one deterministic typed write without a provider call' );
+check( ( $benefits_columns_plan['composition_decision']['record_id'] ?? '' ) === 'benefits.grid' && ( $benefits_columns_plan['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light' && ( $benefits_columns_policy['item_count'] ?? 0 ) === 6 && ( $benefits_columns_policy['columns'] ?? [] ) === [ 'desktop' => 3, 'tablet' => 2, 'mobile' => 1 ] && ( $benefits_columns_policy['column_sources'] ?? [] ) === [ 'desktop' => 'explicit_brief', 'tablet' => 'explicit_brief', 'mobile' => 'explicit_brief' ] && $benefits_columns_tracks_ok && count( (array) ( $benefits_columns_grid['elements'] ?? [] ) ) === 6 && $benefits_columns_no_forbidden_widgets && ! empty( $benefits_columns_pipeline['frozen_decisions']['readback_matches'] ) && wp_json_encode( $benefits_columns_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ), 'Explicit responsive map, selected record/profile, gap-aware native tracks, six exact Benefits and saved native readback agree' );
 foreach ( $benefits_route_global_snapshot as $key => $snapshot ) {
 	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
 }
