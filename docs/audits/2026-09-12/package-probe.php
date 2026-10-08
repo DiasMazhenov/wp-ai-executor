@@ -71,6 +71,17 @@ try {
     $valid = package_validate( $temporary );
     package_assert( ! empty( $valid['ok'] ), 'Complete package was rejected by the real validator.' );
 
+    // Measure the real validator result (which includes opaque PHP/JS bytes)
+    // independently from the human-readable diagnostic metadata.
+    $full_result_json = json_encode( $valid, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+    $full_result_json_error = json_last_error_msg();
+    $serialization_metadata = [ 'label' => 'Проверка CTA 🚀', 'result' => package_result_summary( $valid ) ];
+    $serialization_metadata_json = json_encode( $serialization_metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+    $serialization_metadata_json_error = json_last_error_msg();
+    package_assert( $serialization_metadata_json !== false, 'UTF-8 diagnostic metadata JSON serialization failed: ' . $serialization_metadata_json_error );
+    $serialization_metadata_round_trip = json_decode( $serialization_metadata_json, true );
+    package_assert( $serialization_metadata_round_trip === $serialization_metadata, 'UTF-8 diagnostic metadata JSON did not round-trip.' );
+
     $bad_manifest = $manifest;
     $first_file = (string) array_key_first( $bad_manifest['files'] );
     $bad_manifest['files'][ $first_file ] = str_repeat( '0', 64 );
@@ -100,9 +111,14 @@ try {
         'manifest_file_count' => count( $manifest['files'] ),
         'mismatches' => $mismatches,
         'serialization_probe' => [
-            'full_result_json_encode' => false,
-            'full_result_json_error' => 'Malformed UTF-8 characters, possibly incorrectly encoded',
-            'compact_summary_json_encode' => true,
+            'full_result_json_encode' => $full_result_json !== false,
+            'full_result_json_error' => $full_result_json_error,
+            'full_result_json_bytes' => is_string( $full_result_json ) ? strlen( $full_result_json ) : null,
+            'metadata_json_encode' => $serialization_metadata_json !== false,
+            'metadata_json_error' => $serialization_metadata_json_error,
+            'metadata_round_trip' => $serialization_metadata_round_trip === $serialization_metadata,
+            'metadata_json_bytes' => strlen( $serialization_metadata_json ),
+            'metadata_label' => $serialization_metadata['label'],
         ],
         'scenarios' => [
             'valid_zip' => package_result_summary( $valid ),

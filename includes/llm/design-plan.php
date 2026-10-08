@@ -21,10 +21,10 @@ function wpae_design_plan_schema(): array {
 	return [
 		'schema' => WPAE_DESIGN_PLAN_SCHEMA,
 		'archetypes' => [ 'about', 'hero', 'process', 'pricing', 'faq', 'benefits', 'services', 'team', 'testimonials', 'cta' ],
-		'migrated_create' => [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'services', 'team', 'testimonials', 'process' ],
+		'migrated_create' => [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'services', 'team', 'testimonials', 'process', 'cta' ],
 		'family_compositions' => wpae_composition_family_compositions(),
-		'compositions' => [ 'editorial_list', 'photo_cards', 'split_editorial', 'split_60_40', 'split_50_50', 'split_40_60', 'stacked_left', 'linear', 'three_cards', 'icon_cards', 'ordered_timeline' ],
-		'responsive' => [ 'split_60_40', 'split_50_50', 'split_40_60', 'copy_first_stack', 'stack' ],
+		'compositions' => [ 'editorial_list', 'photo_cards', 'split_editorial', 'split_60_40', 'split_50_50', 'split_40_60', 'stacked_left', 'linear', 'three_cards', 'icon_cards', 'ordered_timeline', 'cta_centered', 'cta_split_actions' ],
+		'responsive' => [ 'split_60_40', 'split_50_50', 'split_40_60', 'copy_first_stack', 'stack', 'row', 'column' ],
 		'quality_gates' => [ 'brief_fidelity', 'capabilities', 'layout_report', 'readback', 'render_review' ],
 	];
 }
@@ -958,7 +958,7 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		$field_sources[$key] = 'documented_default';
 		return $fallback;
 	};
-	$split = in_array( $composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
+	$split = in_array( $composition, [ 'split_60_40', 'split_50_50', 'split_40_60', 'cta_split_actions' ], true );
 	$family = (string) ( $brief['intent']['archetype'] ?? '' );
 	$explicit_intro_token = '';
 	foreach ( (array) ( $brief['layout_constraints'] ?? [] ) as $constraint ) {
@@ -1076,10 +1076,24 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		$collection_implementation = $collection_implementation_default;
 	}
 	$item_surface_contract = wpae_design_plan_item_surface_contract( $record, $family, $values );
+	$intro_text_align = (string) $pick( 'intro_text_align', 'left' );
+	if ( $family === 'cta' ) {
+		$explicit_cta_alignment = wpae_design_plan_constraint_value( $brief, 'cta_alignment' );
+		if ( is_string( $explicit_cta_alignment ) && in_array( $explicit_cta_alignment, [ 'left', 'center', 'right' ], true ) ) { $intro_text_align = $explicit_cta_alignment; $field_sources['intro_text_align'] = 'explicit_brief'; }
+	}
+	$cta_policy = $family === 'cta' ? [
+		'topology' => (string) ( $record_policy['topology'] ?? '' ),
+		'direction' => [ 'desktop' => (string) ( $record_policy['desktop'] ?? 'column' ), 'tablet' => (string) ( $record_policy['tablet'] ?? 'column' ), 'mobile' => (string) ( $record_policy['mobile'] ?? 'column' ) ],
+		'tracks' => [ 'copy' => (int) ( $record_policy['cta_tracks']['copy'] ?? 100 ), 'actions' => (int) ( $record_policy['cta_tracks']['actions'] ?? 100 ) ],
+		'actions_direction' => (array) ( $record_policy['cta_actions_direction'] ?? [] ),
+		'actions_align' => (string) ( $record_policy['cta_actions_align'] ?? 'start' ),
+		'actions_gap' => (array) ( $record_policy['cta_actions_gap'] ?? [] ),
+		'copy_actions_gap' => (array) ( $record_policy['cta_copy_actions_gap'] ?? [] ),
+	] : null;
 	$policy = [
 		'version' => 1,
 		'precedence' => [ 'explicit_brief', 'composition_record', 'visual_profile', 'documented_default' ],
-		'intro' => [ 'placement' => $pick( 'intro_placement', $split ? 'split_copy' : 'above_collection' ), 'text_align' => $pick( 'intro_text_align', 'left' ), 'container_align' => $pick( 'intro_container_align', 'start' ), 'reading_measure' => $pick( 'reading_measure', $values['layout.copy_width'] ?? '38rem' ), 'heading_level' => $family === 'hero' ? 'h1' : 'h2', 'title_token' => $intro_title_token, 'eyebrow_presentation' => $pick( 'eyebrow_presentation', wpae_elementor_recipe_eyebrow_presentation() ) ],
+		'intro' => [ 'placement' => $pick( 'intro_placement', $split ? 'split_copy' : 'above_collection' ), 'text_align' => $intro_text_align, 'container_align' => $pick( 'intro_container_align', 'start' ), 'reading_measure' => $pick( 'reading_measure', $values['layout.copy_width'] ?? '38rem' ), 'heading_level' => $family === 'hero' ? 'h1' : 'h2', 'title_token' => $intro_title_token, 'eyebrow_presentation' => $pick( 'eyebrow_presentation', wpae_elementor_recipe_eyebrow_presentation() ) ],
 		'typography' => [ 'intro_title' => $values[$intro_title_token], 'item_title' => $item, 'body' => $body, 'eyebrow' => $eyebrow, 'price' => array_replace( $body, [ 'desktop' => '2rem', 'tablet' => '1.8rem', 'mobile' => '1.6rem', 'weight' => '800', 'line_height' => '1.2' ] ) ],
 		'spacing' => [ 'eyebrow_title' => $pick( 'eyebrow_title_gap', '0.75rem' ), 'title_description' => $pick( 'title_description_gap', '1rem' ), 'description_cta' => $pick( 'description_cta_gap', '1.5rem' ), 'intro_collection' => $pick( 'intro_collection_gap', '2rem' ), 'item_copy' => $pick( 'item_copy_gap', '0.75rem' ), 'item_cta' => $pick( 'item_cta_gap', '1.25rem' ), 'section' => [ 'desktop' => $values['space.section'], 'tablet' => $values['space.section_tablet'] ?? $values['space.section'], 'mobile' => $values['space.section_mobile'] ?? '2rem' ] ],
 		'eyebrow_colors' => [ 'plain' => $values['color.primary'], 'pill' => $family === 'services' ? $values['color.text'] : $values['color.surface'], 'pill_background' => $family === 'services' ? $values['color.surface'] : $values['color.primary'], 'pill_border' => $family === 'services' ? $values['color.muted'] : $values['color.primary'] ],
@@ -1092,6 +1106,7 @@ function wpae_design_plan_visual_policy( array $brief, array $record, array $vis
 		'list_row' => $is_list && ( $composition === 'editorial_list' || $services_recipe_id === 'services.text_icon_list' ) ? [ 'icon_width' => $pick( 'list_icon_width', '44px' ), 'gap' => [ 'desktop' => $pick( 'list_item_gap_desktop', '1rem' ), 'tablet' => $pick( 'list_item_gap_tablet', '1rem' ), 'mobile' => $pick( 'list_item_gap_mobile', '0.75rem' ) ], 'copy_measure' => $pick( 'list_copy_measure', '48rem' ), 'direction' => [ 'desktop' => 'row', 'tablet' => 'row', 'mobile' => 'row' ] ] : null,
 		'cards' => [ 'direction' => 'column', 'row_alignment' => 'stretch', 'body_actions_distribution' => 'space_between', 'body_copy_gap' => $pick( 'item_copy_gap', '0.75rem' ), 'media_copy_gap' => $pick( 'item_media_gap', $values['space.component'] ), 'body_actions_gap' => $pick( 'item_cta_gap', '1.25rem' ), 'mobile_height' => 'content', 'footer' => 'when_actions_exist' ],
 		'split' => [ 'gap' => [ 'desktop' => $values['space.component'], 'tablet' => $values['space.component_tablet'] ?? $values['space.component'], 'mobile' => $values['space.component_mobile'] ?? '1rem' ], 'ratio' => [ 'split_60_40' => [ 60, 40 ], 'split_50_50' => [ 50, 50 ], 'split_40_60' => [ 40, 60 ] ][ $composition ] ?? [], 'media_side' => $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ), 'mobile_direction' => $split && ( $record_policy['media_side'] ?? wpae_design_plan_constraint_value( $brief, 'media_side', 'right' ) ) === 'left' ? 'column-reverse' : 'column', 'responsive' => $responsive ],
+		'cta' => $cta_policy,
 	];
 	$field_sources['inline_value'] = 'documented_default';
 	$policy = array_filter( $policy, static fn( $value ): bool => $value !== null );
@@ -1163,7 +1178,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		}
 	}
 	$hero_has_media = in_array( $archetype, [ 'hero', 'about' ], true ) && ! empty( $media_references ) && $media_intent !== 'forbidden' && $media_intent !== 'conflict';
-	$cta_has_media = $archetype === 'cta' && ! empty( $media_references ) && $media_intent !== 'forbidden' && $media_intent !== 'conflict';
+	$cta_has_media = $archetype === 'cta' && empty( $context['canonical_create'] ) && ! empty( $media_references ) && $media_intent !== 'forbidden' && $media_intent !== 'conflict';
 	if ( $archetype === 'hero' && ! $hero_has_media && $explicit_composition === null && $media_intent !== 'conflict' ) {
 		$composition = 'stacked_left';
 	}
@@ -1180,7 +1195,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$media_side = 'right';
 	}
 	$record_selection = [];
-	if ( ! empty( $context['canonical_create'] ) && in_array( $archetype, [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'process' ], true ) ) {
+	if ( ! empty( $context['canonical_create'] ) && in_array( $archetype, [ 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'process', 'cta' ], true ) ) {
 		$accepted_decision = (array) ( $context['composition_decision'] ?? [] );
 		$record_selection = ! empty( $accepted_decision )
 			? wpae_composition_decision_for_record( $brief, $accepted_decision, (string) ( $accepted_decision['record']['id'] ?? $accepted_decision['record_id'] ?? '' ) )
@@ -1191,7 +1206,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			$context = wpae_design_plan_context_with_accepted_profile( $context, $record_selection );
 		}
 	}
-	$cta_refs = wpae_design_plan_content_refs( $brief, [ 'cta', 'cta_2', 'cta_3' ] );
+	$cta_refs = wpae_design_plan_content_refs( $brief, [ 'cta', 'cta_2', 'cta_3', 'cta_4' ] );
 	$tokens = [
 		'color.page_bg' => 'color.page_bg',
 		'color.surface' => 'color.surface',
@@ -1225,7 +1240,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 		$section['surface_override'] = $surface_override;
 		$section['provenance']['surface_override'] = [ 'source' => 'prompt', 'constraint' => 'surface_color' ];
 	}
-	if ( in_array( $archetype, [ 'hero', 'about' ], true ) && $eyebrow_presentation === 'pill' ) {
+	if ( in_array( $archetype, [ 'hero', 'about', 'cta' ], true ) && $eyebrow_presentation === 'pill' ) {
 		$eyebrow_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow' ] );
 		$section['badge_content_ref'] = $eyebrow_refs[0] ?? '';
 	}
@@ -1464,23 +1479,34 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				'provenance' => [ 'source' => 'brief', 'roles' => [ 'testimonial_quote', 'testimonial_author', 'testimonial_meta' ] ],
 			];
 	} elseif ( $archetype === 'cta' ) {
-		$cta_content = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body', 'cta', 'cta_2' ] );
-		$button_items = array_values( array_filter( (array) ( $brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2' ], true ) ) );
-		$alignment = (string) wpae_design_plan_constraint_value( $brief, 'cta_alignment', 'left' );
+		$button_roles = [ 'cta', 'cta_2', 'cta_3', 'cta_4' ];
+		$copy_refs = wpae_design_plan_content_refs( $brief, [ 'eyebrow', 'title', 'body' ] );
+		$button_refs = wpae_design_plan_content_refs( $brief, $button_roles );
+		$record_policy = (array) ( $record_selection['record']['policy'] ?? [] );
+		$topology = (string) ( $record_policy['topology'] ?? 'copy_contains_actions' );
+		$alignment = (string) wpae_design_plan_constraint_value( $brief, 'cta_alignment', $record_policy['intro_text_align'] ?? 'left' );
 		$section['media_intent'] = $media_intent;
 		$section['media_side'] = $media_side;
-		$section['children'] = [
-			[
-				'role' => 'cta_copy_group',
-				'allowed_widgets' => [ 'heading', 'text-editor', 'button' ],
-				'content_refs' => $cta_content,
-				'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'color.surface', 'type.display', 'type.section_title', 'type.body', 'space.component' ],
-				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'text_align' => $alignment ],
-				'responsive_policy' => 'stack',
-				'editable_fields' => [ 'text', 'url' ],
-				'provenance' => [ 'source' => 'brief', 'roles' => [ 'title', 'body', 'cta', 'cta_2' ] ],
-			],
-		];
+		$copy_constraints = [ 'min_width' => 0, 'max_width' => 100, 'text_align' => $alignment, 'reading_measure' => true, 'track_key' => 'copy', 'cta_actions_direction' => (array) ( $record_policy['cta_actions_direction'] ?? [] ), 'cta_actions_align' => (string) ( $record_policy['cta_actions_align'] ?? 'start' ), 'cta_actions_gap' => (array) ( $record_policy['cta_actions_gap'] ?? [] ) ];
+		if ( $eyebrow_presentation === 'pill' ) { $copy_constraints['eyebrow_presentation'] = 'pill'; }
+		$section['children'] = [ [
+			'role' => 'cta_copy_group', 'allowed_widgets' => [ 'container', 'heading', 'text-editor' ],
+			'content_refs' => $topology === 'copy_contains_actions' ? array_values( array_merge( $copy_refs, $button_refs ) ) : $copy_refs,
+			'token_refs' => [ 'color.text', 'color.muted', 'color.primary', 'color.surface', 'type.display', 'type.section_title', 'type.body', 'space.component' ],
+			'layout_constraints' => $copy_constraints, 'responsive_policy' => 'stack', 'editable_fields' => [ 'text', 'url' ],
+			'provenance' => [ 'source' => 'brief', 'roles' => [ 'eyebrow', 'title', 'body' ] ],
+		] ];
+		if ( $topology === 'copy_actions_siblings' ) {
+			$section['children'][] = [
+				'role' => 'cta_actions', 'allowed_widgets' => [ 'container', 'button' ], 'content_refs' => $button_refs,
+				'token_refs' => [ 'space.component', 'color.primary', 'color.surface', 'color.text', 'color.hover', 'color.focus' ],
+				'layout_constraints' => [ 'min_width' => 0, 'max_width' => 100, 'track_key' => 'actions', 'actions_direction' => (array) ( $record_policy['cta_actions_direction'] ?? [] ), 'actions_align' => (string) ( $record_policy['cta_actions_align'] ?? 'start' ), 'actions_gap' => (array) ( $record_policy['cta_actions_gap'] ?? [] ) ],
+				'responsive_policy' => 'stack', 'editable_fields' => [ 'text', 'url' ], 'provenance' => [ 'source' => 'brief', 'roles' => $button_roles ],
+			];
+		}
+		$section['children'][0]['layout_constraints']['cta_actions_inside'] = $topology === 'copy_contains_actions';
+		$section['children'][0]['layout_constraints']['cta_copy_actions_gap'] = (array) ( $record_policy['cta_copy_actions_gap'] ?? [] );
+		$section['children'][0]['layout_constraints']['cta_tracks'] = (array) ( $record_policy['cta_tracks'] ?? [] );
 		if ( $cta_has_media ) {
 			$media_ids = array_values( array_map( static fn( $item ): string => sanitize_key( (string) ( $item['asset_id'] ?? '' ) ), $media_references ) );
 			if ( count( $media_ids ) !== 1 ) {
@@ -1503,6 +1529,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 				$section['children'][] = $media_child;
 			}
 		}
+		$button_items = array_values( array_filter( (array) ( $brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), $button_roles, true ) ) );
 		if ( count( $button_items ) > 2 ) {
 			$section['cta_errors'][] = 'more_than_two_buttons';
 		}
@@ -1575,7 +1602,7 @@ function wpae_design_plan_from_brief( array $brief, array $context = [] ): array
 			'source' => 'brief-ir',
 		],
 		'warnings' => array_values( array_unique( array_merge( empty( $brief['ambiguities'] ) ? [] : [ 'brief_has_ambiguities' ], in_array( $archetype, [ 'hero', 'about' ], true ) && $media_intent === 'unspecified' && ! $hero_has_media ? [ 'media_unspecified_no_asset_text_only' ] : [] ) ) ),
-		'explicit_badge' => in_array( $archetype, [ 'hero', 'about' ], true ) && $eyebrow_presentation === 'pill' && ( ! empty( $eyebrow_refs ) || wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', '' ) === 'pill' ),
+		'explicit_badge' => in_array( $archetype, [ 'hero', 'about', 'cta' ], true ) && $eyebrow_presentation === 'pill' && ( ! empty( $eyebrow_refs ) || wpae_design_plan_constraint_value( $brief, 'eyebrow_presentation', '' ) === 'pill' ),
 		'media_intent' => $media_intent,
 		'media_asset_count' => count( $media_references ),
 	];
@@ -2064,7 +2091,8 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		} elseif ( ! empty( $surface['contract_version'] ) && (int) $surface['contract_version'] !== 2 ) {
 			$errors[] = 'visual_policy_item_surface_version_unsupported';
 		}
-		$placement = in_array( $plan['sections'][0]['composition'] ?? '', [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ? 'split_copy' : 'above_collection';
+		$placement = in_array( $plan['sections'][0]['composition'] ?? '', [ 'split_60_40', 'split_50_50', 'split_40_60', 'cta_split_actions' ], true ) ? 'split_copy' : 'above_collection';
+		$placement = (string) ( $plan['composition_decision']['policy']['intro_placement'] ?? $placement );
 		if ( ( $visual_policy['intro']['placement'] ?? '' ) !== $placement ) { $errors[] = 'visual_policy_placement_composition_conflict'; }
 		if ( ( $plan['responsive']['tablet'] ?? 'stack' ) === 'stack' && ( $visual_policy['collection']['columns']['tablet'] ?? 0 ) !== 1 ) { $errors[] = 'visual_policy_responsive_conflict'; }
 		foreach ( (array) ( $visual_policy['collection']['columns'] ?? [] ) as $columns ) { if ( ! is_int( $columns ) || $columns < 1 || $columns > 6 ) { $errors[] = 'visual_policy_columns_invalid'; } }
@@ -2181,10 +2209,12 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 	if ( ( $plan['archetype'] ?? '' ) === 'cta' ) {
 		$content = (array) ( $brief['content'] ?? [] );
 		$has_title = (bool) array_filter( $content, static fn( $item ): bool => is_array( $item ) && ( $item['role'] ?? '' ) === 'title' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== '' );
-		$buttons = array_values( array_filter( $content, static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2' ], true ) ) );
+		$has_body = (bool) array_filter( $content, static fn( $item ): bool => is_array( $item ) && ( $item['role'] ?? '' ) === 'body' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== '' );
+		$buttons = array_values( array_filter( $content, static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2', 'cta_3', 'cta_4' ], true ) ) );
 		if ( ! $has_title ) {
 			$errors[] = 'cta_heading_required';
 		}
+		if ( ! $has_body ) { $errors[] = 'cta_description_required'; }
 		if ( count( $buttons ) < 1 || count( $buttons ) > 2 ) {
 			$errors[] = 'cta_requires_one_or_two_buttons';
 		}
@@ -2195,6 +2225,20 @@ function wpae_design_plan_validate( array $plan, array $brief = [] ): array {
 		}
 		foreach ( (array) ( $plan['sections'][0]['cta_errors'] ?? [] ) as $cta_error ) {
 			$errors[] = 'cta_' . sanitize_key( (string) $cta_error );
+		}
+		$record_id = (string) ( $plan['composition_decision']['record_id'] ?? '' );
+		$record_policy = (array) ( $plan['composition_decision']['policy'] ?? [] );
+		$cta_policy = (array) ( $plan['visual_policy']['cta'] ?? [] );
+		$children = array_values( array_filter( (array) ( $plan['sections'][0]['children'] ?? [] ), 'is_array' ) );
+		$copy_children = array_values( array_filter( $children, static fn( $child ): bool => ( $child['role'] ?? '' ) === 'cta_copy_group' ) );
+		$actions_children = array_values( array_filter( $children, static fn( $child ): bool => ( $child['role'] ?? '' ) === 'cta_actions' ) );
+		if ( in_array( $record_id, [ 'cta.centered', 'cta.split_actions' ], true ) ) {
+			$topology = (string) ( $record_policy['topology'] ?? '' );
+			$valid_shape = count( $copy_children ) === 1 && ( $topology === 'copy_contains_actions' ? count( $actions_children ) === 0 : ( $topology === 'copy_actions_siblings' && count( $actions_children ) === 1 ) );
+			if ( ! $valid_shape ) { $errors[] = 'cta_record_topology_invalid'; }
+			if ( ( $cta_policy['topology'] ?? '' ) !== $topology || ( $cta_policy['direction'] ?? [] ) !== [ 'desktop' => ( $record_policy['desktop'] ?? '' ), 'tablet' => ( $record_policy['tablet'] ?? '' ), 'mobile' => ( $record_policy['mobile'] ?? '' ) ] || ( $cta_policy['tracks'] ?? [] ) !== ( $record_policy['cta_tracks'] ?? [] ) ) { $errors[] = 'cta_visual_policy_record_mismatch'; }
+			if ( ! empty( $brief['media_references'] ) || ( $plan['media_intent'] ?? 'unspecified' ) === 'required' || ! empty( $plan['sections'][0]['media_refs'] ) ) { $errors[] = 'cta_record_media_unsupported'; }
+			if ( ! empty( $plan['explicit_badge'] ) && ( $visual_policy['intro']['eyebrow_presentation'] ?? '' ) === 'pill' && empty( $plan['sections'][0]['badge_content_ref'] ) ) { $errors[] = 'cta_pill_content_missing'; }
 		}
 	}
 	$requested_widgets = (array) ( $record['capabilities'] ?? [] );

@@ -153,6 +153,7 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		}
 	}
 	$has_media_child = (bool) array_filter( $children, static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'media' );
+	$cta_layout = (array) ( $plan['visual_policy']['cta'] ?? [] );
 	foreach ( wpae_layout_report_breakpoints() as $breakpoint ) {
 		$viewport = (int) $breakpoint['width'];
 		$is_mobile = $viewport <= 767;
@@ -161,10 +162,11 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		$breakpoint_composition = $breakpoint['id'] === 'mobile'
 			? sanitize_key( (string) ( $plan['responsive']['mobile'] ?? 'stack' ) )
 			: ( in_array( $breakpoint['id'], [ 'laptop', 'tablet' ], true ) ? sanitize_key( (string) ( $plan['responsive']['tablet'] ?? $composition ) ) : $composition );
-		$is_split_composition = in_array( $breakpoint_composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true );
-		$is_stack = ! $is_split_composition || ( $is_mobile && ( $breakpoint_composition === 'copy_first_stack' || ( $plan['responsive']['mobile'] ?? '' ) === 'copy_first_stack' ) );
-		$basis_percentages = $is_split_composition ? wpae_layout_report_composition_basis( $breakpoint_composition ) : [];
 		$device = $is_mobile ? 'mobile' : ( in_array( $breakpoint['id'], [ 'tablet', 'laptop' ], true ) ? 'tablet' : 'desktop' );
+		$is_cta_row = $archetype === 'cta' && ( $cta_layout['direction'][$device] ?? '' ) === 'row';
+		$is_split_composition = in_array( $breakpoint_composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) || $is_cta_row;
+		$is_stack = ! $is_split_composition || ( $is_mobile && ( $breakpoint_composition === 'copy_first_stack' || ( $plan['responsive']['mobile'] ?? '' ) === 'copy_first_stack' ) );
+		$basis_percentages = $is_cta_row ? [ (float) ( $cta_layout['tracks']['copy'] ?? 0 ), (float) ( $cta_layout['tracks']['actions'] ?? 0 ) ] : ( $is_split_composition ? wpae_layout_report_composition_basis( $breakpoint_composition ) : [] );
         $gap_ref = 'space.component' . ( $device === 'desktop' ? '' : '_' . $device );
         $gap = $gap_override ?? wpae_layout_report_length_px( $tokens[ $gap_ref ] ?? $gap_token, $viewport, 24 );
         if ( ! empty( $plan['visual_policy'] ) && ! in_array( $composition, [ 'split_60_40', 'split_50_50', 'split_40_60' ], true ) ) { $gap = wpae_layout_report_length_px( $plan['visual_policy']['spacing']['intro_collection'], $viewport, 32 ); }
@@ -191,8 +193,9 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 			$basis_percent = $is_stack && ! array_key_exists( $node_id, $basis_overrides ) ? 100.0 : $percentage;
 			$child_basis = $available_width * ( $basis_percent / 100 );
 			$basis[ $node_id ] = round( $child_basis, 2 );
-            if ( ( $child['role'] ?? '' ) === 'copy_group' && ! empty( $plan['resolved_visual']['profile'] ) && isset( $tokens['layout.copy_width'] ) ) {
-                $copy_widths[ $node_id ] = round( $is_mobile ? $child_basis : min( $child_basis, wpae_layout_report_length_px( $tokens['layout.copy_width'], $viewport, $child_basis ) ), 2 );
+            if ( in_array( ( $child['role'] ?? '' ), [ 'copy_group', 'cta_copy_group' ], true ) && ! empty( $plan['resolved_visual']['profile'] ) ) {
+                $measure_spec = (string) ( $plan['visual_policy']['intro']['reading_measure'] ?? $tokens['layout.copy_width'] ?? '' );
+                if ( $measure_spec !== '' ) { $copy_widths[ $node_id ] = round( $is_mobile ? $child_basis : min( $child_basis, wpae_layout_report_length_px( $measure_spec, $viewport, $child_basis ) ), 2 ); }
             }
 			$basis_percentages_for_report[ $node_id ] = $basis_percent;
 			$min_width[ $node_id ] = (float) ( $child['layout_constraints']['min_width'] ?? 0 );
@@ -298,10 +301,25 @@ function wpae_layout_report_for_plan( array $plan, array $options = [] ): array 
 		}
 		if ( $recipe_id !== '' ) { $recipe_layout['collections'] = $collections; }
 	}
+	$cta_geometry = null;
+	if ( $archetype === 'cta' ) {
+		$cta_geometry = [
+			'record_id' => (string) ( $plan['composition_decision']['record_id'] ?? '' ),
+			'topology' => (string) ( $cta_layout['topology'] ?? '' ),
+			'direction' => (array) ( $cta_layout['direction'] ?? [] ),
+			'tracks_percent_of_available_width' => (array) ( $cta_layout['tracks'] ?? [] ),
+			'actions_direction' => (array) ( $cta_layout['actions_direction'] ?? [] ),
+			'actions_gap' => (array) ( $cta_layout['actions_gap'] ?? [] ),
+			'copy_actions_gap' => (array) ( $cta_layout['copy_actions_gap'] ?? [] ),
+			'reading_measure' => (string) ( $plan['visual_policy']['intro']['reading_measure'] ?? '' ),
+			'evidence' => 'static_plan', 'visual_render_verified' => false,
+		];
+	}
 	return [
 		'schema' => WPAE_LAYOUT_REPORT_SCHEMA,
 		'archetype' => $archetype,
 		'recipe_layout' => $recipe_layout,
+		'cta_geometry' => $cta_geometry,
 		'collections' => $collections,
 		'evidence' => 'static_plan',
 		'visual_render_verified' => false,

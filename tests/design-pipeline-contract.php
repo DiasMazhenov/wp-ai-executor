@@ -587,7 +587,7 @@ $faq_surface = $faq_compiled['elementor_data'][0]['elements'][1] ?? [];
 $faq_widget = $faq_surface['elements'][0] ?? [];
 $faq_tabs = (array) ( $faq_widget['settings']['tabs'] ?? [] );
 $check( $faq_brief['intent']['archetype'] === 'faq' && count( array_filter( $faq_brief['content'], static fn( array $item ): bool => in_array( $item['role'], [ 'faq_question', 'faq_answer' ], true ) ) ) === 4, 'FAQ BriefIR retains question and answer slots separately' );
-$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v13', 'BriefIR provenance version tracks the current prompt parser contract' );
+$check( $faq_brief['parser_version'] === 'wpae-brief-parser-v14', 'BriefIR provenance version tracks the current prompt parser contract' );
 $check( wpae_design_plan_validate( $faq_plan )['ok'] && ! empty( $faq_compiled['ok'] ) && ( $faq_widget['widgetType'] ?? '' ) === 'accordion', 'FAQ uses the existing typed pipeline and compiles to Elementor Accordion' );
 $check( ( $faq_compiled['elementor_data'][0]['elements'][0]['elements'][0]['settings']['title'] ?? '' ) === 'FAQ', 'FAQ preserves the short category label in an editable heading' );
 $check( array_column( $faq_tabs, 'tab_title' ) === [ 'Как проходит работа?', 'Можно ли изменить содержание?' ] && array_column( $faq_tabs, 'tab_content' ) === [ '<p>Сначала согласуем задачу, затем соберём страницу.</p>', '<p>Да, каждый текст остаётся редактируемым.</p>' ], 'Accordion freezes exact plain answers in the Elementor WYSIWYG native paragraph representation' );
@@ -1292,6 +1292,66 @@ $invalid_cta_brief = wpae_brief_ir_parse( "Самостоятельный CTA\n�
 $invalid_cta_plan = wpae_design_plan_from_brief( $invalid_cta_brief );
 $invalid_cta_validation = wpae_design_plan_validate( $invalid_cta_plan, $invalid_cta_brief );
 $check( ! $invalid_cta_validation['ok'] && in_array( 'cta_button_1_explicit_url_required', $invalid_cta_validation['errors'], true ), 'standalone CTA rejects a missing explicit destination before compilation' );
+
+$typed_cta_prompt = "Создай отдельный блок CTA без изображения и без пустой media-зоны.\nPill: «ОБСУДИМ ПРОЕКТ».\nЗаголовок: «Превратим идею в понятный план».\nОписание: «Расскажите о задаче — обсудим цели, ограничения и следующий шаг».\nОсновная кнопка: «Обсудить проект и согласовать следующий этап работы», ссылка #contact.\nВторичная кнопка: «Посмотреть работы студии и примеры реализованных проектов», ссылка #projects.";
+$typed_cta_brief = wpae_brief_ir_parse( $typed_cta_prompt );
+$typed_cta_brief_slots = array_values( array_filter( (array) ( $typed_cta_brief['content'] ?? [] ), static fn( array $item ): bool => in_array( (string) ( $item['role'] ?? '' ), [ 'eyebrow', 'title', 'body', 'cta', 'cta_2' ], true ) ) );
+$typed_cta_source_spans_exact = true;
+foreach ( $typed_cta_brief_slots as $typed_cta_slot ) {
+	$typed_cta_span = (array) ( $typed_cta_slot['source_span'] ?? [] );
+	$typed_cta_excerpt = count( $typed_cta_span ) === 2 ? substr( $typed_cta_prompt, (int) $typed_cta_span[0], (int) $typed_cta_span[1] - (int) $typed_cta_span[0] ) : '';
+	$typed_cta_source_spans_exact = $typed_cta_source_spans_exact && $typed_cta_excerpt === (string) ( $typed_cta_slot['exact_text'] ?? '' ) && ( $typed_cta_slot['provenance']['source_span'] ?? [] ) === $typed_cta_span;
+}
+$check( array_column( $typed_cta_brief_slots, 'role' ) === [ 'eyebrow', 'title', 'body', 'cta', 'cta_2' ] && array_column( $typed_cta_brief_slots, 'exact_text' ) === [ 'ОБСУДИМ ПРОЕКТ', 'Превратим идею в понятный план', 'Расскажите о задаче — обсудим цели, ограничения и следующий шаг', 'Обсудить проект и согласовать следующий этап работы', 'Посмотреть работы студии и примеры реализованных проектов' ] && $typed_cta_source_spans_exact, 'CTA Pill is an eyebrow, does not become a second title, and every exact slot keeps source-span provenance' );
+$typed_cta_native = [];
+foreach ( [ 'cta.centered', 'cta.split_actions' ] as $typed_cta_record_id ) {
+	$typed_cta_context = [ 'canonical_create' => true, 'post_id' => 42, 'composition_record' => $typed_cta_record_id, 'composition_version' => 1, 'visual_profile' => 'editorial_light' ];
+	$typed_cta_plan = wpae_design_plan_from_brief( $typed_cta_brief, $typed_cta_context );
+	$typed_cta_plan_validation = wpae_design_plan_validate( $typed_cta_plan, $typed_cta_brief );
+	$typed_cta_ir = wpae_elementor_ir_from_design_plan( $typed_cta_plan, $typed_cta_brief, $typed_cta_context );
+	$typed_cta_ir_validation = wpae_elementor_ir_validate( $typed_cta_ir, $typed_cta_brief );
+	$typed_cta_compiled = wpae_native_elementor_compile( $typed_cta_ir, $typed_cta_brief, [], [ 'resolved_visual' => $typed_cta_plan['resolved_visual'] ?? [], 'id_seed' => 'typed-' . str_replace( '.', '-', $typed_cta_record_id ) ] );
+	$typed_cta_nodes = $walk_elements( (array) ( $typed_cta_compiled['elementor_data'] ?? [] ) );
+	$typed_cta_root = (array) ( $typed_cta_compiled['elementor_data'][0] ?? [] );
+	$typed_cta_buttons = array_values( array_filter( $typed_cta_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+	$typed_cta_badges = array_values( array_filter( $typed_cta_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) );
+	$typed_cta_native[$typed_cta_record_id] = [ 'plan' => $typed_cta_plan, 'plan_validation' => $typed_cta_plan_validation, 'ir_validation' => $typed_cta_ir_validation, 'compiled' => $typed_cta_compiled, 'nodes' => $typed_cta_nodes, 'root' => $typed_cta_root, 'buttons' => $typed_cta_buttons, 'badges' => $typed_cta_badges, 'decision' => $typed_cta_plan['composition_decision'] ?? [], 'raw_decision' => wpae_composition_decide( $typed_cta_brief, $typed_cta_context ) ];
+}
+$typed_cta_centered = $typed_cta_native['cta.centered'];
+$typed_cta_split = $typed_cta_native['cta.split_actions'];
+$typed_cta_native_topology_ok = count( (array) ( $typed_cta_centered['root']['elements'] ?? [] ) ) === 1
+	&& count( (array) ( $typed_cta_split['root']['elements'] ?? [] ) ) === 2
+	&& ( $typed_cta_centered['root']['settings']['flex_direction'] ?? '' ) === 'column'
+	&& ( $typed_cta_split['root']['settings']['flex_direction'] ?? '' ) === 'row'
+	&& ( $typed_cta_split['root']['settings']['flex_direction_tablet'] ?? '' ) === 'column'
+	&& ( $typed_cta_split['root']['settings']['flex_direction_mobile'] ?? '' ) === 'column';
+foreach ( [ $typed_cta_centered, $typed_cta_split ] as $typed_cta_case ) {
+	$typed_cta_buttons_exact = array_map( static fn( array $node ): array => [ (string) ( $node['settings']['text'] ?? '' ), (string) ( $node['settings']['link']['url'] ?? '' ) ], $typed_cta_case['buttons'] );
+	$typed_cta_native_topology_ok = $typed_cta_native_topology_ok
+		&& ! empty( $typed_cta_case['plan_validation']['ok'] )
+		&& ! empty( $typed_cta_case['ir_validation']['ok'] )
+		&& ! empty( $typed_cta_case['compiled']['ok'] )
+		&& ( $typed_cta_case['plan']['composition_decision']['record_id'] ?? '' ) !== ''
+		&& ( $typed_cta_case['plan']['composition_decision']['visual_profile'] ?? '' ) === 'editorial_light'
+		&& ( $typed_cta_case['plan']['visual_policy']['intro']['eyebrow_presentation'] ?? '' ) === 'pill'
+		&& ( $typed_cta_case['plan']['sections'][0]['badge_content_ref'] ?? '' ) !== ''
+		&& $typed_cta_buttons_exact === [ [ 'Обсудить проект и согласовать следующий этап работы', '#contact' ], [ 'Посмотреть работы студии и примеры реализованных проектов', '#projects' ] ]
+		&& ( $typed_cta_case['badges'][0]['elements'][0]['settings']['title'] ?? '' ) === 'ОБСУДИМ ПРОЕКТ'
+		&& empty( $typed_cta_case['plan']['media_references'] );
+}
+$check( $typed_cta_native_topology_ok, 'canonical CTA records freeze exact Russian copy, pill, explicit URLs and distinct native Flex topologies with no media; selected=' . implode( ',', array_map( static fn( array $case ): string => (string) ( $case['decision']['record_id'] ?? '' ), $typed_cta_native ) ) );
+$typed_cta_unknown_context = [ 'canonical_create' => true, 'post_id' => 42, 'composition_record' => 'cta.not_registered', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ];
+$typed_cta_unknown_plan = wpae_design_plan_from_brief( $typed_cta_brief, $typed_cta_unknown_context );
+$typed_cta_unknown_validation = wpae_design_plan_validate( $typed_cta_unknown_plan, $typed_cta_brief );
+$typed_cta_media_brief = wpae_brief_ir_parse( $typed_cta_prompt . "\nДобавь изображение." );
+$typed_cta_media_decision = wpae_composition_decide( $typed_cta_media_brief, [ 'composition_record' => 'cta.split_actions', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$typed_cta_lost_link_brief = $typed_cta_brief;
+foreach ( $typed_cta_lost_link_brief['content'] as &$typed_cta_item ) { if ( ( $typed_cta_item['role'] ?? '' ) === 'cta_2' ) { $typed_cta_item['url'] = ''; } }
+unset( $typed_cta_item );
+$typed_cta_lost_link_context = [ 'canonical_create' => true, 'post_id' => 42, 'composition_record' => 'cta.split_actions', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ];
+$typed_cta_lost_link_plan = wpae_design_plan_from_brief( $typed_cta_lost_link_brief, $typed_cta_lost_link_context );
+$typed_cta_lost_link_validation = wpae_design_plan_validate( $typed_cta_lost_link_plan, $typed_cta_lost_link_brief );
+$check( empty( $typed_cta_unknown_validation['ok'] ) && in_array( 'composition_record_unknown', $typed_cta_unknown_validation['errors'], true ) && ! empty( $typed_cta_media_decision['errors'] ) && ! empty( $typed_cta_lost_link_validation['errors'] ), 'unknown CTA record, unsupported media intent and lost explicit URL stop at typed preflight; errors=' . wp_json_encode( [ $typed_cta_unknown_validation['errors'] ?? [], $typed_cta_media_decision['errors'] ?? [], $typed_cta_lost_link_validation['errors'] ?? [] ] ) );
 
 $services_recipe_prompt = "Блок услуг\nНадзаголовок: «КАК МЫ ПОМОГАЕМ»\nЗаголовок: «Услуги для вашего проекта»\nОписание: «Подробное вступление к списку услуг.»\nУслуга 1 — название: «Стратегия»\nУслуга 1 — описание: «Длинное описание стратегии с несколькими важными этапами и результатами для проекта. Оно должно оставаться рядом только со своей карточкой.»\nУслуга 1 — кнопка: «Подробнее», ссылка #strategy\nУслуга 2 — название: «Дизайн»\nУслуга 2 — описание: «Создаем ясное визуальное решение, сохраняя детали и удобство.»\nУслуга 2 — кнопка: «Подробнее», ссылка #design\nУслуга 3 — название: «Сопровождение»\nУслуга 3 — описание: «Проверяем проектные решения и координируем ключевые этапы.»\nУслуга 3 — кнопка: «Подробнее», ссылка #support";
 $services_recipe_brief = wpae_brief_ir_parse( $services_recipe_prompt );

@@ -414,6 +414,22 @@ function wpae_composition_records(): array {
 				'variant_kind' => 'structural_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button', 'image' ] ];
 		}
 	}
+	// CTA records are native Flex compositions. Their policies own the section
+	// topology and responsive axes before the accepted Plan is frozen.
+	$records['cta.centered'] = [
+		'id' => 'cta.centered', 'version' => 1, 'family' => 'cta', 'scope' => [ 'page' ], 'composition' => 'cta_centered',
+		'slots' => [ 'intro' => 'eyebrow_title_body', 'cta' => 'one_or_two_explicit_links', 'media' => 'none' ],
+		'media' => [ 'min' => 0, 'max' => 0 ], 'groups' => [ 'min' => 0, 'max' => 0 ],
+		'policy' => [ 'composition' => 'cta_centered', 'desktop' => 'column', 'tablet' => 'column', 'mobile' => 'column', 'topology' => 'copy_contains_actions', 'intro_placement' => 'above_collection', 'intro_text_align' => 'center', 'intro_container_align' => 'center', 'reading_measure' => '42rem', 'cta_tracks' => [ 'copy' => 100, 'actions' => 100 ], 'cta_actions_direction' => [ 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column' ], 'cta_actions_align' => 'center', 'cta_actions_gap' => [ 'desktop' => '0.875rem', 'tablet' => '0.75rem', 'mobile' => '0.75rem' ], 'cta_copy_actions_gap' => [ 'desktop' => '1.5rem', 'tablet' => '1.25rem', 'mobile' => '1rem' ] ],
+		'variant_kind' => 'structural_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button' ],
+	];
+	$records['cta.split_actions'] = [
+		'id' => 'cta.split_actions', 'version' => 1, 'family' => 'cta', 'scope' => [ 'page' ], 'composition' => 'cta_split_actions',
+		'slots' => [ 'intro' => 'eyebrow_title_body', 'cta' => 'separate_one_or_two_explicit_links', 'media' => 'none' ],
+		'media' => [ 'min' => 0, 'max' => 0 ], 'groups' => [ 'min' => 0, 'max' => 0 ],
+		'policy' => [ 'composition' => 'cta_split_actions', 'desktop' => 'row', 'tablet' => 'column', 'mobile' => 'column', 'topology' => 'copy_actions_siblings', 'intro_placement' => 'split_copy', 'intro_text_align' => 'left', 'intro_container_align' => 'start', 'reading_measure' => '42rem', 'cta_tracks' => [ 'copy' => 62, 'actions' => 32 ], 'cta_actions_direction' => [ 'desktop' => 'column', 'tablet' => 'column', 'mobile' => 'column' ], 'cta_actions_align' => 'start', 'cta_actions_gap' => [ 'desktop' => '1rem', 'tablet' => '0.75rem', 'mobile' => '0.75rem' ], 'cta_copy_actions_gap' => [ 'desktop' => '2rem', 'tablet' => '1.25rem', 'mobile' => '1rem' ] ],
+		'variant_kind' => 'structural_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button' ],
+	];
 	// New records declare a semantic repeat-surface owner without changing the
 	// hashes of already frozen v1 records. The accepted DesignPlan copies this
 	// owner into its versioned visual policy; the compiler only translates it.
@@ -445,7 +461,7 @@ function wpae_composition_records(): array {
 		];
 	}
 	foreach ( $records as &$record ) {
-		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits', 'team', 'testimonials', 'services', 'process' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
+		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits', 'team', 'testimonials', 'services', 'process', 'cta' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
 		if ( $record['id'] === 'benefits.linear' ) { $record['alias_of'] = 'benefits.grid'; }
 		$record['implementation_status'] = 'implemented_source';
 		$record['provenance'] = [ 'source' => 'typed_plan', 'catalog' => 'wpae-compositions-v1' ];
@@ -548,6 +564,20 @@ function wpae_composition_candidate_compatibility( array $brief, array $context,
 	if ( $family === 'process' && function_exists( 'wpae_design_plan_process_content' ) ) { $groups = (array) ( wpae_design_plan_process_content( $brief )['steps'] ?? [] ); }
 	$minimum = (int) ( $record['groups']['min'] ?? 0 ); $maximum = $record['groups']['max'] ?? null;
 	if ( count( $groups ) < $minimum || ( $maximum !== null && count( $groups ) > (int) $maximum ) ) { $errors[] = 'composition_group_cardinality'; }
+	if ( $family === 'cta' ) {
+		$media_refs = array_merge( (array) ( $brief['media_references'] ?? [] ), (array) ( $context['media_references'] ?? [] ), (array) ( $context['candidate_media_by_record'][$id] ?? [] ) );
+		$cta_media_intent = sanitize_key( (string) ( function_exists( 'wpae_design_plan_constraint_value' ) ? wpae_design_plan_constraint_value( $brief, 'media_intent', 'unspecified' ) : 'unspecified' ) );
+		if ( in_array( $cta_media_intent, [ 'required', 'conflict' ], true ) || ! empty( $media_refs ) ) { $errors[] = 'composition_cta_media_unsupported'; }
+		$content = array_values( array_filter( (array) ( $brief['content'] ?? [] ), 'is_array' ) );
+		$titles = array_values( array_filter( $content, static fn( $item ): bool => ( $item['role'] ?? '' ) === 'title' && trim( (string) ( $item['exact_text'] ?? '' ) ) !== '' ) );
+		$buttons = array_values( array_filter( $content, static fn( $item ): bool => in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2', 'cta_3', 'cta_4' ], true ) ) );
+		if ( count( $titles ) !== 1 ) { $errors[] = 'composition_cta_title_required'; }
+		if ( count( $buttons ) < 1 || count( $buttons ) > 2 ) { $errors[] = 'composition_cta_action_count_invalid'; }
+		foreach ( $buttons as $index => $button ) {
+			if ( empty( $button['url_requested'] ) || trim( (string) ( $button['url'] ?? '' ) ) === '' ) { $errors[] = 'composition_cta_action_url_required:' . ( $index + 1 ); }
+			if ( ( $button['provenance']['source'] ?? '' ) !== 'prompt' || ( $button['copy_status'] ?? '' ) !== 'explicit' ) { $errors[] = 'composition_cta_action_not_explicit:' . ( $index + 1 ); }
+		}
+	}
 	$seen_groups = [];
 	foreach ( $groups as $group ) {
 		$group_id = sanitize_key( (string) ( $group['group_id'] ?? '' ) );
@@ -715,6 +745,11 @@ function wpae_composition_decide( array $brief, array $context = [], ?array $can
 					$want = $body >= 180 || $spread >= 140 ? 'team.editorial_rows' : 'team.grid';
 					if ( $id === $want ) { $score += 300; $reasons[] = $want === 'team.editorial_rows' ? 'long_or_uneven_biographies_favor_rows' : 'compact_biographies_favor_cards'; }
 					break;
+				case 'cta':
+					$button_count = count( array_filter( (array) ( $brief['content'] ?? [] ), static fn( $item ): bool => is_array( $item ) && in_array( (string) ( $item['role'] ?? '' ), [ 'cta', 'cta_2' ], true ) ) );
+					$want = $button_count > 1 ? 'cta.split_actions' : 'cta.centered';
+					if ( $id === $want ) { $score += 300; $reasons[] = $button_count > 1 ? 'separate_actions_favor_split_actions' : 'single_action_favors_centered'; }
+					break;
 				case 'hero': case 'about':
 					$has_media = (int) $compatibility['owned_media_count'] > 0;
 					$desired = $family . '.' . ( $has_media ? ( $body > 280 ? 'split_50_50' : 'split_60_40' ) : 'text_only' );
@@ -763,7 +798,7 @@ function wpae_composition_decision_for_record( array $brief, array $decision, st
 
 function wpae_composition_topology_signature( array $record ): string {
 	$policy = (array) ( $record['policy'] ?? [] );
-	$shape = [ 'family' => $record['family'] ?? '', 'composition' => $record['composition'] ?? '', 'desktop' => $policy['desktop'] ?? '', 'tablet' => $policy['tablet'] ?? '', 'mobile' => $policy['mobile'] ?? '', 'media_side' => $policy['media_side'] ?? '', 'entity_layout' => $policy['entity_layout'] ?? '', 'capabilities' => array_values( (array) ( $record['capabilities'] ?? [] ) ) ];
+	$shape = [ 'family' => $record['family'] ?? '', 'composition' => $record['composition'] ?? '', 'topology' => $policy['topology'] ?? '', 'desktop' => $policy['desktop'] ?? '', 'tablet' => $policy['tablet'] ?? '', 'mobile' => $policy['mobile'] ?? '', 'media_side' => $policy['media_side'] ?? '', 'entity_layout' => $policy['entity_layout'] ?? '', 'capabilities' => array_values( (array) ( $record['capabilities'] ?? [] ) ) ];
 	return hash( 'sha256', wp_json_encode( $shape ) );
 }
 
@@ -804,8 +839,8 @@ function wpae_composition_visual_profiles(): array {
 
 /** Safe editor projection: no trees, tokens, credentials or legacy aliases. */
 function wpae_composition_editor_catalog(): array {
- $families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы', 'team' => 'Команда', 'testimonials' => 'Отзывы', 'services' => 'Услуги', 'process' => 'Процесс' ];
- $labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон', 'team.grid' => 'Карточки участников', 'team.editorial_rows' => 'Редакционные строки', 'testimonials.grid' => 'Карточки отзывов', 'testimonials.editorial_rows' => 'Редакционные строки', 'services.icon_cards' => 'Карточки с иконками', 'services.photo_cards' => 'Карточки с фото', 'services.split_editorial' => 'Текст и фото', 'services.text_icon_list' => 'Список услуг', 'process.ordered_steps' => 'Упорядоченные этапы' ];
+ $families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы', 'team' => 'Команда', 'testimonials' => 'Отзывы', 'services' => 'Услуги', 'process' => 'Процесс', 'cta' => 'Призыв к действию' ];
+ $labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон', 'team.grid' => 'Карточки участников', 'team.editorial_rows' => 'Редакционные строки', 'testimonials.grid' => 'Карточки отзывов', 'testimonials.editorial_rows' => 'Редакционные строки', 'services.icon_cards' => 'Карточки с иконками', 'services.photo_cards' => 'Карточки с фото', 'services.split_editorial' => 'Текст и фото', 'services.text_icon_list' => 'Список услуг', 'process.ordered_steps' => 'Упорядоченные этапы', 'cta.centered' => 'Центрированный блок', 'cta.split_actions' => 'Текст и отдельные действия' ];
  $records = [];
  foreach ( wpae_composition_records() as $record ) {
   if ( empty( $record['distinct'] ) || $record['implementation_status'] !== 'implemented_source' || ! in_array( 'page', $record['scope'], true ) ) { continue; }

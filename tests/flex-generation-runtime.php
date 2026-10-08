@@ -3145,6 +3145,61 @@ foreach ( $process_route_global_snapshot as $key => $snapshot ) {
 	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
 }
 
+// Canonical CTA create uses the same Brief/Plan/native transaction lifecycle.
+$cta_typed_route_global_keys = [ 'page_data', 'http_calls', 'writes', 'responses', 'library', 'options', 'library_retrieval_calls', 'm1_write_attempts', 'typed_last_update_params' ];
+$cta_typed_route_global_snapshot = [];
+foreach ( $cta_typed_route_global_keys as $key ) {
+	$cta_typed_route_global_snapshot[ $key ] = [ 'set' => array_key_exists( $key, $GLOBALS ), 'value' => $GLOBALS[ $key ] ?? null ];
+}
+$GLOBALS['page_data'] = $legacy_page;
+$GLOBALS['http_calls'] = [];
+$GLOBALS['writes'] = [];
+$GLOBALS['responses'] = [];
+$GLOBALS['library'] = [
+	'status' => 'matched',
+	'available_count' => 6,
+	'candidate_count' => 6,
+	'candidates' => array_fill( 0, 6, [ 'choice_key' => 'candidate_1', 'title' => 'Optional CTA template' ] ),
+	'selection_candidates' => array_fill( 0, 6, [ 'choice_key' => 'candidate_1', 'title' => 'Optional CTA template', 'elementor_data' => [] ] ),
+];
+$GLOBALS['library_retrieval_calls'] = [];
+$GLOBALS['options'][WPAE_LLM_SETTINGS_OPTION] = [ 'provider' => 'openrouter', 'model' => 'openrouter/free', 'design_pipeline_mode' => 'active', 'design_engine_mode' => 'active' ];
+$GLOBALS['options'][WPAE_LLM_RATE_LIMIT_OPTION] = [];
+$cta_typed_route_prompt = "Создай отдельный блок CTA без изображения и без пустой media-зоны.\nPill: «ОБСУДИМ ПРОЕКТ».\nЗаголовок: «Превратим идею в понятный план».\nОписание: «Расскажите о задаче — обсудим цели, ограничения и следующий шаг».\nОсновная кнопка: «Обсудить проект и согласовать следующий этап работы», ссылка #contact.\nВторичная кнопка: «Посмотреть работы студии и примеры реализованных проектов», ссылка #projects.";
+$cta_typed_route_request = new WP_REST_Request();
+$cta_typed_route_request->set_param( 'message', $cta_typed_route_prompt );
+$cta_typed_route_request->set_param( 'context', [ 'post_id' => 42, 'operation_identity' => 'canonical-cta-chat-route', 'composition_record' => 'cta.split_actions', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$cta_typed_route_response = wpae_llm_chat_request( $cta_typed_route_request );
+$cta_typed_route_data = $cta_typed_route_response instanceof WP_REST_Response ? $cta_typed_route_response->get_data() : [];
+$cta_typed_route_diagnostics = (array) ( $cta_typed_route_data['diagnostics'] ?? [] );
+$cta_typed_route_pipeline = (array) ( $cta_typed_route_diagnostics['design_pipeline'] ?? [] );
+$cta_typed_route_ledger = (array) ( $cta_typed_route_diagnostics['operation_ledger'] ?? [] );
+$cta_typed_route_contract = wpae_accepted_contract_get( $cta_typed_route_ledger );
+$cta_typed_route_evidence = wpae_accepted_contract_composition_evidence( $cta_typed_route_ledger );
+$cta_typed_route_readback = wpae_get_elementor_data_for_post( 42 );
+$cta_typed_route_roots = array_slice( (array) ( $GLOBALS['page_data'] ?? [] ), count( $legacy_page ) );
+$cta_typed_route_nodes = [];
+$cta_typed_route_collect_nodes = static function ( array $nodes ) use ( &$cta_typed_route_collect_nodes, &$cta_typed_route_nodes ): void {
+	foreach ( $nodes as $node ) {
+		if ( ! is_array( $node ) ) { continue; }
+		$cta_typed_route_nodes[] = $node;
+		$cta_typed_route_collect_nodes( (array) ( $node['elements'] ?? [] ) );
+	}
+};
+$cta_typed_route_collect_nodes( $cta_typed_route_roots );
+$cta_typed_route_actions = array_values( array_filter( $cta_typed_route_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-cta-actions' ) );
+$cta_typed_route_buttons = array_values( array_filter( $cta_typed_route_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+$cta_typed_route_badges = array_values( array_filter( $cta_typed_route_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) );
+$cta_typed_route_plan_decision = (array) ( $cta_typed_route_pipeline['plan']['composition_decision'] ?? [] );
+check( ! empty( $cta_typed_route_data['ok'] ) && ( $cta_typed_route_diagnostics['action_path'] ?? '' ) === 'pipeline' && ( $cta_typed_route_diagnostics['provider_calls'] ?? -1 ) === 0 && ( $cta_typed_route_diagnostics['write_count'] ?? 0 ) === 1 && count( (array) ( $GLOBALS['writes'] ?? [] ) ) === 1, 'Canonical CTA ordinary chat compiles without a provider and crosses the existing write boundary once' );
+check( ( $cta_typed_route_pipeline['brief']['hash'] ?? '' ) !== '' && ( $cta_typed_route_pipeline['brief']['hash'] ?? '' ) === ( $cta_typed_route_pipeline['plan']['brief_hash'] ?? '' ) && ! empty( $cta_typed_route_pipeline['brief']['validation']['ok'] ) && ! empty( $cta_typed_route_pipeline['plan']['validation']['ok'] ) && ! empty( $cta_typed_route_pipeline['elementor_ir']['validation']['ok'] ) && ! empty( $cta_typed_route_pipeline['frozen_decisions']['readback_matches'] ) && ( $cta_typed_route_ledger['current_state'] ?? '' ) === 'written' && count( (array) ( $cta_typed_route_ledger['root_ids'] ?? [] ) ) === 1, 'Canonical CTA chat retains one matching Brief/Plan, successful native validation, exact mock readback, and one owned operation root' );
+check( ( $cta_typed_route_plan_decision['record_id'] ?? '' ) === 'cta.split_actions' && ( $cta_typed_route_plan_decision['visual_profile'] ?? '' ) === 'editorial_light' && ( $cta_typed_route_plan_decision['request_selection']['mode'] ?? '' ) === 'explicit_record' && count( (array) ( $GLOBALS['library_retrieval_calls'] ?? [] ) ) === 0, 'Explicit CTA composition/profile survive the ordinary typed route without selecting a legacy library template' );
+$cta_typed_route_button_pairs = array_map( static fn( array $node ): array => [ (string) ( $node['settings']['text'] ?? '' ), (string) ( $node['settings']['link']['url'] ?? '' ) ], $cta_typed_route_buttons );
+check( count( $cta_typed_route_roots ) === 1 && str_contains( (string) ( $cta_typed_route_roots[0]['settings']['_css_classes'] ?? '' ), 'wpae-cta-section' ) && count( $cta_typed_route_roots[0]['elements'] ?? [] ) === 2 && ( $cta_typed_route_roots[0]['settings']['flex_direction'] ?? '' ) === 'row' && ( $cta_typed_route_roots[0]['settings']['flex_direction_mobile'] ?? '' ) === 'column' && count( $cta_typed_route_actions ) === 1 && $cta_typed_route_button_pairs === [ [ 'Обсудить проект и согласовать следующий этап работы', '#contact' ], [ 'Посмотреть работы студии и примеры реализованных проектов', '#projects' ] ] && ( $cta_typed_route_badges[0]['elements'][0]['settings']['title'] ?? '' ) === 'ОБСУДИМ ПРОЕКТ' && wp_json_encode( $cta_typed_route_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ) && ! empty( $cta_typed_route_contract['ok'] ) && ( $cta_typed_route_evidence['status'] ?? '' ) === 'complete', 'Canonical CTA mock readback keeps its split Flex hierarchy, pill, exact dual actions and typed accepted-contract evidence; diagnostic=' . wp_json_encode( [ 'root_classes' => $cta_typed_route_roots[0]['settings']['_css_classes'] ?? '', 'root_children' => count( $cta_typed_route_roots[0]['elements'] ?? [] ), 'root_direction' => $cta_typed_route_roots[0]['settings']['flex_direction'] ?? '', 'mobile_direction' => $cta_typed_route_roots[0]['settings']['flex_direction_mobile'] ?? '', 'action_count' => count( $cta_typed_route_actions ), 'buttons' => $cta_typed_route_button_pairs, 'badge' => $cta_typed_route_badges[0]['elements'][0]['settings']['title'] ?? '', 'readback_matches' => wp_json_encode( $cta_typed_route_readback, JSON_UNESCAPED_UNICODE ) === wp_json_encode( $GLOBALS['page_data'], JSON_UNESCAPED_UNICODE ), 'contract_ok' => $cta_typed_route_contract['ok'] ?? null, 'evidence' => $cta_typed_route_evidence['status'] ?? '' ], JSON_UNESCAPED_UNICODE ) );
+foreach ( $cta_typed_route_global_snapshot as $key => $snapshot ) {
+	if ( $snapshot['set'] ) { $GLOBALS[ $key ] = $snapshot['value']; } else { unset( $GLOBALS[ $key ] ); }
+}
+
 if ( getenv( 'WPAE_SERVICES_BRIEF_DEMO' ) === '1' ) {
 	$services_demo_brief = array_diff_key( $services_multiline_brief, [ 'source_text' => true ] );
 	$services_demo_brief['validation'] = wpae_brief_ir_validate( $services_multiline_brief );

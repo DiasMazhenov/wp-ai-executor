@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v13';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v14';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -156,6 +156,9 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 		return 'feature_title';
 	}
 	if ( preg_match( '/(?:надзаголов\w*|eyebrow|overline|kicker|надпис\w*|слоган)\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return 'eyebrow';
+	}
+	if ( preg_match( '/(?:pill(?:[\s-]*бейдж)?|badge|бейдж\w*)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'eyebrow';
 	}
 	if ( preg_match( '/(?:заголов\w*|heading|title|headline)\s*[:\-]?\s*$/iu', $prefix ) ) {
@@ -764,7 +767,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		$confidence = $role === 'text' ? 0.62 : 0.98;
 		$content_start = $start;
 		$content_length = strlen( $full );
-		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'process' ], true ) ) {
+		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'process', 'cta' ], true ) ) {
 			foreach ( [ 1, 2, 3 ] as $capture_index ) {
 				if ( isset( $quote_matches[ $capture_index ][ $match_index ][1] ) && (int) $quote_matches[ $capture_index ][ $match_index ][1] >= 0 && (string) $quote_matches[ $capture_index ][ $match_index ][0] === $inner ) {
 					$content_start = (int) $quote_matches[ $capture_index ][ $match_index ][1];
