@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v18';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v19';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -190,6 +190,9 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	}
 	if ( preg_match( '/(?:pill(?:[\s-]*бейдж)?|badge|бейдж\w*)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'eyebrow';
+	}
+	if ( preg_match( '/(?:(?:основн\w*|primary)\s+)?(?:кнопк\w*|cta|button)\s+(?:(?:с|with)\s+)?(?:точн\w*\s+)?(?:текст\w*|label)\s*[:\-]?\s*$/iu', $prefix ) ) {
+		return preg_match( '/(?:втор\w*|secondary)\s+(?:кнопк\w*|cta|button)|(?:кнопк\w*|cta|button)\s*#?2\s+/', $prefix ) ? 'cta_2' : 'cta';
 	}
 	if ( preg_match( '/(?:заголов\w*|heading|title|headline)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'title';
@@ -1035,7 +1038,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		} ) );
 	}
 	$constraints = [];
-	$composition_names = [ 'stacked_left' => '/(?:stacked_left|text[- ]only|текстов\w*\s+(?:hero|хиро)|без\s+(?:фото|изображен\w*))/iu', 'editorial_list' => '/(?:editorial_list|editorial\s+list|редакционн\w*\s+список)/iu', 'three_cards' => '/(?:three_cards|benefits[.]grid|сетка\s+преимуществ)/iu' ];
+	$composition_names = [ 'stacked_left' => '/(?:stacked_left|text[- ]only|текстов\w*\s+(?:hero|хиро))/iu', 'editorial_list' => '/(?:editorial_list|editorial\s+list|редакционн\w*\s+список)/iu', 'three_cards' => '/(?:three_cards|benefits[.]grid|сетка\s+преимуществ)/iu' ];
 	if ( in_array( $archetype, [ 'hero', 'about', 'benefits' ], true ) ) {
 		foreach ( $composition_names as $name => $pattern ) {
 			if ( $archetype === 'benefits' && $name === 'stacked_left' ) { continue; }

@@ -17,6 +17,15 @@ check( ! empty( $intake_hero['response']['ok'] ), 'Ordinary plugin chat accepts 
 check( $intake_hero['calls'] === 1 && $intake_hero['writes'] === 1 && $intake_hero['write_attempts'] === 1 && ( $intake_hero['response']['diagnostics']['provider_calls'] ?? -1 ) === 1, 'Generated Hero uses one typed provider intake and one transaction only' );
 check( ( $intake_hero_pipeline['brief']['intake']['source'] ?? '' ) === 'provider_typed_intake' && ( $intake_hero_pipeline['brief']['intake']['provider_calls'] ?? -1 ) === 1 && ( $intake_hero_pipeline['brief']['hash'] ?? '' ) === ( $intake_hero_pipeline['plan']['brief_hash'] ?? '' ), 'Generated Hero freezes one provider-derived Brief consumed by its accepted Plan' );
 
+$intake_live_hero_prompt = 'Создай самостоятельный блок Hero для небольшой архитектурной и интерьерной студии. Сформулируй оригинальный заголовок и короткое описание: студия проектирует жилые пространства от планировочной идеи до понятной документации, учитывая дневной свет, повседневное движение и хранение. Это весь набор разрешённых фактов о тестовой студии. Не добавляй цифры, сроки, опыт, клиентов, награды, географию, гарантии, цены или обещания. Заголовок и описание должны быть написаны моделью; готовых строк для них нет. Добавь одну основную кнопку с точным текстом «Обсудить проект» и точной ссылкой #contact. Без изображения и без второй кнопки. Композиция — автоматически. Добавь блок к существующей странице.';
+$intake_live_hero = $run_services_route( $intake_live_hero_prompt, [ provider_reply( wp_json_encode( $intake_hero_response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-live-natural-hero-cta' );
+$intake_live_hero_pipeline = (array) ( $intake_live_hero['response']['diagnostics']['design_pipeline'] ?? [] );
+
+$intake_plan_refusal_prompt = 'Создай Hero для архитектурной студии. Оставь точную фразу «Только по записи» как дополнительный текст, а заголовок и описание напиши по заданию: проектирование жилых пространств с учётом света и хранения.';
+$intake_plan_refusal = $run_services_route( $intake_plan_refusal_prompt, [ provider_reply( wp_json_encode( $intake_hero_response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) ) ], [], 'intake-plan-refusal-telemetry' );
+$intake_plan_refusal_details = (array) ( $intake_plan_refusal['error']['data']['details'] ?? [] );
+check( ( $intake_plan_refusal['error']['code'] ?? '' ) === 'wpae_design_plan_rejected' && $intake_plan_refusal['calls'] === 1 && $intake_plan_refusal['writes'] === 0 && $intake_plan_refusal['roots'] === array_column( $legacy_page, 'id' ) && ( $intake_plan_refusal_details['provider_calls'] ?? -1 ) === 1 && ( $intake_plan_refusal_details['provider_call_count_source'] ?? '' ) === 'canonical_intake_telemetry' && ( $intake_plan_refusal_details['intake']['provider_calls'] ?? -1 ) === 1, 'Downstream Plan refusal preserves actual canonical-intake provider-call telemetry and remains no-write' );
+
 $intake_collect_strings = static function ( array $nodes ) use ( &$intake_collect_strings ): array {
 	$strings = [];
 	foreach ( $nodes as $node ) {
@@ -29,6 +38,9 @@ $intake_collect_strings = static function ( array $nodes ) use ( &$intake_collec
 	}
 	return array_values( array_filter( $strings, static fn( string $value ): bool => $value !== '' ) );
 };
+
+$intake_live_hero_strings = $intake_collect_strings( [ $intake_live_hero['written'] ] );
+check( ! empty( $intake_live_hero['response']['ok'] ) && $intake_live_hero['calls'] === 1 && $intake_live_hero['writes'] === 1 && in_array( 'Обсудить проект', $intake_live_hero_strings, true ) && in_array( '#contact', $intake_live_hero_strings, true ) && empty( array_filter( (array) ( $intake_live_hero_pipeline['plan']['validation']['errors'] ?? [] ), static fn( string $error ): bool => $error === 'unbound_explicit_content:text' ) ), 'Ordinary plugin chat binds natural exact CTA language before the generated Hero Plan freezes: ' . wp_json_encode( [ 'error' => $intake_live_hero['error'], 'calls' => $intake_live_hero['calls'], 'writes' => $intake_live_hero['writes'], 'native_strings' => $intake_live_hero_strings, 'plan_errors' => $intake_live_hero_pipeline['plan']['validation']['errors'] ?? [] ], JSON_UNESCAPED_UNICODE ) );
 
 $intake_unknown_prompt = 'Создай визуальный фрагмент с заголовком и коротким пояснением для архитектурного бюро. Не добавляй фото.';
 $intake_unknown_probe = wpae_brief_ir_parse( $intake_unknown_prompt );

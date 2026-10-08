@@ -11362,7 +11362,9 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 				'plan' => $design_pipeline_trace['plan']['validation'] ?? [],
 				'layout' => $design_pipeline_trace['layout'],
 				'services' => $design_pipeline_trace['services'] ?? [],
-				'provider_calls' => 0,
+				'provider_calls' => (int) ( $canonical_intake_telemetry['provider_calls'] ?? 0 ),
+				'provider_call_count_source' => 'canonical_intake_telemetry',
+				'intake' => $canonical_intake_telemetry,
 				'write_count' => 0,
 			],
 		] );
