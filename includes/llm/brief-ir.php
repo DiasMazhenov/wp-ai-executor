@@ -10,7 +10,7 @@
 defined( 'ABSPATH' ) || exit;
 
 const WPAE_BRIEF_IR_SCHEMA = 'wpae-brief-v1';
-const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v14';
+const WPAE_BRIEF_IR_PARSER_VERSION = 'wpae-brief-parser-v16';
 
 function wpae_brief_ir_source_text( string $source_text ): string {
 	$source_text = str_replace( [ "\r\n", "\r" ], "\n", $source_text );
@@ -88,6 +88,7 @@ function wpae_brief_ir_archetype( string $source_text ): string {
 		'hero' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:новый\s+)?(?:hero|хиро|обложк\w*|перв\w*\s+экран|главн\w*\s+экран)\b/iu',
 		'team' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:команд\w*|team)\b|^\s*(?:команда|team)\s*:/iu',
 		'testimonials' => '/(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:отзыв\w*|testimonials?|reviews?)\b|^\s*(?:отзывы|testimonials?|reviews?)\s*:/iu',
+		'portfolio' => '/^\s*(?:(?:создай|сделай|добавь|create|make)\s+)?(?:(?:блок|секци\w*|section|block)\s+)?(?:portfolio|портфолио|проекты|кейсы)\b/iu',
 		'cta' => '/(?:\b(?:cta|call\s+to\s+action)\s*[-–—]?\s*(?:блок|секци\w*|block|section)\b|(?:^|\b)(?:блок|секци\w*|section|block)\s+(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b|^\s*(?:cta|call\s+to\s+action)\s*(?:[.:\-–—]|$)|^\s*(?:самостоятельн\w*|standalone)[^\n]{0,50}\b(?:cta|call\s+to\s+action|призыв\w*\s+к\s+действи\w*)\b)/iu',
 	];
 	foreach ( $explicit as $candidate => $pattern ) {
@@ -134,7 +135,7 @@ function wpae_brief_ir_label_role( string $prefix ): string {
 	if ( preg_match( '/(?:над\s+заголовк\w*\s+(?:(?:добавь|добавить|размести|помести)\s+)?(?:pill[\s-]*бейдж|бейдж\w*|badge)|(?:pill[\s-]*бейдж|бейдж\w*|badge)\s+над\s+заголовк\w*)\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'eyebrow';
 	}
-	if ( preg_match( '/(?:заголов\w*\s+(?:секци\w*|раздел\w*)|(?:section|block)\s+(?:heading|title))\s*[:\-]?\s*$/iu', $prefix ) ) {
+	if ( preg_match( '/(?:заголов\w*\s+(?:секци\w*|раздел\w*)|раздел(?:ом|а)?|(?:section|block)\s+(?:heading|title))\s*[:\-]?\s*$/iu', $prefix ) ) {
 		return 'title';
 	}
 	if ( preg_match( '/призыв\w*\s+к\s+действи\w*\s*[:\-]?\s*$/iu', $prefix ) ) {
@@ -198,6 +199,10 @@ function wpae_brief_ir_repeated_slot( string $prefix ): array {
 		[ 'testimonial', 'testimonial_author', '/(?:отзыв|testimonial|review)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:автор|имя|author|name)\s*[:\-]?\s*$/iu' ],
 		[ 'testimonial', 'testimonial_meta', '/(?:отзыв|testimonial|review)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:должност\w*|компан\w*|position|company)\s*[:\-]?\s*$/iu' ],
 		[ 'testimonial', 'testimonial_rating', '/(?:отзыв|testimonial|review)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:рейтинг|оценка|rating|score)\s*[:\-]?\s*$/iu' ],
+		[ 'portfolio', 'portfolio_project_title', '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:назван\w*|имя|title|name)\s*[:\-]?\s*$/iu' ],
+		[ 'portfolio', 'portfolio_project_description', '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:описан\w*|description|details?|body)\s*[:\-]?\s*$/iu' ],
+		[ 'portfolio', 'portfolio_project_category', '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:категори\w*|category|type)\s*[:\-]?\s*$/iu' ],
+		[ 'portfolio', 'portfolio_project_action_label', '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)\s*(?:[—–:\-]\s*)?(?:(?:подпис\w*|label)\s+)?(?:ссылк\w*|кнопк\w*|action|link)\s*[:\-]?\s*$/iu' ],
 	];
 	foreach ( $patterns as [ $group_prefix, $role, $pattern ] ) {
 		if ( preg_match( $pattern, $prefix, $match ) ) {
@@ -313,12 +318,13 @@ function wpae_brief_ir_entity_fields( string $family ): array {
 	return [
 		'team' => [ 'team_name' => 'name_ref', 'team_position' => 'position_ref', 'team_bio' => 'bio_ref', 'team_action' => 'action_ref' ],
 		'testimonials' => [ 'testimonial_quote' => 'quote_ref', 'testimonial_author' => 'author_ref', 'testimonial_meta' => 'meta_ref', 'testimonial_rating' => 'rating_ref', 'testimonial_action' => 'action_ref' ],
+		'portfolio' => [ 'portfolio_project_title' => 'title_ref', 'portfolio_project_description' => 'description_ref', 'portfolio_project_category' => 'category_ref', 'portfolio_project_action_label' => 'action_label_ref' ],
 	][ $family ] ?? [];
 }
 
 function wpae_brief_ir_entity_groups( string $family, array $content, array $media ): array {
 	$fields = wpae_brief_ir_entity_fields( $family );
-	$prefix = $family === 'team' ? 'team_' : 'testimonial_';
+	$prefix = [ 'team' => 'team_', 'testimonials' => 'testimonial_', 'portfolio' => 'portfolio_' ][ $family ] ?? '';
 	$groups = [];
 	foreach ( $content as $slot ) {
 		$field = $fields[ $slot['role'] ?? '' ] ?? '';
@@ -332,9 +338,35 @@ function wpae_brief_ir_entity_groups( string $family, array $content, array $med
 		$id = (string) ( $asset['group_id'] ?? '' );
 		if ( ! isset( $groups[$id] ) ) { continue; }
 		if ( isset( $groups[$id]['media_ref'] ) ) { $groups[$id]['errors'][] = 'duplicate_media_ref'; }
-		else { $groups[$id]['media_ref'] = $asset['asset_id']; $groups[$id]['provenance']['source_spans']['media_ref'] = $asset['provenance']['source_span'] ?? []; }
+		else { $groups[$id]['media_ref'] = $asset['asset_id']; $groups[$id]['media_role'] = sanitize_key( (string) ( $asset['role'] ?? '' ) ); $groups[$id]['provenance']['source_spans']['media_ref'] = $asset['provenance']['source_span'] ?? []; }
 	}
 	return array_values( $groups );
+}
+
+/** Rebind only source-owned media refs after resolving supplied assets, before Brief freeze. */
+function wpae_brief_ir_rebind_media_groups( array $brief ): array {
+	$family = sanitize_key( (string) ( $brief['intent']['archetype'] ?? '' ) );
+	$media = array_values( array_filter( (array) ( $brief['media_references'] ?? [] ), 'is_array' ) );
+	if ( in_array( $family, [ 'team', 'testimonials', 'portfolio' ], true ) ) {
+		$brief['groups'] = wpae_brief_ir_entity_groups( $family, (array) ( $brief['content'] ?? [] ), $media );
+	} elseif ( in_array( $family, [ 'hero', 'about' ], true ) ) {
+		foreach ( $media as &$asset ) {
+			if ( empty( $asset['group_id'] ) ) { $asset['group_id'] = $family; }
+		}
+		unset( $asset );
+		$brief['media_references'] = $media;
+		$groups = array_values( array_filter( (array) ( $brief['groups'] ?? [] ), 'is_array' ) );
+		// Bind newly resolved media only to the parser-owned section group. Do
+		// not manufacture or repair a missing/ambiguous group in a supplied Brief.
+		if ( count( $groups ) !== 1 || sanitize_key( (string) ( $groups[0]['group_id'] ?? '' ) ) !== $family ) {
+			return $brief;
+		}
+		$group = $groups[0];
+		$resolved_refs = array_values( array_map( static fn( array $asset ): string => sanitize_key( (string) ( $asset['asset_id'] ?? '' ) ), array_filter( $media, static fn( array $asset ): bool => sanitize_key( (string) ( $asset['group_id'] ?? '' ) ) === $family ) ) );
+		$group['media_refs'] = array_values( array_unique( array_merge( array_map( 'sanitize_key', (array) ( $group['media_refs'] ?? [] ) ), $resolved_refs ) ) );
+		$brief['groups'] = [ $group ];
+	}
+	return $brief;
 }
 
 /** Build stable service groups from the canonical Brief content references. */
@@ -737,7 +769,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$role = 'testimonial_author';
 			$group_id = $previous_testimonial_group;
 		}
-		$id_override = $process_id_override !== '' ? $process_id_override : ( $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial)_/', '', $role ) : '' );
+		$id_override = $process_id_override !== '' ? $process_id_override : ( $group_id !== '' && ! in_array( $archetype, [ 'benefits', 'faq' ], true ) ? $group_id . '_' . preg_replace( '/^(?:service|team|testimonial|portfolio)_/', '', $role ) : '' );
 		$url = null;
 		$url_requested = false;
 		// Scope URL association to the structural segment between this quoted
@@ -763,11 +795,11 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 			$role = $cta_index === 0 ? 'cta' : 'cta_' . ( $cta_index + 1 );
 			$cta_index++;
 		}
-		$required = in_array( $role, [ 'title', 'body', 'cta' ], true ) || str_starts_with( $role, 'cta_' ) || in_array( $role, [ 'service_title', 'service_body', 'team_name', 'team_position', 'testimonial_quote', 'testimonial_author' ], true );
+		$required = in_array( $role, [ 'title', 'body', 'cta' ], true ) || str_starts_with( $role, 'cta_' ) || in_array( $role, [ 'service_title', 'service_body', 'team_name', 'team_position', 'testimonial_quote', 'testimonial_author', 'portfolio_project_title', 'portfolio_project_description' ], true );
 		$confidence = $role === 'text' ? 0.62 : 0.98;
 		$content_start = $start;
 		$content_length = strlen( $full );
-		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'process', 'cta' ], true ) ) {
+		if ( in_array( $archetype, [ 'services', 'hero', 'about', 'benefits', 'pricing', 'faq', 'team', 'testimonials', 'portfolio', 'process', 'cta' ], true ) ) {
 			foreach ( [ 1, 2, 3 ] as $capture_index ) {
 				if ( isset( $quote_matches[ $capture_index ][ $match_index ][1] ) && (int) $quote_matches[ $capture_index ][ $match_index ][1] >= 0 && (string) $quote_matches[ $capture_index ][ $match_index ][0] === $inner ) {
 					$content_start = (int) $quote_matches[ $capture_index ][ $match_index ][1];
@@ -1158,6 +1190,10 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 	}
 	$media_references = [];
+	$reuse_authorization_span = null;
+	if ( preg_match( '/(?:разрешаю|можно|разрешено|allow|may)\s+(?:явно\s+)?(?:повторно\s+использовать|переиспользовать|reuse|re-use)[^\n]{0,100}/iu', $source_text, $reuse_match, PREG_OFFSET_CAPTURE ) ) {
+		$reuse_authorization_span = [ (int) $reuse_match[0][1], (int) $reuse_match[0][1] + strlen( (string) $reuse_match[0][0] ) ];
+	}
 	if ( preg_match_all( '~https?://[^\s)\]>]+~i', $source_text, $url_matches, PREG_OFFSET_CAPTURE ) ) {
 		foreach ( $url_matches[0] as $url_match ) {
 			$url = trim( (string) $url_match[0], " \t\n\r.,;" );
@@ -1172,8 +1208,11 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					$role = 'card_image';
 					$group_id = 'service_' . (int) $group_match[1];
 				} elseif ( preg_match( '/(?:отзыв\w*|testimonial|review)\s*\#?(\d+)[^\n]*?(?:фото|image|photo)[^\n]*$/iu', $prefix, $group_match ) ) {
-					$role = 'portrait';
+					$role = preg_match( '/аватар|avatar/iu', $prefix ) ? 'avatar' : 'portrait';
 					$group_id = 'testimonial_' . (int) $group_match[1];
+				} elseif ( preg_match( '/(?:проект|работа|кейс|project|case)\s*\#?(\d+)[^\n]*?(?:изображен\w*|фото|image|photo)[^\n]*$/iu', $prefix, $group_match ) ) {
+					$role = 'project_image';
+					$group_id = 'portfolio_' . (int) $group_match[1];
 				} elseif ( preg_match( '/(?:hero|хиро|обложк\w*|главн\w*\s+экран)[^\n]*$/iu', $prefix ) ) {
 					$role = 'hero';
 				}
@@ -1182,7 +1221,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 				if ( $group_id !== '' ) {
 					// Metadata is owned by this image segment, never borrowed from a previous entity.
 					$local_media_text = substr( $source_text, (int) $url_match[1] + strlen( $url ) );
-					if ( preg_match( '/\n\s*(?:участник\w*|сотрудник\w*|услуг\w*|отзыв\w*|team\s+member|service|testimonial|review)\s*#?\d+/iu', $local_media_text, $next_owner, PREG_OFFSET_CAPTURE ) ) { $local_media_text = substr( $local_media_text, 0, (int) $next_owner[0][1] ); }
+					if ( preg_match( '/\n\s*(?:участник\w*|сотрудник\w*|услуг\w*|отзыв\w*|проект|работа|кейс|team\s+member|service|testimonial|review|project|case)\s*#?\d+/iu', $local_media_text, $next_owner, PREG_OFFSET_CAPTURE ) ) { $local_media_text = substr( $local_media_text, 0, (int) $next_owner[0][1] ); }
 				}
 
 				if ( preg_match( '/(?:alt(?:\s+text)?|альт(?:\s*текст)?)\s*[:\-]?\s*(?:«([^»]{1,300})»|"([^"]{1,300})"|“([^”]{1,300})”)/iu', $local_media_text, $alt_match ) ) {
@@ -1193,7 +1232,9 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					$license = trim( (string) ( $license_match[1] ?: ( $license_match[2] ?: $license_match[3] ) ) );
 				}
 				$attribution = '';
-				if ( preg_match( '/(?:автор(?:\s+фото)?|photo\s+by|photographer)\s*[:\-]?\s*(?:«([^»]{1,160})»|"([^"]{1,160})"|([^\n,;]+))/iu', $local_media_text, $attribution_match ) ) {
+				// Attribution is a labeled metadata field, not any occurrence of
+				// the word "author" in nearby alt prose or a synthetic quote.
+				if ( preg_match( '/(?:^|\R)\s*(?:автор(?:\s+фото)?|photo\s+by|photographer)\s*[:\-]\s*(?:«([^»]{1,160})»|"([^"]{1,160})"|([^\n,;]+))/iu', $local_media_text, $attribution_match ) ) {
 					$attribution = trim( (string) ( $attribution_match[1] ?: ( $attribution_match[2] ?: $attribution_match[3] ) ) );
 				}
 				$allowed_reuse = $license !== '' && preg_match( '/unsplash\s+license/i', $license ) && preg_match( '#^https?://images\.unsplash\.com/#i', $url );
@@ -1202,6 +1243,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					'attachment_id' => null,
 					'source_url' => $url,
 					'role' => $role,
+					'purpose' => $role === 'avatar' ? 'avatar' : ( $role === 'portrait' ? 'portrait' : ( $role === 'project_image' ? 'project_image' : ( in_array( $role, [ 'hero', 'about' ], true ) ? 'section_image' : null ) ) ),
 					'group_id' => $group_id,
 					'alt' => $alt,
 					'focal_point' => null,
@@ -1210,7 +1252,8 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 					'license' => $license,
 					'attribution' => $attribution,
 					'allowed_reuse' => (bool) $allowed_reuse,
-					'provenance' => [ 'source' => 'prompt', 'source_span' => [ (int) $url_match[1], (int) $url_match[1] + strlen( $url ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION ],
+					'allow_shared_asset' => $reuse_authorization_span !== null,
+					'provenance' => array_filter( [ 'source' => 'prompt', 'source_span' => [ (int) $url_match[1], (int) $url_match[1] + strlen( $url ) ], 'parser' => WPAE_BRIEF_IR_PARSER_VERSION, 'reuse_authorization_source_span' => $reuse_authorization_span ], static fn( $value ): bool => $value !== null ),
 				];
 			}
 		}
@@ -1264,7 +1307,7 @@ function wpae_brief_ir_parse( string $source_text, array $context = [] ): array 
 		}
 		$service_groups = array_values( $groups_by_id );
 	} elseif ( $archetype === 'pricing' ) { $service_groups = $pricing_items; }
-	elseif ( in_array( $archetype, [ 'team', 'testimonials' ], true ) ) { $service_groups = wpae_brief_ir_entity_groups( $archetype, $content, $media_references ); }
+	elseif ( in_array( $archetype, [ 'team', 'testimonials', 'portfolio' ], true ) ) { $service_groups = wpae_brief_ir_entity_groups( $archetype, $content, $media_references ); }
 
 	$explicit_constraints = [];
 	foreach ( $constraints as $constraint ) {
@@ -1497,7 +1540,19 @@ function wpae_brief_ir_validate( array $brief ): array {
 			if ( ! is_array( $item ) || ! is_string( $brief['source_text'] ?? null ) || ( $item['copy_status'] ?? '' ) !== 'explicit' || count( $span ) !== 2 || ! is_int( $span[0] ) || ! is_int( $span[1] ) || $span[0] < 0 || $span[1] < $span[0] || $span[1] > strlen( $brief['source_text'] ) || substr( $brief['source_text'], $span[0], $span[1] - $span[0] ) !== ( $item['exact_text'] ?? '' ) ) { $errors[] = 'explicit_content_provenance:' . $id; }
 		}
 	}
-	if ( ! empty( $brief['canonical_create'] ) && in_array( $brief['intent']['archetype'] ?? '', [ 'team', 'testimonials' ], true ) && ( $brief['groups'] ?? [] ) !== wpae_brief_ir_entity_groups( $brief['intent']['archetype'], (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) ) ) { $errors[] = 'entity_groups_source_bindings_mismatch'; }
+	if ( ! empty( $brief['canonical_create'] ) && in_array( $brief['intent']['archetype'] ?? '', [ 'team', 'testimonials', 'portfolio' ], true ) && ( $brief['groups'] ?? [] ) !== wpae_brief_ir_entity_groups( $brief['intent']['archetype'], (array) ( $brief['content'] ?? [] ), (array) ( $brief['media_references'] ?? [] ) ) ) { $errors[] = 'entity_groups_source_bindings_mismatch'; }
+	if ( ! empty( $brief['canonical_create'] ) && ( $brief['intent']['archetype'] ?? '' ) === 'portfolio' ) {
+		$count = count( (array) ( $brief['groups'] ?? [] ) );
+		if ( $count < 2 || $count > 6 ) { $errors[] = 'portfolio_item_count_out_of_range'; }
+		foreach ( (array) ( $brief['groups'] ?? [] ) as $group ) {
+			if ( empty( $group['title_ref'] ) || empty( $group['description_ref'] ) || empty( $group['media_ref'] ) ) { $errors[] = 'portfolio_project_required_fields_missing:' . sanitize_key( (string) ( $group['group_id'] ?? 'unknown' ) ); }
+			$media = array_values( array_filter( (array) ( $brief['media_references'] ?? [] ), static fn( $asset ): bool => is_array( $asset ) && ( $asset['asset_id'] ?? '' ) === ( $group['media_ref'] ?? null ) ) );
+			if ( count( $media ) !== 1 || ( $media[0]['group_id'] ?? '' ) !== ( $group['group_id'] ?? '' ) || ( $media[0]['role'] ?? '' ) !== 'project_image' || empty( $media[0]['allowed_reuse'] ) || trim( (string) ( $media[0]['alt'] ?? '' ) ) === '' ) { $errors[] = 'portfolio_project_media_unresolved:' . sanitize_key( (string) ( $group['group_id'] ?? 'unknown' ) ); }
+			$action_ref = sanitize_key( (string) ( $group['action_label_ref'] ?? '' ) );
+			$action = $action_ref !== '' ? ( array_column( (array) ( $brief['content'] ?? [] ), null, 'id' )[ $action_ref ] ?? [] ) : [];
+			if ( $action_ref !== '' && ( empty( $action['url_requested'] ) || trim( (string) ( $action['url'] ?? '' ) ) === '' ) ) { $errors[] = 'portfolio_project_link_label_without_url:' . sanitize_key( (string) ( $group['group_id'] ?? 'unknown' ) ); }
+		}
+	}
 	$services_validation = [];
 	if ( ( $brief['intent']['archetype'] ?? '' ) === 'services' ) {
 		$services_validation = wpae_brief_ir_validate_services( $brief );

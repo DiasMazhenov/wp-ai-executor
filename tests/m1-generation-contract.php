@@ -1,6 +1,6 @@
 <?php
 /** Cross-family fixtures included by the runtime harness, with external WP/transport mocks only. */
-$m1_media = [ 'asset_id' => 'm1-asset', 'source_url' => 'https://example.com/approved-studio.jpg', 'role' => 'hero', 'alt' => 'Студия', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'locally_supplied_fixture' ] ];
+$m1_media = [ 'asset_id' => 'm1-asset', 'source_url' => 'https://images.unsplash.com/photo-m1-fixture?wpae=1200x800', 'role' => 'hero', 'alt' => 'Студия', 'license' => 'Unsplash License', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'test_approved_catalog', 'approved_catalog' => true, 'catalog_id' => 'm1-test-media-fixture' ] ];
 $m1_copy = "Надзаголовок: «СТУДИЯ»\nЗаголовок: «Работа со смыслом»\nОписание: «Согласуем задачу и доведём проект до результата.»\nКнопка: «Начать», ссылка #start";
 $m1_features = "Преимущество 1: «Понятный план»\nОписание преимущества 1: «Сроки согласованы.»\nПреимущество 2: «Общая команда»\nОписание преимущества 2: «Работаем вместе.»";
 $m1_pricing = "Создай Pricing\n«Старт» — «50 000 ₸/мес» — «Малый проект»\nFeatures: «Аудит», «План»\nКнопка: «Выбрать Старт», ссылка #start\n«Проект» — «150 000 ₸/год» — «Полный проект»\nFeatures: «Дизайн», «Разработка»\nКнопка: «Выбрать Проект», ссылка #project";

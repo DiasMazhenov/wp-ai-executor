@@ -10993,11 +10993,33 @@ function wpae_llm_chat_request( WP_REST_Request $request ) {
 	$migrated_active_create = ! empty( $canonical_brief ) && in_array( $action_archetype, wpae_design_plan_schema()['migrated_create'], true );
 	$services_route_request = $action_request && $action_archetype === 'services';
 	if ( $migrated_active_create && $action_archetype !== 'services' ) { $canonical_brief['canonical_create'] = true; }
-	if ( $migrated_active_create && $action_archetype !== 'services' && is_array( $editor_context_input['media_references'] ?? null ) ) { $canonical_brief['media_references'] = array_map( 'wpae_reference_set_normalize', $editor_context_input['media_references'] ); }
-	if ( $migrated_active_create && in_array( $action_archetype, [ 'hero', 'about' ], true ) ) {
-		foreach ( $canonical_brief['media_references'] as &$asset ) { if ( empty( $asset['group_id'] ) ) { $asset['group_id'] = $action_archetype; } }
-		unset( $asset );
-		if ( isset( $canonical_brief['groups'][0] ) ) { $canonical_brief['groups'][0]['media_refs'] = array_column( $canonical_brief['media_references'], 'asset_id' ); }
+	if ( $migrated_active_create && $action_archetype !== 'services' ) {
+		$prompt_media = array_values( array_filter( (array) ( $canonical_brief['media_references'] ?? [] ), 'is_array' ) );
+		$editor_media = array_values( array_filter( (array) ( $editor_context_input['media_references'] ?? [] ), 'is_array' ) );
+		$merged_media = $prompt_media;
+		$known_media = [];
+		foreach ( $prompt_media as $reference ) { $known_media[ sanitize_key( (string) ( $reference['asset_id'] ?? '' ) ) ] = $reference; }
+		foreach ( $editor_media as $reference ) {
+			$reference = wpae_reference_set_normalize( $reference );
+			$asset_id = sanitize_key( (string) ( $reference['asset_id'] ?? '' ) );
+			if ( $asset_id !== '' && isset( $known_media[$asset_id] ) ) {
+				$existing = $known_media[$asset_id];
+				if ( sanitize_key( (string) ( $existing['group_id'] ?? '' ) ) !== sanitize_key( (string) ( $reference['group_id'] ?? '' ) ) || (string) ( $existing['source_url'] ?? '' ) !== (string) ( $reference['source_url'] ?? '' ) ) {
+					return new WP_Error( 'wpae_media_reference_identity_conflict', 'Одному asset_id переданы разные источник или владелец; Brief не заморожен, запись не выполнялась.', [ 'status' => 422, 'write_count' => 0, 'asset_id' => $asset_id ] );
+				}
+				continue;
+			}
+			$merged_media[] = $reference;
+			if ( $asset_id !== '' ) { $known_media[$asset_id] = $reference; }
+		}
+		$canonical_brief['media_references'] = $merged_media;
+		if ( function_exists( 'wpae_brief_ir_rebind_media_groups' ) ) { $canonical_brief = wpae_brief_ir_rebind_media_groups( $canonical_brief ); }
+		$media_resolution = wpae_reference_set_resolve_explicit_assets( (array) ( $canonical_brief['media_references'] ?? [] ) );
+		if ( ! empty( $media_resolution['errors'] ) ) {
+			return new WP_Error( 'wpae_media_assets_unresolved', 'Одно или несколько явно указанных изображений не разрешены до freeze Brief; запись не выполнялась.', [ 'status' => 422, 'write_count' => 0, 'media_errors' => array_values( $media_resolution['errors'] ) ] );
+		}
+		$canonical_brief['media_references'] = array_values( (array) ( $media_resolution['references'] ?? [] ) );
+		if ( function_exists( 'wpae_brief_ir_rebind_media_groups' ) ) { $canonical_brief = wpae_brief_ir_rebind_media_groups( $canonical_brief ); }
 	}
 	if ( $migrated_active_create && $action_archetype !== 'services' && empty( wpae_brief_ir_validate( $canonical_brief )['ok'] ) ) { return new WP_Error( 'wpae_canonical_brief_invalid', 'Brief не прошёл валидацию exact copy/provenance; запись не выполнялась.', [ 'status' => 422, 'write_count' => 0, 'validation' => wpae_brief_ir_validate( $canonical_brief ) ] ); }
 	$services_brief = $canonical_brief;

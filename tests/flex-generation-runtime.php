@@ -29,6 +29,7 @@ function add_action( ...$args ) {}
 function is_wp_error( $value ) { return $value instanceof WP_Error; }
 function absint( $value ) { return abs( (int) $value ); }
 function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $value ) ); }
+function sanitize_mime_type( $value ) { return strtolower( trim( preg_replace( '/[^a-zA-Z0-9.\/+\-]/', '', (string) $value ) ) ); }
 function sanitize_html_class( $value ) { return preg_replace( '/[^A-Za-z0-9_\-]/', '', (string) $value ); }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
 function sanitize_textarea_field( $value ) { return trim( preg_replace( '/\r\n?/', "\n", strip_tags( (string) $value ) ) ); }
@@ -162,9 +163,21 @@ function wp_safe_remote_post( $url, $args ) {
     }
     return array_shift( $GLOBALS['responses'] );
 }
+function wp_safe_remote_get( $url, $args ) {
+	$GLOBALS['reference_image_fetches'][] = [ 'url' => (string) $url, 'timeout' => (int) ( $args['timeout'] ?? 0 ), 'redirection' => (int) ( $args['redirection'] ?? -1 ) ];
+	$query = [];
+	parse_str( (string) ( parse_url( (string) $url, PHP_URL_QUERY ) ?: '' ), $query );
+	$dimensions = preg_split( '/x/', (string) ( $query['wpae'] ?? '1200x800' ) );
+	$width = max( 16, (int) ( $dimensions[0] ?? 1200 ) );
+	$height = max( 16, (int) ( $dimensions[1] ?? 800 ) );
+	$chunk = static function ( string $type, string $data ): string { return pack( 'N', strlen( $data ) ) . $type . $data . pack( 'N', crc32( $type . $data ) ); };
+	$row = "\x00" . str_repeat( "\x00\x00\x00\xff", $width );
+	$png = "\x89PNG\r\n\x1a\n" . $chunk( 'IHDR', pack( 'NNCCCCC', $width, $height, 8, 6, 0, 0, 0 ) ) . $chunk( 'IDAT', gzcompress( str_repeat( $row, $height ) ) ) . $chunk( 'IEND', '' );
+	return [ 'response' => [ 'code' => 200 ], 'headers' => [ 'content-type' => 'image/png' ], 'body' => $png ];
+}
 function wp_remote_retrieve_response_code( $response ) { return $response['response']['code']; }
 function wp_remote_retrieve_body( $response ) { return $response['body']; }
-function wp_remote_retrieve_header( $response, $name ) { return ''; }
+function wp_remote_retrieve_header( $response, $name ) { return $response['headers'][strtolower( (string) $name )] ?? ''; }
 function get_post( $id, $output = null ) {
     $autosave = $GLOBALS['test_autosave'] ?? null;
     if ( $autosave && (int) ( $autosave->ID ?? 0 ) === (int) $id ) {

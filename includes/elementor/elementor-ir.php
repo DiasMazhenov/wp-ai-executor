@@ -249,6 +249,59 @@ function wpae_elementor_ir_services_recipe_nodes( string $role, string $node_id,
 	return [];
 }
 
+/** Build semantically owned project rows/cards; layout is selected by the frozen record. */
+function wpae_elementor_ir_portfolio_project_nodes( string $layout, string $node_id, array $items, array $content_map ): array {
+	$nodes = [];
+	$layout = $layout === 'editorial_rows' ? 'editorial_rows' : 'project_cards';
+	foreach ( array_values( $items ) as $index => $item ) {
+		if ( ! is_array( $item ) ) { continue; }
+		$group_id = sanitize_key( (string) ( $item['group_id'] ?? '' ) );
+		if ( $group_id === '' ) { continue; }
+		$owner = static function ( array $node ) use ( $group_id, $item ): array {
+			$node['layout_constraints']['item_id'] = $group_id;
+			$node['provenance'] = array_merge( (array) ( $node['provenance'] ?? [] ), [ 'source' => 'brief', 'group_id' => $group_id, 'item_id' => $group_id, 'source_spans' => (array) ( $item['provenance']['source_spans'] ?? [] ) ] );
+			return $node;
+		};
+		$field = static function ( string $field, string $role, string $widget, array $tokens ) use ( $item, $content_map, $node_id, $group_id, $index, $owner ): ?array {
+			$ref = sanitize_key( (string) ( $item[$field] ?? '' ) );
+			if ( $ref === '' || ! isset( $content_map[$ref] ) ) { return null; }
+			$node = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-' . $role . '-' . $index, $role, $widget, [ $ref ], $tokens, [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] );
+			$node['provenance']['content_ref'] = $ref;
+			return $owner( $node );
+		};
+		$title = $field( 'title_ref', 'portfolio_project_title', 'heading', [ 'color.text', 'type.body' ] );
+		$category = $field( 'category_ref', 'portfolio_project_category', 'text-editor', [ 'color.primary', 'type.body' ] );
+		$description = $field( 'description_ref', 'portfolio_project_description', 'text-editor', [ 'color.muted', 'type.body' ] );
+		$copy_children = array_values( array_filter( [ $title, $category, $description ] ) );
+		$copy = $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-copy', 'portfolio_project_content', 'container', [], [ 'space.component' ], $copy_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] ) );
+		$asset_id = sanitize_key( (string) ( $item['media_ref'] ?? '' ) );
+		$image = null;
+		if ( $asset_id !== '' ) {
+			$image = wpae_elementor_ir_node( $node_id . '-' . $group_id . '-image', 'portfolio_project_image', 'image', [], [ 'radius.card' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'media_refs' => [ $asset_id ], 'editable_fields' => [ 'media', 'alt' ] ] );
+			$image['provenance'] = array_merge( (array) $image['provenance'], [ 'source' => 'brief', 'group_id' => $group_id, 'item_id' => $group_id, 'asset_id' => $asset_id ] );
+			$image = $owner( $image );
+		}
+		$action = $field( 'action_label_ref', 'portfolio_project_action', 'button', [ 'color.primary', 'color.surface', 'color.text', 'color.hover', 'color.focus' ] );
+		$actions = $action ? $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-actions', 'card_actions', 'container', [], [ 'space.component' ], [ $action ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] ) ) : null;
+		if ( $layout === 'editorial_rows' ) {
+			$identity_children = $image ? [ $image ] : [];
+			$identity = $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-identity', 'entity_identity', 'container', [], [], $identity_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'media', 'alt' ] ] ) );
+			$copy_children = $copy['children'];
+			if ( $actions ) { $copy_children[] = $actions; }
+			$copy['children'] = $copy_children;
+			$entity_copy = $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-entity-copy', 'entity_copy', 'container', [], [ 'space.component' ], [ $copy ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url' ] ] ) );
+			$nodes[] = $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-row', 'portfolio_project_row', 'container', [], [ 'color.border', 'space.component' ], [ $identity, $entity_copy ], [ 'min_width' => 0, 'max_width' => 100, 'entity_layout' => 'editorial_rows' ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] ) );
+			continue;
+		}
+		$body_children = array_values( array_filter( [ $image, $copy ] ) );
+		$body = $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-body', 'card_body', 'container', [], [ 'space.component' ], $body_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'media', 'alt' ] ] ) );
+		$card_children = [ $body ];
+		if ( $actions ) { $card_children[] = $actions; }
+		$nodes[] = $owner( wpae_elementor_ir_node( $node_id . '-' . $group_id . '-card', 'portfolio_project_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] ) );
+	}
+	return $nodes;
+}
+
 function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $context = [] ): array {
 	$content_map = wpae_elementor_ir_content_map( $brief );
 	$nodes = [];
@@ -384,6 +437,12 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 					$step_children[] = wpae_elementor_ir_node( $child_id . '-step-' . $step_number . '-card', 'process_card', 'container', [], [ 'color.surface', 'color.border', 'radius.card', 'space.component' ], $card_children, [ 'item_id' => (string) $step_number ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
 				}
 				$section_children[] = wpae_elementor_ir_node( $child_id, 'process_steps', 'container', [], $token_refs, $step_children, [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'stack', 'editable_fields' => [ 'text' ] ] );
+			} elseif ( $role === 'portfolio_projects' ) {
+				$layout = sanitize_key( (string) ( $child['layout_constraints']['entity_layout'] ?? 'project_cards' ) );
+				$projects = wpae_elementor_ir_portfolio_project_nodes( $layout, $child_id, (array) ( $child['items'] ?? [] ), $content_map );
+				$collection = wpae_elementor_ir_node( $child_id, 'portfolio_projects', 'container', [], $token_refs, $projects, (array) ( $child['layout_constraints'] ?? [] ), [ 'strategy' => 'stack', 'editable_fields' => [ 'text', 'url', 'media', 'alt' ] ] );
+				$collection['provenance'] = array_merge( (array) $collection['provenance'], [ 'source' => 'design-plan', 'record_id' => (string) ( $plan['composition_decision']['record_id'] ?? '' ), 'item_groups' => array_values( array_map( static fn( array $item ): string => sanitize_key( (string) ( $item['group_id'] ?? '' ) ), (array) ( $child['items'] ?? [] ) ) ) ] );
+				$section_children[] = $collection;
 			} elseif ( in_array( $role, [ 'services_photo_grid', 'services_split_editorial', 'services_text_icon_list', 'services_icon_cards' ], true ) ) {
 				$recipe_nodes = wpae_elementor_ir_services_recipe_nodes( $role, $child_id, (array) ( $child['items'] ?? [] ), $token_refs, (string) ( $plan['recipe_selection']['lead_service_ref'] ?? '' ) );
 				foreach ( $recipe_nodes as $recipe_node ) {
@@ -535,14 +594,14 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	if ( $surface_v2 ) {
 		$node['visual_policy']['item_surface_scope'] = $is_surface_owner ? 'owner' : ( $inside_surface_owner ? 'interior' : 'outside' );
 	}
-	if ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
-	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
-	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && ( $policy['collection']['axis'] ?? '' ) === 'grid' && isset( $policy['collection']['surface_alignment'] ) ) {
+	if ( ( ( $role === 'card_body' && ( $node['layout_constraints']['entity_layout'] ?? '' ) === 'editorial_rows' ) || $role === 'portfolio_project_row' ) && isset( $policy['entity_layout'] ) ) { $node['visual_policy']['entity_layout'] = $policy['entity_layout']; }
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && isset( $policy['cards'] ) ) { $node['visual_policy']['cards'] = $policy['cards']; }
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) && ( $policy['collection']['axis'] ?? '' ) === 'grid' && isset( $policy['collection']['surface_alignment'] ) ) {
 		$node['visual_policy']['collection_item_alignment'] = $policy['collection']['surface_alignment'];
 	}
 	if ( $role === 'pricing_price_group' && isset( $policy['inline_value'] ) ) { $node['visual_policy']['inline_value'] = $policy['inline_value']; }
 	if ( $intro && $node['widget_type'] === 'container' && in_array( $role, [ 'copy_group', 'cta_copy_group', 'pricing_intro' ], true ) ) { $node['visual_policy']['reading_measure'] = $policy['intro']['reading_measure']; }
-	if ( in_array( $role, [ 'feature_cards', 'feature_list', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'services_photo_grid', 'services_text_icon_list', 'services_icon_cards', 'process_steps' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
+	if ( in_array( $role, [ 'feature_cards', 'feature_list', 'pricing_cards', 'service_cards', 'team_cards', 'testimonial_cards', 'portfolio_projects', 'services_photo_grid', 'services_text_icon_list', 'services_icon_cards', 'process_steps' ], true ) ) { $node['visual_policy']['collection'] = $policy['collection']; }
 	if ( in_array( $role, [ 'feature_row', 'services_text_icon_row' ], true ) && isset( $policy['list_row'] ) ) { $node['visual_policy']['list_row'] = $policy['list_row']; }
 	if ( $list_row_copy && in_array( $role, [ 'copy_group', 'services_text_icon_copy' ], true ) && isset( $policy['list_row']['copy_measure'] ) ) {
 		$node['visual_policy']['reading_measure'] = $policy['list_row']['copy_measure'];
@@ -612,7 +671,7 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 			$settings[ 'flex_gap' . $suffix ] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
 		}
 	}
-	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) ) {
+	if ( in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) ) {
 		$pad = wpae_elementor_ir_dimension_control( $policy['item_surface']['padding'], 'rem', 1.5, false );
 		unset( $pad['size'] );
 		$settings['padding'] = $settings['padding_tablet'] = $settings['padding_mobile'] = $pad;
@@ -625,7 +684,7 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 		$align_self = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end', 'stretch' => 'stretch' ][ (string) $policy['collection_item_alignment'] ] ?? 'flex-start';
 		$settings['align_self'] = $settings['align_self_tablet'] = $settings['align_self_mobile'] = $align_self;
 	}
-	if ( ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'testimonial_card', 'entity_identity', 'entity_copy', 'services_photo_content', 'services_text_icon_copy', 'card_body', 'services_photo_panel' ], true ) && ! ( $role === 'card_body' && isset( $policy['entity_layout']['tracks'] ) ) ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
+	if ( ( in_array( $role, [ 'feature_card', 'pricing_card', 'pricing_details', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'portfolio_project_content', 'entity_identity', 'entity_copy', 'services_photo_content', 'services_text_icon_copy', 'card_body', 'services_photo_panel' ], true ) && ! ( $role === 'card_body' && isset( $policy['entity_layout']['tracks'] ) ) ) || ( $role === 'copy_group' && empty( $policy['intro'] ) ) ) {
 		$gap = wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'], 'rem', 0.75 );
 		$settings['flex_gap'] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'row' => (string) $gap['size'], 'column' => (string) $gap['size'], 'isLinked' => true ];
 		$settings['flex_gap_tablet'] = $settings['flex_gap_mobile'] = $settings['flex_gap'];
@@ -739,7 +798,7 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 			$settings[ 'flex_gap' . $suffix ] = [ 'unit' => $gap['unit'], 'size' => $gap['size'], 'column' => (string) $gap['size'], 'row' => (string) $gap['size'], 'isLinked' => true ];
 		}
 	}
-	if ( isset( $policy['cards'] ) && in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) ) {
+	if ( isset( $policy['cards'] ) && in_array( $role, [ 'feature_card', 'pricing_card', 'service_card', 'team_card', 'testimonial_card', 'portfolio_project_card', 'services_photo_card', 'services_icon_card', 'process_card' ], true ) ) {
 		$card = (array) $policy['cards'];
 		$has_actions = (bool) array_filter( (array) ( $node['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['role'] ?? '' ) === 'card_actions' );
 		$body_has_media = (bool) array_filter( (array) ( $node['children'][0]['children'] ?? [] ), static fn( $child ): bool => is_array( $child ) && ( $child['widget_type'] ?? '' ) === 'image' );
@@ -1014,6 +1073,96 @@ function wpae_elementor_ir_validate( array $ir, array $brief = [] ): array {
 			$errors[] = 'typed_process_ordered_steps_structure_invalid';
 		}
 	}
+	if ( ( $ir['archetype'] ?? '' ) === 'portfolio' ) {
+		$portfolio_flat = [];
+		$collect_portfolio = static function ( array $nodes ) use ( &$collect_portfolio, &$portfolio_flat ): void {
+			foreach ( $nodes as $node ) {
+				if ( ! is_array( $node ) ) { continue; }
+				$portfolio_flat[ (string) ( $node['role'] ?? '' ) ][] = $node;
+				$collect_portfolio( (array) ( $node['children'] ?? [] ) );
+			}
+		};
+		$collect_portfolio( (array) ( $ir['nodes'] ?? [] ) );
+		// Composition IDs are dotted catalog keys; sanitize_key would erase the
+		// family boundary and make an accepted Portfolio record unverifiable.
+		$record_id = trim( (string) ( $ir['composition_decision']['record_id'] ?? '' ) );
+		$record_layouts = [ 'portfolio.project_cards' => 'project_cards', 'portfolio.editorial_rows' => 'editorial_rows' ];
+		$expected_layout = $record_layouts[$record_id] ?? '';
+		$collections = array_values( (array) ( $portfolio_flat['portfolio_projects'] ?? [] ) );
+		$collection = $collections[0] ?? [];
+		$layout = sanitize_key( (string) ( $collection['layout_constraints']['entity_layout'] ?? '' ) );
+		$projects = array_values( (array) ( $collection['children'] ?? [] ) );
+		$group_ids = array_values( array_map( 'sanitize_key', (array) ( $collection['provenance']['item_groups'] ?? [] ) ) );
+		if ( $record_id === '' || $expected_layout === '' || count( $collections ) !== 1 || ( $collection['provenance']['record_id'] ?? '' ) !== $record_id || $layout !== $expected_layout || count( $projects ) < 2 || count( $projects ) > 6 || count( $group_ids ) !== count( $projects ) || count( array_unique( $group_ids ) ) !== count( $group_ids ) ) {
+			$errors[] = 'portfolio_ir_collection_or_record_invalid';
+		}
+		$brief_groups = array_values( array_filter( (array) ( $brief['groups'] ?? [] ), 'is_array' ) );
+		if ( $brief_groups ) {
+			$brief_group_ids = array_values( array_map( static fn( array $item ): string => sanitize_key( (string) ( $item['group_id'] ?? '' ) ), $brief_groups ) );
+			if ( $group_ids !== $brief_group_ids ) { $errors[] = 'portfolio_ir_group_order_changed'; }
+		}
+		$media_by_id = [];
+		foreach ( (array) ( $ir['media_references'] ?? [] ) as $asset ) {
+			if ( is_array( $asset ) && trim( (string) ( $asset['asset_id'] ?? '' ) ) !== '' ) {
+				$media_by_id[ sanitize_key( (string) $asset['asset_id'] ) ] = $asset;
+			}
+		}
+		$content_map = $brief ? wpae_elementor_ir_content_map( $brief ) : [];
+		$consumed_assets = [];
+		foreach ( $projects as $index => $project ) {
+			if ( ! is_array( $project ) ) { $errors[] = 'portfolio_ir_project_node_invalid'; continue; }
+			$group_id = $group_ids[$index] ?? '';
+			$expected_role = $expected_layout === 'project_cards' ? 'portfolio_project_card' : 'portfolio_project_row';
+			if ( $group_id === '' || ( $project['role'] ?? '' ) !== $expected_role || sanitize_key( (string) ( $project['provenance']['group_id'] ?? '' ) ) !== $group_id || sanitize_key( (string) ( $project['layout_constraints']['item_id'] ?? '' ) ) !== $group_id ) {
+				$errors[] = 'portfolio_ir_project_owner_or_topology_invalid';
+				continue;
+			}
+			$find_descendants = static function ( array $node, string $role ) use ( &$find_descendants ): array {
+				$found = [];
+				foreach ( (array) ( $node['children'] ?? [] ) as $child ) {
+					if ( ! is_array( $child ) ) { continue; }
+					if ( ( $child['role'] ?? '' ) === $role ) { $found[] = $child; }
+					$found = array_merge( $found, $find_descendants( $child, $role ) );
+				}
+				return $found;
+			};
+			$direct = array_values( (array) ( $project['children'] ?? [] ) );
+			if ( $expected_layout === 'project_cards' ) {
+				$body = $direct[0] ?? [];
+				$actions = $direct[1] ?? [];
+				$body_children = array_values( (array) ( $body['children'] ?? [] ) );
+				if ( ( $body['role'] ?? '' ) !== 'card_body' || ( $body['provenance']['group_id'] ?? '' ) !== $group_id || ! in_array( count( $direct ), [ 1, 2 ], true ) || ( count( $direct ) === 2 && ( $actions['role'] ?? '' ) !== 'card_actions' ) || ( $body_children[0]['role'] ?? '' ) !== 'portfolio_project_image' || ( $body_children[1]['role'] ?? '' ) !== 'portfolio_project_content' || count( $body_children ) !== 2 ) {
+					$errors[] = 'portfolio_project_cards_native_topology_invalid:' . $group_id;
+				}
+			} else {
+				$identity = $direct[0] ?? [];
+				$copy = $direct[1] ?? [];
+				$copy_children = array_values( (array) ( $copy['children'] ?? [] ) );
+				if ( count( $direct ) !== 2 || ( $identity['role'] ?? '' ) !== 'entity_identity' || ( $copy['role'] ?? '' ) !== 'entity_copy' || count( $copy_children ) !== 1 || ( $copy_children[0]['role'] ?? '' ) !== 'portfolio_project_content' || count( (array) ( $identity['children'] ?? [] ) ) !== 1 || ( $identity['children'][0]['role'] ?? '' ) !== 'portfolio_project_image' ) {
+					$errors[] = 'portfolio_editorial_rows_native_topology_invalid:' . $group_id;
+				}
+			}
+			foreach ( [ 'portfolio_project_image' => 'media', 'portfolio_project_title' => 'portfolio_project_title', 'portfolio_project_description' => 'portfolio_project_description', 'portfolio_project_category' => 'portfolio_project_category', 'portfolio_project_action' => 'portfolio_project_action_label' ] as $role => $content_role ) {
+				$owned = array_values( array_filter( $find_descendants( $project, $role ), static fn( array $node ): bool => sanitize_key( (string) ( $node['provenance']['group_id'] ?? '' ) ) === $group_id ) );
+				if ( $role === 'portfolio_project_image' ) { continue; }
+				if ( count( $owned ) > 1 || ( in_array( $role, [ 'portfolio_project_title', 'portfolio_project_description' ], true ) && count( $owned ) !== 1 ) ) { $errors[] = 'portfolio_project_content_owner_invalid:' . $group_id . ':' . $role; continue; }
+				if ( $owned ) {
+					$ref = sanitize_key( (string) ( $owned[0]['content_refs'][0] ?? '' ) );
+					$slot = $content_map[$ref] ?? [];
+					if ( count( (array) ( $owned[0]['content_refs'] ?? [] ) ) !== 1 || ( $slot['role'] ?? '' ) !== $content_role || ( $slot['group_id'] ?? '' ) !== $group_id ) { $errors[] = 'portfolio_project_content_binding_invalid:' . $group_id . ':' . $role; }
+					if ( $role === 'portfolio_project_action' && ( empty( $slot['url_requested'] ) || trim( (string) ( $slot['url'] ?? '' ) ) === '' ) ) { $errors[] = 'portfolio_project_action_url_invalid:' . $group_id; }
+				}
+			}
+			$images = array_values( array_filter( $find_descendants( $project, 'portfolio_project_image' ), static fn( array $node ): bool => sanitize_key( (string) ( $node['provenance']['group_id'] ?? '' ) ) === $group_id ) );
+			$asset_id = sanitize_key( (string) ( $images[0]['media_refs'][0] ?? '' ) );
+			$asset = $media_by_id[$asset_id] ?? [];
+			if ( count( $images ) !== 1 || count( (array) ( $images[0]['media_refs'] ?? [] ) ) !== 1 || $asset_id === '' || sanitize_key( (string) ( $images[0]['provenance']['asset_id'] ?? '' ) ) !== $asset_id || ( $asset['group_id'] ?? '' ) !== $group_id || ( $asset['role'] ?? '' ) !== 'project_image' || empty( $asset['allowed_reuse'] ) || trim( (string) ( $asset['alt'] ?? '' ) ) === '' || absint( $asset['asset_facts']['width'] ?? 0 ) < 16 || absint( $asset['asset_facts']['height'] ?? 0 ) < 16 || ( empty( $asset['attachment_id'] ) && trim( (string) ( $asset['source_url'] ?? '' ) ) === '' ) || ! is_array( $asset['render'] ?? null ) || ! in_array( $asset['render']['object_fit'] ?? '', [ 'cover', 'contain' ], true ) ) {
+				$errors[] = 'portfolio_project_media_identity_or_render_policy_invalid:' . $group_id;
+			}
+			$consumed_assets[] = $asset_id;
+		}
+		if ( $media_by_id && ( count( array_unique( $consumed_assets ) ) !== count( $consumed_assets ) || array_diff( array_keys( $media_by_id ), $consumed_assets ) ) ) { $errors[] = 'portfolio_ir_media_unowned_or_reused'; }
+	}
 	$capabilities = function_exists( 'wpae_widget_capability_report' ) ? wpae_widget_capability_report( $widgets ) : [ 'ok' => true, 'unavailable' => [], 'downgrades' => [] ];
 	if ( empty( $capabilities['ok'] ) ) {
 		foreach ( (array) ( $capabilities['failures'] ?? [] ) as $failure ) {
@@ -1106,6 +1255,21 @@ function wpae_elementor_ir_flex_equal_track_dimension( $gap_value, int $columns 
 	$term = ( $number === '' ? '0' : $number ) . (string) $gap['unit'];
 	$subtractions = implode( ' - ', array_fill( 0, $columns - 1, $term ) );
 	return [ 'unit' => 'custom', 'size' => 'calc((100% - ' . $subtractions . ') / ' . $columns . ')', 'sizes' => [] ];
+}
+
+/** Native image dimension controls use unit/size, while asset facts stay intrinsic. */
+function wpae_elementor_ir_media_dimension( $value ): array {
+	$raw = trim( (string) $value );
+	if ( $raw === 'auto' ) { return []; }
+	if ( ! preg_match( '/^(0|[1-9]\d*(?:\.\d+)?)(px|%|em|rem|vh|vw)$/', $raw, $match ) ) { return []; }
+	return [ 'unit' => strtolower( $match[2] ), 'size' => (float) $match[1], 'sizes' => [] ];
+}
+
+function wpae_elementor_ir_focal_position( $focal ): string {
+	if ( ! is_array( $focal ) || ! is_numeric( $focal['x'] ?? null ) || ! is_numeric( $focal['y'] ?? null ) ) { return ''; }
+	$x = round( max( 0, min( 1, (float) $focal['x'] ) ) * 100, 2 );
+	$y = round( max( 0, min( 1, (float) $focal['y'] ) ) * 100, 2 );
+	return rtrim( rtrim( number_format( $x, 2, '.', '' ), '0' ), '.' ) . '% ' . rtrim( rtrim( number_format( $y, 2, '.', '' ), '0' ), '.' ) . '%';
 }
 
 function wpae_elementor_ir_service_image_radius( string $card_radius ): array {
@@ -1839,6 +2003,8 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		}
 	} elseif ( $widget_type === 'image' ) {
 		$media = $media_map[ sanitize_key( (string) ( $node['media_refs'][0] ?? '' ) ) ] ?? [];
+		$render = is_array( $media['render'] ?? null ) ? $media['render'] : [];
+		$has_render_policy = ! empty( $render['width'] ) || ! empty( $render['height'] ) || in_array( $render['object_fit'] ?? '', [ 'cover', 'contain' ], true ) || is_array( $render['focal_point'] ?? null ) || in_array( $render['shape'] ?? '', [ 'rounded', 'circle' ], true ) || ! empty( $render['radius_token'] );
 		$source_url = trim( (string) ( $media['source_url'] ?? '' ) );
 		$source_parts = parse_url( $source_url );
 		$valid_source = absint( $media['attachment_id'] ?? 0 ) > 0 || ( is_array( $source_parts ) && in_array( strtolower( (string) ( $source_parts['scheme'] ?? '' ) ), [ 'http', 'https' ], true ) && trim( (string) ( $source_parts['host'] ?? '' ) ) !== '' );
@@ -1858,22 +2024,50 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 		$settings['image_size'] = 'full';
 		$settings['width'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
 		$settings['width_mobile'] = [ 'unit' => '%', 'size' => 100, 'sizes' => [] ];
+		if ( $has_render_policy ) {
+			foreach ( [ 'desktop' => '', 'tablet' => '_tablet', 'mobile' => '_mobile' ] as $device => $suffix ) {
+				foreach ( [ 'width', 'height' ] as $dimension_name ) {
+					$dimension = wpae_elementor_ir_media_dimension( $render[$dimension_name][$device] ?? '' );
+					if ( $dimension ) { $settings[ $dimension_name . $suffix ] = $dimension; }
+				}
+			}
+			if ( in_array( $render['object_fit'] ?? '', [ 'cover', 'contain' ], true ) ) { $settings['object-fit'] = (string) $render['object_fit']; }
+			$focal_position = wpae_elementor_ir_focal_position( $render['focal_point'] ?? null );
+			if ( $focal_position !== '' ) { $settings['object-position'] = $focal_position; }
+			$shape = sanitize_key( (string) ( $render['shape'] ?? 'natural' ) );
+			if ( $shape === 'circle' ) {
+				$settings['image_border_radius'] = [ 'unit' => '%', 'top' => '50', 'right' => '50', 'bottom' => '50', 'left' => '50', 'isLinked' => true ];
+				$settings['image_border_radius_mobile'] = $settings['image_border_radius'];
+			} elseif ( $shape === 'rounded' ) {
+				$radius_token = sanitize_key( (string) ( $render['radius_token'] ?? '' ) );
+				$radius_value = $radius_token !== '' ? (string) ( $token_values[$radius_token] ?? '' ) : '';
+				if ( $radius_value !== '' ) {
+					$settings['image_border_radius'] = wpae_elementor_ir_dimension_control( $radius_value, 'rem', 0.75 );
+					$settings['image_border_radius_mobile'] = $settings['image_border_radius'];
+				}
+			} else {
+				unset( $settings['image_border_radius'], $settings['image_border_radius_mobile'] );
+			}
+		}
 		if ( in_array( $role, [ 'services_photo_image', 'services_split_image' ], true ) ) {
 			$settings['height'] = [ 'unit' => 'px', 'size' => 260, 'sizes' => [] ];
 			$settings['height_tablet'] = [ 'unit' => 'px', 'size' => 240, 'sizes' => [] ];
 			$settings['height_mobile'] = [ 'unit' => 'px', 'size' => 220, 'sizes' => [] ];
 			$settings['object-fit'] = 'cover';
-			$settings['object-position'] = sanitize_text_field( (string) ( $media['focal_point'] ?? 'center center' ) );
+			$focal_position = wpae_elementor_ir_focal_position( $media['focal_point'] ?? null );
+			if ( $focal_position !== '' ) { $settings['object-position'] = $focal_position; }
 		}
-		$settings['image_border_radius'] = $role === 'service_image'
-			? wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius'] ?? '16px' ) )
-			: wpae_elementor_ir_dimension_control( $token_values['radius.card'] ?? '0.5rem', 'rem', 0.5 );
-		if ( in_array( $role, [ 'service_image', 'services_photo_image' ], true ) ) {
-			$settings['image_border_radius_mobile'] = wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius_mobile'] ?? $node['layout_constraints']['card_border_radius'] ?? '16px' ) );
+		if ( ! $has_render_policy ) {
+			$settings['image_border_radius'] = $role === 'service_image'
+				? wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius'] ?? '16px' ) )
+				: wpae_elementor_ir_dimension_control( $token_values['radius.card'] ?? '0.5rem', 'rem', 0.5 );
+			if ( in_array( $role, [ 'service_image', 'services_photo_image' ], true ) ) {
+				$settings['image_border_radius_mobile'] = wpae_elementor_ir_service_image_radius( (string) ( $node['layout_constraints']['card_border_radius_mobile'] ?? $node['layout_constraints']['card_border_radius'] ?? '16px' ) );
+			}
 		}
-		if ( in_array( (string) ( $media['object_fit'] ?? '' ), [ 'cover', 'contain', 'fill' ], true ) ) {
+		if ( ! $has_render_policy && in_array( (string) ( $media['object_fit'] ?? '' ), [ 'cover', 'contain', 'fill' ], true ) ) {
 			$settings['object-fit'] = (string) $media['object_fit'];
-		} elseif ( $role === 'service_image' ) {
+		} elseif ( ! $has_render_policy && $role === 'service_image' ) {
 			$settings['object-fit'] = 'cover';
 		}
 	} elseif ( $widget_type === 'icon-list' ) {

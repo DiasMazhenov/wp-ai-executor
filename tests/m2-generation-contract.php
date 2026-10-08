@@ -73,6 +73,7 @@ foreach ( $m2_cases as $name => [ $prompt, $context, $record, $profile ] ) {
  if ( ! empty( $context['media_references'] ) ) {
   $brief['media_references'] = array_map( 'wpae_reference_set_normalize', $context['media_references'] );
   foreach ( $brief['media_references'] as &$media ) { $media['group_id'] = $brief['intent']['archetype']; } unset( $media );
+  foreach ( $context['media_references'] as &$media ) { $media['group_id'] = $brief['intent']['archetype']; } unset( $media );
   $brief['groups'][0]['media_refs'] = array_column( $brief['media_references'], 'asset_id' );
  }
  $ctx = [ 'composition_record' => $record, 'composition_version' => 1, 'visual_profile' => $profile ];
@@ -309,6 +310,95 @@ foreach ( [ 'editorial_light', 'soft_cards_light' ] as $profile ) {
   check( abs( $bp['boxed_copy_content_width_px']['copy_group'] - $expected ) < 0.01, 'Editor static boxed copy clamp matches native ' . $profile . ' ' . $bp['breakpoint'] );
  }
 }
+
+// Portfolio uses the production plugin-chat route and the same ReferenceSet,
+// DesignPlan, IR, compiler, validation and transaction path as other creates.
+$portfolio_prompt_lines = [
+	'Создай Portfolio с разделом «Проекты» и описанием «Избранные работы студии».',
+	'Проект #1 название: «Альфа — общественный центр».',
+	'Проект #1 описание: «Проект реконструкции квартала с общественными пространствами, доступными маршрутами и ясной связью между новой архитектурой и исторической застройкой. В длинном описании важно сохранить весь авторский текст, включая его финальную фразу.»',
+	'Проект #1 категория: «Архитектура».',
+	'Проект #1 ссылка: «Открыть проект» — https://projects.example/alpha',
+	'Проект #1 изображение: https://images.unsplash.com/photo-portfolio-alpha?wpae=1200x800',
+	'Alt: «Современный общественный центр с открытой площадью».',
+	'Лицензия: «Unsplash License».',
+	'Проект #2 название: «Бета — тихий интерьер».',
+	'Проект #2 описание: «Небольшое пространство, организованное вокруг естественного света и спокойной палитры.»',
+	'Проект #2 категория: «Интерьер».',
+	'Проект #2 ссылка: «Смотреть детали» — https://projects.example/beta',
+	'Проект #2 изображение: https://images.unsplash.com/photo-portfolio-beta?wpae=720x1280',
+	'Alt: «Светлый интерьер с длинной перспективой».',
+	'Лицензия: «Unsplash License».',
+	'Проект #3 название: «Гамма — культурная площадка».',
+	'Проект #3 описание: «Трансформация существующего здания в гибкую площадку для культурных событий.»',
+	'Проект #3 категория: «Культура».',
+	'Проект #3 ссылка: «Перейти к кейсу» — https://projects.example/gamma',
+	'Проект #3 изображение: https://images.unsplash.com/photo-portfolio-gamma?wpae=960x640',
+	'Alt: «Культурная площадка внутри переоборудованного здания».',
+	'Лицензия: «Unsplash License».',
+];
+$portfolio_prompt = implode( "\n", $portfolio_prompt_lines );
+$portfolio_routes = [];
+$portfolio_flatten = static function ( array $nodes ) use ( &$portfolio_flatten ): array {
+	$all = [];
+	foreach ( $nodes as $node ) { if ( ! is_array( $node ) ) { continue; } $all[] = $node; $all = array_merge( $all, $portfolio_flatten( (array) ( $node['elements'] ?? [] ) ) ); }
+	return $all;
+};
+foreach ( [ 'portfolio.project_cards', 'portfolio.editorial_rows' ] as $portfolio_record ) {
+	$GLOBALS['reference_image_fetches'] = [];
+	$portfolio_routes[$portfolio_record] = $run_services_route(
+		$portfolio_prompt,
+		[],
+		$services_library_fixture,
+		'm2-' . str_replace( '.', '-', $portfolio_record ),
+		false,
+		'active',
+		'active',
+		[ 'composition_record' => $portfolio_record, 'composition_version' => 1, 'visual_profile' => 'editorial_light' ]
+	);
+	$route = $portfolio_routes[$portfolio_record];
+	$trace = $route['response']['diagnostics']['design_pipeline'] ?? [];
+	$portfolio_nodes = $portfolio_flatten( [ $route['written'] ?? [] ] );
+	$images = array_values( array_filter( $portfolio_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'image' ) );
+	$buttons = array_values( array_filter( $portfolio_nodes, static fn( array $node ): bool => ( $node['widgetType'] ?? '' ) === 'button' ) );
+	$copy = array_values( array_filter( $portfolio_nodes, static fn( array $node ): bool => in_array( ( $node['widgetType'] ?? '' ), [ 'heading', 'text-editor' ], true ) ) );
+	$all_copy = array_map( static fn( array $node ): string => trim( wp_strip_all_tags( (string) ( $node['settings']['title'] ?? $node['settings']['editor'] ?? '' ) ) ), $copy );
+	$topology = static function ( array $node ) use ( &$topology ): array {
+		return [ 'type' => ( $node['widgetType'] ?? '' ) !== '' ? 'widget:' . $node['widgetType'] : 'container', 'children' => array_values( array_map( $topology, array_filter( (array) ( $node['elements'] ?? [] ), 'is_array' ) ) ) ];
+	};
+	$collection_node = (array) ( $route['written']['elements'][1] ?? [] );
+	$native_topology = array_values( array_map( $topology, (array) ( $collection_node['elements'] ?? [] ) ) );
+	$expected_urls = [
+		'https://images.unsplash.com/photo-portfolio-alpha?wpae=1200x800',
+		'https://images.unsplash.com/photo-portfolio-beta?wpae=720x1280',
+		'https://images.unsplash.com/photo-portfolio-gamma?wpae=960x640',
+	];
+	$expected_alts = [ 'Современный общественный центр с открытой площадью', 'Светлый интерьер с длинной перспективой', 'Культурная площадка внутри переоборудованного здания' ];
+	$expected_links = [ 'https://projects.example/alpha', 'https://projects.example/beta', 'https://projects.example/gamma' ];
+	$expected_labels = [ 'Открыть проект', 'Смотреть детали', 'Перейти к кейсу' ];
+	check( ! empty( $route['response']['ok'] ) && ( $route['response']['diagnostics']['action_path'] ?? '' ) === 'pipeline' && $route['writes'] === 1 && $route['write_attempts'] === 1 && $route['calls'] === 0 && $route['library_retrieval_count'] === 0, 'Ordinary Portfolio plugin chat uses one typed transaction without provider or library fallback: ' . $portfolio_record . ' ' . wp_json_encode( $route['error'] ) );
+	check( ( $trace['brief']['archetype'] ?? '' ) === 'portfolio' && ( $trace['plan']['composition_decision']['record_id'] ?? '' ) === $portfolio_record && ( $trace['plan']['resolved_visual']['profile'] ?? '' ) === 'editorial_light' && ! empty( $trace['brief']['validation']['ok'] ) && ! empty( $trace['plan']['validation']['ok'] ) && ! empty( $trace['frozen_decisions']['readback_matches'] ), 'Portfolio accepted Brief, record/profile and native transaction readback share one chat route: ' . $portfolio_record );
+	check( count( $GLOBALS['reference_image_fetches'] ?? [] ) === 3 && array_column( $GLOBALS['reference_image_fetches'], 'timeout' ) === [ 5, 5, 5 ] && array_column( $GLOBALS['reference_image_fetches'], 'redirection' ) === [ 0, 0, 0 ], 'Portfolio resolves three explicit image assets with bounded HTTP fetches before Brief freeze: ' . $portfolio_record );
+	check( count( $images ) === 3 && array_column( array_column( $images, 'settings' ), 'image' ) !== [] && array_column( array_column( $images, 'settings' ), 'image' ) !== [] && array_column( array_map( static fn( array $node ): array => (array) ( $node['settings']['image'] ?? [] ), $images ), 'url' ) === $expected_urls && array_column( array_map( static fn( array $node ): array => (array) ( $node['settings']['image'] ?? [] ), $images ), 'alt' ) === $expected_alts, 'Portfolio image ownership, exact alt, different asset identity and source order survive native compile: ' . $portfolio_record );
+	check( count( $buttons ) === 3 && array_column( array_map( static fn( array $node ): array => (array) ( $node['settings']['link'] ?? [] ), $buttons ), 'url' ) === $expected_links && array_column( array_map( static fn( array $node ): array => (array) ( $node['settings'] ?? [] ), $buttons ), 'text' ) === $expected_labels, 'Portfolio project actions retain exact labels and distinct hrefs: ' . $portfolio_record );
+	check( in_array( 'Альфа — общественный центр', $all_copy, true ) && in_array( 'Проект реконструкции квартала с общественными пространствами, доступными маршрутами и ясной связью между новой архитектурой и исторической застройкой. В длинном описании важно сохранить весь авторский текст, включая его финальную фразу.', $all_copy, true ) && in_array( 'Бета — тихий интерьер', $all_copy, true ) && in_array( 'Гамма — культурная площадка', $all_copy, true ), 'Portfolio exact Cyrillic and long project copy survive without substitution: ' . $portfolio_record );
+	$rendered = array_map( static fn( array $node ): array => (array) ( $node['settings'] ?? [] ), $images );
+	$render_controls_valid = static fn( array $settings ): bool => ( $settings['object-fit'] ?? '' ) === 'cover' && ( $settings['width']['unit'] ?? '' ) === '%' && ( $settings['width']['size'] ?? 0 ) == 100 && ( $settings['height']['unit'] ?? '' ) === 'rem' && ( $settings['height']['size'] ?? 0 ) > 0 && ( $settings['height_tablet']['unit'] ?? '' ) === 'rem' && ( $settings['height_tablet']['size'] ?? 0 ) > 0 && ( $settings['height_mobile']['unit'] ?? '' ) === 'rem' && ( $settings['height_mobile']['size'] ?? 0 ) > 0;
+	check( count( array_filter( $rendered, $render_controls_valid ) ) === 3, 'Portfolio Plan render policy becomes responsive native image dimensions and valid fit controls: ' . $portfolio_record . ' ' . wp_json_encode( array_map( $render_controls_valid, $rendered ) ) );
+	$operation_ledger = (array) ( $route['response']['diagnostics']['operation_ledger'] ?? [] );
+	check( count( $native_topology ) === 3 && ( $operation_ledger['current_state'] ?? '' ) === 'written' && ( $operation_ledger['root_ids'] ?? [] ) === [ (string) ( $route['written']['id'] ?? '' ) ] && ( $operation_ledger['operation_id'] ?? '' ) === ( $route['response']['operation_id'] ?? '' ), 'Portfolio native topology and operation-owned roots are present: ' . $portfolio_record );
+}
+$cards_topology = $portfolio_routes['portfolio.project_cards']['written']['elements'][1] ?? [];
+$rows_topology = $portfolio_routes['portfolio.editorial_rows']['written']['elements'][1] ?? [];
+check( ! empty( $portfolio_routes['portfolio.project_cards']['response']['ok'] ) && ! empty( $portfolio_routes['portfolio.editorial_rows']['response']['ok'] ) && $topology( $cards_topology ) !== $topology( $rows_topology ), 'Portfolio composition records produce different native topology with IDs excluded' );
+
+$missing_portfolio_image = implode( "\n", array_values( array_filter( $portfolio_prompt_lines, static fn( string $line ): bool => ! str_starts_with( $line, 'Проект #3 изображение:' ) && ! in_array( $line, [ 'Alt: «Культурная площадка внутри переоборудованного здания».', 'Лицензия: «Unsplash License».' ], true ) ) ) );
+$missing_portfolio_result = $run_services_route( $missing_portfolio_image, [], $services_library_fixture, 'm2-portfolio-missing-image', false, 'active', 'active', [ 'composition_record' => 'portfolio.project_cards', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+check( empty( $missing_portfolio_result['response']['ok'] ) && $missing_portfolio_result['writes'] === 0 && $missing_portfolio_result['write_attempts'] === 0, 'Portfolio required project image missing refuses before write' );
+
+$wrong_owner_media = [ [ 'asset_id' => 'prompt_media_0', 'group_id' => 'portfolio_2', 'source_url' => 'https://images.unsplash.com/photo-portfolio-alpha?wpae=1200x800', 'role' => 'project_image', 'alt' => 'Современный общественный центр с открытой площадью', 'license' => 'Unsplash License', 'allowed_reuse' => true, 'provenance' => [ 'source' => 'prompt' ] ] ];
+$wrong_owner = $run_services_route( $portfolio_prompt, [], $services_library_fixture, 'm2-portfolio-wrong-owner', false, 'active', 'active', [ 'composition_record' => 'portfolio.project_cards', 'composition_version' => 1, 'visual_profile' => 'editorial_light', 'media_references' => $wrong_owner_media ] );
+check( empty( $wrong_owner['response']['ok'] ) && $wrong_owner['writes'] === 0 && $wrong_owner['write_attempts'] === 0 && ( $wrong_owner['error']['code'] ?? '' ) === 'wpae_media_reference_identity_conflict', 'Portfolio conflicting entity/media ownership refuses before write' );
 $feature_collection = (array) ( $legacy_definitions['feature.grid']['elementor_data'][0]['elements'][2] ?? [] );
 $feature_card = (array) ( $feature_collection['elements'][0] ?? [] );
 check( ( $feature_collection['settings']['container_type'] ?? '' ) === 'flex' && ( $feature_collection['settings']['flex_wrap'] ?? '' ) === 'wrap' && ( $feature_collection['settings']['flex_direction_mobile'] ?? '' ) === 'column' && ( $feature_card['settings']['_element_custom_width']['size'] ?? '' ) === 'calc((100% - 48px) / 3)' && ( $feature_card['settings']['_element_custom_width_tablet']['size'] ?? '' ) === 'calc((100% - 24px) / 2)' && ( $feature_card['settings']['_element_custom_width_mobile']['size'] ?? 0 ) === 100, 'Saved three-card recipe preserves equal Flex tracks and mobile stack while accounting for gaps' );

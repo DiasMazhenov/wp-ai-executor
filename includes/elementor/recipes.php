@@ -414,6 +414,17 @@ function wpae_composition_records(): array {
 				'variant_kind' => 'structural_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button', 'image' ] ];
 		}
 	}
+	foreach ( [
+		'portfolio.project_cards' => [ 'composition' => 'project_cards', 'layout' => 'project_cards', 'desktop' => 'three_cards', 'tablet' => 'two_cards', 'mobile' => 'stack', 'columns' => [ 'desktop_max' => 3, 'tablet' => 2, 'mobile' => 1 ] ],
+		'portfolio.editorial_rows' => [ 'composition' => 'editorial_list', 'layout' => 'editorial_rows', 'desktop' => 'editorial_list', 'tablet' => 'stack', 'mobile' => 'stack', 'columns' => [ 'desktop_max' => 1, 'tablet' => 1, 'mobile' => 1 ] ],
+	] as $id => $spec ) {
+		$records[$id] = [ 'id' => $id, 'version' => 1, 'family' => 'portfolio', 'scope' => [ 'page' ], 'composition' => $spec['composition'],
+			'slots' => [ 'intro' => 'all_exact_section_refs', 'groups' => 'ordered_project_entity_refs', 'media' => 'one_allowed_project_image_per_entity', 'links' => 'exact_project_links' ],
+			'media' => [ 'min' => 2, 'max' => 6 ], 'groups' => [ 'min' => 2, 'max' => 6 ],
+			'policy' => [ 'composition' => $spec['composition'], 'desktop' => $spec['desktop'], 'tablet' => $spec['tablet'], 'mobile' => $spec['mobile'], 'collection_columns' => $spec['columns'], 'entity_layout' => $spec['layout'], 'project_media' => [ 'height' => [ 'desktop' => '16rem', 'tablet' => '14rem', 'mobile' => '13rem' ], 'fit' => 'cover', 'surface_token' => 'color.surface', 'radius_token' => 'radius.card', 'mobile_height' => 'content' ] ],
+			'variant_kind' => 'structural_alternative', 'distinct' => true, 'capabilities' => [ 'container', 'heading', 'text-editor', 'button', 'image' ],
+		];
+	}
 	// CTA records are native Flex compositions. Their policies own the section
 	// topology and responsive axes before the accepted Plan is frozen.
 	$records['cta.centered'] = [
@@ -461,7 +472,7 @@ function wpae_composition_records(): array {
 		];
 	}
 	foreach ( $records as &$record ) {
-		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits', 'team', 'testimonials', 'services', 'process', 'cta' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
+		$record['visual_profiles'] = in_array( $record['family'], [ 'hero', 'about', 'benefits', 'team', 'testimonials', 'portfolio', 'services', 'process', 'cta' ], true ) ? [ 'editorial_light', 'soft_cards_light' ] : [];
 		if ( $record['id'] === 'benefits.linear' ) { $record['alias_of'] = 'benefits.grid'; }
 		$record['implementation_status'] = 'implemented_source';
 		$record['provenance'] = [ 'source' => 'typed_plan', 'catalog' => 'wpae-compositions-v1' ];
@@ -640,13 +651,13 @@ function wpae_composition_candidate_compatibility( array $brief, array $context,
 		if ( ! is_array( $asset ) || trim( (string) ( $asset['asset_id'] ?? '' ) ) === '' ) { continue; }
 		$role = sanitize_key( (string) ( $asset['role'] ?? '' ) );
 		$group_id = sanitize_key( (string) ( $asset['group_id'] ?? '' ) );
-		$role_owned = [ 'hero' => [ 'hero' ], 'about' => [ 'about' ], 'services' => [ 'card_image', 'service_image', 'photo' ], 'team' => [ 'portrait' ], 'testimonials' => [ 'portrait', 'avatar', 'testimonial_image' ] ][$family] ?? [];
+		$role_owned = [ 'hero' => [ 'hero' ], 'about' => [ 'about' ], 'services' => [ 'card_image', 'service_image', 'photo' ], 'team' => [ 'portrait' ], 'testimonials' => [ 'portrait', 'avatar', 'testimonial_image' ], 'portfolio' => [ 'project_image' ] ][$family] ?? [];
 		$owned_group = $group_id !== '' && isset( $group_ids[$group_id] );
 		$section_asset = in_array( $family, [ 'hero', 'about' ], true ) && in_array( $group_id, [ $family, 'hero_visual', 'about_visual' ], true );
 		$group_scoped_service_media = $family === 'services' && $role === '' && $owned_group;
 		if ( ( in_array( $role, $role_owned, true ) || $group_scoped_service_media ) && ( $owned_group || $section_asset ) ) { $owned_media[] = $asset; }
 	}
-	$family_media_roles = [ 'hero' => [ 'hero' ], 'about' => [ 'about' ], 'services' => [ 'card_image', 'service_image', 'photo' ], 'team' => [ 'portrait' ], 'testimonials' => [ 'portrait', 'avatar', 'testimonial_image' ] ][$family] ?? [];
+	$family_media_roles = [ 'hero' => [ 'hero' ], 'about' => [ 'about' ], 'services' => [ 'card_image', 'service_image', 'photo' ], 'team' => [ 'portrait' ], 'testimonials' => [ 'portrait', 'avatar', 'testimonial_image' ], 'portfolio' => [ 'project_image' ] ][$family] ?? [];
 	foreach ( (array) ( $context['candidate_media_by_record'][$id] ?? [] ) as $asset ) {
 		if ( ! is_array( $asset ) || trim( (string) ( $asset['asset_id'] ?? '' ) ) === '' ) { $errors[] = 'composition_candidate_media_invalid'; continue; }
 		if ( ! function_exists( 'wpae_design_plan_media_reference_valid' ) || ! wpae_design_plan_media_reference_valid( $asset ) || empty( $asset['allowed_reuse'] ) || trim( (string) ( $asset['alt'] ?? '' ) ) === '' ) { $errors[] = 'composition_candidate_media_unverified:' . sanitize_key( (string) $asset['asset_id'] ); continue; }
@@ -839,8 +850,8 @@ function wpae_composition_visual_profiles(): array {
 
 /** Safe editor projection: no trees, tokens, credentials or legacy aliases. */
 function wpae_composition_editor_catalog(): array {
- $families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы', 'team' => 'Команда', 'testimonials' => 'Отзывы', 'services' => 'Услуги', 'process' => 'Процесс', 'cta' => 'Призыв к действию' ];
- $labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон', 'team.grid' => 'Карточки участников', 'team.editorial_rows' => 'Редакционные строки', 'testimonials.grid' => 'Карточки отзывов', 'testimonials.editorial_rows' => 'Редакционные строки', 'services.icon_cards' => 'Карточки с иконками', 'services.photo_cards' => 'Карточки с фото', 'services.split_editorial' => 'Текст и фото', 'services.text_icon_list' => 'Список услуг', 'process.ordered_steps' => 'Упорядоченные этапы', 'cta.centered' => 'Центрированный блок', 'cta.split_actions' => 'Текст и отдельные действия' ];
+	$families = [ 'hero' => 'Первый экран', 'about' => 'О нас', 'benefits' => 'Преимущества', 'pricing' => 'Тарифы', 'faq' => 'Вопросы и ответы', 'team' => 'Команда', 'testimonials' => 'Отзывы', 'portfolio' => 'Портфолио', 'services' => 'Услуги', 'process' => 'Процесс', 'cta' => 'Призыв к действию' ];
+	$labels = [ 'hero.text_only' => 'Только текст', 'benefits.grid' => 'Сетка карточек', 'benefits.editorial_list' => 'Список с иконками', 'pricing.tiers' => 'Карточки тарифов', 'faq.native' => 'Аккордеон', 'team.grid' => 'Карточки участников', 'team.editorial_rows' => 'Редакционные строки', 'testimonials.grid' => 'Карточки отзывов', 'testimonials.editorial_rows' => 'Редакционные строки', 'portfolio.project_cards' => 'Карточки проектов', 'portfolio.editorial_rows' => 'Редакционные строки проектов', 'services.icon_cards' => 'Карточки с иконками', 'services.photo_cards' => 'Карточки с фото', 'services.split_editorial' => 'Текст и фото', 'services.text_icon_list' => 'Список услуг', 'process.ordered_steps' => 'Упорядоченные этапы', 'cta.centered' => 'Центрированный блок', 'cta.split_actions' => 'Текст и отдельные действия' ];
  $records = [];
  foreach ( wpae_composition_records() as $record ) {
   if ( empty( $record['distinct'] ) || $record['implementation_status'] !== 'implemented_source' || ! in_array( 'page', $record['scope'], true ) ) { continue; }

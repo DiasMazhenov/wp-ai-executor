@@ -1,0 +1,115 @@
+{
+  "format": "wpae-reference-set-portfolio-v294-acceptance-v1",
+  "post_id": 5214,
+  "source_start": {
+    "head": "2f4c78964f2daba23095cb902027178cb14ea6dd",
+    "source_version": "v02.11.293"
+  },
+  "baseline_before_live": {
+    "editor_root_ids": [],
+    "public_root_ids": [],
+    "public_css_viewport": "1232x923",
+    "publish_disabled_means_saved": true
+  },
+  "scenarios": [
+    {
+      "id": "A",
+      "fixture": "fixtures/A-hero-split.txt",
+      "family": "hero",
+      "record": "hero.split_50_50.right",
+      "profile": "editorial_light",
+      "status": "NOT RUN",
+      "operation_id": null,
+      "identity": null,
+      "generation_revision": null,
+      "root_id": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "public_desktop_png": null,
+      "public_mobile_png": null,
+      "undo_status": "NOT RUN"
+    },
+    {
+      "id": "B",
+      "fixture": "fixtures/B-about-split.txt",
+      "family": "about",
+      "record": "about.split_40_60.left",
+      "profile": "editorial_light",
+      "status": "NOT RUN",
+      "operation_id": null,
+      "identity": null,
+      "generation_revision": null,
+      "root_id": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "public_desktop_png": null,
+      "public_mobile_png": null,
+      "undo_status": "NOT RUN"
+    },
+    {
+      "id": "C",
+      "fixture": "fixtures/C-team-grid.txt",
+      "family": "team",
+      "record": "team.grid",
+      "profile": "editorial_light",
+      "status": "NOT RUN",
+      "operation_id": null,
+      "identity": null,
+      "generation_revision": null,
+      "root_id": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "public_desktop_png": null,
+      "public_mobile_png": null,
+      "undo_status": "NOT RUN"
+    },
+    {
+      "id": "D",
+      "fixture": "fixtures/D-testimonials-grid.txt",
+      "family": "testimonials",
+      "record": "testimonials.grid",
+      "profile": "editorial_light",
+      "status": "NOT RUN",
+      "operation_id": null,
+      "identity": null,
+      "generation_revision": null,
+      "root_id": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "public_desktop_png": null,
+      "public_mobile_png": null,
+      "undo_status": "NOT RUN"
+    },
+    {
+      "id": "E",
+      "fixture": "fixtures/E-portfolio-project-cards.txt",
+      "family": "portfolio",
+      "record": "portfolio.project_cards",
+      "profile": "editorial_light",
+      "status": "NOT RUN",
+      "operation_id": null,
+      "identity": null,
+      "generation_revision": null,
+      "root_id": null,
+      "brief_hash": null,
+      "plan_hash": null,
+      "public_desktop_png": null,
+      "public_mobile_png": null,
+      "undo_status": "NOT RUN"
+    }
+  ],
+  "counts": {
+    "new_accepted_generations": 0,
+    "required": 5,
+    "remaining": 5,
+    "retries": 0,
+    "repairs": 0
+  },
+  "fixture_sha256": {
+    "A": "f705717db859ce9de1aa2ca9a4a90b1e38a9e14025b8e3bc749e9ea7f3813212",
+    "B": "399d25ab10b36ad2c8468eab6b11d81e02ee55dc7ccaf1d683801c11edd6a06a",
+    "C": "994f1f1fef1372eece1300cd14849031c02f3af1248b34a24a4b0fba81c9a2f1",
+    "D": "a64825f23e316ac775bacd1815e4cfccae3097120002b8ff25317d6a3569bbe9",
+    "E": "22108bcc33f0574c1f282c7072f693d49dd029b5841f339f7fa9f7aa7f58a05a"
+  }
+}
