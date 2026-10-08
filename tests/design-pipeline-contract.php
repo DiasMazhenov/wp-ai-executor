@@ -1396,6 +1396,10 @@ foreach ( [ 'cta.centered', 'cta.split_actions' ] as $typed_cta_record_id ) {
 }
 $typed_cta_centered = $typed_cta_native['cta.centered'];
 $typed_cta_split = $typed_cta_native['cta.split_actions'];
+$typed_cta_centered_actions = array_values( array_filter( $typed_cta_centered['nodes'], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-cta-actions' ) )[0] ?? [];
+$typed_cta_split_actions = array_values( array_filter( $typed_cta_split['nodes'], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-cta-actions' ) )[0] ?? [];
+$typed_cta_centered_copy = array_values( array_filter( $typed_cta_centered['nodes'], static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-cta-copy' ) )[0] ?? [];
+$typed_cta_centered_badge = $typed_cta_centered['badges'][0] ?? [];
 $typed_cta_native_topology_ok = count( (array) ( $typed_cta_centered['root']['elements'] ?? [] ) ) === 1
 	&& count( (array) ( $typed_cta_split['root']['elements'] ?? [] ) ) === 2
 	&& ( $typed_cta_centered['root']['settings']['flex_direction'] ?? '' ) === 'column'
@@ -1417,6 +1421,26 @@ foreach ( [ $typed_cta_centered, $typed_cta_split ] as $typed_cta_case ) {
 		&& empty( $typed_cta_case['plan']['media_references'] );
 }
 $check( $typed_cta_native_topology_ok, 'canonical CTA records freeze exact Russian copy, pill, explicit URLs and distinct native Flex topologies with no media; selected=' . implode( ',', array_map( static fn( array $case ): string => (string) ( $case['decision']['record_id'] ?? '' ), $typed_cta_native ) ) );
+$typed_cta_alignment_contract_ok = ( $typed_cta_centered['plan']['visual_policy']['intro']['container_align'] ?? '' ) === 'center'
+	&& ( $typed_cta_centered['plan']['visual_policy']['intro']['text_align'] ?? '' ) === 'center'
+	&& ( $typed_cta_centered_copy['settings']['flex_align_items'] ?? '' ) === 'center'
+	&& ( $typed_cta_centered_badge['settings']['align_self'] ?? '' ) === 'center'
+	&& str_contains( (string) ( $typed_cta_centered_badge['settings']['custom_css'] ?? '' ), 'align-self: center' )
+	&& ( $typed_cta_centered_actions['settings']['flex_direction'] ?? '' ) === 'row'
+	&& ( $typed_cta_centered_actions['settings']['flex_justify_content'] ?? '' ) === 'center'
+	&& ( $typed_cta_centered_actions['settings']['flex_align_items'] ?? '' ) === 'center'
+	&& ( $typed_cta_centered_actions['settings']['flex_align_items_tablet'] ?? '' ) === 'center'
+	&& ( $typed_cta_centered_actions['settings']['flex_align_items_mobile'] ?? '' ) === 'center'
+	&& ( $typed_cta_split_actions['settings']['flex_direction'] ?? '' ) === 'column'
+	&& ( $typed_cta_split_actions['settings']['flex_align_items'] ?? '' ) === 'flex-start';
+$check( $typed_cta_alignment_contract_ok, 'centered CTA maps independent container/text alignment, pill alignment and row/column action alignment to native Flex controls' );
+$typed_cta_legacy_plan = $typed_cta_centered['plan'];
+unset( $typed_cta_legacy_plan['visual_policy']['intro']['container_align'] );
+$typed_cta_legacy_ir = wpae_elementor_ir_from_design_plan( $typed_cta_legacy_plan, $typed_cta_brief, [ 'canonical_create' => true, 'post_id' => 42, 'composition_record' => 'cta.centered', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ] );
+$typed_cta_legacy_native = wpae_native_elementor_compile( $typed_cta_legacy_ir, $typed_cta_brief, [], [ 'resolved_visual' => $typed_cta_legacy_plan['resolved_visual'] ?? [], 'id_seed' => 'typed-cta-legacy-alignment' ] );
+$typed_cta_legacy_nodes = $walk_elements( (array) ( $typed_cta_legacy_native['elementor_data'] ?? [] ) );
+$typed_cta_legacy_badge = array_values( array_filter( $typed_cta_legacy_nodes, static fn( array $node ): bool => ( $node['settings']['_css_classes'] ?? '' ) === 'wpae-generated-badge' ) )[0] ?? [];
+$check( ! empty( $typed_cta_legacy_native['ok'] ) && ( $typed_cta_legacy_badge['settings']['align_self'] ?? '' ) === 'center', 'legacy frozen CTA plans without container alignment continue using their prior text-alignment fallback' );
 $typed_cta_unknown_context = [ 'canonical_create' => true, 'post_id' => 42, 'composition_record' => 'cta.not_registered', 'composition_version' => 1, 'visual_profile' => 'editorial_light' ];
 $typed_cta_unknown_plan = wpae_design_plan_from_brief( $typed_cta_brief, $typed_cta_unknown_context );
 $typed_cta_unknown_validation = wpae_design_plan_validate( $typed_cta_unknown_plan, $typed_cta_brief );

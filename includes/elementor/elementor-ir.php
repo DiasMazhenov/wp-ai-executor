@@ -274,6 +274,9 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 			$allowed = array_values( array_filter( array_map( 'sanitize_key', (array) ( $child['allowed_widgets'] ?? [] ) ) ) );
 			$token_refs = array_values( array_filter( array_map( 'wpae_design_token_ref', (array) ( $child['token_refs'] ?? [] ) ) ) );
 			if ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) ) {
+				$copy_container_alignment = sanitize_key( (string) ( $child['layout_constraints']['container_align'] ?? ( $plan['visual_policy']['intro']['container_align'] ?? ( $child['layout_constraints']['text_align'] ?? 'start' ) ) ) );
+				if ( ! in_array( $copy_container_alignment, [ 'start', 'center', 'end', 'left', 'right' ], true ) ) { $copy_container_alignment = 'start'; }
+				$copy_container_alignment = [ 'left' => 'start', 'right' => 'end' ][ $copy_container_alignment ] ?? $copy_container_alignment;
 				$widgets = [];
 				foreach ( $content_refs as $content_ref ) {
 					$item = $content_map[ $content_ref ] ?? [];
@@ -289,7 +292,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 							$badge_label_role = $is_services_recipe ? 'services_badge_label' : 'eyebrow_badge_label';
 							$badge_role = $is_services_recipe ? 'services_badge' : 'hero_badge';
 							$badge_label = wpae_elementor_ir_node( $child_id . '-eyebrow-badge-label', $badge_label_role, 'heading', [ $content_ref ], [ 'color.text', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
-							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow-badge', $badge_role, 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
+							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow-badge', $badge_role, 'container', [], [ 'color.primary', 'color.surface' ], [ $badge_label ], [ 'min_width' => 0, 'max_width' => 100, 'container_align' => $copy_container_alignment ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 						} else {
 							$widgets['eyebrow'] = wpae_elementor_ir_node( $child_id . '-eyebrow', 'eyebrow', 'heading', [ $content_ref ], [ 'color.primary', 'type.body' ], [], [ 'min_width' => 0, 'max_width' => 100 ], [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text' ] ] );
 						}
@@ -333,6 +336,7 @@ function wpae_elementor_ir_from_design_plan( array $plan, array $brief, array $c
 						unset( $ordered_widget );
 					}
 					$copy_constraints = array_merge( [ 'min_width' => 0, 'max_width' => 100 ], (array) ( $child['layout_constraints'] ?? [] ) );
+					$copy_constraints['container_align'] = $copy_container_alignment;
 				$copy_constraints['reading_measure'] = true;
 				$section_children[] = wpae_elementor_ir_node( $child_id, $role, 'container', [], $token_refs, $ordered_widgets, $copy_constraints, [ 'strategy' => 'copy_first_stack', 'editable_fields' => [ 'text', 'url' ] ] );
 				if ( empty( $widgets ) ) {
@@ -527,7 +531,7 @@ function wpae_elementor_ir_bind_visual_policy( array &$node, array $policy, bool
 	$surface_owner_role = (string) ( $surface['owner_role'] ?? '' );
 	$is_surface_owner = $surface_v2 && $surface_owner_role !== '' && $role === $surface_owner_role;
 	$intro = $intro || ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) && ! empty( $node['layout_constraints']['reading_measure'] ) ) || $role === 'pricing_intro';
-	$node['visual_policy'] = [ 'version' => $policy['version'], 'intro' => $intro, 'text_align' => $intro ? $policy['intro']['text_align'] : 'left', 'container_align' => $intro ? $policy['intro']['container_align'] : 'start', 'spacing' => $policy['spacing'], 'item_surface' => $policy['item_surface'], 'split' => $policy['split'], 'cta' => $policy['cta'] ?? [], 'badge_label' => $badge_label, 'eyebrow_colors' => $policy['eyebrow_colors'] ];
+	$node['visual_policy'] = [ 'version' => $policy['version'], 'intro' => $intro, 'text_align' => $intro ? ( $policy['intro']['text_align'] ?? 'left' ) : 'left', 'container_align' => $intro ? ( $policy['intro']['container_align'] ?? ( $policy['intro']['text_align'] ?? 'start' ) ) : 'start', 'spacing' => $policy['spacing'], 'item_surface' => $policy['item_surface'], 'split' => $policy['split'], 'cta' => $policy['cta'] ?? [], 'badge_label' => $badge_label, 'eyebrow_colors' => $policy['eyebrow_colors'] ];
 	if ( $surface_v2 ) {
 		$node['visual_policy']['item_surface_scope'] = $is_surface_owner ? 'owner' : ( $inside_surface_owner ? 'interior' : 'outside' );
 	}
@@ -630,8 +634,12 @@ function wpae_elementor_ir_visual_controls( array $node, array $settings ): arra
 	$intro_copy = $measured_copy && ! empty( $policy['intro'] );
 	if ( $measured_copy ) {
 		foreach ( [ '', '_tablet', '_mobile' ] as $suffix ) { unset( $settings[ 'boxed_width' . $suffix ] ); }
-		$settings['align_self'] = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $policy['container_align'] ];
-		$settings['flex_align_items'] = [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $policy['text_align'] ];
+		$container_alignment = sanitize_key( (string) ( $policy['container_align'] ?? ( $policy['text_align'] ?? 'start' ) ) );
+		$container_alignment = [ 'left' => 'start', 'right' => 'end' ][ $container_alignment ] ?? $container_alignment;
+		$container_alignment = in_array( $container_alignment, [ 'start', 'center', 'end' ], true ) ? $container_alignment : 'start';
+		$text_alignment = sanitize_key( (string) ( $policy['text_align'] ?? 'left' ) );
+		$settings['align_self'] = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $container_alignment ];
+		$settings['flex_align_items'] = [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $text_alignment ] ?? 'flex-start';
 		$settings['flex_align_items_tablet'] = $settings['flex_align_items_mobile'] = $settings['flex_align_items'];
 		if ( $intro_copy ) {
 			// The full-width intro column preserves the selected axis; its reading wrapper alone owns the measure.
@@ -1386,8 +1394,20 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_wrap'] = $settings['flex_direction'] === 'row' ? 'wrap' : 'nowrap';
 			$settings['flex_wrap_tablet'] = $settings['flex_direction_tablet'] === 'row' ? 'wrap' : 'nowrap';
 			$settings['flex_wrap_mobile'] = 'nowrap';
-			$actions_align = (string) ( $node['layout_constraints']['actions_align'] ?? 'start' );
-			$settings['flex_align_items'] = [ 'center' => 'center', 'end' => 'flex-end' ][$actions_align] ?? 'flex-start';
+			$actions_align = sanitize_key( (string) ( $node['layout_constraints']['actions_align'] ?? 'start' ) );
+			$actions_align = in_array( $actions_align, [ 'start', 'center', 'end' ], true ) ? $actions_align : 'start';
+			$actions_alignment_control = [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $actions_align ];
+			$actions_direction_by_device = [ 'desktop' => $settings['flex_direction'], 'tablet' => $settings['flex_direction_tablet'], 'mobile' => $settings['flex_direction_mobile'] ];
+			foreach ( [ '' => 'desktop', '_tablet' => 'tablet', '_mobile' => 'mobile' ] as $suffix => $device ) {
+				if ( $actions_direction_by_device[ $device ] === 'row' ) {
+					// Alignment is along the action group's main axis; for a horizontal
+					// row that means justify-content, while buttons stay vertically centered.
+					$settings[ 'flex_justify_content' . $suffix ] = $actions_alignment_control;
+					$settings[ 'flex_align_items' . $suffix ] = 'center';
+				} else {
+					$settings[ 'flex_align_items' . $suffix ] = $actions_alignment_control;
+				}
+			}
 			$actions_gap = (array) ( $node['layout_constraints']['actions_gap'] ?? [] );
 			foreach ( [ '' => [ 'device' => 'desktop', 'fallback' => '0.875rem' ], '_tablet' => [ 'device' => 'tablet', 'fallback' => '0.875rem' ], '_mobile' => [ 'device' => 'mobile', 'fallback' => '0.75rem' ] ] as $suffix => $device_config ) {
 				$gap = wpae_elementor_ir_dimension_control( $actions_gap[$device_config['device']] ?? $device_config['fallback'], 'rem', 0.75 );
@@ -1599,10 +1619,13 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_justify_content_mobile'] = 'flex-start';
 		}
 		if ( in_array( $role, [ 'copy_group', 'cta_copy_group' ], true ) ) {
-			$alignment = sanitize_key( (string) ( $node['layout_constraints']['text_align'] ?? 'left' ) );
+			$text_alignment = sanitize_key( (string) ( $node['layout_constraints']['text_align'] ?? 'left' ) );
+			$container_alignment = sanitize_key( (string) ( $node['layout_constraints']['container_align'] ?? $text_alignment ) );
+			$container_alignment = [ 'left' => 'start', 'right' => 'end' ][ $container_alignment ] ?? $container_alignment;
+			$container_alignment = in_array( $container_alignment, [ 'start', 'center', 'end' ], true ) ? $container_alignment : 'start';
 			$settings['flex_direction'] = 'column';
-			$settings['flex_align_items'] = [ 'center' => 'center', 'right' => 'flex-end' ][ $alignment ] ?? 'flex-start';
-			$settings['text_align'] = in_array( $alignment, [ 'left', 'center', 'right' ], true ) ? $alignment : 'left';
+			$settings['flex_align_items'] = [ 'center' => 'center', 'end' => 'flex-end' ][ $container_alignment ] ?? 'flex-start';
+			$settings['text_align'] = in_array( $text_alignment, [ 'left', 'center', 'right' ], true ) ? $text_alignment : 'left';
 			if ( $role === 'cta_copy_group' ) {
 				$settings['_css_classes'] = 'wpae-cta-copy';
 				$settings['flex_gap'] = [ 'unit' => 'px', 'size' => 0, 'column' => '0', 'row' => '0', 'isLinked' => true ];
@@ -1622,6 +1645,9 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['flex_gap_mobile'] = $settings['flex_gap'];
 		}
 		if ( in_array( $role, [ 'pricing_badge', 'hero_badge' ], true ) ) {
+			$badge_container_alignment = sanitize_key( (string) ( $node['layout_constraints']['container_align'] ?? 'start' ) );
+			$badge_container_alignment = [ 'left' => 'start', 'right' => 'end' ][ $badge_container_alignment ] ?? $badge_container_alignment;
+			$badge_align_self = [ 'center' => 'center', 'end' => 'flex-end' ][ $badge_container_alignment ] ?? 'flex-start';
 			$accent = (string) ( $token_values['color.primary'] ?? '#4460EC' );
 			$settings['flex_direction'] = 'row';
 			$settings['flex_wrap'] = 'nowrap';
@@ -1632,15 +1658,15 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			$settings['border_width'] = [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ];
 			$settings['border_radius'] = wpae_elementor_ir_dimension_control( '999px', 'px', 999 );
 			$settings['padding'] = [ 'unit' => 'rem', 'top' => '0.35', 'right' => '0.75', 'bottom' => '0.35', 'left' => '0.75', 'isLinked' => false, 'sizes' => [] ];
-			$settings['align_self'] = 'flex-start';
-			$settings['align_self_tablet'] = 'flex-start';
-			$settings['align_self_mobile'] = 'flex-start';
+			$settings['align_self'] = $badge_align_self;
+			$settings['align_self_tablet'] = $badge_align_self;
+			$settings['align_self_mobile'] = $badge_align_self;
 			$settings['_element_width'] = 'initial';
 			$settings['_element_width_tablet'] = 'initial';
 			$settings['_element_width_mobile'] = 'initial';
 			$settings['_flex_grow'] = 0;
 			$settings['_flex_shrink'] = 0;
-			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: flex-start; flex: 0 0 auto; }';
+			$settings['custom_css'] = 'selector { width: fit-content; max-width: 100%; align-self: ' . $badge_align_self . '; flex: 0 0 auto; }';
 			$settings['_css_classes'] = 'wpae-generated-badge';
 		}
 	} elseif ( $widget_type === 'heading' ) {
@@ -2219,7 +2245,11 @@ function wpae_elementor_ir_compile_node( array $node, array $content_map, array 
 			// Elementor's native custom slider unit emits the expression without a unit suffix.
 			$measure = [ 'unit' => 'custom', 'size' => 'min(100%, ' . $measure['size'] . $measure['unit'] . ')', 'sizes' => [] ];
 			$measure_gap = ! empty( $policy['intro'] ) ? [ 'unit' => 'px', 'size' => 0 ] : wpae_elementor_ir_dimension_control( $policy['spacing']['item_copy'] ?? '0.75rem', 'rem', 0.75 );
-			$measure_settings = [ 'background_background' => 'classic', 'background_color' => 'transparent', 'container_type' => 'flex', 'content_width' => 'full', 'flex_direction' => 'column', 'flex_gap' => [ 'unit' => $measure_gap['unit'], 'size' => $measure_gap['size'], 'column' => (string) $measure_gap['size'], 'row' => (string) $measure_gap['size'], 'isLinked' => true ], 'padding' => [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'align_self' => [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $policy['container_align'] ], 'flex_align_items' => [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $policy['text_align'] ], 'width' => $measure, 'width_tablet' => $measure, 'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ] ];
+			$measure_container_alignment = sanitize_key( (string) ( $policy['container_align'] ?? ( $policy['text_align'] ?? 'start' ) ) );
+			$measure_container_alignment = [ 'left' => 'start', 'right' => 'end' ][ $measure_container_alignment ] ?? $measure_container_alignment;
+			$measure_container_alignment = in_array( $measure_container_alignment, [ 'start', 'center', 'end' ], true ) ? $measure_container_alignment : 'start';
+			$measure_text_alignment = sanitize_key( (string) ( $policy['text_align'] ?? 'left' ) );
+			$measure_settings = [ 'background_background' => 'classic', 'background_color' => 'transparent', 'container_type' => 'flex', 'content_width' => 'full', 'flex_direction' => 'column', 'flex_gap' => [ 'unit' => $measure_gap['unit'], 'size' => $measure_gap['size'], 'column' => (string) $measure_gap['size'], 'row' => (string) $measure_gap['size'], 'isLinked' => true ], 'padding' => [ 'unit' => 'px', 'top' => '0', 'right' => '0', 'bottom' => '0', 'left' => '0', 'isLinked' => true ], 'align_self' => [ 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end' ][ $measure_container_alignment ], 'flex_align_items' => [ 'left' => 'flex-start', 'center' => 'center', 'right' => 'flex-end' ][ $measure_text_alignment ] ?? 'flex-start', 'width' => $measure, 'width_tablet' => $measure, 'width_mobile' => [ 'unit' => '%', 'size' => 100, 'sizes' => [] ] ];
 			$compiled_children = [ [ 'id' => wpae_elementor_ir_id( (string) $node['node_id'] . '-reading-measure', $seed ), 'elType' => 'container', 'settings' => $measure_settings, 'elements' => $compiled_children ] ];
 		}
 	}
